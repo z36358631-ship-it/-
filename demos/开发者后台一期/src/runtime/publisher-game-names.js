@@ -122,6 +122,7 @@
         if (!state.staged) return;
         state.draft.nameLanguages = [...state.staged.languages]; state.draft.defaultNameLanguage = state.staged.defaultLanguage;
         if (!state.draft.nameLanguages.includes(state.draft.currentNameLanguage)) state.draft.currentNameLanguage = state.draft.defaultNameLanguage;
+        state.draft.storeLocales = { enabled: [...state.draft.nameLanguages], default: state.draft.defaultNameLanguage, current: state.draft.currentNameLanguage };
         sync(state.draft); state.staged = null; root.querySelector('[data-name-dialog]').close();
         redraw('[data-name-settings]'); state.onChange();
       } else if (event.target.closest('[data-name-clear]') && state.staged) { state.staged.languages = protectedLanguages(state); updateDialog(); }

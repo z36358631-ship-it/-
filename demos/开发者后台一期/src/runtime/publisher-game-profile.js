@@ -21,7 +21,7 @@
     completion: ['必填完成', 'Required fields'], remaining: ['还差 {count} 项', '{count} items to complete'], complete: ['已完善', 'Complete'], incomplete: ['待完善', 'Incomplete'], completeAll: ['必填信息已完整', 'Required information is complete'],
     locked: ['资料已提交审核，当前版本已锁定。可撤销审核后继续修改，尚未公开发布。', 'The current version is locked while its details are in review. Withdraw the review to continue editing. It has not been published.'], submissionId: ['提交编号', 'Submission ID'], submittedAt: ['提交时间', 'Submitted at'],
     classification: ['游戏分类与平台', 'Classification and platforms'], classificationHint: ['设置游戏类型和发布平台。', 'Set the game genres and release platforms.'],
-    pricing: ['收费设置', 'Pricing settings'], pricingHint: ['选择免费提供，或按发行范围设置单次买断价格。', 'Offer the game for free or set a one-time purchase price for each release scope.'], pricingModel: ['收费方式', 'Pricing model'], free: ['免费', 'Free'], paid: ['收费（单次买断）', 'Paid (one-time purchase)'], freeHint: ['免费向玩家提供完整游戏。', 'Players can access the full game for free.'], paidHint: ['玩家一次购买后即可游玩完整游戏。', 'Players purchase the full game once.'], globalPrice: ['全球服售价（USD）', 'Global price (USD)'], domesticPrice: ['国内服售价（CNY）', 'Domestic price (CNY)'], priceHint: ['请输入大于 0 的金额，最多 2 位小数。', 'Enter an amount greater than 0 with up to 2 decimal places.'], pricingModelRequired: ['请选择免费或收费（单次买断）。', 'Select free or a one-time paid purchase.'], priceRequired: ['请填写大于 0 的售价，最多 2 位小数。', 'Enter a price greater than 0 with up to 2 decimal places.'], discountInvalid: ['折扣价须低于售价，并设置开始早于结束、结束时间尚未到期的折扣期限。', 'Set a discount below the list price with a valid start time and a future end time.'], pricingRegionHint: ['请先在发行设置中选择发布地区，再填写对应售价。', 'Select release regions in Release settings, then enter the relevant prices.'], pricingUnconfigured: ['历史未配置', 'Not recorded'], pricingLegacy: ['历史提交未记录收费设置，按原提交内容保留。', 'Pricing was not recorded in this historical submission. Its original details are preserved.'], pricingLegacyEdit: ['历史提交未记录收费设置，请选择本次提交的收费方式。', 'Pricing was not recorded in this historical submission. Choose a pricing model for this submission.'],
+    pricing: ['收费设置', 'Pricing settings'], pricingHint: ['选择免费提供，或按发行区域设置单次买断价格。', 'Offer the game for free or set a one-time purchase price for the release regions.'], pricingModel: ['收费方式', 'Pricing model'], free: ['免费', 'Free'], paid: ['收费（单次买断）', 'Paid (one-time purchase)'], freeHint: ['免费向玩家提供完整游戏。', 'Players can access the full game for free.'], paidHint: ['玩家一次购买后即可游玩完整游戏。', 'Players purchase the full game once.'], pricingStrategy: ['定价方式', 'Pricing method'], uniform: ['全球统一价', 'Global unified price'], uniformHint: ['使用一个基准价，适用于发行设置中的全部地区。', 'Use one base price for every territory selected in Release settings.'], regional: ['分区定价', 'Regional pricing'], regionalHint: ['设置覆盖全部发行地区的基准价，仅为少数地区添加例外价。', 'Set one base price for all release territories and add overrides only where needed.'], pricingStrategyRequired: ['请选择全球统一价或分区定价。', 'Select global unified or regional pricing.'], globalPrice: ['全球服售价（USD）', 'Global price (USD)'], domesticPrice: ['国内服售价（CNY）', 'Domestic price (CNY)'], priceHint: ['请输入大于 0 的金额，最多 2 位小数。', 'Enter an amount greater than 0 with up to 2 decimal places.'], pricingModelRequired: ['请选择免费或收费（单次买断）。', 'Select free or a one-time paid purchase.'], priceRequired: ['请填写大于 0 的售价，最多 2 位小数。', 'Enter a price greater than 0 with up to 2 decimal places.'], discountInvalid: ['折扣价须低于对应售价，并设置开始早于结束、结束时间尚未到期的折扣期限。', 'Set each discount below its list price with a valid start time and a future end time.'], pricingRegionHint: ['例外地区仅来自发行设置；未单独定价的地区继承基准价。', 'Overrides come from Release settings; all other territories inherit the base price.'], pricingUnconfigured: ['历史未配置', 'Not recorded'], pricingLegacy: ['历史提交未记录收费设置，按原提交内容保留。', 'Pricing was not recorded in this historical submission. Its original details are preserved.'], pricingLegacyEdit: ['历史提交未记录收费设置，请选择本次提交的收费方式。', 'Pricing was not recorded in this historical submission. Choose a pricing model for this submission.'],
     genres: ['游戏类型', 'Game genres'], relationship: ['当前主体与该游戏的关系', 'Company relationship to this game'], releasePlan: ['当前发布计划', 'Current release plan'], platforms: ['发布平台', 'Release platforms'], choose: ['请选择', 'Please select'],
     releaseRegions: ['发行范围', 'Release regions'], regionRequired: ['请选择全球服或国内服。', 'Select a global or domestic release.'],
     contentLanguage: ['资料填写语言', 'Content language'], contentZh: ['中文', 'Chinese'], contentEn: ['英语', 'English'], contentRequired: ['当前发行范围必填', 'Required for the selected release'], contentOptional: ['选填资料', 'Optional content'],
@@ -68,7 +68,15 @@
     return { builds: 'builds', pricing: 'catalog', publication: 'release', qualification: 'qualification' }[section] || 'profile';
   };
   const releaseMissingCounts = done => Object.fromEntries(releaseModules.map(module => [module, done.missing.filter(item => releaseModuleOf(item.key) === module).length]));
-  const labelFor = (lang, key) => key === 'buildPackages.readyFull' ? t(lang, 'readyFull') : key === 'pricing.model' ? t(lang, 'pricingModel') : key === 'qualifications.mainland' ? t(lang, 'mainlandScan') : key.startsWith('gameNames.') ? `${lang === 'en' ? 'Game name' : '游戏名称'} · ${window.PublisherGameNames.label(key.split('.')[1], lang)}` : key.startsWith('requirements.') ? `${key.slice(13)} · ${t(lang, 'requirements')}` : t(lang, key.split('.').pop() === 'scheduledAt' ? 'scheduleTime' : key.split('.').pop());
+  const labelFor = (lang, key) => {
+    const regionalPrice = key.match(/\.regionalPrices\.([A-Z]{2,3})\.listPrice$/);
+    if (regionalPrice) {
+      const code = regionalPrice[1];
+      const label = code.length === 2 ? window.PublisherReleaseRegions.territoryLabel(code, lang) : code;
+      return lang === 'en' ? `${label} list price` : `${label}售价`;
+    }
+    return key === 'buildPackages.readyFull' ? t(lang, 'readyFull') : key === 'pricing.model' ? t(lang, 'pricingModel') : key === 'qualifications.mainland' ? t(lang, 'mainlandScan') : key.startsWith('gameNames.') ? `${lang === 'en' ? 'Game name' : '游戏名称'} · ${window.PublisherGameNames.label(key.split('.')[1], lang)}` : key.startsWith('requirements.') ? `${key.slice(13)} · ${t(lang, 'requirements')}` : t(lang, key.split('.').pop() === 'scheduledAt' ? 'scheduleTime' : key.split('.').pop());
+  };
   const lock = draft => draft.reviewStatus === 'reviewing' || draft.saving || draft.submitting || draft.withdrawing;
   const accessFor = value => value && typeof value === 'object' ? value : {
     accountKind: 'enterprise', qualificationStatus: 'approved', canEditReleaseDraft: true,
@@ -102,7 +110,7 @@
   const contentRequired = (draft, language) => draft.legacyReview ? language === 'en' : language === (draft.releaseConfig?.mode === 'domestic' ? 'zh' : 'en');
   const contentKeys = language => language === 'zh' ? ['gameNameZh', 'taglineZh', 'descriptionZh'] : ['gameNameEn', 'tagline', 'description'];
   const displayName = draft => String(draft.gameNames?.[draft.defaultNameLanguage] || draft.gameName || (draft.releaseRegions?.includes('domestic') ? draft.gameNameZh || draft.gameNameEn : draft.gameNameEn || draft.gameNameZh) || '').trim();
-  const stateFor = draft => { let state = runtime.get(draft); if (!state) { state = { root: null, urls: new Map(), uploads: new Map(), uploadSequence: 0, focus: null, observer: null, versionRequest: 0, versionPage: 1, versionViewer: { status: 'list', submissionId: '', record: null }, demoReleaseState: { open: false, active: false, status: 'reviewing' } }; runtime.set(draft, state); } return state; };
+  const stateFor = draft => { let state = runtime.get(draft); if (!state) { state = { root: null, urls: new Map(), uploads: new Map(), uploadSequence: 0, focus: null, observer: null, versionRequest: 0, versionPage: 1, versionViewer: { status: 'list', submissionId: '', record: null }, demoReleaseState: { open: false, active: false, status: 'reviewing' }, overridePicker: { open: false, skuIndex: -1, search: '', selected: [] } }; runtime.set(draft, state); } return state; };
   function urlFor(draft, file) {
     if (!validFile(file)) return '';
     const state = stateFor(draft);
@@ -116,16 +124,86 @@
   }
   const validPrice = value => /^\d+(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) && Number.isFinite(Number(value)) && Number(value) > 0;
   const pricingIsHistorical = draft => !draft.pricing && draft.legacyPricing && ['reviewing', 'approved'].includes(draft.reviewStatus) && Boolean(draft.submissionId);
-  const emptySku = (type = 'dlc', index = 0) => ({ skuId: type === 'base_game' ? 'BASE' : `DLC-${String(index + 1).padStart(3, '0')}`, type, title: type === 'base_game' ? '基础游戏' : `DLC ${index + 1}`, installContentRef: '', pricingModel: 'free', listPrice: '', discountPrice: '', discountStartAt: '', discountEndAt: '' });
-  const normalizeSku = (value, type, index = 0) => ({ ...emptySku(type, index), ...(value || {}), type });
+  const normalizeRegionalPrices = source => Object.fromEntries(Object.entries(source && typeof source === 'object' ? source : {}).map(([code, price]) => [code, {
+    listPrice: String(price?.listPrice ?? ''), discountPrice: String(price?.discountPrice ?? ''),
+  }]));
+  const emptySku = (type = 'dlc', index = 0) => ({ skuId: type === 'base_game' ? 'BASE' : `DLC-${String(index + 1).padStart(3, '0')}`, type, title: type === 'base_game' ? '基础游戏' : `DLC ${index + 1}`, installContentRef: '', pricingModel: 'free', pricingStrategy: 'uniform', listPrice: '', discountPrice: '', regionalPrices: {}, discountStartAt: '', discountEndAt: '' });
+  const normalizeSku = (value, type, index = 0) => {
+    const normalized = { ...emptySku(type, index), ...(value || {}), type };
+    normalized.pricingStrategy = normalized.pricingStrategy === 'regional' ? 'regional' : 'uniform';
+    normalized.regionalPrices = normalizeRegionalPrices(normalized.regionalPrices);
+    return normalized;
+  };
   const skuList = draft => [draft.catalog.baseGame, ...(draft.catalog.dlcs || [])];
   const currencyFor = draft => draft.releaseConfig?.mode === 'domestic' ? 'CNY' : 'USD';
-  const validDiscount = (sku, allowExpired = false) => {
-    if (!sku.discountPrice && !sku.discountStartAt && !sku.discountEndAt) return true;
+  const priceZonesFor = draft => {
+    const territoryCodes = draft.releaseConfig?.mode === 'domestic' ? ['CN'] : [...new Set(draft.releaseConfig?.globalTerritoryCodes || [])].filter(code => code !== 'CN');
+    return territoryCodes.map(code => ({ code, currency: window.PublisherReleaseRegions.currencyForTerritory(code), territoryCodes: [code] }));
+  };
+  const pricingStrategyFor = (sku, draft) => draft.releaseConfig?.mode === 'domestic' ? 'uniform' : sku.pricingStrategy === 'regional' ? 'regional' : 'uniform';
+  const clearSkuPrice = (sku, { resetStrategy = false } = {}) => Object.assign(sku, {
+    ...(resetStrategy ? { pricingStrategy: 'uniform' } : {}),
+    listPrice: '', discountPrice: '', regionalPrices: {}, discountStartAt: '', discountEndAt: '',
+  });
+  const hasPriceOverride = (sku, code) => Boolean(sku?.regionalPrices) && Object.prototype.hasOwnProperty.call(sku.regionalPrices, code);
+  const activeOverrideZonesFor = (sku, draft) => priceZonesFor(draft).filter(zone => hasPriceOverride(sku, zone.code));
+  const migrateRegionalPriceKeys = draft => {
+    skuList(draft).forEach(sku => {
+      const source = normalizeRegionalPrices(sku.regionalPrices);
+      const next = Object.fromEntries(Object.entries(source).filter(([code]) => /^[A-Z]{2}$/.test(code)));
+      priceZonesFor(draft).forEach(zone => {
+        if (!next[zone.code] && source[zone.currency]) next[zone.code] = { ...source[zone.currency] };
+      });
+      sku.regionalPrices = next;
+    });
+  };
+  const submissionSnapshot = draft => {
+    const snapshot = structuredClone(draft);
+    skuList(snapshot).forEach(sku => {
+      if (sku.pricingModel !== 'paid') {
+        clearSkuPrice(sku, { resetStrategy: true });
+        return;
+      }
+      sku.pricingStrategy = pricingStrategyFor(sku, snapshot);
+      if (sku.pricingStrategy !== 'regional') {
+        sku.regionalPrices = {};
+        return;
+      }
+      sku.regionalPrices = Object.fromEntries(activeOverrideZonesFor(sku, snapshot).map(zone => [zone.code, {
+        listPrice: String(sku.regionalPrices[zone.code]?.listPrice ?? ''),
+        discountPrice: String(sku.regionalPrices[zone.code]?.discountPrice ?? ''),
+      }]));
+    });
+    const enabledLocales = [...new Set(snapshot.storeLocales?.enabled || snapshot.nameLanguages || [])];
+    if (enabledLocales.length) {
+      const activeOnly = source => Object.fromEntries(enabledLocales.filter(code => source && Object.prototype.hasOwnProperty.call(source, code)).map(code => [code, source[code]]));
+      snapshot.gameNames = activeOnly(snapshot.gameNames);
+      snapshot.localizedContent = activeOnly(snapshot.localizedContent);
+      snapshot.localizedAssets = activeOnly(snapshot.localizedAssets);
+      if (snapshot.gameProfileDraft) {
+        snapshot.gameProfileDraft.gameNames = activeOnly(snapshot.gameProfileDraft.gameNames);
+        snapshot.gameProfileDraft.localizedContent = activeOnly(snapshot.gameProfileDraft.localizedContent);
+        snapshot.gameProfileDraft.localizedAssets = activeOnly(snapshot.gameProfileDraft.localizedAssets);
+      }
+    }
+    return snapshot;
+  };
+  const skuDiscountConfigured = (sku, draft) => pricingStrategyFor(sku, draft) === 'regional'
+    ? Boolean(sku.discountPrice) || activeOverrideZonesFor(sku, draft).some(zone => Boolean(sku.regionalPrices?.[zone.code]?.discountPrice)) || Boolean(sku.discountStartAt || sku.discountEndAt)
+    : Boolean(sku.discountPrice || sku.discountStartAt || sku.discountEndAt);
+  const validDiscount = (sku, draft, allowExpired = false) => {
+    if (!skuDiscountConfigured(sku, draft)) return true;
     const start = new Date(sku.discountStartAt).getTime();
     const end = new Date(sku.discountEndAt).getTime();
-    return validPrice(sku.discountPrice)
-      && Number(sku.discountPrice) < Number(sku.listPrice)
+    const pricesValid = pricingStrategyFor(sku, draft) === 'regional' ? (
+      (!sku.discountPrice || (validPrice(sku.discountPrice) && Number(sku.discountPrice) < Number(sku.listPrice)))
+      && activeOverrideZonesFor(sku, draft).every(zone => {
+        const price = sku.regionalPrices?.[zone.code] || {};
+        return !price.discountPrice || (validPrice(price.discountPrice) && Number(price.discountPrice) < Number(price.listPrice));
+      })
+      && (Boolean(sku.discountPrice) || activeOverrideZonesFor(sku, draft).some(zone => Boolean(sku.regionalPrices?.[zone.code]?.discountPrice)))
+    ) : validPrice(sku.discountPrice) && Number(sku.discountPrice) < Number(sku.listPrice);
+    return pricesValid
       && Number.isFinite(start)
       && Number.isFinite(end)
       && start < end
@@ -229,6 +307,11 @@
     draft.releaseSubmissions = structuredClone(normalized.releaseSubmissions || []);
     draft.reviewRecords = structuredClone(normalized.reviewRecords || []);
     draft.currentReleaseReview = structuredClone(normalized.currentReleaseReview || null);
+    migrateRegionalPriceKeys(draft);
+    skuList(draft).forEach(sku => {
+      if (sku.pricingModel !== 'paid') clearSkuPrice(sku, { resetStrategy: true });
+      else if (draft.releaseConfig?.mode === 'domestic') Object.assign(sku, { pricingStrategy: 'uniform', regionalPrices: {} });
+    });
     delete draft.languages;
     return draft;
   }
@@ -262,8 +345,13 @@
       result.push([`${key}.installContentRef`, window.PublisherGameBuilds.parsedFullBuilds(draft).some(build => build.id === sku.installContentRef), 'required']);
       result.push([`${key}.pricingModel`, ['free', 'paid'].includes(sku.pricingModel), 'pricingModelRequired']);
       if (sku.pricingModel === 'paid') {
+        const pricingStrategy = pricingStrategyFor(sku, draft);
+        if (mode === 'global') result.push([`${key}.pricingStrategy`, ['uniform', 'regional'].includes(sku.pricingStrategy), 'pricingStrategyRequired']);
         result.push([`${key}.listPrice`, validPrice(sku.listPrice), 'priceRequired']);
-        if (sku.discountPrice || sku.discountStartAt || sku.discountEndAt) result.push([`${key}.discount`, validDiscount(sku, draft.reviewStatus === 'reviewing'), 'discountInvalid']);
+        if (pricingStrategy === 'regional') {
+          activeOverrideZonesFor(sku, draft).forEach(zone => result.push([`${key}.regionalPrices.${zone.code}.listPrice`, validPrice(sku.regionalPrices?.[zone.code]?.listPrice), 'priceRequired']));
+        }
+        if (skuDiscountConfigured(sku, draft)) result.push([`${key}.discount`, validDiscount(sku, draft, draft.reviewStatus === 'reviewing'), 'discountInvalid']);
       }
     });
     return result;
@@ -314,15 +402,51 @@
   function renderPricing(draft, lang) {
     const isEnglish = lang === 'en';
     const currency = currencyFor(draft);
+    const readonly = lock(draft);
+    const runtimeState = stateFor(draft);
     const buildOptions = window.PublisherGameBuilds.parsedFullBuilds(draft);
-    const buildSelect = (sku, key) => `<div class="pgp-field" data-profile-field-wrap="${key}.installContentRef"><label>${isEnglish ? 'Installation content / build' : '安装内容／包体版本'} ${required}</label><select data-sku-build="${esc(key)}" aria-label="${isEnglish ? 'Installation content / build' : '安装内容／包体版本'}"${buildOptions.length ? '' : ' disabled'}><option value="">${isEnglish ? (buildOptions.length ? 'Choose a parsed full package' : 'Upload a parsed full package first') : (buildOptions.length ? '请选择已解析整包' : '请先上传并解析游戏整包')}</option>${buildOptions.map(build => `<option value="${esc(build.id)}"${sku.installContentRef === build.id ? ' selected' : ''}>${esc(build.platform)} · ${esc(build.version)} · ${esc(build.id)}</option>`).join('')}</select><p class="pgp-hint">${isEnglish ? 'Only parsed full packages can be linked.' : '只能关联已解析通过的游戏整包。'}</p>${errorHTML(draft, lang, `${key}.installContentRef`)}</div>`;
+    const zones = priceZonesFor(draft);
+    const buildSelect = (sku, key) => `<div class="pgp-field" data-profile-field-wrap="${key}.installContentRef"><label>${isEnglish ? 'Installation content / build' : '安装内容／包体版本'} ${required}</label><select data-sku-build="${esc(key)}" aria-label="${isEnglish ? 'Installation content / build' : '安装内容／包体版本'}"${buildOptions.length && !readonly ? '' : ' disabled'}><option value="">${isEnglish ? (buildOptions.length ? 'Choose a parsed full package' : 'Upload a parsed full package first') : (buildOptions.length ? '请选择已解析整包' : '请先上传并解析游戏整包')}</option>${buildOptions.map(build => `<option value="${esc(build.id)}"${sku.installContentRef === build.id ? ' selected' : ''}>${esc(build.platform)} · ${esc(build.version)} · ${esc(build.id)}</option>`).join('')}</select><p class="pgp-hint">${isEnglish ? 'Only parsed full packages can be linked.' : '只能关联已解析通过的游戏整包。'}</p>${errorHTML(draft, lang, `${key}.installContentRef`)}</div>`;
+    const regionalPricing = (sku, key, index) => {
+      if (!zones.length) return `<p class="pgp-sku-free-note pgp-wide">${isEnglish ? 'Select release territories in Release settings before entering regional prices.' : '请先在发行设置中选择发行区域，再填写分区价格。'}</p>`;
+      const activeOverrides = activeOverrideZonesFor(sku, draft);
+      const candidates = zones.filter(zone => !hasPriceOverride(sku, zone.code));
+      const picker = runtimeState.overridePicker?.open && runtimeState.overridePicker.skuIndex === index ? runtimeState.overridePicker : null;
+      const selected = new Set(picker?.selected || []);
+      const basePrice = `<section class="pgp-regional-base" data-sku-regional-base><header class="pgp-regional-base__head"><div><strong>${isEnglish ? 'Base price' : '基准价'}</strong><p>${isEnglish ? `Applied to all territories without an override; ${currency} is converted by platform rules.` : `覆盖未单独定价的发行地区；${currency} 按平台规则换算为当地币种。`}</p></div><span>${esc(currency)}</span></header><div class="pgp-regional-base__fields">${field(draft, lang, `${key}.listPrice`, { isRequired: true, readonly, label: `${isEnglish ? 'Base list price' : '基准售价'}（${currency}）`, hint: t(lang, 'priceHint') })}${field(draft, lang, `${key}.discountPrice`, { readonly, label: `${isEnglish ? 'Base discount price' : '基准折扣价'}（${currency}）` })}</div></section>`;
+      const pickerHTML = picker ? `<section class="pgp-override-picker" data-sku-override-picker="${index}"><div class="pgp-override-picker__search"><input type="search" value="${esc(picker.search || '')}" placeholder="${isEnglish ? 'Search country, region or code' : '搜索国家、地区或代码'}" data-sku-override-search="${index}" aria-label="${isEnglish ? 'Search override territories' : '搜索例外地区'}"></div><div class="pgp-override-picker__list">${candidates.map(zone => {
+        const territoryName = window.PublisherReleaseRegions.territoryLabel(zone.code, lang);
+        const searchText = `${territoryName} ${zone.code} ${zone.currency}`.toLowerCase();
+        return `<label class="pgp-override-picker__option" data-sku-override-candidate="${esc(zone.code)}" data-sku-override-search-text="${esc(searchText)}"><input type="checkbox" data-sku-override-option="${esc(zone.code)}"${selected.has(zone.code) ? ' checked' : ''}><span><strong>${esc(territoryName)}</strong><small>${esc(zone.code)} · ${esc(zone.currency)}</small></span></label>`;
+      }).join('')}<p class="pgp-override-picker__empty" data-sku-override-empty${candidates.length ? ' hidden' : ''}>${isEnglish ? 'No territories available.' : '暂无可添加地区'}</p></div><footer class="pgp-override-picker__actions"><button type="button" class="pgp-button" data-sku-override-cancel="${index}">${isEnglish ? 'Cancel' : '取消'}</button><button type="button" class="pgp-button pgp-button--primary" data-sku-override-confirm="${index}" data-sku-override-confirm-label="${isEnglish ? 'Add selected' : '添加所选地区'}"${selected.size ? '' : ' disabled'}>${isEnglish ? 'Add selected' : '添加所选地区'}${selected.size ? `（${selected.size}）` : ''}</button></footer></section>` : '';
+      const overrideRows = activeOverrides.map(zone => {
+        const price = sku.regionalPrices?.[zone.code] || {};
+        const listKey = `${key}.regionalPrices.${zone.code}.listPrice`;
+        const discountKey = `${key}.regionalPrices.${zone.code}.discountPrice`;
+        const territoryName = window.PublisherReleaseRegions.territoryLabel(zone.code, lang);
+        return `<div class="pgp-region-pricing__row" data-sku-price-zone="${esc(zone.code)}"><div class="pgp-region-pricing__zone"><strong>${esc(territoryName)}</strong><small>${esc(zone.code)} · ${esc(zone.currency)}</small><button type="button" data-sku-override-remove="${esc(zone.code)}" data-sku-override-index="${index}"${readonly ? ' disabled' : ''}>${isEnglish ? 'Remove' : '移除'}</button></div><div class="pgp-region-pricing__field" data-profile-field-wrap="${esc(listKey)}"><label for="${id(listKey)}">${isEnglish ? 'List price' : '售价'}（${esc(zone.currency)}） ${required}</label><input id="${id(listKey)}" type="text" inputmode="decimal" autocomplete="off" value="${esc(price.listPrice || '')}" data-profile-field="${esc(listKey)}" aria-invalid="${Boolean(draft.errors[listKey])}" aria-describedby="${id(listKey)}-error"${readonly ? ' readonly' : ''}>${errorHTML(draft, lang, listKey)}</div><div class="pgp-region-pricing__field"><label for="${id(discountKey)}">${isEnglish ? 'Discount price' : '折扣价'}（${esc(zone.currency)}）</label><input id="${id(discountKey)}" type="text" inputmode="decimal" autocomplete="off" value="${esc(price.discountPrice || '')}" data-profile-field="${esc(discountKey)}"${readonly ? ' readonly' : ''}><p class="pgp-hint">${isEnglish ? 'Blank inherits the base discount rate.' : '留空继承基准折扣比例。'}</p></div></div>`;
+      }).join('');
+      const inheritedCount = zones.length - activeOverrides.length;
+      const summary = isEnglish ? `${inheritedCount} territories use the base price · ${activeOverrides.length} overrides` : `${inheritedCount} 个地区使用基准价 · ${activeOverrides.length} 个例外价`;
+      const overrides = `<section class="pgp-regional-overrides"><header class="pgp-regional-overrides__head"><div><strong>${isEnglish ? 'Territory overrides' : '地区例外价'}</strong><p data-sku-inherited-count>${esc(summary)}</p></div><button type="button" class="pgp-button" data-sku-override-add="${index}"${readonly || !candidates.length ? ' disabled' : ''}>${isEnglish ? 'Add override territories' : '添加例外地区'}</button></header>${pickerHTML}${activeOverrides.length ? `<div class="pgp-region-pricing" data-sku-regional-prices><div class="pgp-region-pricing__head"><span>${isEnglish ? 'Release country / region' : '发行国家／地区'}</span><span>${isEnglish ? 'List price' : '售价'}</span><span>${isEnglish ? 'Discount price (optional)' : '折扣价（选填）'}</span></div>${overrideRows}<p class="pgp-region-pricing__note">${esc(t(lang, 'pricingRegionHint'))}</p></div>` : `<p class="pgp-regional-empty">${isEnglish ? 'All selected release territories currently use the base price.' : '全部已选发行地区使用基准价。'}</p>`}</section>`;
+      return `<div class="pgp-regional-pricing pgp-wide">${basePrice}${overrides}</div>`;
+    };
     const renderSku = (sku, index) => {
       const base = index === 0;
       const key = base ? 'catalog.baseGame' : `catalog.dlcs.${index - 1}`;
       const paid = sku.pricingModel === 'paid';
-      return `<article class="pgp-sku-card" data-catalog-sku="${esc(sku.skuId)}" data-sku-index="${index}"><header><div><small>${base ? (isEnglish ? 'BASE GAME' : '基础游戏') : 'DLC'}</small><h4>${esc(sku.title || (base ? (isEnglish ? 'Base game' : '基础游戏') : `DLC ${index}`))}</h4><span>${esc(sku.skuId)}</span></div>${base ? '' : `<button type="button" class="pgp-link-danger" data-sku-remove="${index - 1}">${isEnglish ? 'Remove' : '删除'}</button>`}</header><div class="pgp-form-grid">${field(draft, lang, `${key}.title`, { isRequired: true, label: isEnglish ? 'Product name' : '商品名称' })}${buildSelect(sku, key)}<fieldset class="pgp-pricing-model pgp-wide" data-profile-field-wrap="${key}.pricingModel"><legend>${esc(t(lang, 'pricingModel'))} ${required}</legend><div class="pgp-pricing-options">${['free', 'paid'].map(value => `<label class="pgp-pricing-option${sku.pricingModel === value ? ' is-selected' : ''}"><input type="radio" name="sku-pricing-${index}" value="${value}" data-sku-pricing-model="${index}"${sku.pricingModel === value ? ' checked' : ''}><span><strong>${esc(t(lang, value))}</strong><small>${esc(t(lang, `${value}Hint`))}</small></span></label>`).join('')}</div>${errorHTML(draft, lang, `${key}.pricingModel`)}</fieldset>${paid ? `${field(draft, lang, `${key}.listPrice`, { isRequired: true, label: `${isEnglish ? 'List price' : '售价'}（${currency}）`, hint: t(lang, 'priceHint') })}${field(draft, lang, `${key}.discountPrice`, { label: `${isEnglish ? 'Discount price' : '折扣价'}（${currency}）` })}${field(draft, lang, `${key}.discountStartAt`, { label: isEnglish ? 'Discount starts' : '折扣开始时间' })}${field(draft, lang, `${key}.discountEndAt`, { label: isEnglish ? 'Discount ends' : '折扣结束时间' })}${errorHTML(draft, lang, `${key}.discount`)}` : `<p class="pgp-sku-free-note pgp-wide">${isEnglish ? 'This SKU is free. Price and discount values are cleared when saved.' : '此 SKU 免费提供，售价与折扣信息不会生效。'}</p>`}</div></article>`;
+      const domestic = draft.releaseConfig?.mode === 'domestic';
+      const strategy = pricingStrategyFor(sku, draft);
+      const strategyFields = domestic ? '' : `<fieldset class="pgp-pricing-model pgp-pricing-strategy pgp-wide" data-profile-field-wrap="${key}.pricingStrategy"><legend>${esc(t(lang, 'pricingStrategy'))} ${required}</legend><div class="pgp-pricing-options">${['uniform', 'regional'].map(value => `<label class="pgp-pricing-option${strategy === value ? ' is-selected' : ''}"><input type="radio" name="sku-pricing-strategy-${index}" value="${value}" data-sku-pricing-strategy="${index}"${strategy === value ? ' checked' : ''}${readonly ? ' disabled' : ''}><span><strong>${esc(t(lang, value))}</strong><small>${esc(t(lang, `${value}Hint`))}</small></span></label>`).join('')}</div>${errorHTML(draft, lang, `${key}.pricingStrategy`)}</fieldset>`;
+      const priceFields = strategy === 'regional'
+        ? regionalPricing(sku, key, index)
+        : `${field(draft, lang, `${key}.listPrice`, { isRequired: true, readonly, label: `${isEnglish ? 'List price' : '售价'}（${currency}）`, hint: t(lang, 'priceHint') })}${field(draft, lang, `${key}.discountPrice`, { readonly, label: `${isEnglish ? 'Discount price' : '折扣价'}（${currency}）` })}`;
+      return `<article class="pgp-sku-card" data-catalog-sku="${esc(sku.skuId)}" data-sku-index="${index}"><header><div><small>${base ? (isEnglish ? 'BASE GAME' : '基础游戏') : 'DLC'}</small><h4>${esc(sku.title || (base ? (isEnglish ? 'Base game' : '基础游戏') : `DLC ${index}`))}</h4><span>${esc(sku.skuId)}</span></div>${base ? '' : `<button type="button" class="pgp-link-danger" data-sku-remove="${index - 1}"${readonly ? ' disabled' : ''}>${isEnglish ? 'Remove' : '删除'}</button>`}</header><div class="pgp-form-grid">${field(draft, lang, `${key}.title`, { isRequired: true, readonly, label: isEnglish ? 'Product name' : '商品名称' })}${buildSelect(sku, key)}<fieldset class="pgp-pricing-model pgp-wide" data-profile-field-wrap="${key}.pricingModel"><legend>${esc(t(lang, 'pricingModel'))} ${required}</legend><div class="pgp-pricing-options">${['free', 'paid'].map(value => `<label class="pgp-pricing-option${sku.pricingModel === value ? ' is-selected' : ''}"><input type="radio" name="sku-pricing-${index}" value="${value}" data-sku-pricing-model="${index}"${sku.pricingModel === value ? ' checked' : ''}${readonly ? ' disabled' : ''}><span><strong>${esc(t(lang, value))}</strong><small>${esc(t(lang, `${value}Hint`))}</small></span></label>`).join('')}</div>${errorHTML(draft, lang, `${key}.pricingModel`)}</fieldset>${paid ? `${strategyFields}${priceFields}${field(draft, lang, `${key}.discountStartAt`, { readonly, label: isEnglish ? 'Discount starts' : '折扣开始时间' })}${field(draft, lang, `${key}.discountEndAt`, { readonly, label: isEnglish ? 'Discount ends' : '折扣结束时间' })}${errorHTML(draft, lang, `${key}.discount`)}` : `<p class="pgp-sku-free-note pgp-wide">${isEnglish ? 'This SKU is free. Price and discount values are cleared when saved.' : '此 SKU 免费提供，售价与折扣信息不会生效。'}</p>`}</div></article>`;
     };
-    return `<section class="pgp-catalog" data-profile-catalog><header class="pgp-module-intro"><div><h3>${isEnglish ? 'Products & SKU' : '商品与 SKU'}</h3><p>${isEnglish ? `Each product links to a build and is priced independently in ${currency}.` : `基础游戏与每个 DLC 都是独立 SKU，分别关联包体并使用 ${currency} 定价。`}</p></div><button type="button" class="pgp-button" data-sku-add>${isEnglish ? 'Add DLC' : '新增 DLC'}</button></header><div class="pgp-sku-list">${skuList(draft).map(renderSku).join('')}</div></section>`;
+    const catalogHint = draft.releaseConfig?.mode === 'domestic'
+      ? (isEnglish ? 'Each SKU links to a build and uses a CNY unified price.' : '基础游戏与每个 DLC 独立关联包体，并设置 CNY 统一价。')
+      : (isEnglish ? 'Each SKU links to a build and can use one unified price or a base price with territory overrides.' : '基础游戏与每个 DLC 独立关联包体，可设置统一价，或设置基准价与少量地区例外价。');
+    return `<section class="pgp-catalog" data-profile-catalog><header class="pgp-module-intro"><div><h3>${isEnglish ? 'Products & SKU' : '商品与 SKU'}</h3><p>${esc(catalogHint)}</p></div><button type="button" class="pgp-button" data-sku-add${readonly ? ' disabled' : ''}>${isEnglish ? 'Add DLC' : '新增 DLC'}</button></header><div class="pgp-sku-list">${skuList(draft).map(renderSku).join('')}</div></section>`;
   }
   function renderQualifications(draft, lang, options = {}) {
     const helper = window.PublisherGameQualifications;
@@ -552,13 +676,25 @@
     const currency = mode === 'domestic' ? 'CNY' : 'USD';
     const skuCards = skuRecords.map((sku, index) => {
       const paid = sku.pricingModel === 'paid';
-      const discountConfigured = Boolean(sku.discountPrice || sku.discountStartAt || sku.discountEndAt);
+      const strategy = mode === 'domestic' ? 'uniform' : sku.pricingStrategy === 'regional' ? 'regional' : 'uniform';
+      const snapshotZones = priceZonesFor({ releaseConfig: release });
+      const snapshotOverrides = snapshotZones.filter(zone => hasPriceOverride(sku, zone.code));
+      const overridePriceText = snapshotOverrides.map(zone => {
+        const price = sku.regionalPrices?.[zone.code] || {};
+        const territory = window.PublisherReleaseRegions.territoryLabel(zone.code, lang);
+        const discount = price.discountPrice ? ` → ${price.discountPrice}` : sku.discountPrice ? ` → ${isEnglish ? 'inherits base discount rate' : '继承基准折扣比例'}` : '';
+        return `${territory}（${zone.currency}）${price.listPrice || '—'}${discount}`;
+      }).join(isEnglish ? '; ' : '；');
+      const regionalPriceText = `${isEnglish ? 'Base' : '基准价'} ${currency} ${sku.listPrice || '—'}${sku.discountPrice ? ` → ${sku.discountPrice}` : ''}${overridePriceText ? `${isEnglish ? '; Overrides: ' : '；例外：'}${overridePriceText}` : ''}${snapshotZones.length > snapshotOverrides.length ? `${isEnglish ? `; ${snapshotZones.length - snapshotOverrides.length} territories inherit base` : `；${snapshotZones.length - snapshotOverrides.length} 个地区继承基准价`}` : ''}`;
+      const discountConfigured = skuDiscountConfigured(sku, { releaseConfig: release });
       const type = index === 0 || sku.type === 'base_game' ? (isEnglish ? 'Base game' : '基础游戏') : 'DLC';
       const pricing = paid ? (isEnglish ? 'One-time purchase' : '单次买断') : sku.pricingModel === 'free' ? (isEnglish ? 'Free' : '免费') : (isEnglish ? 'Not recorded' : '历史未记录');
       const discount = paid && discountConfigured
-        ? `${currency} ${sku.discountPrice || '—'} · ${versionDate(lang, sku.discountStartAt)} – ${versionDate(lang, sku.discountEndAt)}`
+        ? `${strategy === 'regional' ? (isEnglish ? 'Regional discount' : '分区折扣') : `${currency} ${sku.discountPrice || '—'}`} · ${versionDate(lang, sku.discountStartAt)} – ${versionDate(lang, sku.discountEndAt)}`
         : (isEnglish ? 'No discount' : '未设置折扣');
-      return `<article data-version-sku="${esc(sku.skuId || `SKU-${index + 1}`)}"><header><div><span>${esc(type)}</span><strong>${esc(sku.title || type)}</strong></div><small>${esc(sku.skuId || '—')}</small></header><dl>${versionFact(isEnglish ? 'Installation content / build' : '安装内容／包体版本', sku.installContentRef || (isEnglish ? 'Not recorded' : '历史未记录'), true)}${versionFact(isEnglish ? 'Pricing model' : '收费方式', pricing)}${versionFact(isEnglish ? 'List price' : '售价', paid ? `${currency} ${sku.listPrice || '—'}` : '—')}${versionFact(isEnglish ? 'Discount price and period' : '折扣价与折扣期限', discount, true)}</dl></article>`;
+      const strategyLabel = strategy === 'regional' ? (isEnglish ? 'Regional pricing' : '分区定价') : mode === 'domestic' ? (isEnglish ? 'Unified price' : '统一价') : (isEnglish ? 'Global unified price' : '全球统一价');
+      const listPrice = strategy === 'regional' ? regionalPriceText || (isEnglish ? 'No regions recorded' : '未记录分区价格') : `${currency} ${sku.listPrice || '—'}`;
+      return `<article data-version-sku="${esc(sku.skuId || `SKU-${index + 1}`)}"><header><div><span>${esc(type)}</span><strong>${esc(sku.title || type)}</strong></div><small>${esc(sku.skuId || '—')}</small></header><dl>${versionFact(isEnglish ? 'Installation content / build' : '安装内容／包体版本', sku.installContentRef || (isEnglish ? 'Not recorded' : '历史未记录'), true)}${versionFact(isEnglish ? 'Pricing model' : '收费方式', pricing)}${paid ? versionFact(isEnglish ? 'Pricing method' : '定价方式', strategyLabel) : ''}${versionFact(isEnglish ? 'List price' : '售价', paid ? listPrice : '—', strategy === 'regional')}${versionFact(isEnglish ? 'Discount price and period' : '折扣价与折扣期限', discount, true)}</dl></article>`;
     }).join('');
 
     const buildRecords = window.PublisherGameBuilds.createPackages(snapshot.buildPackages || []);
@@ -995,8 +1131,13 @@
     if (assetsSection) window.PublisherGameNames.bind(assetsSection, { draft, language: lang, readonly: editingLocked(), hideInput: true, idPrefix: 'profile-assets', title: lang === 'en' ? 'Store detail languages' : '商店资料语言', onChange: () => { const config = JSON.stringify([draft.nameLanguages, draft.defaultNameLanguage]); syncContent(); if (config !== state.assetConfig && !editingLocked()) changed('assets'); state.assetConfig = config; repaint(null, `[data-profile-section="assets"] [data-name-language="${draft.currentNameLanguage}"]`); } });
     window.PublisherReleaseRegions.bind(root, { releaseConfig: draft.releaseConfig, language: lang, onChange: next => {
       if (editingLocked()) return;
-      const hadDomestic = draft.releaseConfig.mode === 'domestic';
+      const previousMode = draft.releaseConfig.mode;
+      const hadDomestic = previousMode === 'domestic';
       draft.releaseConfig = { ...draft.releaseConfig, ...next };
+      if (previousMode && previousMode !== draft.releaseConfig.mode) {
+        skuList(draft).forEach(sku => clearSkuPrice(sku, { resetStrategy: true }));
+        state.overridePicker = { open: false, skuIndex: -1, search: '', selected: [] };
+      }
       draft.releaseRegions = [draft.releaseConfig.mode];
       draft.releaseStatus = draft.releaseConfig.releaseStatus;
       draft.releaseTerritories = window.PublisherReleaseRegions.territoriesFor ? window.PublisherReleaseRegions.territoriesFor(draft.releaseConfig) : [];
@@ -1247,9 +1388,79 @@
       const sku = skuList(draft)[Number(input.dataset.skuPricingModel)];
       if (!sku) return;
       sku.pricingModel = input.value;
-      if (input.value === 'free') Object.assign(sku, { listPrice: '', discountPrice: '', discountStartAt: '', discountEndAt: '' });
+      if (input.value === 'free') Object.assign(sku, { pricingStrategy: 'uniform', listPrice: '', discountPrice: '', regionalPrices: {}, discountStartAt: '', discountEndAt: '' });
       changed(`${Number(input.dataset.skuPricingModel) ? `catalog.dlcs.${Number(input.dataset.skuPricingModel) - 1}` : 'catalog.baseGame'}.pricingModel`);
       repaint(null, `[data-sku-pricing-model="${input.dataset.skuPricingModel}"][value="${input.value}"]`);
+    }));
+    root.querySelectorAll('[data-sku-pricing-strategy]').forEach(input => input.addEventListener('change', () => {
+      if (editingLocked()) return;
+      const index = Number(input.dataset.skuPricingStrategy);
+      const sku = skuList(draft)[index];
+      if (!sku) return;
+      sku.pricingStrategy = input.value === 'regional' ? 'regional' : 'uniform';
+      sku.regionalPrices ||= {};
+      const key = index ? `catalog.dlcs.${index - 1}` : 'catalog.baseGame';
+      changed(`${key}.pricingStrategy`);
+      repaint(null, `[data-sku-pricing-strategy="${index}"][value="${sku.pricingStrategy}"]`);
+    }));
+    root.querySelectorAll('[data-sku-override-add]').forEach(button => button.addEventListener('click', () => {
+      if (editingLocked()) return;
+      const index = Number(button.dataset.skuOverrideAdd);
+      state.overridePicker = { open: true, skuIndex: index, search: '', selected: [] };
+      repaint(null, `[data-sku-override-search="${index}"]`);
+    }));
+    root.querySelectorAll('[data-sku-override-cancel]').forEach(button => button.addEventListener('click', () => {
+      const index = Number(button.dataset.skuOverrideCancel);
+      state.overridePicker = { open: false, skuIndex: -1, search: '', selected: [] };
+      repaint(null, `[data-sku-override-add="${index}"]`);
+    }));
+    root.querySelectorAll('[data-sku-override-search]').forEach(input => input.addEventListener('input', () => {
+      if (!state.overridePicker?.open) return;
+      state.overridePicker.search = input.value;
+      const query = input.value.trim().toLowerCase();
+      const picker = input.closest('[data-sku-override-picker]');
+      const options = [...picker.querySelectorAll('[data-sku-override-candidate]')];
+      options.forEach(option => { option.hidden = Boolean(query) && !option.dataset.skuOverrideSearchText.includes(query); });
+      const empty = picker.querySelector('[data-sku-override-empty]');
+      if (empty) empty.hidden = options.some(option => !option.hidden);
+    }));
+    root.querySelectorAll('[data-sku-override-option]').forEach(input => input.addEventListener('change', () => {
+      if (!state.overridePicker?.open) return;
+      const selected = new Set(state.overridePicker.selected || []);
+      if (input.checked) selected.add(input.dataset.skuOverrideOption); else selected.delete(input.dataset.skuOverrideOption);
+      state.overridePicker.selected = [...selected];
+      const confirm = input.closest('[data-sku-override-picker]')?.querySelector('[data-sku-override-confirm]');
+      if (confirm) {
+        confirm.disabled = selected.size === 0;
+        confirm.textContent = `${confirm.dataset.skuOverrideConfirmLabel}${selected.size ? `（${selected.size}）` : ''}`;
+      }
+    }));
+    root.querySelectorAll('[data-sku-override-confirm]').forEach(button => button.addEventListener('click', () => {
+      if (editingLocked()) return;
+      const index = Number(button.dataset.skuOverrideConfirm);
+      const sku = skuList(draft)[index];
+      if (!sku) return;
+      const allowed = new Set(priceZonesFor(draft).map(zone => zone.code));
+      const selected = [...new Set(state.overridePicker?.selected || [])].filter(code => allowed.has(code));
+      if (!selected.length) return;
+      sku.regionalPrices ||= {};
+      selected.forEach(code => { sku.regionalPrices[code] ||= { listPrice: '', discountPrice: '' }; });
+      state.overridePicker = { open: false, skuIndex: -1, search: '', selected: [] };
+      const key = index ? `catalog.dlcs.${index - 1}` : 'catalog.baseGame';
+      changed(`${key}.regionalPrices`);
+      repaint(null, `[data-sku-price-zone="${selected[0]}"] input`);
+    }));
+    root.querySelectorAll('[data-sku-override-remove]').forEach(button => button.addEventListener('click', () => {
+      if (editingLocked()) return;
+      const index = Number(button.dataset.skuOverrideIndex);
+      const sku = skuList(draft)[index];
+      if (!sku?.regionalPrices) return;
+      const code = button.dataset.skuOverrideRemove;
+      delete sku.regionalPrices[code];
+      const key = index ? `catalog.dlcs.${index - 1}` : 'catalog.baseGame';
+      draft.errors = Object.fromEntries(Object.entries(draft.errors).filter(([errorKey]) => !errorKey.startsWith(`${key}.regionalPrices.${code}.`)));
+      changed(`${key}.regionalPrices`);
+      repaint(null, `[data-sku-override-add="${index}"]`);
     }));
     root.querySelector('[data-sku-add]')?.addEventListener('click', () => {
       if (editingLocked()) return;
@@ -1344,7 +1555,7 @@
     });
     root.querySelector('[data-profile-save]')?.addEventListener('click', () => action('save'));
     root.querySelector('[data-profile-submit]')?.addEventListener('click', () => action('submit'));
-    if (editingLocked()) root.querySelectorAll('[data-profile-field], [data-profile-array], [data-profile-upload], [data-profile-remove], [data-profile-listed], [data-profile-publication], [data-profile-pricing-model], [data-profile-compliance-ack]').forEach(control => { control.disabled = true; });
+    if (editingLocked()) root.querySelectorAll('[data-profile-field], [data-profile-array], [data-profile-upload], [data-profile-remove], [data-profile-listed], [data-profile-publication], [data-profile-pricing-model], [data-sku-pricing-strategy], [data-sku-override-add], [data-sku-override-remove], [data-sku-override-option], [data-sku-override-confirm], [data-sku-override-cancel], [data-profile-compliance-ack]').forEach(control => { control.disabled = true; });
     const qualificationTargetFor = key => {
       if (!key) return null;
       if (key === 'rightsDeclarationAccepted') return root.querySelector('[data-qualification-declaration]');
@@ -1371,10 +1582,28 @@
     const scrollSnapshot = state.scrollSnapshot; state.scrollSnapshot = null;
     if (focus) {
       const nameCode = focus === 'gameNameEn' ? 'en' : focus === 'gameNameZh' ? 'zh' : focus.startsWith('gameNames.') ? focus.split('.')[1] : '';
-      const discountKey = focus.endsWith('.discount') ? focus.replace(/\.discount$/, '.discountPrice') : '';
-      const target = (nameCode && root.querySelector(`[data-profile-section="basic"] [data-game-name-input="${nameCode}"]`)) || (focus === 'pricing.model' && root.querySelector('[data-profile-pricing-model]')) || (focus === 'qualifications.activeVersion' && (qualificationTargetFor(qualificationFocus) || root.querySelector('[data-qualification-editor], [data-qualification-cards]'))) || (focus === 'buildPackages.readyFull' && root.querySelector('[data-build-local-open]')) || (focus === 'compliance.antiAddictionAcknowledged' && root.querySelector('[data-profile-compliance-ack]')) || (discountKey && root.querySelector(`[data-profile-field="${discountKey}"]`)) || root.querySelector(`[data-profile-field="${focus}"], [data-profile-upload="${focus}"], [data-profile-array="${focus}"]`) || root.querySelector(`[data-profile-section="${sectionOf(focus)}"]`);
+      const discountKey = focus.endsWith('.discount') ? focus.replace(/\.discount$/, '') : '';
+      const discountTarget = discountKey ? (() => {
+        const sku = get(draft, discountKey);
+        if (sku?.pricingStrategy === 'regional') {
+          if (sku.discountPrice && (!validPrice(sku.discountPrice) || Number(sku.discountPrice) >= Number(sku.listPrice))) {
+            return root.querySelector(`[data-profile-field="${discountKey}.discountPrice"]`);
+          }
+          const zone = activeOverrideZonesFor(sku, draft).find(item => {
+            const price = sku.regionalPrices?.[item.code] || {};
+            return price.discountPrice && (!validPrice(price.discountPrice) || Number(price.discountPrice) >= Number(price.listPrice));
+          });
+          if (zone) return root.querySelector(`[data-profile-field="${discountKey}.regionalPrices.${zone.code}.discountPrice"]`);
+        } else if (sku) return root.querySelector(`[data-profile-field="${discountKey}.discountPrice"]`);
+        const start = new Date(sku?.discountStartAt).getTime();
+        const end = new Date(sku?.discountEndAt).getTime();
+        return !Number.isFinite(start) || start >= end
+          ? root.querySelector(`[data-profile-field="${discountKey}.discountStartAt"]`)
+          : root.querySelector(`[data-profile-field="${discountKey}.discountEndAt"]`);
+      })() : null;
+      const target = (nameCode && root.querySelector(`[data-profile-section="basic"] [data-game-name-input="${nameCode}"]`)) || (focus === 'pricing.model' && root.querySelector('[data-profile-pricing-model]')) || (focus === 'qualifications.activeVersion' && (qualificationTargetFor(qualificationFocus) || root.querySelector('[data-qualification-editor], [data-qualification-cards]'))) || (focus === 'buildPackages.readyFull' && root.querySelector('[data-build-local-open]')) || (focus === 'compliance.antiAddictionAcknowledged' && root.querySelector('[data-profile-compliance-ack]')) || discountTarget || root.querySelector(`[data-profile-field="${focus}"], [data-profile-upload="${focus}"], [data-profile-array="${focus}"]`) || root.querySelector(`[data-profile-section="${sectionOf(focus)}"]`);
       focusTarget(target);
     } else if (scrollSnapshot) restoreScroll(scrollSnapshot);
   }
-  window.PublisherGameProfile = { createDraft, render, bind, validate, completion, displayName };
+  window.PublisherGameProfile = { createDraft, render, bind, validate, completion, displayName, submissionSnapshot };
 })();

@@ -121,18 +121,41 @@
       return `<div class="pgr-legacy-note">历史 V2.4 提交：按提交时原字段只读展示，不补写 V2.5 结构。</div>${localePicker(locale)}<dl class="pgr-fields">${field('后台项目名称', row.summary.projectName, true, { emphasis: true })}${field('商店游戏名称', locale.name, true)}${field('一句话介绍', locale.content.tagline, true)}${field('完整介绍', locale.content.description, true)}${field('开发者的话', locale.content.developerWords, true)}${field('游戏类型', list(draft.genres).join('、'))}${field('支持平台', list(draft.platforms).join('、'))}${field('主体关系', relationshipText[draft.relationship] || draft.relationship)}${field('开发商', draft.developerName)}</dl><div class="pgr-subsection"><h3>游戏素材</h3>${assetSections(locale)}</div>`;
     };
 
-    const skuPrice = (sku, currency) => {
-      if (sku.pricingModel === 'free') return '免费';
-      if (sku.pricingModel !== 'paid') return '未配置';
-      const base = `${currency} ${global.PublisherGameReviewStore.validPrice(sku.listPrice) ? Number(sku.listPrice).toFixed(2) : sku.listPrice || '未填写'}`;
-      return present(sku.discountPrice) ? `${base} → ${currency} ${global.PublisherGameReviewStore.validPrice(sku.discountPrice) ? Number(sku.discountPrice).toFixed(2) : sku.discountPrice}` : base;
+    const priceValue = (currency, value) => `${currency} ${global.PublisherGameReviewStore.validPrice(value) ? Number(value).toFixed(2) : present(value) ? value : '未填写'}`;
+
+    const renderSkuPricing = (sku, index) => {
+      const kind = index === 0 ? '基础游戏' : 'DLC';
+      const title = sku.title || sku.skuId || `DLC ${index}`;
+      const header = `<header><span>${kind}</span><strong>${esc(title)}</strong><small>${esc(sku.skuId || '—')}</small></header>`;
+      const install = field('安装内容／包体版本', sku.installContentRef || (sku.legacy ? '历史提交未记录' : ''), true);
+      if (sku.pricingModel === 'free') {
+        return `<article class="pgr-sku pricing-snapshot" data-game-review-sku="${esc(sku.skuId || index)}" data-pricing-snapshot data-pricing-strategy="free">${header}<dl class="pgr-fields pricing-facts">${install}${field('收费方式', '免费')}</dl></article>`;
+      }
+      if (sku.pricingModel !== 'paid') {
+        return `<article class="pgr-sku pricing-snapshot" data-game-review-sku="${esc(sku.skuId || index)}" data-pricing-snapshot data-pricing-strategy="unconfigured">${header}<dl class="pgr-fields pricing-facts">${install}${field('收费方式', '历史未记录')}</dl></article>`;
+      }
+      const regional = sku.pricingStrategy === 'regional';
+      const baseCurrency = sku.baseCurrency || (sku.territoryCodes?.length === 1 && sku.territoryCodes[0] === 'CN' ? 'CNY' : 'USD');
+      const overrides = regional ? Object.entries(sku.regionalPrices || {}) : [];
+      const inherited = Math.max(0, list(sku.territoryCodes).length - overrides.length);
+      const discount = present(sku.discountPrice) ? `${priceValue(baseCurrency, sku.listPrice)} → ${priceValue(baseCurrency, sku.discountPrice)}` : priceValue(baseCurrency, sku.listPrice);
+      const period = sku.discountStartAt || sku.discountEndAt ? `${time(sku.discountStartAt)} 至 ${time(sku.discountEndAt)}` : '未设置';
+      const pricingFacts = regional
+        ? `${field('收费方式', '收费（单次买断）')}${field('定价方式', '分区定价')}${field('基准售价／折扣价', discount)}${field('发行地区', `${list(sku.territoryCodes).length} 个`)}${field('继承基准价地区', `${inherited} 个`)}${field('折扣期限', period, true)}`
+        : `${field('收费方式', '收费（单次买断）')}${field('定价方式', baseCurrency === 'CNY' ? '统一价' : '全球统一价')}${field('售价／折扣价', discount)}${field('折扣期限', period, true)}`;
+      const overrideRows = overrides.map(([code, price]) => {
+        const label = global.PublisherReleaseRegions?.territoryLabel?.(code, 'zh') || code;
+        const currency = global.PublisherGameReviewStore.territoryCurrency(code);
+        const discountValue = present(price.discountPrice) ? priceValue(currency, price.discountPrice) : present(sku.discountPrice) ? '继承基准折扣比例' : '未设置';
+        return `<div class="pricing-override-row" data-pricing-override data-game-review-price-override="${esc(code)}" data-territory-code="${esc(code)}"><strong>${esc(label)}（${esc(code)}）</strong><span>售价 ${esc(priceValue(currency, price.listPrice))}</span><span>折扣价 ${esc(discountValue)}</span></div>`;
+      }).join('');
+      return `<article class="pgr-sku pricing-snapshot" data-game-review-sku="${esc(sku.skuId || index)}" data-pricing-snapshot data-pricing-strategy="${regional ? 'regional' : 'uniform'}">${header}<dl class="pgr-fields pricing-facts">${install}${pricingFacts}</dl>${overrideRows ? `<div class="pricing-overrides"><h4>例外地区价</h4>${overrideRows}</div>` : ''}</article>`;
     };
 
     const renderCatalog = draft => {
-      const rows = global.PublisherGameReviewStore.skuRows(draft);
-      const currency = global.PublisherGameReviewStore.releaseMode(draft) === 'domestic' ? 'CNY' : 'USD';
+      const rows = global.PublisherGameReviewStore.pricingSnapshot(draft);
       if (!rows.length) return '<p class="pgr-muted">历史提交未记录收费设置。</p>';
-      return `<div class="pgr-sku-list" data-game-review-pricing>${rows.map((sku, index) => `<article class="pgr-sku" data-game-review-sku="${esc(sku.skuId || index)}"><header><span>${index === 0 ? '基础游戏' : 'DLC'}</span><strong>${esc(sku.title || sku.skuId || `DLC ${index}`)}</strong><small>${esc(sku.skuId || '—')}</small></header><dl class="pgr-fields">${field('安装内容／包体版本', sku.installContentRef || (sku.legacy ? '历史提交未记录' : ''), true)}${field('收费方式', sku.pricingModel === 'free' ? '免费' : sku.pricingModel === 'paid' ? '收费（单次买断）' : '未配置')}${field('售价／折扣价', skuPrice(sku, currency))}${sku.pricingModel === 'paid' && (sku.discountStartAt || sku.discountEndAt) ? field('折扣期限', `${time(sku.discountStartAt)} 至 ${time(sku.discountEndAt)}`, true) : ''}</dl></article>`).join('')}</div>`;
+      return `<div class="pgr-sku-list pricing-snapshot-list" data-game-review-pricing>${rows.map(renderSkuPricing).join('')}</div>`;
     };
 
     const territoryGroups = draft => {

@@ -24,10 +24,12 @@
   const fileExists = value => Boolean(value && (value.blob instanceof Blob || value.name || value.size));
 
   function legacyLocales(source) {
+    const configured = source.storeLocales?.enabled || source.nameLanguages || source.assetLanguageSettings?.nameLanguages;
+    if (Array.isArray(configured)) {
+      const values = unique(configured.map(localeCode));
+      return values.length ? values : [localeCode(source.storeLocales?.default || source.defaultNameLanguage || 'en')];
+    }
     const values = [
-      ...(source.storeLocales?.enabled || []),
-      ...(source.nameLanguages || []),
-      ...(source.assetLanguageSettings?.nameLanguages || []),
       ...(source.languages || []).map(localeCode),
       ...Object.keys(source.gameNames || {}),
       ...Object.keys(source.localizedContent || {}),

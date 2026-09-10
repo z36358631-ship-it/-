@@ -46,7 +46,7 @@
           saved.submissionId = 'REVIEW-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase();
           saved.currentReleaseReview = { submissionId: saved.submissionId, status: 'reviewing', submittedAt: savedAt };
           saved.releaseSubmissions = [...record.draft.releaseSubmissions, { id: saved.submissionId, submittedAt: savedAt, submitter: '当前开发者', status: 'reviewing', qualificationVersionId: saved.qualifications?.activeVersion?.versionId || saved.qualifications?.activeVersion?.id || '' }];
-          const snapshot = structuredClone(saved);
+          const snapshot = window.PublisherGameProfile.submissionSnapshot(saved);
           if (snapshot.pricing) {
             if (snapshot.pricing.model === 'free' || !snapshot.releaseRegions?.includes('global')) snapshot.pricing.globalPrice = '';
             if (snapshot.pricing.model === 'free' || !snapshot.releaseRegions?.includes('domestic')) snapshot.pricing.domesticPrice = '';

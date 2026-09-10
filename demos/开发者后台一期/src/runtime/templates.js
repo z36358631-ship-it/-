@@ -293,7 +293,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       developerName: stored.developerName ?? game.developerName ?? createData.developerName ?? (relationship === 'publisher' ? '' : '星海互动'),
       platforms,
       releasePlan: stored.releasePlan || game.releasePlan || createData.releasePlan || 'launch',
-      languages: Array.isArray(stored.languages) ? stored.languages : ['简体中文', 'English'],
+      languages: Array.isArray(stored.languages) ? stored.languages : Array.isArray(createData.languages) ? createData.languages : projectOnly ? ['English'] : ['简体中文', 'English'],
       requirements: { ...Object.fromEntries(platforms.map(platform => [platform, publisherProfileDefaultRequirement(platform)])), ...(stored.requirements || {}) },
       assets: { ...defaultAssets, ...(stored.assets || {}), screenshots: Array.isArray(stored.assets?.screenshots) ? stored.assets.screenshots : defaultAssets.screenshots },
       qualifications: { ...defaultQualifications, ...(stored.qualifications || {}) },

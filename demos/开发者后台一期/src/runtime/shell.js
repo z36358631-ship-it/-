@@ -98,15 +98,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const consoleLink = account && role === 'developer'
       ? `<button class="top-console-button" type="button" data-portal-action="go-console" hidden>${icon('chart')}<span>${isEnglish ? 'Console' : '控制台'}</span></button>`
       : '';
-    const portalSwitch = !redacted && !isLogin && account
-      ? `<button class="top-portal-switch" type="button" data-portal-action="switch-portal-side">${icon('chart')}<span>${role === 'operations' ? '切换开发者前台' : (isEnglish ? 'Switch to operations' : '切换运营后台')}</span></button>`
-      : '';
-    const developerTools = `${consoleLink}${help}${languageSwitch}${portalSwitch}${accountBlock}${login}`;
-    const operationsTools = `${accountBlock}${portalSwitch}${help}`;
+    const developerTools = `${consoleLink}${help}${languageSwitch}${accountBlock}${login}`;
+    const operationsTools = `${accountBlock}${help}`;
     const isPublisherWorkspace = module?.id === '02' && role === 'developer';
     const brandTitle = role === 'operations' ? 'gamesir-dashboard' : isPublisherWorkspace ? (isEnglish ? 'PC Publishing' : 'PC 发行平台') : '盖世游戏';
     const brandSubtitle = role === 'operations' ? '运营管理后台' : isPublisherWorkspace ? (isEnglish ? 'Developer Center' : '开发者中心') : (isEnglish && role === 'developer' ? 'Developer Platform' : '开发者平台');
     return `<header class="top-bar"><button class="brand-block" type="button" data-portal-action="home" aria-label="${role === 'operations' ? '返回发行平台后台首页' : (isEnglish ? 'Back to developer home' : '返回开发者首页')}"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">${brandTitle}</div><div class="brand-subtitle">${brandSubtitle}</div></div></button>${context}${role === 'developer' ? developerTools : operationsTools}</header>`;
+  };
+
+  const renderPortalDemoSwitch = ({ portalData, role, redacted, isLogin, language }) => {
+    const account = redacted || isLogin ? null : portalData.accounts?.[role];
+    if (!account) return '';
+    const isEnglish = language === 'en';
+    const fullLabel = role === 'operations' ? '切换开发者前台' : (isEnglish ? 'Switch to operations' : '切换运营后台');
+    const shortLabel = role === 'operations' ? '开发者前台' : (isEnglish ? 'Operations' : '运营后台');
+    const assistiveLabel = role === 'operations' ? 'Demo 工具：切换开发者前台' : (isEnglish ? 'Demo tool: switch to operations' : 'Demo 工具：切换运营后台');
+    return `<button class="portal-demo-switch" type="button" data-portal-action="switch-portal-side" aria-label="${assistiveLabel}" title="${assistiveLabel}"><span class="portal-demo-switch__badge" aria-hidden="true">Demo</span>${icon('chart')}<span class="portal-demo-switch__label portal-demo-switch__label--full" aria-hidden="true">${fullLabel}</span><span class="portal-demo-switch__label portal-demo-switch__label--short" aria-hidden="true">${shortLabel}</span></button>`;
   };
 
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
@@ -254,7 +261,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
     const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}`;
     const showContext = !isLogin && !isOnboarding && !isConfiguration && !showPlatformConsole && !isPublisherWorkspace && route.id !== 'P01-08';
-    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main></div>`;
+    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main>${renderPortalDemoSwitch({ portalData, role, redacted, isLogin, language })}</div>`;
   };
   namespace.shell = { roleMeta, publicTitle, hashFor, renderBusiness };
 })(window.GameHubDeveloperPortal);

@@ -134,25 +134,23 @@ svg { display: block; }
 .top-account-menu:hover .top-account-dropdown, .top-account-menu.is-open .top-account-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
 .top-account-dropdown button { width: 100%; min-height: 38px; padding: 0 11px; color: var(--text-secondary); text-align: left; border: 0; border-radius: 7px; background: transparent; cursor: pointer; }
 .top-account-dropdown button:hover { color: var(--text-primary); background: #F2F5F9; }
-.top-help-button, .top-login-button, .top-language-button, .top-console-button, .top-portal-switch { min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; color: #EAF0FA; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(255,255,255,.06); cursor: pointer; }
-.top-help-button, .top-language-button, .top-login-button, .top-console-button, .top-portal-switch { margin-left: 8px; }
-.top-help-button:hover, .top-login-button:hover, .top-language-button:hover, .top-console-button:hover, .top-portal-switch:hover { color: #FFFFFF; border-color: rgba(56,232,255,.44); background: rgba(56,232,255,.08); }
+.top-help-button, .top-login-button, .top-language-button, .top-console-button { min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; color: #EAF0FA; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(255,255,255,.06); cursor: pointer; }
+.top-help-button, .top-language-button, .top-login-button, .top-console-button { margin-left: 8px; }
+.top-help-button:hover, .top-login-button:hover, .top-language-button:hover, .top-console-button:hover { color: #FFFFFF; border-color: rgba(56,232,255,.44); background: rgba(56,232,255,.08); }
 .top-help-button.is-active { color: #071522; border-color: var(--brand-cyan); background: linear-gradient(135deg, var(--brand-cyan), #8BEFFF); }
 .top-help-button.is-active svg { color: #071522; }
 .top-language-button { min-width: 92px; font-weight: 700; }
-.top-help-button svg, .top-login-button svg, .top-console-button svg, .top-portal-switch svg { width: 16px; height: 16px; color: var(--brand-cyan); }
+.top-help-button svg, .top-login-button svg, .top-console-button svg { width: 16px; height: 16px; color: var(--brand-cyan); }
 .top-language-button + .top-account-menu, .top-language-button + .top-account { margin-left: 8px; }
 .top-context + .top-account-menu, .top-context + .top-account, .top-context + .top-login-button, .top-context + .top-help-button { margin-left: auto; }
-.top-login-button[hidden], .top-help-button[hidden], .top-console-button[hidden], .top-portal-switch[hidden] { display: none; }
+.top-login-button[hidden], .top-help-button[hidden], .top-console-button[hidden] { display: none; }
 .product-frame[data-role="developer"] .top-help-button,
 .product-frame[data-role="developer"] .top-language-button,
-.product-frame[data-role="developer"] .top-console-button,
-.product-frame[data-role="developer"] .top-portal-switch { color: #C7D1E0; border-color: transparent; background: transparent; }
+.product-frame[data-role="developer"] .top-console-button { color: #C7D1E0; border-color: transparent; background: transparent; }
 .product-frame[data-role="developer"] > .top-bar > .top-help-button { margin-left: auto; }
 .product-frame[data-role="developer"] .top-help-button:hover,
 .product-frame[data-role="developer"] .top-language-button:hover,
-.product-frame[data-role="developer"] .top-console-button:hover,
-.product-frame[data-role="developer"] .top-portal-switch:hover { color: #FFFFFF; border-color: transparent; background: rgba(255,255,255,.06); }
+.product-frame[data-role="developer"] .top-console-button:hover { color: #FFFFFF; border-color: transparent; background: rgba(255,255,255,.06); }
 .product-frame[data-role="developer"] .top-help-button.is-active { color: var(--brand-cyan); border-color: transparent; background: rgba(56,232,255,.08); }
 .product-frame[data-role="developer"] .top-help-button.is-active svg { color: var(--brand-cyan); }
 .product-frame[data-role="developer"] .top-login-button { color: #071522; font-weight: 700; border-color: transparent; background: linear-gradient(135deg, var(--brand-cyan), #9AF2FF); }
@@ -160,6 +158,36 @@ svg { display: block; }
 .product-frame.is-login.is-help-open > .top-bar { height: 64px; padding-right: clamp(20px, 2vw, 32px); padding-left: clamp(20px, 2vw, 32px); }
 .product-frame.is-login.is-help-open > .top-bar .brand-block { width: auto; height: 64px; padding: 0; border-right: 0; }
 .product-frame.is-login.is-help-open .workspace { inset: 64px 0 0; }
+
+.portal-demo-switch {
+  position: fixed;
+  top: 68%;
+  right: 18px;
+  z-index: 45;
+  min-height: 42px;
+  max-width: calc(100vw - 36px);
+  padding: 0 15px 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #24324A;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  border: 1px solid rgba(102, 119, 148, .32);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 10px 28px rgba(16, 31, 54, .18);
+  backdrop-filter: blur(14px);
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+.portal-demo-switch:hover { color: #3048B6; border-color: rgba(75, 95, 213, .48); box-shadow: 0 12px 32px rgba(16, 31, 54, .24); transform: translate(-2px, -50%); }
+.portal-demo-switch:focus-visible { outline: 3px solid rgba(56, 201, 220, .46); outline-offset: 3px; }
+.portal-demo-switch svg { width: 16px; height: 16px; flex: 0 0 auto; color: #4055C8; }
+.portal-demo-switch__badge { min-width: 39px; height: 22px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; color: #086B7A; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; border-radius: 999px; background: #E2F8FB; }
+.portal-demo-switch__label--short { display: none; }
 
 .side-nav {
   position: absolute;
@@ -381,10 +409,8 @@ svg { display: block; }
 .product-frame[data-role="operations"] .top-account:hover { background: #F6F8FA; }
 .product-frame[data-role="operations"] .account-copy strong { color: #2A3444; }
 .product-frame[data-role="operations"] .account-copy span { color: #8A94A4; }
-.product-frame[data-role="operations"] .top-help-button,
-.product-frame[data-role="operations"] .top-portal-switch { color: #596577; border-color: #DDE3EB; background: #FFFFFF; }
-.product-frame[data-role="operations"] .top-help-button:hover,
-.product-frame[data-role="operations"] .top-portal-switch:hover { color: #3448B7; border-color: #BFC8E8; background: #F7F8FF; }
+.product-frame[data-role="operations"] .top-help-button { color: #596577; border-color: #DDE3EB; background: #FFFFFF; }
+.product-frame[data-role="operations"] .top-help-button:hover { color: #3448B7; border-color: #BFC8E8; background: #F7F8FF; }
 .product-frame[data-role="operations"] .side-nav--operations { color: #596577; background: #FFFFFF; border-right-color: #E0E5ED; }
 .product-frame[data-role="operations"] .side-nav--operations .nav-label { color: #9AA3B1; }
 .product-frame[data-role="operations"] .side-nav--operations .nav-item { color: #596577; border-radius: 4px; }
@@ -416,6 +442,11 @@ svg { display: block; }
   .account-copy,
   .top-account > svg { display: none; }
   .top-account-dropdown { top: 50px; right: 0; }
+  .portal-demo-switch { top: auto; right: 10px; bottom: calc(76px + env(safe-area-inset-bottom)); min-height: 38px; padding: 0 12px 0 8px; gap: 7px; transform: none; }
+  .portal-demo-switch:hover { transform: translateX(-2px); }
+  .portal-demo-switch__label--full { display: none; }
+  .portal-demo-switch__label--short { display: inline; }
+  .portal-demo-switch__badge { min-width: 35px; height: 20px; padding: 0 6px; font-size: 9px; }
 
   .platform-tab-bar { height: 52px; }
   .platform-tab-list { width: 100%; padding: 0 14px; gap: 28px; }
@@ -496,6 +527,7 @@ svg { display: block; }
   .top-login-button { margin-left: 4px; }
   .top-help-button { margin-left: auto; }
   .top-account-menu { margin-left: 4px; }
+  .portal-demo-switch { right: 8px; bottom: calc(70px + env(safe-area-inset-bottom)); max-width: calc(100vw - 16px); }
   .side-nav { padding-right: 8px; padding-left: 8px; }
   .help-breadcrumb { flex-wrap: wrap; }
   .help-search input { padding-left: 10px; }
@@ -3797,9 +3829,52 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .pgp-pricing-prices { margin-top: 23px; }
 .pgp-pricing-prices > .pgp-field { min-width: 0; }
 .pgp-pricing-region-hint { margin-top: 18px; }
+.pgp-pricing-strategy { margin-top: 22px; padding-top: 20px; border-top: 1px solid #e7edf2; }
+.pgp-pricing-strategy > legend { margin-bottom: 12px; }
+.pgp-regional-pricing { min-width: 0; display: grid; gap: 14px; }
+.pgp-regional-base { min-width: 0; padding: 16px; border: 1px solid #dbe5eb; border-radius: 8px; background: #f8fbfc; }
+.pgp-regional-base__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.pgp-regional-base__head strong { color: #40596d; font-size: 13px; font-weight: 600; }
+.pgp-regional-base__head p { margin: 5px 0 0; color: #8394a2; font-size: 11px; line-height: 1.6; }
+.pgp-regional-base__head span { flex: 0 0 auto; padding: 3px 8px; color: #278087; border-radius: 999px; background: #e7f6f7; font-size: 10px; }
+.pgp-regional-base__fields { min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pgp-regional-overrides { min-width: 0; position: relative; border: 1px solid #dfe7ed; border-radius: 8px; background: #fff; }
+.pgp-regional-overrides__head { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; }
+.pgp-regional-overrides__head strong { display: block; color: #40596d; font-size: 13px; font-weight: 600; }
+.pgp-regional-overrides__head p { margin: 4px 0 0; color: #8797a6; font-size: 11px; }
+.pgp-regional-empty { margin: 0; padding: 14px 16px; color: #728697; border-top: 1px solid #e8eef2; background: #fbfcfd; font-size: 12px; }
+.pgp-override-picker { margin: 0 16px 14px; overflow: hidden; border: 1px solid #cfdde5; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(38, 66, 88, .11); }
+.pgp-override-picker [hidden] { display: none !important; }
+.pgp-override-picker__search { padding: 12px; border-bottom: 1px solid #e5edf1; }
+.pgp-override-picker__search input { width: 100%; min-height: 38px; padding: 8px 11px; color: #40576a; border: 1px solid #d5dfe7; border-radius: 5px; background: #fff; font-size: 12px; }
+.pgp-override-picker__list { max-height: 224px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 12px; }
+.pgp-override-picker__option { min-width: 0; display: flex; align-items: center; gap: 9px; padding: 9px 10px; color: #4a6174; border: 1px solid #e2e9ee; border-radius: 6px; cursor: pointer; }
+.pgp-override-picker__option:hover { border-color: #86d4d8; background: #f2fbfb; }
+.pgp-override-picker__option input { flex: 0 0 auto; accent-color: #00aeb5; }
+.pgp-override-picker__option span { min-width: 0; display: grid; gap: 2px; font-size: 12px; }
+.pgp-override-picker__option small { color: #91a0ac; font-size: 10px; }
+.pgp-override-picker__empty { grid-column: 1 / -1; margin: 0; padding: 18px; color: #8a99a5; text-align: center; font-size: 12px; }
+.pgp-override-picker__actions { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 12px; border-top: 1px solid #e5edf1; background: #fbfcfd; }
+.pgp-region-pricing { min-width: 0; margin-top: 18px; border: 1px solid #dfe7ed; border-radius: 8px; overflow: hidden; }
+.pgp-region-pricing__head,
+.pgp-region-pricing__row { min-width: 0; display: grid; grid-template-columns: minmax(230px, 1.5fr) minmax(150px, .72fr) minmax(150px, .72fr); align-items: start; gap: 14px; padding: 13px 16px; }
+.pgp-region-pricing__head { align-items: center; color: #8292a1; background: #f6f8fa; font-size: 11px; }
+.pgp-region-pricing__row + .pgp-region-pricing__row { border-top: 1px solid #e7edf2; }
+.pgp-region-pricing__zone { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; align-items: center; padding-top: 7px; }
+.pgp-region-pricing__zone strong { color: #3e566a; font-size: 13px; font-weight: 600; }
+.pgp-region-pricing__zone small { grid-column: 1; color: #8797a6; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+.pgp-region-pricing__zone button { grid-column: 2; grid-row: 1 / 3; align-self: center; padding: 4px 6px; color: #b45f5f; border: 0; background: transparent; font-size: 11px; cursor: pointer; }
+.pgp-region-pricing__zone button:hover { color: #903f3f; }
+.pgp-region-pricing__field { min-width: 0; }
+.pgp-region-pricing__field label { display: block; margin-bottom: 7px; color: #61778a; font-size: 11px; }
+.pgp-region-pricing__field input { width: 100%; min-height: 38px; padding: 8px 10px; color: #40576a; border: 1px solid #d5dfe7; border-radius: 5px; background: #fff; font-size: 12px; }
+.pgp-region-pricing__field input:focus { outline: 0; border-color: #54cbd0; box-shadow: 0 0 0 2px rgba(0,174,181,.08); }
+.pgp-region-pricing__field input[readonly] { color: #7e8f9d; background: #f7f9fa; }
+.pgp-region-pricing__field .pgp-error { margin: 6px 0 0; }
+.pgp-region-pricing__note { margin: 0; padding: 11px 16px; color: #7d8f9e; border-top: 1px solid #e7edf2; background: #fbfcfd; font-size: 11px; line-height: 1.7; }
 .pgp-pricing-legacy { margin: 0 0 18px; color: #8192a3; font-size: 12px; line-height: 1.8; }
 .pgp-status.is-historical { color: #8192a3; background: #f1f4f7; }
-@media (max-width: 760px) { .pgp-pricing-options { grid-template-columns: minmax(0, 1fr); }.pgp-pricing-option { min-height: 78px; } }
+@media (max-width: 760px) { .pgp-pricing-options { grid-template-columns: minmax(0, 1fr); }.pgp-pricing-option { min-height: 78px; }.pgp-regional-base__fields,.pgp-override-picker__list { grid-template-columns: minmax(0, 1fr); }.pgp-regional-base__head,.pgp-regional-overrides__head { align-items: stretch; flex-direction: column; }.pgp-regional-overrides__head .pgp-button { width: 100%; }.pgp-region-pricing__head { display: none; }.pgp-region-pricing__row { grid-template-columns: minmax(0, 1fr); gap: 11px; padding: 15px; }.pgp-region-pricing__zone { padding-top: 0; } }
 
 /* 资质分组沿用资料卡，按发行范围和联网方式展示适用信息。 */
 .pgp-qualification-group { min-width: 0; }
@@ -4087,10 +4162,11 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .pgr-language-picker{display:flex;align-items:center;gap:14px;margin-bottom:22px;color:#607788;font-size:12px}.pgr-language-picker select{width:260px;max-width:70%}.pgr-legacy-note,.pgr-release-callout,.pgr-review-ready{margin:0 0 20px;border-radius:7px;background:#f3f7f9;padding:12px 14px;color:#718694;font-size:12px;line-height:1.7}.pgr-release-callout{margin:20px 0 0;background:#eef8f8;color:#3a7780}.pgr-asset-fallback{margin:20px 0 -10px;color:#8298a7;font-size:12px;line-height:1.6}.pgr-muted,.pgr-local-note{color:#8292a0;font-size:12px;line-height:1.7}.pgr-local-note{margin:18px 0}.pgr-error{margin:12px 0;color:#c04741;font-size:13px;line-height:1.6;white-space:pre-wrap}.pgr-error:empty{display:none}
 .pgr-files-section{margin-top:22px}.pgr-files{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.pgr-file{min-width:0;overflow:hidden;border:1px solid #dce5ed;border-radius:7px}.pgr-file img,.pgr-file video{display:block;width:100%;height:150px;background:#eff3f7;object-fit:contain}.pgr-file object{width:100%;height:240px;border:0;background:#eff3f7}.pgr-file>div{padding:10px}.pgr-file strong,.pgr-file small{display:block;overflow-wrap:anywhere}.pgr-file strong{font-size:12px;font-weight:500}.pgr-file small{margin-top:5px;color:#8293a0;font-size:10px}.pgr-file a{color:#159eaa;font-size:12px}.pgr-file>div>a{display:inline-block;margin-top:8px}.pgr-file-unavailable{display:grid;min-height:100px;place-content:center;background:#fbf4ef;color:#ac7863;text-align:center;font-size:12px;line-height:1.8}
 .pgr-sku-list{display:grid;gap:14px}.pgr-sku{overflow:hidden;border:1px solid #dce5ed;border-radius:8px}.pgr-sku>header{display:flex;align-items:center;gap:10px;padding:14px 17px;border-bottom:1px solid #e6edf1;background:#f8fafb}.pgr-sku>header span{border-radius:4px;background:#e7f4f6;padding:3px 6px;color:#168896;font-size:10px}.pgr-sku>header strong{color:#304b5e;font-size:14px}.pgr-sku>header small{margin-left:auto;color:#899aa5;font-size:11px}.pgr-sku>.pgr-fields{padding:18px}
+.pricing-snapshot-list{display:grid;gap:14px}.pricing-snapshot{background:#fbfcfd}.pricing-snapshot[data-pricing-strategy="regional"]>header span{background:#e8f6f6;color:#168490}.pricing-snapshot .pricing-facts{margin:0}.pricing-overrides{padding:0 18px 18px}.pricing-overrides>h4{margin:2px 0 9px;color:#5a7181;font-size:12px}.pricing-override-row{display:grid;grid-template-columns:minmax(150px,1.15fr) minmax(120px,.85fr) minmax(180px,1fr);align-items:center;gap:12px;border-top:1px dashed #dce6eb;padding:11px 0;color:#526d7d;font-size:12px}.pricing-override-row strong{color:#344f61;font-size:12px}.pricing-override-row span:last-child{color:#718794}
 .pgr-territory-fixed{display:flex;align-items:center;gap:14px;border:1px solid #cfe6e7;border-radius:8px;background:#f1fafa;padding:16px}.pgr-territory-fixed strong,.pgr-territory-fixed small{display:block}.pgr-territory-fixed small{margin-top:4px;color:#749098;font-size:11px}.pgr-territory-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.pgr-territory-groups>section{min-width:0;border:1px solid #dce5ed;border-radius:8px;padding:13px}.pgr-territory-groups>section>header{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px}.pgr-territory-groups>section>header strong{font-size:12px}.pgr-territory-groups>section>header span{color:#8295a2;font-size:11px}.pgr-territory-groups>section>div{display:flex;flex-wrap:wrap;gap:7px}.pgr-territory-groups>section>div>span{border-radius:5px;background:#f3f7f9;padding:5px 7px;color:#526c7d;font-size:11px}.pgr-territory-groups small{color:#91a0aa}
 .pgr-version-reference{display:flex;align-items:center;gap:12px;margin-bottom:20px;border-radius:8px;background:#f1f8fa;padding:15px}.pgr-version-reference span{color:#72909e;font-size:12px}.pgr-version-reference strong{margin-right:auto;color:#183f53;font-size:16px}.pgr-qualification-missing{border-radius:7px;background:#fff4ed;padding:15px;color:#a86636}.pgr-qualification-missing p{margin:6px 0 0;font-size:12px}.pgr-issues{margin:20px 0;border-radius:7px;background:#fff8ed;padding:13px;color:#9b6b25;font-size:12px;line-height:1.8}.pgr-issues ul{margin:8px 0 0;padding-left:18px}.pgr-reason{display:block;margin:20px 0 14px;color:#536c7e;font-size:13px}.pgr-reason span{margin-left:6px;color:#8c9da8;font-size:11px}.pgr-reason textarea{margin-top:10px;resize:vertical}.pgr-actions{display:flex;justify-content:flex-end;gap:10px}.pgr-result{margin-bottom:22px;border-radius:7px;background:#eaf7ee;padding:14px;color:#32714b;line-height:1.7}.pgr-result--rejected{background:#fff2e9;color:#9e6136}.pgr-result--withdrawn{background:#f0f3f6;color:#627584}.pgr-result strong{font-size:14px}.pgr-result p{margin:6px 0;font-size:13px;overflow-wrap:anywhere;white-space:pre-wrap}.pgr-result small{font-size:11px}.pgr-timeline{margin:0;padding-left:18px}.pgr-timeline li{padding:0 0 22px 5px;color:#55a9b3}.pgr-timeline li:last-child{padding-bottom:0}.pgr-timeline strong,.pgr-timeline span,.pgr-timeline small{display:block;color:#4d6373;font-size:12px;line-height:1.8;overflow-wrap:anywhere}.pgr-timeline span,.pgr-timeline small{color:#8a9ba6;font-size:11px}.pgr-timeline p{color:#8a6b4d;font-size:12px;overflow-wrap:anywhere;white-space:pre-wrap}
 @media(max-width:1100px){.pgr-files,.pgr-territory-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:720px){.pgr-list-header,.pgr-detail-header{flex-direction:column;align-items:flex-start}.pgr-detail-header__status{justify-content:flex-start}.pgr-filter{padding:16px}.pgr-filter label,.pgr-filter label:first-child{flex:1 1 100%}.pgr-filter .pgr-button{flex:1 1 90px}.pgr-panel{padding:18px}.pgr-fields,.pgr-files,.pgr-territory-groups{grid-template-columns:minmax(0,1fr)}.pgr-wide{grid-column:auto}.pgr-language-picker{align-items:flex-start;flex-direction:column}.pgr-language-picker select{max-width:none}.pgr-list-header h1,.pgr-detail-header h1{font-size:23px}.pgr-version-reference{align-items:flex-start;flex-wrap:wrap}.pgr-version-reference strong{flex:1 1 100%;margin:0}.pgr-actions{flex-direction:column-reverse}.pgr-actions .pgr-button{width:100%}}</style></head><body>
+@media(max-width:720px){.pgr-list-header,.pgr-detail-header{flex-direction:column;align-items:flex-start}.pgr-detail-header__status{justify-content:flex-start}.pgr-filter{padding:16px}.pgr-filter label,.pgr-filter label:first-child{flex:1 1 100%}.pgr-filter .pgr-button{flex:1 1 90px}.pgr-panel{padding:18px}.pgr-fields,.pgr-files,.pgr-territory-groups{grid-template-columns:minmax(0,1fr)}.pgr-wide{grid-column:auto}.pgr-language-picker{align-items:flex-start;flex-direction:column}.pgr-language-picker select{max-width:none}.pgr-list-header h1,.pgr-detail-header h1{font-size:23px}.pgr-version-reference{align-items:flex-start;flex-wrap:wrap}.pgr-version-reference strong{flex:1 1 100%;margin:0}.pricing-override-row{grid-template-columns:minmax(0,1fr);gap:5px}.pricing-override-row span{display:block}.pgr-actions{flex-direction:column-reverse}.pgr-actions .pgr-button{width:100%}}</style></head><body>
 <div id="app"></div>
 <textarea id="portal-module" hidden aria-hidden="true">{"id":"01","name":"开发者平台与企业认证","description":"开发者首页、弹窗登录、帮助中心、平台注册、企业认证申请与状态、运营审核和中英文内容配置闭环。","output":"01-开发者平台与资料demo.html","defaultRoute":"P01-01","routeIds":["P01-01","P01-03","P01-08","P01-09","P01-10","P02-01"]}</textarea>
 <textarea id="portal-modules" hidden aria-hidden="true">[{"id":"01","name":"开发者平台与企业认证","description":"开发者首页、弹窗登录、帮助中心、平台注册、企业认证申请与状态、运营审核和中英文内容配置闭环。","output":"01-开发者平台与资料demo.html","defaultRoute":"P01-01","routeIds":["P01-01","P01-03","P01-08","P01-09","P01-10","P02-01"]},{"id":"02","name":"游戏创建与发行","description":"创建游戏项目，维护版本发布、发布记录与游戏资质认证。","output":"02-游戏创建与发行demo.html","aliases":["02-CDKEY商品与供给demo.html"],"defaultRoute":"P02-01","routeIds":["P01-01","P01-03","P01-08","P01-09","P01-10","P02-01"]},{"id":"03","name":"包体测试与版本发布","description":"Windows、macOS、Linux 的 Build／Manifest、测试、Release Pointer 发布与历史 Build 回滚。","output":"03-包体测试与发布demo.html","defaultRoute":"P03-01"},{"id":"04","name":"精准化投放与发行数据","description":"经营看板、Campaign／UTM、人工资源执行、渠道归因及聚合导出。","output":"04-精准投放与数据demo.html","defaultRoute":"P04-01"}]</textarea>
@@ -4122,10 +4198,12 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   const fileExists = value => Boolean(value && (value.blob instanceof Blob || value.name || value.size));
 
   function legacyLocales(source) {
+    const configured = source.storeLocales?.enabled || source.nameLanguages || source.assetLanguageSettings?.nameLanguages;
+    if (Array.isArray(configured)) {
+      const values = unique(configured.map(localeCode));
+      return values.length ? values : [localeCode(source.storeLocales?.default || source.defaultNameLanguage || 'en')];
+    }
     const values = [
-      ...(source.storeLocales?.enabled || []),
-      ...(source.nameLanguages || []),
-      ...(source.assetLanguageSettings?.nameLanguages || []),
       ...(source.languages || []).map(localeCode),
       ...Object.keys(source.gameNames || {}),
       ...Object.keys(source.localizedContent || {}),
@@ -4693,6 +4771,12 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   ].map(([code, zh, en, continent]) => Object.freeze({ code, zh, en, continent })));
   const globalCatalog = Object.freeze(catalog.filter(item => item.code !== 'CN'));
   const byCode = new Map(catalog.map(item => [item.code, item]));
+  const territoryCurrencies = Object.freeze({
+    US: 'USD', CN: 'CNY', HK: 'HKD', MO: 'MOP', TW: 'TWD', JP: 'JPY', KR: 'KRW', GB: 'GBP',
+    DE: 'EUR', FR: 'EUR', ES: 'EUR', IT: 'EUR', NL: 'EUR',
+    CA: 'CAD', AU: 'AUD', BR: 'BRL', TR: 'TRY', RU: 'RUB', IN: 'INR', ID: 'IDR', TH: 'THB', MX: 'MXN',
+    PH: 'PHP', SG: 'SGD', IQ: 'IQD', PK: 'PKR', CO: 'COP', EG: 'EGP', DZ: 'DZD', AR: 'ARS', VN: 'VND', VE: 'VES',
+  });
   const continents = Object.freeze({
     AS: Object.freeze(['亚洲', 'Asia']),
     EU: Object.freeze(['欧洲', 'Europe']),
@@ -4799,6 +4883,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   };
   const label = (code, language = 'zh') => copy[languageCode(language)][code] || code;
   const territoryLabel = (code, language = 'zh') => byCode.get(code)?.[languageCode(language) === 'en' ? 'en' : 'zh'] || code;
+  const currencyForTerritory = code => territoryCurrencies[code] || 'USD';
   const continentLabel = (code, language = 'zh') => continents[code]?.[languageCode(language) === 'en' ? 1 : 0] || code;
   const statusLabel = (code, language = 'zh') => label(code, language);
   const filterDefaults = filters => {
@@ -5035,6 +5120,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     isChinese,
     label,
     territoryLabel,
+    currencyForTerritory,
     continentLabel,
     statusLabel,
     normalize,
@@ -5176,6 +5262,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
         if (!state.staged) return;
         state.draft.nameLanguages = [...state.staged.languages]; state.draft.defaultNameLanguage = state.staged.defaultLanguage;
         if (!state.draft.nameLanguages.includes(state.draft.currentNameLanguage)) state.draft.currentNameLanguage = state.draft.defaultNameLanguage;
+        state.draft.storeLocales = { enabled: [...state.draft.nameLanguages], default: state.draft.defaultNameLanguage, current: state.draft.currentNameLanguage };
         sync(state.draft); state.staged = null; root.querySelector('[data-name-dialog]').close();
         redraw('[data-name-settings]'); state.onChange();
       } else if (event.target.closest('[data-name-clear]') && state.staged) { state.staged.languages = protectedLanguages(state); updateDialog(); }
@@ -5971,7 +6058,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     completion: ['必填完成', 'Required fields'], remaining: ['还差 {count} 项', '{count} items to complete'], complete: ['已完善', 'Complete'], incomplete: ['待完善', 'Incomplete'], completeAll: ['必填信息已完整', 'Required information is complete'],
     locked: ['资料已提交审核，当前版本已锁定。可撤销审核后继续修改，尚未公开发布。', 'The current version is locked while its details are in review. Withdraw the review to continue editing. It has not been published.'], submissionId: ['提交编号', 'Submission ID'], submittedAt: ['提交时间', 'Submitted at'],
     classification: ['游戏分类与平台', 'Classification and platforms'], classificationHint: ['设置游戏类型和发布平台。', 'Set the game genres and release platforms.'],
-    pricing: ['收费设置', 'Pricing settings'], pricingHint: ['选择免费提供，或按发行范围设置单次买断价格。', 'Offer the game for free or set a one-time purchase price for each release scope.'], pricingModel: ['收费方式', 'Pricing model'], free: ['免费', 'Free'], paid: ['收费（单次买断）', 'Paid (one-time purchase)'], freeHint: ['免费向玩家提供完整游戏。', 'Players can access the full game for free.'], paidHint: ['玩家一次购买后即可游玩完整游戏。', 'Players purchase the full game once.'], globalPrice: ['全球服售价（USD）', 'Global price (USD)'], domesticPrice: ['国内服售价（CNY）', 'Domestic price (CNY)'], priceHint: ['请输入大于 0 的金额，最多 2 位小数。', 'Enter an amount greater than 0 with up to 2 decimal places.'], pricingModelRequired: ['请选择免费或收费（单次买断）。', 'Select free or a one-time paid purchase.'], priceRequired: ['请填写大于 0 的售价，最多 2 位小数。', 'Enter a price greater than 0 with up to 2 decimal places.'], discountInvalid: ['折扣价须低于售价，并设置开始早于结束、结束时间尚未到期的折扣期限。', 'Set a discount below the list price with a valid start time and a future end time.'], pricingRegionHint: ['请先在发行设置中选择发布地区，再填写对应售价。', 'Select release regions in Release settings, then enter the relevant prices.'], pricingUnconfigured: ['历史未配置', 'Not recorded'], pricingLegacy: ['历史提交未记录收费设置，按原提交内容保留。', 'Pricing was not recorded in this historical submission. Its original details are preserved.'], pricingLegacyEdit: ['历史提交未记录收费设置，请选择本次提交的收费方式。', 'Pricing was not recorded in this historical submission. Choose a pricing model for this submission.'],
+    pricing: ['收费设置', 'Pricing settings'], pricingHint: ['选择免费提供，或按发行区域设置单次买断价格。', 'Offer the game for free or set a one-time purchase price for the release regions.'], pricingModel: ['收费方式', 'Pricing model'], free: ['免费', 'Free'], paid: ['收费（单次买断）', 'Paid (one-time purchase)'], freeHint: ['免费向玩家提供完整游戏。', 'Players can access the full game for free.'], paidHint: ['玩家一次购买后即可游玩完整游戏。', 'Players purchase the full game once.'], pricingStrategy: ['定价方式', 'Pricing method'], uniform: ['全球统一价', 'Global unified price'], uniformHint: ['使用一个基准价，适用于发行设置中的全部地区。', 'Use one base price for every territory selected in Release settings.'], regional: ['分区定价', 'Regional pricing'], regionalHint: ['设置覆盖全部发行地区的基准价，仅为少数地区添加例外价。', 'Set one base price for all release territories and add overrides only where needed.'], pricingStrategyRequired: ['请选择全球统一价或分区定价。', 'Select global unified or regional pricing.'], globalPrice: ['全球服售价（USD）', 'Global price (USD)'], domesticPrice: ['国内服售价（CNY）', 'Domestic price (CNY)'], priceHint: ['请输入大于 0 的金额，最多 2 位小数。', 'Enter an amount greater than 0 with up to 2 decimal places.'], pricingModelRequired: ['请选择免费或收费（单次买断）。', 'Select free or a one-time paid purchase.'], priceRequired: ['请填写大于 0 的售价，最多 2 位小数。', 'Enter a price greater than 0 with up to 2 decimal places.'], discountInvalid: ['折扣价须低于对应售价，并设置开始早于结束、结束时间尚未到期的折扣期限。', 'Set each discount below its list price with a valid start time and a future end time.'], pricingRegionHint: ['例外地区仅来自发行设置；未单独定价的地区继承基准价。', 'Overrides come from Release settings; all other territories inherit the base price.'], pricingUnconfigured: ['历史未配置', 'Not recorded'], pricingLegacy: ['历史提交未记录收费设置，按原提交内容保留。', 'Pricing was not recorded in this historical submission. Its original details are preserved.'], pricingLegacyEdit: ['历史提交未记录收费设置，请选择本次提交的收费方式。', 'Pricing was not recorded in this historical submission. Choose a pricing model for this submission.'],
     genres: ['游戏类型', 'Game genres'], relationship: ['当前主体与该游戏的关系', 'Company relationship to this game'], releasePlan: ['当前发布计划', 'Current release plan'], platforms: ['发布平台', 'Release platforms'], choose: ['请选择', 'Please select'],
     releaseRegions: ['发行范围', 'Release regions'], regionRequired: ['请选择全球服或国内服。', 'Select a global or domestic release.'],
     contentLanguage: ['资料填写语言', 'Content language'], contentZh: ['中文', 'Chinese'], contentEn: ['英语', 'English'], contentRequired: ['当前发行范围必填', 'Required for the selected release'], contentOptional: ['选填资料', 'Optional content'],
@@ -6018,7 +6105,15 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     return { builds: 'builds', pricing: 'catalog', publication: 'release', qualification: 'qualification' }[section] || 'profile';
   };
   const releaseMissingCounts = done => Object.fromEntries(releaseModules.map(module => [module, done.missing.filter(item => releaseModuleOf(item.key) === module).length]));
-  const labelFor = (lang, key) => key === 'buildPackages.readyFull' ? t(lang, 'readyFull') : key === 'pricing.model' ? t(lang, 'pricingModel') : key === 'qualifications.mainland' ? t(lang, 'mainlandScan') : key.startsWith('gameNames.') ? `${lang === 'en' ? 'Game name' : '游戏名称'} · ${window.PublisherGameNames.label(key.split('.')[1], lang)}` : key.startsWith('requirements.') ? `${key.slice(13)} · ${t(lang, 'requirements')}` : t(lang, key.split('.').pop() === 'scheduledAt' ? 'scheduleTime' : key.split('.').pop());
+  const labelFor = (lang, key) => {
+    const regionalPrice = key.match(/\.regionalPrices\.([A-Z]{2,3})\.listPrice$/);
+    if (regionalPrice) {
+      const code = regionalPrice[1];
+      const label = code.length === 2 ? window.PublisherReleaseRegions.territoryLabel(code, lang) : code;
+      return lang === 'en' ? `${label} list price` : `${label}售价`;
+    }
+    return key === 'buildPackages.readyFull' ? t(lang, 'readyFull') : key === 'pricing.model' ? t(lang, 'pricingModel') : key === 'qualifications.mainland' ? t(lang, 'mainlandScan') : key.startsWith('gameNames.') ? `${lang === 'en' ? 'Game name' : '游戏名称'} · ${window.PublisherGameNames.label(key.split('.')[1], lang)}` : key.startsWith('requirements.') ? `${key.slice(13)} · ${t(lang, 'requirements')}` : t(lang, key.split('.').pop() === 'scheduledAt' ? 'scheduleTime' : key.split('.').pop());
+  };
   const lock = draft => draft.reviewStatus === 'reviewing' || draft.saving || draft.submitting || draft.withdrawing;
   const accessFor = value => value && typeof value === 'object' ? value : {
     accountKind: 'enterprise', qualificationStatus: 'approved', canEditReleaseDraft: true,
@@ -6052,7 +6147,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   const contentRequired = (draft, language) => draft.legacyReview ? language === 'en' : language === (draft.releaseConfig?.mode === 'domestic' ? 'zh' : 'en');
   const contentKeys = language => language === 'zh' ? ['gameNameZh', 'taglineZh', 'descriptionZh'] : ['gameNameEn', 'tagline', 'description'];
   const displayName = draft => String(draft.gameNames?.[draft.defaultNameLanguage] || draft.gameName || (draft.releaseRegions?.includes('domestic') ? draft.gameNameZh || draft.gameNameEn : draft.gameNameEn || draft.gameNameZh) || '').trim();
-  const stateFor = draft => { let state = runtime.get(draft); if (!state) { state = { root: null, urls: new Map(), uploads: new Map(), uploadSequence: 0, focus: null, observer: null, versionRequest: 0, versionPage: 1, versionViewer: { status: 'list', submissionId: '', record: null }, demoReleaseState: { open: false, active: false, status: 'reviewing' } }; runtime.set(draft, state); } return state; };
+  const stateFor = draft => { let state = runtime.get(draft); if (!state) { state = { root: null, urls: new Map(), uploads: new Map(), uploadSequence: 0, focus: null, observer: null, versionRequest: 0, versionPage: 1, versionViewer: { status: 'list', submissionId: '', record: null }, demoReleaseState: { open: false, active: false, status: 'reviewing' }, overridePicker: { open: false, skuIndex: -1, search: '', selected: [] } }; runtime.set(draft, state); } return state; };
   function urlFor(draft, file) {
     if (!validFile(file)) return '';
     const state = stateFor(draft);
@@ -6066,16 +6161,86 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   }
   const validPrice = value => /^\d+(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) && Number.isFinite(Number(value)) && Number(value) > 0;
   const pricingIsHistorical = draft => !draft.pricing && draft.legacyPricing && ['reviewing', 'approved'].includes(draft.reviewStatus) && Boolean(draft.submissionId);
-  const emptySku = (type = 'dlc', index = 0) => ({ skuId: type === 'base_game' ? 'BASE' : `DLC-${String(index + 1).padStart(3, '0')}`, type, title: type === 'base_game' ? '基础游戏' : `DLC ${index + 1}`, installContentRef: '', pricingModel: 'free', listPrice: '', discountPrice: '', discountStartAt: '', discountEndAt: '' });
-  const normalizeSku = (value, type, index = 0) => ({ ...emptySku(type, index), ...(value || {}), type });
+  const normalizeRegionalPrices = source => Object.fromEntries(Object.entries(source && typeof source === 'object' ? source : {}).map(([code, price]) => [code, {
+    listPrice: String(price?.listPrice ?? ''), discountPrice: String(price?.discountPrice ?? ''),
+  }]));
+  const emptySku = (type = 'dlc', index = 0) => ({ skuId: type === 'base_game' ? 'BASE' : `DLC-${String(index + 1).padStart(3, '0')}`, type, title: type === 'base_game' ? '基础游戏' : `DLC ${index + 1}`, installContentRef: '', pricingModel: 'free', pricingStrategy: 'uniform', listPrice: '', discountPrice: '', regionalPrices: {}, discountStartAt: '', discountEndAt: '' });
+  const normalizeSku = (value, type, index = 0) => {
+    const normalized = { ...emptySku(type, index), ...(value || {}), type };
+    normalized.pricingStrategy = normalized.pricingStrategy === 'regional' ? 'regional' : 'uniform';
+    normalized.regionalPrices = normalizeRegionalPrices(normalized.regionalPrices);
+    return normalized;
+  };
   const skuList = draft => [draft.catalog.baseGame, ...(draft.catalog.dlcs || [])];
   const currencyFor = draft => draft.releaseConfig?.mode === 'domestic' ? 'CNY' : 'USD';
-  const validDiscount = (sku, allowExpired = false) => {
-    if (!sku.discountPrice && !sku.discountStartAt && !sku.discountEndAt) return true;
+  const priceZonesFor = draft => {
+    const territoryCodes = draft.releaseConfig?.mode === 'domestic' ? ['CN'] : [...new Set(draft.releaseConfig?.globalTerritoryCodes || [])].filter(code => code !== 'CN');
+    return territoryCodes.map(code => ({ code, currency: window.PublisherReleaseRegions.currencyForTerritory(code), territoryCodes: [code] }));
+  };
+  const pricingStrategyFor = (sku, draft) => draft.releaseConfig?.mode === 'domestic' ? 'uniform' : sku.pricingStrategy === 'regional' ? 'regional' : 'uniform';
+  const clearSkuPrice = (sku, { resetStrategy = false } = {}) => Object.assign(sku, {
+    ...(resetStrategy ? { pricingStrategy: 'uniform' } : {}),
+    listPrice: '', discountPrice: '', regionalPrices: {}, discountStartAt: '', discountEndAt: '',
+  });
+  const hasPriceOverride = (sku, code) => Boolean(sku?.regionalPrices) && Object.prototype.hasOwnProperty.call(sku.regionalPrices, code);
+  const activeOverrideZonesFor = (sku, draft) => priceZonesFor(draft).filter(zone => hasPriceOverride(sku, zone.code));
+  const migrateRegionalPriceKeys = draft => {
+    skuList(draft).forEach(sku => {
+      const source = normalizeRegionalPrices(sku.regionalPrices);
+      const next = Object.fromEntries(Object.entries(source).filter(([code]) => /^[A-Z]{2}$/.test(code)));
+      priceZonesFor(draft).forEach(zone => {
+        if (!next[zone.code] && source[zone.currency]) next[zone.code] = { ...source[zone.currency] };
+      });
+      sku.regionalPrices = next;
+    });
+  };
+  const submissionSnapshot = draft => {
+    const snapshot = structuredClone(draft);
+    skuList(snapshot).forEach(sku => {
+      if (sku.pricingModel !== 'paid') {
+        clearSkuPrice(sku, { resetStrategy: true });
+        return;
+      }
+      sku.pricingStrategy = pricingStrategyFor(sku, snapshot);
+      if (sku.pricingStrategy !== 'regional') {
+        sku.regionalPrices = {};
+        return;
+      }
+      sku.regionalPrices = Object.fromEntries(activeOverrideZonesFor(sku, snapshot).map(zone => [zone.code, {
+        listPrice: String(sku.regionalPrices[zone.code]?.listPrice ?? ''),
+        discountPrice: String(sku.regionalPrices[zone.code]?.discountPrice ?? ''),
+      }]));
+    });
+    const enabledLocales = [...new Set(snapshot.storeLocales?.enabled || snapshot.nameLanguages || [])];
+    if (enabledLocales.length) {
+      const activeOnly = source => Object.fromEntries(enabledLocales.filter(code => source && Object.prototype.hasOwnProperty.call(source, code)).map(code => [code, source[code]]));
+      snapshot.gameNames = activeOnly(snapshot.gameNames);
+      snapshot.localizedContent = activeOnly(snapshot.localizedContent);
+      snapshot.localizedAssets = activeOnly(snapshot.localizedAssets);
+      if (snapshot.gameProfileDraft) {
+        snapshot.gameProfileDraft.gameNames = activeOnly(snapshot.gameProfileDraft.gameNames);
+        snapshot.gameProfileDraft.localizedContent = activeOnly(snapshot.gameProfileDraft.localizedContent);
+        snapshot.gameProfileDraft.localizedAssets = activeOnly(snapshot.gameProfileDraft.localizedAssets);
+      }
+    }
+    return snapshot;
+  };
+  const skuDiscountConfigured = (sku, draft) => pricingStrategyFor(sku, draft) === 'regional'
+    ? Boolean(sku.discountPrice) || activeOverrideZonesFor(sku, draft).some(zone => Boolean(sku.regionalPrices?.[zone.code]?.discountPrice)) || Boolean(sku.discountStartAt || sku.discountEndAt)
+    : Boolean(sku.discountPrice || sku.discountStartAt || sku.discountEndAt);
+  const validDiscount = (sku, draft, allowExpired = false) => {
+    if (!skuDiscountConfigured(sku, draft)) return true;
     const start = new Date(sku.discountStartAt).getTime();
     const end = new Date(sku.discountEndAt).getTime();
-    return validPrice(sku.discountPrice)
-      && Number(sku.discountPrice) < Number(sku.listPrice)
+    const pricesValid = pricingStrategyFor(sku, draft) === 'regional' ? (
+      (!sku.discountPrice || (validPrice(sku.discountPrice) && Number(sku.discountPrice) < Number(sku.listPrice)))
+      && activeOverrideZonesFor(sku, draft).every(zone => {
+        const price = sku.regionalPrices?.[zone.code] || {};
+        return !price.discountPrice || (validPrice(price.discountPrice) && Number(price.discountPrice) < Number(price.listPrice));
+      })
+      && (Boolean(sku.discountPrice) || activeOverrideZonesFor(sku, draft).some(zone => Boolean(sku.regionalPrices?.[zone.code]?.discountPrice)))
+    ) : validPrice(sku.discountPrice) && Number(sku.discountPrice) < Number(sku.listPrice);
+    return pricesValid
       && Number.isFinite(start)
       && Number.isFinite(end)
       && start < end
@@ -6179,6 +6344,11 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     draft.releaseSubmissions = structuredClone(normalized.releaseSubmissions || []);
     draft.reviewRecords = structuredClone(normalized.reviewRecords || []);
     draft.currentReleaseReview = structuredClone(normalized.currentReleaseReview || null);
+    migrateRegionalPriceKeys(draft);
+    skuList(draft).forEach(sku => {
+      if (sku.pricingModel !== 'paid') clearSkuPrice(sku, { resetStrategy: true });
+      else if (draft.releaseConfig?.mode === 'domestic') Object.assign(sku, { pricingStrategy: 'uniform', regionalPrices: {} });
+    });
     delete draft.languages;
     return draft;
   }
@@ -6212,8 +6382,13 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
       result.push([`${key}.installContentRef`, window.PublisherGameBuilds.parsedFullBuilds(draft).some(build => build.id === sku.installContentRef), 'required']);
       result.push([`${key}.pricingModel`, ['free', 'paid'].includes(sku.pricingModel), 'pricingModelRequired']);
       if (sku.pricingModel === 'paid') {
+        const pricingStrategy = pricingStrategyFor(sku, draft);
+        if (mode === 'global') result.push([`${key}.pricingStrategy`, ['uniform', 'regional'].includes(sku.pricingStrategy), 'pricingStrategyRequired']);
         result.push([`${key}.listPrice`, validPrice(sku.listPrice), 'priceRequired']);
-        if (sku.discountPrice || sku.discountStartAt || sku.discountEndAt) result.push([`${key}.discount`, validDiscount(sku, draft.reviewStatus === 'reviewing'), 'discountInvalid']);
+        if (pricingStrategy === 'regional') {
+          activeOverrideZonesFor(sku, draft).forEach(zone => result.push([`${key}.regionalPrices.${zone.code}.listPrice`, validPrice(sku.regionalPrices?.[zone.code]?.listPrice), 'priceRequired']));
+        }
+        if (skuDiscountConfigured(sku, draft)) result.push([`${key}.discount`, validDiscount(sku, draft, draft.reviewStatus === 'reviewing'), 'discountInvalid']);
       }
     });
     return result;
@@ -6264,15 +6439,51 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   function renderPricing(draft, lang) {
     const isEnglish = lang === 'en';
     const currency = currencyFor(draft);
+    const readonly = lock(draft);
+    const runtimeState = stateFor(draft);
     const buildOptions = window.PublisherGameBuilds.parsedFullBuilds(draft);
-    const buildSelect = (sku, key) => `<div class="pgp-field" data-profile-field-wrap="${key}.installContentRef"><label>${isEnglish ? 'Installation content / build' : '安装内容／包体版本'} ${required}</label><select data-sku-build="${esc(key)}" aria-label="${isEnglish ? 'Installation content / build' : '安装内容／包体版本'}"${buildOptions.length ? '' : ' disabled'}><option value="">${isEnglish ? (buildOptions.length ? 'Choose a parsed full package' : 'Upload a parsed full package first') : (buildOptions.length ? '请选择已解析整包' : '请先上传并解析游戏整包')}</option>${buildOptions.map(build => `<option value="${esc(build.id)}"${sku.installContentRef === build.id ? ' selected' : ''}>${esc(build.platform)} · ${esc(build.version)} · ${esc(build.id)}</option>`).join('')}</select><p class="pgp-hint">${isEnglish ? 'Only parsed full packages can be linked.' : '只能关联已解析通过的游戏整包。'}</p>${errorHTML(draft, lang, `${key}.installContentRef`)}</div>`;
+    const zones = priceZonesFor(draft);
+    const buildSelect = (sku, key) => `<div class="pgp-field" data-profile-field-wrap="${key}.installContentRef"><label>${isEnglish ? 'Installation content / build' : '安装内容／包体版本'} ${required}</label><select data-sku-build="${esc(key)}" aria-label="${isEnglish ? 'Installation content / build' : '安装内容／包体版本'}"${buildOptions.length && !readonly ? '' : ' disabled'}><option value="">${isEnglish ? (buildOptions.length ? 'Choose a parsed full package' : 'Upload a parsed full package first') : (buildOptions.length ? '请选择已解析整包' : '请先上传并解析游戏整包')}</option>${buildOptions.map(build => `<option value="${esc(build.id)}"${sku.installContentRef === build.id ? ' selected' : ''}>${esc(build.platform)} · ${esc(build.version)} · ${esc(build.id)}</option>`).join('')}</select><p class="pgp-hint">${isEnglish ? 'Only parsed full packages can be linked.' : '只能关联已解析通过的游戏整包。'}</p>${errorHTML(draft, lang, `${key}.installContentRef`)}</div>`;
+    const regionalPricing = (sku, key, index) => {
+      if (!zones.length) return `<p class="pgp-sku-free-note pgp-wide">${isEnglish ? 'Select release territories in Release settings before entering regional prices.' : '请先在发行设置中选择发行区域，再填写分区价格。'}</p>`;
+      const activeOverrides = activeOverrideZonesFor(sku, draft);
+      const candidates = zones.filter(zone => !hasPriceOverride(sku, zone.code));
+      const picker = runtimeState.overridePicker?.open && runtimeState.overridePicker.skuIndex === index ? runtimeState.overridePicker : null;
+      const selected = new Set(picker?.selected || []);
+      const basePrice = `<section class="pgp-regional-base" data-sku-regional-base><header class="pgp-regional-base__head"><div><strong>${isEnglish ? 'Base price' : '基准价'}</strong><p>${isEnglish ? `Applied to all territories without an override; ${currency} is converted by platform rules.` : `覆盖未单独定价的发行地区；${currency} 按平台规则换算为当地币种。`}</p></div><span>${esc(currency)}</span></header><div class="pgp-regional-base__fields">${field(draft, lang, `${key}.listPrice`, { isRequired: true, readonly, label: `${isEnglish ? 'Base list price' : '基准售价'}（${currency}）`, hint: t(lang, 'priceHint') })}${field(draft, lang, `${key}.discountPrice`, { readonly, label: `${isEnglish ? 'Base discount price' : '基准折扣价'}（${currency}）` })}</div></section>`;
+      const pickerHTML = picker ? `<section class="pgp-override-picker" data-sku-override-picker="${index}"><div class="pgp-override-picker__search"><input type="search" value="${esc(picker.search || '')}" placeholder="${isEnglish ? 'Search country, region or code' : '搜索国家、地区或代码'}" data-sku-override-search="${index}" aria-label="${isEnglish ? 'Search override territories' : '搜索例外地区'}"></div><div class="pgp-override-picker__list">${candidates.map(zone => {
+        const territoryName = window.PublisherReleaseRegions.territoryLabel(zone.code, lang);
+        const searchText = `${territoryName} ${zone.code} ${zone.currency}`.toLowerCase();
+        return `<label class="pgp-override-picker__option" data-sku-override-candidate="${esc(zone.code)}" data-sku-override-search-text="${esc(searchText)}"><input type="checkbox" data-sku-override-option="${esc(zone.code)}"${selected.has(zone.code) ? ' checked' : ''}><span><strong>${esc(territoryName)}</strong><small>${esc(zone.code)} · ${esc(zone.currency)}</small></span></label>`;
+      }).join('')}<p class="pgp-override-picker__empty" data-sku-override-empty${candidates.length ? ' hidden' : ''}>${isEnglish ? 'No territories available.' : '暂无可添加地区'}</p></div><footer class="pgp-override-picker__actions"><button type="button" class="pgp-button" data-sku-override-cancel="${index}">${isEnglish ? 'Cancel' : '取消'}</button><button type="button" class="pgp-button pgp-button--primary" data-sku-override-confirm="${index}" data-sku-override-confirm-label="${isEnglish ? 'Add selected' : '添加所选地区'}"${selected.size ? '' : ' disabled'}>${isEnglish ? 'Add selected' : '添加所选地区'}${selected.size ? `（${selected.size}）` : ''}</button></footer></section>` : '';
+      const overrideRows = activeOverrides.map(zone => {
+        const price = sku.regionalPrices?.[zone.code] || {};
+        const listKey = `${key}.regionalPrices.${zone.code}.listPrice`;
+        const discountKey = `${key}.regionalPrices.${zone.code}.discountPrice`;
+        const territoryName = window.PublisherReleaseRegions.territoryLabel(zone.code, lang);
+        return `<div class="pgp-region-pricing__row" data-sku-price-zone="${esc(zone.code)}"><div class="pgp-region-pricing__zone"><strong>${esc(territoryName)}</strong><small>${esc(zone.code)} · ${esc(zone.currency)}</small><button type="button" data-sku-override-remove="${esc(zone.code)}" data-sku-override-index="${index}"${readonly ? ' disabled' : ''}>${isEnglish ? 'Remove' : '移除'}</button></div><div class="pgp-region-pricing__field" data-profile-field-wrap="${esc(listKey)}"><label for="${id(listKey)}">${isEnglish ? 'List price' : '售价'}（${esc(zone.currency)}） ${required}</label><input id="${id(listKey)}" type="text" inputmode="decimal" autocomplete="off" value="${esc(price.listPrice || '')}" data-profile-field="${esc(listKey)}" aria-invalid="${Boolean(draft.errors[listKey])}" aria-describedby="${id(listKey)}-error"${readonly ? ' readonly' : ''}>${errorHTML(draft, lang, listKey)}</div><div class="pgp-region-pricing__field"><label for="${id(discountKey)}">${isEnglish ? 'Discount price' : '折扣价'}（${esc(zone.currency)}）</label><input id="${id(discountKey)}" type="text" inputmode="decimal" autocomplete="off" value="${esc(price.discountPrice || '')}" data-profile-field="${esc(discountKey)}"${readonly ? ' readonly' : ''}><p class="pgp-hint">${isEnglish ? 'Blank inherits the base discount rate.' : '留空继承基准折扣比例。'}</p></div></div>`;
+      }).join('');
+      const inheritedCount = zones.length - activeOverrides.length;
+      const summary = isEnglish ? `${inheritedCount} territories use the base price · ${activeOverrides.length} overrides` : `${inheritedCount} 个地区使用基准价 · ${activeOverrides.length} 个例外价`;
+      const overrides = `<section class="pgp-regional-overrides"><header class="pgp-regional-overrides__head"><div><strong>${isEnglish ? 'Territory overrides' : '地区例外价'}</strong><p data-sku-inherited-count>${esc(summary)}</p></div><button type="button" class="pgp-button" data-sku-override-add="${index}"${readonly || !candidates.length ? ' disabled' : ''}>${isEnglish ? 'Add override territories' : '添加例外地区'}</button></header>${pickerHTML}${activeOverrides.length ? `<div class="pgp-region-pricing" data-sku-regional-prices><div class="pgp-region-pricing__head"><span>${isEnglish ? 'Release country / region' : '发行国家／地区'}</span><span>${isEnglish ? 'List price' : '售价'}</span><span>${isEnglish ? 'Discount price (optional)' : '折扣价（选填）'}</span></div>${overrideRows}<p class="pgp-region-pricing__note">${esc(t(lang, 'pricingRegionHint'))}</p></div>` : `<p class="pgp-regional-empty">${isEnglish ? 'All selected release territories currently use the base price.' : '全部已选发行地区使用基准价。'}</p>`}</section>`;
+      return `<div class="pgp-regional-pricing pgp-wide">${basePrice}${overrides}</div>`;
+    };
     const renderSku = (sku, index) => {
       const base = index === 0;
       const key = base ? 'catalog.baseGame' : `catalog.dlcs.${index - 1}`;
       const paid = sku.pricingModel === 'paid';
-      return `<article class="pgp-sku-card" data-catalog-sku="${esc(sku.skuId)}" data-sku-index="${index}"><header><div><small>${base ? (isEnglish ? 'BASE GAME' : '基础游戏') : 'DLC'}</small><h4>${esc(sku.title || (base ? (isEnglish ? 'Base game' : '基础游戏') : `DLC ${index}`))}</h4><span>${esc(sku.skuId)}</span></div>${base ? '' : `<button type="button" class="pgp-link-danger" data-sku-remove="${index - 1}">${isEnglish ? 'Remove' : '删除'}</button>`}</header><div class="pgp-form-grid">${field(draft, lang, `${key}.title`, { isRequired: true, label: isEnglish ? 'Product name' : '商品名称' })}${buildSelect(sku, key)}<fieldset class="pgp-pricing-model pgp-wide" data-profile-field-wrap="${key}.pricingModel"><legend>${esc(t(lang, 'pricingModel'))} ${required}</legend><div class="pgp-pricing-options">${['free', 'paid'].map(value => `<label class="pgp-pricing-option${sku.pricingModel === value ? ' is-selected' : ''}"><input type="radio" name="sku-pricing-${index}" value="${value}" data-sku-pricing-model="${index}"${sku.pricingModel === value ? ' checked' : ''}><span><strong>${esc(t(lang, value))}</strong><small>${esc(t(lang, `${value}Hint`))}</small></span></label>`).join('')}</div>${errorHTML(draft, lang, `${key}.pricingModel`)}</fieldset>${paid ? `${field(draft, lang, `${key}.listPrice`, { isRequired: true, label: `${isEnglish ? 'List price' : '售价'}（${currency}）`, hint: t(lang, 'priceHint') })}${field(draft, lang, `${key}.discountPrice`, { label: `${isEnglish ? 'Discount price' : '折扣价'}（${currency}）` })}${field(draft, lang, `${key}.discountStartAt`, { label: isEnglish ? 'Discount starts' : '折扣开始时间' })}${field(draft, lang, `${key}.discountEndAt`, { label: isEnglish ? 'Discount ends' : '折扣结束时间' })}${errorHTML(draft, lang, `${key}.discount`)}` : `<p class="pgp-sku-free-note pgp-wide">${isEnglish ? 'This SKU is free. Price and discount values are cleared when saved.' : '此 SKU 免费提供，售价与折扣信息不会生效。'}</p>`}</div></article>`;
+      const domestic = draft.releaseConfig?.mode === 'domestic';
+      const strategy = pricingStrategyFor(sku, draft);
+      const strategyFields = domestic ? '' : `<fieldset class="pgp-pricing-model pgp-pricing-strategy pgp-wide" data-profile-field-wrap="${key}.pricingStrategy"><legend>${esc(t(lang, 'pricingStrategy'))} ${required}</legend><div class="pgp-pricing-options">${['uniform', 'regional'].map(value => `<label class="pgp-pricing-option${strategy === value ? ' is-selected' : ''}"><input type="radio" name="sku-pricing-strategy-${index}" value="${value}" data-sku-pricing-strategy="${index}"${strategy === value ? ' checked' : ''}${readonly ? ' disabled' : ''}><span><strong>${esc(t(lang, value))}</strong><small>${esc(t(lang, `${value}Hint`))}</small></span></label>`).join('')}</div>${errorHTML(draft, lang, `${key}.pricingStrategy`)}</fieldset>`;
+      const priceFields = strategy === 'regional'
+        ? regionalPricing(sku, key, index)
+        : `${field(draft, lang, `${key}.listPrice`, { isRequired: true, readonly, label: `${isEnglish ? 'List price' : '售价'}（${currency}）`, hint: t(lang, 'priceHint') })}${field(draft, lang, `${key}.discountPrice`, { readonly, label: `${isEnglish ? 'Discount price' : '折扣价'}（${currency}）` })}`;
+      return `<article class="pgp-sku-card" data-catalog-sku="${esc(sku.skuId)}" data-sku-index="${index}"><header><div><small>${base ? (isEnglish ? 'BASE GAME' : '基础游戏') : 'DLC'}</small><h4>${esc(sku.title || (base ? (isEnglish ? 'Base game' : '基础游戏') : `DLC ${index}`))}</h4><span>${esc(sku.skuId)}</span></div>${base ? '' : `<button type="button" class="pgp-link-danger" data-sku-remove="${index - 1}"${readonly ? ' disabled' : ''}>${isEnglish ? 'Remove' : '删除'}</button>`}</header><div class="pgp-form-grid">${field(draft, lang, `${key}.title`, { isRequired: true, readonly, label: isEnglish ? 'Product name' : '商品名称' })}${buildSelect(sku, key)}<fieldset class="pgp-pricing-model pgp-wide" data-profile-field-wrap="${key}.pricingModel"><legend>${esc(t(lang, 'pricingModel'))} ${required}</legend><div class="pgp-pricing-options">${['free', 'paid'].map(value => `<label class="pgp-pricing-option${sku.pricingModel === value ? ' is-selected' : ''}"><input type="radio" name="sku-pricing-${index}" value="${value}" data-sku-pricing-model="${index}"${sku.pricingModel === value ? ' checked' : ''}${readonly ? ' disabled' : ''}><span><strong>${esc(t(lang, value))}</strong><small>${esc(t(lang, `${value}Hint`))}</small></span></label>`).join('')}</div>${errorHTML(draft, lang, `${key}.pricingModel`)}</fieldset>${paid ? `${strategyFields}${priceFields}${field(draft, lang, `${key}.discountStartAt`, { readonly, label: isEnglish ? 'Discount starts' : '折扣开始时间' })}${field(draft, lang, `${key}.discountEndAt`, { readonly, label: isEnglish ? 'Discount ends' : '折扣结束时间' })}${errorHTML(draft, lang, `${key}.discount`)}` : `<p class="pgp-sku-free-note pgp-wide">${isEnglish ? 'This SKU is free. Price and discount values are cleared when saved.' : '此 SKU 免费提供，售价与折扣信息不会生效。'}</p>`}</div></article>`;
     };
-    return `<section class="pgp-catalog" data-profile-catalog><header class="pgp-module-intro"><div><h3>${isEnglish ? 'Products & SKU' : '商品与 SKU'}</h3><p>${isEnglish ? `Each product links to a build and is priced independently in ${currency}.` : `基础游戏与每个 DLC 都是独立 SKU，分别关联包体并使用 ${currency} 定价。`}</p></div><button type="button" class="pgp-button" data-sku-add>${isEnglish ? 'Add DLC' : '新增 DLC'}</button></header><div class="pgp-sku-list">${skuList(draft).map(renderSku).join('')}</div></section>`;
+    const catalogHint = draft.releaseConfig?.mode === 'domestic'
+      ? (isEnglish ? 'Each SKU links to a build and uses a CNY unified price.' : '基础游戏与每个 DLC 独立关联包体，并设置 CNY 统一价。')
+      : (isEnglish ? 'Each SKU links to a build and can use one unified price or a base price with territory overrides.' : '基础游戏与每个 DLC 独立关联包体，可设置统一价，或设置基准价与少量地区例外价。');
+    return `<section class="pgp-catalog" data-profile-catalog><header class="pgp-module-intro"><div><h3>${isEnglish ? 'Products & SKU' : '商品与 SKU'}</h3><p>${esc(catalogHint)}</p></div><button type="button" class="pgp-button" data-sku-add${readonly ? ' disabled' : ''}>${isEnglish ? 'Add DLC' : '新增 DLC'}</button></header><div class="pgp-sku-list">${skuList(draft).map(renderSku).join('')}</div></section>`;
   }
   function renderQualifications(draft, lang, options = {}) {
     const helper = window.PublisherGameQualifications;
@@ -6502,13 +6713,25 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     const currency = mode === 'domestic' ? 'CNY' : 'USD';
     const skuCards = skuRecords.map((sku, index) => {
       const paid = sku.pricingModel === 'paid';
-      const discountConfigured = Boolean(sku.discountPrice || sku.discountStartAt || sku.discountEndAt);
+      const strategy = mode === 'domestic' ? 'uniform' : sku.pricingStrategy === 'regional' ? 'regional' : 'uniform';
+      const snapshotZones = priceZonesFor({ releaseConfig: release });
+      const snapshotOverrides = snapshotZones.filter(zone => hasPriceOverride(sku, zone.code));
+      const overridePriceText = snapshotOverrides.map(zone => {
+        const price = sku.regionalPrices?.[zone.code] || {};
+        const territory = window.PublisherReleaseRegions.territoryLabel(zone.code, lang);
+        const discount = price.discountPrice ? ` → ${price.discountPrice}` : sku.discountPrice ? ` → ${isEnglish ? 'inherits base discount rate' : '继承基准折扣比例'}` : '';
+        return `${territory}（${zone.currency}）${price.listPrice || '—'}${discount}`;
+      }).join(isEnglish ? '; ' : '；');
+      const regionalPriceText = `${isEnglish ? 'Base' : '基准价'} ${currency} ${sku.listPrice || '—'}${sku.discountPrice ? ` → ${sku.discountPrice}` : ''}${overridePriceText ? `${isEnglish ? '; Overrides: ' : '；例外：'}${overridePriceText}` : ''}${snapshotZones.length > snapshotOverrides.length ? `${isEnglish ? `; ${snapshotZones.length - snapshotOverrides.length} territories inherit base` : `；${snapshotZones.length - snapshotOverrides.length} 个地区继承基准价`}` : ''}`;
+      const discountConfigured = skuDiscountConfigured(sku, { releaseConfig: release });
       const type = index === 0 || sku.type === 'base_game' ? (isEnglish ? 'Base game' : '基础游戏') : 'DLC';
       const pricing = paid ? (isEnglish ? 'One-time purchase' : '单次买断') : sku.pricingModel === 'free' ? (isEnglish ? 'Free' : '免费') : (isEnglish ? 'Not recorded' : '历史未记录');
       const discount = paid && discountConfigured
-        ? `${currency} ${sku.discountPrice || '—'} · ${versionDate(lang, sku.discountStartAt)} – ${versionDate(lang, sku.discountEndAt)}`
+        ? `${strategy === 'regional' ? (isEnglish ? 'Regional discount' : '分区折扣') : `${currency} ${sku.discountPrice || '—'}`} · ${versionDate(lang, sku.discountStartAt)} – ${versionDate(lang, sku.discountEndAt)}`
         : (isEnglish ? 'No discount' : '未设置折扣');
-      return `<article data-version-sku="${esc(sku.skuId || `SKU-${index + 1}`)}"><header><div><span>${esc(type)}</span><strong>${esc(sku.title || type)}</strong></div><small>${esc(sku.skuId || '—')}</small></header><dl>${versionFact(isEnglish ? 'Installation content / build' : '安装内容／包体版本', sku.installContentRef || (isEnglish ? 'Not recorded' : '历史未记录'), true)}${versionFact(isEnglish ? 'Pricing model' : '收费方式', pricing)}${versionFact(isEnglish ? 'List price' : '售价', paid ? `${currency} ${sku.listPrice || '—'}` : '—')}${versionFact(isEnglish ? 'Discount price and period' : '折扣价与折扣期限', discount, true)}</dl></article>`;
+      const strategyLabel = strategy === 'regional' ? (isEnglish ? 'Regional pricing' : '分区定价') : mode === 'domestic' ? (isEnglish ? 'Unified price' : '统一价') : (isEnglish ? 'Global unified price' : '全球统一价');
+      const listPrice = strategy === 'regional' ? regionalPriceText || (isEnglish ? 'No regions recorded' : '未记录分区价格') : `${currency} ${sku.listPrice || '—'}`;
+      return `<article data-version-sku="${esc(sku.skuId || `SKU-${index + 1}`)}"><header><div><span>${esc(type)}</span><strong>${esc(sku.title || type)}</strong></div><small>${esc(sku.skuId || '—')}</small></header><dl>${versionFact(isEnglish ? 'Installation content / build' : '安装内容／包体版本', sku.installContentRef || (isEnglish ? 'Not recorded' : '历史未记录'), true)}${versionFact(isEnglish ? 'Pricing model' : '收费方式', pricing)}${paid ? versionFact(isEnglish ? 'Pricing method' : '定价方式', strategyLabel) : ''}${versionFact(isEnglish ? 'List price' : '售价', paid ? listPrice : '—', strategy === 'regional')}${versionFact(isEnglish ? 'Discount price and period' : '折扣价与折扣期限', discount, true)}</dl></article>`;
     }).join('');
 
     const buildRecords = window.PublisherGameBuilds.createPackages(snapshot.buildPackages || []);
@@ -6945,8 +7168,13 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     if (assetsSection) window.PublisherGameNames.bind(assetsSection, { draft, language: lang, readonly: editingLocked(), hideInput: true, idPrefix: 'profile-assets', title: lang === 'en' ? 'Store detail languages' : '商店资料语言', onChange: () => { const config = JSON.stringify([draft.nameLanguages, draft.defaultNameLanguage]); syncContent(); if (config !== state.assetConfig && !editingLocked()) changed('assets'); state.assetConfig = config; repaint(null, `[data-profile-section="assets"] [data-name-language="${draft.currentNameLanguage}"]`); } });
     window.PublisherReleaseRegions.bind(root, { releaseConfig: draft.releaseConfig, language: lang, onChange: next => {
       if (editingLocked()) return;
-      const hadDomestic = draft.releaseConfig.mode === 'domestic';
+      const previousMode = draft.releaseConfig.mode;
+      const hadDomestic = previousMode === 'domestic';
       draft.releaseConfig = { ...draft.releaseConfig, ...next };
+      if (previousMode && previousMode !== draft.releaseConfig.mode) {
+        skuList(draft).forEach(sku => clearSkuPrice(sku, { resetStrategy: true }));
+        state.overridePicker = { open: false, skuIndex: -1, search: '', selected: [] };
+      }
       draft.releaseRegions = [draft.releaseConfig.mode];
       draft.releaseStatus = draft.releaseConfig.releaseStatus;
       draft.releaseTerritories = window.PublisherReleaseRegions.territoriesFor ? window.PublisherReleaseRegions.territoriesFor(draft.releaseConfig) : [];
@@ -7197,9 +7425,79 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
       const sku = skuList(draft)[Number(input.dataset.skuPricingModel)];
       if (!sku) return;
       sku.pricingModel = input.value;
-      if (input.value === 'free') Object.assign(sku, { listPrice: '', discountPrice: '', discountStartAt: '', discountEndAt: '' });
+      if (input.value === 'free') Object.assign(sku, { pricingStrategy: 'uniform', listPrice: '', discountPrice: '', regionalPrices: {}, discountStartAt: '', discountEndAt: '' });
       changed(`${Number(input.dataset.skuPricingModel) ? `catalog.dlcs.${Number(input.dataset.skuPricingModel) - 1}` : 'catalog.baseGame'}.pricingModel`);
       repaint(null, `[data-sku-pricing-model="${input.dataset.skuPricingModel}"][value="${input.value}"]`);
+    }));
+    root.querySelectorAll('[data-sku-pricing-strategy]').forEach(input => input.addEventListener('change', () => {
+      if (editingLocked()) return;
+      const index = Number(input.dataset.skuPricingStrategy);
+      const sku = skuList(draft)[index];
+      if (!sku) return;
+      sku.pricingStrategy = input.value === 'regional' ? 'regional' : 'uniform';
+      sku.regionalPrices ||= {};
+      const key = index ? `catalog.dlcs.${index - 1}` : 'catalog.baseGame';
+      changed(`${key}.pricingStrategy`);
+      repaint(null, `[data-sku-pricing-strategy="${index}"][value="${sku.pricingStrategy}"]`);
+    }));
+    root.querySelectorAll('[data-sku-override-add]').forEach(button => button.addEventListener('click', () => {
+      if (editingLocked()) return;
+      const index = Number(button.dataset.skuOverrideAdd);
+      state.overridePicker = { open: true, skuIndex: index, search: '', selected: [] };
+      repaint(null, `[data-sku-override-search="${index}"]`);
+    }));
+    root.querySelectorAll('[data-sku-override-cancel]').forEach(button => button.addEventListener('click', () => {
+      const index = Number(button.dataset.skuOverrideCancel);
+      state.overridePicker = { open: false, skuIndex: -1, search: '', selected: [] };
+      repaint(null, `[data-sku-override-add="${index}"]`);
+    }));
+    root.querySelectorAll('[data-sku-override-search]').forEach(input => input.addEventListener('input', () => {
+      if (!state.overridePicker?.open) return;
+      state.overridePicker.search = input.value;
+      const query = input.value.trim().toLowerCase();
+      const picker = input.closest('[data-sku-override-picker]');
+      const options = [...picker.querySelectorAll('[data-sku-override-candidate]')];
+      options.forEach(option => { option.hidden = Boolean(query) && !option.dataset.skuOverrideSearchText.includes(query); });
+      const empty = picker.querySelector('[data-sku-override-empty]');
+      if (empty) empty.hidden = options.some(option => !option.hidden);
+    }));
+    root.querySelectorAll('[data-sku-override-option]').forEach(input => input.addEventListener('change', () => {
+      if (!state.overridePicker?.open) return;
+      const selected = new Set(state.overridePicker.selected || []);
+      if (input.checked) selected.add(input.dataset.skuOverrideOption); else selected.delete(input.dataset.skuOverrideOption);
+      state.overridePicker.selected = [...selected];
+      const confirm = input.closest('[data-sku-override-picker]')?.querySelector('[data-sku-override-confirm]');
+      if (confirm) {
+        confirm.disabled = selected.size === 0;
+        confirm.textContent = `${confirm.dataset.skuOverrideConfirmLabel}${selected.size ? `（${selected.size}）` : ''}`;
+      }
+    }));
+    root.querySelectorAll('[data-sku-override-confirm]').forEach(button => button.addEventListener('click', () => {
+      if (editingLocked()) return;
+      const index = Number(button.dataset.skuOverrideConfirm);
+      const sku = skuList(draft)[index];
+      if (!sku) return;
+      const allowed = new Set(priceZonesFor(draft).map(zone => zone.code));
+      const selected = [...new Set(state.overridePicker?.selected || [])].filter(code => allowed.has(code));
+      if (!selected.length) return;
+      sku.regionalPrices ||= {};
+      selected.forEach(code => { sku.regionalPrices[code] ||= { listPrice: '', discountPrice: '' }; });
+      state.overridePicker = { open: false, skuIndex: -1, search: '', selected: [] };
+      const key = index ? `catalog.dlcs.${index - 1}` : 'catalog.baseGame';
+      changed(`${key}.regionalPrices`);
+      repaint(null, `[data-sku-price-zone="${selected[0]}"] input`);
+    }));
+    root.querySelectorAll('[data-sku-override-remove]').forEach(button => button.addEventListener('click', () => {
+      if (editingLocked()) return;
+      const index = Number(button.dataset.skuOverrideIndex);
+      const sku = skuList(draft)[index];
+      if (!sku?.regionalPrices) return;
+      const code = button.dataset.skuOverrideRemove;
+      delete sku.regionalPrices[code];
+      const key = index ? `catalog.dlcs.${index - 1}` : 'catalog.baseGame';
+      draft.errors = Object.fromEntries(Object.entries(draft.errors).filter(([errorKey]) => !errorKey.startsWith(`${key}.regionalPrices.${code}.`)));
+      changed(`${key}.regionalPrices`);
+      repaint(null, `[data-sku-override-add="${index}"]`);
     }));
     root.querySelector('[data-sku-add]')?.addEventListener('click', () => {
       if (editingLocked()) return;
@@ -7294,7 +7592,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     });
     root.querySelector('[data-profile-save]')?.addEventListener('click', () => action('save'));
     root.querySelector('[data-profile-submit]')?.addEventListener('click', () => action('submit'));
-    if (editingLocked()) root.querySelectorAll('[data-profile-field], [data-profile-array], [data-profile-upload], [data-profile-remove], [data-profile-listed], [data-profile-publication], [data-profile-pricing-model], [data-profile-compliance-ack]').forEach(control => { control.disabled = true; });
+    if (editingLocked()) root.querySelectorAll('[data-profile-field], [data-profile-array], [data-profile-upload], [data-profile-remove], [data-profile-listed], [data-profile-publication], [data-profile-pricing-model], [data-sku-pricing-strategy], [data-sku-override-add], [data-sku-override-remove], [data-sku-override-option], [data-sku-override-confirm], [data-sku-override-cancel], [data-profile-compliance-ack]').forEach(control => { control.disabled = true; });
     const qualificationTargetFor = key => {
       if (!key) return null;
       if (key === 'rightsDeclarationAccepted') return root.querySelector('[data-qualification-declaration]');
@@ -7321,12 +7619,30 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     const scrollSnapshot = state.scrollSnapshot; state.scrollSnapshot = null;
     if (focus) {
       const nameCode = focus === 'gameNameEn' ? 'en' : focus === 'gameNameZh' ? 'zh' : focus.startsWith('gameNames.') ? focus.split('.')[1] : '';
-      const discountKey = focus.endsWith('.discount') ? focus.replace(/\.discount$/, '.discountPrice') : '';
-      const target = (nameCode && root.querySelector(`[data-profile-section="basic"] [data-game-name-input="${nameCode}"]`)) || (focus === 'pricing.model' && root.querySelector('[data-profile-pricing-model]')) || (focus === 'qualifications.activeVersion' && (qualificationTargetFor(qualificationFocus) || root.querySelector('[data-qualification-editor], [data-qualification-cards]'))) || (focus === 'buildPackages.readyFull' && root.querySelector('[data-build-local-open]')) || (focus === 'compliance.antiAddictionAcknowledged' && root.querySelector('[data-profile-compliance-ack]')) || (discountKey && root.querySelector(`[data-profile-field="${discountKey}"]`)) || root.querySelector(`[data-profile-field="${focus}"], [data-profile-upload="${focus}"], [data-profile-array="${focus}"]`) || root.querySelector(`[data-profile-section="${sectionOf(focus)}"]`);
+      const discountKey = focus.endsWith('.discount') ? focus.replace(/\.discount$/, '') : '';
+      const discountTarget = discountKey ? (() => {
+        const sku = get(draft, discountKey);
+        if (sku?.pricingStrategy === 'regional') {
+          if (sku.discountPrice && (!validPrice(sku.discountPrice) || Number(sku.discountPrice) >= Number(sku.listPrice))) {
+            return root.querySelector(`[data-profile-field="${discountKey}.discountPrice"]`);
+          }
+          const zone = activeOverrideZonesFor(sku, draft).find(item => {
+            const price = sku.regionalPrices?.[item.code] || {};
+            return price.discountPrice && (!validPrice(price.discountPrice) || Number(price.discountPrice) >= Number(price.listPrice));
+          });
+          if (zone) return root.querySelector(`[data-profile-field="${discountKey}.regionalPrices.${zone.code}.discountPrice"]`);
+        } else if (sku) return root.querySelector(`[data-profile-field="${discountKey}.discountPrice"]`);
+        const start = new Date(sku?.discountStartAt).getTime();
+        const end = new Date(sku?.discountEndAt).getTime();
+        return !Number.isFinite(start) || start >= end
+          ? root.querySelector(`[data-profile-field="${discountKey}.discountStartAt"]`)
+          : root.querySelector(`[data-profile-field="${discountKey}.discountEndAt"]`);
+      })() : null;
+      const target = (nameCode && root.querySelector(`[data-profile-section="basic"] [data-game-name-input="${nameCode}"]`)) || (focus === 'pricing.model' && root.querySelector('[data-profile-pricing-model]')) || (focus === 'qualifications.activeVersion' && (qualificationTargetFor(qualificationFocus) || root.querySelector('[data-qualification-editor], [data-qualification-cards]'))) || (focus === 'buildPackages.readyFull' && root.querySelector('[data-build-local-open]')) || (focus === 'compliance.antiAddictionAcknowledged' && root.querySelector('[data-profile-compliance-ack]')) || discountTarget || root.querySelector(`[data-profile-field="${focus}"], [data-profile-upload="${focus}"], [data-profile-array="${focus}"]`) || root.querySelector(`[data-profile-section="${sectionOf(focus)}"]`);
       focusTarget(target);
     } else if (scrollSnapshot) restoreScroll(scrollSnapshot);
   }
-  window.PublisherGameProfile = { createDraft, render, bind, validate, completion, displayName };
+  window.PublisherGameProfile = { createDraft, render, bind, validate, completion, displayName, submissionSnapshot };
 })();
 
 /* 02 本地资料保存：文件随草稿存储，提交记录与可编辑草稿分开保存。 */
@@ -7377,7 +7693,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
           saved.submissionId = 'REVIEW-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase();
           saved.currentReleaseReview = { submissionId: saved.submissionId, status: 'reviewing', submittedAt: savedAt };
           saved.releaseSubmissions = [...record.draft.releaseSubmissions, { id: saved.submissionId, submittedAt: savedAt, submitter: '当前开发者', status: 'reviewing', qualificationVersionId: saved.qualifications?.activeVersion?.versionId || saved.qualifications?.activeVersion?.id || '' }];
-          const snapshot = structuredClone(saved);
+          const snapshot = window.PublisherGameProfile.submissionSnapshot(saved);
           if (snapshot.pricing) {
             if (snapshot.pricing.model === 'free' || !snapshot.releaseRegions?.includes('global')) snapshot.pricing.globalPrice = '';
             if (snapshot.pricing.model === 'free' || !snapshot.releaseRegions?.includes('domestic')) snapshot.pricing.domesticPrice = '';
@@ -7881,6 +8197,12 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   const validPrice = value => /^\d+(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) && Number.isFinite(Number(value)) && Number(value) > 0;
   const isV25 = draft => Number(draft?.schemaVersion) >= 2 && Boolean(draft?.releaseConfig && draft?.catalog && draft?.gameProfileDraft);
   const statusLabels = { reviewing: '待审核', approved: '已通过', rejected: '已驳回', withdrawn: '已撤销', unavailable: '历史记录' };
+  const fallbackCurrencies = Object.freeze({
+    US: 'USD', CN: 'CNY', HK: 'HKD', MO: 'MOP', TW: 'TWD', JP: 'JPY', KR: 'KRW', GB: 'GBP',
+    DE: 'EUR', FR: 'EUR', ES: 'EUR', IT: 'EUR', NL: 'EUR', CA: 'CAD', AU: 'AUD', BR: 'BRL',
+    TR: 'TRY', RU: 'RUB', IN: 'INR', ID: 'IDR', TH: 'THB', MX: 'MXN', PH: 'PHP', SG: 'SGD',
+    IQ: 'IQD', PK: 'PKR', CO: 'COP', EG: 'EGP', DZ: 'DZD', AR: 'ARS', VN: 'VND', VE: 'VES',
+  });
 
   const open = async () => {
     if (!global.PublisherStorageSchema?.open) throw new Error('publisher-storage-schema-unavailable');
@@ -7923,29 +8245,68 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   }
 
   const currencyFor = draft => releaseMode(draft) === 'domestic' ? 'CNY' : 'USD';
+  const territoryCurrency = code => global.PublisherReleaseRegions?.currencyForTerritory?.(code) || fallbackCurrencies[code] || 'USD';
   const money = value => validPrice(value) ? Number(value).toFixed(2) : present(value) ? `格式无效：${String(value).trim()}` : '未填写';
+  const moneyWithCurrency = (currency, value) => `${currency} ${money(value)}`;
+  const normalizePrice = value => ({ listPrice: String(value?.listPrice ?? ''), discountPrice: String(value?.discountPrice ?? '') });
+  function normalizeRegionalPrices(source, draft) {
+    const entries = source && typeof source === 'object' && !Array.isArray(source) ? Object.entries(source) : [];
+    const raw = Object.fromEntries(entries.map(([code, value]) => [String(code).toUpperCase(), normalizePrice(value)]));
+    const normalized = Object.fromEntries(Object.entries(raw).filter(([code]) => /^[A-Z]{2}$/.test(code)));
+    territoryCodes(draft).forEach(code => {
+      const legacy = raw[territoryCurrency(code)];
+      if (!normalized[code] && legacy) normalized[code] = { ...legacy };
+    });
+    return normalized;
+  }
+  const pricingStrategyFor = (sku, draft) => releaseMode(draft) === 'domestic' ? 'uniform' : sku?.pricingStrategy === 'regional' ? 'regional' : 'uniform';
+  const activeRegionalPrices = (sku, draft) => {
+    if (sku?.pricingModel !== 'paid' || pricingStrategyFor(sku, draft) !== 'regional') return {};
+    const normalized = normalizeRegionalPrices(sku?.regionalPrices, draft);
+    return Object.fromEntries(territoryCodes(draft).filter(code => Object.prototype.hasOwnProperty.call(normalized, code)).map(code => [code, normalized[code]]));
+  };
   function skuRows(draft) {
-    if (isV25(draft)) return [draft.catalog?.baseGame, ...list(draft.catalog?.dlcs)].filter(Boolean).map((sku, index) => ({
-      ...sku,
-      type: index === 0 ? 'base_game' : 'dlc',
-      title: sku.title || (index === 0 ? '基础游戏' : `DLC ${index}`),
-    }));
+    if (isV25(draft)) return [draft.catalog?.baseGame, ...list(draft.catalog?.dlcs)].filter(Boolean).map((sku, index) => {
+      const normalized = {
+        ...sku,
+        type: index === 0 ? 'base_game' : 'dlc',
+        title: sku.title || (index === 0 ? '基础游戏' : `DLC ${index}`),
+        pricingStrategy: pricingStrategyFor(sku, draft),
+        regionalPrices: normalizeRegionalPrices(sku.regionalPrices, draft),
+      };
+      if (normalized.pricingModel !== 'paid') Object.assign(normalized, { pricingStrategy: 'uniform', listPrice: '', discountPrice: '', discountStartAt: '', discountEndAt: '', regionalPrices: {} });
+      if (releaseMode(draft) === 'domestic' || normalized.pricingStrategy !== 'regional') normalized.regionalPrices = {};
+      return normalized;
+    });
     if (!Object.prototype.hasOwnProperty.call(draft || {}, 'pricing')) return [];
     const model = draft.pricing?.model;
     const amount = releaseMode(draft) === 'domestic' ? draft.pricing?.domesticPrice : draft.pricing?.globalPrice;
-    return [{ skuId: 'LEGACY-BASE', type: 'base_game', title: '基础游戏', installContentRef: '', pricingModel: model, listPrice: amount, legacy: true }];
+    return [{ skuId: 'LEGACY-BASE', type: 'base_game', title: '基础游戏', installContentRef: '', pricingModel: model, pricingStrategy: 'uniform', listPrice: amount, discountPrice: '', discountStartAt: '', discountEndAt: '', regionalPrices: {}, legacy: true }];
+  }
+
+  function pricingSnapshot(draft) {
+    const codes = territoryCodes(draft);
+    return skuRows(draft).map(sku => ({
+      ...sku,
+      baseCurrency: currencyFor(draft),
+      territoryCodes: [...codes],
+      pricingStrategy: pricingStrategyFor(sku, draft),
+      regionalPrices: activeRegionalPrices(sku, draft),
+    }));
   }
 
   function priceSummary(draft) {
-    const rows = skuRows(draft);
+    const rows = pricingSnapshot(draft);
     if (!rows.length) return '未记录（历史提交）';
-    const currency = currencyFor(draft);
     return rows.map((sku, index) => {
       const prefix = index === 0 ? '基础游戏' : `DLC·${sku.title || sku.skuId || index}`;
       if (sku.pricingModel === 'free') return `${prefix} 免费`;
       if (sku.pricingModel !== 'paid') return `${prefix} 未配置`;
-      const discount = present(sku.discountPrice) ? ` → ${money(sku.discountPrice)}` : '';
-      return `${prefix} ${currency} ${money(sku.listPrice)}${discount}`;
+      const discount = present(sku.discountPrice) ? ` → ${moneyWithCurrency(sku.baseCurrency, sku.discountPrice)}` : '';
+      const base = `${moneyWithCurrency(sku.baseCurrency, sku.listPrice)}${discount}`;
+      if (sku.pricingStrategy !== 'regional') return `${prefix} ${base}`;
+      const overrideCount = Object.keys(sku.regionalPrices).length;
+      return `${prefix} 分区定价 · 基准 ${base} · ${overrideCount} 个例外价`;
     }).join('；');
   }
 
@@ -7963,11 +8324,21 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     return versions.find(item => [item?.id, item?.versionId].includes(id)) || draft.qualifications?.activeVersion || null;
   }
 
-  const discountIssues = sku => {
-    const fields = [sku.discountPrice, sku.discountStartAt, sku.discountEndAt];
-    if (fields.every(value => !present(value))) return [];
-    if (!fields.every(present)) return ['折扣价、折扣开始和结束时间需同时填写。'];
-    if (!validPrice(sku.discountPrice) || !validPrice(sku.listPrice) || Number(sku.discountPrice) >= Number(sku.listPrice)) return ['折扣价必须大于 0 且低于售价。'];
+  const discountIssues = (sku, draft) => {
+    const regional = pricingStrategyFor(sku, draft) === 'regional';
+    const overrides = regional ? activeRegionalPrices(sku, draft) : {};
+    const discountPrices = [sku.discountPrice, ...Object.values(overrides).map(price => price.discountPrice)];
+    const hasDiscount = discountPrices.some(present);
+    const hasTime = present(sku.discountStartAt) || present(sku.discountEndAt);
+    if (!hasDiscount && !hasTime) return [];
+    if (!hasDiscount || !present(sku.discountStartAt) || !present(sku.discountEndAt)) return ['折扣价、折扣开始和结束时间需同时填写。'];
+    if (present(sku.discountPrice) && (!validPrice(sku.discountPrice) || !validPrice(sku.listPrice) || Number(sku.discountPrice) >= Number(sku.listPrice))) return ['折扣价必须大于 0 且低于售价。'];
+    for (const [code, price] of Object.entries(overrides)) {
+      if (present(price.discountPrice) && (!validPrice(price.discountPrice) || !validPrice(price.listPrice) || Number(price.discountPrice) >= Number(price.listPrice))) {
+        const label = global.PublisherReleaseRegions?.territoryLabel?.(code, 'zh') || code;
+        return [`${label}（${code}）例外折扣价必须大于 0 且低于售价。`];
+      }
+    }
     const startsAt = Date.parse(sku.discountStartAt);
     const endsAt = Date.parse(sku.discountEndAt);
     if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || startsAt >= endsAt) return ['折扣期限无效，结束时间必须晚于开始时间。'];
@@ -8006,13 +8377,28 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 
     const skus = skuRows(draft);
     if (!draft.catalog?.baseGame) issues.push('缺少基础游戏 SKU。');
-    skus.forEach(sku => {
+    skus.forEach((sku, index) => {
       const title = sku.title || sku.skuId || 'SKU';
+      const rawSku = index === 0 ? draft.catalog?.baseGame : list(draft.catalog?.dlcs)[index - 1];
       if (!present(sku.installContentRef)) issues.push(`${title} 未关联安装内容／包体版本。`);
       if (!['free', 'paid'].includes(sku.pricingModel)) issues.push(`${title} 未选择免费或单次买断。`);
       if (sku.pricingModel === 'paid') {
+        if (mode === 'global' && present(rawSku?.pricingStrategy) && !['uniform', 'regional'].includes(rawSku.pricingStrategy)) issues.push(`${title} 未选择全球统一价或分区定价。`);
+        if (mode === 'domestic' && (rawSku?.pricingStrategy === 'regional' || Object.keys(normalizeRegionalPrices(rawSku?.regionalPrices, draft)).length)) issues.push(`${title} 中国大陆发行不允许分区定价。`);
         if (!validPrice(sku.listPrice)) issues.push(`${title} 售价无效。`);
-        discountIssues(sku).forEach(issue => issues.push(`${title} ${issue}`));
+        if (pricingStrategyFor(sku, draft) === 'regional') {
+          const normalizedPrices = normalizeRegionalPrices(sku.regionalPrices, draft);
+          const selectedCodes = territoryCodes(draft);
+          const outsideCodes = Object.keys(normalizedPrices).filter(code => !selectedCodes.includes(code));
+          if (outsideCodes.length) issues.push(`${title} 地区例外价包含非当前发行范围：${outsideCodes.join('、')}。`);
+          Object.entries(activeRegionalPrices(sku, draft)).forEach(([code, price]) => {
+            if (!validPrice(price.listPrice)) {
+              const label = global.PublisherReleaseRegions?.territoryLabel?.(code, 'zh') || code;
+              issues.push(`${title} ${label}（${code}）例外售价无效。`);
+            }
+          });
+        }
+        discountIssues(sku, draft).forEach(issue => issues.push(`${title} ${issue}`));
       }
     });
 
@@ -8193,6 +8579,11 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     releaseStatus,
     releaseStatusLabel,
     skuRows,
+    pricingSnapshot,
+    pricingStrategyFor,
+    normalizeRegionalPrices,
+    activeRegionalPrices,
+    territoryCurrency,
     priceSummary,
     qualificationVersionId,
     qualificationVersion,
@@ -8325,18 +8716,41 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
       return `<div class="pgr-legacy-note">历史 V2.4 提交：按提交时原字段只读展示，不补写 V2.5 结构。</div>${localePicker(locale)}<dl class="pgr-fields">${field('后台项目名称', row.summary.projectName, true, { emphasis: true })}${field('商店游戏名称', locale.name, true)}${field('一句话介绍', locale.content.tagline, true)}${field('完整介绍', locale.content.description, true)}${field('开发者的话', locale.content.developerWords, true)}${field('游戏类型', list(draft.genres).join('、'))}${field('支持平台', list(draft.platforms).join('、'))}${field('主体关系', relationshipText[draft.relationship] || draft.relationship)}${field('开发商', draft.developerName)}</dl><div class="pgr-subsection"><h3>游戏素材</h3>${assetSections(locale)}</div>`;
     };
 
-    const skuPrice = (sku, currency) => {
-      if (sku.pricingModel === 'free') return '免费';
-      if (sku.pricingModel !== 'paid') return '未配置';
-      const base = `${currency} ${global.PublisherGameReviewStore.validPrice(sku.listPrice) ? Number(sku.listPrice).toFixed(2) : sku.listPrice || '未填写'}`;
-      return present(sku.discountPrice) ? `${base} → ${currency} ${global.PublisherGameReviewStore.validPrice(sku.discountPrice) ? Number(sku.discountPrice).toFixed(2) : sku.discountPrice}` : base;
+    const priceValue = (currency, value) => `${currency} ${global.PublisherGameReviewStore.validPrice(value) ? Number(value).toFixed(2) : present(value) ? value : '未填写'}`;
+
+    const renderSkuPricing = (sku, index) => {
+      const kind = index === 0 ? '基础游戏' : 'DLC';
+      const title = sku.title || sku.skuId || `DLC ${index}`;
+      const header = `<header><span>${kind}</span><strong>${esc(title)}</strong><small>${esc(sku.skuId || '—')}</small></header>`;
+      const install = field('安装内容／包体版本', sku.installContentRef || (sku.legacy ? '历史提交未记录' : ''), true);
+      if (sku.pricingModel === 'free') {
+        return `<article class="pgr-sku pricing-snapshot" data-game-review-sku="${esc(sku.skuId || index)}" data-pricing-snapshot data-pricing-strategy="free">${header}<dl class="pgr-fields pricing-facts">${install}${field('收费方式', '免费')}</dl></article>`;
+      }
+      if (sku.pricingModel !== 'paid') {
+        return `<article class="pgr-sku pricing-snapshot" data-game-review-sku="${esc(sku.skuId || index)}" data-pricing-snapshot data-pricing-strategy="unconfigured">${header}<dl class="pgr-fields pricing-facts">${install}${field('收费方式', '历史未记录')}</dl></article>`;
+      }
+      const regional = sku.pricingStrategy === 'regional';
+      const baseCurrency = sku.baseCurrency || (sku.territoryCodes?.length === 1 && sku.territoryCodes[0] === 'CN' ? 'CNY' : 'USD');
+      const overrides = regional ? Object.entries(sku.regionalPrices || {}) : [];
+      const inherited = Math.max(0, list(sku.territoryCodes).length - overrides.length);
+      const discount = present(sku.discountPrice) ? `${priceValue(baseCurrency, sku.listPrice)} → ${priceValue(baseCurrency, sku.discountPrice)}` : priceValue(baseCurrency, sku.listPrice);
+      const period = sku.discountStartAt || sku.discountEndAt ? `${time(sku.discountStartAt)} 至 ${time(sku.discountEndAt)}` : '未设置';
+      const pricingFacts = regional
+        ? `${field('收费方式', '收费（单次买断）')}${field('定价方式', '分区定价')}${field('基准售价／折扣价', discount)}${field('发行地区', `${list(sku.territoryCodes).length} 个`)}${field('继承基准价地区', `${inherited} 个`)}${field('折扣期限', period, true)}`
+        : `${field('收费方式', '收费（单次买断）')}${field('定价方式', baseCurrency === 'CNY' ? '统一价' : '全球统一价')}${field('售价／折扣价', discount)}${field('折扣期限', period, true)}`;
+      const overrideRows = overrides.map(([code, price]) => {
+        const label = global.PublisherReleaseRegions?.territoryLabel?.(code, 'zh') || code;
+        const currency = global.PublisherGameReviewStore.territoryCurrency(code);
+        const discountValue = present(price.discountPrice) ? priceValue(currency, price.discountPrice) : present(sku.discountPrice) ? '继承基准折扣比例' : '未设置';
+        return `<div class="pricing-override-row" data-pricing-override data-game-review-price-override="${esc(code)}" data-territory-code="${esc(code)}"><strong>${esc(label)}（${esc(code)}）</strong><span>售价 ${esc(priceValue(currency, price.listPrice))}</span><span>折扣价 ${esc(discountValue)}</span></div>`;
+      }).join('');
+      return `<article class="pgr-sku pricing-snapshot" data-game-review-sku="${esc(sku.skuId || index)}" data-pricing-snapshot data-pricing-strategy="${regional ? 'regional' : 'uniform'}">${header}<dl class="pgr-fields pricing-facts">${install}${pricingFacts}</dl>${overrideRows ? `<div class="pricing-overrides"><h4>例外地区价</h4>${overrideRows}</div>` : ''}</article>`;
     };
 
     const renderCatalog = draft => {
-      const rows = global.PublisherGameReviewStore.skuRows(draft);
-      const currency = global.PublisherGameReviewStore.releaseMode(draft) === 'domestic' ? 'CNY' : 'USD';
+      const rows = global.PublisherGameReviewStore.pricingSnapshot(draft);
       if (!rows.length) return '<p class="pgr-muted">历史提交未记录收费设置。</p>';
-      return `<div class="pgr-sku-list" data-game-review-pricing>${rows.map((sku, index) => `<article class="pgr-sku" data-game-review-sku="${esc(sku.skuId || index)}"><header><span>${index === 0 ? '基础游戏' : 'DLC'}</span><strong>${esc(sku.title || sku.skuId || `DLC ${index}`)}</strong><small>${esc(sku.skuId || '—')}</small></header><dl class="pgr-fields">${field('安装内容／包体版本', sku.installContentRef || (sku.legacy ? '历史提交未记录' : ''), true)}${field('收费方式', sku.pricingModel === 'free' ? '免费' : sku.pricingModel === 'paid' ? '收费（单次买断）' : '未配置')}${field('售价／折扣价', skuPrice(sku, currency))}${sku.pricingModel === 'paid' && (sku.discountStartAt || sku.discountEndAt) ? field('折扣期限', `${time(sku.discountStartAt)} 至 ${time(sku.discountEndAt)}`, true) : ''}</dl></article>`).join('')}</div>`;
+      return `<div class="pgr-sku-list pricing-snapshot-list" data-game-review-pricing>${rows.map(renderSkuPricing).join('')}</div>`;
     };
 
     const territoryGroups = draft => {
@@ -8984,7 +9398,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       developerName: stored.developerName ?? game.developerName ?? createData.developerName ?? (relationship === 'publisher' ? '' : '星海互动'),
       platforms,
       releasePlan: stored.releasePlan || game.releasePlan || createData.releasePlan || 'launch',
-      languages: Array.isArray(stored.languages) ? stored.languages : ['简体中文', 'English'],
+      languages: Array.isArray(stored.languages) ? stored.languages : Array.isArray(createData.languages) ? createData.languages : projectOnly ? ['English'] : ['简体中文', 'English'],
       requirements: { ...Object.fromEntries(platforms.map(platform => [platform, publisherProfileDefaultRequirement(platform)])), ...(stored.requirements || {}) },
       assets: { ...defaultAssets, ...(stored.assets || {}), screenshots: Array.isArray(stored.assets?.screenshots) ? stored.assets.screenshots : defaultAssets.screenshots },
       qualifications: { ...defaultQualifications, ...(stored.qualifications || {}) },
@@ -10181,15 +10595,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const consoleLink = account && role === 'developer'
       ? `<button class="top-console-button" type="button" data-portal-action="go-console" hidden>${icon('chart')}<span>${isEnglish ? 'Console' : '控制台'}</span></button>`
       : '';
-    const portalSwitch = !redacted && !isLogin && account
-      ? `<button class="top-portal-switch" type="button" data-portal-action="switch-portal-side">${icon('chart')}<span>${role === 'operations' ? '切换开发者前台' : (isEnglish ? 'Switch to operations' : '切换运营后台')}</span></button>`
-      : '';
-    const developerTools = `${consoleLink}${help}${languageSwitch}${portalSwitch}${accountBlock}${login}`;
-    const operationsTools = `${accountBlock}${portalSwitch}${help}`;
+    const developerTools = `${consoleLink}${help}${languageSwitch}${accountBlock}${login}`;
+    const operationsTools = `${accountBlock}${help}`;
     const isPublisherWorkspace = module?.id === '02' && role === 'developer';
     const brandTitle = role === 'operations' ? 'gamesir-dashboard' : isPublisherWorkspace ? (isEnglish ? 'PC Publishing' : 'PC 发行平台') : '盖世游戏';
     const brandSubtitle = role === 'operations' ? '运营管理后台' : isPublisherWorkspace ? (isEnglish ? 'Developer Center' : '开发者中心') : (isEnglish && role === 'developer' ? 'Developer Platform' : '开发者平台');
     return `<header class="top-bar"><button class="brand-block" type="button" data-portal-action="home" aria-label="${role === 'operations' ? '返回发行平台后台首页' : (isEnglish ? 'Back to developer home' : '返回开发者首页')}"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">${brandTitle}</div><div class="brand-subtitle">${brandSubtitle}</div></div></button>${context}${role === 'developer' ? developerTools : operationsTools}</header>`;
+  };
+
+  const renderPortalDemoSwitch = ({ portalData, role, redacted, isLogin, language }) => {
+    const account = redacted || isLogin ? null : portalData.accounts?.[role];
+    if (!account) return '';
+    const isEnglish = language === 'en';
+    const fullLabel = role === 'operations' ? '切换开发者前台' : (isEnglish ? 'Switch to operations' : '切换运营后台');
+    const shortLabel = role === 'operations' ? '开发者前台' : (isEnglish ? 'Operations' : '运营后台');
+    const assistiveLabel = role === 'operations' ? 'Demo 工具：切换开发者前台' : (isEnglish ? 'Demo tool: switch to operations' : 'Demo 工具：切换运营后台');
+    return `<button class="portal-demo-switch" type="button" data-portal-action="switch-portal-side" aria-label="${assistiveLabel}" title="${assistiveLabel}"><span class="portal-demo-switch__badge" aria-hidden="true">Demo</span>${icon('chart')}<span class="portal-demo-switch__label portal-demo-switch__label--full" aria-hidden="true">${fullLabel}</span><span class="portal-demo-switch__label portal-demo-switch__label--short" aria-hidden="true">${shortLabel}</span></button>`;
   };
 
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
@@ -10337,7 +10758,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
     const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}`;
     const showContext = !isLogin && !isOnboarding && !isConfiguration && !showPlatformConsole && !isPublisherWorkspace && route.id !== 'P01-08';
-    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main></div>`;
+    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main>${renderPortalDemoSwitch({ portalData, role, redacted, isLogin, language })}</div>`;
   };
   namespace.shell = { roleMeta, publicTitle, hashFor, renderBusiness };
 })(window.GameHubDeveloperPortal);

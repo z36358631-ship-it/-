@@ -7,9 +7,9 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
 const evidence = path.resolve('tests/developer-backend/evidence/game-create');
-const url = pathToFileURL(path.resolve('demos/开发者后台一期/02-CDKEY商品与供给demo.html')).href + '#/P02-01';
-const workspaceKey = 'gamehub-developer-publisher-workspace-v1';
+const url = pathToFileURL(path.resolve('demos/开发者后台一期/02-游戏创建与发行demo.html')).href + '#/P02-01';
 let browser;
+let accountSerial = 0;
 before(async () => {
   fs.mkdirSync(evidence, { recursive: true });
   browser = await chromium.launch({ headless: true, executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', args: ['--allow-file-access-from-files'] });
@@ -18,6 +18,29 @@ after(async () => { await browser?.close(); });
 async function open(width = 1440, height = 1000) {
   const page = await browser.newPage({ viewport: { width, height } });
   await page.goto(url);
+  const accountKey = `game-create:test:${++accountSerial}`;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await page.evaluate(key => {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.name = '';
+      sessionStorage.setItem('gamehub-developer-session-v1', JSON.stringify({ authenticated: true, accountKey: key }));
+      localStorage.setItem('gamehub-developer-account-states-v1', JSON.stringify({
+        [key]: {
+          registration: { accountTier: 'registered', registeredAt: '2026-09-10 10:00', consoleTab: 'games' },
+          qualification: { status: 'unsubmitted', revision: 0, step: 0, view: 'intro', form: {}, history: [], submissions: [] },
+        },
+      }));
+      history.replaceState(null, '', '#/P02-01');
+    }, accountKey);
+    await page.reload({ waitUntil: 'load' });
+    try {
+      await page.locator('[data-publisher-workspace][data-publisher-access="personal"]').waitFor({ timeout: 15000 });
+      break;
+    } catch (error) {
+      if (attempt === 2) throw error;
+    }
+  }
   await page.getByRole('button', { name: '添加游戏', exact: true }).click();
   await page.locator('[data-publisher-create]').waitFor();
   return page;
@@ -125,14 +148,13 @@ test('返回游戏管理后再次创建保留全部草稿字段', async () => {
   } finally { await page.close(); }
 });
 
-test('三种发布计划均可创建唯一后台项目与 App ID，商店名称保持为空', async () => {
+test('三种发布计划均可创建唯一后台项目与 Game ID，App ID 和商店名称保持待配置', async () => {
   const page = await open();
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   try {
     const keys = new Set();
     const ids = new Set();
-    const appIds = new Set();
     for (const [index, plan] of ['reservation', 'test', 'launch'].entries()) {
       const name = `Ocean Trail ${index + 1}`;
       if (index) {
@@ -151,22 +173,23 @@ test('三种发布计划均可创建唯一后台项目与 App ID，商店名称�
       assert.match(key, /^created-GAME-/);
       assert.equal(keys.has(key), false);
       keys.add(key);
-      const game = await page.evaluate(({ workspaceKey, key }) => JSON.parse(localStorage.getItem(workspaceKey)).createdGames.find(item => item.gameKey === key), { workspaceKey, key });
+      const game = await page.evaluate(key => {
+        const accountKey = window.PublisherAccountContext.currentAccountKey(sessionStorage);
+        return window.PublisherAccountContext.loadWorkspace(localStorage, accountKey, 'publisher-console').createdGames.find(item => item.gameKey === key);
+      }, key);
       assert.equal(game.name, name);
       assert.equal(game.projectName, name);
       assert.equal(game.releasePlan, plan);
       assert.equal(Object.hasOwn(game, 'releaseRegions'), false);
       assert.equal(game.createData.projectName, name);
-      for (const field of ['releaseRegions', 'gameNames', 'nameLanguages', 'defaultNameLanguage', 'currentNameLanguage', 'gameNameEn', 'gameNameZh']) {
+      for (const field of ['releaseRegions', 'gameNames', 'nameLanguages', 'defaultNameLanguage', 'currentNameLanguage', 'gameNameEn', 'gameNameZh', 'storeLocales', 'localizedContent', 'localizedAssets', 'assetLanguageSettings', 'languages']) {
         assert.equal(Object.hasOwn(game.createData, field), false, `createData must not include ${field}`);
       }
       assert.deepEqual(game.genres, ['策略', '冒险']);
       assert.equal(ids.has(game.gameId), false);
-      assert.equal(appIds.has(game.appId), false);
       assert.match(game.gameId, /^GAME-[A-Z0-9]+$/);
-      assert.match(game.appId, /^APP-[A-Z0-9]+$/);
+      assert.equal(game.appId, '');
       ids.add(game.gameId);
-      appIds.add(game.appId);
       const storeNames = await page.locator('[data-publisher-profile] [data-game-name-input]').evaluateAll(inputs => inputs.map(input => input.value));
       assert.ok(storeNames.length > 0, 'The post-creation game profile must expose store name fields');
       assert.deepEqual(storeNames, storeNames.map(() => ''), 'The project name must not prefill any store name');
@@ -289,10 +312,10 @@ test('创建阶段仅处理后台项目名称，不渲染商店多语言字段',
     const create = page.locator('[data-publisher-create]');
     assert.equal(await page.locator('[data-create-project-name]').count(), 1);
     assert.equal(await create.locator('[data-game-names], [data-game-name-input], [data-name-language], [data-name-settings], [data-name-dialog]').count(), 0);
-    assert.doesNotMatch(await create.innerText(), /管理多语言|多语言设置|Manage languages|Language settings/);
+    assert.doesNotMatch(await create.innerText(), /管理多语言|多语言设置|Manage languages|Language settings|简体中文|英语|English/);
     const draft = await page.evaluate(() => window.PublisherGameCreate.createDraft());
     assert.equal(draft.projectName, '');
-    for (const field of ['releaseRegions', 'gameNames', 'nameLanguages', 'defaultNameLanguage', 'currentNameLanguage', 'gameName', 'gameNameEn', 'gameNameZh']) {
+    for (const field of ['releaseRegions', 'gameNames', 'nameLanguages', 'defaultNameLanguage', 'currentNameLanguage', 'gameName', 'gameNameEn', 'gameNameZh', 'storeLocales', 'localizedContent', 'localizedAssets', 'assetLanguageSettings', 'languages']) {
       assert.equal(Object.hasOwn(draft, field), false, `Create draft must not include ${field}`);
     }
     await page.locator('[data-portal-action="toggle-interface-language"]').click();
@@ -302,6 +325,26 @@ test('创建阶段仅处理后台项目名称，不渲染商店多语言字段',
     assert.deepEqual(errors, []);
   } catch (error) { await failureEvidence(page, 'project-only-create-failure'); throw error; }
   finally { await page.close(); }
+});
+
+test('旧项目对象存在 projectName 时始终以后台项目名展示', async () => {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  try {
+    await page.goto(url);
+    const game = await page.evaluate(() => window.GameHubDeveloperPortal.templates.publisherGame({
+      createdGames: [{
+        gameKey: 'created-legacy-project',
+        projectName: '旧版后台项目名',
+        name: '被商店名称污染的旧值',
+        profileDraft: { gameNames: { en: 'English Store Name' }, platforms: ['Windows'] },
+      }],
+      publicationDrafts: {},
+      profileDrafts: {},
+      deletedGameKeys: [],
+    }, 'created-legacy-project'));
+    assert.equal(game.projectName, '旧版后台项目名');
+    assert.equal(game.name, '旧版后台项目名');
+  } finally { await page.close(); }
 });
 async function position(page, selector) {
   return page.locator(selector).evaluate(element => {
@@ -331,15 +374,17 @@ for (const [width, height] of [[1440, 650], [390, 844]]) {
     page.on('pageerror', error => errors.push(error.message));
     try {
       await page.locator('.pgc-plan-grid').evaluate(element => element.scrollIntoView({ block: 'center' }));
-      for (const plan of ['reservation', 'test', 'launch', 'reservation']) {
-        const selector = `.pgc-plan-card--${plan}`;
-        const before = await position(page, selector);
-        assert.ok(before.scrollers.some(item => item.top > 100) || before.windowY > 100, 'The plan must be selected below the top of the form');
-        await choosePlan(page, plan);
-        const after = await position(page, selector); measures.push({ action: `click ${plan}`, before, after });
-        preserved(before, after, `${width}px click ${plan}`);
-        assert.equal(await page.locator('.pgc-plan-card.is-selected').count(), 1);
-        assert.equal(await page.locator(`[data-create-release-plan="${plan}"]`).evaluate(input => input === document.activeElement), true);
+      for (let round = 1; round <= 5; round += 1) {
+        for (const plan of ['reservation', 'test', 'launch', 'reservation']) {
+          const selector = `.pgc-plan-card--${plan}`;
+          const before = await position(page, selector);
+          assert.ok(before.scrollers.some(item => item.top > 100) || before.windowY > 100, 'The plan must be selected below the top of the form');
+          await choosePlan(page, plan);
+          const after = await position(page, selector); measures.push({ action: `round ${round} click ${plan}`, before, after });
+          preserved(before, after, `${width}px round ${round} click ${plan}`);
+          assert.equal(await page.locator('.pgc-plan-card.is-selected').count(), 1);
+          assert.equal(await page.locator(`[data-create-release-plan="${plan}"]`).evaluate(input => input === document.activeElement), true);
+        }
       }
       await page.locator('[data-create-release-plan="reservation"]').evaluate(input => input.focus({ preventScroll: true }));
       for (const [key, plan] of [['ArrowRight', 'test'], ['ArrowRight', 'launch'], ['ArrowLeft', 'test'], ['ArrowLeft', 'reservation']]) {
@@ -361,7 +406,11 @@ for (const [width, height] of [[1440, 650], [390, 844]]) {
       assert.deepEqual(errors, []);
       fs.writeFileSync(path.join(evidence, `plans-stay-${width}.json`), JSON.stringify({ measures, beforeSubmit, afterSubmit }, null, 2), 'utf8');
       await page.screenshot({ path: path.join(evidence, `create-missing-focus-${width}.png`) });
-    } catch (error) { await failureEvidence(page, `plans-position-failure-${width}`); throw error; }
+    } catch (error) {
+      await failureEvidence(page, `plans-position-failure-${width}`);
+      fs.writeFileSync(path.join(evidence, `plans-position-failure-${width}.json`), JSON.stringify(measures, null, 2), 'utf8');
+      throw error;
+    }
     finally { await page.close(); }
   });
 }

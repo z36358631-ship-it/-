@@ -191,9 +191,52 @@
 .pgp-pricing-prices { margin-top: 23px; }
 .pgp-pricing-prices > .pgp-field { min-width: 0; }
 .pgp-pricing-region-hint { margin-top: 18px; }
+.pgp-pricing-strategy { margin-top: 22px; padding-top: 20px; border-top: 1px solid #e7edf2; }
+.pgp-pricing-strategy > legend { margin-bottom: 12px; }
+.pgp-regional-pricing { min-width: 0; display: grid; gap: 14px; }
+.pgp-regional-base { min-width: 0; padding: 16px; border: 1px solid #dbe5eb; border-radius: 8px; background: #f8fbfc; }
+.pgp-regional-base__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.pgp-regional-base__head strong { color: #40596d; font-size: 13px; font-weight: 600; }
+.pgp-regional-base__head p { margin: 5px 0 0; color: #8394a2; font-size: 11px; line-height: 1.6; }
+.pgp-regional-base__head span { flex: 0 0 auto; padding: 3px 8px; color: #278087; border-radius: 999px; background: #e7f6f7; font-size: 10px; }
+.pgp-regional-base__fields { min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pgp-regional-overrides { min-width: 0; position: relative; border: 1px solid #dfe7ed; border-radius: 8px; background: #fff; }
+.pgp-regional-overrides__head { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; }
+.pgp-regional-overrides__head strong { display: block; color: #40596d; font-size: 13px; font-weight: 600; }
+.pgp-regional-overrides__head p { margin: 4px 0 0; color: #8797a6; font-size: 11px; }
+.pgp-regional-empty { margin: 0; padding: 14px 16px; color: #728697; border-top: 1px solid #e8eef2; background: #fbfcfd; font-size: 12px; }
+.pgp-override-picker { margin: 0 16px 14px; overflow: hidden; border: 1px solid #cfdde5; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(38, 66, 88, .11); }
+.pgp-override-picker [hidden] { display: none !important; }
+.pgp-override-picker__search { padding: 12px; border-bottom: 1px solid #e5edf1; }
+.pgp-override-picker__search input { width: 100%; min-height: 38px; padding: 8px 11px; color: #40576a; border: 1px solid #d5dfe7; border-radius: 5px; background: #fff; font-size: 12px; }
+.pgp-override-picker__list { max-height: 224px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 12px; }
+.pgp-override-picker__option { min-width: 0; display: flex; align-items: center; gap: 9px; padding: 9px 10px; color: #4a6174; border: 1px solid #e2e9ee; border-radius: 6px; cursor: pointer; }
+.pgp-override-picker__option:hover { border-color: #86d4d8; background: #f2fbfb; }
+.pgp-override-picker__option input { flex: 0 0 auto; accent-color: #00aeb5; }
+.pgp-override-picker__option span { min-width: 0; display: grid; gap: 2px; font-size: 12px; }
+.pgp-override-picker__option small { color: #91a0ac; font-size: 10px; }
+.pgp-override-picker__empty { grid-column: 1 / -1; margin: 0; padding: 18px; color: #8a99a5; text-align: center; font-size: 12px; }
+.pgp-override-picker__actions { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 12px; border-top: 1px solid #e5edf1; background: #fbfcfd; }
+.pgp-region-pricing { min-width: 0; margin-top: 18px; border: 1px solid #dfe7ed; border-radius: 8px; overflow: hidden; }
+.pgp-region-pricing__head,
+.pgp-region-pricing__row { min-width: 0; display: grid; grid-template-columns: minmax(230px, 1.5fr) minmax(150px, .72fr) minmax(150px, .72fr); align-items: start; gap: 14px; padding: 13px 16px; }
+.pgp-region-pricing__head { align-items: center; color: #8292a1; background: #f6f8fa; font-size: 11px; }
+.pgp-region-pricing__row + .pgp-region-pricing__row { border-top: 1px solid #e7edf2; }
+.pgp-region-pricing__zone { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; align-items: center; padding-top: 7px; }
+.pgp-region-pricing__zone strong { color: #3e566a; font-size: 13px; font-weight: 600; }
+.pgp-region-pricing__zone small { grid-column: 1; color: #8797a6; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+.pgp-region-pricing__zone button { grid-column: 2; grid-row: 1 / 3; align-self: center; padding: 4px 6px; color: #b45f5f; border: 0; background: transparent; font-size: 11px; cursor: pointer; }
+.pgp-region-pricing__zone button:hover { color: #903f3f; }
+.pgp-region-pricing__field { min-width: 0; }
+.pgp-region-pricing__field label { display: block; margin-bottom: 7px; color: #61778a; font-size: 11px; }
+.pgp-region-pricing__field input { width: 100%; min-height: 38px; padding: 8px 10px; color: #40576a; border: 1px solid #d5dfe7; border-radius: 5px; background: #fff; font-size: 12px; }
+.pgp-region-pricing__field input:focus { outline: 0; border-color: #54cbd0; box-shadow: 0 0 0 2px rgba(0,174,181,.08); }
+.pgp-region-pricing__field input[readonly] { color: #7e8f9d; background: #f7f9fa; }
+.pgp-region-pricing__field .pgp-error { margin: 6px 0 0; }
+.pgp-region-pricing__note { margin: 0; padding: 11px 16px; color: #7d8f9e; border-top: 1px solid #e7edf2; background: #fbfcfd; font-size: 11px; line-height: 1.7; }
 .pgp-pricing-legacy { margin: 0 0 18px; color: #8192a3; font-size: 12px; line-height: 1.8; }
 .pgp-status.is-historical { color: #8192a3; background: #f1f4f7; }
-@media (max-width: 760px) { .pgp-pricing-options { grid-template-columns: minmax(0, 1fr); }.pgp-pricing-option { min-height: 78px; } }
+@media (max-width: 760px) { .pgp-pricing-options { grid-template-columns: minmax(0, 1fr); }.pgp-pricing-option { min-height: 78px; }.pgp-regional-base__fields,.pgp-override-picker__list { grid-template-columns: minmax(0, 1fr); }.pgp-regional-base__head,.pgp-regional-overrides__head { align-items: stretch; flex-direction: column; }.pgp-regional-overrides__head .pgp-button { width: 100%; }.pgp-region-pricing__head { display: none; }.pgp-region-pricing__row { grid-template-columns: minmax(0, 1fr); gap: 11px; padding: 15px; }.pgp-region-pricing__zone { padding-top: 0; } }
 
 /* 资质分组沿用资料卡，按发行范围和联网方式展示适用信息。 */
 .pgp-qualification-group { min-width: 0; }

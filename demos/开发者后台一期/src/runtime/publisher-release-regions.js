@@ -39,6 +39,12 @@
   ].map(([code, zh, en, continent]) => Object.freeze({ code, zh, en, continent })));
   const globalCatalog = Object.freeze(catalog.filter(item => item.code !== 'CN'));
   const byCode = new Map(catalog.map(item => [item.code, item]));
+  const territoryCurrencies = Object.freeze({
+    US: 'USD', CN: 'CNY', HK: 'HKD', MO: 'MOP', TW: 'TWD', JP: 'JPY', KR: 'KRW', GB: 'GBP',
+    DE: 'EUR', FR: 'EUR', ES: 'EUR', IT: 'EUR', NL: 'EUR',
+    CA: 'CAD', AU: 'AUD', BR: 'BRL', TR: 'TRY', RU: 'RUB', IN: 'INR', ID: 'IDR', TH: 'THB', MX: 'MXN',
+    PH: 'PHP', SG: 'SGD', IQ: 'IQD', PK: 'PKR', CO: 'COP', EG: 'EGP', DZ: 'DZD', AR: 'ARS', VN: 'VND', VE: 'VES',
+  });
   const continents = Object.freeze({
     AS: Object.freeze(['亚洲', 'Asia']),
     EU: Object.freeze(['欧洲', 'Europe']),
@@ -145,6 +151,7 @@
   };
   const label = (code, language = 'zh') => copy[languageCode(language)][code] || code;
   const territoryLabel = (code, language = 'zh') => byCode.get(code)?.[languageCode(language) === 'en' ? 'en' : 'zh'] || code;
+  const currencyForTerritory = code => territoryCurrencies[code] || 'USD';
   const continentLabel = (code, language = 'zh') => continents[code]?.[languageCode(language) === 'en' ? 1 : 0] || code;
   const statusLabel = (code, language = 'zh') => label(code, language);
   const filterDefaults = filters => {
@@ -381,6 +388,7 @@
     isChinese,
     label,
     territoryLabel,
+    currencyForTerritory,
     continentLabel,
     statusLabel,
     normalize,

@@ -74,16 +74,17 @@ test('同一 Demo 可在 02 开发者前台和 01 运营后台之间快速切换
   const page = await context.newPage();
   try {
     await seedAccount(page, 'approved', 'shell:switch');
-    const toOperations = page.locator('[data-portal-action="switch-portal-side"]');
-    assert.equal(await toOperations.innerText(), '切换运营后台');
+    assert.equal(await page.locator('.top-bar [data-portal-action="switch-portal-side"]').count(), 0);
+    const toOperations = page.locator('.portal-stage > .portal-demo-switch');
+    assert.equal(await toOperations.getAttribute('aria-label'), 'Demo 工具：切换运营后台');
     await toOperations.click();
     await page.waitForURL(/#\/P01-08$/);
     await page.locator('.product-frame[data-role="operations"]').waitFor();
     assert.equal(await page.locator('.product-frame[data-role="operations"]').isVisible(), true);
     assert.deepEqual(await page.locator('.side-nav--operations .nav-item').allTextContents(), ['企业认证内容配置', '帮助中心', '发行审核']);
     assert.deepEqual(await page.locator('[data-game-review-tab]').allTextContents(), ['企业认证审核', '游戏发布审核', '游戏资质审核']);
-    const toDeveloper = page.locator('[data-portal-action="switch-portal-side"]');
-    assert.equal(await toDeveloper.innerText(), '切换开发者前台');
+    const toDeveloper = page.locator('.portal-stage > .portal-demo-switch');
+    assert.equal(await toDeveloper.getAttribute('aria-label'), 'Demo 工具：切换开发者前台');
     await toDeveloper.click();
     await page.waitForURL(/#\/P02-01$/);
     await page.locator('.publisher-console-sidebar').waitFor();

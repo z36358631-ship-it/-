@@ -7,10 +7,11 @@ import { createRequire } from 'node:module';
 
 const { chromium } = createRequire(import.meta.url)('playwright-core');
 const evidence = path.resolve('tests/developer-backend/evidence/profile-v25/pricing');
-const url = pathToFileURL(path.resolve('demos/开发者后台一期/02-CDKEY商品与供给demo.html')).href + '#/P02-01';
+const url = pathToFileURL(path.resolve('demos/开发者后台一期/02-游戏创建与发行demo.html')).href + '#/P02-01';
 const preparationOrder = ['release-workspace', 'versions', 'qualifications'];
 const runtimeErrors = new WeakMap();
 let browser;
+let accountSerial = 0;
 
 before(async () => {
   fs.mkdirSync(evidence, { recursive: true });
@@ -18,11 +19,29 @@ before(async () => {
 });
 after(async () => { await browser?.close(); });
 
-async function open(width = 1440) {
-  const page = await browser.newPage({ viewport: { width, height: width < 600 ? 844 : 1000 } });
+async function open(width = 1440, { accountTier = 'registered', qualificationStatus = 'unsubmitted' } = {}) {
+  const context = await browser.newContext({ viewport: { width, height: width < 600 ? 844 : 1000 } });
+  const page = await context.newPage();
+  page.on('close', () => context.close().catch(() => {}));
   runtimeErrors.set(page, []);
   page.on('pageerror', error => runtimeErrors.get(page).push(error.message));
   await page.goto(url);
+  const accountKey = `pricing:test:${width}:${++accountSerial}`;
+  await page.evaluate(({ key, accountTier: tier, qualificationStatus: status }) => {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.name = '';
+    sessionStorage.setItem('gamehub-developer-session-v1', JSON.stringify({ authenticated: true, accountKey: key }));
+    localStorage.setItem('gamehub-developer-account-states-v1', JSON.stringify({
+      [key]: {
+        registration: { accountTier: tier, registeredAt: '2026-09-10 10:00', consoleTab: 'games' },
+        qualification: { status, revision: status === 'approved' ? 1 : 0, step: status === 'approved' ? 5 : 0, view: 'intro', form: {}, history: [], submissions: [] },
+      },
+    }));
+    history.replaceState(null, '', '#/P02-01');
+  }, { key: accountKey, accountTier, qualificationStatus });
+  await page.reload({ waitUntil: 'load' });
+  await page.locator(`[data-publisher-workspace][data-publisher-access="${accountTier === 'enterprise' ? 'enterprise' : 'personal'}"]`).waitFor();
   await page.waitForFunction(() => Boolean(window.PublisherGameProfile && window.PublisherProfileStore));
   return page;
 }
@@ -350,7 +369,7 @@ test('分区定价与发行区域联动，切换定价方式保留已填价格',
 });
 
 test('付费 SKU 提审后锁定，撤销可改并以新编号重提，旧快照不变', async () => {
-  const page = await open();
+  const page = await open(1440, { accountTier: 'enterprise', qualificationStatus: 'approved' });
   try {
     const gameKey = await create(page, 'review');
     const paidCatalog = {

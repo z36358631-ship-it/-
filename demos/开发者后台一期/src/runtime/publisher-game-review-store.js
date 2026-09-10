@@ -12,6 +12,12 @@
   const validPrice = value => /^\d+(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) && Number.isFinite(Number(value)) && Number(value) > 0;
   const isV25 = draft => Number(draft?.schemaVersion) >= 2 && Boolean(draft?.releaseConfig && draft?.catalog && draft?.gameProfileDraft);
   const statusLabels = { reviewing: '待审核', approved: '已通过', rejected: '已驳回', withdrawn: '已撤销', unavailable: '历史记录' };
+  const fallbackCurrencies = Object.freeze({
+    US: 'USD', CN: 'CNY', HK: 'HKD', MO: 'MOP', TW: 'TWD', JP: 'JPY', KR: 'KRW', GB: 'GBP',
+    DE: 'EUR', FR: 'EUR', ES: 'EUR', IT: 'EUR', NL: 'EUR', CA: 'CAD', AU: 'AUD', BR: 'BRL',
+    TR: 'TRY', RU: 'RUB', IN: 'INR', ID: 'IDR', TH: 'THB', MX: 'MXN', PH: 'PHP', SG: 'SGD',
+    IQ: 'IQD', PK: 'PKR', CO: 'COP', EG: 'EGP', DZ: 'DZD', AR: 'ARS', VN: 'VND', VE: 'VES',
+  });
 
   const open = async () => {
     if (!global.PublisherStorageSchema?.open) throw new Error('publisher-storage-schema-unavailable');
@@ -54,29 +60,68 @@
   }
 
   const currencyFor = draft => releaseMode(draft) === 'domestic' ? 'CNY' : 'USD';
+  const territoryCurrency = code => global.PublisherReleaseRegions?.currencyForTerritory?.(code) || fallbackCurrencies[code] || 'USD';
   const money = value => validPrice(value) ? Number(value).toFixed(2) : present(value) ? `格式无效：${String(value).trim()}` : '未填写';
+  const moneyWithCurrency = (currency, value) => `${currency} ${money(value)}`;
+  const normalizePrice = value => ({ listPrice: String(value?.listPrice ?? ''), discountPrice: String(value?.discountPrice ?? '') });
+  function normalizeRegionalPrices(source, draft) {
+    const entries = source && typeof source === 'object' && !Array.isArray(source) ? Object.entries(source) : [];
+    const raw = Object.fromEntries(entries.map(([code, value]) => [String(code).toUpperCase(), normalizePrice(value)]));
+    const normalized = Object.fromEntries(Object.entries(raw).filter(([code]) => /^[A-Z]{2}$/.test(code)));
+    territoryCodes(draft).forEach(code => {
+      const legacy = raw[territoryCurrency(code)];
+      if (!normalized[code] && legacy) normalized[code] = { ...legacy };
+    });
+    return normalized;
+  }
+  const pricingStrategyFor = (sku, draft) => releaseMode(draft) === 'domestic' ? 'uniform' : sku?.pricingStrategy === 'regional' ? 'regional' : 'uniform';
+  const activeRegionalPrices = (sku, draft) => {
+    if (sku?.pricingModel !== 'paid' || pricingStrategyFor(sku, draft) !== 'regional') return {};
+    const normalized = normalizeRegionalPrices(sku?.regionalPrices, draft);
+    return Object.fromEntries(territoryCodes(draft).filter(code => Object.prototype.hasOwnProperty.call(normalized, code)).map(code => [code, normalized[code]]));
+  };
   function skuRows(draft) {
-    if (isV25(draft)) return [draft.catalog?.baseGame, ...list(draft.catalog?.dlcs)].filter(Boolean).map((sku, index) => ({
-      ...sku,
-      type: index === 0 ? 'base_game' : 'dlc',
-      title: sku.title || (index === 0 ? '基础游戏' : `DLC ${index}`),
-    }));
+    if (isV25(draft)) return [draft.catalog?.baseGame, ...list(draft.catalog?.dlcs)].filter(Boolean).map((sku, index) => {
+      const normalized = {
+        ...sku,
+        type: index === 0 ? 'base_game' : 'dlc',
+        title: sku.title || (index === 0 ? '基础游戏' : `DLC ${index}`),
+        pricingStrategy: pricingStrategyFor(sku, draft),
+        regionalPrices: normalizeRegionalPrices(sku.regionalPrices, draft),
+      };
+      if (normalized.pricingModel !== 'paid') Object.assign(normalized, { pricingStrategy: 'uniform', listPrice: '', discountPrice: '', discountStartAt: '', discountEndAt: '', regionalPrices: {} });
+      if (releaseMode(draft) === 'domestic' || normalized.pricingStrategy !== 'regional') normalized.regionalPrices = {};
+      return normalized;
+    });
     if (!Object.prototype.hasOwnProperty.call(draft || {}, 'pricing')) return [];
     const model = draft.pricing?.model;
     const amount = releaseMode(draft) === 'domestic' ? draft.pricing?.domesticPrice : draft.pricing?.globalPrice;
-    return [{ skuId: 'LEGACY-BASE', type: 'base_game', title: '基础游戏', installContentRef: '', pricingModel: model, listPrice: amount, legacy: true }];
+    return [{ skuId: 'LEGACY-BASE', type: 'base_game', title: '基础游戏', installContentRef: '', pricingModel: model, pricingStrategy: 'uniform', listPrice: amount, discountPrice: '', discountStartAt: '', discountEndAt: '', regionalPrices: {}, legacy: true }];
+  }
+
+  function pricingSnapshot(draft) {
+    const codes = territoryCodes(draft);
+    return skuRows(draft).map(sku => ({
+      ...sku,
+      baseCurrency: currencyFor(draft),
+      territoryCodes: [...codes],
+      pricingStrategy: pricingStrategyFor(sku, draft),
+      regionalPrices: activeRegionalPrices(sku, draft),
+    }));
   }
 
   function priceSummary(draft) {
-    const rows = skuRows(draft);
+    const rows = pricingSnapshot(draft);
     if (!rows.length) return '未记录（历史提交）';
-    const currency = currencyFor(draft);
     return rows.map((sku, index) => {
       const prefix = index === 0 ? '基础游戏' : `DLC·${sku.title || sku.skuId || index}`;
       if (sku.pricingModel === 'free') return `${prefix} 免费`;
       if (sku.pricingModel !== 'paid') return `${prefix} 未配置`;
-      const discount = present(sku.discountPrice) ? ` → ${money(sku.discountPrice)}` : '';
-      return `${prefix} ${currency} ${money(sku.listPrice)}${discount}`;
+      const discount = present(sku.discountPrice) ? ` → ${moneyWithCurrency(sku.baseCurrency, sku.discountPrice)}` : '';
+      const base = `${moneyWithCurrency(sku.baseCurrency, sku.listPrice)}${discount}`;
+      if (sku.pricingStrategy !== 'regional') return `${prefix} ${base}`;
+      const overrideCount = Object.keys(sku.regionalPrices).length;
+      return `${prefix} 分区定价 · 基准 ${base} · ${overrideCount} 个例外价`;
     }).join('；');
   }
 
@@ -94,11 +139,21 @@
     return versions.find(item => [item?.id, item?.versionId].includes(id)) || draft.qualifications?.activeVersion || null;
   }
 
-  const discountIssues = sku => {
-    const fields = [sku.discountPrice, sku.discountStartAt, sku.discountEndAt];
-    if (fields.every(value => !present(value))) return [];
-    if (!fields.every(present)) return ['折扣价、折扣开始和结束时间需同时填写。'];
-    if (!validPrice(sku.discountPrice) || !validPrice(sku.listPrice) || Number(sku.discountPrice) >= Number(sku.listPrice)) return ['折扣价必须大于 0 且低于售价。'];
+  const discountIssues = (sku, draft) => {
+    const regional = pricingStrategyFor(sku, draft) === 'regional';
+    const overrides = regional ? activeRegionalPrices(sku, draft) : {};
+    const discountPrices = [sku.discountPrice, ...Object.values(overrides).map(price => price.discountPrice)];
+    const hasDiscount = discountPrices.some(present);
+    const hasTime = present(sku.discountStartAt) || present(sku.discountEndAt);
+    if (!hasDiscount && !hasTime) return [];
+    if (!hasDiscount || !present(sku.discountStartAt) || !present(sku.discountEndAt)) return ['折扣价、折扣开始和结束时间需同时填写。'];
+    if (present(sku.discountPrice) && (!validPrice(sku.discountPrice) || !validPrice(sku.listPrice) || Number(sku.discountPrice) >= Number(sku.listPrice))) return ['折扣价必须大于 0 且低于售价。'];
+    for (const [code, price] of Object.entries(overrides)) {
+      if (present(price.discountPrice) && (!validPrice(price.discountPrice) || !validPrice(price.listPrice) || Number(price.discountPrice) >= Number(price.listPrice))) {
+        const label = global.PublisherReleaseRegions?.territoryLabel?.(code, 'zh') || code;
+        return [`${label}（${code}）例外折扣价必须大于 0 且低于售价。`];
+      }
+    }
     const startsAt = Date.parse(sku.discountStartAt);
     const endsAt = Date.parse(sku.discountEndAt);
     if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || startsAt >= endsAt) return ['折扣期限无效，结束时间必须晚于开始时间。'];
@@ -137,13 +192,28 @@
 
     const skus = skuRows(draft);
     if (!draft.catalog?.baseGame) issues.push('缺少基础游戏 SKU。');
-    skus.forEach(sku => {
+    skus.forEach((sku, index) => {
       const title = sku.title || sku.skuId || 'SKU';
+      const rawSku = index === 0 ? draft.catalog?.baseGame : list(draft.catalog?.dlcs)[index - 1];
       if (!present(sku.installContentRef)) issues.push(`${title} 未关联安装内容／包体版本。`);
       if (!['free', 'paid'].includes(sku.pricingModel)) issues.push(`${title} 未选择免费或单次买断。`);
       if (sku.pricingModel === 'paid') {
+        if (mode === 'global' && present(rawSku?.pricingStrategy) && !['uniform', 'regional'].includes(rawSku.pricingStrategy)) issues.push(`${title} 未选择全球统一价或分区定价。`);
+        if (mode === 'domestic' && (rawSku?.pricingStrategy === 'regional' || Object.keys(normalizeRegionalPrices(rawSku?.regionalPrices, draft)).length)) issues.push(`${title} 中国大陆发行不允许分区定价。`);
         if (!validPrice(sku.listPrice)) issues.push(`${title} 售价无效。`);
-        discountIssues(sku).forEach(issue => issues.push(`${title} ${issue}`));
+        if (pricingStrategyFor(sku, draft) === 'regional') {
+          const normalizedPrices = normalizeRegionalPrices(sku.regionalPrices, draft);
+          const selectedCodes = territoryCodes(draft);
+          const outsideCodes = Object.keys(normalizedPrices).filter(code => !selectedCodes.includes(code));
+          if (outsideCodes.length) issues.push(`${title} 地区例外价包含非当前发行范围：${outsideCodes.join('、')}。`);
+          Object.entries(activeRegionalPrices(sku, draft)).forEach(([code, price]) => {
+            if (!validPrice(price.listPrice)) {
+              const label = global.PublisherReleaseRegions?.territoryLabel?.(code, 'zh') || code;
+              issues.push(`${title} ${label}（${code}）例外售价无效。`);
+            }
+          });
+        }
+        discountIssues(sku, draft).forEach(issue => issues.push(`${title} ${issue}`));
       }
     });
 
@@ -324,6 +394,11 @@
     releaseStatus,
     releaseStatusLabel,
     skuRows,
+    pricingSnapshot,
+    pricingStrategyFor,
+    normalizeRegionalPrices,
+    activeRegionalPrices,
+    territoryCurrency,
     priceSummary,
     qualificationVersionId,
     qualificationVersion,
