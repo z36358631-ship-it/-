@@ -30,8 +30,8 @@
 |---:|---|---|---|---|
 | 1 | 用户确认 | 当前会话方案 A 与来源规则 | 当前业务决定 | 有效 |
 | 2 | 任务板 | GUANWANGGAID-41 | 需求背景、范围与评审状态 | 有效 |
-| 3 | 设计方案 | `ef854a7a`（初版）；`aed27237`（兑换商城与告警）；`4e3878cf`（盖世积分／盖世币） | 原页面、方案和边界 | 有效 |
-| 4 | 实施计划 | `5181b988`（初版）；`39e17191`（兑换商城与告警）；`4e3878cf`（盖世积分／盖世币） | 产物、验证与提交计划 | 有效 |
+| 3 | 设计方案 | `ef854a7a`（初版）；`aed27237`（兑换商城与告警）；`badd13fd`（盖世积分／盖世币） | 原页面、方案和边界 | 有效 |
+| 4 | 实施计划 | `5181b988`（初版）；`39e17191`（兑换商城与告警）；`badd13fd`（盖世积分／盖世币） | 产物、验证与提交计划 | 有效 |
 | 5 | 当前 C/B Demo | `demos/Mod与发行人/发行人计划demo.html`；`demos/Mod与发行人/发行人计划-后台demo.html` | 可操作页面与交互 | 有效 |
 | 6 | 图片与验证 | `public/prd/publisher-plan-v2/`；`docs/evidence/publisher-plan-v2/verification.json` | PRD 图示、离线运行与视觉证据 | 有效 |
 | 7 | XGP 告警参考 | `demos/充值与商城/XGP赠品后台.html`；既有 CD123—CD128 用例 | 全局阈值、飞书通知、消息预览和频率控制 | 有效 |
@@ -55,17 +55,17 @@
 
 | 产物 | 路径或地址 | 当前状态 | 验证证据 |
 |---|---|---|---|
-| 增量设计与计划 | `docs/superpowers/specs/2026-09-10-publisher-currency-terminology-design.md`；`docs/superpowers/plans/2026-09-10-publisher-currency-terminology.md` | 已同步 | D-010 及实施范围已记录；提交 `4e3878cf` |
-| C 端 Demo | `demos/Mod与发行人/发行人计划demo.html`、同名 JS | 已同步 | 发行人计划名称、盖世币单位、发行任务奖励资格和兑换规则均已同步；提交 `dbb7ba61` |
-| B 端 Demo | `demos/Mod与发行人/发行人计划-后台demo.html`、同名 JS | 已同步 | 兑换订单来源口径已同步；原京东卡告警规则保持不变；提交 `dbb7ba61` |
-| V2.2 PRD | `prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md` | 已同步 | D-010、`coin_cost` 与 24 张固定图片已同步；提交 `c1ca63c3` |
-| 产品流程与页面图 | `public/prd/publisher-plan-v2/00-product-flow.png` 至 `23-card-alert-settings.png` | 已同步 | 24 张截图已重截并固定到 `28150f31bd1002db7ae9bfb8f69bb7210aef9dde` |
+| 增量设计与计划 | `docs/superpowers/specs/2026-09-10-publisher-currency-terminology-design.md`；`docs/superpowers/plans/2026-09-10-publisher-currency-terminology.md` | 已同步 | D-010 及实施范围已记录；提交 `badd13fd` |
+| C 端 Demo | `demos/Mod与发行人/发行人计划demo.html`、同名 JS | 已同步 | 发行人计划名称、盖世币单位、发行任务奖励资格和兑换规则均已同步；提交 `2ba4394d` |
+| B 端 Demo | `demos/Mod与发行人/发行人计划-后台demo.html`、同名 JS | 已同步 | 兑换订单来源口径已同步；原京东卡告警规则保持不变；提交 `2ba4394d` |
+| V2.2 PRD | `prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md` | 已同步 | D-010、`coin_cost` 与 24 张固定图片已同步；提交 `fa7b7763` |
+| 产品流程与页面图 | `public/prd/publisher-plan-v2/00-product-flow.png` 至 `23-card-alert-settings.png` | 已同步 | 24 张截图已重截并固定到 `a60297eaef2c0150a29fa161e74c8966e7c3e5b5` |
 | 机器与视觉证据 | `docs/evidence/publisher-plan-v2/verification.json` | 已同步 | 静态、离线 UI、PRD、严格组件与原尺寸审图通过；24/24 哈希稳定 |
-| 静态与 UI 合同 | `tools/verify-publisher-plan-v2.mjs`；`tools/verify-publisher-plan-v2-ui.mjs` | 已同步 | 已增加 D-010 与 `coin_cost` 回归断言；提交 `dbb7ba61` |
-| Git | 本地提交 `4e3878cf`、`dbb7ba61`、`28150f31`、`c1ca63c3` | 已同步 | 提交均可本地验证，未推送 |
+| 静态与 UI 合同 | `tools/verify-publisher-plan-v2.mjs`；`tools/verify-publisher-plan-v2-ui.mjs` | 已同步 | 已增加 D-010 与 `coin_cost` 回归断言；提交 `2ba4394d` |
+| Git | 本地提交 `badd13fd`、`2ba4394d`、`a60297ea`、`fa7b7763` | 已同步 | 提交均可本地验证，未推送 |
 | 任务板 | `GUANWANGGAID-41` | 已同步 | 已追加 D-010 完成评论并移到 `in_review`，版本 10 |
 | 公开预览 | 无 | 未执行 | 未获发布授权 |
-| 远程图片与飞书 | PRD 使用固定图片提交 SHA `28150f31bd1002db7ae9bfb8f69bb7210aef9dde` | 未执行 | 未推送；未做公网 HTTP 与飞书转存验证 |
+| 远程图片与飞书 | PRD 使用固定图片提交 SHA `a60297eaef2c0150a29fa161e74c8966e7c3e5b5` | 未执行 | 未推送；未做公网 HTTP 与飞书转存验证 |
 
 ## 修改与验证
 
@@ -82,4 +82,4 @@
 
 - 必须确认：正式京东卡面额、兑换所需盖世币、限兑、使用说明；京东卡采购、税务、劳务报酬、凭证与协议口径；混合来源预算冻结顺序；存量盖世币是否均可追溯来源；卡密批量导入单次数量上限。
 - 默认建议：混合来源先冻结充值来源、再冻结任务奖励来源，逐笔记录来源并按原明细退回；无法追溯来源的存量盖世币不得静默计入可兑换余额。
-- 已知风险：真实线上旧 SKU 阈值若不一致，启用前需由运营确认唯一全局值，不取平均值或静默覆盖；Webhook 服务端加密、权限控制、发送日志和重试仍需研发按 PRD 落实。全局阈值适合当前 SKU 少且备货规模接近的阶段，不同面额差异扩大后需重新评估。图片已固定到本地提交 `28150f31bd1002db7ae9bfb8f69bb7210aef9dde`，但未推送，公网链接、飞书转存和线上发布均未验证。
+- 已知风险：真实线上旧 SKU 阈值若不一致，启用前需由运营确认唯一全局值，不取平均值或静默覆盖；Webhook 服务端加密、权限控制、发送日志和重试仍需研发按 PRD 落实。全局阈值适合当前 SKU 少且备货规模接近的阶段，不同面额差异扩大后需重新评估。图片已固定到本地提交 `a60297eaef2c0150a29fa161e74c8966e7c3e5b5`，但未推送，公网链接、飞书转存和线上发布均未验证。
