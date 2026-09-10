@@ -2804,9 +2804,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         onChange: (_next, options = {}) => updatePublisherWorkspace({ dataDashboard:dashboardState }, { preserveScroll:Boolean(options.preserveScroll) }),
         onFinance: (target, filters) => {
           persistPublisherWorkspace();
-          const vendorId = memory.session.vendorId || portalData.context?.vendorId || '';
-          const query = new URLSearchParams({ vendor:vendorId, game:filters.game || 'all', fulfillment:filters.fulfillment || 'all', range:filters.range || '30d', ledger_source:'direct_sale' });
-          window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, vendorId, targetRoute:target, filters, ledgerSource:'direct_sale', expiresAt:Date.now() + 30 * 60 * 1000 });
+          const lockedStatement = window.PublisherDataDashboard.statements().find(item => item.status === 'locked');
+          const query = target === 'settlement/flows'
+            ? new URLSearchParams({ game:filters.game || 'all', fulfillment:filters.fulfillment || 'all', range:filters.range || '30d', ledger_source:'direct_sale' })
+            : new URLSearchParams({ statement:lockedStatement?.id || '', ledger_source:'direct_sale' });
+          window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? filters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
           location.href = `15-开发者财务结算demo.html#/${target}?${query.toString()}`;
         },
       });

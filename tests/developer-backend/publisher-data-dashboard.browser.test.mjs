@@ -112,19 +112,21 @@ test('开发者侧边栏进入数据看板且只提供经营概览、订单明�
       paid: 7,
       free: 1,
       refundCount: 1,
-      refundMinor: 12800,
+      refundMinor: 1770,
       chargebackOpen: 1,
-      chargebackRiskMinor: 2600,
+      chargebackRiskMinor: 400,
       chargebackLost: 1,
-      chargebackLossMinor: 3800,
+      chargebackLossMinor: 599,
       netSales: 5,
-      grossMinor: 51400,
-      taxMinor: 1392,
-      channelFeeMinor: 1044,
-      platformShareMinor: 5220,
-      adjustmentMinor: 850,
-      estimatedMinor: 27994,
-      pendingMinor: 14976,
+      grossMinor: 7548,
+      taxMinor: 208,
+      channelFeeMinor: 156,
+      platformShareMinor: 777,
+      adjustmentMinor: 85,
+      estimatedMinor: 4123,
+      settlementCurrency: 'USD',
+      fxVersion: 'FX-20260910-01',
+      pendingByCurrency: { USD: 1548260 },
     });
 
     await selectDashboardTab(dashboard, 'orders', '订单明细');
@@ -213,7 +215,7 @@ test('数据口径弹窗说明计入条件、更新时间、脱敏范围和正�
     const dialog = page.getByRole('dialog', { name: '数据口径' });
     await dialog.waitFor();
     const content = await dialog.innerText();
-    for (const phrase of ['付费销量', '免费领取', '拒付待裁决', '更新时间', '脱敏', '正式金额以财务结算']) {
+    for (const phrase of ['付费销量', '免费领取', '拒付待裁决', '多币种', '更新时间', '脱敏', '正式金额以财务结算']) {
       assert.match(content, new RegExp(phrase), phrase);
     }
     await dialog.getByRole('button', { name: '关闭', exact: true }).click();
@@ -239,12 +241,18 @@ test('收入与结算提供两个准确的财务模块跳转 URL 并携带当前
     const flowsUrl = page.url();
     assertFinanceUrl(settlementUrl, '#/settlement');
     assertFinanceUrl(flowsUrl, '#/settlement/flows');
-    for (const rawUrl of [settlementUrl, flowsUrl]) {
-      const url = new URL(rawUrl);
-      assert.match(url.hash, /vendor=/);
-      assert.match(url.hash, /game=/);
-      assert.match(url.hash, /fulfillment=/);
-    }
+    const settlementQuery = new URLSearchParams(new URL(settlementUrl).hash.split('?')[1]);
+    assert.equal(settlementQuery.get('statement'), 'STMT-2026-06-V1');
+    assert.equal(settlementQuery.get('ledger_source'), 'direct_sale');
+    assert.equal(settlementQuery.has('vendor'), false);
+    assert.equal(settlementQuery.has('game'), false);
+    assert.equal(settlementQuery.has('fulfillment'), false);
+    const flowQuery = new URLSearchParams(new URL(flowsUrl).hash.split('?')[1]);
+    assert.equal(flowQuery.get('game'), 'all');
+    assert.equal(flowQuery.get('fulfillment'), 'all');
+    assert.equal(flowQuery.get('range'), '30d');
+    assert.equal(flowQuery.get('ledger_source'), 'direct_sale');
+    assert.equal(flowQuery.has('vendor'), false);
   } finally {
     await context.close();
   }

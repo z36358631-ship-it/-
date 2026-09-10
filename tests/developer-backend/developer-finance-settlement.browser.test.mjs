@@ -82,6 +82,40 @@ test('财务模块只保留财务主体和对账结算两个一级入口', async
   }
 });
 
+test('接收经营看板的结算单与流水筛选参数且忽略 URL 厂商身份', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/settlement?statement=STMT-2026-06-V1&ledger_source=direct_sale&vendor=OTHER-VENDOR'), { waitUntil:'load' });
+    let snapshot = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    assert.equal(snapshot.route, 'settlement');
+    assert.equal(snapshot.filters.settlement.keyword, 'STMT-2026-06-V1');
+    assert.equal(snapshot.filters.settlement.source, 'direct_sale');
+    assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').count(), 1);
+    assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').getAttribute('data-statement-id'), 'STMT-2026-06-V1');
+    assert.equal(snapshot.entity.legalName, '星海互动科技有限公司');
+
+    await page.goto(url('/settlement/flows?game=像素边境&fulfillment=cdkey&range=90d&ledger_source=external_key&vendor=OTHER-VENDOR'), { waitUntil:'load' });
+    snapshot = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    assert.equal(snapshot.route, 'settlement/flows');
+    assert.deepEqual(
+      { game:snapshot.filters.flow.game, fulfillment:snapshot.filters.flow.fulfillment, range:snapshot.filters.flow.range, source:snapshot.filters.flow.source },
+      { game:'像素边境', fulfillment:'cdkey', range:'90d', source:'external_key' },
+    );
+    assert.ok(await page.locator('tbody tr[data-ledger-source="external_key"]').count() > 0);
+    assert.equal(snapshot.entity.legalName, '星海互动科技有限公司');
+
+    await page.goto(url('/settlement/flows?game=UNKNOWN&fulfillment=external_key&range=365d&ledger_source=unknown&vendor=OTHER-VENDOR'), { waitUntil:'load' });
+    snapshot = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    assert.deepEqual(
+      { game:snapshot.filters.flow.game, fulfillment:snapshot.filters.flow.fulfillment, range:snapshot.filters.flow.range, source:snapshot.filters.flow.source },
+      { game:'all', fulfillment:'all', range:'all', source:'all' },
+    );
+    assert.equal(snapshot.entity.legalName, '星海互动科技有限公司');
+  } finally {
+    await page.close();
+  }
+});
+
 test('一张结算记录同时展示对账发票付款和当前待办', async () => {
   const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
   try {

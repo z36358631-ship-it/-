@@ -14,7 +14,7 @@
   const CURRENCY_DIGITS = Object.freeze({ USD:2, EUR:2, CNY:2, HKD:2, JPY:0 });
   const LEDGER_SOURCES = Object.freeze(['direct_sale','external_key','gamehub_key']);
   const LEDGER_SOURCE_LABELS = Object.freeze({ direct_sale:'平台直销', external_key:'外部 Key 采购', gamehub_key:'盖世 Key 渠道' });
-  const FULFILLMENT_LABELS = Object.freeze({ account_entitlement:'账号权益', external_key:'外部 Key', gamehub_key:'盖世 Key' });
+  const FULFILLMENT_LABELS = Object.freeze({ account_entitlement:'账号权益', cdkey:'CDKEY' });
   const DISPUTE_TYPES = Object.freeze({
     existing_flow:'已有流水差异',
     missing_transaction:'交易遗漏',
@@ -120,10 +120,10 @@
 
   const flowPatterns = [
     { type:'sale', basisPoints:5200, ledgerSource:LEDGER_SOURCES[0], fulfillmentType:'account_entitlement', settlementCounterparty:'盖世游戏发行平台', ruleModel:'revenue_share' },
-    { type:'sale', basisPoints:6000, ledgerSource:LEDGER_SOURCES[1], fulfillmentType:'external_key', settlementCounterparty:'盖世游戏采购主体', ruleModel:'fixed_purchase' },
+    { type:'sale', basisPoints:6000, ledgerSource:LEDGER_SOURCES[1], fulfillmentType:'cdkey', settlementCounterparty:'盖世游戏采购主体', ruleModel:'fixed_purchase' },
     { type:'refund', basisPoints:-500, ledgerSource:LEDGER_SOURCES[0], fulfillmentType:'account_entitlement', settlementCounterparty:'盖世游戏发行平台', ruleModel:'revenue_share' },
     { type:'chargeback', basisPoints:-200, ledgerSource:LEDGER_SOURCES[0], fulfillmentType:'account_entitlement', settlementCounterparty:'盖世游戏发行平台', ruleModel:'revenue_share' },
-    { type:'adjustment', basisPoints:-500, ledgerSource:LEDGER_SOURCES[2], fulfillmentType:'gamehub_key', settlementCounterparty:'盖世游戏渠道平台', ruleModel:'channel_share' },
+    { type:'adjustment', basisPoints:-500, ledgerSource:LEDGER_SOURCES[2], fulfillmentType:'cdkey', settlementCounterparty:'盖世游戏渠道平台', ruleModel:'channel_share' },
   ];
   const FX_RATE_TEXT = Object.freeze({ USD:'1.0000', EUR:'1.1700', JPY:'0.0068', CNY:'0.1400', HKD:'0.1280' });
 
@@ -387,7 +387,7 @@
     bankProofFingerprint:'',
     selectedHistory:'',
     settlementFilters:{ keyword:'', period:'all', source:'all', statementStatus:'all', invoiceStatus:'all', paymentStatus:'all' },
-    flowFilters:{ keyword:'', type:'all', source:'all', period:'all', currency:'all' },
+    flowFilters:{ keyword:'', type:'all', source:'all', range:'all', game:'all', fulfillment:'all', currency:'all' },
     filterKeywordDrafts:{ settlement:'', flow:'' },
     settlementPage:1,
     flowPage:1,
@@ -612,6 +612,41 @@
     if (raw === 'settlement/flows') return 'settlement/flows';
     return routes[raw] ? raw : 'entity';
   }
+
+  function applyHashContext() {
+    const queryText = location.hash.includes('?') ? location.hash.slice(location.hash.indexOf('?') + 1) : '';
+    if (!queryText) return;
+    const query = new URLSearchParams(queryText);
+    if (state.route === 'settlement') {
+      state.settlementFilters.keyword = '';
+      state.settlementFilters.source = 'all';
+      state.filterKeywordDrafts.settlement = '';
+    } else if (state.route === 'settlement/flows') {
+      Object.assign(state.flowFilters, { range:'all', game:'all', fulfillment:'all', source:'all' });
+    }
+    const source = query.get('ledger_source');
+    if (LEDGER_SOURCES.includes(source)) {
+      if (state.route === 'settlement') state.settlementFilters.source = source;
+      if (state.route === 'settlement/flows') state.flowFilters.source = source;
+    }
+    if (state.route === 'settlement') {
+      const statementId = query.get('statement');
+      if (statementId && activeStatements().some(item => item.id === statementId)) {
+        state.settlementFilters.keyword = statementId;
+        state.filterKeywordDrafts.settlement = statementId;
+      }
+      return;
+    }
+    if (state.route !== 'settlement/flows') return;
+    const range = query.get('range');
+    const game = query.get('game');
+    const fulfillment = query.get('fulfillment');
+    if (['all','7d','30d','90d'].includes(range)) state.flowFilters.range = range;
+    if (game === 'all' || activeFlows().some(item => item.game === game)) state.flowFilters.game = game;
+    if (['all','account_entitlement','cdkey'].includes(fulfillment)) state.flowFilters.fulfillment = fulfillment;
+  }
+
+  applyHashContext();
 
   function primaryRoute() {
     return state.route === 'settlement/flows' ? 'settlement' : state.route;
@@ -984,7 +1019,10 @@
       const f = state.flowFilters;
       if (f.keyword && !(item.id + item.game + item.sku).toLowerCase().includes(f.keyword.toLowerCase())) return false;
       if (f.type !== 'all' && item.type !== f.type) return false;
-      if (f.period !== 'all' && item.date.slice(0,4) !== f.period) return false;
+      const cutoff = ({ '7d':'2026-09-04', '30d':'2026-08-12', '90d':'2026-06-12' })[f.range];
+      if (cutoff && item.date < cutoff) return false;
+      if (f.game !== 'all' && item.game !== f.game) return false;
+      if (f.fulfillment !== 'all' && item.fulfillmentType !== f.fulfillment) return false;
       if (f.currency !== 'all' && item.originalCurrency !== f.currency) return false;
       if (f.source !== 'all' && item.ledgerSource !== f.source) return false;
       return true;
@@ -1047,7 +1085,9 @@
     const f = state.flowFilters;
     return '<section class="gh-card"><div class="gh-card-body"><div class="d15-filter-grid">' +
       '<div class="gh-field d15-filter-keyword"><label for="d15-flow-keyword">流水</label><input id="d15-flow-keyword" class="gh-input" data-filter-group="flow" data-filter="keyword" value="' + esc(state.filterKeywordDrafts.flow) + '" placeholder="流水号、游戏或 SKU"></div>' +
-      filterSelect('时间','flow','period',f.period,[['all','全部时间'],['2026','2026 年'],['2025','2025 年']]) +
+      filterSelect('时间','flow','range',f.range,[['all','全部时间'],['7d','近 7 天'],['30d','近 30 天'],['90d','近 90 天']]) +
+      filterSelect('游戏','flow','game',f.game,[['all','全部游戏'],['星海远征','星海远征'],['像素边境','像素边境']]) +
+      filterSelect('履约方式','flow','fulfillment',f.fulfillment,[['all','全部方式'],['account_entitlement','账号权益'],['cdkey','CDKEY']]) +
       filterSelect('类型','flow','type',f.type,[['all','全部类型'],['sale','销售'],['refund','退款'],['chargeback','拒付'],['adjustment','调整']]) +
       filterSelect('业务来源','flow','source',f.source,[['all','全部来源'],['direct_sale','平台直销'],['external_key','外部 Key 采购'],['gamehub_key','盖世 Key 渠道']]) +
       filterSelect('交易币种','flow','currency',f.currency,[['all','全部币种'],['USD','USD'],['EUR','EUR'],['JPY','JPY'],['CNY','CNY']]) +
@@ -1400,7 +1440,7 @@
     state.bankProofNeedsRefresh = false;
     state.bankProofFingerprint = '';
     state.settlementFilters = { keyword:'', period:'all', source:'all', statementStatus:'all', invoiceStatus:'all', paymentStatus:'all' };
-    state.flowFilters = { keyword:'', type:'all', source:'all', period:'all', currency:'all' };
+    state.flowFilters = { keyword:'', type:'all', source:'all', range:'all', game:'all', fulfillment:'all', currency:'all' };
     state.filterKeywordDrafts = { settlement:'', flow:'' };
     state.settlementPage = 1;
     state.flowPage = 1;
@@ -1951,7 +1991,7 @@
     } else if (action === 'reset-settlement-filters') {
       state.settlementFilters = { keyword:'', period:'all', source:'all', statementStatus:'all', invoiceStatus:'all', paymentStatus:'all' }; state.filterKeywordDrafts.settlement = ''; state.settlementPage = 1; render();
     } else if (action === 'reset-flow-filters') {
-      state.flowFilters = { keyword:'', type:'all', source:'all', period:'all', currency:'all' }; state.filterKeywordDrafts.flow = ''; state.flowPage = 1; render();
+      state.flowFilters = { keyword:'', type:'all', source:'all', range:'all', game:'all', fulfillment:'all', currency:'all' }; state.filterKeywordDrafts.flow = ''; state.flowPage = 1; render();
     } else if (action === 'close-dialog') {
       prepareOverlayClose();
       state.dialog = ''; render();
@@ -1961,6 +2001,7 @@
   window.addEventListener('hashchange', () => {
     state.route = routeFromHash();
     clearRouteOverlays();
+    applyHashContext();
     render();
   });
   window.addEventListener('keydown', event => {
@@ -2018,7 +2059,7 @@
       return clone({
         scenario:state.demoScenario,
         moneyStorage:state.demoScenario === 'empty' || audit.moneyAmountsAreIntegers ? 'minor-unit-integer' : 'invalid',
-        route:state.route, entity:activeEntity(), statements:currentStatements.map(item => ({ id:item.id, status:item.status, payment:item.payment, invoice:item.invoice })),
+        route:state.route, filters:{ settlement:state.settlementFilters, flow:state.flowFilters }, entity:activeEntity(), statements:currentStatements.map(item => ({ id:item.id, status:item.status, payment:item.payment, invoice:item.invoice })),
         settlementRecords:activeSettlementRecords(),
         counts:{ statements:currentStatements.length, flows:activeFlows().length, disputes:activeDisputes().length, invoices:activeInvoices().length, payments:currentPayments.length },
         ledgerSources:[...new Set(activeFlows().map(item => item.ledgerSource))],
