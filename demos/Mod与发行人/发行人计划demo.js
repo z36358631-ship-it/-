@@ -226,7 +226,7 @@ function openCardRedeem(cardId){
     <div class="card-confirm-name">${card.name}</div>
     <div class="card-confirm-row"><span>所需盖世币</span><strong>${card.cost.toLocaleString()}</strong></div>
     <div class="card-confirm-row"><span>当前可兑换</span><strong>${wallet.redeemableBalance.toLocaleString()}</strong></div>
-    <p>兑换成功后自动发放卡密；充值获得的盖世币不可用于兑换。</p>
+    <p>兑换成功后自动发放卡密；只有参与发行任务并结算获得的盖世币可兑换，充值获得的盖世币不可兑换。</p>
     <div class="modal-actions"><button type="button" class="modal-cancel" onclick="closeCardRedeem()">取消</button><button type="button" id="confirm-card-redeem" class="modal-confirm" onclick="confirmCardRedeem()">确认兑换</button></div>`;
   const modal=document.getElementById('card-redeem-modal');
   modal.classList.add('show');
