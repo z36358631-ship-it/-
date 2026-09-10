@@ -69,9 +69,9 @@ test('普通评审者只用可见按钮完成直接购买与退款，不依赖�
     await page.getByRole('heading', { name: '退款处理中', exact: true }).waitFor();
     await page.getByRole('button', { name: '刷新退款状态', exact: true }).click();
     await page.getByRole('heading', { name: '退款已完成', exact: true }).waitFor();
-    const snapshot = await page.evaluate(() => window.__androidBuyoutDemo.snapshot());
-    assert.equal(snapshot.currentOrder.refund.status, 'succeeded');
-    assert.equal(snapshot.currentOrder.entitlement.status, 'revoked');
+    assert.match(await page.locator('#app').innerText(), /退款状态\s*退款成功/);
+    assert.match(await page.locator('#app').innerText(), /权益状态\s*已撤销/);
+    assert.equal(await page.locator('#app').getByText(/退款处理中/).count(), 0);
     assertClean(errors, remoteRequests);
   } finally {
     await page.close();
@@ -112,19 +112,22 @@ test('普通评审者只用可见按钮完成 CDKEY 购买、查看、复制和�
 test('横竖屏切换使用独立 Shell 且保留当前订单与页面状态', async () => {
   const { page, errors, remoteRequests } = await openDemo({ width: 1100, height: 920 });
   try {
+    const toolbarRect = await page.locator('[data-demo-control]').boundingBox();
+    const appRect = await page.locator('#app').boundingBox();
+    assert.ok(toolbarRect && appRect);
+    assert.ok(toolbarRect.x >= appRect.x + appRect.width || toolbarRect.y + toolbarRect.height <= appRect.y);
     await page.getByRole('button', { name: '购买 ¥128', exact: true }).click();
     await page.getByRole('button', { name: /购买 CDKEY/ }).click();
-    const before = await page.evaluate(() => window.__androidBuyoutDemo.snapshot());
+    const orderCopyBefore = await page.locator('#app').innerText();
     await page.getByRole('button', { name: '横屏预览', exact: true }).click();
     await page.locator('#app[data-orientation="landscape"] .landscape-shell').waitFor();
     assert.equal(await page.locator('#app .bottom-nav').count(), 0);
     assert.equal(await page.locator('#app .landscape-top-nav').count(), 1);
-    const after = await page.evaluate(() => window.__androidBuyoutDemo.snapshot());
-    assert.equal(after.screen, before.screen);
-    assert.equal(after.checkoutFulfillmentType, before.checkoutFulfillmentType);
-    assert.deepEqual(after.orders, before.orders);
+    assert.match(await page.locator('#app').innerText(), /购买 CDKEY/);
     await page.getByRole('button', { name: '竖屏预览', exact: true }).click();
     await page.locator('#app[data-orientation="portrait"] .app-shell').waitFor();
+    assert.match(await page.locator('#app').innerText(), /购买 CDKEY/);
+    assert.equal((await page.locator('#app').innerText()).includes('星穹余烬'), orderCopyBefore.includes('星穹余烬'));
     assertClean(errors, remoteRequests);
   } finally {
     await page.close();
@@ -142,7 +145,27 @@ test('真实设备横屏视窗自动使用横屏 Shell', async () => {
     await page.close();
   }
 });
+
+test('真实 resize 与手动切换汇入同一方向入口且不丢订单', async () => {
+  const { page, errors, remoteRequests } = await openDemo({ width: 1100, height: 920 });
+  try {
+    await page.getByRole('button', { name: '购买 ¥128', exact: true }).click();
+    await page.getByRole('button', { name: /购买 CDKEY/ }).click();
+    await page.getByRole('button', { name: '横屏预览', exact: true }).click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('#app[data-orientation="portrait"] .app-shell').waitFor();
+    assert.match(await page.locator('#app').innerText(), /购买 CDKEY/);
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.locator('#app[data-orientation="landscape"] .landscape-shell').waitFor();
+    assert.match(await page.locator('#app').innerText(), /购买 CDKEY/);
+    assertClean(errors, remoteRequests);
+  } finally {
+    await page.close();
+  }
+});
 ```
+
+上述纯可见主链路的 `openDemo()` 只能等待 `#app` 内的可见页面节点，不能把等待 `window.__androidBuyoutDemo` 作为初始化条件。若测试辅助函数默认等待隐藏 API，应为这两条用例传入 `waitForTestApi: false`。手动方向切换必须使用 1100×920 之类能显示工具条的桌面视窗；窄屏只验证真实 viewport 方向响应。
 
 - [ ] **Step 5: 运行新增用例并确认先失败**
 
@@ -237,7 +260,7 @@ const deviceViewportOrientation = () => (
 const makeInitialState = (orientation = deviceViewportOrientation()) => ({
   orientation,
   orientationSource: 'viewport',
-  pendingAction: '',
+  pendingAction: null,
   // 保留现有全部字段
 });
 
@@ -254,6 +277,8 @@ function setOrientation(nextOrientation, source = 'manual') {
   return true;
 }
 ```
+
+首次 `render()` 前必须调用一次 `setOrientation(state.orientation, state.orientationSource)`，或由等价的 `syncOrientationUi()` 同时同步 `#app[data-orientation]` 与两个工具按钮的 `aria-pressed`。不能依赖 HTML 中写死的 `portrait` 初始值，否则直接以 844×390 打开时会出现横屏状态、竖屏 DOM 标记不一致。
 
 `reset()` 必须先保存 `state.orientation`，再调用 `makeInitialState(savedOrientation)`。
 
@@ -310,23 +335,26 @@ git commit -m "feat: add android demo orientation controls"
 - [ ] **Step 1: 新增独立横屏顶部导航和 Shell**
 
 ```js
-function landscapeTopNav(title) {
+function landscapeTopNav({ title, backScreen, backLabel, trailing, noTopbar }) {
+  const leading = backScreen
+    ? `<button class="landscape-back" type="button" data-action="navigate" data-screen="${backScreen}" aria-label="${backLabel}">‹ ${backLabel}</button>`
+    : '<strong class="landscape-brand">GAMEHUB</strong>';
   return `<header class="landscape-top-nav" data-component-id="C-NAV-L">
-    <strong class="landscape-brand">GAMEHUB</strong>
+    ${leading}
     <nav aria-label="掌机顶部导航">
-      <button type="button" data-action="navigate" data-screen="detail">首页</button>
+      <button type="button" data-action="navigate" data-screen="store">首页</button>
       <button type="button" data-action="navigate" data-screen="library">游戏库</button>
       <button type="button" data-action="navigate" data-screen="orders">订单</button>
     </nav>
     <span class="landscape-current">${title}</span>
-    <span class="landscape-system">14:38 · Wi-Fi · 82</span>
+    <span class="landscape-trailing">${trailing || '<span class="landscape-system">14:38 · Wi-Fi · 82</span>'}</span>
   </header>`;
 }
 
 function landscapeShell(content, options = {}) {
-  const { title = '', dock = '', nav = '' } = options;
-  return `<div class="landscape-shell" data-component-id="C-SHELL-L" data-screen="${state.screen}">
-    ${landscapeTopNav(title)}
+  const { title = '', backScreen = '', backLabel = '返回', trailing = '', dock = '', nav = '', noTopbar = false } = options;
+  return `<div class="landscape-shell ${noTopbar ? 'landscape-shell--immersive' : ''}" data-component-id="C-SHELL-L" data-screen="${state.screen}">
+    ${landscapeTopNav({ title, backScreen, backLabel, trailing, noTopbar })}
     <main class="landscape-page">
       <section class="landscape-content">${content}</section>
       ${dock ? `<aside class="landscape-action-panel">${dock}</aside>` : ''}
@@ -474,19 +502,27 @@ Expected: FAIL，找不到“查询中…”按钮。
 ```js
 function runVisibleTransition(actionKey, operation, delay = 180) {
   if (state.pendingAction) return false;
-  state.pendingAction = actionKey;
+  const orderId = state.currentOrderId;
+  const token = `${actionKey}:${orderId || 'none'}:${Date.now()}`;
+  state.pendingAction = { actionKey, orderId, token };
   render();
   window.setTimeout(() => {
-    if (state.pendingAction !== actionKey) return;
-    operation();
-    state.pendingAction = '';
+    if (state.pendingAction?.token !== token) return;
+    const targetOrder = orderId ? state.orders.find((order) => order.id === orderId) : null;
+    if (orderId && !targetOrder) {
+      state.pendingAction = null;
+      render();
+      return;
+    }
+    operation({ orderId, targetOrder, token });
+    if (state.pendingAction?.token === token) state.pendingAction = null;
     render();
   }, delay);
   return true;
 }
 
 function pendingButton(actionKey, idleLabel, loadingLabel) {
-  const pending = state.pendingAction === actionKey;
+  const pending = state.pendingAction?.actionKey === actionKey;
   return `aria-busy="${pending}" ${pending ? 'disabled' : ''}>${pending ? loadingLabel : idleLabel}`;
 }
 ```
@@ -497,25 +533,31 @@ function pendingButton(actionKey, idleLabel, loadingLabel) {
 
 ```js
 if (action === 'refresh-payment') {
-  return runVisibleTransition('payment-query', () => applyPaymentResult(state.nextPaymentResult));
+  return runVisibleTransition('payment-query', ({ orderId }) => applyPaymentResult(state.nextPaymentResult, orderId));
 }
 if (action === 'refresh-fulfillment') {
-  return runVisibleTransition('entitlement-query', () => applyFulfillmentResult(state.nextFulfillmentResult));
+  return runVisibleTransition('entitlement-query', ({ orderId }) => applyFulfillmentResult(state.nextFulfillmentResult, orderId));
 }
 if (action === 'refresh-key-allocation') {
-  return runVisibleTransition('key-allocation-query', () => applyKeyAllocationResult(state.nextKeyAllocationResult));
+  return runVisibleTransition('key-allocation-query', ({ orderId }) => applyKeyAllocationResult(state.nextKeyAllocationResult, orderId));
 }
 if (action === 'refresh-activation') {
-  return runVisibleTransition('activation-query', () => applyActivationResult(state.nextActivationResult));
+  return runVisibleTransition('activation-query', ({ orderId }) => applyActivationResult(state.nextActivationResult, orderId));
 }
 if (action === 'refresh-refund') {
-  return runVisibleTransition('refund-query', () => applyRefundResult(state.nextRefundResult));
+  return runVisibleTransition('refund-query', ({ orderId }) => applyRefundResult(state.nextRefundResult, orderId));
 }
 ```
 
-不修改 `applyPaymentResult`、`applyFulfillmentResult`、`applyKeyAllocationResult`、`applyActivationResult` 和 `applyRefundResult` 的业务规则。
+把 `applyPaymentResult`、`applyFulfillmentResult`、`applyKeyAllocationResult`、`applyActivationResult` 和 `applyRefundResult` 改为接收可选 `orderId`，通过 `orderById(orderId)` 取得触发时的目标订单；只改变目标定位方式，不修改业务规则。回调执行时即使用户已导航到另一笔订单，也不得串改新的 `currentOrder()`。
 
-- [ ] **Step 5: 运行纯可见成功链路和原有异常注入链路**
+- [ ] **Step 5: 让状态样例复用正式订单详情与动作策略**
+
+移除独立的 `renderSampleOrderDetail()` 事实与动作实现。点击 `open-sample-order` 时，把对应 fixture 克隆为当前会话的 sandbox order，并统一进入正式 `renderOrderDetail()`、`getOrderActions()` 和上面的状态机函数。样例详情必须显示该状态真实允许的主操作；重新打开样例时恢复 fixture 初始值，避免评审操作污染其他状态样例。
+
+增加至少一个可见 DOM 用例：从状态样例进入“支付待确认”详情，看到并点击“刷新支付结果”，随后由正式详情显示下一状态；测试不得调用 `snapshot()` 或 `setApi()`。
+
+- [ ] **Step 6: 运行纯可见成功链路和原有异常注入链路**
 
 Run:
 
@@ -525,7 +567,7 @@ node --test --test-name-pattern="普通评审者|可见刷新动作|CDKEY 交付
 
 Expected: PASS。纯可见链路不调用 `setApi`；异常用例仍可通过隐藏测试 API 注入边界结果。
 
-- [ ] **Step 6: 提交所见即所得动作反馈**
+- [ ] **Step 7: 提交所见即所得动作反馈**
 
 ```powershell
 git add -- demos/APP买断游戏与DLC/盖世游戏APP买断游戏与DLCdemo.html tests/buyout-commerce/android-buyout.browser.test.mjs
