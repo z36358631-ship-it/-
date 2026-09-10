@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "5b5fe1f2-9cff-43a0-8f69-29ef1ed5ade0",
   "requirementId": "GUANWANGGAID-41",
-  "revision": 47,
+  "revision": 50,
   "status": "passed",
   "createdAt": "2026-08-31T03:22:01.3837637Z",
-  "updatedAt": "2026-09-10T05:45:23.8515418Z",
+  "updatedAt": "2026-09-10T05:48:48.2418172Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
   "cardHash": "FAC5A31359508A1B969EC05461F496B57DACDF5050FE19D47E814DE96D4D4724",
   "contract": {
@@ -330,7 +330,7 @@
         "S7"
       ],
       "status": "passed",
-      "attempt": 4,
+      "attempt": 5,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\AppData\\Local\\Temp\\codex-guanwanggaid-41-publisher-plan-push-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
@@ -357,16 +357,17 @@
         "源文件｜通过：C/B Demo、V2.2 PRD、24 张图片、验证脚本与状态卡均已落盘并完成对账",
         "机器验证｜通过：静态合同、PRD 质量与图片结构通过；既有离线 UI 与视觉证据保持通过",
         "专业判断｜通过：发行人计划命名、盖世积分／盖世币口径与兑换来源规则复核通过",
-        "Git｜通过，已推送：origin/codex/guanwanggaid-41-publisher-plan-v2-20260910，核心产物远端 HEAD f9113622",
+        "Git｜通过，已推送：origin/codex/guanwanggaid-41-publisher-plan-v2-20260910；核心产物提交 f9113622 已在远端历史中",
         "公开预览｜未执行：未获公开发布授权",
         "远程资源｜通过：公网图片 HTTP 状态与 MIME 24/24；飞书转存未执行"
       ],
       "evidence": [
-        "git push -u origin codex/guanwanggaid-41-publisher-plan-v2-20260910：成功",
+        "独立分支首次推送成功；状态同步提交再次推送成功",
+        "git ls-remote 与本地 HEAD 37471cea 一致",
         "validate-prd-images.ps1 -VerifyRemote：PASS，24/24",
         "GUANWANGGAID-41=in_review，version=11，已绑定分支"
       ],
-      "validation": "独立发行人计划分支已推送并完成公网图片验证；未公开发布或执行飞书转存",
+      "validation": "独立发行人计划分支已同步；远端与本地核对一致；公网图片通过；未公开发布或执行飞书转存",
       "error": null,
       "reviewer": null
     }
