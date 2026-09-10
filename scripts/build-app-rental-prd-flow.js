@@ -1,71 +1,163 @@
-const path = require('path');
+const path = require('node:path');
 const sharp = require('sharp');
 
-const workspace = path.resolve(__dirname, '..');
-const output = path.join(workspace, 'public', 'prd', 'app-rental', 'app-rental-current-flow.png');
+const root = path.resolve(__dirname, '..');
+const assetDir = path.join(root, 'public', 'prd', 'app-rental');
+const outputPath = path.join(assetDir, 'app-rental-current-flow.png');
 
 const steps = [
-  ['1', '发现租号', '首页、PC游戏、搜索'],
-  ['2', '游戏详情', '校验已有权益与可售状态'],
-  ['3', '选择权益', '首次体验 2 小时 / 单游戏永久 / 开会员畅玩'],
-  ['4', '确认并支付', '微信 / 支付宝，保存订单快照'],
-  ['5', '权益生效', '从支付成功开始计时或发放长期权益'],
-  ['6', '登录与启动', '无感准备账号，登录成功回游戏详情'],
-  ['7', '订单与售后', '查看有效期、退款进度、换号与履约售后'],
+  { num: '01', title: '发现租号', detail: '识别租号价格与当前权益', image: '01-discovery-portrait.png', crop: { left: 0, top: 70, width: 390, height: 330 } },
+  { num: '02', title: '游戏详情', detail: '核验权益与商品可售状态', image: '02-detail-portrait.png', crop: { left: 0, top: 245, width: 390, height: 300 } },
+  { num: '03', title: '选择权益', detail: '体验、永久或开会员畅玩', image: '03-checkout-portrait.png', crop: { left: 0, top: 230, width: 390, height: 350 } },
+  { num: '04', title: '确认并支付', detail: '核对金额与支付方式后购买', image: '03-checkout-portrait.png', crop: { left: 0, top: 555, width: 390, height: 289 } },
+  { num: '05', title: '权益生效', detail: '支付成功后计时或发放权益', image: '17-payment-success-portrait.png', crop: { left: 0, top: 65, width: 390, height: 365 } },
+  { num: '06', title: '登录与启动', detail: '登录成功进入详情下载或启动', image: '06-steam-login-portrait.png', crop: { left: 0, top: 70, width: 390, height: 430 } },
+  { num: '07', title: '订单管理／续租／售后（按需）', detail: '查看有效期、续租与售后进度', image: '05-orders-portrait.png', crop: { left: 0, top: 75, width: 390, height: 430 } },
 ];
 
-const cardWidth = 500;
-const cardHeight = 250;
-const gap = 92;
-const marginX = 72;
-const width = marginX * 2 + steps.length * cardWidth + (steps.length - 1) * gap;
-const height = 620;
+const layout = Object.freeze({
+  columns: 4,
+  rows: [4, 3],
+  width: 2560,
+  height: 1640,
+  marginX: 80,
+  cardWidth: 570,
+  cardHeight: 590,
+  gapX: 40,
+  rowOneY: 160,
+  rowTwoY: 830,
+  imageX: 26,
+  imageY: 102,
+  imageWidth: 518,
+  imageHeight: 356,
+});
 
 function escapeXml(value) {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-const nodes = steps.map(([num, title, subtitle], index) => {
-  const x = marginX + index * (cardWidth + gap);
-  const subtitleLines = subtitle.split(' / ');
-  const text = subtitleLines.map((line, lineIndex) =>
-    `<text x="${x + cardWidth / 2}" y="${330 + lineIndex * 42}" class="sub">${escapeXml(lineIndex < subtitleLines.length - 1 ? `${line} /` : line)}</text>`
-  ).join('');
-  return `
-    <g>
-      <rect x="${x}" y="170" width="${cardWidth}" height="${cardHeight}" rx="30" fill="#ffffff" stroke="#dbe4f0" stroke-width="4"/>
-      <circle cx="${x + 62}" cy="228" r="34" fill="#2f6bff"/>
-      <text x="${x + 62}" y="240" class="num">${num}</text>
-      <text x="${x + 114}" y="240" class="title">${escapeXml(title)}</text>
-      <line x1="${x + 42}" y1="278" x2="${x + cardWidth - 42}" y2="278" stroke="#e8edf5" stroke-width="3"/>
-      ${text}
-    </g>`;
-}).join('');
+function positionFor(index) {
+  const row = index < layout.rows[0] ? 0 : 1;
+  const column = row === 0 ? index : index - layout.rows[0];
+  return {
+    left: layout.marginX + column * (layout.cardWidth + layout.gapX),
+    top: row === 0 ? layout.rowOneY : layout.rowTwoY,
+  };
+}
 
-const arrows = steps.slice(0, -1).map((_, index) => {
-  const x = marginX + cardWidth + index * (cardWidth + gap) + 18;
-  return `<path d="M${x} 295 H${x + 46} M${x + 32} 278 L${x + 50} 295 L${x + 32} 312" fill="none" stroke="#9aa9bd" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
-}).join('');
+function cardSvg(step) {
+  const titleSize = step.title.length > 10 ? 25 : 34;
+  const detailSize = step.detail.length > 15 ? 21 : 23;
+  return Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${layout.cardWidth}" height="${layout.cardHeight}">
+      <defs>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#7d91a7" flood-opacity="0.16"/>
+        </filter>
+      </defs>
+      <rect x="8" y="8" width="${layout.cardWidth - 16}" height="${layout.cardHeight - 20}" rx="26" fill="#ffffff" stroke="#d8e3ec" stroke-width="2" filter="url(#shadow)"/>
+      <rect x="24" y="22" width="62" height="52" rx="14" fill="#11a7bb"/>
+      <text x="55" y="58" fill="#ffffff" font-family="Microsoft YaHei, sans-serif" font-size="25" font-weight="700" text-anchor="middle">${step.num}</text>
+      <text x="104" y="59" fill="#17324a" font-family="Microsoft YaHei, sans-serif" font-size="${titleSize}" font-weight="700">${escapeXml(step.title)}</text>
+      <rect x="24" y="98" width="522" height="360" rx="17" fill="#0b0e13" stroke="#d7e2eb" stroke-width="2"/>
+      <line x1="24" y1="486" x2="546" y2="486" stroke="#e6edf3" stroke-width="2"/>
+      <circle cx="40" cy="532" r="6" fill="#11a7bb"/>
+      <text x="58" y="540" fill="#52677b" font-family="Microsoft YaHei, sans-serif" font-size="${detailSize}" font-weight="500">${escapeXml(step.detail)}</text>
+    </svg>
+  `);
+}
 
-const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-  <rect width="100%" height="100%" fill="#f7f9fc"/>
-  <style>
-    .headline { font-family: "Microsoft YaHei", sans-serif; font-size: 42px; font-weight: 700; fill: #172033; }
-    .caption { font-family: "Microsoft YaHei", sans-serif; font-size: 24px; fill: #64748b; }
-    .num { font-family: "Microsoft YaHei", sans-serif; font-size: 32px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
-    .title { font-family: "Microsoft YaHei", sans-serif; font-size: 32px; font-weight: 700; fill: #182235; }
-    .sub { font-family: "Microsoft YaHei", sans-serif; font-size: 24px; fill: #5b687c; text-anchor: middle; }
-  </style>
-  <text x="${marginX}" y="72" class="headline">APP 租号首期主流程</text>
-  <text x="${marginX}" y="115" class="caption">首期只含首次体验、单游戏永久和会员；热门游戏时租为后续版本</text>
-  ${nodes}
-  ${arrows}
-  <rect x="${marginX}" y="482" width="${width - marginX * 2}" height="76" rx="20" fill="#eef4ff"/>
-  <text x="${marginX + 30}" y="531" class="caption">异常恢复：支付、权益发放、账号准备或售后结果未知时，保留订单号并查询服务端真值，不重复扣款、发放权益或退款。</text>
-</svg>`;
+async function roundedScreenshot(step) {
+  const resized = await sharp(path.join(assetDir, step.image))
+    .extract(step.crop)
+    .resize({
+      width: layout.imageWidth,
+      height: layout.imageHeight,
+      fit: 'contain',
+      background: '#0b0e13',
+    })
+    .png()
+    .toBuffer();
+  const mask = Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${layout.imageWidth}" height="${layout.imageHeight}">
+      <rect width="100%" height="100%" rx="15" fill="#ffffff"/>
+    </svg>
+  `);
+  return sharp(resized).composite([{ input: mask, blend: 'dest-in' }]).png().toBuffer();
+}
 
-sharp(Buffer.from(svg)).png().toFile(output).catch((error) => {
+function arrowBetween(fromIndex, toIndex, top) {
+  const from = positionFor(fromIndex);
+  const to = positionFor(toIndex);
+  const y = top + layout.cardHeight / 2;
+  const start = from.left + layout.cardWidth + 9;
+  const end = to.left - 13;
+  return `<path d="M${start} ${y} H${end}" fill="none" stroke="#18a8b8" stroke-width="6" stroke-linecap="round" marker-end="url(#arrow)"/>`;
+}
+
+const fourth = positionFor(3);
+const fifth = positionFor(4);
+const returnPath = `M${fourth.left + layout.cardWidth / 2} ${fourth.top + layout.cardHeight + 8} V790 H${fifth.left + layout.cardWidth / 2} V${fifth.top - 14}`;
+
+function backgroundSvg() {
+  const horizontalArrows = [
+    arrowBetween(0, 1, layout.rowOneY),
+    arrowBetween(1, 2, layout.rowOneY),
+    arrowBetween(2, 3, layout.rowOneY),
+    arrowBetween(4, 5, layout.rowTwoY),
+    arrowBetween(5, 6, layout.rowTwoY),
+  ].join('');
+  return Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${layout.width}" height="${layout.height}">
+      <defs>
+        <marker id="arrow" markerWidth="13" markerHeight="13" refX="10" refY="6.5" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L11,6.5 L0,13 Z" fill="#18a8b8"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="#f3f7fa"/>
+      <text x="80" y="70" fill="#17324a" font-family="Microsoft YaHei, sans-serif" font-size="46" font-weight="700">APP 租号首期主流程</text>
+      <text x="80" y="116" fill="#6a7f92" font-family="Microsoft YaHei, sans-serif" font-size="24">首次体验、单游戏永久与会员的发现、购买、履约和订单管理</text>
+      ${horizontalArrows}
+      <path d="${returnPath}" fill="none" stroke="#18a8b8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+      <rect x="80" y="1480" width="2400" height="104" rx="20" fill="#e7f4f7" stroke="#c9e6eb" stroke-width="2"/>
+      <circle cx="126" cy="1532" r="21" fill="#11a7bb"/>
+      <text x="126" y="1541" fill="#ffffff" font-family="Microsoft YaHei, sans-serif" font-size="25" font-weight="700" text-anchor="middle">!</text>
+      <text x="166" y="1541" fill="#4f687c" font-family="Microsoft YaHei, sans-serif" font-size="23">异常恢复：支付、权益发放、登录启动或售后结果未知时，按订单号查询服务端真值；禁止重复扣款、重复发放和重复退款。</text>
+    </svg>
+  `);
+}
+
+async function main() {
+  const composites = [{ input: backgroundSvg(), left: 0, top: 0 }];
+  for (let index = 0; index < steps.length; index += 1) {
+    const step = steps[index];
+    const position = positionFor(index);
+    composites.push({ input: cardSvg(step), left: position.left, top: position.top });
+    composites.push({
+      input: await roundedScreenshot(step),
+      left: position.left + layout.imageX,
+      top: position.top + layout.imageY,
+    });
+  }
+
+  await sharp({
+    create: {
+      width: layout.width,
+      height: layout.height,
+      channels: 4,
+      background: '#f3f7fa',
+    },
+  }).composite(composites).png({ compressionLevel: 9 }).toFile(outputPath);
+
+  const metadata = await sharp(outputPath).metadata();
+  process.stdout.write(`BUILD ${path.relative(root, outputPath)} ${metadata.width}x${metadata.height}\n`);
+}
+
+main().catch((error) => {
   process.stderr.write(`${error.stack || error.message}\n`);
   process.exitCode = 1;
 });
