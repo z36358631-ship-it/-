@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "5b5fe1f2-9cff-43a0-8f69-29ef1ed5ade0",
   "requirementId": "GUANWANGGAID-41",
-  "revision": 76,
+  "revision": 92,
   "status": "passed",
   "createdAt": "2026-08-31T03:22:01.3837637Z",
-  "updatedAt": "2026-09-10T10:24:57.2688218Z",
+  "updatedAt": "2026-09-10T15:43:37.8647043Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
   "cardHash": "FAC5A31359508A1B969EC05461F496B57DACDF5050FE19D47E814DE96D4D4724",
   "contract": {
@@ -13,26 +13,34 @@
       "可操作C/B Demo",
       "V2 PRD",
       "流程图与页面图",
-      "机器与人工验证证据"
+      "机器与人工验证证据",
+      "任务中心C/B Demo",
+      "任务中心V2 PRD与完整页面证据"
     ],
     "changes": [
       "充值盖世币不进入兑换余额",
       "兑换页不显示充值部分",
       "规则说明新增来源限制",
-      "电子卡密自动发放"
+      "电子卡密自动发放",
+      "任务中心与兑换商城更新为最新竖屏样式",
+      "普通任务奖励与商城支付资产统一为盖世积分",
+      "保留虚拟权益、实物商品、地址、发货与物流"
     ],
-    "goal": "取消现金提现，改为符合兑换资格的盖世币自主兑换京东电子卡并自动发卡密",
+    "goal": "完成发行人计划京东电子卡改造，并将任务中心与兑换商城更新为盖世积分口径和最新竖屏样式",
     "inScope": [
       "发行人计划C端Demo",
       "发行人计划B端Demo",
       "发行人计划V2 PRD",
+      "任务中心C/B Demo",
+      "任务中心V2 PRD",
       "页面截图与横向流程图"
     ],
     "outOfScope": [
-      "实体京东卡",
-      "收货地址与物流",
+      "发行人计划实体京东卡、收货地址与物流",
       "其他礼品卡",
-      "线上发布",
+      "任务中心横屏改版和新增一级入口",
+      "盖世积分兑换京东卡或与盖世币互换",
+      "线上功能发布",
       "真实卡密与真实资金"
     ],
     "inputs": [
@@ -40,7 +48,9 @@
       "已确认设计稿",
       "V1 C/B Demo",
       "V1 PRD",
-      "任务中心兑换商城Demo"
+      "任务中心兑换商城Demo",
+      "用户确认任务中心方案A",
+      "GameHub X-03页面配方与竖屏组件契约"
     ]
   },
   "steps": [
@@ -91,30 +101,31 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 7,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\specs\\2026-09-10-publisher-preview-interactivity-fix-design.md",
-          "sha256": "6241EFD12CD61E40DE746B932F122DA1EB29E1734B647BC1CA71E06B888DA27C"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\specs\\2026-09-10-task-center-redemption-store-refresh-design.md",
+          "sha256": "8AC9DABDD62688A5CC61C044B8ECA497E4FEC6521A86E38F1246393503AC62C0"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\plans\\2026-09-10-publisher-preview-interactivity-fix.md",
-          "sha256": "B7F7D08B955B24FE57BD038F6448C9D764ED62C53233A58C19EB077ED3C78007"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\plans\\2026-09-10-task-center-redemption-store-refresh.md",
+          "sha256": "C8E204A5CF191CBB0FE54C6320C69127CF9A1ED3ADA1E9B5DF60D5E46EAB7B9C"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
-          "sha256": "429CD733DBF46C66C9076BBE97F1A7DAED95294C3BA9F53FBA6AAC61E3D3EDBC"
+          "sha256": "874924CD16927E4FF72AC6FFCC30EE3363CEEA2FB9994A8695CB751D06B15240"
         }
       ],
       "outputs": [
-        "修复 htmlpreview 不执行 jsDelivr 外链脚本导致的 C/B Demo 点击失效",
-        "采用方案 A：交互脚本内嵌到 HTML，业务逻辑、视觉、PRD 和截图不变"
+        "方案A：只更新竖屏任务中心与兑换商城并保留完整履约",
+        "普通任务和本商城统一盖世积分，与发行人计划盖世币分账",
+        "PRD、页面证据、验证器、Git与状态卡均受影响"
       ],
       "evidence": [
-        "用户反馈：页面可以打开但所有点击无反应",
-        "用户确认方案 A 与书面设计"
+        "用户明确选择方案A并要求更新样式、PRD与Git",
+        "D-010与D-011"
       ],
-      "validation": "变化已编译；仅 C/B Demo 封装、静态合同、公开预览、Git 和状态卡受影响",
+      "validation": "变化已编译；不改横屏、不新增入口、不把京东卡引入任务中心",
       "error": null,
       "reviewer": null
     },
@@ -126,33 +137,26 @@
         "S3"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 6,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.html",
-          "sha256": "F2DFAABDD32567E5DF4FB4FEAD55C84BA3BD0A70BC07FB6D74F39FBD6F85BA37"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\specs\\2026-09-10-task-center-redemption-store-refresh-design.md",
+          "sha256": "8AC9DABDD62688A5CC61C044B8ECA497E4FEC6521A86E38F1246393503AC62C0"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.html",
-          "sha256": "03365D5DBBBF641DBC770F5BE8B6AB513114FFE758A555DE999A0F7A767F4DB4"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\07-wallet.png",
-          "sha256": "5F7B4EB9CA3376B929278471B943408495B0CCEB2A698440FEBDDE38D7B505F9"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\20-card-products.png",
-          "sha256": "368C675C1464CB408B46C757BD4DA2CFEA0EB98C9977B6CA42C51B587BA27817"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\plans\\2026-09-10-task-center-redemption-store-refresh.md",
+          "sha256": "C8E204A5CF191CBB0FE54C6320C69127CF9A1ED3ADA1E9B5DF60D5E46EAB7B9C"
         }
       ],
       "outputs": [
-        "确认既有 C/B 页面结构、样式和业务交互不改，仅修复脚本交付形式"
+        "已恢复旧任务中心的任务、积分明细、虚拟与实物兑换、地址和物流能力",
+        "确认本轮只更新竖屏视觉并保留原履约链路"
       ],
       "evidence": [
-        "public/prd/publisher-plan-v2/07-wallet.png",
-        "public/prd/publisher-plan-v2/20-card-products.png"
+        "任务中心刷新设计文档中的原页面盘点",
+        "用户确认方案A"
       ],
-      "validation": "同版本页面基线保持有效，无新增页面、入口、弹窗、Toast、字段或流程",
+      "validation": "原页面结构、视觉问题和保留能力已形成实施基线",
       "error": null,
       "reviewer": null
     },
@@ -165,36 +169,36 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 6,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.html",
-          "sha256": "F2DFAABDD32567E5DF4FB4FEAD55C84BA3BD0A70BC07FB6D74F39FBD6F85BA37"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\任务中心demo.html",
+          "sha256": "1DC35FA5A65364B3C565E2C06C1BC7AF926237BB78EEF6B5E293C489433469BD"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.js",
-          "sha256": "B743D1C84FCC1DC74FB067556D31C83BB5A5CC56122E79ADFC7349D338C261D5"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\任务中心后台demo.html",
+          "sha256": "C25D685C2A22495DD65AA791B99DCD811A6C10452F0E088BEA0C7143D5F9D5EE"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.html",
-          "sha256": "03365D5DBBBF641DBC770F5BE8B6AB513114FFE758A555DE999A0F7A767F4DB4"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\【Prd】《盖世游戏》任务中心与兑换商城需求.md",
+          "sha256": "C81AB7192F850735A19A8B4F59B16FDBA0891AFE2E373A133A45ADDD8E742FA1"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.js",
-          "sha256": "C61753B1F5B3D7F716EBF3E1804A9C00E83E6BD5ADFFA4E5F9D065D5D9AD2437"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-v2.mjs",
-          "sha256": "8E5829F8C72FF5EED639308D5EFDBB1E4219D881F34DDA1CE3894C677D2B622D"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\evidence\\task-center-v2\\verification.json",
+          "sha256": "44D321533D12200F0BEF09D3BAA170FF901FE31B8430E342B726DECC13F6A592"
         }
       ],
       "outputs": [
-        "C/B Demo 已改为自包含脚本单文件，维护源 JS 保留并受一致性合同约束"
+        "竖屏任务中心与兑换商城无外链单文件Demo",
+        "后台任务、奖品和兑换发货页统一盖世积分",
+        "to-prd标准V2 PRD与10张固定图"
       ],
       "evidence": [
-        "9eaa1574：C/B HTML 单文件修复与静态合同"
+        "251acf93：任务中心与兑换商城改版",
+        "8867bea7：完整页面证据",
+        "2b341b7d：PRD与状态卡"
       ],
-      "validation": "方案 A 已实施；业务内容、视觉、PRD 和截图无需修改",
+      "validation": "方案A产物已同步；横屏、入口和京东卡边界未扩展",
       "error": null,
       "reviewer": null
     },
@@ -206,32 +210,34 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 6,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-v2.mjs",
-          "sha256": "8E5829F8C72FF5EED639308D5EFDBB1E4219D881F34DDA1CE3894C677D2B622D"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-task-center-v2.mjs",
+          "sha256": "D6BD921776C3D3E65B7781A599B302F0F917750FDC88FD4D19BCE63E43E7D87A"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-v2-ui.mjs",
-          "sha256": "C79B9B36DA2B1A430012FB030906922F692F267BA2E949422BACD95FBD0188BC"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-task-center-public-preview.mjs",
+          "sha256": "939AF2E58D07E8669C5077B2C09D486624FF16CCC5B7239C148AAACAF694B0AB"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-public-preview.mjs",
-          "sha256": "99811E25E35083E6C8FA815D5AE23B71AE76588903D5AF2493993C0E89C8ECF7"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\【Prd】《盖世游戏》任务中心与兑换商城需求.md",
+          "sha256": "C81AB7192F850735A19A8B4F59B16FDBA0891AFE2E373A133A45ADDD8E742FA1"
         }
       ],
       "outputs": [
-        "静态合同通过",
-        "离线 UI 回归通过并重建 24 张截图",
-        "固定提交 4a7e8202 的 C/B 公网核心点击通过"
+        "本地静态与交互验证通过",
+        "PRD质量校验0错误0警告",
+        "固定图片公网验证10/10通过",
+        "固定提交C/B公网核心点击通过"
       ],
       "evidence": [
-        "node tools/verify-publisher-plan-v2.mjs：PASS",
-        "node tools/verify-publisher-plan-v2-ui.mjs：PASS，24 screenshots captured",
-        "node tools/verify-publisher-plan-public-preview.mjs 4a7e8202293f570e22ba5279a18e048be7e757da：PASS"
+        "node tools/verify-task-center-v2.mjs：PASS",
+        "validate-prd-quality.ps1：0错误、0警告",
+        "validate-prd-images.ps1 -VerifyRemote：10/10",
+        "node tools/verify-task-center-public-preview.mjs 251acf939f91612942693dd294c8f261b8515b02：PASS"
       ],
-      "validation": "确定性验证通过；新验证器可准确复现旧提交点击失效并验证新提交恢复",
+      "validation": "机器验证覆盖本地交互、PRD结构、图片公网状态和公网点击",
       "error": null,
       "reviewer": null
     },
@@ -243,35 +249,53 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 5,
+      "attempt": 6,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.html",
-          "sha256": "F2DFAABDD32567E5DF4FB4FEAD55C84BA3BD0A70BC07FB6D74F39FBD6F85BA37"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\任务中心demo.html",
+          "sha256": "1DC35FA5A65364B3C565E2C06C1BC7AF926237BB78EEF6B5E293C489433469BD"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.html",
-          "sha256": "03365D5DBBBF641DBC770F5BE8B6AB513114FFE758A555DE999A0F7A767F4DB4"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\任务中心后台demo.html",
+          "sha256": "C25D685C2A22495DD65AA791B99DCD811A6C10452F0E088BEA0C7143D5F9D5EE"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\07-wallet.png",
-          "sha256": "5F7B4EB9CA3376B929278471B943408495B0CCEB2A698440FEBDDE38D7B505F9"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\task-center-v2\\01-task-center.png",
+          "sha256": "C39402DAE6B82A778D8898811C422F4BCEC37BD79C12A0B85605035BD4BAC65D"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\20-card-products.png",
-          "sha256": "368C675C1464CB408B46C757BD4DA2CFEA0EB98C9977B6CA42C51B587BA27817"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\task-center-v2\\02-redemption-store.png",
+          "sha256": "2812A7F04BAC061F0734DE786BBCFEAA9E2B22E9A67CB39759727C082E12D766"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\task-center-v2\\07-admin-task-config.png",
+          "sha256": "737C0F1EDBDABAD095CF218659CA9E7DA0D8D154B064805DDBD1D23536D14F8D"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\task-center-v2\\08-admin-product-config.png",
+          "sha256": "E91C6BE9D2A2B9B255ECD123D3A7420F086358B11587E4C82F6A95AF2083B01D"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\task-center-v2\\09-admin-redemption-fulfillment.png",
+          "sha256": "EA2593CA50035CAE7F5C386DA9FF6DEE76CDD37128AA403D38B95F5968F03CEA"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\【Prd】《盖世游戏》任务中心与兑换商城需求.md",
+          "sha256": "C81AB7192F850735A19A8B4F59B16FDBA0891AFE2E373A133A45ADDD8E742FA1"
         }
       ],
       "outputs": [
-        "公网交互恢复且原页面业务、视觉和信息架构保持不变"
+        "盖世积分与盖世币分账在任务中心、商城、确认、规则和后台前置一致",
+        "虚拟权益与实物履约能力未被样式改造删除",
+        "页面融合GameHub竖屏组件契约且无明显遮挡或溢出"
       ],
       "evidence": [
-        "固定提交 4a7e8202：C 端钱包→兑换商城点击通过；B 端京东卡管理→兑换订单点击通过",
-        "离线 UI 回归 24 张截图通过且未纳入新的视觉改动"
+        "原尺寸审看任务中心、兑换商城、积分明细和后台三页截图",
+        "用户、研发、商业三视角评审结论已写回PRD"
       ],
-      "validation": "专业判断通过；修复仅改变脚本交付形式，不改变用户体验设计",
+      "validation": "专业判断通过；Figma像素级比对因鉴权未执行并保留风险",
       "error": null,
-      "reviewer": "Codex 产品、交互与开发复核"
+      "reviewer": "Codex 产品、用户、研发与视觉复核"
     },
     {
       "id": "S8",
@@ -284,39 +308,43 @@
         "S7"
       ],
       "status": "passed",
-      "attempt": 7,
+      "attempt": 8,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
-          "sha256": "429CD733DBF46C66C9076BBE97F1A7DAED95294C3BA9F53FBA6AAC61E3D3EDBC"
+          "sha256": "874924CD16927E4FF72AC6FFCC30EE3363CEEA2FB9994A8695CB751D06B15240"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.html",
-          "sha256": "F2DFAABDD32567E5DF4FB4FEAD55C84BA3BD0A70BC07FB6D74F39FBD6F85BA37"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\任务中心demo.html",
+          "sha256": "1DC35FA5A65364B3C565E2C06C1BC7AF926237BB78EEF6B5E293C489433469BD"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.html",
-          "sha256": "03365D5DBBBF641DBC770F5BE8B6AB513114FFE758A555DE999A0F7A767F4DB4"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\任务中心后台demo.html",
+          "sha256": "C25D685C2A22495DD65AA791B99DCD811A6C10452F0E088BEA0C7143D5F9D5EE"
         },
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-public-preview.mjs",
-          "sha256": "99811E25E35083E6C8FA815D5AE23B71AE76588903D5AF2493993C0E89C8ECF7"
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\【Prd】《盖世游戏》任务中心与兑换商城需求.md",
+          "sha256": "C81AB7192F850735A19A8B4F59B16FDBA0891AFE2E373A133A45ADDD8E742FA1"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-task-center-public-preview.mjs",
+          "sha256": "939AF2E58D07E8669C5077B2C09D486624FF16CCC5B7239C148AAACAF694B0AB"
         }
       ],
       "outputs": [
-        "源文件｜通过：C/B HTML 已自包含交互脚本，维护源和一致性合同已落盘",
-        "机器验证｜通过：静态合同、离线 UI 24 图回归、固定 SHA 公网点击通过",
-        "专业判断｜通过：业务、视觉和信息架构未改变，C/B 核心路径可操作",
-        "Git｜通过：修复与验证提交已推送到 origin/codex/guanwanggaid-41-publisher-plan-v2-20260910",
-        "公开预览｜通过：固定提交 4a7e8202 的 C/B 页面可打开并响应核心点击",
-        "远程资源｜通过：预览 HTTP 失败资源为 0；飞书导入或转存未执行"
+        "源文件｜通过：任务中心C/B Demo、V2 PRD、10张图与验证器已同步",
+        "机器验证｜通过：本地交互、PRD质量、远程图片10/10与固定提交公网点击通过",
+        "专业判断｜通过：资产口径、实物履约和竖屏视觉一致；Figma像素比对未执行",
+        "Git｜通过：业务产物、证据与PRD已推送至2b341b7d",
+        "公开预览｜通过：固定提交251acf93的C/B页面可打开并响应核心点击",
+        "远程资源｜通过：PRD图片10/10公网可访问；飞书真实导入未执行"
       ],
       "evidence": [
-        "4a7e8202293f570e22ba5279a18e048be7e757da：公网点击通过",
-        "f5f140d3：公网资源错误精确验证器已推送",
-        "PRD 与 24 张业务截图无需修改"
+        "状态卡产物登记与修改验证已更新",
+        "固定图片提交8867bea79d29b405c1edbde8fe92e63bdb3b57a8",
+        "PRD提交2b341b7d已推送"
       ],
-      "validation": "预览交互修复完成并对账；任务继续保持 in_review 等待用户验收",
+      "validation": "任务中心与兑换商城改版完成对账；任务保持in_review等待用户验收",
       "error": null,
       "reviewer": null
     }
