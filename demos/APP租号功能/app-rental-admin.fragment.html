@@ -273,6 +273,12 @@
     snapshot() { return { page: adminState.page, clientType: currentClientType(), auditCount: adminState.auditLogs.length, dataCount: adminState.page === 'audit' ? adminState.auditLogs.length : (currentData()[dataKeyForPage(adminState.page)]?.length || 0) }; },
     reset() { adminState.page = 'products'; ADMIN_DUAL_CLIENT_PAGES.forEach((pageId) => { adminState.clientByPage[pageId] = 'android'; }); adminState.selectedIds = { android: {}, mac: {} }; adminState.filters = { android: {}, mac: {} }; adminState.auditLogs = [...BASE_AUDIT_LOGS]; adminState.toast = ''; renderAdminApp(); return this.snapshot(); },
   });
+  const initialQuery = new URLSearchParams(window.location.search);
+  if (initialQuery.get('surface') === 'admin') {
+    setSurface('admin');
+    const initialPage = initialQuery.get('page');
+    if (initialPage && initialPage !== 'products' && ADMIN_RENDERERS[initialPage]) navigate(initialPage);
+  }
 })();
 </script>
 <!-- APP_RENTAL_ADMIN_FRAGMENT_END -->
