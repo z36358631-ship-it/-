@@ -1114,7 +1114,30 @@ test('生成穷举态、缺省态、三本账与付款尝试四张视觉证据',
       return document.elementFromPoint(box.x + box.width / 2,box.y + box.height / 2) === scenarioOrb;
     }), false, 'scenario orb must stay behind the payment drawer');
     await returnedDrawer.locator('.d15-drawer-body').evaluate(node => { node.scrollTop = node.scrollHeight; });
-    await page.screenshot({ path:path.join(evidenceDir,'payment-attempts-1440x900.png') });
+    await page.screenshot({ path:path.join(evidenceDir,'settlement-payment-recovery-1440x900.png') });
+  } finally {
+    await page.close();
+  }
+});
+
+test('生成两入口结算列表详情流水与缺省态证据', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    await page.screenshot({ path:path.join(evidenceDir,'settlement-list-1440x900.png') });
+
+    await openSettlementDetail(page,'STMT-2026-03-V1');
+    await page.screenshot({ path:path.join(evidenceDir,'settlement-detail-1440x900.png') });
+    await page.keyboard.press('Escape');
+
+    await page.getByRole('button', { name:'查询流水', exact:true }).click();
+    await page.screenshot({ path:path.join(evidenceDir,'flows-query-1440x900.png') });
+
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    await page.evaluate(() => window.__developerFinanceDemo.setDemoScenario('empty'));
+    assert.equal(await page.locator('main .gh-notice').count(), 0);
+    assert.equal(await page.locator('main .d15-metrics').count(), 0);
+    await page.screenshot({ path:path.join(evidenceDir,'settlement-empty-1440x900.png') });
   } finally {
     await page.close();
   }
