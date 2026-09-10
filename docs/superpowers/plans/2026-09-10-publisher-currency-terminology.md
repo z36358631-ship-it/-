@@ -136,7 +136,7 @@ git commit -m "feat: clarify publisher coin eligibility"
 
 - [ ] **Step 3: 运行 PRD 质量校验**
 
-Run: `powershell -ExecutionPolicy Bypass -File scripts/validate-prd-quality.ps1 -Path 'prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md'`
+Run: `powershell -ExecutionPolicy Bypass -File .agents/skills/to-prd/scripts/validate-prd-quality.ps1 -Path 'prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md'`
 
 Expected: `Pass`，0 个错误；原有必要重述提示允许保留，但不得新增术语冲突。
 
@@ -196,8 +196,8 @@ git commit -m "docs: distinguish gamehub points and coins"
 ```powershell
 node tools/verify-publisher-plan-v2.mjs
 node tools/verify-publisher-plan-v2-ui.mjs
-powershell -ExecutionPolicy Bypass -File scripts/validate-prd-quality.ps1 -Path 'prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md'
-powershell -ExecutionPolicy Bypass -File scripts/validate-prd-images.ps1 -PrdPath 'prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md'
+powershell -ExecutionPolicy Bypass -File .agents/skills/to-prd/scripts/validate-prd-quality.ps1 -Path 'prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md'
+powershell -ExecutionPolicy Bypass -File .agents/skills/to-prd/scripts/validate-prd-images.ps1 -PrdPath 'prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md'
 ```
 
 Expected: 全部为 PASS；24 图哈希在第二次 UI 复验后保持不变。
