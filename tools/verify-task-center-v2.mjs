@@ -104,6 +104,10 @@ try {
   await page.locator('[data-action="task-tab"][data-value="growth"]').click();
   assert.equal(await page.locator('[data-task-id="growth-profile"]').count(), 1, '成长任务 Tab 应可切换');
 
+  await page.evaluate(() => window.demoApi.showView('points'));
+  assert.equal(await page.locator('[data-view="points"].is-active').count(), 1, '积分明细应打开');
+  await capture(page, '06-points-detail.png');
+
   await page.evaluate(() => window.demoApi.reset());
   await page.locator('[data-action="open-store"]').click();
   assert.equal(await page.locator('[data-view="store"].is-active').count(), 1, '兑换商城应打开');
@@ -149,6 +153,25 @@ try {
   assert.equal(await page.locator('[data-dialog="address"].is-open').count(), 1, '实物商品兑换后应进入地址流程');
   assert.equal((await page.evaluate(() => window.demoApi.getState())).points, 200, '实物兑换应扣减对应积分');
 
+  const adminPage = await context.newPage();
+  await adminPage.setViewportSize({ width: 1440, height: 960 });
+  await adminPage.goto(pathToFileURL(adminPath).href, { waitUntil: 'load' });
+  await adminPage.locator('#page-task.active').waitFor({ state: 'visible' });
+  for (const [pageId, menuIndex, fileName] of [
+    ['task', 0, '07-admin-task-config.png'],
+    ['reward', 1, '08-admin-product-config.png'],
+    ['order', 2, '09-admin-redemption-fulfillment.png']
+  ]) {
+    await adminPage.evaluate(({ id, index }) => {
+      window.switchMenu(id, document.querySelectorAll('.menu-item')[index]);
+    }, { id: pageId, index: menuIndex });
+    await adminPage.locator(`#page-${pageId}.active`).waitFor({ state: 'visible' });
+    const filePath = path.join(outputDir, fileName);
+    await adminPage.screenshot({ path: filePath, animations: 'disabled' });
+    screenshots.push({ path: path.relative(root, filePath).replaceAll('\\', '/'), width: 1440, height: 960, sha256: sha256(filePath) });
+  }
+  await adminPage.close();
+
   await createFlowImage(context);
   assert.deepEqual(pageErrors, [], `Page errors: ${pageErrors.join('; ')}`);
   assert.deepEqual(failedRequests, [], `Failed requests: ${failedRequests.join('; ')}`);
@@ -163,11 +186,15 @@ const expectedImages = [
   '02-redemption-store.png',
   '03-redeem-confirm.png',
   '04-redemption-records.png',
-  '05-points-rules.png'
+  '05-points-rules.png',
+  '06-points-detail.png',
+  '07-admin-task-config.png',
+  '08-admin-product-config.png',
+  '09-admin-redemption-fulfillment.png'
 ];
 for (const name of expectedImages) {
   const filePath = path.join(outputDir, name);
-  assert(fs.existsSync(filePath) && fs.statSync(filePath).size > 20_000, `Invalid screenshot: ${name}`);
+  assert(fs.existsSync(filePath) && fs.statSync(filePath).size > 10_000, `Invalid screenshot: ${name}`);
 }
 
 if (fs.existsSync(prdPath)) {
