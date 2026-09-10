@@ -22,6 +22,23 @@ const mustNotContain = (source, values, label) => {
   }
 };
 
+const assertInlineScriptMatches = (html, js, sourceName, label) => {
+  const openingTag = `<script data-maintenance-source="${sourceName}">`;
+  assert(!html.includes(`<script src="${sourceName}"></script>`), `${label} still loads external script`);
+  const start = html.indexOf(openingTag);
+  assert.notEqual(start, -1, `${label} missing inline script marker`);
+  const contentStart = start + openingTag.length;
+  const end = html.indexOf('</script>', contentStart);
+  assert.notEqual(end, -1, `${label} missing inline script closing tag`);
+  let embedded = html.slice(contentStart, end);
+  if (embedded.startsWith('\r\n')) embedded = embedded.slice(2);
+  else if (embedded.startsWith('\n')) embedded = embedded.slice(1);
+  assert.equal(embedded, js, `${label} inline script differs from maintenance source`);
+};
+
+assertInlineScriptMatches(cHtml, cJs, '发行人计划demo.js', 'C demo');
+assertInlineScriptMatches(bHtml, bJs, '发行人计划-后台demo.js', 'B demo');
+
 mustContain(cHtml + cJs, [
   '可兑换盖世币',
   '任务中心获得的是盖世积分，与盖世币分开计算',
