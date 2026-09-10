@@ -61,6 +61,8 @@ function sha256(filePath) {
 
 async function capture(page, fileName) {
   const filePath = path.join(outputDir, fileName);
+  const toast = page.locator('[data-toast]');
+  if (await toast.count()) await toast.evaluate((element) => element.classList.remove('is-visible'));
   await page.locator('[data-demo-root]').screenshot({ path: filePath, animations: 'disabled' });
   screenshots.push({ path: path.relative(root, filePath).replaceAll('\\', '/'), width: 390, height: 844, sha256: sha256(filePath) });
 }
@@ -155,6 +157,7 @@ try {
 
   const adminPage = await context.newPage();
   await adminPage.setViewportSize({ width: 1440, height: 960 });
+  await adminPage.route(/^https?:\/\//, (route) => route.abort());
   await adminPage.goto(pathToFileURL(adminPath).href, { waitUntil: 'load' });
   await adminPage.locator('#page-task.active').waitFor({ state: 'visible' });
   for (const [pageId, menuIndex, fileName] of [
