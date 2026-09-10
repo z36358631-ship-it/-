@@ -26,6 +26,20 @@ async function locationHash(page) {
   return page.evaluate(() => location.hash);
 }
 
+async function openSettlementDetail(page, statementId) {
+  await page.locator(`[data-statement-id="${statementId}"]`).getByRole('button', { name:'查看', exact:true }).click();
+  return page.getByRole('dialog', { name:'结算详情' });
+}
+
+async function expandSettlementSection(drawer, sectionId) {
+  const section = drawer.locator(`[data-settlement-section="${sectionId}"]`);
+  await section.evaluate(node => {
+    node.open = true;
+    node.scrollIntoView({ block:'start' });
+  });
+  return section;
+}
+
 before(async () => {
   assert.ok(chrome, 'Chrome or Edge not found');
   assert.ok(fs.existsSync(demo), 'Demo 15 is not built');
@@ -56,13 +70,13 @@ test('财务模块只保留财务主体和对账结算两个一级入口', async
     assert.equal(await locationHash(page), '#/settlement');
 
     await page.goto(url('/payments'), { waitUntil:'load' });
-    assert.equal(await page.locator('main h1').innerText(), '付款记录');
-    assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot())).route, 'settlement/payments');
-    assert.equal(await locationHash(page), '#/settlement/payments');
+    assert.equal(await page.locator('main h1').innerText(), '对账结算');
+    assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot())).route, 'settlement');
+    assert.equal(await locationHash(page), '#/settlement');
     assert.equal(await page.locator('.d15-nav [data-route]').count(), 2);
     assert.equal(await page.locator('[data-route="settlement"]').evaluate(node => node.classList.contains('is-active')), true);
-    await page.locator('[data-payment-id="PAY-202606-001"]').getByRole('button', { name:'查看', exact:true }).click();
-    assert.equal(await page.getByRole('dialog', { name:'付款详情' }).count(), 1);
+    await page.locator('[data-statement-id="STMT-2026-05-V1"]').getByRole('button', { name:'查看', exact:true }).click();
+    assert.equal(await page.getByRole('dialog', { name:'结算详情' }).count(), 1);
   } finally {
     await page.close();
   }
@@ -126,6 +140,53 @@ test('对账结算无页内Tab且流水查询使用次级路由', async () => {
     assert.equal(await page.locator('[data-route="settlement"]').getAttribute('class').then(value => value.includes('is-active')), true);
     await page.getByRole('button', { name:'返回对账结算', exact:true }).click();
     assert.equal(new URL(page.url()).hash, '#/settlement');
+  } finally {
+    await page.close();
+  }
+});
+
+test('结算详情使用单层抽屉纵向串联全部阶段', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    await page.locator('[data-statement-id="STMT-2026-03-V1"]').getByRole('button', { name:'查看', exact:true }).click();
+    const drawer = page.getByRole('dialog', { name:'结算详情' });
+    assert.equal(await drawer.count(), 1);
+    assert.equal(await page.getByRole('dialog').count(), 1);
+    assert.equal(await drawer.locator('[role="tab"], [data-statement-drawer-tab]').count(), 0);
+    for (const section of ['progress','summary','sources','flows','dispute','invoice','payment']) {
+      assert.equal(await drawer.locator('[data-settlement-section="' + section + '"]').count(), 1, section);
+    }
+    assert.match(await drawer.innerText(), /付款单[\s\S]*付款尝试/);
+    assert.equal(await drawer.locator('.d15-drawer-foot').evaluate(node => getComputedStyle(node).position), 'sticky');
+  } finally {
+    await page.close();
+  }
+});
+
+test('结算详情默认展开当前待办区块且主操作固定在底部', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  const assertOpenSection = async (statementId, expectedSection, closedSection) => {
+    const drawer = await openSettlementDetail(page,statementId);
+    assert.equal(await drawer.locator(`[data-settlement-section="${expectedSection}"]`).evaluate(node => node.open), true);
+    if (closedSection) assert.equal(await drawer.locator(`[data-settlement-section="${closedSection}"]`).evaluate(node => node.open), false);
+    await drawer.getByRole('button', { name:'关闭', exact:true }).last().click();
+  };
+  try {
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    await assertOpenSection('STMT-2026-08-V1','summary','payment');
+    await assertOpenSection('STMT-2026-07-V2','dispute','summary');
+    await assertOpenSection('STMT-2026-06-V1','invoice','summary');
+    await assertOpenSection('STMT-2026-03-V1','payment','summary');
+
+    const disputeDrawer = await openSettlementDetail(page,'STMT-2026-07-V2');
+    assert.equal(await disputeDrawer.locator('[data-settlement-section="dispute"]').getByRole('button', { name:'补充材料', exact:true }).count(), 0);
+    assert.equal(await disputeDrawer.locator('.d15-drawer-foot').getByRole('button', { name:'补充材料', exact:true }).count(), 1);
+    await disputeDrawer.getByRole('button', { name:'关闭', exact:true }).last().click();
+
+    const invoiceDrawer = await openSettlementDetail(page,'STMT-2026-06-V1');
+    assert.equal(await invoiceDrawer.locator('[data-settlement-section="invoice"]').getByRole('button', { name:'提交发票', exact:true }).count(), 0);
+    assert.equal(await invoiceDrawer.locator('.d15-drawer-foot').getByRole('button', { name:'提交发票', exact:true }).count(), 1);
   } finally {
     await page.close();
   }
@@ -228,8 +289,8 @@ test('悬浮球默认穷举态并可往返切换缺省态', async () => {
     await page.getByRole('button', { name:'查询流水', exact:true }).click();
     assert.match(await page.locator('main').innerText(), /暂无对账流水/);
     await page.evaluate(() => { location.hash = '/settlement/payments'; });
-    await page.waitForFunction(() => location.hash === '#/settlement/payments');
-    assert.match(await page.locator('main').innerText(), /暂无付款记录/);
+    await page.waitForFunction(() => location.hash === '#/settlement');
+    assert.match(await page.locator('main').innerText(), /暂无结算记录/);
     await page.locator('[data-route="entity"]').click();
     assert.match(await page.locator('main').innerText(), /尚未配置财务主体/);
     await page.getByRole('button', { name:'配置财务主体', exact:true }).click();
@@ -315,7 +376,7 @@ test('切换场景保留一级路由并重置临时视图且不写公共存储',
     assert.match(await page.locator('.gh-pagination').innerText(), /2 \/ 2/);
 
     await page.locator('tbody tr[data-statement-id]').first().getByRole('button', { name:'查看', exact:true }).click();
-    assert.equal(await page.getByRole('dialog', { name:'账单详情' }).count(), 1);
+    assert.equal(await page.getByRole('dialog', { name:'结算详情' }).count(), 1);
     const storageBefore = await page.evaluate(() => {
       const read = storage => {
         try { return Object.keys(storage).sort().map(key => [key,storage.getItem(key)]); }
@@ -400,11 +461,12 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
     await page.getByLabel('期望金额').fill('18520.36');
     await page.getByLabel('差异说明').fill('支付商结算文件中的汇率版本不同，请复核。');
     await page.getByRole('button', { name:'提交差异', exact:true }).click();
-    assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /差异记录/);
+    assert.match(await page.getByRole('dialog', { name:'结算详情' }).innerText(), /差异记录/);
 
     await page.getByRole('button', { name:'关闭', exact:true }).last().click();
     await page.locator('[data-statement-id="STMT-2026-06-V1"]').getByRole('button', { name:'查看', exact:true }).click();
-    assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /仅因合同要求展示/);
+    const pendingInvoiceSection = await expandSettlementSection(page.getByRole('dialog', { name:'结算详情' }),'invoice');
+    assert.match(await pendingInvoiceSection.innerText(), /待提交[\s\S]*发票号[\s\S]*发票附件/);
     await page.locator('[data-invoice-file]').setInputFiles({
       name:'invoice.pdf',
       mimeType:'application/pdf',
@@ -419,8 +481,8 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
     assert.equal(await page.getByLabel('发票号').getAttribute('aria-invalid'), null);
     await page.getByLabel('发票金额（USD）').fill('15482.60');
     await page.getByRole('button', { name:'提交发票', exact:true }).click();
-    assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /审核中/);
-    assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /INV-202609-1024/);
+    assert.match(await page.getByRole('dialog', { name:'结算详情' }).innerText(), /审核中/);
+    assert.match(await page.getByRole('dialog', { name:'结算详情' }).innerText(), /INV-202609-1024/);
     assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot().settlementRecords.find(item => item.statementId === 'STMT-2026-06-V1'))).updatedAt, '2026-09-10 16:15');
     await page.screenshot({ path:path.join(evidenceDir,'statement-invoice-1440x900.png'), fullPage:true });
 
@@ -428,9 +490,9 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
     await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
     await page.getByRole('button', { name:'确认账单', exact:true }).click();
     await page.getByRole('dialog', { name:'确认账单' }).getByRole('button', { name:'确认账单', exact:true }).click();
-    assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /已确认/);
+    assert.match(await page.getByRole('dialog', { name:'结算详情' }).innerText(), /已确认/);
     assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot().settlementRecords.find(item => item.statementId === 'STMT-2026-08-V1'))).updatedAt, '2026-09-10 16:10');
-    assert.doesNotMatch(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /账单已锁定/);
+    assert.doesNotMatch(await page.getByRole('dialog', { name:'结算详情' }).innerText(), /账单已锁定/);
     assert.deepEqual(errors, []);
   } finally {
     await page.close();
@@ -465,7 +527,7 @@ test('三本账可筛选、可按来源核对并导出完整审计字段', async
 
     await page.getByRole('button', { name:'返回对账结算', exact:true }).click();
     await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
-    const drawer = page.getByRole('dialog', { name:'账单详情' });
+    const drawer = page.getByRole('dialog', { name:'结算详情' });
     for (const source of ['direct_sale','external_key','gamehub_key']) {
       assert.equal(await drawer.locator('[data-source-subtotal="' + source + '"]').count(), 1);
     }
@@ -479,8 +541,10 @@ test('三本账可筛选、可按来源核对并导出完整审计字段', async
 
     assert.equal(await drawer.getByRole('heading', { name:'发票', exact:true }).count(), 0);
     await drawer.getByRole('button', { name:'关闭', exact:true }).last().click();
-    await page.locator('[data-statement-id="STMT-2026-06-V1"]').getByRole('button', { name:'查看', exact:true }).click();
-    assert.equal(await page.getByRole('dialog', { name:'账单详情' }).getByRole('heading', { name:'发票', exact:true }).count(), 1);
+    const invoiceDrawer = await openSettlementDetail(page,'STMT-2026-06-V1');
+    const invoiceSection = await expandSettlementSection(invoiceDrawer,'invoice');
+    assert.equal(await invoiceSection.getByRole('heading', { name:'发票', exact:true }).count(), 0);
+    assert.match(await invoiceSection.innerText(), /发票/);
   } finally {
     await page.close();
   }
@@ -528,7 +592,7 @@ test('差异支持四种输入模型、不可变提交快照和追加补充时�
 
     await page.getByRole('button', { name:'关闭', exact:true }).last().click();
     await page.locator('[data-statement-id="STMT-2026-07-V2"]').getByRole('button', { name:'查看', exact:true }).click();
-    await page.getByRole('button', { name:'差异记录', exact:true }).click();
+    await expandSettlementSection(page.getByRole('dialog', { name:'结算详情' }),'dispute');
     const before = await page.evaluate(() => {
       const record = window.__developerFinanceDemo.snapshot().disputeRecords.find(item => item.status === 'supplement');
       return JSON.stringify(record.submissionSnapshot);
@@ -644,9 +708,9 @@ test('三张表关键词输入后页面与直接导出口径一致', async () =>
     await page.getByRole('button', { name:'查询流水', exact:true }).click();
     await assertFilterAndExport({ selector:'#d15-flow-keyword', keyword:'DRAFT-ONLY-FLOW', group:'flow', countKey:'flows' });
 
-    await page.evaluate(() => { location.hash = '/settlement/payments'; });
-    await page.waitForFunction(() => location.hash === '#/settlement/payments');
-    await assertFilterAndExport({ selector:'#d15-payment-keyword', keyword:'DRAFT-ONLY-PAYMENT', group:'payment', countKey:'payments' });
+    await page.evaluate(() => { location.hash = '/settlement'; });
+    await page.waitForFunction(() => location.hash === '#/settlement');
+    await assertFilterAndExport({ selector:'#d15-settlement-keyword', keyword:'DRAFT-ONLY-PAYMENT', group:'payment', countKey:'payments' });
   } finally {
     await page.close();
   }
@@ -694,7 +758,7 @@ test('财务主体按收款地区校验且暂停付款不影响历史核账', as
 
     await page.getByRole('button', { name:'关闭', exact:true }).last().click();
     await page.evaluate(() => { location.hash = '/settlement/payments'; });
-    await page.waitForFunction(() => location.hash === '#/settlement/payments');
+    await page.waitForFunction(() => location.hash === '#/settlement');
     assert.match(await page.locator('main').innerText(), /付款暂停/);
   } finally {
     await page.close();
@@ -852,15 +916,17 @@ test('付款记录覆盖完整状态且不提供开发者打款操作', async ()
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   try {
-    await page.goto(url('/payments'), { waitUntil:'load' });
-    assert.equal(await page.locator('tbody tr').count(), 20);
-    const text = await page.locator('main').innerText();
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').count(), 20);
+    const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
     for (const status of ['待具备条件','待付款','处理中','已汇出','已完成','失败','退回','暂缓','已结转','已取消']) {
-      assert.match(text, new RegExp(status));
+      assert.ok(model.paymentStatuses.map(value => ({
+        not_ready:'待具备条件', awaiting_invoice:'待发票', pending:'待付款', processing:'处理中', remitted:'已汇出', completed:'已完成', failed:'失败', returned:'退回', held:'暂缓', carried:'已结转', cancelled:'已取消',
+      })[value]).includes(status), status);
     }
-    assert.doesNotMatch(text, /提现|发起付款|标记到账/);
-    await page.locator('[data-payment-id="PAY-202606-001"]').getByRole('button', { name:'查看', exact:true }).click();
-    const drawer = page.getByRole('dialog', { name:'付款详情' });
+    assert.doesNotMatch(await page.locator('main').innerText(), /提现|发起付款|标记到账/);
+    const drawer = await openSettlementDetail(page,'STMT-2026-05-V1');
+    await expandSettlementSection(drawer,'payment');
     assert.match(await drawer.innerText(), /银行参考号/);
     assert.match(await drawer.innerText(), /下载付款凭证/);
     await page.screenshot({ path:path.join(evidenceDir,'payments-all-statuses-1440x900.png'), fullPage:true });
@@ -873,7 +939,7 @@ test('付款记录覆盖完整状态且不提供开发者打款操作', async ()
 test('付款单使用付款尝试时间线且仅当前真实汇出后提供凭证', async () => {
   const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
   try {
-    await page.goto(url('/payments'), { waitUntil:'load' });
+    await page.goto(url('/settlement'), { waitUntil:'load' });
     const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
     assert.equal(model.paymentOrdersUnique, true);
     assert.equal(model.paymentAttemptsLinked, true);
@@ -905,8 +971,8 @@ test('付款单使用付款尝试时间线且仅当前真实汇出后提供凭�
     assert.equal(invalidFixture.paymentAttemptTransitionsValid, false);
     assert.equal(invalidFixture.paymentEffectiveAmountsConsistent, false);
 
-    await page.locator('[data-payment-id="PAY-202605-001"]').getByRole('button', { name:'查看', exact:true }).click();
-    const returned = page.getByRole('dialog', { name:'付款详情' });
+    const returned = await openSettlementDetail(page,'STMT-2025-10-V1');
+    await expandSettlementSection(returned,'payment');
     const returnedText = await returned.innerText();
     assert.match(returnedText, /退回原因/);
     assert.match(returnedText, /开发者是否需处理/);
@@ -916,8 +982,8 @@ test('付款单使用付款尝试时间线且仅当前真实汇出后提供凭�
     assert.doesNotMatch(returnedText, /下载付款凭证/);
 
     await returned.getByRole('button', { name:'关闭', exact:true }).last().click();
-    await page.locator('[data-payment-id="PAY-202607-001"]').getByRole('button', { name:'查看', exact:true }).click();
-    const partial = page.getByRole('dialog', { name:'付款详情' });
+    const partial = await openSettlementDetail(page,'STMT-2025-11-V1');
+    await expandSettlementSection(partial,'payment');
     assert.match(await partial.innerText(), /本次付款金额/);
     assert.match(await partial.innerText(), /剩余金额/);
   } finally {
@@ -975,22 +1041,22 @@ test('生成穷举态、缺省态、三本账与付款尝试四张视觉证据',
     await page.evaluate(() => scrollTo(0,0));
     await page.getByRole('button', { name:'返回对账结算', exact:true }).click();
     await page.locator('[data-statement-id="STMT-2026-07-V2"]').getByRole('button', { name:'查看', exact:true }).click();
-    await page.getByRole('button', { name:'差异记录', exact:true }).click();
-    const disputeDrawer = page.getByRole('dialog', { name:'账单详情' });
+    const disputeDrawer = page.getByRole('dialog', { name:'结算详情' });
+    await expandSettlementSection(disputeDrawer,'dispute');
     assert.match(await disputeDrawer.innerText(), /待补充/);
     assert.equal(await disputeDrawer.getByRole('button', { name:'补充材料', exact:true }).count(), 1);
     await disputeDrawer.getByRole('button', { name:'关闭', exact:true }).last().click();
 
-    await page.goto(url('/payments'), { waitUntil:'load' });
-    await assertSinglePageTitle('付款记录');
-    await page.locator('[data-payment-id="PAY-202605-002"]').getByRole('button', { name:'查看', exact:true }).click();
-    const failedDrawer = page.getByRole('dialog', { name:'付款详情' });
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    await assertSinglePageTitle('对账结算');
+    const failedDrawer = await openSettlementDetail(page,'STMT-2026-03-V1');
+    await expandSettlementSection(failedDrawer,'payment');
     assert.match(await failedDrawer.innerText(), /失败原因[\s\S]*开发者是否需处理[\s\S]*预计重试时间[\s\S]*下一次付款尝试/);
     assert.equal(await failedDrawer.getByRole('button', { name:'前往财务主体', exact:true }).count(), 1);
     await failedDrawer.getByRole('button', { name:'关闭', exact:true }).last().click();
 
-    await page.locator('[data-payment-id="PAY-202605-001"]').getByRole('button', { name:'查看', exact:true }).click();
-    const returnedDrawer = page.getByRole('dialog', { name:'付款详情' });
+    const returnedDrawer = await openSettlementDetail(page,'STMT-2025-10-V1');
+    await expandSettlementSection(returnedDrawer,'payment');
     assert.match(await returnedDrawer.innerText(), /退回原因[\s\S]*开发者是否需处理[\s\S]*预计重试时间[\s\S]*下一次付款尝试/);
     assert.equal(await returnedDrawer.getByRole('button', { name:'前往财务主体', exact:true }).count(), 1);
     const drawerFoot = returnedDrawer.locator('.d15-drawer-foot');
@@ -1034,7 +1100,7 @@ test('账单付款历史抽屉与确认框统一锁定焦点并逐层恢复', as
     assert.equal(await statementOpener.getAttribute('data-focus-key'), 'statement-STMT-2026-08-V1');
     await statementOpener.focus();
     await statementOpener.click();
-    const statementDrawer = page.getByRole('dialog', { name:'账单详情' });
+    const statementDrawer = page.getByRole('dialog', { name:'结算详情' });
     await assertBackgroundInert(true);
     await assertFocusInside(statementDrawer);
     await assertFocusLoop(statementDrawer);
@@ -1043,7 +1109,7 @@ test('账单付款历史抽屉与确认框统一锁定焦点并逐层恢复', as
     assert.equal(await confirmTrigger.getAttribute('data-focus-key'), 'confirm-statement-STMT-2026-08-V1');
     await confirmTrigger.click();
     const confirmDialog = page.getByRole('dialog', { name:'确认账单' });
-    assert.equal(await page.getByRole('dialog').count(), 2);
+    assert.equal(await page.getByRole('dialog').count(), 1);
     await assertFocusInside(confirmDialog);
     await assertFocusLoop(confirmDialog);
     await page.keyboard.press('Escape');
@@ -1057,12 +1123,10 @@ test('账单付款历史抽屉与确认框统一锁定焦点并逐层恢复', as
     assert.equal(await statementOpener.evaluate(node => node === document.activeElement), true);
     await assertBackgroundInert(false);
 
-    await page.evaluate(() => { location.hash = '/settlement/payments'; });
-    await page.waitForFunction(() => location.hash === '#/settlement/payments');
-    const paymentOpener = page.locator('[data-payment-id="PAY-202605-001"]').getByRole('button', { name:'查看', exact:true });
-    assert.equal(await paymentOpener.getAttribute('data-focus-key'), 'payment-PAY-202605-001');
+    const paymentOpener = page.locator('[data-statement-id="STMT-2025-10-V1"]').getByRole('button', { name:'查看', exact:true });
+    assert.equal(await paymentOpener.getAttribute('data-focus-key'), 'statement-STMT-2025-10-V1');
     await paymentOpener.click();
-    await assertFocusInside(page.getByRole('dialog', { name:'付款详情' }));
+    await assertFocusInside(page.getByRole('dialog', { name:'结算详情' }));
     await page.keyboard.press('Escape');
     assert.equal(await paymentOpener.evaluate(node => node === document.activeElement), true);
 
@@ -1094,12 +1158,12 @@ test('hash变化关闭旧路由覆盖层并恢复页面交互状态', async () =
   try {
     await page.goto(url('/reconciliation'), { waitUntil:'load' });
     await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
-    assert.equal(await page.getByRole('dialog', { name:'账单详情' }).count(), 1);
+    assert.equal(await page.getByRole('dialog', { name:'结算详情' }).count(), 1);
     assert.equal(await page.locator('.gh-layout').getAttribute('inert'), '');
     assert.equal(await page.evaluate(() => document.body.style.overflow), 'hidden');
 
     await page.evaluate(() => { location.hash = '/payments'; });
-    await page.waitForFunction(() => location.hash === '#/settlement/payments' && !document.querySelector('[role="dialog"]'));
+    await page.waitForFunction(() => location.hash === '#/settlement' && !document.querySelector('[role="dialog"]'));
     assert.equal(await page.getByRole('dialog').count(), 0);
     assert.equal(await page.evaluate(() => document.body.style.overflow), '');
     assert.equal(await page.locator('.gh-topbar').getAttribute('inert'), null);
@@ -1108,7 +1172,7 @@ test('hash变化关闭旧路由覆盖层并恢复页面交互状态', async () =
 
     const state = await page.evaluate(() => window.__developerFinanceDemo.overlaySnapshot());
     assert.deepEqual(state, {
-      activeStatement:'', activePayment:'', selectedHistory:'', dialog:'', disputeMode:false,
+      activeStatement:'', selectedHistory:'', dialog:'', disputeMode:false,
       disputeFile:'', invoiceFile:'', focusDepth:0,
     });
   } finally {
@@ -1141,9 +1205,6 @@ test('三张表按当前场景和已应用筛选导出分页前完整安全字�
     }
     assert.doesNotMatch(flowCsv, /外部 Key 采购|盖世 Key 渠道/);
 
-    await page.evaluate(() => { location.hash = '/settlement/payments'; });
-    await page.waitForFunction(() => location.hash === '#/settlement/payments');
-    await page.getByRole('button', { name:'下一页', exact:true }).click();
     const paymentCsv = await page.evaluate(() => window.__developerFinanceDemo.exportCsv('payment'));
     assert.equal(csvLines(paymentCsv).length, model.counts.payments + 1);
     for (const header of ['付款单号','账单号','付款状态','付款金额','剩余金额','币种','收款账户','财务主体版本','计划付款日','生成时间','更新时间','付款尝试数','当前尝试状态','银行参考号']) {
@@ -1180,7 +1241,7 @@ test('390px视口无根节点横向溢出', async () => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   try {
-    for (const route of ['/entity','/reconciliation','/payments']) {
+    for (const route of ['/entity','/settlement','/settlement/flows']) {
       await page.goto(url(route), { waitUntil:'load' });
       const geometry = await page.evaluate(() => ({
         scrollWidth:document.documentElement.scrollWidth,
