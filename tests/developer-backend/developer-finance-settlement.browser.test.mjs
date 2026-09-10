@@ -68,6 +68,29 @@ test('财务模块只保留财务主体和对账结算两个一级入口', async
   }
 });
 
+test('一张结算记录同时展示对账发票付款和当前待办', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    const headers = await page.locator('[data-testid="settlement-table"] thead th').allTextContents();
+    for (const label of ['账期／结算单号','业务来源','应结算金额','对账状态','发票状态','付款状态','当前待办','更新时间']) {
+      assert.ok(headers.includes(label), label);
+    }
+    assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').count(), 20);
+
+    const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    assert.equal(model.settlementRecords.length, model.counts.statements);
+    assert.equal(model.settlementRecords.every(item => item.statementId && item.statementStatus && item.invoiceStatus && item.paymentStatus && item.currentTask), true);
+    for (const record of model.settlementRecords) {
+      const statement = model.statements.find(item => item.id === record.statementId);
+      assert.equal(record.statementStatus, statement.status);
+      assert.equal(record.invoiceStatus, statement.invoice);
+    }
+  } finally {
+    await page.close();
+  }
+});
+
 test('穷举数据使用整数金额并由流水还原账单', async () => {
   const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
   try {
@@ -159,7 +182,7 @@ test('悬浮球默认穷举态并可往返切换缺省态', async () => {
     assert.deepEqual(emptyModel.counts, { statements:0, flows:0, disputes:0, invoices:0, payments:0 });
     assert.equal(emptyModel.entity.status, 'unconfigured');
     assert.equal(emptyModel.entity.effectiveVersion, '');
-    assert.match(await page.locator('main').innerText(), /暂无对账单/);
+    assert.match(await page.locator('main').innerText(), /暂无结算记录/);
     assert.equal(await locationHash(page), '#/settlement');
 
     await page.getByRole('button', { name:'对账流水', exact:true }).click();
@@ -327,7 +350,7 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
     assert.equal(model.paymentTimelineValid, true);
     const rows = page.locator('tbody tr');
     assert.equal(await rows.count(), 20);
-    assert.match(await page.locator('main').innerText(), /交易原币汇总/);
+    assert.match(await page.locator('main').innerText(), /业务来源/);
     assert.doesNotMatch(await page.locator('main').innerText(), /人民币等值/);
     await page.screenshot({ path:path.join(evidenceDir,'reconciliation-list-1440x900.png'), fullPage:true });
 

@@ -278,6 +278,14 @@ a { color: var(--info); text-decoration: none; }
   min-height: 40px;
 }
 .d15-original { min-width: 220px; max-width: 300px; line-height: 1.65; }
+.d15-settlement-table { min-width: 1180px; }
+.d15-source-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 150px;
+}
+.d15-current-task { white-space: nowrap; }
 .d15-mono {
   font-family: Consolas, "SFMono-Regular", monospace;
   font-size: 12px;
@@ -1348,6 +1356,53 @@ a { color: var(--info); text-decoration: none; }
     return payment ? payment.status : item.payment;
   }
 
+  function paymentForStatement(statementId) {
+    return activePayments().find(item => item.statementId === statementId) || null;
+  }
+
+  function sourceKeysForStatement(statement) {
+    return LEDGER_SOURCES.filter(source => Number(statement.sourceTotalsMinor[source] || 0) !== 0);
+  }
+
+  function currentTaskFor(statement, payment) {
+    if (statement.status === 'voided') return '无需处理';
+    if (statement.status === 'pending') return '确认账单';
+    if (statement.status === 'disputed') {
+      const dispute = activeDisputes().find(item => item.statementId === statement.id);
+      return dispute && dispute.status === 'supplement' ? '补充差异材料' : '等待平台处理';
+    }
+    if (statement.status === 'confirmed') return '等待平台锁单';
+    if (statement.invoice === 'pending') return '提交发票';
+    if (statement.invoice === 'rejected') return '重新提交发票';
+    if (statement.invoice === 'reviewing') return '等待发票审核';
+    if (payment && ['failed','returned','held'].includes(payment.status) && payment.developerActionRequired) return '处理收款资料';
+    const paymentState = payment ? payment.status : statement.payment;
+    if (['completed','carried','cancelled'].includes(paymentState)) return '无需处理';
+    return '等待平台处理';
+  }
+
+  function settlementRecord(statement) {
+    const payment = paymentForStatement(statement.id);
+    return {
+      id:statement.id,
+      statementId:statement.id,
+      period:statement.period,
+      currency:statement.currency,
+      amountMinor:statement.settlementMinor,
+      sources:sourceKeysForStatement(statement),
+      statementStatus:statement.status,
+      invoiceStatus:statement.invoice,
+      paymentStatus:payment ? payment.status : paymentStateForStatement(statement),
+      paymentId:payment ? payment.id : '',
+      currentTask:currentTaskFor(statement,payment),
+      updatedAt:payment ? payment.updated : statement.generated,
+    };
+  }
+
+  function activeSettlementRecords() {
+    return activeStatements().map(settlementRecord);
+  }
+
   function nav() {
     return '<aside class="gh-sidebar"><div class="gh-sidebar-label">财务</div><nav class="gh-nav d15-nav" aria-label="财务导航">' +
       Object.entries(routes).map(entry => '<button type="button" data-route="' + entry[0] + '" class="' + (primaryRoute() === entry[0] ? 'is-active' : '') + '"><span class="gh-nav-icon">' + entry[1].icon + '</span>' + entry[1].title + '</button>').join('') +
@@ -1544,12 +1599,15 @@ a { color: var(--info); text-decoration: none; }
       filterSelect('账单状态','statement','status',f.status,[['all','全部状态'],['draft','草稿'],['pending','待确认'],['confirmed','已确认'],['disputed','有异议'],['locked','已锁定'],['voided','已作废']]) +
       filterSelect('结算币种','statement','currency',f.currency,[['all','全部币种'],['USD','USD'],['CNY','CNY']]) +
       '<div class="d15-filter-action">' + button('重置','reset-statement-filters','link','') + button('查询','apply-filters','primary','') + button('导出','export-statements','','') + '</div></div></div>' +
-      '<div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>账期／账单号</th><th>交易原币汇总</th><th>应结算</th><th>确认期限</th><th>账单状态</th><th>付款状态</th><th>操作</th></tr></thead><tbody>' +
+      '<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th>账期／结算单号</th><th>业务来源</th><th>应结算金额</th><th>对账状态</th><th>发票状态</th><th>付款状态</th><th>当前待办</th><th>更新时间</th><th>操作</th></tr></thead><tbody>' +
       (pageRows.length ? pageRows.map(item => {
+        const record = settlementRecord(item);
         const sm = statementStatus(item.status);
-        const pm = paymentStatus(paymentStateForStatement(item));
-        return '<tr data-statement-id="' + item.id + '"><td><strong>' + item.period + '</strong><small>' + item.id + ' · ' + item.version + '</small></td><td class="d15-original">' + esc(item.originalSummary) + '</td><td><strong>' + money(item.settlementMinor,item.currency) + '</strong></td><td>' + item.deadline + '</td><td>' + tag(sm[0],sm[1]) + '</td><td>' + tag(pm[0],pm[1]) + '</td><td>' + button('查看','open-statement','link','data-statement="' + item.id + '" data-focus-key="statement-' + item.id + '"') + '</td></tr>';
-      }).join('') : emptyTableRow(7,activeStatements().length ? '' : '暂无对账单',activeStatements().length ? '' : '完成财务主体配置后，账单将在出单后展示。')) + '</tbody></table></div>' + pagination('statement',state.statementPage,rows.length) + '</section>';
+        const im = invoiceStatus(record.invoiceStatus);
+        const pm = paymentStatus(record.paymentStatus);
+        const sources = record.sources.map(source => tag(ledgerSourceLabel(source),'')).join('');
+        return '<tr data-statement-id="' + item.id + '"><td><strong>' + item.period + '</strong><small>' + item.id + '</small></td><td><div class="d15-source-tags">' + sources + '</div></td><td><strong>' + money(record.amountMinor,record.currency) + '</strong></td><td>' + tag(sm[0],sm[1]) + '</td><td>' + tag(im[0],im[1]) + '</td><td>' + tag(pm[0],pm[1]) + '</td><td><strong class="d15-current-task">' + esc(record.currentTask) + '</strong></td><td>' + esc(record.updatedAt) + '</td><td>' + button('查看','open-statement','link','data-statement="' + item.id + '" data-focus-key="statement-' + item.id + '"') + '</td></tr>';
+      }).join('') : emptyTableRow(9,activeStatements().length ? '' : '暂无结算记录',activeStatements().length ? '' : '产生可结算交易后，结算记录将在此展示。')) + '</tbody></table></div>' + pagination('statement',state.statementPage,rows.length) + '</section>';
   }
 
   function flowType(type) {
@@ -2552,6 +2610,7 @@ a { color: var(--info); text-decoration: none; }
         scenario:state.demoScenario,
         moneyStorage:state.demoScenario === 'empty' || audit.moneyAmountsAreIntegers ? 'minor-unit-integer' : 'invalid',
         route:state.route, entity:activeEntity(), statements:currentStatements.map(item => ({ id:item.id, status:item.status, payment:item.payment, invoice:item.invoice })),
+        settlementRecords:activeSettlementRecords(),
         counts:{ statements:currentStatements.length, flows:activeFlows().length, disputes:activeDisputes().length, invoices:activeInvoices().length, payments:currentPayments.length },
         ledgerSources:[...new Set(activeFlows().map(item => item.ledgerSource))],
         statementStatuses:[...new Set(currentStatements.map(item => item.status))],
