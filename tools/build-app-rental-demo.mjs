@@ -5,6 +5,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const templatePath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.template.html');
 const outputPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
 const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
+const onlineAnnotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-在线预览.html');
 const adminFragmentPath = path.join(root, 'demos', 'APP租号功能', 'app-rental-admin.fragment.html');
 const sourceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'source');
 const referenceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'reference');
@@ -31,6 +32,8 @@ const assets = {
   V611_LANDSCAPE_DETAIL: path.join(referenceAssetDir, '44-landscape-detail.png'),
   ORDER_CENTER_REFERENCE: path.join(referenceAssetDir, 'profile-order-center-user-reference.png'),
 };
+const publicAssetRevision = process.env.APP_RENTAL_PUBLIC_ASSET_REVISION || '4837eab1e38091728a3b3e731d79c671edb0b88e';
+const publicAssetBase = `https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@${publicAssetRevision}/`;
 
 function writeTextWithRetry(filePath, content) {
   let lastError;
@@ -50,6 +53,11 @@ function writeTextWithRetry(filePath, content) {
 function dataUrl(filePath) {
   const ext = path.extname(filePath).slice(1).toLowerCase();
   return `data:image/${ext === 'jpg' ? 'jpeg' : ext};base64,${fs.readFileSync(filePath).toString('base64')}`;
+}
+
+function publicAssetUrl(filePath) {
+  const relativePath = path.relative(root, filePath).split(path.sep).map(encodeURIComponent).join('/');
+  return `${publicAssetBase}${relativePath}`;
 }
 
 let html = fs.readFileSync(templatePath, 'utf8');
@@ -221,8 +229,8 @@ if (fs.existsSync(annotationPath)) {
     '<div class="annotation-surface-switch"><button class="active" type="button" data-annotation-surface="client">APP（安卓端）客户端</button><button type="button" data-annotation-surface="admin">后台只读预览</button><a class="annotation-admin-link" href="../../Mac端demo/mac端租号功能/Mac端租号功能-标注版.html?mode=admin&page=products" target="_blank" rel="noopener">打开完整统一租号后台 ↗</a></div><p class="annotation-admin-note">前 6 个后台页仅在 Mac 后台基础上新增“APP（安卓端）”Tab；操作记录无端别 Tab。查询、新建、编辑、上下架等交互全部复用 Mac 后台。</p></div><nav class="admin-module-nav"',
   );
   const styleMarker = '    /* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 */';
-  const scriptMarker = '  <script>\n    const ANNOTATION_GROUPS = Object.freeze([';
-  if (!annotation.includes(styleMarker) || !annotation.includes(scriptMarker)) throw new Error('标注版缺少稳定同步标记');
+  const scriptMarker = /<script>\s*const ANNOTATION_GROUPS = Object\.freeze\(\[/;
+  if (!annotation.includes(styleMarker) || !scriptMarker.test(annotation)) throw new Error('标注版缺少稳定同步标记');
 
   annotation = annotation.replace(
     /<style>[\s\S]*?(?=    \/\* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 \*\/)/,
@@ -348,6 +356,16 @@ if (fs.existsSync(annotationPath)) {
   const missingAdminSignatures = requiredAdminSignatures.filter((signature) => !annotation.includes(signature));
   if (missingAdminSignatures.length) throw new Error(`标注版缺少后台签名：${missingAdminSignatures.join('、')}`);
   writeTextWithRetry(annotationPath, annotation);
+
+  let onlineAnnotation = annotation;
+  for (const filePath of Object.values(assets)) {
+    onlineAnnotation = onlineAnnotation.replaceAll(dataUrl(filePath), publicAssetUrl(filePath));
+  }
+  if (/data:image\/(?:jpeg|png);base64,/.test(onlineAnnotation)) {
+    throw new Error('在线预览版仍存在未外链化的 Base64 图片');
+  }
+  writeTextWithRetry(onlineAnnotationPath, onlineAnnotation);
+  process.stdout.write(`ONLINE ${path.relative(root, onlineAnnotationPath)} ${Buffer.byteLength(onlineAnnotation)} bytes\n`);
 
   const annotationBusinessScript = annotation.match(/<script>\s*(const ASSETS[\s\S]*?)<\/script>\s*<script>\s*const ANNOTATION_GROUPS/)?.[1] || '';
   const annotationStyle = annotation.match(/<style>([\s\S]*?)(?=    \/\* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 \*\/)/)?.[1] || '';
