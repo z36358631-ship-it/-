@@ -123,7 +123,9 @@ try {
   await captureC(page, '01-task-plaza', '找任务');
   await page.evaluate(() => showRules('plaza'));
   await captureC(page, '02-play-rules', '玩法说明');
+  assert.equal(await page.getByText('任务中心获得的是盖世积分，与盖世币分开计算', { exact: false }).count() > 0, true);
   assert.equal(await page.getByText('充值获得的盖世币仅可用于发布任务，不可兑换京东卡', { exact: false }).count() > 0, true);
+  assert.equal(await page.getByText('只有参与发行任务并结算获得的盖世币可兑换京东电子卡', { exact: false }).count() > 0, true);
 
   await page.evaluate(() => openDetail(1));
   await captureC(page, '03-task-detail', '任务详情');
@@ -137,6 +139,7 @@ try {
   await page.evaluate(() => showView('earnings'));
   assert.equal(await page.locator('#wallet-total').innerText(), '3,650');
   assert.equal(await page.locator('#view-earnings .redeem-card-entry strong').innerText(), '兑换商城');
+  assert.equal(await page.getByText('只有参与发行任务并结算获得的盖世币可兑换', { exact: true }).count(), 1);
   await captureC(page, '07-wallet', '我的钱包');
   await capture(
     page.locator('#view-earnings .header'),
@@ -166,6 +169,7 @@ try {
 
   await page.getByRole('button', { name: /京东E卡 20元/ }).click();
   assert.equal(await page.getByText('当前可兑换').count(), 1);
+  assert.equal(await page.getByText('只有参与发行任务并结算获得的盖世币可兑换', { exact: false }).count() > 0, true);
   await captureC(page, '10-card-confirm', '确认兑换');
   await capture(
     page.locator('#card-redeem-modal .modal'),
@@ -220,6 +224,7 @@ try {
 
   await adminPage.evaluate(() => switchPage('jd-cards'));
   assert.equal(await adminPage.getByText('京东电子卡商品').count(), 1);
+  assert.equal(await adminPage.getByText('任务中心盖世积分不可兑换', { exact: false }).count() > 0, true);
   assert.equal(await adminPage.locator('th').filter({ hasText: /^预警$/ }).count(), 0);
   await adminPage.evaluate(() => openCardProductModal('JD10'));
   assert.equal(await adminPage.getByText('库存预警阈值', { exact: true }).count(), 0);
@@ -303,6 +308,7 @@ try {
     assert.equal(await adminPage.getByText(status, { exact: true }).count() > 0, true, `missing order status: ${status}`);
   }
   assert.equal(await adminPage.getByText('禁止自动退款或补发', { exact: false }).count() > 0, true);
+  assert.equal(await adminPage.getByText('只扣减参与发行任务并结算获得的盖世币', { exact: false }).count() > 0, true);
   assert.equal(await adminPage.getByText('物流', { exact: false }).count(), 0);
   await adminPage.waitForFunction(() => !document.getElementById('toast').classList.contains('show'));
   await captureB(adminPage, '22-card-orders', '京东卡兑换订单');

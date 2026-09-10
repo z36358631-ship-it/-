@@ -24,7 +24,9 @@ const mustNotContain = (source, values, label) => {
 
 mustContain(cHtml + cJs, [
   '可兑换盖世币',
+  '任务中心获得的是盖世积分，与盖世币分开计算',
   '充值获得的盖世币仅可用于发布任务',
+  '只有参与发行任务并结算获得的盖世币可兑换京东电子卡',
   'view-card-store',
   'card-redeem-modal',
   'card-history-modal',
@@ -62,7 +64,9 @@ mustContain(bHtml + bJs, [
   '已预占',
   '已发放',
   '待核对',
-  '作废'
+  '作废',
+  '只扣减参与发行任务并结算获得的盖世币',
+  '任务中心盖世积分不可兑换'
 ], 'B demo');
 mustNotContain(bJs, [
   'warning:',
@@ -76,7 +80,7 @@ mustContain(prd, [
   '### 2.2 产品流程',
   '### 3.1 C 端功能需求',
   '### 3.2 B 端功能需求',
-  'V2.1',
+  'V2.2',
   '#### 3.1.9 兑换商城',
   '所有已上架京东卡 SKU 共用一个全局库存预警阈值',
   '按 SKU 独立判断',
@@ -87,10 +91,17 @@ mustContain(prd, [
   '23-card-alert-settings.png',
   '充值获得的盖世币仅可用于发布任务，不可兑换京东卡',
   '任务取消、审核驳回或结算后退回的未消耗预算沿用原来源',
-  '完成发行人任务获得的盖世币可用于兑换京东电子卡',
+  '任务中心获得的是盖世积分，与盖世币分开计算',
+  '只有参与发行任务并结算获得的盖世币可兑换京东电子卡',
   '![产品流程]',
   '## 五、待确认项'
 ], 'PRD');
+mustNotContain(cHtml + cJs + bHtml + bJs + prd, [
+  '发行积分',
+  '发行币',
+  '共创币',
+  '创作者计划'
+], 'publisher currency terminology');
 mustNotContain(prd, [
   '__' + 'IMAGE_COMMIT_SHA' + '__',
   '<' + 'IMAGE_COMMIT_SHA' + '>',

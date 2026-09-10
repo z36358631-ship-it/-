@@ -227,7 +227,7 @@ function renderJdCards(){
     <button class="${productsActive?'active':''}" role="tab" aria-selected="${productsActive}" onclick="switchCardAdminTab(this,'products')">商品配置</button>
     <button class="${productsActive?'':'active'}" role="tab" aria-selected="${!productsActive}" onclick="switchCardAdminTab(this,'inventory')">卡密库存</button>
   </div>
-  <div class="status-note info">兑换订单仅扣除符合兑换资格的盖世币；充值获得及充值预算退回的盖世币不会进入京东卡兑换流程。</div>
+  <div class="status-note info">京东卡仅支持发行任务结算奖励盖世币兑换；充值盖世币与任务中心盖世积分不可兑换。</div>
   <div id="card-products-panel" class="card-admin-panel" style="display:${productsActive?'block':'none'}">${renderCardProducts()}</div>
   <div id="card-inventory-panel" class="card-admin-panel" style="display:${productsActive?'none':'block'}">${renderCardInventory()}</div>`;
 }
@@ -292,6 +292,7 @@ function renderCardOrders(){
   return `<div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
     ${statuses.map(status=>`<div class="stat-card"><div class="sc-num">${cardExchangeOrders.filter(item=>item.status===status).length}</div><div class="sc-label">${status}</div></div>`).join('')}
   </div>
+  <div class="status-note info">兑换订单只扣减参与发行任务并结算获得的盖世币；充值获得的盖世币和任务中心盖世积分均不会进入京东卡兑换流程。</div>
   <div class="status-note">待核对表示发放结果不确定：冻结对应卡密和扣减结果，由有权限人员核实卡密是否已暴露，禁止自动退款或补发。</div>
   <div class="card"><div class="card-title">京东卡兑换订单</div>
     <div class="filter-bar">

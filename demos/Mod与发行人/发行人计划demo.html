@@ -213,7 +213,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 <div class="section"><div class="section-title">什么是发行人计划？</div><div style="font-size:13px;color:#666;line-height:2">发行人计划是盖世游戏的推广任务平台。你可以领取任务，去抖音/B站/快手/小红书发布游戏推广视频，根据视频点赞量获得盖世币奖励。</div></div>
 <div class="section"><div class="section-title">如何参与？</div><div style="font-size:13px;color:#666;line-height:2">1. 在「找任务」浏览并领取感兴趣的任务<br>2. 按照任务要求拍摄游戏视频并发布到指定平台<br>3. 回到APP粘贴视频链接提交<br>4. 等待审核通过后，系统自动按点赞量结算盖世币<br>5. 任务结算所得盖世币可兑换京东电子卡</div></div>
 <div class="section"><div class="section-title">结算规则</div><div style="font-size:13px;color:#666;line-height:2">· 任务到期后第3天系统自动抓取视频数据<br>· 按任务设定的阶梯规则计算奖励<br>· 后续每隔固定周期补发新增点赞奖励<br>· 单条视频奖金不超过任务设定的上限</div></div>
-<div class="section"><div class="section-title">盖世币兑换规则</div><div class="rule-copy">兑换页展示的盖世币余额仅包含可兑换部分。充值获得的盖世币仅可用于发布任务，不可兑换京东卡；任务取消、审核驳回或结算后退回的未消耗预算沿用原来源，不计入可兑换余额。完成发行人任务获得的盖世币可用于兑换京东电子卡。</div></div>
+<div class="section"><div class="section-title">盖世币兑换规则</div><div class="rule-copy">任务中心获得的是盖世积分，与盖世币分开计算，不计入盖世币总余额或兑换余额。充值获得的盖世币仅可用于发布任务，不可兑换京东卡；任务取消、审核驳回或结算后退回的未消耗预算沿用原来源，不计入兑换余额。只有参与发行任务并结算获得的盖世币可兑换京东电子卡。</div></div>
 <div class="section"><div class="section-title">如何发布任务？</div><div style="font-size:13px;color:#666;line-height:2">在「做任务」页面点击"+ 发布任务"，填写任务信息并充值预算即可。个人发布的任务需24小时内审核通过后上架。</div></div>
 </div>
 </div>
@@ -247,8 +247,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 <div class="earn-header">
 <div class="eh-label">盖世币总余额</div>
 <div class="eh-row"><div class="eh-amount" id="wallet-total">3,650</div></div>
-<button class="redeem-card-entry" type="button" onclick="showView('card-store')"><span><strong>兑换商城</strong><span>完成发行人任务获得的盖世币可兑换</span></span><span class="entry-arrow">›</span></button>
-<div class="wallet-rule">充值获得的盖世币仅可用于发布任务，不计入兑换余额。</div>
+<button class="redeem-card-entry" type="button" onclick="showView('card-store')"><span><strong>兑换商城</strong><span>只有参与发行任务并结算获得的盖世币可兑换</span></span><span class="entry-arrow">›</span></button>
+<div class="wallet-rule">任务中心盖世积分与盖世币分开计算；充值盖世币不计入兑换余额。</div>
 </div>
 <div class="earn-tabs" data-component-id="C-TAB"><div class="earn-tab active" data-et="all">全部</div><div class="earn-tab" data-et="income">收入</div><div class="earn-tab" data-et="expense">消耗</div><div class="earn-tab" data-et="recharge">充值</div></div>
 <div id="earn-list"></div>
@@ -259,7 +259,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 <div class="header" data-component-id="C-TOPBAR"><span class="back" onclick="showView('earnings')">‹</span><span class="title">兑换商城</span><button type="button" class="right-btn" onclick="openCardHistory()">兑换记录</button></div>
 <div class="content">
 <div class="redeem-balance-card"><span class="balance-label">可兑换盖世币</span><strong id="redeemable-balance">2,650</strong><button type="button" onclick="showRules('card-store')">规则说明</button></div>
-<div class="redeem-tip">仅展示符合兑换资格的盖世币；充值获得及其退回的盖世币不计入此余额。</div>
+<div class="redeem-tip">仅展示参与发行任务并结算获得的盖世币；充值盖世币与盖世积分不计入此余额。</div>
 <div id="jd-card-grid" class="jd-card-grid"></div>
 </div>
 </div>
