@@ -828,6 +828,89 @@ test('付款单使用付款尝试时间线且仅当前真实汇出后提供凭�
   }
 });
 
+test('生成穷举态、缺省态、三本账与付款尝试四张视觉证据', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  const assertSinglePageTitle = async expected => {
+    assert.deepEqual(await page.locator('main h1').allTextContents(), [expected]);
+    assert.equal(await page.locator('.gh-page-head p').count(), 0);
+  };
+  const boxesOverlap = (first, second) => Boolean(first && second &&
+    first.x < second.x + second.width && first.x + first.width > second.x &&
+    first.y < second.y + second.height && first.y + first.height > second.y);
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    await assertSinglePageTitle('财务主体');
+    assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot())).scenario, 'exhaustive');
+    await page.screenshot({ path:path.join(evidenceDir,'scenario-exhaustive-1440x900.png') });
+
+    await page.locator('[data-testid="scenario-orb"]').click();
+    await page.getByRole('menuitemradio', { name:/缺省态/ }).click();
+    await assertSinglePageTitle('财务主体');
+    assert.equal(await page.locator('main .gh-notice').count(), 0);
+    assert.deepEqual(await page.locator('main .gh-empty').allTextContents(), [
+      '∅尚未配置财务主体企业认证资料将自动同步，请补充收款与税务资料。配置财务主体',
+    ]);
+    await page.screenshot({ path:path.join(evidenceDir,'scenario-empty-1440x900.png') });
+
+    await page.evaluate(() => window.__developerFinanceDemo.setDemoScenario('exhaustive'));
+    await page.goto(url('/reconciliation'), { waitUntil:'load' });
+    await page.getByRole('button', { name:'对账流水', exact:true }).click();
+    await assertSinglePageTitle('财务对账');
+    assert.equal(await page.locator('tbody tr[data-ledger-source]').count(), 20);
+    for (const source of ['平台直销','外部 Key 采购','盖世 Key 渠道']) {
+      assert.match(await page.locator('tbody').innerText(), new RegExp(source));
+    }
+    await page.evaluate(() => scrollTo(0,360));
+    await page.screenshot({ path:path.join(evidenceDir,'reconciliation-sources-1440x900.png') });
+
+    await page.evaluate(() => scrollTo(0,document.documentElement.scrollHeight));
+    const orb = page.locator('[data-testid="scenario-orb"]');
+    const [orbBox,paginationBox] = await Promise.all([
+      orb.boundingBox(),
+      page.locator('.gh-pagination').boundingBox(),
+    ]);
+    assert.equal(boxesOverlap(orbBox,paginationBox), false, 'scenario orb overlaps pagination');
+    const backToTop = page.locator('button,a').filter({ hasText:/返回顶部|回到顶部/ });
+    if (await backToTop.count()) {
+      assert.equal(boxesOverlap(orbBox,await backToTop.first().boundingBox()), false, 'scenario orb overlaps back-to-top control');
+    }
+
+    await page.evaluate(() => scrollTo(0,0));
+    await page.getByRole('button', { name:'对账单', exact:true }).click();
+    await page.locator('[data-statement-id="STMT-2026-07-V2"]').getByRole('button', { name:'查看', exact:true }).click();
+    await page.getByRole('button', { name:'差异记录', exact:true }).click();
+    const disputeDrawer = page.getByRole('dialog', { name:'账单详情' });
+    assert.match(await disputeDrawer.innerText(), /待补充/);
+    assert.equal(await disputeDrawer.getByRole('button', { name:'补充材料', exact:true }).count(), 1);
+    await disputeDrawer.getByRole('button', { name:'关闭', exact:true }).last().click();
+
+    await page.goto(url('/payments'), { waitUntil:'load' });
+    await assertSinglePageTitle('付款记录');
+    await page.locator('[data-payment-id="PAY-202605-002"]').getByRole('button', { name:'查看', exact:true }).click();
+    const failedDrawer = page.getByRole('dialog', { name:'付款详情' });
+    assert.match(await failedDrawer.innerText(), /失败原因[\s\S]*开发者是否需处理[\s\S]*预计重试时间[\s\S]*下一次付款尝试/);
+    assert.equal(await failedDrawer.getByRole('button', { name:'前往财务主体', exact:true }).count(), 1);
+    await failedDrawer.getByRole('button', { name:'关闭', exact:true }).last().click();
+
+    await page.locator('[data-payment-id="PAY-202605-001"]').getByRole('button', { name:'查看', exact:true }).click();
+    const returnedDrawer = page.getByRole('dialog', { name:'付款详情' });
+    assert.match(await returnedDrawer.innerText(), /退回原因[\s\S]*开发者是否需处理[\s\S]*预计重试时间[\s\S]*下一次付款尝试/);
+    assert.equal(await returnedDrawer.getByRole('button', { name:'前往财务主体', exact:true }).count(), 1);
+    const drawerFoot = returnedDrawer.locator('.d15-drawer-foot');
+    const [coveredOrbBox,drawerFootBox] = await Promise.all([orb.boundingBox(),drawerFoot.boundingBox()]);
+    assert.equal(boxesOverlap(coveredOrbBox,drawerFootBox), true, 'fixture should exercise the shared bottom-right area');
+    assert.equal(await page.evaluate(() => {
+      const scenarioOrb = document.querySelector('[data-testid="scenario-orb"]');
+      const box = scenarioOrb.getBoundingClientRect();
+      return document.elementFromPoint(box.x + box.width / 2,box.y + box.height / 2) === scenarioOrb;
+    }), false, 'scenario orb must stay behind the payment drawer');
+    await returnedDrawer.locator('.d15-drawer-body').evaluate(node => { node.scrollTop = node.scrollHeight; });
+    await page.screenshot({ path:path.join(evidenceDir,'payment-attempts-1440x900.png') });
+  } finally {
+    await page.close();
+  }
+});
+
 test('账单付款历史抽屉与确认框统一锁定焦点并逐层恢复', async () => {
   const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
   const assertBackgroundInert = async expected => {
