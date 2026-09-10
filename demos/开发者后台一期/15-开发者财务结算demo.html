@@ -849,51 +849,119 @@ a { color: var(--info); text-decoration: none; }
     }),
   ];
 
-  const paymentTemplates = [
-    ['PAY-202609-001','STMT-2026-08-V1','待具备条件','not_ready','账单尚未锁定'],
-    ['PAY-202608-003','STMT-2025-12-V1','待付款','pending','已进入付款计划'],
-    ['PAY-202607-002','STMT-2026-01-V1','处理中','processing','银行正在处理'],
-    ['PAY-202607-001','STMT-2025-11-V1','已汇出','remitted','预计 1—5 个工作日到账'],
-    ['PAY-202606-001','STMT-2026-05-V1','已完成','completed','银行回执已确认'],
-    ['PAY-202605-002','STMT-2026-03-V1','失败','failed','收款账户信息不匹配'],
-    ['PAY-202605-001','STMT-2025-10-V1','退回','returned','收款行退回款项'],
-    ['PAY-202604-001','STMT-2025-09-V1','暂缓','held','收款资料变更审核中'],
-    ['PAY-202603-001','STMT-2025-08-V1','已结转','carried','未达到合同起付条件'],
-    ['PAY-202602-001','STMT-2025-07-V1','已取消','cancelled','关联账单已作废'],
-  ];
-  const payments = paymentTemplates.map((row, index) => {
-    const year = row[0].slice(4,8);
-    const month = row[0].slice(8,10);
-    const statement = statements.find(item => item.id === row[1]);
-    const proofAvailable = ['remitted','completed','returned'].includes(row[3]);
+  function makePaymentOrder(config) {
+    const statement = statements.find(item => item.id === config.statementId);
+    const amountMinor = statement ? statement.settlementMinor : 0;
+    const attempts = (config.attempts || []).map((attempt,index) => {
+      const events = (attempt.events || []).map(event => ({
+        at:event.at,
+        status:event.status,
+        reason:event.reason || '',
+        note:event.note || '',
+      }));
+      return {
+        id:attempt.id || config.id.replace('PAY-','ATT-') + '-' + String(index + 1).padStart(2,'0'),
+        paymentOrderId:config.id,
+        createdAt:attempt.createdAt || (events[0] ? events[0].at : ''),
+        amountMinor:attempt.amountBasisPoints == null
+          ? (attempt.amountMinor == null ? amountMinor : attempt.amountMinor)
+          : allocateMinor(amountMinor,attempt.amountBasisPoints),
+        providerRef:attempt.providerRef || '',
+        proofAvailable:Boolean(attempt.proofAvailable),
+        events,
+      };
+    });
+    const currentAttempt = attempts[attempts.length - 1];
+    const currentEvent = currentAttempt && currentAttempt.events[currentAttempt.events.length - 1];
     return {
-      id:row[0], statementId:row[1], status:row[3], label:row[2], reason:row[4],
-      amountMinor:statement ? statement.settlementMinor : 0, currency:statement ? statement.currency : 'USD', account:'**** 7826',
-      created:year + '-' + month + '-05 09:00',
-      planned:year + '-' + month + '-25',
-      updated:year + '-' + month + '-' + String(index === 0 ? 9 : index === 1 || row[3] === 'held' || row[3] === 'carried' || row[3] === 'cancelled' ? 20 : Math.min(28,24 + index)).padStart(2,'0') + ' 16:20',
-      proofAvailable,
-      providerRef:proofAvailable ? 'BANK-REF-****-' + (8240 + index) : '—',
+      id:config.id,
+      statementId:config.statementId,
+      amountMinor,
+      currency:statement ? statement.currency : 'USD',
+      remainingMinor:config.remainingBasisPoints == null
+        ? (config.remainingMinor == null ? amountMinor : config.remainingMinor)
+        : amountMinor - allocateMinor(amountMinor,10000 - config.remainingBasisPoints),
+      status:config.status,
+      label:paymentStatus(config.status)[0],
+      account:config.account || '**** 7826',
+      accountVersion:config.accountVersion || 'FIN-2026-003',
+      created:config.created,
+      planned:config.planned,
+      updated:currentEvent ? currentEvent.at : (config.updated || config.created),
+      reason:config.reason || '',
+      developerActionRequired:Boolean(config.developerActionRequired),
+      developerAction:config.developerAction || '无需处理',
+      estimatedRetryAt:config.estimatedRetryAt || '—',
+      nextAttempt:config.nextAttempt || '—',
+      attempts,
     };
-  }).concat(Array.from({ length:13 }, (_, index) => {
+  }
+
+  const payments = [
+    makePaymentOrder({ id:'PAY-202609-001', statementId:'STMT-2026-08-V1', status:'not_ready', created:'2026-09-05 09:00', planned:'—', updated:'2026-09-09 16:20', reason:'账单尚未锁定' }),
+    makePaymentOrder({ id:'PAY-202608-003', statementId:'STMT-2025-12-V1', status:'pending', created:'2026-08-05 09:00', planned:'2026-08-25', updated:'2026-08-20 16:20', reason:'已进入付款计划', nextAttempt:'2026-08-25 10:00 · 首次付款' }),
+    makePaymentOrder({ id:'PAY-202607-002', statementId:'STMT-2026-01-V1', status:'processing', created:'2026-07-05 09:00', planned:'2026-07-25', reason:'银行正在处理', attempts:[
+      { events:[{ at:'2026-07-25 10:10', status:'processing', note:'付款指令已提交银行' }] },
+    ] }),
+    makePaymentOrder({ id:'PAY-202607-001', statementId:'STMT-2025-11-V1', status:'remitted', created:'2026-07-05 09:00', planned:'2026-07-25', reason:'预计 1—5 个工作日到账', remainingBasisPoints:2500, attempts:[
+      { amountBasisPoints:7500, providerRef:'BANK-REF-****-8243', proofAvailable:true, events:[
+        { at:'2026-07-25 09:40', status:'processing', note:'首笔付款指令已提交银行' },
+        { at:'2026-07-26 16:20', status:'remitted', note:'首笔款项已汇出' },
+      ] },
+    ] }),
+    makePaymentOrder({ id:'PAY-202606-001', statementId:'STMT-2026-05-V1', status:'completed', created:'2026-06-05 09:00', planned:'2026-06-25', reason:'银行回执已确认', remainingMinor:0, attempts:[
+      { providerRef:'BANK-REF-****-8244', proofAvailable:true, events:[
+        { at:'2026-06-25 09:20', status:'processing', note:'付款指令已提交银行' },
+        { at:'2026-06-25 09:30', status:'remitted', note:'款项已汇出' },
+        { at:'2026-06-28 16:20', status:'completed', note:'银行回执已确认' },
+      ] },
+    ] }),
+    makePaymentOrder({ id:'PAY-202605-002', statementId:'STMT-2026-03-V1', status:'failed', created:'2026-05-05 09:00', planned:'2026-05-25', reason:'收款账户信息不匹配', developerActionRequired:true, developerAction:'请在财务主体核对账户名和银行账号', estimatedRetryAt:'2026-05-30 10:00', nextAttempt:'资料核验通过后自动重试', attempts:[
+      { events:[
+        { at:'2026-05-25 10:05', status:'processing', note:'付款指令已提交银行' },
+        { at:'2026-05-27 16:20', status:'failed', reason:'收款账户信息不匹配', note:'银行拒绝受理' },
+      ] },
+    ] }),
+    makePaymentOrder({ id:'PAY-202605-001', statementId:'STMT-2025-10-V1', status:'returned', created:'2026-05-05 09:00', planned:'2026-05-20', reason:'收款行退回款项', developerActionRequired:true, developerAction:'请在财务主体确认收款行是否可接收 USD', estimatedRetryAt:'2026-05-31 10:00', nextAttempt:'资料确认后发起第 3 次付款尝试', attempts:[
+      { events:[
+        { at:'2026-05-16 09:10', status:'processing', note:'第 1 次付款指令已提交银行' },
+        { at:'2026-05-16 11:30', status:'failed', reason:'银行通道异常', note:'第 1 次付款尝试失败' },
+      ] },
+      { providerRef:'BANK-REF-****-8246', proofAvailable:true, events:[
+        { at:'2026-05-20 08:50', status:'processing', note:'第 2 次付款尝试（重试）已提交银行' },
+        { at:'2026-05-20 09:00', status:'remitted', note:'第 2 次付款尝试（重试）已汇出' },
+        { at:'2026-05-24 16:20', status:'returned', reason:'收款行退回款项', note:'第 2 次付款尝试被退回' },
+      ] },
+    ] }),
+    makePaymentOrder({ id:'PAY-202604-001', statementId:'STMT-2025-09-V1', status:'held', created:'2026-04-05 09:00', planned:'2026-04-25', updated:'2026-04-20 16:20', reason:'收款资料变更审核中', developerActionRequired:false, developerAction:'无需处理，等待平台完成资料审核', estimatedRetryAt:'2026-05-06 10:00', nextAttempt:'资料审核通过后自动进入付款计划' }),
+    makePaymentOrder({ id:'PAY-202603-001', statementId:'STMT-2025-08-V1', status:'carried', created:'2026-03-05 09:00', planned:'—', updated:'2026-03-20 16:20', reason:'未达到合同起付条件' }),
+    makePaymentOrder({ id:'PAY-202602-001', statementId:'STMT-2025-07-V1', status:'cancelled', created:'2026-02-05 09:00', planned:'—', updated:'2026-02-20 16:20', reason:'关联账单已作废', remainingMinor:0 }),
+  ].concat(Array.from({ length:13 }, (_, index) => {
     const statement = statements[14 + index];
     const parts = statement.period.split('-').map(Number);
     const date = new Date(parts[0],parts[1],1);
     const period = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2,'0');
     const status = index % 3 === 0 ? 'completed' : index % 3 === 1 ? 'carried' : 'cancelled';
-    return {
-      id:'PAY-' + period.replace('-','') + '-' + String(index + 10).padStart(3, '0'),
+    const id = 'PAY-' + period.replace('-','') + '-' + String(index + 10).padStart(3,'0');
+    return makePaymentOrder({
+      id,
       statementId:statement.id,
       status,
-      label:status === 'completed' ? '已完成' : status === 'carried' ? '已结转' : '已取消',
-      reason:status === 'completed' ? '银行回执已确认' : status === 'carried' ? '未达到合同起付条件' : '关联账单已作废',
-      amountMinor:statement.settlementMinor, currency:statement.currency, account:'**** 5369',
+      account:'**** 5369',
+      accountVersion:'FIN-2026-002',
       created:period + '-05 09:00',
-      planned:period + '-25',
+      planned:status === 'completed' ? period + '-25' : '—',
       updated:period + '-28 11:30',
-      proofAvailable:status === 'completed',
-      providerRef:status === 'completed' ? 'BANK-REF-****-' + (7000 + index) : '—',
-    };
+      remainingMinor:status === 'completed' || status === 'cancelled' ? 0 : statement.settlementMinor,
+      reason:status === 'completed' ? '银行回执已确认' : status === 'carried' ? '未达到合同起付条件' : '关联账单已作废',
+      attempts:status === 'completed' ? [
+        { providerRef:'BANK-REF-****-' + (7000 + index), proofAvailable:true, events:[
+          { at:period + '-25 09:10', status:'processing', note:'付款指令已提交银行' },
+          { at:period + '-25 09:20', status:'remitted', note:'款项已汇出' },
+          { at:period + '-28 11:30', status:'completed', note:'银行回执已确认' },
+        ] },
+      ] : [],
+    });
   }));
 
   const state = {
@@ -1045,6 +1113,85 @@ a { color: var(--info); text-decoration: none; }
     };
   }
 
+  function paymentAuditFixture() {
+    return { statements:clone(activeStatements()), payments:clone(activePayments()) };
+  }
+
+  function paymentEventSequenceValid(attempt) {
+    const events = Array.isArray(attempt && attempt.events) ? attempt.events : [];
+    if (!events.length || attempt.createdAt !== events[0].at || events[0].status !== 'processing') return false;
+    const allowed = {
+      processing:['remitted','failed'],
+      remitted:['completed','returned'],
+      completed:[], failed:[], returned:[],
+    };
+    return events.every((event,index) => {
+      if (!event.at || !Object.prototype.hasOwnProperty.call(allowed,event.status)) return false;
+      if (!index) return true;
+      const previous = events[index - 1];
+      return previous.at <= event.at && allowed[previous.status].includes(event.status);
+    });
+  }
+
+  function auditPaymentData(fixture) {
+    const auditStatements = Array.isArray(fixture && fixture.statements) ? fixture.statements : [];
+    const auditPayments = Array.isArray(fixture && fixture.payments) ? fixture.payments : [];
+    const statementById = new Map(auditStatements.map(statement => [statement.id,statement]));
+    const allAttempts = auditPayments.flatMap(payment => Array.isArray(payment.attempts) ? payment.attempts : []);
+    const paymentAttemptAudit = auditPayments.map(payment => {
+      const attempts = Array.isArray(payment.attempts) ? payment.attempts : [];
+      const attemptRows = attempts.map(attempt => {
+        const statuses = (attempt.events || []).map(event => event.status);
+        return { id:attempt.id, amountMinor:attempt.amountMinor, statuses };
+      });
+      const effectiveRemittedMinor = attempts
+        .filter(attempt => ['remitted','completed'].includes(paymentAttemptStatus(attempt)))
+        .reduce((sum,attempt) => sum + attempt.amountMinor,0);
+      const completedMinor = attempts
+        .filter(attempt => paymentAttemptStatus(attempt) === 'completed')
+        .reduce((sum,attempt) => sum + attempt.amountMinor,0);
+      return { id:payment.id, amountMinor:payment.amountMinor, remainingMinor:payment.remainingMinor, attemptCount:attempts.length, attempts:attemptRows, effectiveRemittedMinor, completedMinor };
+    });
+    const paymentAttemptTransitionsValid = auditPayments.every(payment => {
+      const attempts = Array.isArray(payment.attempts) ? payment.attempts : [];
+      const retriesValid = attempts.every((attempt,index) => !index || ['failed','returned'].includes(paymentAttemptStatus(attempts[index - 1])));
+      const currentAttempt = attempts[attempts.length - 1];
+      const statusMatches = currentAttempt ? paymentAttemptStatus(currentAttempt) === payment.status : ['not_ready','pending','held','carried','cancelled'].includes(payment.status);
+      return retriesValid && statusMatches && attempts.every(paymentEventSequenceValid);
+    });
+    const paymentEffectiveAmountsConsistent = auditPayments.every(payment => {
+      const row = paymentAttemptAudit.find(item => item.id === payment.id);
+      const expectedEffectiveMinor = ['remitted','completed'].includes(payment.status) ? payment.amountMinor - payment.remainingMinor : 0;
+      return row.effectiveRemittedMinor === expectedEffectiveMinor && row.completedMinor <= row.effectiveRemittedMinor;
+    });
+    return {
+      paymentOrdersUnique:new Set(auditPayments.map(item => item.id)).size === auditPayments.length,
+      paymentStatementsUnique:new Set(auditPayments.map(item => item.statementId)).size === auditPayments.length,
+      paymentAttemptsLinked:new Set(allAttempts.map(item => item.id)).size === allAttempts.length && auditPayments.every(payment =>
+        (payment.attempts || []).every(attempt => attempt.paymentOrderId === payment.id)
+      ),
+      paymentAmountsConsistent:auditPayments.every(payment => {
+        const statement = statementById.get(payment.statementId);
+        return statement && statement.settlementMinor === payment.amountMinor &&
+          Number.isSafeInteger(payment.amountMinor) && Number.isSafeInteger(payment.remainingMinor) &&
+          payment.remainingMinor >= 0 && payment.remainingMinor <= payment.amountMinor &&
+          (payment.attempts || []).every(attempt => Number.isSafeInteger(attempt.amountMinor) && attempt.amountMinor > 0 && attempt.amountMinor <= payment.amountMinor);
+      }),
+      paymentTimelineValid:auditPayments.every(payment => {
+        const events = (payment.attempts || []).flatMap(attempt => attempt.events || []);
+        return payment.created <= payment.updated && events.every((event,index) => payment.created <= event.at && (!index || events[index - 1].at <= event.at)) && (!events.length || events[events.length - 1].at === payment.updated);
+      }),
+      paymentAttemptTransitionsValid,
+      paymentEffectiveAmountsConsistent,
+      paymentProofAccessValid:auditPayments.every(payment => {
+        const attempt = currentPaymentAttempt(payment);
+        const hasProof = Boolean(attempt && ['remitted','completed'].includes(paymentAttemptStatus(attempt)) && attempt.proofAvailable);
+        return Boolean(downloadablePaymentAttempt(payment)) === hasProof;
+      }),
+      paymentAttemptAudit,
+    };
+  }
+
   applyPreview();
 
   function routeFromHash() {
@@ -1089,6 +1236,24 @@ a { color: var(--info); text-decoration: none; }
       completed:['已完成','success'], failed:['失败','danger'], returned:['退回','danger'], held:['暂缓','warning'],
       carried:['已结转',''], cancelled:['已取消',''],
     }[status] || [status,'']);
+  }
+
+  function currentPaymentAttempt(payment) {
+    return payment && payment.attempts && payment.attempts.length ? payment.attempts[payment.attempts.length - 1] : null;
+  }
+
+  function currentPaymentEvent(attempt) {
+    return attempt && attempt.events && attempt.events.length ? attempt.events[attempt.events.length - 1] : null;
+  }
+
+  function paymentAttemptStatus(attempt) {
+    const event = currentPaymentEvent(attempt);
+    return event ? event.status : '';
+  }
+
+  function downloadablePaymentAttempt(payment) {
+    const attempt = currentPaymentAttempt(payment);
+    return attempt && ['remitted','completed'].includes(paymentAttemptStatus(attempt)) && attempt.proofAvailable ? attempt : null;
   }
 
   function invoiceStatus(status) {
@@ -1550,15 +1715,31 @@ a { color: var(--info); text-decoration: none; }
     const item = activePayments().find(row => row.id === state.activePayment);
     if (!item) return '';
     const pm = paymentStatus(item.status);
-    const timeline = [
-      ['生成付款单','关联账单 ' + item.statementId,item.created],
-      [item.label,item.reason,item.updated],
-    ];
+    const currentAttempt = currentPaymentAttempt(item);
+    const proofAttempt = downloadablePaymentAttempt(item);
+    const currentAttemptStatus = paymentAttemptStatus(currentAttempt);
+    const isPartial = currentAttempt && currentAttempt.amountMinor < item.amountMinor && item.remainingMinor > 0 && ['remitted','completed'].includes(currentAttemptStatus);
+    const recovery = ['failed','returned','held'].includes(item.status)
+      ? '<section class="gh-card"><div class="gh-card-head"><div><h2>异常处理</h2></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
+        readonly(pm[0] + '原因',item.reason) +
+        readonly('开发者是否需处理',item.developerActionRequired ? '是' : '否',item.developerAction) +
+        readonly('预计重试时间',item.estimatedRetryAt) +
+        readonly('下一次付款尝试',item.nextAttempt) +
+      '</div></div></section>'
+      : '';
+    const attemptTimeline = item.attempts.length
+      ? item.attempts.map((attempt,attemptIndex) => (attempt.events || []).map((event,eventIndex) => {
+        const eventMeta = paymentStatus(event.status);
+        const isCurrent = attemptIndex === item.attempts.length - 1 && eventIndex === attempt.events.length - 1;
+        const detail = [event.note || event.reason, money(attempt.amountMinor,item.currency), attempt.providerRef && ['remitted','completed','returned'].includes(event.status) ? '参考号 ' + attempt.providerRef : ''].filter(Boolean).join(' · ');
+        return '<div data-attempt-id="' + attempt.id + '" data-attempt-event="' + event.status + '" class="' + (isCurrent ? 'is-current' : '') + '"><b>' + event.at + '</b><strong>第 ' + (attemptIndex + 1) + ' 次付款尝试 · ' + eventMeta[0] + '</strong><p>' + esc(detail) + '</p></div>';
+      }).join('')).join('')
+      : '<div class="is-current"><b>' + item.updated + '</b><strong>' + pm[0] + '</strong><p>' + esc(item.reason) + '</p></div>';
     return '<div class="d15-drawer-layer" data-action="close-drawer"><aside class="d15-drawer d15-payment-drawer" data-stop role="dialog" aria-modal="true" aria-label="付款详情" data-testid="payment-drawer"><div class="d15-drawer-head"><div><h2>付款详情</h2><p>' + item.id + ' · ' + tag(pm[0],pm[1]) + '</p></div><button type="button" class="gh-dialog-close" data-action="close-drawer" aria-label="关闭">×</button></div><div class="d15-drawer-body"><section class="gh-card"><div class="gh-card-body"><div class="gh-grid-2">' +
-      '<div class="gh-readonly"><span>关联账单</span><strong><button type="button" class="d15-text-button" data-action="open-related-statement" data-statement="' + item.statementId + '">' + item.statementId + '</button></strong><small>点击查看账单</small></div>' + readonly('付款金额',money(item.amountMinor,item.currency)) + readonly('收款账户',item.account) + readonly('计划付款日',item.planned) + readonly('银行参考号',item.providerRef) + readonly('更新时间',item.updated) +
+      '<div class="gh-readonly"><span>关联账单</span><strong><button type="button" class="d15-text-button" data-action="open-related-statement" data-statement="' + item.statementId + '">' + item.statementId + '</button></strong><small>点击查看账单</small></div>' + readonly('付款单金额',money(item.amountMinor,item.currency)) + (isPartial ? readonly('本次付款金额',money(currentAttempt.amountMinor,item.currency)) + readonly('剩余金额',money(item.remainingMinor,item.currency)) : '') + readonly('收款账户',item.account,'财务主体版本 ' + item.accountVersion) + readonly('计划付款日',item.planned) + readonly('银行参考号',currentAttempt && currentAttempt.providerRef ? currentAttempt.providerRef : '—') + readonly('更新时间',item.updated) +
       '</div></div></section><section class="gh-card"><div class="gh-card-head"><div><h2>处理记录</h2></div></div><div class="gh-card-body"><div class="d15-timeline">' +
-      timeline.map((row,index) => '<div class="' + (index === timeline.length - 1 ? 'is-current' : '') + '"><b>' + row[2] + '</b><strong>' + row[0] + '</strong><p>' + row[1] + '</p></div>').join('') +
-      '</div></div></section>' + (item.proofAvailable ? '<section class="gh-card"><div class="gh-card-body">' + button('下载付款凭证','download-payment-proof','','') + '</div></section>' : '') + '</div><div class="d15-drawer-foot">' + (['failed','returned','held'].includes(item.status) ? button('前往财务主体','go-entity','','') : '') + button('关闭','close-drawer','','') + '</div></aside></div>';
+      '<div><b>' + item.created + '</b><strong>生成付款单</strong><p>关联账单 ' + item.statementId + '</p></div>' + attemptTimeline +
+      '</div></div></section>' + recovery + (proofAttempt ? '<section class="gh-card"><div class="gh-card-body">' + button('下载付款凭证','download-payment-proof','','data-attempt="' + proofAttempt.id + '"') + '</div></section>' : '') + '</div><div class="d15-drawer-foot">' + (item.developerActionRequired ? button('前往财务主体','go-entity','','') : '') + button('关闭','close-drawer','','') + '</div></aside></div>';
   }
 
   function historyDrawer() {
@@ -1720,7 +1901,10 @@ a { color: var(--info); text-decoration: none; }
     if (group === 'flow') {
       return csv(['流水号','日期','游戏','SKU','业务来源','履约方式','类型','交易原币','交易金额','汇率','汇率版本','折算金额','税费','支付费','平台分成','调整','应结算','结算币种','结算模型','规则版本','结算对手方','账单号'],filteredFlows().map(item => [item.id,item.date,item.game,item.sku,ledgerSourceLabel(item.ledgerSource),fulfillmentLabel(item.fulfillmentType),flowType(item.type)[0],item.originalCurrency,decimal(item.originalMinor,item.originalCurrency),item.fxRateText,item.fxVersion,decimal(item.convertedMinor,item.settlementCurrency),decimal(item.taxMinor,item.settlementCurrency),decimal(item.feeMinor,item.settlementCurrency),decimal(item.platformShareMinor,item.settlementCurrency),decimal(item.adjustmentMinor,item.settlementCurrency),decimal(item.settlementMinor,item.settlementCurrency),item.settlementCurrency,ruleModelLabel(item.ruleModel),item.ruleVersion,item.settlementCounterparty,item.statementId]));
     }
-    return csv(['付款单号','账单号','状态','金额','币种','收款账户','计划付款日','更新时间','银行参考号'],filteredPayments().map(item => [item.id,item.statementId,item.label,decimal(item.amountMinor,item.currency),item.currency,item.account,item.planned,item.updated,item.providerRef]));
+    return csv(['付款单号','账单号','状态','金额','币种','收款账户','计划付款日','更新时间','银行参考号'],filteredPayments().map(item => {
+      const attempt = currentPaymentAttempt(item);
+      return [item.id,item.statementId,item.label,decimal(item.amountMinor,item.currency),item.currency,item.account,item.planned,item.updated,attempt && attempt.providerRef ? attempt.providerRef : ''];
+    }));
   }
 
   app.addEventListener('input', event => {
@@ -2082,7 +2266,10 @@ a { color: var(--info); text-decoration: none; }
       if (item) saveTextFile(item.id + '.csv',csv(['账单号','账期','版本','销售额','退款','拒付','税费','支付费','平台分成','补贴与调整','应结算','币种','状态'],[[item.id,item.period,item.version,decimal(item.salesMinor,item.currency),decimal(item.refundsMinor,item.currency),decimal(item.chargebacksMinor,item.currency),decimal(item.taxMinor,item.currency),decimal(item.providerFeeMinor,item.currency),decimal(item.platformShareMinor,item.currency),decimal(item.adjustmentsMinor,item.currency),decimal(item.settlementMinor,item.currency),item.currency,statementStatus(item.status)[0]]]));
     } else if (action === 'download-payment-proof') {
       const item = payments.find(row => row.id === state.activePayment);
-      if (item && item.proofAvailable) saveTextFile(item.id + '-付款凭证.txt','付款单号：' + item.id + '\n银行参考号：' + item.providerRef);
+      const attempt = downloadablePaymentAttempt(item);
+      if (attempt && (!actionNode.dataset.attempt || actionNode.dataset.attempt === attempt.id)) {
+        saveTextFile(item.id + '-付款凭证.txt','付款单号：' + item.id + '\n付款尝试：' + attempt.id + '\n银行参考号：' + attempt.providerRef);
+      }
     } else if (action === 'open-related-statement') {
       state.activePayment = '';
       state.route = 'reconciliation';
@@ -2161,6 +2348,7 @@ a { color: var(--info); text-decoration: none; }
       const currentPayments = activePayments();
       const currentDisputes = activeDisputes();
       const invoiceData = currentStatements.filter(item => item.invoiceData).map(item => item.invoiceData);
+      const paymentAudit = auditPaymentData({ statements:currentStatements, payments:currentPayments });
       return clone({
         scenario:state.demoScenario,
         moneyStorage:state.demoScenario === 'empty' || audit.moneyAmountsAreIntegers ? 'minor-unit-integer' : 'invalid',
@@ -2178,16 +2366,13 @@ a { color: var(--info); text-decoration: none; }
         pages:{ statements:Math.ceil(filteredStatements().length / PAGE_SIZE), flows:Math.ceil(filteredFlows().length / PAGE_SIZE), payments:Math.ceil(filteredPayments().length / PAGE_SIZE) },
         statementIdsUnique:new Set(currentStatements.map(item => item.id)).size === currentStatements.length,
         ...audit,
-        paymentStatementsUnique:new Set(currentPayments.map(item => item.statementId)).size === currentPayments.length,
-        paymentAmountsConsistent:currentPayments.every(payment => {
-          const statement = currentStatements.find(item => item.id === payment.statementId);
-          return statement && statement.settlementMinor === payment.amountMinor;
-        }),
-        paymentTimelineValid:currentPayments.every(payment => payment.created <= payment.updated),
+        ...paymentAudit,
       });
     },
     auditFixture:() => clone(auditFixture()),
     auditLedger:fixture => clone(auditLedgerData(fixture)),
+    paymentAuditFixture:() => clone(paymentAuditFixture()),
+    auditPayments:fixture => clone(auditPaymentData(fixture)),
     exportCsv,
     setDemoScenario,
     setEntityScenario:(status, overrides) => {

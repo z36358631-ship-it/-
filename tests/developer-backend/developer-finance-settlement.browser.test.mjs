@@ -773,6 +773,61 @@ test('付款记录覆盖完整状态且不提供开发者打款操作', async ()
   }
 });
 
+test('付款单使用付款尝试时间线且仅当前真实汇出后提供凭证', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/payments'), { waitUntil:'load' });
+    const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    assert.equal(model.paymentOrdersUnique, true);
+    assert.equal(model.paymentAttemptsLinked, true);
+    assert.equal(model.paymentAmountsConsistent, true);
+    assert.equal(model.paymentTimelineValid, true);
+    assert.equal(model.paymentAttemptTransitionsValid, true);
+    assert.equal(model.paymentEffectiveAmountsConsistent, true);
+
+    const completedAudit = model.paymentAttemptAudit.find(item => item.id === 'PAY-202606-001');
+    assert.equal(completedAudit.attemptCount, 1);
+    assert.deepEqual(completedAudit.attempts[0].statuses, ['processing','remitted','completed']);
+    assert.equal(completedAudit.effectiveRemittedMinor, completedAudit.amountMinor);
+
+    const returnedAudit = model.paymentAttemptAudit.find(item => item.id === 'PAY-202605-001');
+    assert.equal(returnedAudit.attemptCount, 2);
+    assert.deepEqual(returnedAudit.attempts[1].statuses, ['processing','remitted','returned']);
+    assert.equal(returnedAudit.effectiveRemittedMinor, 0);
+
+    const invalidFixture = await page.evaluate(() => {
+      const fixture = window.__developerFinanceDemo.paymentAuditFixture();
+      const payment = fixture.payments.find(item => item.id === 'PAY-202606-001');
+      const original = payment.attempts[0];
+      payment.attempts = [
+        { ...original, id:original.id + '-SPLIT-1', events:original.events.slice(0,2) },
+        { ...original, id:original.id + '-SPLIT-2', createdAt:original.events[2].at, events:[original.events[2]] },
+      ];
+      return window.__developerFinanceDemo.auditPayments(fixture);
+    });
+    assert.equal(invalidFixture.paymentAttemptTransitionsValid, false);
+    assert.equal(invalidFixture.paymentEffectiveAmountsConsistent, false);
+
+    await page.locator('[data-payment-id="PAY-202605-001"]').getByRole('button', { name:'查看', exact:true }).click();
+    const returned = page.getByRole('dialog', { name:'付款详情' });
+    const returnedText = await returned.innerText();
+    assert.match(returnedText, /退回原因/);
+    assert.match(returnedText, /开发者是否需处理/);
+    assert.match(returnedText, /预计重试时间/);
+    assert.match(returnedText, /下一次付款尝试/);
+    assert.match(returnedText, /已汇出[\s\S]*退回/);
+    assert.doesNotMatch(returnedText, /下载付款凭证/);
+
+    await returned.getByRole('button', { name:'关闭', exact:true }).last().click();
+    await page.locator('[data-payment-id="PAY-202607-001"]').getByRole('button', { name:'查看', exact:true }).click();
+    const partial = page.getByRole('dialog', { name:'付款详情' });
+    assert.match(await partial.innerText(), /本次付款金额/);
+    assert.match(await partial.innerText(), /剩余金额/);
+  } finally {
+    await page.close();
+  }
+});
+
 test('390px视口无根节点横向溢出', async () => {
   const page = await browser.newPage({ viewport:{ width:390, height:844 } });
   const errors = [];
