@@ -236,8 +236,10 @@
 
   const state = {
     demoScenario:'exhaustive',
+    scenarioMenuOpen:false,
     route:routeFromHash(),
     entity:clone(entitySeed),
+    emptyEntity:{ ...clone(entitySeed), status:'unconfigured', effectiveVersion:'', submittedVersion:'' },
     entityDraft:null,
     entityEditing:false,
     entityEditMode:'',
@@ -267,6 +269,22 @@
 
   function activeFlows() {
     return state.demoScenario === 'exhaustive' ? flows : [];
+  }
+
+  function activePayments() {
+    return state.demoScenario === 'exhaustive' ? payments : [];
+  }
+
+  function activeDisputes() {
+    return state.demoScenario === 'exhaustive' ? state.disputes : [];
+  }
+
+  function activeInvoices() {
+    return activeStatements().filter(statement => statement.requiresInvoice || statement.invoiceData);
+  }
+
+  function activeEntity() {
+    return state.demoScenario === 'empty' ? state.emptyEntity : state.entity;
   }
 
   function nextNaturalMonth(period) {
@@ -314,8 +332,8 @@
     return {
       statements:clone(activeStatements()),
       flows:clone(activeFlows()),
-      payments:clone(payments),
-      disputes:clone(state.disputes),
+      payments:clone(activePayments()),
+      disputes:clone(activeDisputes()),
     };
   }
 
@@ -401,11 +419,12 @@
   }
 
   function financeActionsAllowed() {
-    return Boolean(state.entity.effectiveVersion) && !['change_reviewing','supplement','suspended'].includes(state.entity.status);
+    const entity = activeEntity();
+    return Boolean(entity.effectiveVersion) && !['change_reviewing','supplement','suspended'].includes(entity.status);
   }
 
   function paymentStateForStatement(item) {
-    const payment = payments.find(row => row.statementId === item.id);
+    const payment = activePayments().find(row => row.statementId === item.id);
     return payment ? payment.status : item.payment;
   }
 
@@ -432,34 +451,35 @@
   }
 
   function entitySummary() {
-    const meta = statusMeta(state.entity.status);
-    const blocked = ['change_reviewing','supplement','suspended'].includes(state.entity.status);
+    const entity = activeEntity();
+    const meta = statusMeta(entity.status);
+    const blocked = ['change_reviewing','supplement','suspended'].includes(entity.status);
     let notice = '';
-    if (state.entity.status === 'change_reviewing') {
+    if (entity.status === 'change_reviewing') {
       notice = '<div class="gh-notice warning"><div><strong>变更审核中</strong><p>旧资料继续用于账单归属；本次涉及收款账户，审核完成前暂停付款。</p></div><div class="gh-row-actions">' + button('查看提交内容','view-submission','', '') + button('撤销审核','withdraw-review','danger','') + '</div></div>';
-    } else if (state.entity.status === 'reviewing') {
+    } else if (entity.status === 'reviewing') {
       notice = '<div class="gh-notice"><div><strong>资料审核中</strong><p>审核通过后开放账单确认和付款。</p></div><div class="gh-row-actions">' + button('查看提交内容','view-submission','', '') + button('撤销审核','withdraw-review','danger','') + '</div></div>';
-    } else if (state.entity.status === 'suspended') {
+    } else if (entity.status === 'suspended') {
       notice = '<div class="gh-notice danger"><div><strong>结算已暂停</strong><p>财务资料存在异常，账单仍可查看，付款暂停。请发送邮件至 dev@xiaoji.com。</p></div></div>';
-    } else if (state.entity.status === 'supplement') {
+    } else if (entity.status === 'supplement') {
       notice = '<div class="gh-notice danger"><div><strong>请补充资料</strong><p>账户证明未显示账户名和完整银行信息；旧资料继续生效，付款暂停。</p></div><div class="gh-row-actions">' + button('补充资料','resume-entity-edit','primary','') + '</div></div>';
     }
-    const paymentState = !state.entity.effectiveVersion ? tag('未启用','warning') : blocked ? tag('暂停','danger') : tag('正常','success');
+    const paymentState = !entity.effectiveVersion ? tag('未启用','warning') : blocked ? tag('暂停','danger') : tag('正常','success');
     return notice +
-      '<div class="d15-status-strip"><div><span>当前状态</span><strong>' + tag(meta[0], meta[1]) + '</strong></div><div><span>生效版本</span><strong>' + esc(state.entity.effectiveVersion || '—') + '</strong></div><div><span>结算币种</span><strong>' + esc(state.entity.settlementCurrency) + '</strong></div><div><span>付款状态</span><strong>' + paymentState + '</strong></div><div class="d15-status-action">' + (state.entity.status === 'effective' ? button('申请变更','start-change','primary','') : '') + '</div></div>' +
+      '<div class="d15-status-strip"><div><span>当前状态</span><strong>' + tag(meta[0], meta[1]) + '</strong></div><div><span>生效版本</span><strong>' + esc(entity.effectiveVersion || '—') + '</strong></div><div><span>结算币种</span><strong>' + esc(entity.settlementCurrency) + '</strong></div><div><span>付款状态</span><strong>' + paymentState + '</strong></div><div class="d15-status-action">' + (entity.status === 'effective' ? button('申请变更','start-change','primary','') : '') + '</div></div>' +
       '<div class="d15-entity-grid">' +
-        '<section class="gh-card"><div class="gh-card-head"><div><h2>认证主体</h2><p>来源：企业认证 ' + esc(state.entity.sourceVersion) + '</p></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
-          readonly('企业名称',state.entity.legalName,'企业认证字段') + readonly('注册国家或地区',state.entity.registrationRegion,'企业认证字段') +
-          readonly('注册号',state.entity.registrationNo,'企业认证字段') + readonly('财务联系人',state.entity.contactName + ' · ' + state.entity.contactEmail,'财务通知接收人') +
+        '<section class="gh-card"><div class="gh-card-head"><div><h2>认证主体</h2><p>来源：企业认证 ' + esc(entity.sourceVersion) + '</p></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
+          readonly('企业名称',entity.legalName,'企业认证字段') + readonly('注册国家或地区',entity.registrationRegion,'企业认证字段') +
+          readonly('注册号',entity.registrationNo,'企业认证字段') + readonly('财务联系人',entity.contactName + ' · ' + entity.contactEmail,'财务通知接收人') +
         '</div></div></section>' +
         '<section class="gh-card"><div class="gh-card-head"><div><h2>合作规则</h2><p>合同线下签署，页面只读</p></div></div><div class="gh-card-body"><div class="d15-kv-list">' +
-          '<div><span>结算模型</span><strong>收入分成</strong></div><div><span>账期</span><strong>自然月</strong></div><div><span>确认期限</span><strong>出单后 10 个自然日</strong></div><div><span>结算币种</span><strong>' + esc(state.entity.settlementCurrency) + '</strong></div><div><span>规则版本</span><strong>RULE-2026-02</strong></div><div><span>发票</span><strong>按账单要求提交</strong></div>' +
+          '<div><span>结算模型</span><strong>收入分成</strong></div><div><span>账期</span><strong>自然月</strong></div><div><span>确认期限</span><strong>出单后 10 个自然日</strong></div><div><span>结算币种</span><strong>' + esc(entity.settlementCurrency) + '</strong></div><div><span>规则版本</span><strong>RULE-2026-02</strong></div><div><span>发票</span><strong>按账单要求提交</strong></div>' +
         '</div></div></section>' +
         '<section class="gh-card"><div class="gh-card-head"><div><h2>收款账户</h2></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
-          readonly('账户名',state.entity.accountName,'须与签约主体一致') + readonly('银行国家或地区',state.entity.bankRegion) + readonly('银行',state.entity.bankName) + readonly('账号',state.entity.accountNumber) + readonly('SWIFT / BIC',state.entity.swift) + readonly('账户证明',state.entity.bankProof) +
+          readonly('账户名',entity.accountName,'须与签约主体一致') + readonly('银行国家或地区',entity.bankRegion) + readonly('银行',entity.bankName) + readonly('账号',entity.accountNumber) + readonly('SWIFT / BIC',entity.swift) + readonly('账户证明',entity.bankProof) +
         '</div></div></section>' +
         '<section class="gh-card"><div class="gh-card-head"><div><h2>税务资料</h2></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
-          readonly('税务居民地',state.entity.taxRegion) + readonly('税号',state.entity.taxNo) + readonly('税务证明',state.entity.taxProof) + readonly('生效时间',state.entity.effectiveAt) +
+          readonly('税务居民地',entity.taxRegion) + readonly('税号',entity.taxNo) + readonly('税务证明',entity.taxProof) + readonly('生效时间',entity.effectiveAt) +
         '</div></div></section>' +
       '</div>' + historyTable();
   }
@@ -472,7 +492,8 @@
 
   function entityForm() {
     const draft = state.entityDraft || clone(entitySeed);
-    const isSupplement = state.entity.status === 'supplement';
+    const entity = activeEntity();
+    const isSupplement = entity.status === 'supplement';
     return (isSupplement ? '<div class="gh-notice danger"><div><strong>请补充资料</strong><p>账户证明未显示账户名和完整银行信息，请重新上传。</p></div></div>' : '') +
       '<form data-testid="entity-form" onsubmit="return false">' +
       '<section class="gh-card"><div class="gh-card-head"><div><h2>认证主体</h2><p>企业认证资料自动同步，不在此处修改</p></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
@@ -490,7 +511,7 @@
         selectField('税务居民地','taxRegion',draft.taxRegion,[['中国大陆','中国大陆'],['中国香港','中国香港'],['中国澳门','中国澳门'],['新加坡','新加坡'],['美国','美国']],true) +
         field('税号','taxNo',draft.taxNo,true) + uploadField('税务证明','taxProof',draft.taxProof,true) +
         '<div class="gh-field wide"><label for="d15-change-reason">变更说明</label><textarea id="d15-change-reason" class="gh-textarea" data-entity-field="changeReason" placeholder="首次配置可不填">' + esc(draft.changeReason) + '</textarea></div>' +
-      '</div><div class="gh-error" data-testid="entity-error"></div><div class="gh-form-actions">' + button('取消','cancel-entity-edit','','') + button('保存','save-entity','','') + button(state.entity.status === 'supplement' ? '重新提交' : '提交审核','submit-entity','primary','') + '</div></div></section></form>';
+      '</div><div class="gh-error" data-testid="entity-error"></div><div class="gh-form-actions">' + button('取消','cancel-entity-edit','','') + button('保存','save-entity','','') + button(entity.status === 'supplement' ? '重新提交' : '提交审核','submit-entity','primary','') + '</div></div></section></form>';
   }
 
   function field(label, key, value, required, type) {
@@ -508,11 +529,12 @@
   }
 
   function entityPage() {
+    const entity = activeEntity();
     if (state.entityEditing) return entityForm();
-    if (state.entity.status === 'unconfigured') {
+    if (entity.status === 'unconfigured') {
       return '<section class="gh-card">' + emptyState('尚未配置财务主体','企业认证资料将自动同步，请补充收款与税务资料。',button('配置财务主体','start-initial','primary','')) + '</section>';
     }
-    if (state.entity.status === 'draft' || (state.entity.status === 'supplement' && !state.entity.effectiveVersion)) {
+    if (entity.status === 'draft' || (entity.status === 'supplement' && !entity.effectiveVersion)) {
       state.entityDraft = state.entityDraft || clone(entitySeed);
       state.entityEditing = true;
       return entityForm();
@@ -558,8 +580,8 @@
       '<span>' + safePage + ' / ' + pages + '</span><button class="gh-button" type="button" data-page-group="' + group + '" data-page="' + (safePage + 1) + '" ' + (safePage >= pages ? 'disabled' : '') + '>下一页</button></div>';
   }
 
-  function emptyTableRow(columns) {
-    return '<tr><td colspan="' + columns + '"><div class="gh-empty"><strong>暂无匹配结果</strong><p>请调整筛选条件后查询。</p></div></td></tr>';
+  function emptyTableRow(columns, title, text) {
+    return '<tr><td colspan="' + columns + '"><div class="gh-empty"><strong>' + esc(title || '暂无匹配结果') + '</strong><p>' + esc(text || '请调整筛选条件后查询。') + '</p></div></td></tr>';
   }
 
   function statementList() {
@@ -577,7 +599,7 @@
         const sm = statementStatus(item.status);
         const pm = paymentStatus(paymentStateForStatement(item));
         return '<tr data-statement-id="' + item.id + '"><td><strong>' + item.period + '</strong><small>' + item.id + ' · ' + item.version + '</small></td><td class="d15-original">' + esc(item.originalSummary) + '</td><td><strong>' + money(item.settlementMinor,item.currency) + '</strong></td><td>' + item.deadline + '</td><td>' + tag(sm[0],sm[1]) + '</td><td>' + tag(pm[0],pm[1]) + '</td><td>' + button('查看','open-statement','link','data-statement="' + item.id + '"') + '</td></tr>';
-      }).join('') : emptyTableRow(7)) + '</tbody></table></div>' + pagination('statement',state.statementPage,rows.length) + '</section>';
+      }).join('') : emptyTableRow(7,activeStatements().length ? '' : '暂无对账单',activeStatements().length ? '' : '完成财务主体配置后，账单将在出单后展示。')) + '</tbody></table></div>' + pagination('statement',state.statementPage,rows.length) + '</section>';
   }
 
   function flowType(type) {
@@ -602,24 +624,25 @@
       (pageRows.length ? pageRows.map(item => {
         const tm = flowType(item.type);
         return '<tr><td><strong>' + item.date + '</strong><small class="d15-mono">' + item.id + '</small></td><td><strong>' + item.game + '</strong><small>' + item.sku + '</small></td><td>' + tag(tm[0],tm[1]) + '</td><td>' + money(item.originalMinor,item.originalCurrency) + '</td><td><strong>' + item.fxRateText + '</strong><small>' + money(item.convertedMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.taxMinor,item.settlementCurrency) + '</strong><small>支付费 ' + money(item.feeMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.platformShareMinor,item.settlementCurrency) + '</strong><small>调整 ' + money(item.adjustmentMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.settlementMinor,item.settlementCurrency) + '</strong><small>' + ruleModelLabel(item.ruleModel) + ' · ' + item.ruleVersion + '</small></td><td><button type="button" class="d15-text-button" data-action="open-statement" data-statement="' + item.statementId + '">' + item.statementId + '</button></td></tr>';
-      }).join('') : emptyTableRow(9)) + '</tbody></table></div>' + pagination('flow',state.flowPage,rows.length) + '</section>';
+      }).join('') : emptyTableRow(9,activeFlows().length ? '' : '暂无对账流水',activeFlows().length ? '' : '产生可结算交易后，对账流水将在此展示。')) + '</tbody></table></div>' + pagination('flow',state.flowPage,rows.length) + '</section>';
   }
 
   function reconciliationPage() {
+    const isEmptyScenario = state.demoScenario === 'empty';
     const pendingCount = activeStatements().filter(item => item.status === 'pending').length;
     const payableStates = new Set(['pending','processing','remitted','awaiting_invoice']);
     const lockedUnpaid = activeStatements().filter(item => item.status === 'locked' && payableStates.has(paymentStateForStatement(item))).reduce((sum,item) => sum + item.settlementMinor,0);
     const gate = financeActionsAllowed() ? '' : '<div class="gh-notice warning"><div><strong>财务操作暂不可用</strong><p>财务主体生效且付款未暂停后，才可确认账单或提交差异。</p></div></div>';
     return gate + '<div class="gh-grid-3 d15-metrics">' +
-      metric('本期预估应结算','USD 19,204.18','交易原币：USD 15,420.60 / EUR 2,846.20 / JPY 308,000') +
-      metric('待确认账单',pendingCount + ' 份','最近确认期限：2026-09-15 23:59') +
+      metric('本期预估应结算',isEmptyScenario ? 'USD 0.00' : 'USD 19,204.18',isEmptyScenario ? '产生可结算交易后更新' : '交易原币：USD 15,420.60 / EUR 2,846.20 / JPY 308,000') +
+      metric('待确认账单',pendingCount + ' 份',isEmptyScenario ? '暂无待确认账单' : '最近确认期限：2026-09-15 23:59') +
       metric('已锁定待付款',money(lockedUnpaid,'USD'),'以锁定账单为准') +
       '</div><div class="gh-tabs d15-main-tabs"><button type="button" data-reconcile-tab="statements" class="' + (state.reconcileTab === 'statements' ? 'is-active' : '') + '">对账单</button><button type="button" data-reconcile-tab="flows" class="' + (state.reconcileTab === 'flows' ? 'is-active' : '') + '">对账流水</button></div>' +
       (state.reconcileTab === 'statements' ? statementList() : flowList());
   }
 
   function filteredPayments() {
-    return payments.filter(item => {
+    return activePayments().filter(item => {
       const f = state.paymentFilters;
       if (f.keyword && !(item.id + item.statementId).toLowerCase().includes(f.keyword.toLowerCase())) return false;
       if (f.status !== 'all' && item.status !== f.status) return false;
@@ -643,7 +666,7 @@
       (pageRows.length ? pageRows.map(item => {
         const pm = paymentStatus(item.status);
         return '<tr data-payment-id="' + item.id + '"><td><strong>' + item.id + '</strong></td><td>' + item.statementId + '</td><td><strong>' + money(item.amountMinor,item.currency) + '</strong></td><td>' + item.account + '</td><td>' + item.planned + '</td><td>' + item.updated + '</td><td>' + tag(pm[0],pm[1]) + '</td><td>' + button('查看','open-payment','link','data-payment="' + item.id + '"') + '</td></tr>';
-      }).join('') : emptyTableRow(8)) + '</tbody></table></div>' + pagination('payment',state.paymentPage,rows.length) + '</section>';
+      }).join('') : emptyTableRow(8,activePayments().length ? '' : '暂无付款记录',activePayments().length ? '' : '账单锁定并进入付款计划后，付款进度将在此展示。')) + '</tbody></table></div>' + pagination('payment',state.paymentPage,rows.length) + '</section>';
   }
 
   function breakdownRow(label, value, tone) {
@@ -651,12 +674,12 @@
   }
 
   function statementDrawer() {
-    const item = statements.find(row => row.id === state.activeStatement);
+    const item = activeStatements().find(row => row.id === state.activeStatement);
     if (!item) return '';
     const sm = statementStatus(item.status);
     const pm = paymentStatus(paymentStateForStatement(item));
-    const linked = flows.filter(flow => flow.statementId === item.id);
-    const currentDispute = state.disputes.filter(dispute => dispute.statementId === item.id).slice(-1)[0];
+    const linked = activeFlows().filter(flow => flow.statementId === item.id);
+    const currentDispute = activeDisputes().filter(dispute => dispute.statementId === item.id).slice(-1)[0];
     const selectedFlow = linked.find(flow => flow.id === state.disputeFlowId) || linked[0];
     let body = '';
     if (state.disputeMode === 'supplement') {
@@ -718,7 +741,7 @@
   }
 
   function paymentDrawer() {
-    const item = payments.find(row => row.id === state.activePayment);
+    const item = activePayments().find(row => row.id === state.activePayment);
     if (!item) return '';
     const pm = paymentStatus(item.status);
     const timeline = [
@@ -734,8 +757,9 @@
 
   function historyDrawer() {
     if (state.selectedHistory === '__submission') {
-      const draft = state.entityDraft || state.entity;
-      return '<div class="d15-drawer-layer" data-action="close-drawer"><aside class="d15-drawer d15-history-drawer" data-stop role="dialog" aria-modal="true" aria-label="提交内容"><div class="d15-drawer-head"><div><h2>提交内容</h2><p>' + esc(state.entity.submittedVersion || '待审核版本') + ' · 只读</p></div><button type="button" class="gh-dialog-close" data-action="close-drawer" aria-label="关闭">×</button></div><div class="d15-drawer-body"><section class="gh-card"><div class="gh-card-body"><div class="gh-grid-2">' +
+      const entity = activeEntity();
+      const draft = state.entityDraft || entity;
+      return '<div class="d15-drawer-layer" data-action="close-drawer"><aside class="d15-drawer d15-history-drawer" data-stop role="dialog" aria-modal="true" aria-label="提交内容"><div class="d15-drawer-head"><div><h2>提交内容</h2><p>' + esc(entity.submittedVersion || '待审核版本') + ' · 只读</p></div><button type="button" class="gh-dialog-close" data-action="close-drawer" aria-label="关闭">×</button></div><div class="d15-drawer-body"><section class="gh-card"><div class="gh-card-body"><div class="gh-grid-2">' +
         readonly('企业名称',draft.legalName) + readonly('注册国家或地区',draft.registrationRegion) + readonly('财务联系人',draft.contactName + ' · ' + draft.contactEmail) + readonly('结算币种',draft.settlementCurrency) + readonly('账户名',draft.accountName) + readonly('银行',draft.bankName) + readonly('银行账号',draft.accountNumber) + readonly('SWIFT / BIC',draft.swift) + readonly('税务居民地',draft.taxRegion) + readonly('税号',draft.taxNo) + readonly('账户证明',draft.bankProof) + readonly('税务证明',draft.taxProof) +
         '</div></div></section></div><div class="d15-drawer-foot">' + button('关闭','close-drawer','','') + '</div></aside></div>';
     }
@@ -756,11 +780,55 @@
     return '<div class="gh-dialog-layer" data-action="close-dialog"><div class="gh-dialog" data-stop role="dialog" aria-modal="true" aria-label="' + title + '"><div class="gh-dialog-head"><div><h2>' + title + '</h2><p>' + text + '</p></div><button class="gh-dialog-close" data-action="close-dialog" aria-label="关闭">×</button></div><div class="gh-dialog-foot">' + button('取消','close-dialog','','') + button(isWithdraw ? '确认撤销' : '确认账单',action,isWithdraw ? 'danger' : 'primary','') + '</div></div></div>';
   }
 
+  function scenarioOption(value, label, hint) {
+    const selected = state.demoScenario === value;
+    return '<button type="button" role="menuitemradio" aria-checked="' + selected + '" tabindex="' + (selected ? '0' : '-1') + '" data-action="set-demo-scenario" data-scenario="' + value + '"><strong>' + label + '</strong><small>' + hint + '</small></button>';
+  }
+
+  function scenarioSwitcher() {
+    const expanded = state.scenarioMenuOpen ? 'true' : 'false';
+    return '<div class="d15-scenario-switcher">' +
+      (state.scenarioMenuOpen ? '<div id="d15-scenario-menu" class="d15-scenario-menu" role="menu" aria-label="Demo 场景">' +
+        scenarioOption('exhaustive','穷举态','展示完整状态') +
+        scenarioOption('empty','缺省态','模拟首次进入') +
+      '</div>' : '') +
+      '<button type="button" class="d15-scenario-orb" data-testid="scenario-orb" data-action="toggle-scenario-menu" aria-haspopup="menu" aria-controls="d15-scenario-menu" aria-expanded="' + expanded + '" aria-label="切换 Demo 场景">场景</button>' +
+    '</div>';
+  }
+
+  function setDemoScenario(scenario) {
+    if (!['exhaustive','empty'].includes(scenario)) return;
+    state.demoScenario = scenario;
+    if (scenario === 'empty') state.emptyEntity = { ...clone(entitySeed), status:'unconfigured', effectiveVersion:'', submittedVersion:'' };
+    state.scenarioMenuOpen = false;
+    state.entityDraft = null;
+    state.entityEditing = false;
+    state.entityEditMode = '';
+    state.statementFilters = { keyword:'', status:'all', period:'all', currency:'all' };
+    state.flowFilters = { keyword:'', type:'all', period:'all', currency:'all' };
+    state.paymentFilters = { keyword:'', status:'all', period:'all', currency:'all' };
+    state.statementPage = 1;
+    state.flowPage = 1;
+    state.paymentPage = 1;
+    state.activeStatement = '';
+    state.activePayment = '';
+    state.selectedHistory = '';
+    state.dialog = '';
+    state.disputeMode = false;
+    state.disputeFlowId = '';
+    state.disputeFile = '';
+    state.invoiceFile = '';
+    state.toast = '';
+    render();
+    const orb = app.querySelector('[data-testid="scenario-orb"]');
+    if (orb) orb.focus();
+  }
+
   function render() {
     state.route = routes[state.route] ? state.route : 'entity';
     const page = state.route === 'entity' ? entityPage() : state.route === 'reconciliation' ? reconciliationPage() : paymentsPage();
     app.innerHTML = '<div class="gh-app" data-testid="developer-finance-demo">' + topbar() + '<div class="gh-layout">' + nav() + '<main class="gh-main"><div class="gh-content">' + pageHead() + page + '</div></main></div>' +
-      statementDrawer() + paymentDrawer() + historyDrawer() + confirmDialog() + (state.toast ? '<div class="gh-toast" role="status">' + esc(state.toast) + '</div>' : '') + '</div>';
+      scenarioSwitcher() + statementDrawer() + paymentDrawer() + historyDrawer() + confirmDialog() + (state.toast ? '<div class="gh-toast" role="status">' + esc(state.toast) + '</div>' : '') + '</div>';
     document.body.style.overflow = state.activeStatement || state.activePayment || state.selectedHistory || state.dialog ? 'hidden' : '';
   }
 
@@ -812,7 +880,7 @@
     if (entityControl && state.entityDraft) {
       const key = entityControl.dataset.entityField;
       state.entityDraft[key] = entityControl.value;
-      if (['bankRegion','accountName','bankName','accountNumber','swift'].includes(key) && entityControl.value !== String(state.entity[key] || '')) {
+      if (['bankRegion','accountName','bankName','accountNumber','swift'].includes(key) && entityControl.value !== String(activeEntity()[key] || '')) {
         state.entityDraft.bankProof = '';
         const label = app.querySelector('[data-file-label="bankProof"]');
         if (label) label.textContent = '账户信息已变更，请重新上传账户证明';
@@ -869,6 +937,7 @@
     const route = event.target.closest('[data-route]');
     if (route) {
       state.route = route.dataset.route;
+      state.scenarioMenuOpen = false;
       state.activeStatement = '';
       state.activePayment = '';
       state.selectedHistory = '';
@@ -894,26 +963,37 @@
     const actionNode = event.target.closest('[data-action]');
     if (!actionNode) return;
     const action = actionNode.dataset.action;
-    if (action === 'start-initial') {
+    if (action === 'toggle-scenario-menu') {
+      state.scenarioMenuOpen = !state.scenarioMenuOpen;
+      render();
+      const target = state.scenarioMenuOpen
+        ? app.querySelector('[role="menuitemradio"][aria-checked="true"]')
+        : app.querySelector('[data-testid="scenario-orb"]');
+      if (target) target.focus();
+    } else if (action === 'set-demo-scenario') {
+      setDemoScenario(actionNode.dataset.scenario);
+    } else if (action === 'start-initial') {
       state.entityDraft = clone(entitySeed);
       state.entityDraft.effectiveVersion = '';
       state.entityEditing = true;
       state.entityEditMode = 'initial';
       render();
     } else if (action === 'start-change') {
-      state.entityDraft = clone(state.entity);
+      state.entityDraft = clone(activeEntity());
       state.entityDraft.accountNumber = '782612340098';
       state.entityEditing = true;
       state.entityEditMode = 'change';
       render();
     } else if (action === 'cancel-entity-edit') {
+      const entity = activeEntity();
       state.entityEditing = false;
-      if (!state.entity.effectiveVersion) state.entity.status = 'unconfigured';
+      if (!entity.effectiveVersion) entity.status = 'unconfigured';
       state.entityDraft = null;
       render();
     } else if (action === 'save-entity') {
       syncEntityDraftFromDom();
-      if (!state.entity.effectiveVersion) state.entity.status = 'draft';
+      const entity = activeEntity();
+      if (!entity.effectiveVersion) entity.status = 'draft';
       setToast('已保存');
     } else if (action === 'submit-entity') {
       if (!validateEntity()) {
@@ -921,25 +1001,28 @@
         if (error) error.textContent = '请检查必填项、邮箱和 SWIFT / BIC 格式。';
         return;
       }
-      const isChange = state.entityEditMode === 'change' || Boolean(state.entity.effectiveVersion);
-      state.entity.submittedVersion = 'FIN-2026-004';
-      state.entity.status = isChange ? 'change_reviewing' : 'reviewing';
+      const entity = activeEntity();
+      const isChange = state.entityEditMode === 'change' || Boolean(entity.effectiveVersion);
+      entity.submittedVersion = 'FIN-2026-004';
+      entity.status = isChange ? 'change_reviewing' : 'reviewing';
       state.entityEditing = false;
       setToast('已提交审核');
     } else if (action === 'view-submission') {
       state.selectedHistory = '__submission';
       render();
     } else if (action === 'resume-entity-edit') {
-      state.entityDraft = state.entityDraft || clone(state.entity);
+      const entity = activeEntity();
+      state.entityDraft = state.entityDraft || clone(entity);
       state.entityEditing = true;
-      state.entityEditMode = state.entity.effectiveVersion ? 'change' : 'initial';
+      state.entityEditMode = entity.effectiveVersion ? 'change' : 'initial';
       render();
     } else if (action === 'withdraw-review') {
       state.dialog = 'withdraw';
       render();
     } else if (action === 'confirm-withdraw') {
-      const hasEffective = Boolean(state.entity.effectiveVersion);
-      state.entity.status = hasEffective ? 'effective' : 'draft';
+      const entity = activeEntity();
+      const hasEffective = Boolean(entity.effectiveVersion);
+      entity.status = hasEffective ? 'effective' : 'draft';
       state.entityEditing = !hasEffective;
       state.dialog = '';
       setToast('审核已撤销');
@@ -1101,40 +1184,67 @@
 
   window.addEventListener('hashchange', () => { state.route = routeFromHash(); render(); });
   window.addEventListener('keydown', event => {
+    if (state.scenarioMenuOpen) {
+      const item = event.target.closest && event.target.closest('[role="menuitemradio"]');
+      const items = [...app.querySelectorAll('[role="menuitemradio"]')];
+      if (item && ['ArrowDown','ArrowRight','ArrowUp','ArrowLeft','Home','End'].includes(event.key)) {
+        event.preventDefault();
+        const index = items.indexOf(item);
+        const nextIndex = event.key === 'Home' ? 0
+          : event.key === 'End' ? items.length - 1
+          : ['ArrowDown','ArrowRight'].includes(event.key) ? (index + 1) % items.length
+          : (index - 1 + items.length) % items.length;
+        items.forEach((node,itemIndex) => { node.tabIndex = itemIndex === nextIndex ? 0 : -1; });
+        if (items[nextIndex]) items[nextIndex].focus();
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        state.scenarioMenuOpen = false;
+        render();
+        const orb = app.querySelector('[data-testid="scenario-orb"]');
+        if (orb) orb.focus();
+        return;
+      }
+    }
     if (event.key !== 'Escape') return;
     if (state.dialog) state.dialog = '';
-    else {
+    else if (state.activeStatement || state.activePayment || state.selectedHistory || state.disputeMode) {
       state.activeStatement = '';
       state.activePayment = '';
       state.selectedHistory = '';
       state.disputeMode = false;
       state.invoiceFile = '';
       state.disputeFile = '';
-    }
+    } else state.scenarioMenuOpen = false;
     render();
   });
   window.__developerFinanceDemo = {
     snapshot:() => {
       const audit = auditLedgerData(auditFixture());
+      const currentStatements = activeStatements();
+      const currentPayments = activePayments();
       return clone({
         scenario:state.demoScenario,
-        moneyStorage:audit.moneyAmountsAreIntegers ? 'minor-unit-integer' : 'invalid',
-        route:state.route, entity:state.entity, statements:activeStatements().map(item => ({ id:item.id, status:item.status, payment:item.payment, invoice:item.invoice })),
+        moneyStorage:state.demoScenario === 'empty' || audit.moneyAmountsAreIntegers ? 'minor-unit-integer' : 'invalid',
+        route:state.route, entity:activeEntity(), statements:currentStatements.map(item => ({ id:item.id, status:item.status, payment:item.payment, invoice:item.invoice })),
+        counts:{ statements:currentStatements.length, flows:activeFlows().length, disputes:activeDisputes().length, invoices:activeInvoices().length, payments:currentPayments.length },
         ledgerSources:[...new Set(activeFlows().map(item => item.ledgerSource))],
-        paymentStatuses:[...new Set(payments.map(item => item.status))],
+        paymentStatuses:[...new Set(currentPayments.map(item => item.status))],
         pages:{ statements:Math.ceil(filteredStatements().length / PAGE_SIZE), flows:Math.ceil(filteredFlows().length / PAGE_SIZE), payments:Math.ceil(filteredPayments().length / PAGE_SIZE) },
-        statementIdsUnique:new Set(activeStatements().map(item => item.id)).size === activeStatements().length,
+        statementIdsUnique:new Set(currentStatements.map(item => item.id)).size === currentStatements.length,
         ...audit,
-        paymentStatementsUnique:new Set(payments.map(item => item.statementId)).size === payments.length,
-        paymentAmountsConsistent:payments.every(payment => {
-          const statement = statements.find(item => item.id === payment.statementId);
+        paymentStatementsUnique:new Set(currentPayments.map(item => item.statementId)).size === currentPayments.length,
+        paymentAmountsConsistent:currentPayments.every(payment => {
+          const statement = currentStatements.find(item => item.id === payment.statementId);
           return statement && statement.settlementMinor === payment.amountMinor;
         }),
-        paymentTimelineValid:payments.every(payment => payment.created <= payment.updated),
+        paymentTimelineValid:currentPayments.every(payment => payment.created <= payment.updated),
       });
     },
     auditFixture:() => clone(auditFixture()),
     auditLedger:fixture => clone(auditLedgerData(fixture)),
+    setDemoScenario,
     setEntityScenario:status => {
       state.entity = clone(entitySeed);
       state.entity.status = status;
