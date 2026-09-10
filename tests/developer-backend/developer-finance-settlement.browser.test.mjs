@@ -80,12 +80,33 @@ test('一张结算记录同时展示对账发票付款和当前待办', async ()
 
     const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
     assert.equal(model.settlementRecords.length, model.counts.statements);
-    assert.equal(model.settlementRecords.every(item => item.statementId && item.statementStatus && item.invoiceStatus && item.paymentStatus && item.currentTask), true);
+    assert.equal(model.settlementRecords.every(item => item.statementId && item.statementStatus && item.invoiceStatus && item.paymentStatus && item.currentTask.label && item.currentTask.owner && item.updatedAt), true);
     for (const record of model.settlementRecords) {
       const statement = model.statements.find(item => item.id === record.statementId);
       assert.equal(record.statementStatus, statement.status);
       assert.equal(record.invoiceStatus, statement.invoice);
     }
+    const supplement = model.settlementRecords.find(item => item.statementId === 'STMT-2026-07-V2');
+    assert.equal(supplement.currentTask.label, '补充差异材料');
+    assert.equal(supplement.currentTask.owner, 'developer');
+    assert.equal(supplement.updatedAt, '2026-08-10 15:40');
+    const failedPayment = model.settlementRecords.find(item => item.statementId === 'STMT-2026-03-V1');
+    assert.ok(failedPayment.paymentId);
+    assert.equal(failedPayment.paymentStatus, 'failed');
+    assert.equal(failedPayment.currentTask.label, '处理收款资料');
+    const lastAction = page.locator('[data-testid="settlement-table"] tbody tr').first().getByRole('button');
+    const actionBox = await lastAction.boundingBox();
+    assert.ok(actionBox && actionBox.x + actionBox.width <= 1440);
+
+    await page.locator('#d15-settlement-paymentStatus').selectOption('failed');
+    await page.getByRole('button', { name:'查询', exact:true }).click();
+    assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').count(), 1);
+    assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').getAttribute('data-statement-id'), 'STMT-2026-03-V1');
+    await page.getByRole('button', { name:'重置', exact:true }).click();
+    await page.locator('#d15-settlement-keyword').fill('BANK-REF-****-8243');
+    await page.getByRole('button', { name:'查询', exact:true }).click();
+    assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').count(), 1);
+    assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').getAttribute('data-statement-id'), 'STMT-2025-11-V1');
   } finally {
     await page.close();
   }
@@ -270,7 +291,7 @@ test('切换场景保留一级路由并重置临时视图且不写公共存储',
     assert.equal(await page.getByRole('dialog').count(), 0);
     await page.evaluate(() => window.__developerFinanceDemo.setDemoScenario('exhaustive'));
 
-    await page.getByLabel('账单状态').selectOption('locked');
+    await page.getByLabel('对账状态').selectOption('locked');
     await page.getByRole('button', { name:'下一页', exact:true }).click();
     assert.match(await page.locator('.gh-pagination').innerText(), /2 \/ 2/);
 
@@ -289,7 +310,7 @@ test('切换场景保留一级路由并重置临时视图且不写公共存储',
     assert.equal(await page.getByRole('dialog').count(), 0);
 
     await page.evaluate(() => window.__developerFinanceDemo.setDemoScenario('exhaustive'));
-    assert.equal(await page.getByLabel('账单状态').inputValue(), 'all');
+    assert.equal(await page.getByLabel('对账状态').inputValue(), 'all');
     assert.match(await page.locator('.gh-pagination').innerText(), /1 \/ 2/);
     const storageAfter = await page.evaluate(() => {
       const read = storage => {
@@ -343,7 +364,7 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
     const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
     assert.equal(model.statementIdsUnique, true);
     assert.equal(model.statementTotalsConsistent, true);
-    assert.deepEqual(model.pages, { statements:2, flows:7, payments:2 });
+    assert.deepEqual(model.pages, { settlements:2, flows:7 });
     assert.equal(model.flowTotalsConsistent, true);
     assert.equal(model.paymentStatementsUnique, true);
     assert.equal(model.paymentAmountsConsistent, true);
@@ -597,7 +618,7 @@ test('三张表关键词输入后页面与直接导出口径一致', async () =>
   };
   try {
     await page.goto(url('/reconciliation'), { waitUntil:'load' });
-    await assertFilterAndExport({ selector:'#d15-statement-keyword', keyword:'DRAFT-ONLY-STATEMENT', group:'statement', countKey:'statements' });
+    await assertFilterAndExport({ selector:'#d15-settlement-keyword', keyword:'DRAFT-ONLY-STATEMENT', group:'statement', countKey:'statements' });
 
     await page.getByRole('button', { name:'对账流水', exact:true }).click();
     await assertFilterAndExport({ selector:'#d15-flow-keyword', keyword:'DRAFT-ONLY-FLOW', group:'flow', countKey:'flows' });

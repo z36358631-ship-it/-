@@ -385,11 +385,11 @@
     bankProofFingerprint:'',
     selectedHistory:'',
     reconcileTab:'statements',
-    statementFilters:{ keyword:'', status:'all', period:'all', currency:'all' },
+    settlementFilters:{ keyword:'', period:'all', source:'all', statementStatus:'all', invoiceStatus:'all', paymentStatus:'all' },
     flowFilters:{ keyword:'', type:'all', source:'all', period:'all', currency:'all' },
     paymentFilters:{ keyword:'', status:'all', period:'all', currency:'all' },
-    filterKeywordDrafts:{ statement:'', flow:'', payment:'' },
-    statementPage:1,
+    filterKeywordDrafts:{ settlement:'', flow:'', payment:'' },
+    settlementPage:1,
     flowPage:1,
     paymentPage:1,
     activeStatement:'',
@@ -758,20 +758,36 @@
   }
 
   function currentTaskFor(statement, payment) {
-    if (statement.status === 'voided') return '无需处理';
-    if (statement.status === 'pending') return '确认账单';
-    if (statement.status === 'disputed') {
-      const dispute = activeDisputes().find(item => item.statementId === statement.id);
-      return dispute && dispute.status === 'supplement' ? '补充差异材料' : '等待平台处理';
-    }
-    if (statement.status === 'confirmed') return '等待平台锁单';
-    if (statement.invoice === 'pending') return '提交发票';
-    if (statement.invoice === 'rejected') return '重新提交发票';
-    if (statement.invoice === 'reviewing') return '等待发票审核';
-    if (payment && ['failed','returned','held'].includes(payment.status) && payment.developerActionRequired) return '处理收款资料';
+    const dispute = activeDisputes().find(item => item.statementId === statement.id && ['processing','supplement'].includes(item.status));
+    if (dispute && dispute.status === 'supplement') return { label:'补充差异材料', tone:'warning', owner:'developer' };
+    if (statement.status === 'voided') return { label:'无需处理', tone:'', owner:'none' };
+    if (statement.status === 'pending') return { label:'确认账单', tone:'warning', owner:'developer' };
+    if (statement.status === 'disputed') return { label:'等待差异处理', tone:'info', owner:'platform' };
+    if (statement.status === 'confirmed') return { label:'等待平台锁单', tone:'info', owner:'platform' };
+    if (statement.invoice === 'pending' && statement.requiresInvoice) return { label:'提交发票', tone:'warning', owner:'developer' };
+    if (statement.invoice === 'rejected') return { label:'重新提交发票', tone:'danger', owner:'developer' };
+    if (statement.invoice === 'reviewing') return { label:'等待发票审核', tone:'info', owner:'platform' };
+    if (payment && ['failed','returned'].includes(payment.status) && payment.developerActionRequired) return { label:'处理收款资料', tone:'danger', owner:'developer' };
     const paymentState = payment ? payment.status : statement.payment;
-    if (['completed','carried','cancelled'].includes(paymentState)) return '无需处理';
-    return '等待平台处理';
+    if (['completed','carried','cancelled'].includes(paymentState)) return { label:'无需处理', tone:'success', owner:'none' };
+    return { label:'等待平台处理', tone:'info', owner:'platform' };
+  }
+
+  function settlementUpdatedAt(statement, payment) {
+    const disputeTimes = activeDisputes().filter(item => item.statementId === statement.id).flatMap(item => [
+      item.submissionSnapshot && item.submissionSnapshot.submittedAt,
+      ...(item.supplements || []).map(supplement => supplement.submittedAt),
+      ...(item.timeline || []).map(event => event.at),
+    ]);
+    const paymentTimes = payment ? [
+      payment.created,
+      payment.updated,
+      ...(payment.attempts || []).flatMap(attempt => (attempt.events || []).map(event => event.at)),
+    ] : [];
+    return [statement.generated,statement.invoiceData && statement.invoiceData.date,...disputeTimes,...paymentTimes]
+      .filter(Boolean)
+      .sort((left,right) => String(left).localeCompare(String(right)))
+      .slice(-1)[0] || '—';
   }
 
   function settlementRecord(statement) {
@@ -788,7 +804,7 @@
       paymentStatus:payment ? payment.status : paymentStateForStatement(statement),
       paymentId:payment ? payment.id : '',
       currentTask:currentTaskFor(statement,payment),
-      updatedAt:payment ? payment.updated : statement.generated,
+      updatedAt:settlementUpdatedAt(statement,payment),
     };
   }
 
@@ -939,13 +955,18 @@
     return entitySummary();
   }
 
-  function filteredStatements() {
-    return activeStatements().filter(item => {
-      const f = state.statementFilters;
-      if (f.keyword && !(item.id + item.period).toLowerCase().includes(f.keyword.toLowerCase())) return false;
-      if (f.status !== 'all' && item.status !== f.status) return false;
+  function filteredSettlementRecords() {
+    return activeSettlementRecords().filter(item => {
+      const f = state.settlementFilters;
+      const payment = paymentForStatement(item.statementId);
+      const providerRefs = payment ? (payment.attempts || []).map(attempt => attempt.providerRef || '').join(' ') : '';
+      const keywordText = [item.statementId,item.paymentId,item.period,providerRefs].join(' ').toLowerCase();
+      if (f.keyword && !keywordText.includes(f.keyword.toLowerCase())) return false;
       if (f.period !== 'all' && item.period.slice(0,4) !== f.period) return false;
-      if (f.currency !== 'all' && item.currency !== f.currency) return false;
+      if (f.source !== 'all' && !item.sources.includes(f.source)) return false;
+      if (f.statementStatus !== 'all' && item.statementStatus !== f.statementStatus) return false;
+      if (f.invoiceStatus !== 'all' && item.invoiceStatus !== f.invoiceStatus) return false;
+      if (f.paymentStatus !== 'all' && item.paymentStatus !== f.paymentStatus) return false;
       return true;
     });
   }
@@ -983,24 +1004,25 @@
   }
 
   function statementList() {
-    const rows = filteredStatements();
-    const pageRows = rows.slice((state.statementPage - 1) * PAGE_SIZE, state.statementPage * PAGE_SIZE);
-    const f = state.statementFilters;
-    return '<section class="gh-card"><div class="gh-card-body"><div class="d15-filter-grid">' +
-      '<div class="gh-field d15-filter-keyword"><label for="d15-statement-keyword">账单</label><input id="d15-statement-keyword" class="gh-input" data-filter-group="statement" data-filter="keyword" value="' + esc(state.filterKeywordDrafts.statement) + '" placeholder="账单号或账期"></div>' +
-      filterSelect('账期','statement','period',f.period,[['all','全部账期'],['2026','2026 年'],['2025','2025 年']]) +
-      filterSelect('账单状态','statement','status',f.status,[['all','全部状态'],['draft','草稿'],['pending','待确认'],['confirmed','已确认'],['disputed','有异议'],['locked','已锁定'],['voided','已作废']]) +
-      filterSelect('结算币种','statement','currency',f.currency,[['all','全部币种'],['USD','USD'],['CNY','CNY']]) +
-      '<div class="d15-filter-action">' + button('重置','reset-statement-filters','link','') + button('查询','apply-filters','primary','') + button('导出','export-statements','','') + '</div></div></div>' +
-      '<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th>账期／结算单号</th><th>业务来源</th><th>应结算金额</th><th>对账状态</th><th>发票状态</th><th>付款状态</th><th>当前待办</th><th>更新时间</th><th>操作</th></tr></thead><tbody>' +
-      (pageRows.length ? pageRows.map(item => {
-        const record = settlementRecord(item);
-        const sm = statementStatus(item.status);
+    const rows = filteredSettlementRecords();
+    const pageRows = rows.slice((state.settlementPage - 1) * PAGE_SIZE, state.settlementPage * PAGE_SIZE);
+    const f = state.settlementFilters;
+    return '<section class="gh-card"><div class="gh-card-body"><div class="d15-filter-grid d15-settlement-filter-grid">' +
+      '<div class="gh-field d15-filter-keyword"><label for="d15-settlement-keyword">结算单</label><input id="d15-settlement-keyword" class="gh-input" data-filter-group="settlement" data-filter="keyword" value="' + esc(state.filterKeywordDrafts.settlement) + '" placeholder="结算单号、付款单号或银行参考号"></div>' +
+      filterSelect('账期','settlement','period',f.period,[['all','全部账期'],['2026','2026 年'],['2025','2025 年']]) +
+      filterSelect('业务来源','settlement','source',f.source,[['all','全部来源'],['direct_sale','平台直销'],['external_key','外部 Key 采购'],['gamehub_key','盖世 Key 渠道']]) +
+      filterSelect('对账状态','settlement','statementStatus',f.statementStatus,[['all','全部状态'],['draft','草稿'],['pending','待确认'],['confirmed','已确认'],['disputed','有异议'],['locked','已锁定'],['voided','已作废']]) +
+      filterSelect('发票状态','settlement','invoiceStatus',f.invoiceStatus,[['all','全部状态'],['pending','待提交'],['reviewing','审核中'],['approved','已通过'],['rejected','已退回'],['not_required','不需要']]) +
+      filterSelect('付款状态','settlement','paymentStatus',f.paymentStatus,[['all','全部状态'],['not_ready','待具备条件'],['awaiting_invoice','待发票'],['pending','待付款'],['processing','处理中'],['remitted','已汇出'],['completed','已完成'],['failed','失败'],['returned','退回'],['held','暂缓'],['carried','已结转'],['cancelled','已取消']]) +
+      '<div class="d15-filter-action">' + button('重置','reset-settlement-filters','link','') + button('查询','apply-filters','primary','') + '</div></div></div>' +
+      '<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table" aria-label="结算记录"><thead><tr><th>账期／结算单号</th><th>业务来源</th><th>应结算金额</th><th>对账状态</th><th>发票状态</th><th>付款状态</th><th>当前待办</th><th>更新时间</th><th>操作</th></tr></thead><tbody>' +
+      (pageRows.length ? pageRows.map(record => {
+        const sm = statementStatus(record.statementStatus);
         const im = invoiceStatus(record.invoiceStatus);
         const pm = paymentStatus(record.paymentStatus);
-        const sources = record.sources.map(source => tag(ledgerSourceLabel(source),'')).join('');
-        return '<tr data-statement-id="' + item.id + '"><td><strong>' + item.period + '</strong><small>' + item.id + '</small></td><td><div class="d15-source-tags">' + sources + '</div></td><td><strong>' + money(record.amountMinor,record.currency) + '</strong></td><td>' + tag(sm[0],sm[1]) + '</td><td>' + tag(im[0],im[1]) + '</td><td>' + tag(pm[0],pm[1]) + '</td><td><strong class="d15-current-task">' + esc(record.currentTask) + '</strong></td><td>' + esc(record.updatedAt) + '</td><td>' + button('查看','open-statement','link','data-statement="' + item.id + '" data-focus-key="statement-' + item.id + '"') + '</td></tr>';
-      }).join('') : emptyTableRow(9,activeStatements().length ? '' : '暂无结算记录',activeStatements().length ? '' : '产生可结算交易后，结算记录将在此展示。')) + '</tbody></table></div>' + pagination('statement',state.statementPage,rows.length) + '</section>';
+        const sourceSummary = record.sources.length ? ledgerSourceLabel(record.sources[0]) + (record.sources.length > 1 ? '等 ' + record.sources.length + ' 项' : '') : '—';
+        return '<tr data-statement-id="' + record.statementId + '"><td><strong>' + record.period + '</strong><small id="d15-settlement-' + record.statementId + '">' + record.statementId + '</small></td><td><span class="d15-source-summary" title="' + esc(record.sources.map(ledgerSourceLabel).join('、')) + '">' + esc(sourceSummary) + '</span></td><td><strong>' + money(record.amountMinor,record.currency) + '</strong></td><td>' + tag(sm[0],sm[1]) + '</td><td>' + tag(im[0],im[1]) + '</td><td>' + tag(pm[0],pm[1]) + '</td><td>' + tag(record.currentTask.label,record.currentTask.tone) + '</td><td>' + esc(record.updatedAt) + '</td><td>' + button('查看','open-statement','link','data-statement="' + record.statementId + '" data-focus-key="statement-' + record.statementId + '" aria-describedby="d15-settlement-' + record.statementId + '"') + '</td></tr>';
+      }).join('') : emptyTableRow(9,activeStatements().length ? '' : '暂无结算记录',activeStatements().length ? '' : '产生可结算交易后，结算记录将在此展示。')) + '</tbody></table></div>' + pagination('settlement',state.settlementPage,rows.length) + '</section>';
   }
 
   function flowType(type) {
@@ -1373,11 +1395,11 @@
     state.entityValidation = null;
     state.bankProofNeedsRefresh = false;
     state.bankProofFingerprint = '';
-    state.statementFilters = { keyword:'', status:'all', period:'all', currency:'all' };
+    state.settlementFilters = { keyword:'', period:'all', source:'all', statementStatus:'all', invoiceStatus:'all', paymentStatus:'all' };
     state.flowFilters = { keyword:'', type:'all', source:'all', period:'all', currency:'all' };
     state.paymentFilters = { keyword:'', status:'all', period:'all', currency:'all' };
-    state.filterKeywordDrafts = { statement:'', flow:'', payment:'' };
-    state.statementPage = 1;
+    state.filterKeywordDrafts = { settlement:'', flow:'', payment:'' };
+    state.settlementPage = 1;
     state.flowPage = 1;
     state.paymentPage = 1;
     state.activeStatement = '';
@@ -1531,7 +1553,10 @@
   }
 
   function exportCsv(group) {
-    if (group === 'statement') return statementExportCsv(filteredStatements());
+    if (group === 'statement') {
+      const ids = new Set(filteredSettlementRecords().map(item => item.statementId));
+      return statementExportCsv(activeStatements().filter(item => ids.has(item.id)));
+    }
     if (group === 'flow') return flowExportCsv(filteredFlows());
     if (group === 'payment') return paymentExportCsv(filteredPayments());
     return csv([],[]);
@@ -1588,9 +1613,9 @@
     if (control) {
       if (control.tagName === 'INPUT') return;
       const group = control.dataset.filterGroup;
-      const map = group === 'statement' ? state.statementFilters : group === 'flow' ? state.flowFilters : state.paymentFilters;
+      const map = group === 'settlement' ? state.settlementFilters : group === 'flow' ? state.flowFilters : state.paymentFilters;
       map[control.dataset.filter] = control.value;
-      if (group === 'statement') state.statementPage = 1;
+      if (group === 'settlement') state.settlementPage = 1;
       if (group === 'flow') state.flowPage = 1;
       if (group === 'payment') state.paymentPage = 1;
       render();
@@ -1633,7 +1658,7 @@
     const pager = event.target.closest('[data-page-group]');
     if (pager && !pager.disabled) {
       const page = Number(pager.dataset.page);
-      if (pager.dataset.pageGroup === 'statement') state.statementPage = page;
+      if (pager.dataset.pageGroup === 'settlement') state.settlementPage = page;
       if (pager.dataset.pageGroup === 'flow') state.flowPage = page;
       if (pager.dataset.pageGroup === 'payment') state.paymentPage = page;
       render();
@@ -1925,12 +1950,12 @@
     } else if (action === 'export-payments') {
       saveTextFile('付款记录.csv',exportCsv('payment'));
     } else if (action === 'apply-filters') {
-      state.statementFilters.keyword = state.filterKeywordDrafts.statement;
+      state.settlementFilters.keyword = state.filterKeywordDrafts.settlement;
       state.flowFilters.keyword = state.filterKeywordDrafts.flow;
       state.paymentFilters.keyword = state.filterKeywordDrafts.payment;
-      state.statementPage = 1; state.flowPage = 1; state.paymentPage = 1; render();
-    } else if (action === 'reset-statement-filters') {
-      state.statementFilters = { keyword:'', status:'all', period:'all', currency:'all' }; state.filterKeywordDrafts.statement = ''; state.statementPage = 1; render();
+      state.settlementPage = 1; state.flowPage = 1; state.paymentPage = 1; render();
+    } else if (action === 'reset-settlement-filters') {
+      state.settlementFilters = { keyword:'', period:'all', source:'all', statementStatus:'all', invoiceStatus:'all', paymentStatus:'all' }; state.filterKeywordDrafts.settlement = ''; state.settlementPage = 1; render();
     } else if (action === 'reset-flow-filters') {
       state.flowFilters = { keyword:'', type:'all', source:'all', period:'all', currency:'all' }; state.filterKeywordDrafts.flow = ''; state.flowPage = 1; render();
     } else if (action === 'reset-payment-filters') {
@@ -2014,7 +2039,7 @@
         invoiceDataComplete:invoiceData.length > 0 && invoiceData.every(item => item.number && item.date && Number.isSafeInteger(item.amountMinor) && item.currency && item.file),
         invoiceAmountsAreIntegers:invoiceData.length > 0 && invoiceData.every(item => Number.isSafeInteger(item.amountMinor)),
         paymentStatuses:[...new Set(currentPayments.map(item => item.status))],
-        pages:{ statements:Math.ceil(filteredStatements().length / PAGE_SIZE), flows:Math.ceil(filteredFlows().length / PAGE_SIZE), payments:Math.ceil(filteredPayments().length / PAGE_SIZE) },
+        pages:{ settlements:Math.ceil(filteredSettlementRecords().length / PAGE_SIZE), flows:Math.ceil(filteredFlows().length / PAGE_SIZE) },
         statementIdsUnique:new Set(currentStatements.map(item => item.id)).size === currentStatements.length,
         ...audit,
         ...paymentAudit,
