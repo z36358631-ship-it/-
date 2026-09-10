@@ -84,6 +84,11 @@
   box-shadow: -6px 0 10px rgba(16,24,40,.05);
 }
 .d15-settlement-table th:last-child { z-index: 2; background: #f9fafb; }
+.d15-settlement-table th:nth-child(8),
+.d15-settlement-table td:nth-child(8) {
+  min-width: 128px;
+  white-space: nowrap;
+}
 .d15-mono {
   font-family: Consolas, "SFMono-Regular", monospace;
   font-size: 12px;
@@ -342,6 +347,11 @@
 .d15-scenario-menu button:hover { background: #f8fafc; }
 .d15-scenario-menu button[aria-checked="true"] { background: #fff8dc; color: #7a5200; }
 .d15-scenario-menu small { color: var(--muted); }
+
+@media (min-width: 961px) {
+  [data-testid="developer-finance-demo"] .gh-content { padding-right: 40px; }
+  .d15-scenario-switcher { right: 8px; }
+}
 
 @media (max-width: 1120px) {
   .d15-filter-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
