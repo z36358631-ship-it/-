@@ -102,6 +102,12 @@
   background: #fff;
   box-shadow: -16px 0 40px rgba(16,24,40,.16);
 }
+.d15-drawer :focus-visible,
+[data-testid="developer-finance-demo"] .gh-dialog :focus-visible {
+  outline: 3px solid rgba(243,183,27,.48);
+  outline-offset: 2px;
+}
+[data-testid="developer-finance-demo"] [inert] { pointer-events: none; }
 .d15-payment-drawer,
 .d15-history-drawer { width: min(720px, calc(100vw - 40px)); }
 .d15-drawer-head {

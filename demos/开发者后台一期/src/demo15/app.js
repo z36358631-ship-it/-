@@ -405,6 +405,11 @@
     dialog:'',
     toast:'',
   };
+  const overlayFocus = {
+    triggerKeys:[],
+    pendingInitialFocus:false,
+    pendingRestoreKey:'',
+  };
 
   function activeStatements() {
     return state.demoScenario === 'exhaustive' ? statements : [];
@@ -804,7 +809,7 @@
     const meta = statusMeta(entity.status);
     const actions = entity.status === 'supplement'
       ? button('补充资料','resume-entity-edit','primary','')
-      : button('查看提交内容','view-submission','','') + button('撤销审核','withdraw-review','danger','');
+      : button('查看提交内容','view-submission','','data-focus-key="submission-' + esc(entity.submittedVersion || 'current') + '"') + button('撤销审核','withdraw-review','danger','data-focus-key="withdraw-entity-review"');
     return '<section class="gh-card d15-current-application" role="region" aria-label="当前申请"><div class="gh-card-head"><div><h2>当前申请</h2><p>' + esc(entity.submittedVersion || '待审核版本') + '</p></div>' + tag(meta[0],meta[1]) + '</div><div class="gh-card-body"><div class="gh-grid-2">' +
       readonly('申请类型',entity.effectiveVersion ? '资料变更' : '首次配置') + readonly('提交账户',snapshot.accountNumber) + readonly('财务联系人',snapshot.contactName) + readonly('变更说明',snapshot.changeReason || '—') +
       '</div><div class="gh-form-actions">' + actions + '</div></div></section>';
@@ -814,7 +819,7 @@
     return '<section class="gh-card d15-section-gap" role="region" aria-label="财务主体历史版本"><div class="gh-card-head"><div><h2>历史版本</h2></div></div><div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>版本</th><th>类型</th><th>提交时间</th><th>生效时间</th><th>收款账户</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
       entityHistory.map(item => {
         const tone = item.status === '已生效' ? 'success' : item.status === '审核中' ? 'info' : item.status === '需补充' || item.status === '已拒绝' ? 'danger' : '';
-        return '<tr><td><strong>' + item.version + '</strong></td><td>' + item.type + '</td><td>' + item.submitted + '</td><td>' + item.effective + '</td><td>' + item.account + '</td><td>' + tag(item.status,tone) + '</td><td>' + button('查看','view-history','link','data-version="' + item.version + '"') + '</td></tr>';
+        return '<tr><td><strong>' + item.version + '</strong></td><td>' + item.type + '</td><td>' + item.submitted + '</td><td>' + item.effective + '</td><td>' + item.account + '</td><td>' + tag(item.status,tone) + '</td><td>' + button('查看','view-history','link','data-version="' + item.version + '" data-focus-key="history-' + item.version + '"') + '</td></tr>';
       }).join('') +
       '</tbody></table></div></section>';
   }
@@ -934,7 +939,7 @@
       (pageRows.length ? pageRows.map(item => {
         const sm = statementStatus(item.status);
         const pm = paymentStatus(paymentStateForStatement(item));
-        return '<tr data-statement-id="' + item.id + '"><td><strong>' + item.period + '</strong><small>' + item.id + ' · ' + item.version + '</small></td><td class="d15-original">' + esc(item.originalSummary) + '</td><td><strong>' + money(item.settlementMinor,item.currency) + '</strong></td><td>' + item.deadline + '</td><td>' + tag(sm[0],sm[1]) + '</td><td>' + tag(pm[0],pm[1]) + '</td><td>' + button('查看','open-statement','link','data-statement="' + item.id + '"') + '</td></tr>';
+        return '<tr data-statement-id="' + item.id + '"><td><strong>' + item.period + '</strong><small>' + item.id + ' · ' + item.version + '</small></td><td class="d15-original">' + esc(item.originalSummary) + '</td><td><strong>' + money(item.settlementMinor,item.currency) + '</strong></td><td>' + item.deadline + '</td><td>' + tag(sm[0],sm[1]) + '</td><td>' + tag(pm[0],pm[1]) + '</td><td>' + button('查看','open-statement','link','data-statement="' + item.id + '" data-focus-key="statement-' + item.id + '"') + '</td></tr>';
       }).join('') : emptyTableRow(7,activeStatements().length ? '' : '暂无对账单',activeStatements().length ? '' : '完成财务主体配置后，账单将在出单后展示。')) + '</tbody></table></div>' + pagination('statement',state.statementPage,rows.length) + '</section>';
   }
 
@@ -960,7 +965,7 @@
       '<div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>日期／对账流水号</th><th>游戏／SKU</th><th>业务来源／履约方式</th><th>类型</th><th>交易原币</th><th>汇率／折算</th><th>税费／支付费</th><th>平台分成／调整</th><th>应结算</th><th>关联账单</th></tr></thead><tbody>' +
       (pageRows.length ? pageRows.map(item => {
         const tm = flowType(item.type);
-        return '<tr data-ledger-source="' + item.ledgerSource + '"><td><strong>' + item.date + '</strong><small class="d15-mono">' + item.id + '</small></td><td><strong>' + item.game + '</strong><small>' + item.sku + '</small></td><td><strong>' + ledgerSourceLabel(item.ledgerSource) + '</strong><small>' + fulfillmentLabel(item.fulfillmentType) + '</small></td><td>' + tag(tm[0],tm[1]) + '</td><td>' + money(item.originalMinor,item.originalCurrency) + '</td><td><strong>' + item.fxRateText + '</strong><small>' + money(item.convertedMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.taxMinor,item.settlementCurrency) + '</strong><small>支付费 ' + money(item.feeMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.platformShareMinor,item.settlementCurrency) + '</strong><small>调整 ' + money(item.adjustmentMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.settlementMinor,item.settlementCurrency) + '</strong><small>' + ruleModelLabel(item.ruleModel) + ' · ' + item.ruleVersion + '</small></td><td><button type="button" class="d15-text-button" data-action="open-statement" data-statement="' + item.statementId + '">' + item.statementId + '</button></td></tr>';
+        return '<tr data-ledger-source="' + item.ledgerSource + '"><td><strong>' + item.date + '</strong><small class="d15-mono">' + item.id + '</small></td><td><strong>' + item.game + '</strong><small>' + item.sku + '</small></td><td><strong>' + ledgerSourceLabel(item.ledgerSource) + '</strong><small>' + fulfillmentLabel(item.fulfillmentType) + '</small></td><td>' + tag(tm[0],tm[1]) + '</td><td>' + money(item.originalMinor,item.originalCurrency) + '</td><td><strong>' + item.fxRateText + '</strong><small>' + money(item.convertedMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.taxMinor,item.settlementCurrency) + '</strong><small>支付费 ' + money(item.feeMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.platformShareMinor,item.settlementCurrency) + '</strong><small>调整 ' + money(item.adjustmentMinor,item.settlementCurrency) + '</small></td><td><strong>' + money(item.settlementMinor,item.settlementCurrency) + '</strong><small>' + ruleModelLabel(item.ruleModel) + ' · ' + item.ruleVersion + '</small></td><td><button type="button" class="d15-text-button" data-action="open-statement" data-statement="' + item.statementId + '" data-focus-key="flow-statement-' + item.id + '">' + item.statementId + '</button></td></tr>';
       }).join('') : emptyTableRow(10,activeFlows().length ? '' : '暂无对账流水',activeFlows().length ? '' : '产生可结算交易后，对账流水将在此展示。')) + '</tbody></table></div>' + pagination('flow',state.flowPage,rows.length) + '</section>';
   }
 
@@ -1003,7 +1008,7 @@
       '<div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>付款单号</th><th>关联账单</th><th>金额</th><th>收款账户</th><th>计划付款日</th><th>更新时间</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
       (pageRows.length ? pageRows.map(item => {
         const pm = paymentStatus(item.status);
-        return '<tr data-payment-id="' + item.id + '"><td><strong>' + item.id + '</strong></td><td>' + item.statementId + '</td><td><strong>' + money(item.amountMinor,item.currency) + '</strong></td><td>' + item.account + '</td><td>' + item.planned + '</td><td>' + item.updated + '</td><td>' + tag(pm[0],pm[1]) + '</td><td>' + button('查看','open-payment','link','data-payment="' + item.id + '"') + '</td></tr>';
+        return '<tr data-payment-id="' + item.id + '"><td><strong>' + item.id + '</strong></td><td>' + item.statementId + '</td><td><strong>' + money(item.amountMinor,item.currency) + '</strong></td><td>' + item.account + '</td><td>' + item.planned + '</td><td>' + item.updated + '</td><td>' + tag(pm[0],pm[1]) + '</td><td>' + button('查看','open-payment','link','data-payment="' + item.id + '" data-focus-key="payment-' + item.id + '"') + '</td></tr>';
       }).join('') : emptyTableRow(8,activePayments().length ? '' : '暂无付款记录',activePayments().length ? '' : '账单锁定并进入付款计划后，付款进度将在此展示。')) + '</tbody></table></div>' + pagination('payment',state.paymentPage,rows.length) + '</section>';
   }
 
@@ -1099,7 +1104,7 @@
     let foot = button('关闭','close-drawer','','');
     if (state.disputeMode === 'supplement') foot = button('取消','cancel-dispute','','') + button('提交补充','confirm-supplement','primary','');
     else if (state.disputeMode) foot = button('取消','cancel-dispute','','') + button('提交差异','confirm-dispute','primary','');
-    else if (item.status === 'pending') foot = button('导出账单','download-statement','','') + (canReconcile() ? button('提交差异','start-dispute','','') + button('确认账单','confirm-statement','primary','') : button('提交差异','start-dispute','','disabled title="财务主体生效后可操作"') + button('确认账单','confirm-statement','','disabled title="财务主体生效后可操作"'));
+    else if (item.status === 'pending') foot = button('导出账单','download-statement','','') + (canReconcile() ? button('提交差异','start-dispute','','') + button('确认账单','confirm-statement','primary','data-focus-key="confirm-statement-' + item.id + '"') : button('提交差异','start-dispute','','disabled title="财务主体生效后可操作"') + button('确认账单','confirm-statement','','disabled title="财务主体生效后可操作" data-focus-key="confirm-statement-' + item.id + '"'));
     else if (item.status === 'locked') foot = button('导出账单','download-statement','','') + foot;
     else foot = button('导出账单','download-statement','','') + foot;
     return '<div class="d15-drawer-layer" data-action="close-drawer"><aside class="d15-drawer" data-stop role="dialog" aria-modal="true" aria-label="账单详情" data-testid="statement-drawer"><div class="d15-drawer-head"><div><h2>' + item.period + ' 对账单</h2><p>' + item.id + ' · ' + tag(sm[0],sm[1]) + ' · 付款 ' + tag(pm[0],pm[1]) + '</p></div><button type="button" class="gh-dialog-close" data-action="close-drawer" aria-label="关闭">×</button></div><div class="d15-drawer-body">' + tabs + body + '</div><div class="d15-drawer-foot">' + foot + '</div></aside></div>';
@@ -1190,6 +1195,110 @@
     '</div>';
   }
 
+  function focusKeyTarget(key) {
+    return [...app.querySelectorAll('[data-focus-key]')].find(node => node.dataset.focusKey === key) || null;
+  }
+
+  function rememberOverlayTrigger(node) {
+    overlayFocus.triggerKeys.push((node && node.dataset.focusKey) || '');
+    overlayFocus.pendingInitialFocus = true;
+    overlayFocus.pendingRestoreKey = '';
+  }
+
+  function replaceOverlay() {
+    overlayFocus.pendingInitialFocus = true;
+    overlayFocus.pendingRestoreKey = '';
+  }
+
+  function prepareOverlayClose() {
+    overlayFocus.pendingRestoreKey = overlayFocus.triggerKeys.pop() || '';
+    overlayFocus.pendingInitialFocus = false;
+  }
+
+  function focusableIn(node) {
+    if (!node) return [];
+    return [...node.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]')]
+      .filter(control => !control.closest('[inert]') && control.getAttribute('aria-hidden') !== 'true');
+  }
+
+  function topOverlay() {
+    const overlays = [...app.querySelectorAll('[role="dialog"]')];
+    return overlays[overlays.length - 1] || null;
+  }
+
+  function syncOverlayA11y() {
+    const overlays = [...app.querySelectorAll('[role="dialog"]')];
+    const current = overlays[overlays.length - 1] || null;
+    const backgrounds = app.querySelectorAll('.gh-topbar, .gh-layout, .d15-scenario-switcher');
+    backgrounds.forEach(node => {
+      if (current) node.setAttribute('inert','');
+      else node.removeAttribute('inert');
+    });
+    overlays.forEach(node => {
+      if (node === current) node.removeAttribute('inert');
+      else node.setAttribute('inert','');
+    });
+
+    const restoreKey = overlayFocus.pendingRestoreKey;
+    overlayFocus.pendingRestoreKey = '';
+    if (restoreKey) {
+      const target = focusKeyTarget(restoreKey);
+      if (target) {
+        target.focus();
+        return;
+      }
+    }
+    if (current && (overlayFocus.pendingInitialFocus || !current.contains(document.activeElement))) {
+      const target = focusableIn(current)[0] || current;
+      target.focus();
+    } else if (!current && restoreKey) {
+      const route = app.querySelector('[data-route="' + state.route + '"]');
+      if (route) route.focus();
+    }
+    overlayFocus.pendingInitialFocus = false;
+  }
+
+  function trapOverlayFocus(event) {
+    if (event.key !== 'Tab') return false;
+    const overlay = topOverlay();
+    if (!overlay) return false;
+    const focusable = focusableIn(overlay);
+    if (!focusable.length) {
+      event.preventDefault();
+      overlay.focus();
+      return true;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    } else if (!overlay.contains(document.activeElement)) {
+      event.preventDefault();
+      first.focus();
+    }
+    return true;
+  }
+
+  function clearRouteOverlays() {
+    state.scenarioMenuOpen = false;
+    state.activeStatement = '';
+    state.activePayment = '';
+    state.selectedHistory = '';
+    state.dialog = '';
+    state.disputeMode = false;
+    state.disputeType = 'existing_flow';
+    state.disputeFlowIds = [];
+    state.disputeFile = '';
+    state.invoiceFile = '';
+    overlayFocus.triggerKeys = [];
+    overlayFocus.pendingInitialFocus = false;
+    overlayFocus.pendingRestoreKey = '__route-change__';
+  }
+
   function setDemoScenario(scenario) {
     if (!['exhaustive','empty'].includes(scenario)) return;
     state.demoScenario = scenario;
@@ -1217,6 +1326,9 @@
     state.disputeFile = '';
     state.invoiceFile = '';
     state.toast = '';
+    overlayFocus.triggerKeys = [];
+    overlayFocus.pendingInitialFocus = false;
+    overlayFocus.pendingRestoreKey = '';
     render();
     const orb = app.querySelector('[data-testid="scenario-orb"]');
     if (orb) orb.focus();
@@ -1228,6 +1340,7 @@
     app.innerHTML = '<div class="gh-app" data-testid="developer-finance-demo">' + topbar() + '<div class="gh-layout">' + nav() + '<main class="gh-main"><div class="gh-content">' + pageHead() + page + '</div></main></div>' +
       scenarioSwitcher() + statementDrawer() + paymentDrawer() + historyDrawer() + confirmDialog() + (state.toast ? '<div class="gh-toast" role="status">' + esc(state.toast) + '</div>' : '') + '</div>';
     document.body.style.overflow = state.activeStatement || state.activePayment || state.selectedHistory || state.dialog ? 'hidden' : '';
+    syncOverlayA11y();
   }
 
   function setToast(message) {
@@ -1293,7 +1406,7 @@
 
   function csvCell(value) {
     let text = String(value == null ? '' : value);
-    if (/^[=+\-@]/.test(text)) text = "'" + text;
+    if (/^\s*[=+\-@]/u.test(text)) text = "'" + text;
     return '"' + text.replace(/"/g,'""') + '"';
   }
 
@@ -1301,17 +1414,57 @@
     return [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\n');
   }
 
-  function exportCsv(group) {
-    if (group === 'statement') {
-      return csv(['账单号','账期','版本','交易原币汇总','应结算','币种','账单状态','付款状态'],filteredStatements().map(item => [item.id,item.period,item.version,item.originalSummary,decimal(item.settlementMinor,item.currency),item.currency,statementStatus(item.status)[0],paymentStatus(paymentStateForStatement(item))[0]]));
-    }
-    if (group === 'flow') {
-      return csv(['流水号','日期','游戏','SKU','业务来源','履约方式','类型','交易原币','交易金额','汇率','汇率版本','折算金额','税费','支付费','平台分成','调整','应结算','结算币种','结算模型','规则版本','结算对手方','账单号'],filteredFlows().map(item => [item.id,item.date,item.game,item.sku,ledgerSourceLabel(item.ledgerSource),fulfillmentLabel(item.fulfillmentType),flowType(item.type)[0],item.originalCurrency,decimal(item.originalMinor,item.originalCurrency),item.fxRateText,item.fxVersion,decimal(item.convertedMinor,item.settlementCurrency),decimal(item.taxMinor,item.settlementCurrency),decimal(item.feeMinor,item.settlementCurrency),decimal(item.platformShareMinor,item.settlementCurrency),decimal(item.adjustmentMinor,item.settlementCurrency),decimal(item.settlementMinor,item.settlementCurrency),item.settlementCurrency,ruleModelLabel(item.ruleModel),item.ruleVersion,item.settlementCounterparty,item.statementId]));
-    }
-    return csv(['付款单号','账单号','状态','金额','币种','收款账户','计划付款日','更新时间','银行参考号'],filteredPayments().map(item => {
+  const STATEMENT_EXPORT_HEADERS = Object.freeze([
+    '账单号','账期','版本','交易原币汇总','折算后销售额','退款','拒付','税费','支付费','平台分成','补贴与调整','应结算','币种',
+    '生成时间','确认期限','账单状态','付款状态','平台直销小计','外部 Key 采购小计','盖世 Key 渠道小计',
+  ]);
+  const FLOW_EXPORT_HEADERS = Object.freeze([
+    '流水号','日期','游戏','SKU','业务来源','履约方式','类型','交易原币','交易金额','汇率','汇率版本','折算金额','税费','支付费',
+    '平台分成','调整','应结算','结算币种','结算模型','规则版本','结算对手方','账单号',
+  ]);
+  const PAYMENT_EXPORT_HEADERS = Object.freeze([
+    '付款单号','账单号','付款状态','付款金额','剩余金额','币种','收款账户','财务主体版本','计划付款日','生成时间','更新时间',
+    '付款尝试数','当前尝试状态','银行参考号','异常原因','是否需开发者处理','预计重试时间','下一次付款尝试',
+  ]);
+
+  function statementExportCsv(items) {
+    return csv(STATEMENT_EXPORT_HEADERS,items.map(item => [
+      item.id,item.period,item.version,item.originalSummary,decimal(item.salesMinor,item.currency),decimal(item.refundsMinor,item.currency),
+      decimal(item.chargebacksMinor,item.currency),decimal(item.taxMinor,item.currency),decimal(item.providerFeeMinor,item.currency),
+      decimal(item.platformShareMinor,item.currency),decimal(item.adjustmentsMinor,item.currency),decimal(item.settlementMinor,item.currency),item.currency,
+      item.generated,item.deadline,statementStatus(item.status)[0],paymentStatus(paymentStateForStatement(item))[0],
+      decimal(item.sourceTotalsMinor.direct_sale,item.currency),decimal(item.sourceTotalsMinor.external_key,item.currency),decimal(item.sourceTotalsMinor.gamehub_key,item.currency),
+    ]));
+  }
+
+  function flowExportCsv(items) {
+    return csv(FLOW_EXPORT_HEADERS,items.map(item => [
+      item.id,item.date,item.game,item.sku,ledgerSourceLabel(item.ledgerSource),fulfillmentLabel(item.fulfillmentType),flowType(item.type)[0],
+      item.originalCurrency,decimal(item.originalMinor,item.originalCurrency),item.fxRateText,item.fxVersion,decimal(item.convertedMinor,item.settlementCurrency),
+      decimal(item.taxMinor,item.settlementCurrency),decimal(item.feeMinor,item.settlementCurrency),decimal(item.platformShareMinor,item.settlementCurrency),
+      decimal(item.adjustmentMinor,item.settlementCurrency),decimal(item.settlementMinor,item.settlementCurrency),item.settlementCurrency,
+      ruleModelLabel(item.ruleModel),item.ruleVersion,item.settlementCounterparty,item.statementId,
+    ]));
+  }
+
+  function paymentExportCsv(items) {
+    return csv(PAYMENT_EXPORT_HEADERS,items.map(item => {
       const attempt = currentPaymentAttempt(item);
-      return [item.id,item.statementId,item.label,decimal(item.amountMinor,item.currency),item.currency,item.account,item.planned,item.updated,attempt && attempt.providerRef ? attempt.providerRef : ''];
+      const attemptStatus = paymentAttemptStatus(attempt);
+      return [
+        item.id,item.statementId,paymentStatus(item.status)[0],decimal(item.amountMinor,item.currency),decimal(item.remainingMinor,item.currency),item.currency,
+        item.account,item.accountVersion,item.planned,item.created,item.updated,item.attempts.length,paymentStatus(attemptStatus)[0] || '',
+        attempt && attempt.providerRef ? attempt.providerRef : '',item.reason || '',item.developerActionRequired ? '是' : '否',
+        item.estimatedRetryAt || '',item.nextAttempt || '',
+      ];
     }));
+  }
+
+  function exportCsv(group) {
+    if (group === 'statement') return statementExportCsv(filteredStatements());
+    if (group === 'flow') return flowExportCsv(filteredFlows());
+    if (group === 'payment') return paymentExportCsv(filteredPayments());
+    return csv([],[]);
   }
 
   app.addEventListener('input', event => {
@@ -1398,12 +1551,7 @@
     const route = event.target.closest('[data-route]');
     if (route) {
       state.route = route.dataset.route;
-      state.scenarioMenuOpen = false;
-      state.activeStatement = '';
-      state.activePayment = '';
-      state.selectedHistory = '';
-      state.invoiceFile = '';
-      state.disputeFile = '';
+      clearRouteOverlays();
       location.hash = '/' + state.route;
       render();
       return;
@@ -1481,6 +1629,7 @@
       state.entityEditing = false;
       setToast('已提交审核');
     } else if (action === 'view-submission') {
+      rememberOverlayTrigger(actionNode);
       state.selectedHistory = '__submission';
       render();
     } else if (action === 'resume-entity-edit') {
@@ -1491,9 +1640,11 @@
       state.entityEditMode = entity.effectiveVersion ? 'change' : 'initial';
       render();
     } else if (action === 'withdraw-review') {
+      rememberOverlayTrigger(actionNode);
       state.dialog = 'withdraw';
       render();
     } else if (action === 'confirm-withdraw') {
+      prepareOverlayClose();
       const entity = activeEntity();
       const hasEffective = Boolean(entity.effectiveVersion);
       entity.status = hasEffective ? 'effective' : 'draft';
@@ -1502,9 +1653,11 @@
       state.dialog = '';
       setToast('审核已撤销');
     } else if (action === 'view-history') {
+      rememberOverlayTrigger(actionNode);
       state.selectedHistory = actionNode.dataset.version;
       render();
     } else if (action === 'open-statement') {
+      rememberOverlayTrigger(actionNode);
       state.activeStatement = actionNode.dataset.statement;
       state.statementDrawerTab = 'summary';
       state.disputeMode = false;
@@ -1512,10 +1665,12 @@
       state.disputeFile = '';
       render();
     } else if (action === 'open-payment') {
+      rememberOverlayTrigger(actionNode);
       state.activePayment = actionNode.dataset.payment;
       render();
     } else if (action === 'close-drawer') {
       if (event.target.closest('[data-stop]') && !event.target.closest('.gh-dialog-close') && !event.target.closest('.d15-drawer-foot')) return;
+      prepareOverlayClose();
       state.activeStatement = '';
       state.activePayment = '';
       state.selectedHistory = '';
@@ -1525,9 +1680,11 @@
       render();
     } else if (action === 'confirm-statement') {
       if (!canReconcile()) { setToast('财务主体生效后可确认账单'); return; }
+      rememberOverlayTrigger(actionNode);
       state.dialog = 'confirm-statement';
       render();
     } else if (action === 'confirm-statement-final') {
+      prepareOverlayClose();
       const item = statements.find(row => row.id === state.activeStatement);
       if (canReconcile() && item && item.status === 'pending') {
         item.status = 'confirmed';
@@ -1670,7 +1827,7 @@
       setToast('发票已提交');
     } else if (action === 'download-statement') {
       const item = statements.find(row => row.id === state.activeStatement);
-      if (item) saveTextFile(item.id + '.csv',csv(['账单号','账期','版本','销售额','退款','拒付','税费','支付费','平台分成','补贴与调整','应结算','币种','状态'],[[item.id,item.period,item.version,decimal(item.salesMinor,item.currency),decimal(item.refundsMinor,item.currency),decimal(item.chargebacksMinor,item.currency),decimal(item.taxMinor,item.currency),decimal(item.providerFeeMinor,item.currency),decimal(item.platformShareMinor,item.currency),decimal(item.adjustmentsMinor,item.currency),decimal(item.settlementMinor,item.currency),item.currency,statementStatus(item.status)[0]]]));
+      if (item) saveTextFile(item.id + '.csv',statementExportCsv([item]));
     } else if (action === 'download-payment-proof') {
       const item = payments.find(row => row.id === state.activePayment);
       const attempt = downloadablePaymentAttempt(item);
@@ -1678,13 +1835,15 @@
         saveTextFile(item.id + '-付款凭证.txt','付款单号：' + item.id + '\n付款尝试：' + attempt.id + '\n银行参考号：' + attempt.providerRef);
       }
     } else if (action === 'open-related-statement') {
+      replaceOverlay();
       state.activePayment = '';
       state.route = 'reconciliation';
       state.activeStatement = actionNode.dataset.statement;
       state.statementDrawerTab = 'summary';
-      location.hash = '/reconciliation';
+      if (location.hash !== '#/reconciliation') history.pushState(null,'','#/reconciliation');
       render();
     } else if (action === 'go-entity') {
+      prepareOverlayClose();
       state.activePayment = '';
       state.route = 'entity';
       location.hash = '/entity';
@@ -1707,12 +1866,34 @@
     } else if (action === 'reset-payment-filters') {
       state.paymentFilters = { keyword:'', status:'all', period:'all', currency:'all' }; state.filterKeywordDrafts.payment = ''; state.paymentPage = 1; render();
     } else if (action === 'close-dialog') {
+      prepareOverlayClose();
       state.dialog = ''; render();
     }
   });
 
-  window.addEventListener('hashchange', () => { state.route = routeFromHash(); render(); });
+  window.addEventListener('hashchange', () => {
+    state.route = routeFromHash();
+    clearRouteOverlays();
+    render();
+  });
   window.addEventListener('keydown', event => {
+    if (trapOverlayFocus(event)) return;
+    if (event.key === 'Escape' && topOverlay()) {
+      event.preventDefault();
+      prepareOverlayClose();
+      if (state.dialog) {
+        state.dialog = '';
+      } else {
+        state.activeStatement = '';
+        state.activePayment = '';
+        state.selectedHistory = '';
+        state.disputeMode = false;
+        state.invoiceFile = '';
+        state.disputeFile = '';
+      }
+      render();
+      return;
+    }
     if (state.scenarioMenuOpen) {
       const item = event.target.closest && event.target.closest('[role="menuitemradio"]');
       const items = [...app.querySelectorAll('[role="menuitemradio"]')];
@@ -1737,15 +1918,7 @@
       }
     }
     if (event.key !== 'Escape') return;
-    if (state.dialog) state.dialog = '';
-    else if (state.activeStatement || state.activePayment || state.selectedHistory || state.disputeMode) {
-      state.activeStatement = '';
-      state.activePayment = '';
-      state.selectedHistory = '';
-      state.disputeMode = false;
-      state.invoiceFile = '';
-      state.disputeFile = '';
-    } else state.scenarioMenuOpen = false;
+    state.scenarioMenuOpen = false;
     render();
   });
   window.__developerFinanceDemo = {
@@ -1781,6 +1954,17 @@
     paymentAuditFixture:() => clone(paymentAuditFixture()),
     auditPayments:fixture => clone(auditPaymentData(fixture)),
     exportCsv,
+    csvCell,
+    overlaySnapshot:() => clone({
+      activeStatement:state.activeStatement,
+      activePayment:state.activePayment,
+      selectedHistory:state.selectedHistory,
+      dialog:state.dialog,
+      disputeMode:Boolean(state.disputeMode),
+      disputeFile:state.disputeFile,
+      invoiceFile:state.invoiceFile,
+      focusDepth:overlayFocus.triggerKeys.length,
+    }),
     setDemoScenario,
     setEntityScenario:(status, overrides) => {
       state.entity = { ...clone(entitySeed), ...(overrides ? clone(overrides) : {}), status };
