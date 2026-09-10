@@ -1019,6 +1019,24 @@ test('付款单使用付款尝试时间线且仅当前真实汇出后提供凭�
   }
 });
 
+test('合并付款可关联多张结算单并保持金额审计一致', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    const model = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    const mergedRecords = model.settlementRecords.filter(item => item.paymentId === 'PAY-202608-003');
+    assert.deepEqual(mergedRecords.map(item => item.statementId), ['STMT-2025-12-V1','STMT-2024-05-V1']);
+    assert.equal(model.paymentStatementsUnique, true);
+    assert.equal(model.paymentAmountsConsistent, true);
+
+    const drawer = await openSettlementDetail(page,'STMT-2025-12-V1');
+    const paymentSection = await expandSettlementSection(drawer,'payment');
+    assert.match(await paymentSection.innerText(), /PAY-202608-003[\s\S]*STMT-2025-12-V1、STMT-2024-05-V1/);
+  } finally {
+    await page.close();
+  }
+});
+
 test('生成穷举态、缺省态、三本账与付款尝试四张视觉证据', async () => {
   const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
   const assertSinglePageTitle = async expected => {

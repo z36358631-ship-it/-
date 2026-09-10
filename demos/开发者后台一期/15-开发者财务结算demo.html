@@ -769,7 +769,7 @@ a { color: var(--info); text-decoration: none; }
     { id:'STMT-2026-04-V1', period:'2026-04', version:'V1', status:'confirmed', targetSettlementMinor:minor('11928.40','USD'), currency:'USD', deadline:'2026-05-15 23:59', generated:'2026-05-03 10:08', payment:'not_ready', invoice:'not_required', requiresInvoice:false },
     { id:'STMT-2026-03-V1', period:'2026-03', version:'V1', status:'locked', targetSettlementMinor:minor('11284.72','USD'), currency:'USD', deadline:'2026-04-15 23:59', generated:'2026-04-05 12:28', payment:'failed', invoice:'approved', requiresInvoice:true, invoiceData:{ number:'INV-202604-0182', date:'2026-04-08', amountMinor:minor('11284.72','USD'), currency:'USD', file:'invoice_202603.pdf' } },
   ];
-  const statementSeeds = baseStatementSeeds.concat(Array.from({ length:21 }, (_, index) => {
+  const statementSeeds = baseStatementSeeds.concat(Array.from({ length:22 }, (_, index) => {
     const monthIndex = 1 - index;
     const date = new Date(2026, monthIndex, 1);
     const period = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
@@ -928,8 +928,9 @@ a { color: var(--info); text-decoration: none; }
   ];
 
   function makePaymentOrder(config) {
-    const statement = statements.find(item => item.id === config.statementId);
-    const amountMinor = statement ? statement.settlementMinor : 0;
+    const statementIds = [...new Set(config.statementIds || [config.statementId])];
+    const linkedStatements = statementIds.map(id => statements.find(item => item.id === id)).filter(Boolean);
+    const amountMinor = config.amountMinor == null ? linkedStatements.reduce((sum,item) => sum + item.settlementMinor,0) : config.amountMinor;
     const attempts = (config.attempts || []).map((attempt,index) => {
       const events = (attempt.events || []).map(event => ({
         at:event.at,
@@ -953,9 +954,10 @@ a { color: var(--info); text-decoration: none; }
     const currentEvent = currentAttempt && currentAttempt.events[currentAttempt.events.length - 1];
     return {
       id:config.id,
-      statementId:config.statementId,
+      statementId:statementIds[0] || '',
+      statementIds,
       amountMinor,
-      currency:statement ? statement.currency : 'USD',
+      currency:linkedStatements[0] ? linkedStatements[0].currency : 'USD',
       remainingMinor:config.remainingBasisPoints == null
         ? (config.remainingMinor == null ? amountMinor : config.remainingMinor)
         : amountMinor - allocateMinor(amountMinor,10000 - config.remainingBasisPoints),
@@ -977,7 +979,7 @@ a { color: var(--info); text-decoration: none; }
 
   const payments = [
     makePaymentOrder({ id:'PAY-202609-001', statementId:'STMT-2026-08-V1', status:'not_ready', created:'2026-09-05 09:00', planned:'—', updated:'2026-09-09 16:20', reason:'账单尚未锁定' }),
-    makePaymentOrder({ id:'PAY-202608-003', statementId:'STMT-2025-12-V1', status:'pending', created:'2026-08-05 09:00', planned:'2026-08-25', updated:'2026-08-20 16:20', reason:'已进入付款计划', nextAttempt:'2026-08-25 10:00 · 首次付款' }),
+    makePaymentOrder({ id:'PAY-202608-003', statementIds:['STMT-2025-12-V1','STMT-2024-05-V1'], status:'pending', created:'2026-08-05 09:00', planned:'2026-08-25', updated:'2026-08-20 16:20', reason:'已进入付款计划', nextAttempt:'2026-08-25 10:00 · 首次付款' }),
     makePaymentOrder({ id:'PAY-202607-002', statementId:'STMT-2026-01-V1', status:'processing', created:'2026-07-05 09:00', planned:'2026-07-25', reason:'银行正在处理', attempts:[
       { events:[{ at:'2026-07-25 10:10', status:'processing', note:'付款指令已提交银行' }] },
     ] }),
@@ -1215,6 +1217,7 @@ a { color: var(--info); text-decoration: none; }
     const auditStatements = Array.isArray(fixture && fixture.statements) ? fixture.statements : [];
     const auditPayments = Array.isArray(fixture && fixture.payments) ? fixture.payments : [];
     const statementById = new Map(auditStatements.map(statement => [statement.id,statement]));
+    const linkedStatementIds = auditPayments.flatMap(payment => payment.statementIds || [payment.statementId]);
     const allAttempts = auditPayments.flatMap(payment => Array.isArray(payment.attempts) ? payment.attempts : []);
     const paymentAttemptAudit = auditPayments.map(payment => {
       const attempts = Array.isArray(payment.attempts) ? payment.attempts : [];
@@ -1244,13 +1247,15 @@ a { color: var(--info); text-decoration: none; }
     });
     return {
       paymentOrdersUnique:new Set(auditPayments.map(item => item.id)).size === auditPayments.length,
-      paymentStatementsUnique:new Set(auditPayments.map(item => item.statementId)).size === auditPayments.length,
+      paymentStatementsUnique:new Set(linkedStatementIds).size === linkedStatementIds.length,
       paymentAttemptsLinked:new Set(allAttempts.map(item => item.id)).size === allAttempts.length && auditPayments.every(payment =>
         (payment.attempts || []).every(attempt => attempt.paymentOrderId === payment.id)
       ),
       paymentAmountsConsistent:auditPayments.every(payment => {
-        const statement = statementById.get(payment.statementId);
-        return statement && statement.settlementMinor === payment.amountMinor &&
+        const paymentStatementIds = payment.statementIds || [payment.statementId];
+        const linkedStatements = paymentStatementIds.map(id => statementById.get(id)).filter(Boolean);
+        const linkedAmountMinor = linkedStatements.reduce((sum,statement) => sum + statement.settlementMinor,0);
+        return linkedStatements.length === paymentStatementIds.length && linkedAmountMinor === payment.amountMinor &&
           Number.isSafeInteger(payment.amountMinor) && Number.isSafeInteger(payment.remainingMinor) &&
           payment.remainingMinor >= 0 && payment.remainingMinor <= payment.amountMinor &&
           (payment.attempts || []).every(attempt => Number.isSafeInteger(attempt.amountMinor) && attempt.amountMinor > 0 && attempt.amountMinor <= payment.amountMinor);
@@ -1412,12 +1417,12 @@ a { color: var(--info); text-decoration: none; }
   }
 
   function paymentStateForStatement(item) {
-    const payment = activePayments().find(row => row.statementId === item.id);
+    const payment = activePayments().find(row => (row.statementIds || [row.statementId]).includes(item.id));
     return payment ? payment.status : item.payment;
   }
 
   function paymentForStatement(statementId) {
-    return activePayments().find(item => item.statementId === statementId) || null;
+    return activePayments().find(item => (item.statementIds || [item.statementId]).includes(statementId)) || null;
   }
 
   function sourceKeysForStatement(statement) {
@@ -1851,9 +1856,9 @@ a { color: var(--info); text-decoration: none; }
       }).join('')).join('')
       : '<div class="is-current"><b>' + item.updated + '</b><strong>' + pm[0] + '</strong><p>' + esc(item.reason) + '</p></div>';
     return '<div class="d15-section-status">' + tag(pm[0],pm[1]) + '</div><h3>付款单 ' + esc(item.id) + '</h3><div class="gh-grid-2">' +
-      readonly('关联结算单',item.statementId) + readonly('付款单金额',money(item.amountMinor,item.currency)) + (isPartial ? readonly('本次付款金额',money(currentAttempt.amountMinor,item.currency)) + readonly('剩余金额',money(item.remainingMinor,item.currency)) : '') + readonly('收款账户',item.account,'财务主体版本 ' + item.accountVersion) + readonly('计划付款日',item.planned) + readonly('银行参考号',currentAttempt && currentAttempt.providerRef ? currentAttempt.providerRef : '—') + readonly('更新时间',item.updated) +
+      readonly('关联结算单',(item.statementIds || [item.statementId]).join('、')) + readonly('付款单金额',money(item.amountMinor,item.currency)) + (isPartial ? readonly('本次付款金额',money(currentAttempt.amountMinor,item.currency)) + readonly('剩余金额',money(item.remainingMinor,item.currency)) : '') + readonly('收款账户',item.account,'财务主体版本 ' + item.accountVersion) + readonly('计划付款日',item.planned) + readonly('银行参考号',currentAttempt && currentAttempt.providerRef ? currentAttempt.providerRef : '—') + readonly('更新时间',item.updated) +
       '</div><h3 class="d15-section-gap">付款尝试</h3><div class="d15-timeline">' +
-      '<div><b>' + item.created + '</b><strong>生成付款单</strong><p>关联账单 ' + item.statementId + '</p></div>' + attemptTimeline +
+      '<div><b>' + item.created + '</b><strong>生成付款单</strong><p>关联结算单 ' + (item.statementIds || [item.statementId]).join('、') + '</p></div>' + attemptTimeline +
       '</div>' + recovery + (proofAttempt ? '<div class="gh-form-actions">' + button('下载付款凭证','download-payment-proof','','data-payment="' + item.id + '" data-attempt="' + proofAttempt.id + '"') + '</div>' : '');
   }
 
@@ -2212,7 +2217,7 @@ a { color: var(--info); text-decoration: none; }
       const attempt = currentPaymentAttempt(item);
       const attemptStatus = paymentAttemptStatus(attempt);
       return [
-        item.id,item.statementId,paymentStatus(item.status)[0],decimal(item.amountMinor,item.currency),decimal(item.remainingMinor,item.currency),item.currency,
+        item.id,(item.statementIds || [item.statementId]).join('、'),paymentStatus(item.status)[0],decimal(item.amountMinor,item.currency),decimal(item.remainingMinor,item.currency),item.currency,
         item.account,item.accountVersion,item.planned,item.created,item.updated,item.attempts.length,paymentStatus(attemptStatus)[0] || '',
         attempt && attempt.providerRef ? attempt.providerRef : '',item.reason || '',item.developerActionRequired ? '是' : '否',
         item.estimatedRetryAt || '',item.nextAttempt || '',
