@@ -1060,15 +1060,16 @@
     const pendingCount = activeStatements().filter(item => item.status === 'pending').length;
     const payableStates = new Set(['pending','processing','remitted','awaiting_invoice']);
     const lockedUnpaid = activeStatements().filter(item => item.status === 'locked' && payableStates.has(paymentStateForStatement(item))).reduce((sum,item) => sum + item.settlementMinor,0);
-    const gate = canReconcile() ? '' : '<div class="gh-notice warning"><div><strong>财务操作暂不可用</strong><p>首次财务主体生效后，才可确认正式账单或提交差异。</p></div></div>';
+    const gate = !isEmptyScenario && !canReconcile() ? '<div class="gh-notice warning"><div><strong>财务操作暂不可用</strong><p>首次财务主体生效后，才可确认正式账单或提交差异。</p></div></div>' : '';
     const paymentPause = ['suspended','supplement','change_reviewing'].includes(entity.status)
       ? '<div class="gh-notice danger d15-inline-notice"><div><strong>付款暂停</strong><p>不影响历史核账与差异处理。</p></div></div>'
       : '';
-    return gate + paymentPause + '<div class="d15-page-tools">' + button('查询流水','open-flow-query','','') + button('导出','export-statements','','') + '</div><div class="gh-grid-3 d15-metrics">' +
+    const metrics = isEmptyScenario ? '' : '<div class="gh-grid-3 d15-metrics">' +
       metric('本期预估应结算',isEmptyScenario ? 'USD 0.00' : 'USD 19,204.18',isEmptyScenario ? '产生可结算交易后更新' : '交易原币：USD 15,420.60 / EUR 2,846.20 / JPY 308,000') +
       metric('待确认账单',pendingCount + ' 份',isEmptyScenario ? '暂无待确认账单' : '最近确认期限：2026-09-15 23:59') +
       metric('已锁定待付款',money(lockedUnpaid,'USD'),'以锁定账单为准') +
-      '</div>' + statementList();
+      '</div>';
+    return gate + paymentPause + '<div class="d15-page-tools">' + button('查询流水','open-flow-query','','') + button('导出','export-statements','','') + '</div>' + metrics + statementList();
   }
 
   function flowQueryPage() {

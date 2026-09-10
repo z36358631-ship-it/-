@@ -315,6 +315,34 @@ test('悬浮球默认穷举态并可往返切换缺省态', async () => {
   }
 });
 
+test('两页面缺省态不造数据且主体异常只暂停付款', async () => {
+  const page = await browser.newPage({ viewport:{ width:390, height:844 } });
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    await page.evaluate(() => window.__developerFinanceDemo.setDemoScenario('empty'));
+    assert.match(await page.locator('main').innerText(), /尚未配置财务主体/);
+    const empty = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
+    assert.deepEqual(empty.counts, { statements:0, flows:0, disputes:0, invoices:0, payments:0 });
+
+    await page.locator('[data-route="settlement"]').click();
+    assert.match(await page.locator('main').innerText(), /暂无结算记录[\s\S]*产生可结算交易后/);
+    assert.equal(await page.locator('main .gh-notice').count(), 0);
+    assert.equal(await page.locator('main .d15-metrics').count(), 0);
+
+    await page.evaluate(() => {
+      window.__developerFinanceDemo.setDemoScenario('exhaustive');
+      window.__developerFinanceDemo.setEntityScenario('suspended');
+    });
+    await page.locator('[data-route="settlement"]').click();
+    assert.match(await page.locator('main').innerText(), /付款暂停[\s\S]*不影响历史核账与差异处理/);
+    const drawer = await openSettlementDetail(page,'STMT-2026-08-V1');
+    assert.equal(await drawer.getByRole('button', { name:'确认账单', exact:true }).isDisabled(), false);
+    assert.equal(await drawer.getByRole('button', { name:'提交差异', exact:true }).isDisabled(), false);
+  } finally {
+    await page.close();
+  }
+});
+
 test('场景菜单支持键盘导航并在重渲染后恢复焦点', async () => {
   const page = await browser.newPage({ viewport:{ width:1280, height:800 } });
   try {
