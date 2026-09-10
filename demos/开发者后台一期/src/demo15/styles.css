@@ -98,7 +98,15 @@
   text-align: left;
   white-space: nowrap;
 }
-.d15-main-tabs { margin: 0 0 16px; }
+.d15-page-tools {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.d15-page-tools > div { display: flex; gap: 8px; }
+.d15-page-tools > div:first-child { margin-right: auto; }
 .d15-drawer-layer {
   position: fixed;
   inset: 0;
@@ -294,6 +302,7 @@
   .d15-filter-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .d15-settlement-filter-grid .d15-filter-action { grid-column: 1 / -1; }
   .d15-filter-action { justify-content: flex-start; }
+  .d15-page-tools { flex-wrap: wrap; }
 }
 @media (max-width: 960px) {
   .d15-status-strip { grid-template-columns: repeat(2, minmax(0,1fr)); }

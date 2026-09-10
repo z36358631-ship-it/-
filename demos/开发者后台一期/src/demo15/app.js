@@ -384,7 +384,6 @@
     bankProofNeedsRefresh:false,
     bankProofFingerprint:'',
     selectedHistory:'',
-    reconcileTab:'statements',
     settlementFilters:{ keyword:'', period:'all', source:'all', statementStatus:'all', invoiceStatus:'all', paymentStatus:'all' },
     flowFilters:{ keyword:'', type:'all', source:'all', period:'all', currency:'all' },
     paymentFilters:{ keyword:'', status:'all', period:'all', currency:'all' },
@@ -784,7 +783,7 @@
       payment.updated,
       ...(payment.attempts || []).flatMap(attempt => (attempt.events || []).map(event => event.at)),
     ] : [];
-    return [statement.generated,statement.invoiceData && statement.invoiceData.date,...disputeTimes,...paymentTimes]
+    return [statement.generated,statement.updatedAt,statement.invoiceUpdatedAt,statement.invoiceData && statement.invoiceData.date,...disputeTimes,...paymentTimes]
       .filter(Boolean)
       .sort((left,right) => String(left).localeCompare(String(right)))
       .slice(-1)[0] || '—';
@@ -1043,7 +1042,7 @@
       filterSelect('类型','flow','type',f.type,[['all','全部类型'],['sale','销售'],['refund','退款'],['chargeback','拒付'],['adjustment','调整']]) +
       filterSelect('业务来源','flow','source',f.source,[['all','全部来源'],['direct_sale','平台直销'],['external_key','外部 Key 采购'],['gamehub_key','盖世 Key 渠道']]) +
       filterSelect('交易币种','flow','currency',f.currency,[['all','全部币种'],['USD','USD'],['EUR','EUR'],['JPY','JPY'],['CNY','CNY']]) +
-      '<div class="d15-filter-action">' + button('重置','reset-flow-filters','link','') + button('查询','apply-filters','primary','') + button('导出','export-flows','','') + '</div></div></div>' +
+      '<div class="d15-filter-action">' + button('重置','reset-flow-filters','link','') + button('查询','apply-filters','primary','') + '</div></div></div>' +
       '<div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>日期／对账流水号</th><th>游戏／SKU</th><th>业务来源／履约方式</th><th>类型</th><th>交易原币</th><th>汇率／折算</th><th>税费／支付费</th><th>平台分成／调整</th><th>应结算</th><th>关联账单</th></tr></thead><tbody>' +
       (pageRows.length ? pageRows.map(item => {
         const tm = flowType(item.type);
@@ -1057,16 +1056,15 @@
     const payableStates = new Set(['pending','processing','remitted','awaiting_invoice']);
     const lockedUnpaid = activeStatements().filter(item => item.status === 'locked' && payableStates.has(paymentStateForStatement(item))).reduce((sum,item) => sum + item.settlementMinor,0);
     const gate = canReconcile() ? '' : '<div class="gh-notice warning"><div><strong>财务操作暂不可用</strong><p>首次财务主体生效后，才可确认正式账单或提交差异。</p></div></div>';
-    return gate + '<div class="gh-grid-3 d15-metrics">' +
+    return gate + '<div class="d15-page-tools">' + button('查询流水','open-flow-query','','') + button('导出','export-statements','','') + '</div><div class="gh-grid-3 d15-metrics">' +
       metric('本期预估应结算',isEmptyScenario ? 'USD 0.00' : 'USD 19,204.18',isEmptyScenario ? '产生可结算交易后更新' : '交易原币：USD 15,420.60 / EUR 2,846.20 / JPY 308,000') +
       metric('待确认账单',pendingCount + ' 份',isEmptyScenario ? '暂无待确认账单' : '最近确认期限：2026-09-15 23:59') +
       metric('已锁定待付款',money(lockedUnpaid,'USD'),'以锁定账单为准') +
-      '</div><div class="gh-tabs d15-main-tabs"><button type="button" data-reconcile-tab="statements" class="' + (state.reconcileTab === 'statements' ? 'is-active' : '') + '">对账单</button><button type="button" data-reconcile-tab="flows" class="' + (state.reconcileTab === 'flows' ? 'is-active' : '') + '">对账流水</button></div>' +
-      (state.reconcileTab === 'statements' ? statementList() : flowList());
+      '</div>' + statementList();
   }
 
   function flowQueryPage() {
-    return flowList();
+    return '<div class="d15-page-tools"><div>' + button('返回对账结算','back-settlement','','') + '</div><div>' + button('导出流水','export-flows','','') + '</div></div>' + flowList();
   }
 
   function filteredPayments() {
@@ -1651,8 +1649,6 @@
       render();
       return;
     }
-    const reconcileTab = event.target.closest('[data-reconcile-tab]');
-    if (reconcileTab) { state.reconcileTab = reconcileTab.dataset.reconcileTab; render(); return; }
     const drawerTab = event.target.closest('[data-statement-drawer-tab]');
     if (drawerTab) { state.statementDrawerTab = drawerTab.dataset.statementDrawerTab; state.disputeMode = false; render(); return; }
     const pager = event.target.closest('[data-page-group]');
@@ -1667,7 +1663,17 @@
     const actionNode = event.target.closest('[data-action]');
     if (!actionNode) return;
     const action = actionNode.dataset.action;
-    if (action === 'toggle-scenario-menu') {
+    if (action === 'open-flow-query') {
+      clearRouteOverlays();
+      state.route = 'settlement/flows';
+      location.hash = '/settlement/flows';
+      render();
+    } else if (action === 'back-settlement') {
+      clearRouteOverlays();
+      state.route = 'settlement';
+      location.hash = '/settlement';
+      render();
+    } else if (action === 'toggle-scenario-menu') {
       state.scenarioMenuOpen = !state.scenarioMenuOpen;
       render();
       const target = state.scenarioMenuOpen
@@ -1784,6 +1790,7 @@
       if (canReconcile() && item && item.status === 'pending') {
         item.status = 'confirmed';
         item.payment = 'not_ready';
+        item.updatedAt = '2026-09-10 16:10';
       }
       state.dialog = '';
       setToast('账单已确认');
@@ -1917,6 +1924,7 @@
         item.invoice = 'reviewing';
         item.payment = 'awaiting_invoice';
         item.invoiceData = { number:number.value.trim(), date:date.value, amountMinor, currency:item.currency, file:invoiceFile };
+        item.invoiceUpdatedAt = '2026-09-10 16:15';
       }
       state.invoiceFile = '';
       setToast('发票已提交');
@@ -1944,7 +1952,7 @@
       location.hash = '/entity';
       render();
     } else if (action === 'export-statements') {
-      saveTextFile('对账单.csv',exportCsv('statement'));
+      saveTextFile('结算记录.csv',exportCsv('statement'));
     } else if (action === 'export-flows') {
       saveTextFile('对账流水.csv',exportCsv('flow'));
     } else if (action === 'export-payments') {

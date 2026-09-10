@@ -112,6 +112,25 @@ test('一张结算记录同时展示对账发票付款和当前待办', async ()
   }
 });
 
+test('对账结算无页内Tab且流水查询使用次级路由', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/settlement'), { waitUntil:'load' });
+    assert.equal(await page.locator('[data-reconcile-tab]').count(), 0);
+    assert.equal(await page.locator('.d15-main-tabs').count(), 0);
+    await page.getByRole('button', { name:'查询流水', exact:true }).click();
+    assert.equal(new URL(page.url()).hash, '#/settlement/flows');
+    assert.equal(await page.locator('main h1').innerText(), '对账流水');
+    assert.match(await page.locator('.gh-breadcrumb').innerText(), /对账结算[\s\S]*对账流水/);
+    assert.equal(await page.locator('.d15-nav [data-route]').count(), 2);
+    assert.equal(await page.locator('[data-route="settlement"]').getAttribute('class').then(value => value.includes('is-active')), true);
+    await page.getByRole('button', { name:'返回对账结算', exact:true }).click();
+    assert.equal(new URL(page.url()).hash, '#/settlement');
+  } finally {
+    await page.close();
+  }
+});
+
 test('穷举数据使用整数金额并由流水还原账单', async () => {
   const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
   try {
@@ -206,7 +225,7 @@ test('悬浮球默认穷举态并可往返切换缺省态', async () => {
     assert.match(await page.locator('main').innerText(), /暂无结算记录/);
     assert.equal(await locationHash(page), '#/settlement');
 
-    await page.getByRole('button', { name:'对账流水', exact:true }).click();
+    await page.getByRole('button', { name:'查询流水', exact:true }).click();
     assert.match(await page.locator('main').innerText(), /暂无对账流水/);
     await page.evaluate(() => { location.hash = '/settlement/payments'; });
     await page.waitForFunction(() => location.hash === '#/settlement/payments');
@@ -402,6 +421,7 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
     await page.getByRole('button', { name:'提交发票', exact:true }).click();
     assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /审核中/);
     assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /INV-202609-1024/);
+    assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot().settlementRecords.find(item => item.statementId === 'STMT-2026-06-V1'))).updatedAt, '2026-09-10 16:15');
     await page.screenshot({ path:path.join(evidenceDir,'statement-invoice-1440x900.png'), fullPage:true });
 
     await page.reload();
@@ -409,6 +429,7 @@ test('财务对账每页20条并支持确认、差异和发票', async () => {
     await page.getByRole('button', { name:'确认账单', exact:true }).click();
     await page.getByRole('dialog', { name:'确认账单' }).getByRole('button', { name:'确认账单', exact:true }).click();
     assert.match(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /已确认/);
+    assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot().settlementRecords.find(item => item.statementId === 'STMT-2026-08-V1'))).updatedAt, '2026-09-10 16:10');
     assert.doesNotMatch(await page.getByRole('dialog', { name:'账单详情' }).innerText(), /账单已锁定/);
     assert.deepEqual(errors, []);
   } finally {
@@ -420,7 +441,7 @@ test('三本账可筛选、可按来源核对并导出完整审计字段', async
   const page = await browser.newPage({ viewport:{ width:1440, height:900 }, acceptDownloads:true });
   try {
     await page.goto(url('/reconciliation'), { waitUntil:'load' });
-    await page.getByRole('button', { name:'对账流水', exact:true }).click();
+    await page.getByRole('button', { name:'查询流水', exact:true }).click();
 
     const sourceFilter = page.getByLabel('业务来源');
     assert.equal(await sourceFilter.count(), 1);
@@ -435,14 +456,14 @@ test('三本账可筛选、可按来源核对并导出完整审计字段', async
 
     await sourceFilter.selectOption('all');
     const downloadPromise = page.waitForEvent('download');
-    await page.getByRole('button', { name:'导出', exact:true }).click();
+    await page.getByRole('button', { name:'导出流水', exact:true }).click();
     const download = await downloadPromise;
     const exported = fs.readFileSync(await download.path(), 'utf8');
     for (const header of ['业务来源','履约方式','交易原币','汇率版本','规则版本','结算对手方']) {
       assert.match(exported, new RegExp('"' + header + '"'));
     }
 
-    await page.getByRole('button', { name:'对账单', exact:true }).click();
+    await page.getByRole('button', { name:'返回对账结算', exact:true }).click();
     await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
     const drawer = page.getByRole('dialog', { name:'账单详情' });
     for (const source of ['direct_sale','external_key','gamehub_key']) {
@@ -620,7 +641,7 @@ test('三张表关键词输入后页面与直接导出口径一致', async () =>
     await page.goto(url('/reconciliation'), { waitUntil:'load' });
     await assertFilterAndExport({ selector:'#d15-settlement-keyword', keyword:'DRAFT-ONLY-STATEMENT', group:'statement', countKey:'statements' });
 
-    await page.getByRole('button', { name:'对账流水', exact:true }).click();
+    await page.getByRole('button', { name:'查询流水', exact:true }).click();
     await assertFilterAndExport({ selector:'#d15-flow-keyword', keyword:'DRAFT-ONLY-FLOW', group:'flow', countKey:'flows' });
 
     await page.evaluate(() => { location.hash = '/settlement/payments'; });
@@ -930,8 +951,8 @@ test('生成穷举态、缺省态、三本账与付款尝试四张视觉证据',
 
     await page.evaluate(() => window.__developerFinanceDemo.setDemoScenario('exhaustive'));
     await page.goto(url('/reconciliation'), { waitUntil:'load' });
-    await page.getByRole('button', { name:'对账流水', exact:true }).click();
-    await assertSinglePageTitle('对账结算');
+    await page.getByRole('button', { name:'查询流水', exact:true }).click();
+    await assertSinglePageTitle('对账流水');
     assert.equal(await page.locator('tbody tr[data-ledger-source]').count(), 20);
     for (const source of ['平台直销','外部 Key 采购','盖世 Key 渠道']) {
       assert.match(await page.locator('tbody').innerText(), new RegExp(source));
@@ -952,7 +973,7 @@ test('生成穷举态、缺省态、三本账与付款尝试四张视觉证据',
     }
 
     await page.evaluate(() => scrollTo(0,0));
-    await page.getByRole('button', { name:'对账单', exact:true }).click();
+    await page.getByRole('button', { name:'返回对账结算', exact:true }).click();
     await page.locator('[data-statement-id="STMT-2026-07-V2"]').getByRole('button', { name:'查看', exact:true }).click();
     await page.getByRole('button', { name:'差异记录', exact:true }).click();
     const disputeDrawer = page.getByRole('dialog', { name:'账单详情' });
@@ -1110,7 +1131,7 @@ test('三张表按当前场景和已应用筛选导出分页前完整安全字�
     assert.match(statementCsv, /"18420\.36"/);
     assert.doesNotMatch(statementCsv, /"1842036"/);
 
-    await page.getByRole('button', { name:'对账流水', exact:true }).click();
+    await page.getByRole('button', { name:'查询流水', exact:true }).click();
     await page.getByLabel('业务来源').selectOption('direct_sale');
     await page.getByRole('button', { name:'下一页', exact:true }).click();
     const flowCsv = await page.evaluate(() => window.__developerFinanceDemo.exportCsv('flow'));
