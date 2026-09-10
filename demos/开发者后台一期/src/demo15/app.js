@@ -607,13 +607,14 @@
 
   function routeFromHash() {
     const raw = location.hash.replace(/^#\/?/, '').split('?')[0];
-    if (raw === 'reconciliation' || raw === 'payments') return 'settlement';
+    if (raw === 'reconciliation') return 'settlement';
+    if (raw === 'payments' || raw === 'settlement/payments') return 'settlement/payments';
     if (raw === 'settlement/flows') return 'settlement/flows';
     return routes[raw] ? raw : 'entity';
   }
 
   function primaryRoute() {
-    return state.route === 'settlement/flows' ? 'settlement' : state.route;
+    return state.route === 'settlement/flows' || state.route === 'settlement/payments' ? 'settlement' : state.route;
   }
 
   function applyPreview() {
@@ -756,8 +757,9 @@
 
   function pageHead() {
     const isFlowQuery = state.route === 'settlement/flows';
-    const title = isFlowQuery ? '对账流水' : routes[primaryRoute()].title;
-    const trail = isFlowQuery ? '对账结算 <span>/</span> 对账流水' : title;
+    const isPaymentQuery = state.route === 'settlement/payments';
+    const title = isFlowQuery ? '对账流水' : isPaymentQuery ? '付款记录' : routes[primaryRoute()].title;
+    const trail = isFlowQuery ? '对账结算 <span>/</span> 对账流水' : isPaymentQuery ? '对账结算 <span>/</span> 付款记录' : title;
     return '<div class="gh-breadcrumb">开发者平台 <span>/</span> 经营与财务 <span>/</span> ' + trail + '</div><div class="gh-page-head"><div><h1>' + title + '</h1></div></div>';
   }
 
@@ -1264,7 +1266,7 @@
       const target = focusableIn(current)[0] || current;
       target.focus();
     } else if (!current && restoreKey) {
-      const route = app.querySelector('[data-route="' + state.route + '"]');
+      const route = app.querySelector('[data-route="' + primaryRoute() + '"]');
       if (route) route.focus();
     }
     overlayFocus.pendingInitialFocus = false;
@@ -1347,12 +1349,14 @@
   }
 
   function render() {
-    state.route = state.route === 'settlement/flows' || routes[state.route] ? state.route : 'entity';
+    state.route = state.route === 'settlement/flows' || state.route === 'settlement/payments' || routes[state.route] ? state.route : 'entity';
     const rawRoute = location.hash.replace(/^#\/?/, '').split('?')[0];
-    if ((rawRoute === 'reconciliation' || rawRoute === 'payments') && state.route === 'settlement') {
+    if (rawRoute === 'reconciliation' && state.route === 'settlement') {
       history.replaceState(null,'','#/settlement');
+    } else if (rawRoute === 'payments' && state.route === 'settlement/payments') {
+      history.replaceState(null,'','#/settlement/payments');
     }
-    const page = state.route === 'entity' ? entityPage() : state.route === 'settlement/flows' ? flowQueryPage() : settlementPage();
+    const page = state.route === 'entity' ? entityPage() : state.route === 'settlement/flows' ? flowQueryPage() : state.route === 'settlement/payments' ? paymentsPage() : settlementPage();
     app.innerHTML = '<div class="gh-app" data-testid="developer-finance-demo">' + topbar() + '<div class="gh-layout">' + nav() + '<main class="gh-main"><div class="gh-content">' + pageHead() + page + '</div></main></div>' +
       scenarioSwitcher() + statementDrawer() + paymentDrawer() + historyDrawer() + confirmDialog() + (state.toast ? '<div class="gh-toast" role="status">' + esc(state.toast) + '</div>' : '') + '</div>';
     document.body.style.overflow = state.activeStatement || state.activePayment || state.selectedHistory || state.dialog ? 'hidden' : '';
