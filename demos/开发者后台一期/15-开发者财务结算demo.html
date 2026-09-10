@@ -245,6 +245,12 @@ a { color: var(--info); text-decoration: none; }
   gap: 18px;
 }
 .d15-entity-grid > .gh-card { margin-top: 0; }
+.d15-current-application { margin: 0 0 18px; }
+.d15-readonly-input[readonly] {
+  color: var(--ink);
+  background: #f7f8fa;
+  cursor: not-allowed;
+}
 .d15-kv-list { display: grid; gap: 0; }
 .d15-kv-list > div {
   display: grid;
@@ -655,9 +661,12 @@ a { color: var(--info); text-decoration: none; }
   };
 
   const entityHistory = [
-    { version:'FIN-2026-003', type:'收款账户变更', status:'已生效', submitted:'2026-08-09 14:22', effective:'2026-08-12 15:30', account:'**** 7826', operator:'平台财务', snapshot:{ ...entitySeed } },
-    { version:'FIN-2026-002', type:'税务资料变更', status:'已停用', submitted:'2026-06-18 10:14', effective:'2026-06-20 17:08', account:'**** 5369', operator:'平台财务', snapshot:{ ...entitySeed, accountNumber:'**** 5369', bankProof:'bank_account_proof_2026_v1.pdf', taxProof:'tax_residency_2026_v2.pdf', effectiveAt:'2026-06-20 17:08' } },
-    { version:'FIN-2026-001', type:'首次配置', status:'已停用', submitted:'2026-03-02 09:40', effective:'2026-03-05 16:12', account:'**** 5369', operator:'平台财务', snapshot:{ ...entitySeed, accountNumber:'**** 5369', bankProof:'bank_account_proof_2026_v1.pdf', taxProof:'tax_residency_2026_v1.pdf', effectiveAt:'2026-03-05 16:12' } },
+    { version:'FIN-2026-009', type:'收款账户变更', status:'审核中', submitted:'2026-09-02 11:06', effective:'—', account:'**** 3188', operator:'平台财务 李敏', snapshot:Object.freeze({ ...entitySeed, accountNumber:'**** 3188', bankProof:'bank_account_proof_202609.pdf', effectiveAt:'' }) },
+    { version:'FIN-2026-008', type:'税务资料变更', status:'需补充', submitted:'2026-08-28 16:42', effective:'—', account:'**** 7826', operator:'平台财务 李敏', snapshot:Object.freeze({ ...entitySeed, taxProof:'tax_residency_pending.pdf', effectiveAt:'' }) },
+    { version:'FIN-2026-007', type:'收款账户变更', status:'已拒绝', submitted:'2026-08-21 09:18', effective:'—', account:'**** 9066', operator:'平台财务 周然', snapshot:Object.freeze({ ...entitySeed, bankName:'示例商业银行', accountNumber:'**** 9066', swift:'BADCODE', bankProof:'bank_account_proof_rejected.pdf', effectiveAt:'' }) },
+    { version:'FIN-2026-006', type:'税务资料变更', status:'已撤销', submitted:'2026-08-16 13:25', effective:'—', account:'**** 7826', operator:'开发者 王明', snapshot:Object.freeze({ ...entitySeed, taxNo:'', taxProof:'tax_draft.pdf', effectiveAt:'' }) },
+    { version:'FIN-2026-003', type:'收款账户变更', status:'已生效', submitted:'2026-08-09 14:22', effective:'2026-08-12 15:30', account:'**** 7826', operator:'平台财务', snapshot:Object.freeze({ ...entitySeed }) },
+    { version:'FIN-2026-002', type:'税务资料变更', status:'已停用', submitted:'2026-06-18 10:14', effective:'2026-06-20 17:08', account:'**** 5369', operator:'平台财务', snapshot:Object.freeze({ ...entitySeed, accountName:'', accountNumber:'**** 5369', bankProof:'bank_account_proof_2026_v1.pdf', taxProof:'tax_residency_2026_v2.pdf', effectiveAt:'2026-06-20 17:08' }) },
   ];
 
   const baseStatementSeeds = [
@@ -830,6 +839,10 @@ a { color: var(--info); text-decoration: none; }
     entityDraft:null,
     entityEditing:false,
     entityEditMode:'',
+    applicationSnapshots:{ exhaustive:null, empty:null },
+    entityValidation:null,
+    bankProofNeedsRefresh:false,
+    bankProofFingerprint:'',
     selectedHistory:'',
     reconcileTab:'statements',
     statementFilters:{ keyword:'', status:'all', period:'all', currency:'all' },
@@ -872,6 +885,14 @@ a { color: var(--info); text-decoration: none; }
 
   function activeEntity() {
     return state.demoScenario === 'empty' ? state.emptyEntity : state.entity;
+  }
+
+  function activeApplicationSnapshot() {
+    return state.applicationSnapshots[state.demoScenario];
+  }
+
+  function setActiveApplicationSnapshot(snapshot) {
+    state.applicationSnapshots[state.demoScenario] = snapshot ? Object.freeze(clone(snapshot)) : null;
   }
 
   function nextNaturalMonth(period) {
@@ -974,8 +995,13 @@ a { color: var(--info); text-decoration: none; }
       state.entityDraft = clone(entitySeed);
       state.entityEditing = true;
       state.entityEditMode = state.entity.effectiveVersion ? 'change' : 'initial';
+      bindBankProofToDraft(state.entityDraft);
     }
     if (preview === 'reviewing') state.entity.effectiveVersion = '';
+    if (['reviewing','supplement','change_reviewing'].includes(preview)) {
+      state.entity.submittedVersion = state.entity.submittedVersion || 'FIN-2026-004';
+      setActiveApplicationSnapshot(state.entityDraft || state.entity);
+    }
   }
 
   function statusMeta(status) {
@@ -1005,7 +1031,11 @@ a { color: var(--info); text-decoration: none; }
     return '<header class="gh-topbar"><div class="gh-brand">' + logo() + '<span>盖世游戏开发者平台</span></div><div class="gh-top-actions"><div class="gh-user"><span class="gh-avatar">王</span><span class="gh-user-copy"><strong>王明</strong><small>企业主账号</small></span></div></div></header>';
   }
 
-  function financeActionsAllowed() {
+  function canReconcile() {
+    return Boolean(activeEntity().effectiveVersion);
+  }
+
+  function canPay() {
     const entity = activeEntity();
     return Boolean(entity.effectiveVersion) && !['change_reviewing','supplement','suspended'].includes(entity.status);
   }
@@ -1029,6 +1059,10 @@ a { color: var(--info); text-decoration: none; }
     return '<div class="gh-readonly"><span>' + esc(label) + '</span><strong>' + esc(value || '—') + '</strong>' + (hint ? '<small>' + esc(hint) + '</small>' : '') + '</div>';
   }
 
+  function readonlyInput(label, key, value, hint) {
+    return '<div class="gh-field"><label for="d15-' + key + '">' + esc(label) + '</label><input id="d15-' + key + '" class="gh-input d15-readonly-input" value="' + esc(value) + '" readonly aria-readonly="true">' + (hint ? '<small>' + esc(hint) + '</small>' : '') + '</div>';
+  }
+
   function metric(label, value, hint) {
     return '<div class="gh-metric"><span>' + esc(label) + '</span><strong>' + esc(value) + '</strong><small>' + esc(hint) + '</small></div>';
   }
@@ -1040,19 +1074,19 @@ a { color: var(--info); text-decoration: none; }
   function entitySummary() {
     const entity = activeEntity();
     const meta = statusMeta(entity.status);
-    const blocked = ['change_reviewing','supplement','suspended'].includes(entity.status);
+    const paymentBlocked = !canPay();
     let notice = '';
     if (entity.status === 'change_reviewing') {
-      notice = '<div class="gh-notice warning"><div><strong>变更审核中</strong><p>旧资料继续用于账单归属；本次涉及收款账户，审核完成前暂停付款。</p></div><div class="gh-row-actions">' + button('查看提交内容','view-submission','', '') + button('撤销审核','withdraw-review','danger','') + '</div></div>';
+      notice = '<div class="gh-notice warning"><div><strong>变更审核中</strong><p>旧资料继续用于账单归属和核对；审核完成前暂停付款。</p></div></div>';
     } else if (entity.status === 'reviewing') {
-      notice = '<div class="gh-notice"><div><strong>资料审核中</strong><p>审核通过后开放账单确认和付款。</p></div><div class="gh-row-actions">' + button('查看提交内容','view-submission','', '') + button('撤销审核','withdraw-review','danger','') + '</div></div>';
+      notice = '<div class="gh-notice"><div><strong>资料审核中</strong><p>首次财务主体生效后，才可确认正式账单和进入付款。</p></div></div>';
     } else if (entity.status === 'suspended') {
-      notice = '<div class="gh-notice danger"><div><strong>结算已暂停</strong><p>财务资料存在异常，账单仍可查看，付款暂停。请发送邮件至 dev@xiaoji.com。</p></div></div>';
+      notice = '<div class="gh-notice danger"><div><strong>付款暂停</strong><p>历史账单仍可核对和提交差异。请发送邮件至 dev@xiaoji.com 处理财务资料异常。</p></div></div>';
     } else if (entity.status === 'supplement') {
-      notice = '<div class="gh-notice danger"><div><strong>请补充资料</strong><p>账户证明未显示账户名和完整银行信息；旧资料继续生效，付款暂停。</p></div><div class="gh-row-actions">' + button('补充资料','resume-entity-edit','primary','') + '</div></div>';
+      notice = '<div class="gh-notice danger"><div><strong>请补充资料</strong><p>旧资料继续用于账单核对；补充完成前暂停付款。</p></div></div>';
     }
-    const paymentState = !entity.effectiveVersion ? tag('未启用','warning') : blocked ? tag('暂停','danger') : tag('正常','success');
-    return notice +
+    const paymentState = !entity.effectiveVersion ? tag('未启用','warning') : paymentBlocked ? tag('暂停','danger') : tag('正常','success');
+    return notice + currentApplicationSection(entity) +
       '<div class="d15-status-strip"><div><span>当前状态</span><strong>' + tag(meta[0], meta[1]) + '</strong></div><div><span>生效版本</span><strong>' + esc(entity.effectiveVersion || '—') + '</strong></div><div><span>结算币种</span><strong>' + esc(entity.settlementCurrency) + '</strong></div><div><span>付款状态</span><strong>' + paymentState + '</strong></div><div class="d15-status-action">' + (entity.status === 'effective' ? button('申请变更','start-change','primary','') : '') + '</div></div>' +
       '<div class="d15-entity-grid">' +
         '<section class="gh-card"><div class="gh-card-head"><div><h2>认证主体</h2><p>来源：企业认证 ' + esc(entity.sourceVersion) + '</p></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
@@ -1071,9 +1105,24 @@ a { color: var(--info); text-decoration: none; }
       '</div>' + historyTable();
   }
 
+  function currentApplicationSection(entity) {
+    if (!['reviewing','change_reviewing','supplement'].includes(entity.status)) return '';
+    const snapshot = activeApplicationSnapshot() || entity;
+    const meta = statusMeta(entity.status);
+    const actions = entity.status === 'supplement'
+      ? button('补充资料','resume-entity-edit','primary','')
+      : button('查看提交内容','view-submission','','') + button('撤销审核','withdraw-review','danger','');
+    return '<section class="gh-card d15-current-application" role="region" aria-label="当前申请"><div class="gh-card-head"><div><h2>当前申请</h2><p>' + esc(entity.submittedVersion || '待审核版本') + '</p></div>' + tag(meta[0],meta[1]) + '</div><div class="gh-card-body"><div class="gh-grid-2">' +
+      readonly('申请类型',entity.effectiveVersion ? '资料变更' : '首次配置') + readonly('提交账户',snapshot.accountNumber) + readonly('财务联系人',snapshot.contactName) + readonly('变更说明',snapshot.changeReason || '—') +
+      '</div><div class="gh-form-actions">' + actions + '</div></div></section>';
+  }
+
   function historyTable() {
-    return '<section class="gh-card d15-section-gap"><div class="gh-card-head"><div><h2>变更历史</h2></div></div><div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>版本</th><th>类型</th><th>提交时间</th><th>生效时间</th><th>收款账户</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
-      entityHistory.map(item => '<tr><td><strong>' + item.version + '</strong></td><td>' + item.type + '</td><td>' + item.submitted + '</td><td>' + item.effective + '</td><td>' + item.account + '</td><td>' + tag(item.status,item.status === '已生效' ? 'success' : '') + '</td><td>' + button('查看','view-history','link','data-version="' + item.version + '"') + '</td></tr>').join('') +
+    return '<section class="gh-card d15-section-gap" role="region" aria-label="财务主体历史版本"><div class="gh-card-head"><div><h2>历史版本</h2></div></div><div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>版本</th><th>类型</th><th>提交时间</th><th>生效时间</th><th>收款账户</th><th>状态</th><th>操作</th></tr></thead><tbody>' +
+      entityHistory.map(item => {
+        const tone = item.status === '已生效' ? 'success' : item.status === '审核中' ? 'info' : item.status === '需补充' || item.status === '已拒绝' ? 'danger' : '';
+        return '<tr><td><strong>' + item.version + '</strong></td><td>' + item.type + '</td><td>' + item.submitted + '</td><td>' + item.effective + '</td><td>' + item.account + '</td><td>' + tag(item.status,tone) + '</td><td>' + button('查看','view-history','link','data-version="' + item.version + '"') + '</td></tr>';
+      }).join('') +
       '</tbody></table></div></section>';
   }
 
@@ -1082,37 +1131,43 @@ a { color: var(--info); text-decoration: none; }
     const entity = activeEntity();
     const isSupplement = entity.status === 'supplement';
     return (isSupplement ? '<div class="gh-notice danger"><div><strong>请补充资料</strong><p>账户证明未显示账户名和完整银行信息，请重新上传。</p></div></div>' : '') +
-      '<form data-testid="entity-form" onsubmit="return false">' +
+      '<section role="region" aria-label="当前申请"><form data-testid="entity-form" onsubmit="return false">' +
       '<section class="gh-card"><div class="gh-card-head"><div><h2>认证主体</h2><p>企业认证资料自动同步，不在此处修改</p></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
         readonly('企业名称',draft.legalName,'如需变更，请先更新企业认证') + readonly('注册国家或地区',draft.registrationRegion,'企业认证字段') + readonly('注册号',draft.registrationNo,'企业认证字段') + readonly('企业认证版本',draft.sourceVersion,'自动关联') +
       '</div></div></section>' +
       '<section class="gh-card"><div class="gh-card-head"><div><h2>收款账户</h2></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
         field('财务联系人','contactName',draft.contactName,true) + field('财务邮箱','contactEmail',draft.contactEmail,true,'email') +
         selectField('银行国家或地区','bankRegion',draft.bankRegion,[['中国大陆','中国大陆'],['中国香港','中国香港'],['中国澳门','中国澳门'],['新加坡','新加坡'],['美国','美国']],true) +
-        readonly('结算币种',draft.settlementCurrency,'如需变更，请联系商务更新合同') +
+        readonlyInput('结算币种','settlementCurrency',draft.settlementCurrency,'如需变更，请联系商务更新合同') +
         field('账户名','accountName',draft.accountName,true) + field('银行名称','bankName',draft.bankName,true) +
-        field('银行账号','accountNumber',draft.accountNumber,true) + field('SWIFT / BIC','swift',draft.swift,true) +
+        field('银行账号','accountNumber',draft.accountNumber,true) + field('SWIFT / BIC','swift',draft.swift,needsSwift(draft)) +
         uploadField('账户证明','bankProof',draft.bankProof,true) +
       '</div></div></section>' +
       '<section class="gh-card"><div class="gh-card-head"><div><h2>税务资料</h2></div></div><div class="gh-card-body"><div class="gh-grid-2">' +
         selectField('税务居民地','taxRegion',draft.taxRegion,[['中国大陆','中国大陆'],['中国香港','中国香港'],['中国澳门','中国澳门'],['新加坡','新加坡'],['美国','美国']],true) +
         field('税号','taxNo',draft.taxNo,true) + uploadField('税务证明','taxProof',draft.taxProof,true) +
         '<div class="gh-field wide"><label for="d15-change-reason">变更说明</label><textarea id="d15-change-reason" class="gh-textarea" data-entity-field="changeReason" placeholder="首次配置可不填">' + esc(draft.changeReason) + '</textarea></div>' +
-      '</div><div class="gh-error" data-testid="entity-error"></div><div class="gh-form-actions">' + button('取消','cancel-entity-edit','','') + button('保存','save-entity','','') + button(entity.status === 'supplement' ? '重新提交' : '提交审核','submit-entity','primary','') + '</div></div></section></form>';
+      '</div><div id="d15-entity-error" class="gh-error" data-testid="entity-error" role="alert" aria-live="assertive">' + esc(state.entityValidation ? state.entityValidation.message : '') + '</div><div class="gh-form-actions">' + button('取消','cancel-entity-edit','','') + button('保存','save-entity','','') + button(entity.status === 'supplement' ? '重新提交' : '提交审核','submit-entity','primary','') + '</div></div></section></form></section>' + (entity.effectiveVersion ? historyTable() : '');
+  }
+
+  function entityFieldA11y(key) {
+    const invalid = Boolean(state.entityValidation && state.entityValidation.fields.includes(key));
+    return 'aria-invalid="' + invalid + '"' + (invalid ? ' aria-describedby="d15-entity-error"' : '');
   }
 
   function field(label, key, value, required, type) {
-    return '<div class="gh-field"><label for="d15-' + key + '" class="' + (required ? 'gh-required' : '') + '">' + label + '</label><input id="d15-' + key + '" class="gh-input" data-entity-field="' + key + '" type="' + (type || 'text') + '" value="' + esc(value) + '"></div>';
+    return '<div class="gh-field"><label for="d15-' + key + '" class="' + (required ? 'gh-required' : '') + '">' + label + '</label><input id="d15-' + key + '" class="gh-input" data-entity-field="' + key + '" aria-required="' + Boolean(required) + '" ' + entityFieldA11y(key) + ' type="' + (type || 'text') + '" value="' + esc(value) + '"></div>';
   }
 
   function selectField(label, key, value, options, required) {
-    return '<div class="gh-field"><label for="d15-' + key + '" class="' + (required ? 'gh-required' : '') + '">' + label + '</label><select id="d15-' + key + '" class="gh-select" data-entity-field="' + key + '">' +
+    return '<div class="gh-field"><label for="d15-' + key + '" class="' + (required ? 'gh-required' : '') + '">' + label + '</label><select id="d15-' + key + '" class="gh-select" data-entity-field="' + key + '" aria-required="' + Boolean(required) + '" ' + entityFieldA11y(key) + '>' +
       options.map(option => '<option value="' + option[0] + '" ' + (option[0] === value ? 'selected' : '') + '>' + option[1] + '</option>').join('') +
       '</select></div>';
   }
 
   function uploadField(label, key, value, required) {
-    return '<div class="gh-field"><label class="' + (required ? 'gh-required' : '') + '">' + label + '</label><label class="gh-upload d15-upload"><input type="file" data-entity-file="' + key + '" accept=".pdf,.png,.jpg,.jpeg"><span data-file-label="' + key + '">' + esc(value || '上传 PDF、PNG 或 JPG') + '</span></label></div>';
+    const display = key === 'bankProof' && state.bankProofNeedsRefresh ? '账户信息已变更，请重新上传账户证明' : value || '上传 PDF、PNG 或 JPG';
+    return '<div class="gh-field"><label class="' + (required ? 'gh-required' : '') + '">' + label + '</label><label class="gh-upload d15-upload"><input type="file" data-entity-file="' + key + '" aria-required="' + Boolean(required) + '" ' + entityFieldA11y(key) + ' accept=".pdf,.png,.jpg,.jpeg"><span data-file-label="' + key + '">' + esc(display) + '</span></label></div>';
   }
 
   function entityPage() {
@@ -1219,7 +1274,7 @@ a { color: var(--info); text-decoration: none; }
     const pendingCount = activeStatements().filter(item => item.status === 'pending').length;
     const payableStates = new Set(['pending','processing','remitted','awaiting_invoice']);
     const lockedUnpaid = activeStatements().filter(item => item.status === 'locked' && payableStates.has(paymentStateForStatement(item))).reduce((sum,item) => sum + item.settlementMinor,0);
-    const gate = financeActionsAllowed() ? '' : '<div class="gh-notice warning"><div><strong>财务操作暂不可用</strong><p>财务主体生效且付款未暂停后，才可确认账单或提交差异。</p></div></div>';
+    const gate = canReconcile() ? '' : '<div class="gh-notice warning"><div><strong>财务操作暂不可用</strong><p>首次财务主体生效后，才可确认正式账单或提交差异。</p></div></div>';
     return gate + '<div class="gh-grid-3 d15-metrics">' +
       metric('本期预估应结算',isEmptyScenario ? 'USD 0.00' : 'USD 19,204.18',isEmptyScenario ? '产生可结算交易后更新' : '交易原币：USD 15,420.60 / EUR 2,846.20 / JPY 308,000') +
       metric('待确认账单',pendingCount + ' 份',isEmptyScenario ? '暂无待确认账单' : '最近确认期限：2026-09-15 23:59') +
@@ -1243,7 +1298,8 @@ a { color: var(--info); text-decoration: none; }
     const rows = filteredPayments();
     const pageRows = rows.slice((state.paymentPage - 1) * PAGE_SIZE, state.paymentPage * PAGE_SIZE);
     const f = state.paymentFilters;
-    return '<section class="gh-card"><div class="gh-card-body"><div class="d15-filter-grid">' +
+    const gate = canPay() ? '' : '<div class="gh-notice warning"><div><strong>付款暂停</strong><p>历史付款记录仍可查询；财务主体生效且资料正常后恢复付款。</p></div></div>';
+    return gate + '<section class="gh-card"><div class="gh-card-body"><div class="d15-filter-grid">' +
       '<div class="gh-field d15-filter-keyword"><label for="d15-payment-keyword">付款单</label><input id="d15-payment-keyword" class="gh-input" data-filter-group="payment" data-filter="keyword" value="' + esc(f.keyword) + '" placeholder="付款单号或账单号"></div>' +
       filterSelect('时间','payment','period',f.period,[['all','全部时间'],['2026','2026 年'],['2025','2025 年']]) +
       filterSelect('付款状态','payment','status',f.status,[['all','全部状态'],['not_ready','待具备条件'],['pending','待付款'],['processing','处理中'],['remitted','已汇出'],['completed','已完成'],['failed','失败'],['returned','退回'],['held','暂缓'],['carried','已结转'],['cancelled','已取消']]) +
@@ -1308,7 +1364,7 @@ a { color: var(--info); text-decoration: none; }
     let foot = button('关闭','close-drawer','','');
     if (state.disputeMode === 'supplement') foot = button('取消','cancel-dispute','','') + button('提交补充','confirm-supplement','primary','');
     else if (state.disputeMode) foot = button('取消','cancel-dispute','','') + button('提交差异','confirm-dispute','primary','');
-    else if (item.status === 'pending') foot = button('导出账单','download-statement','','') + (financeActionsAllowed() ? button('提交差异','start-dispute','','') + button('确认账单','confirm-statement','primary','') : button('提交差异','start-dispute','','disabled title="财务主体生效后可操作"') + button('确认账单','confirm-statement','','disabled title="财务主体生效后可操作"'));
+    else if (item.status === 'pending') foot = button('导出账单','download-statement','','') + (canReconcile() ? button('提交差异','start-dispute','','') + button('确认账单','confirm-statement','primary','') : button('提交差异','start-dispute','','disabled title="财务主体生效后可操作"') + button('确认账单','confirm-statement','','disabled title="财务主体生效后可操作"'));
     else if (item.status === 'locked') foot = button('导出账单','download-statement','','') + foot;
     else foot = button('导出账单','download-statement','','') + foot;
     return '<div class="d15-drawer-layer" data-action="close-drawer"><aside class="d15-drawer" data-stop role="dialog" aria-modal="true" aria-label="账单详情" data-testid="statement-drawer"><div class="d15-drawer-head"><div><h2>' + item.period + ' 对账单</h2><p>' + item.id + ' · ' + tag(sm[0],sm[1]) + ' · 付款 ' + tag(pm[0],pm[1]) + '</p></div><button type="button" class="gh-dialog-close" data-action="close-drawer" aria-label="关闭">×</button></div><div class="d15-drawer-body">' + tabs + body + '</div><div class="d15-drawer-foot">' + foot + '</div></aside></div>';
@@ -1345,7 +1401,7 @@ a { color: var(--info); text-decoration: none; }
   function historyDrawer() {
     if (state.selectedHistory === '__submission') {
       const entity = activeEntity();
-      const draft = state.entityDraft || entity;
+      const draft = activeApplicationSnapshot() || state.entityDraft || entity;
       return '<div class="d15-drawer-layer" data-action="close-drawer"><aside class="d15-drawer d15-history-drawer" data-stop role="dialog" aria-modal="true" aria-label="提交内容"><div class="d15-drawer-head"><div><h2>提交内容</h2><p>' + esc(entity.submittedVersion || '待审核版本') + ' · 只读</p></div><button type="button" class="gh-dialog-close" data-action="close-drawer" aria-label="关闭">×</button></div><div class="d15-drawer-body"><section class="gh-card"><div class="gh-card-body"><div class="gh-grid-2">' +
         readonly('企业名称',draft.legalName) + readonly('注册国家或地区',draft.registrationRegion) + readonly('财务联系人',draft.contactName + ' · ' + draft.contactEmail) + readonly('结算币种',draft.settlementCurrency) + readonly('账户名',draft.accountName) + readonly('银行',draft.bankName) + readonly('银行账号',draft.accountNumber) + readonly('SWIFT / BIC',draft.swift) + readonly('税务居民地',draft.taxRegion) + readonly('税号',draft.taxNo) + readonly('账户证明',draft.bankProof) + readonly('税务证明',draft.taxProof) +
         '</div></div></section></div><div class="d15-drawer-foot">' + button('关闭','close-drawer','','') + '</div></aside></div>';
@@ -1386,11 +1442,13 @@ a { color: var(--info); text-decoration: none; }
   function setDemoScenario(scenario) {
     if (!['exhaustive','empty'].includes(scenario)) return;
     state.demoScenario = scenario;
-    if (scenario === 'empty') state.emptyEntity = { ...clone(entitySeed), status:'unconfigured', effectiveVersion:'', submittedVersion:'' };
     state.scenarioMenuOpen = false;
     state.entityDraft = null;
     state.entityEditing = false;
     state.entityEditMode = '';
+    state.entityValidation = null;
+    state.bankProofNeedsRefresh = false;
+    state.bankProofFingerprint = '';
     state.statementFilters = { keyword:'', status:'all', period:'all', currency:'all' };
     state.flowFilters = { keyword:'', type:'all', period:'all', currency:'all' };
     state.paymentFilters = { keyword:'', status:'all', period:'all', currency:'all' };
@@ -1431,13 +1489,41 @@ a { color: var(--info); text-decoration: none; }
     app.querySelectorAll('[data-entity-field]').forEach(control => { state.entityDraft[control.dataset.entityField] = control.value.trim(); });
   }
 
+  function needsSwift(draft) {
+    return !(draft.bankRegion === '中国大陆' && draft.settlementCurrency === 'CNY');
+  }
+
+  const BANK_PROOF_FIELDS = Object.freeze(['bankRegion','accountName','bankName','accountNumber','swift']);
+
+  function bankProofFingerprint(draft) {
+    return BANK_PROOF_FIELDS.map(key => String((draft && draft[key]) || '').trim()).join('\u001f');
+  }
+
+  function bindBankProofToDraft(draft) {
+    state.bankProofFingerprint = draft && draft.bankProof ? bankProofFingerprint(draft) : '';
+    state.bankProofNeedsRefresh = false;
+  }
+
+  function syncBankProofValidity() {
+    const draft = state.entityDraft;
+    if (!draft || !draft.bankProof) return;
+    if (!state.bankProofFingerprint || bankProofFingerprint(draft) !== state.bankProofFingerprint) {
+      draft.bankProof = '';
+      state.bankProofFingerprint = '';
+      state.bankProofNeedsRefresh = true;
+    }
+  }
+
   function validateEntity() {
     syncEntityDraftFromDom();
-    const required = ['contactName','contactEmail','bankRegion','settlementCurrency','accountName','bankName','accountNumber','swift','bankProof','taxRegion','taxNo','taxProof'];
-    if (!required.every(key => state.entityDraft && String(state.entityDraft[key] || '').trim())) return false;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.entityDraft.contactEmail)) return false;
-    if (!/^[A-Za-z0-9]{8}([A-Za-z0-9]{3})?$/.test(state.entityDraft.swift.replace(/\s/g,''))) return false;
-    return true;
+    const draft = state.entityDraft || {};
+    const required = ['contactName','contactEmail','bankRegion','settlementCurrency','accountName','bankName','accountNumber','bankProof','taxRegion','taxNo','taxProof'];
+    if (needsSwift(draft)) required.push('swift');
+    const missing = required.filter(key => !String(draft[key] || '').trim());
+    if (missing.length) return { message:'请补全必填资料。', fields:missing };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.contactEmail)) return { message:'请填写有效财务邮箱。', fields:['contactEmail'] };
+    if (needsSwift(draft) && !/^[A-Za-z0-9]{8}([A-Za-z0-9]{3})?$/.test(draft.swift.replace(/\s/g,''))) return { message:'请填写有效 SWIFT / BIC。', fields:['swift'] };
+    return null;
   }
 
   function saveTextFile(name, rows) {
@@ -1467,10 +1553,10 @@ a { color: var(--info); text-decoration: none; }
     if (entityControl && state.entityDraft) {
       const key = entityControl.dataset.entityField;
       state.entityDraft[key] = entityControl.value;
-      if (['bankRegion','accountName','bankName','accountNumber','swift'].includes(key) && entityControl.value !== String(activeEntity()[key] || '')) {
-        state.entityDraft.bankProof = '';
+      if (BANK_PROOF_FIELDS.includes(key)) {
+        syncBankProofValidity();
         const label = app.querySelector('[data-file-label="bankProof"]');
-        if (label) label.textContent = '账户信息已变更，请重新上传账户证明';
+        if (label && state.bankProofNeedsRefresh) label.textContent = '账户信息已变更，请重新上传账户证明';
       }
       return;
     }
@@ -1482,6 +1568,14 @@ a { color: var(--info); text-decoration: none; }
   });
 
   app.addEventListener('change', event => {
+    const entityControl = event.target.closest('[data-entity-field]');
+    if (entityControl && state.entityDraft) {
+      const key = entityControl.dataset.entityField;
+      state.entityDraft[key] = entityControl.value;
+      if (BANK_PROOF_FIELDS.includes(key)) syncBankProofValidity();
+      if (key === 'bankRegion') render();
+      return;
+    }
     if (event.target.matches('[data-dispute-flow-select]')) {
       state.disputeFlowId = event.target.value;
       const flow = flows.find(item => item.id === state.disputeFlowId);
@@ -1503,6 +1597,7 @@ a { color: var(--info); text-decoration: none; }
     const entityFile = event.target.closest('[data-entity-file]');
     if (entityFile && entityFile.files[0]) {
       state.entityDraft[entityFile.dataset.entityFile] = entityFile.files[0].name;
+      if (entityFile.dataset.entityFile === 'bankProof') bindBankProofToDraft(state.entityDraft);
       const label = app.querySelector('[data-file-label="' + entityFile.dataset.entityFile + '"]');
       if (label) label.textContent = entityFile.files[0].name;
       return;
@@ -1562,20 +1657,29 @@ a { color: var(--info); text-decoration: none; }
     } else if (action === 'start-initial') {
       state.entityDraft = clone(entitySeed);
       state.entityDraft.effectiveVersion = '';
+      bindBankProofToDraft(state.entityDraft);
       state.entityEditing = true;
       state.entityEditMode = 'initial';
+      state.entityValidation = null;
+      state.bankProofNeedsRefresh = false;
       render();
     } else if (action === 'start-change') {
       state.entityDraft = clone(activeEntity());
+      bindBankProofToDraft(state.entityDraft);
       state.entityDraft.accountNumber = '782612340098';
+      syncBankProofValidity();
       state.entityEditing = true;
       state.entityEditMode = 'change';
+      state.entityValidation = null;
       render();
     } else if (action === 'cancel-entity-edit') {
       const entity = activeEntity();
       state.entityEditing = false;
       if (!entity.effectiveVersion) entity.status = 'unconfigured';
       state.entityDraft = null;
+      state.entityValidation = null;
+      state.bankProofNeedsRefresh = false;
+      state.bankProofFingerprint = '';
       render();
     } else if (action === 'save-entity') {
       syncEntityDraftFromDom();
@@ -1583,15 +1687,18 @@ a { color: var(--info); text-decoration: none; }
       if (!entity.effectiveVersion) entity.status = 'draft';
       setToast('已保存');
     } else if (action === 'submit-entity') {
-      if (!validateEntity()) {
-        const error = app.querySelector('[data-testid="entity-error"]');
-        if (error) error.textContent = '请检查必填项、邮箱和 SWIFT / BIC 格式。';
+      const validationError = validateEntity();
+      if (validationError) {
+        state.entityValidation = validationError;
+        render();
         return;
       }
       const entity = activeEntity();
       const isChange = state.entityEditMode === 'change' || Boolean(entity.effectiveVersion);
       entity.submittedVersion = 'FIN-2026-004';
       entity.status = isChange ? 'change_reviewing' : 'reviewing';
+      setActiveApplicationSnapshot(state.entityDraft);
+      state.entityValidation = null;
       state.entityEditing = false;
       setToast('已提交审核');
     } else if (action === 'view-submission') {
@@ -1599,7 +1706,8 @@ a { color: var(--info); text-decoration: none; }
       render();
     } else if (action === 'resume-entity-edit') {
       const entity = activeEntity();
-      state.entityDraft = state.entityDraft || clone(entity);
+      state.entityDraft = state.entityDraft || clone(activeApplicationSnapshot() || entity);
+      if (!state.bankProofFingerprint) bindBankProofToDraft(state.entityDraft);
       state.entityEditing = true;
       state.entityEditMode = entity.effectiveVersion ? 'change' : 'initial';
       render();
@@ -1611,6 +1719,7 @@ a { color: var(--info); text-decoration: none; }
       const hasEffective = Boolean(entity.effectiveVersion);
       entity.status = hasEffective ? 'effective' : 'draft';
       state.entityEditing = !hasEffective;
+      if (hasEffective) setActiveApplicationSnapshot(null);
       state.dialog = '';
       setToast('审核已撤销');
     } else if (action === 'view-history') {
@@ -1636,19 +1745,19 @@ a { color: var(--info); text-decoration: none; }
       state.disputeFile = '';
       render();
     } else if (action === 'confirm-statement') {
-      if (!financeActionsAllowed()) { setToast('财务主体生效后可确认账单'); return; }
+      if (!canReconcile()) { setToast('财务主体生效后可确认账单'); return; }
       state.dialog = 'confirm-statement';
       render();
     } else if (action === 'confirm-statement-final') {
       const item = statements.find(row => row.id === state.activeStatement);
-      if (financeActionsAllowed() && item && item.status === 'pending') {
+      if (canReconcile() && item && item.status === 'pending') {
         item.status = 'confirmed';
         item.payment = 'not_ready';
       }
       state.dialog = '';
       setToast('账单已确认');
     } else if (action === 'start-dispute') {
-      if (!financeActionsAllowed()) { setToast('财务主体生效后可提交差异'); return; }
+      if (!canReconcile()) { setToast('财务主体生效后可提交差异'); return; }
       state.disputeMode = 'new';
       state.disputeFile = '';
       state.disputeFlowId = (flows.find(item => item.statementId === state.activeStatement) || {}).id || '';
@@ -1832,13 +1941,21 @@ a { color: var(--info); text-decoration: none; }
     auditFixture:() => clone(auditFixture()),
     auditLedger:fixture => clone(auditLedgerData(fixture)),
     setDemoScenario,
-    setEntityScenario:status => {
-      state.entity = clone(entitySeed);
-      state.entity.status = status;
-      if (status === 'unconfigured' || status === 'reviewing') state.entity.effectiveVersion = '';
-      state.entityDraft = (status === 'draft' || status === 'supplement') ? clone(entitySeed) : null;
+    setEntityScenario:(status, overrides) => {
+      state.entity = { ...clone(entitySeed), ...(overrides ? clone(overrides) : {}), status };
+      if (status === 'unconfigured' || status === 'draft' || status === 'reviewing') state.entity.effectiveVersion = '';
+      const hasApplication = ['reviewing','change_reviewing','supplement'].includes(status);
+      if (hasApplication && !state.entity.submittedVersion) state.entity.submittedVersion = 'FIN-2026-010';
+      setActiveApplicationSnapshot(hasApplication ? state.entity : null);
+      state.entityDraft = (status === 'draft' || status === 'supplement') ? clone(activeApplicationSnapshot() || state.entity) : null;
       state.entityEditing = status === 'draft' || status === 'supplement';
       state.entityEditMode = state.entity.effectiveVersion ? 'change' : 'initial';
+      state.entityValidation = null;
+      if (state.entityDraft) bindBankProofToDraft(state.entityDraft);
+      else {
+        state.bankProofNeedsRefresh = false;
+        state.bankProofFingerprint = '';
+      }
       state.route = 'entity';
       render();
     },

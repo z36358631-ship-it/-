@@ -261,6 +261,7 @@ test('财务主体支持变更、提交及撤销审核二次确认', async () =>
     assert.match(await page.locator('main').innerText(), /已生效/);
     assert.match(await page.locator('main').innerText(), /来源：企业认证/);
     await page.getByRole('button', { name:'申请变更', exact:true }).click();
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles({ name:'bank-proof.pdf', mimeType:'application/pdf', buffer:Buffer.from('bank proof') });
     await page.getByLabel('变更说明').fill('更新收款账户证明');
     await page.getByRole('button', { name:'提交审核', exact:true }).click();
     assert.match(await page.locator('main').innerText(), /变更审核中/);
@@ -347,6 +348,182 @@ test('财务主体未生效时只允许查看账单', async () => {
     assert.equal(await page.getByRole('button', { name:'确认账单', exact:true }).isDisabled(), true);
     assert.equal(await page.getByRole('button', { name:'提交差异', exact:true }).isDisabled(), true);
     assert.deepEqual(errors, []);
+  } finally {
+    await page.close();
+  }
+});
+
+test('财务主体按收款地区校验且暂停付款不影响历史核账', async () => {
+  const page = await browser.newPage({ viewport:{ width:1280, height:800 } });
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    await page.getByRole('button', { name:'申请变更', exact:true }).click();
+    const currency = page.getByLabel('结算币种');
+    assert.equal(await currency.inputValue(), 'USD');
+    assert.equal(await currency.isEditable(), false);
+    assert.match(await currency.locator('..').innerText(), /联系商务更新合同/);
+
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles({ name:'bank-proof.pdf', mimeType:'application/pdf', buffer:Buffer.from('bank proof') });
+    await page.getByLabel('财务邮箱').fill('bad-mail');
+    await page.getByRole('button', { name:'提交审核', exact:true }).click();
+    assert.equal(await page.locator('[data-testid="entity-error"]').innerText(), '请填写有效财务邮箱。');
+
+    await page.evaluate(() => window.__developerFinanceDemo.setEntityScenario('suspended'));
+    await page.locator('[data-route="reconciliation"]').click();
+    assert.doesNotMatch(await page.locator('main').innerText(), /财务操作暂不可用/);
+    await page.locator('[data-statement-id="STMT-2026-08-V1"]').getByRole('button', { name:'查看', exact:true }).click();
+    assert.equal(await page.getByRole('button', { name:'确认账单', exact:true }).isDisabled(), false);
+    assert.equal(await page.getByRole('button', { name:'提交差异', exact:true }).isDisabled(), false);
+
+    await page.getByRole('button', { name:'关闭', exact:true }).last().click();
+    await page.locator('[data-route="payments"]').click();
+    assert.match(await page.locator('main').innerText(), /付款暂停/);
+  } finally {
+    await page.close();
+  }
+});
+
+test('SWIFT必填规则随收款地区和结算币种联动并返回单一准确错误', async () => {
+  const page = await browser.newPage({ viewport:{ width:1280, height:800 } });
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    await page.evaluate(() => window.__developerFinanceDemo.setEntityScenario('effective', {
+      bankRegion:'中国大陆', settlementCurrency:'CNY', swift:'',
+    }));
+    await page.getByRole('button', { name:'申请变更', exact:true }).click();
+    assert.equal(await page.getByLabel('SWIFT / BIC').getAttribute('aria-required'), 'false');
+
+    await page.getByLabel('财务联系人').fill('');
+    await page.getByRole('button', { name:'提交审核', exact:true }).click();
+    assert.equal(await page.locator('[data-testid="entity-error"]').innerText(), '请补全必填资料。');
+
+    await page.getByLabel('财务联系人').fill('王明');
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles({ name:'bank-proof.pdf', mimeType:'application/pdf', buffer:Buffer.from('bank proof') });
+    await page.getByRole('button', { name:'提交审核', exact:true }).click();
+    assert.match(await page.locator('main').innerText(), /变更审核中/);
+
+    await page.evaluate(() => window.__developerFinanceDemo.setEntityScenario('effective', {
+      bankRegion:'中国香港', settlementCurrency:'USD', swift:'BAD',
+    }));
+    await page.getByRole('button', { name:'申请变更', exact:true }).click();
+    assert.equal(await page.getByLabel('SWIFT / BIC').getAttribute('aria-required'), 'true');
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles({ name:'bank-proof.pdf', mimeType:'application/pdf', buffer:Buffer.from('bank proof') });
+    await page.getByRole('button', { name:'提交审核', exact:true }).click();
+    assert.equal(await page.locator('[data-testid="entity-error"]').innerText(), '请填写有效 SWIFT / BIC。');
+  } finally {
+    await page.close();
+  }
+});
+
+test('当前申请与历史版本分开展示且历史快照不可被当前资料补齐', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    const history = page.getByRole('region', { name:'财务主体历史版本' });
+    const historyText = await history.innerText();
+    for (const status of ['审核中','需补充','已拒绝','已撤销','已生效','已停用']) {
+      assert.match(historyText, new RegExp(status));
+    }
+
+    await page.evaluate(() => window.__developerFinanceDemo.setEntityScenario('change_reviewing', {
+      accountName:'当前申请专用账户名', submittedVersion:'FIN-2026-010',
+    }));
+    assert.equal(await page.getByRole('region', { name:'当前申请' }).count(), 1);
+    assert.equal(await page.getByRole('region', { name:'财务主体历史版本' }).count(), 1);
+    await history.getByRole('button', { name:'查看', exact:true }).last().click();
+    const drawer = page.getByRole('dialog', { name:'财务主体版本' });
+    assert.doesNotMatch(await drawer.innerText(), /当前申请专用账户名/);
+    assert.match(await drawer.innerText(), /—/);
+  } finally {
+    await page.close();
+  }
+});
+
+test('穷举态与缺省态分别保存当前申请快照', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    await page.getByRole('button', { name:'申请变更', exact:true }).click();
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles({ name:'bank-proof.pdf', mimeType:'application/pdf', buffer:Buffer.from('bank proof') });
+    await page.getByLabel('财务联系人').fill('穷举态新联系人');
+    await page.getByRole('button', { name:'提交审核', exact:true }).click();
+    assert.match(await page.getByRole('region', { name:'当前申请' }).innerText(), /穷举态新联系人/);
+
+    await page.evaluate(() => window.__developerFinanceDemo.setDemoScenario('empty'));
+    await page.getByRole('button', { name:'配置财务主体', exact:true }).click();
+    await page.getByLabel('财务联系人').fill('缺省态联系人');
+    await page.getByRole('button', { name:'提交审核', exact:true }).click();
+    assert.match(await page.getByRole('region', { name:'当前申请' }).innerText(), /缺省态联系人/);
+
+    await page.evaluate(() => window.__developerFinanceDemo.setDemoScenario('exhaustive'));
+    const current = page.getByRole('region', { name:'当前申请' });
+    assert.match(await current.innerText(), /穷举态新联系人/);
+    assert.doesNotMatch(await current.innerText(), /缺省态联系人/);
+    await current.getByRole('button', { name:'查看提交内容', exact:true }).click();
+    const submitted = page.getByRole('dialog', { name:'提交内容' });
+    assert.match(await submitted.innerText(), /穷举态新联系人/);
+    assert.doesNotMatch(await submitted.innerText(), /缺省态联系人/);
+  } finally {
+    await page.close();
+  }
+});
+
+test('主体校验错误可被辅助技术感知且只关联对应字段', async () => {
+  const page = await browser.newPage({ viewport:{ width:1280, height:800 } });
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    await page.getByRole('button', { name:'申请变更', exact:true }).click();
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles({ name:'bank-proof.pdf', mimeType:'application/pdf', buffer:Buffer.from('bank proof') });
+    await page.getByLabel('财务邮箱').fill('bad-mail');
+    await page.getByRole('button', { name:'提交审核', exact:true }).click();
+    const alert = page.getByRole('alert');
+    assert.equal(await alert.getAttribute('aria-live'), 'assertive');
+    assert.equal(await alert.getAttribute('id'), 'd15-entity-error');
+    assert.equal(await page.getByLabel('财务邮箱').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.getByLabel('财务邮箱').getAttribute('aria-describedby'), 'd15-entity-error');
+    assert.equal(await page.getByLabel('SWIFT / BIC').getAttribute('aria-invalid'), 'false');
+
+    await page.getByLabel('财务邮箱').fill('finance@example.com');
+    await page.getByLabel('SWIFT / BIC').fill('BAD');
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles({
+      name:'bank-proof.pdf', mimeType:'application/pdf', buffer:Buffer.from('bank proof'),
+    });
+    await page.getByRole('button', { name:'提交审核', exact:true }).click();
+    assert.equal(await page.getByLabel('SWIFT / BIC').getAttribute('aria-invalid'), 'true');
+    assert.equal(await page.getByLabel('SWIFT / BIC').getAttribute('aria-describedby'), 'd15-entity-error');
+    assert.equal(await page.getByLabel('财务邮箱').getAttribute('aria-invalid'), 'false');
+  } finally {
+    await page.close();
+  }
+});
+
+test('银行地区账户或SWIFT变化后要求重新上传账户证明', async () => {
+  const page = await browser.newPage({ viewport:{ width:1280, height:800 } });
+  const proof = {
+    name:'bank-proof.pdf', mimeType:'application/pdf', buffer:Buffer.from('bank proof'),
+  };
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    await page.getByRole('button', { name:'申请变更', exact:true }).click();
+    const proofLabel = page.locator('[data-file-label="bankProof"]');
+    assert.match(await proofLabel.innerText(), /请重新上传账户证明/);
+    const prefilledAccount = await page.getByLabel('银行账号').inputValue();
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles(proof);
+
+    await page.getByLabel('银行国家或地区').selectOption('新加坡');
+    assert.match(await proofLabel.innerText(), /请重新上传账户证明/);
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles(proof);
+    assert.equal(await proofLabel.innerText(), 'bank-proof.pdf');
+
+    await page.getByLabel('银行账号').fill('9988776655');
+    assert.match(await proofLabel.innerText(), /请重新上传账户证明/);
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles(proof);
+    await page.getByLabel('银行账号').fill(prefilledAccount);
+    assert.match(await proofLabel.innerText(), /请重新上传账户证明/);
+    await page.locator('[data-entity-file="bankProof"]').setInputFiles(proof);
+
+    await page.getByLabel('SWIFT / BIC').fill('DBSSSGSG');
+    assert.match(await proofLabel.innerText(), /请重新上传账户证明/);
   } finally {
     await page.close();
   }
