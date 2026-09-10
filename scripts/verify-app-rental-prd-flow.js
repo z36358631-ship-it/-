@@ -20,6 +20,7 @@ const requiredSourceContracts = [
   '06-steam-login-portrait.png',
   '05-orders-portrait.png',
   'rows: [4, 3]',
+  'imageHeight: 740',
   "fit: 'contain'",
   'returnPath',
   '按订单号查询服务端真值',
@@ -30,14 +31,17 @@ async function main() {
   const source = fs.readFileSync(builderPath, 'utf8');
   const missing = requiredSourceContracts.filter((value) => !source.includes(value));
   if (missing.length) throw new Error(`缺少流程契约：${missing.join('、')}`);
+  if (source.includes('.extract(') || source.includes('crop:')) {
+    throw new Error('流程图仍在裁切竖屏截图，必须直接使用完整竖屏图');
+  }
 
   const metadata = await sharp(outputPath).metadata();
   if (metadata.format !== 'png') throw new Error(`流程图格式不是PNG：${metadata.format}`);
-  if (metadata.width < 2400 || metadata.width > 3000 || metadata.height < 1350 || metadata.height > 1900) {
+  if (metadata.width < 2400 || metadata.width > 3000 || metadata.height < 2100 || metadata.height > 2400) {
     throw new Error(`流程图尺寸不合格：${metadata.width}x${metadata.height}`);
   }
 
-  process.stdout.write(`FLOW_CONTRACT 20/20 PASS ${metadata.width}x${metadata.height}\n`);
+  process.stdout.write(`FLOW_CONTRACT ${requiredSourceContracts.length}/${requiredSourceContracts.length} PASS ${metadata.width}x${metadata.height}\n`);
 }
 
 main().catch((error) => {
