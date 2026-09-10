@@ -39,6 +39,28 @@ before(async () => {
 
 after(async () => { await browser?.close(); });
 
+test('财务模块只保留财务主体和对账结算两个一级入口', async () => {
+  const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
+  try {
+    await page.goto(url('/entity'), { waitUntil:'load' });
+    assert.deepEqual(await page.locator('.d15-nav [data-route]').allTextContents(), ['主财务主体','结对账结算']);
+    assert.equal(await page.locator('.d15-nav [data-route="payments"]').count(), 0);
+
+    await page.locator('[data-route="settlement"]').click();
+    assert.equal(await page.locator('main h1').innerText(), '对账结算');
+    assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot())).route, 'settlement');
+
+    for (const legacy of ['reconciliation','payments']) {
+      await page.goto(url('/' + legacy), { waitUntil:'load' });
+      assert.equal(await page.locator('main h1').innerText(), '对账结算');
+      assert.equal((await page.evaluate(() => window.__developerFinanceDemo.snapshot())).route, 'settlement');
+      assert.equal(await locationHash(page), '#/settlement');
+    }
+  } finally {
+    await page.close();
+  }
+});
+
 test('穷举数据使用整数金额并由流水还原账单', async () => {
   const page = await browser.newPage({ viewport:{ width:1440, height:900 } });
   try {
