@@ -87,7 +87,15 @@ async function settle(page) {
 
 async function capture(locator, file, collection, name, title) {
   await locator.waitFor({ state: 'visible' });
-  await locator.screenshot({ path: file, animations: 'disabled' });
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await locator.screenshot({ path: file, animations: 'disabled' });
+      break;
+    } catch (error) {
+      if (attempt === 3) throw error;
+      await locator.page().waitForTimeout(150 * attempt);
+    }
+  }
   const info = pngInfo(file);
   collection.push({
     name,
