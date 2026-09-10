@@ -5,11 +5,17 @@
   const DB_NAME = 'gamehub-publisher-profiles-v1';
   const DB_VERSION = 2;
   const STORES = ['profiles', 'submissions', 'qualificationApplications'];
+  const ACCOUNT_DATABASE_PREFIX = `${DB_NAME}::account-v1::`;
+  const MIGRATION_DATABASE = `${DB_NAME}::scope-migration-v1`;
+  const MIGRATION_STORE = 'claims';
+  const LEGACY_CLAIM_ID = 'legacy-unscoped-database';
   const localeAliases = {
     '简体中文': 'zh', '中文': 'zh', '英语': 'en', English: 'en',
     '繁体中文': 'zh-Hant', '日语': 'ja', '日本語': 'ja',
   };
-  let connection;
+  const connections = new Map();
+  let migrationConnection;
+  let migrationQueue = Promise.resolve();
 
   const clone = value => value == null ? value : structuredClone(value);
   const unique = values => [...new Set(values.filter(Boolean))];
@@ -169,9 +175,15 @@
     };
   }
 
-  function open() {
-    if (!connection) connection = new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
+  const accountKey = () => global.PublisherAccountContext?.currentAccountKey?.(global.sessionStorage) || '';
+  const databaseNameForAccount = value => {
+    const normalized = String(value || '').trim();
+    return normalized ? `${ACCOUNT_DATABASE_PREFIX}${encodeURIComponent(normalized)}` : DB_NAME;
+  };
+
+  function openDatabase(name) {
+    if (!connections.has(name)) connections.set(name, new Promise((resolve, reject) => {
+      const request = indexedDB.open(name, DB_VERSION);
       request.onupgradeneeded = event => {
         const db = request.result;
         for (const name of STORES) {
@@ -181,14 +193,115 @@
       };
       request.onsuccess = () => {
         const db = request.result;
-        db.onversionchange = () => { db.close(); connection = null; };
+        db.onversionchange = () => { db.close(); connections.delete(name); };
         resolve(db);
       };
-      request.onerror = () => { connection = null; reject(request.error); };
-      request.onblocked = () => { connection = null; reject(new Error('storage-upgrade-blocked')); };
-    });
-    return connection;
+      request.onerror = () => { connections.delete(name); reject(request.error); };
+      request.onblocked = () => { connections.delete(name); reject(new Error('storage-upgrade-blocked')); };
+    }));
+    return connections.get(name);
   }
 
-  global.PublisherStorageSchema = { DB_NAME, DB_VERSION, STORES, open, normalizeDraft, normalizeProfile, normalizeSubmission };
+  function openMigrationDatabase() {
+    if (!migrationConnection) migrationConnection = new Promise((resolve, reject) => {
+      const request = indexedDB.open(MIGRATION_DATABASE, 1);
+      request.onupgradeneeded = () => request.result.createObjectStore(MIGRATION_STORE, { keyPath: 'id' });
+      request.onsuccess = () => {
+        const db = request.result;
+        db.onversionchange = () => { db.close(); migrationConnection = null; };
+        resolve(db);
+      };
+      request.onerror = () => { migrationConnection = null; reject(request.error); };
+      request.onblocked = () => { migrationConnection = null; reject(new Error('storage-migration-blocked')); };
+    });
+    return migrationConnection;
+  }
+
+  async function claimLegacyDatabase(ownerAccountKey) {
+    const db = await openMigrationDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(MIGRATION_STORE, 'readwrite');
+      const store = transaction.objectStore(MIGRATION_STORE);
+      const request = store.get(LEGACY_CLAIM_ID);
+      let claim = null;
+      request.onsuccess = () => {
+        const existing = request.result;
+        if (!existing) {
+          claim = { id: LEGACY_CLAIM_ID, accountKey: ownerAccountKey, status: 'claiming', claimedAt: new Date().toISOString(), completedAt: '' };
+          store.add(claim);
+          return;
+        }
+        claim = existing;
+      };
+      transaction.oncomplete = () => resolve(claim);
+      transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error('storage-migration-claim-failed'));
+    });
+  }
+
+  async function completeLegacyClaim(ownerAccountKey) {
+    const db = await openMigrationDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(MIGRATION_STORE, 'readwrite');
+      const store = transaction.objectStore(MIGRATION_STORE);
+      const request = store.get(LEGACY_CLAIM_ID);
+      request.onsuccess = () => {
+        const claim = request.result;
+        if (!claim || claim.accountKey !== ownerAccountKey) {
+          transaction.abort();
+          return;
+        }
+        store.put({ ...claim, status: 'complete', completedAt: new Date().toISOString() });
+      };
+      transaction.oncomplete = () => resolve(true);
+      transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error('storage-migration-complete-failed'));
+    });
+  }
+
+  const readLegacyRecords = async db => new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES, 'readonly');
+    const requests = Object.fromEntries(STORES.map(name => [name, transaction.objectStore(name).getAll()]));
+    transaction.oncomplete = () => resolve(Object.fromEntries(STORES.map(name => [name, requests[name].result || []])));
+    transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error('storage-migration-read-failed'));
+  });
+
+  const copyMissingRecords = async (db, records) => new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES, 'readwrite');
+    for (const name of STORES) {
+      const store = transaction.objectStore(name);
+      const keyPath = name === 'profiles' ? 'gameKey' : 'id';
+      for (const source of records[name] || []) {
+        const value = clone(source);
+        const key = value?.[keyPath];
+        if (key == null || key === '') continue;
+        const request = store.get(key);
+        request.onsuccess = () => { if (request.result === undefined) store.put(value); };
+      }
+    }
+    transaction.oncomplete = () => resolve(true);
+    transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error('storage-migration-copy-failed'));
+  });
+
+  async function migrateLegacyDatabase(ownerAccountKey, targetDatabase) {
+    const claim = await claimLegacyDatabase(ownerAccountKey);
+    if (!claim || claim.accountKey !== ownerAccountKey || claim.status === 'complete') return false;
+    const legacyDatabase = await openDatabase(DB_NAME);
+    const records = await readLegacyRecords(legacyDatabase);
+    await copyMissingRecords(targetDatabase, records);
+    await completeLegacyClaim(ownerAccountKey);
+    return true;
+  }
+
+  async function open(options = {}) {
+    const ownerAccountKey = String(options.accountKey || accountKey()).trim();
+    if (!ownerAccountKey) return openDatabase(DB_NAME);
+    const target = await openDatabase(databaseNameForAccount(ownerAccountKey));
+    migrationQueue = migrationQueue.catch(() => undefined).then(() => migrateLegacyDatabase(ownerAccountKey, target));
+    await migrationQueue;
+    return target;
+  }
+
+  global.PublisherStorageSchema = {
+    DB_NAME, DB_VERSION, STORES, open, accountKey, databaseNameForAccount,
+    normalizeDraft, normalizeProfile, normalizeSubmission,
+  };
 })(window);

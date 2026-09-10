@@ -1,45 +1,174 @@
-/* 游戏发布审核与 02 共用 v2 存储；提交快照只读，审核结果独立留在游戏记录内。 */
-(function () {
+/* 01 游戏发布审核：审核不可变上架快照，与 02 共用 IndexedDB v2。 */
+(function (global) {
   'use strict';
-  const open = () => {
-    if (!window.PublisherStorageSchema) return Promise.reject(new Error('publisher-storage-schema-unavailable'));
-    return window.PublisherStorageSchema.open();
-  };
-  const validFile = file => file?.blob instanceof Blob && file.blob.size > 0;
+
+  const REVIEWING = 'reviewing';
+  const TERMINAL = ['approved', 'rejected', 'withdrawn'];
+  const clone = value => value == null ? value : structuredClone(value);
+  const list = value => Array.isArray(value) ? value : value ? [value] : [];
+  const present = value => Boolean(String(value ?? '').trim());
+  const unique = values => [...new Set(values.filter(Boolean))];
+  const validFile = file => Boolean(file?.blob instanceof Blob && file.blob.size > 0);
   const validPrice = value => /^\d+(?:\.\d{1,2})?$/.test(String(value ?? '').trim()) && Number.isFinite(Number(value)) && Number(value) > 0;
-  const approvalIssues = draft => {
+  const isV25 = draft => Number(draft?.schemaVersion) >= 2 && Boolean(draft?.releaseConfig && draft?.catalog && draft?.gameProfileDraft);
+  const statusLabels = { reviewing: '待审核', approved: '已通过', rejected: '已驳回', withdrawn: '已撤销', unavailable: '历史记录' };
+
+  const open = async () => {
+    if (!global.PublisherStorageSchema?.open) throw new Error('publisher-storage-schema-unavailable');
+    return global.PublisherStorageSchema.open();
+  };
+
+  const releaseMode = draft => {
+    if (isV25(draft)) return ['global', 'domestic'].includes(draft.releaseConfig.mode) ? draft.releaseConfig.mode : '';
+    const regions = list(draft?.releaseRegions);
+    return regions.length === 1 && ['global', 'domestic'].includes(regions[0]) ? regions[0] : regions.includes('domestic') && !regions.includes('global') ? 'domestic' : regions.includes('global') ? 'global' : '';
+  };
+
+  const scopeLabel = draft => {
+    if (!isV25(draft) && list(draft?.releaseRegions).includes('domestic') && list(draft?.releaseRegions).includes('global')) return '国内服、全球服（V2.4 历史双范围）';
+    return releaseMode(draft) === 'domestic' ? '中国大陆' : releaseMode(draft) === 'global' ? '全球服（不含中国大陆）' : '未明确';
+  };
+  const releaseStatus = draft => isV25(draft) ? draft.releaseConfig.releaseStatus : draft?.releaseStatus || list(draft?.releaseTerritories)[0]?.status || '';
+  const releaseStatusLabel = draft => global.PublisherReleaseRegions?.statusLabel?.(releaseStatus(draft), 'zh') || ({ coming_soon: '敬请期待', pre_registration: '预约', demo: '正式上线（试玩版）', released: '正式上线' }[releaseStatus(draft)] || releaseStatus(draft) || '—');
+
+  function territoryCodes(draft) {
+    if (isV25(draft)) return releaseMode(draft) === 'domestic' ? ['CN'] : unique(list(draft.releaseConfig.globalTerritoryCodes)).filter(code => code !== 'CN');
+    const explicit = list(draft?.releaseTerritories).map(item => typeof item === 'string' ? item : item?.code).filter(Boolean);
+    if (explicit.length) return unique(explicit);
+    return list(draft?.releaseRegions).flatMap(region => region === 'domestic' ? ['CN'] : []);
+  }
+
+  function territorySummary(draft) {
+    const codes = territoryCodes(draft);
+    if (releaseMode(draft) === 'domestic') return '中国大陆';
+    if (!codes.length) return '未选择国家／地区';
+    const component = global.PublisherReleaseRegions;
+    const byCode = new Map(list(component?.globalCatalog || component?.catalog).map(item => [item.code, item]));
+    const groups = new Map();
+    codes.forEach(code => {
+      const continent = byCode.get(code)?.continent || 'other';
+      groups.set(continent, (groups.get(continent) || 0) + 1);
+    });
+    const grouped = [...groups].map(([continent, count]) => `${component?.continentLabel?.(continent, 'zh') || continent} ${count}`).join('、');
+    return `${codes.length} 个国家／地区${grouped ? ` · ${grouped}` : ''}`;
+  }
+
+  const currencyFor = draft => releaseMode(draft) === 'domestic' ? 'CNY' : 'USD';
+  const money = value => validPrice(value) ? Number(value).toFixed(2) : present(value) ? `格式无效：${String(value).trim()}` : '未填写';
+  function skuRows(draft) {
+    if (isV25(draft)) return [draft.catalog?.baseGame, ...list(draft.catalog?.dlcs)].filter(Boolean).map((sku, index) => ({
+      ...sku,
+      type: index === 0 ? 'base_game' : 'dlc',
+      title: sku.title || (index === 0 ? '基础游戏' : `DLC ${index}`),
+    }));
+    if (!Object.prototype.hasOwnProperty.call(draft || {}, 'pricing')) return [];
+    const model = draft.pricing?.model;
+    const amount = releaseMode(draft) === 'domestic' ? draft.pricing?.domesticPrice : draft.pricing?.globalPrice;
+    return [{ skuId: 'LEGACY-BASE', type: 'base_game', title: '基础游戏', installContentRef: '', pricingModel: model, listPrice: amount, legacy: true }];
+  }
+
+  function priceSummary(draft) {
+    const rows = skuRows(draft);
+    if (!rows.length) return '未记录（历史提交）';
+    const currency = currencyFor(draft);
+    return rows.map((sku, index) => {
+      const prefix = index === 0 ? '基础游戏' : `DLC·${sku.title || sku.skuId || index}`;
+      if (sku.pricingModel === 'free') return `${prefix} 免费`;
+      if (sku.pricingModel !== 'paid') return `${prefix} 未配置`;
+      const discount = present(sku.discountPrice) ? ` → ${money(sku.discountPrice)}` : '';
+      return `${prefix} ${currency} ${money(sku.listPrice)}${discount}`;
+    }).join('；');
+  }
+
+  function qualificationVersionId(submissionOrDraft, maybeDraft) {
+    const submission = maybeDraft ? submissionOrDraft : null;
+    const draft = maybeDraft || submissionOrDraft || {};
+    const active = draft.qualifications?.activeVersion;
+    return submission?.qualificationVersionId || draft.qualificationVersionId || active?.id || active?.versionId || '';
+  }
+
+  function qualificationVersion(submissionOrDraft, maybeDraft) {
+    const draft = maybeDraft || submissionOrDraft || {};
+    const id = qualificationVersionId(submissionOrDraft, maybeDraft);
+    const versions = [draft.qualifications?.activeVersion, ...list(draft.qualifications?.history)];
+    return versions.find(item => [item?.id, item?.versionId].includes(id)) || draft.qualifications?.activeVersion || null;
+  }
+
+  const discountIssues = sku => {
+    const fields = [sku.discountPrice, sku.discountStartAt, sku.discountEndAt];
+    if (fields.every(value => !present(value))) return [];
+    if (!fields.every(present)) return ['折扣价、折扣开始和结束时间需同时填写。'];
+    if (!validPrice(sku.discountPrice) || !validPrice(sku.listPrice) || Number(sku.discountPrice) >= Number(sku.listPrice)) return ['折扣价必须大于 0 且低于售价。'];
+    const startsAt = Date.parse(sku.discountStartAt);
+    const endsAt = Date.parse(sku.discountEndAt);
+    if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt) || startsAt >= endsAt) return ['折扣期限无效，结束时间必须晚于开始时间。'];
+    if (endsAt <= Date.now()) return ['折扣期限已过，请重新设置。'];
+    return [];
+  };
+
+  function v25ApprovalIssues(draft, submission) {
     const issues = [];
-    if (draft?.schemaVersion >= 2 && draft.releaseConfig) {
-      const mode = draft.releaseConfig.mode;
-      if (!['global', 'domestic'].includes(mode)) issues.push('发行范围必须明确选择全球服或中国大陆。');
-      if (mode === 'global' && (!(draft.releaseConfig.globalTerritoryCodes || []).length || draft.releaseConfig.globalTerritoryCodes.includes('CN'))) issues.push('全球服需选择至少一个中国大陆以外的国家或地区。');
-      const requiredLocale = mode === 'domestic' ? 'zh' : 'en';
-      const names = draft.gameProfileDraft?.gameNames || {};
-      const content = draft.gameProfileDraft?.localizedContent?.[requiredLocale] || {};
-      if (!String(names[requiredLocale] || '').trim() || !String(content.tagline || '').trim() || !String(content.description || '').trim()) issues.push(mode === 'domestic' ? '国内服中文商店资料不完整。' : '全球服英语商店资料不完整。');
-      const skus = [draft.catalog?.baseGame, ...(draft.catalog?.dlcs || [])].filter(Boolean);
-      for (const sku of skus) {
-        if (!String(sku.installContentRef || '').trim()) issues.push(`${sku.title || sku.skuId || 'SKU'} 未关联安装内容。`);
-        if (!['free', 'paid'].includes(sku.pricingModel)) issues.push(`${sku.title || sku.skuId || 'SKU'} 未选择收费方式。`);
-        if (sku.pricingModel === 'paid') {
-          if (!validPrice(sku.listPrice)) issues.push(`${sku.title || sku.skuId || 'SKU'} 售价无效。`);
-          if (sku.discountPrice && (!validPrice(sku.discountPrice) || Number(sku.discountPrice) >= Number(sku.listPrice))) issues.push(`${sku.title || sku.skuId || 'SKU'} 折扣价无效。`);
-          if ((sku.discountStartAt || sku.discountEndAt) && (!sku.discountStartAt || !sku.discountEndAt || new Date(sku.discountStartAt) >= new Date(sku.discountEndAt))) issues.push(`${sku.title || sku.skuId || 'SKU'} 折扣期限无效。`);
-        }
-      }
-      if (mode === 'domestic' && !String(draft.licenseNumber || draft.releaseConfig.licenseNumber || '').trim()) issues.push('国内服发行缺少游戏版号。');
-      if (!draft.qualifications?.activeVersion) issues.push('缺少已审核通过且适用于当前发行范围的资质版本。');
-      return [...new Set(issues)];
+    const release = draft.releaseConfig || {};
+    const mode = releaseMode(draft);
+    if (!mode) issues.push('发行范围必须明确选择全球服或中国大陆。');
+    if (Array.isArray(draft.releaseRegions) && (draft.releaseRegions.length !== 1 || draft.releaseRegions[0] !== mode)) issues.push('一次上架提交只能包含一种发行范围。');
+
+    if (mode === 'global') {
+      const codes = list(release.globalTerritoryCodes);
+      const normalized = global.PublisherReleaseRegions?.normalizeTerritoryCodes?.(codes) || unique(codes).filter(code => code !== 'CN');
+      if (!codes.length) issues.push('全球服需选择至少一个中国大陆以外的国家或地区。');
+      else if (codes.includes('CN') || normalized.length !== codes.length) issues.push('全球服国家／地区范围无效，不能包含中国大陆或重复项。');
     }
-    const regionComponent = window.PublisherReleaseRegions;
-    const hasTerritories = Object.prototype.hasOwnProperty.call(draft || {}, 'releaseTerritories');
-    const regions = hasTerritories && regionComponent ? regionComponent.regionsFor(draft.releaseTerritories, { fallbackGlobal: false }) : draft?.releaseRegions || [];
+    if (Array.isArray(draft.releaseTerritories)) {
+      const actual = unique(draft.releaseTerritories.map(item => item?.code).filter(Boolean));
+      const expected = mode === 'domestic' ? ['CN'] : unique(list(release.globalTerritoryCodes));
+      if (actual.length !== expected.length || actual.some(code => !expected.includes(code))) issues.push('提交快照的国家／地区与发行范围不一致。');
+      if (draft.releaseTerritories.some(item => item?.status && item.status !== release.releaseStatus)) issues.push('所选国家／地区的发行状态与统一发行状态不一致。');
+    }
+    if (!global.PublisherReleaseRegions?.statuses?.includes(release.releaseStatus)) issues.push('请选择有效的发行状态。');
+
+    const requiredLocale = mode === 'domestic' ? 'zh' : 'en';
+    const locales = list(draft.storeLocales?.enabled);
+    const profile = draft.gameProfileDraft || {};
+    const localized = profile.localizedContent?.[requiredLocale] || {};
+    if (!locales.includes(requiredLocale) || !present(profile.gameNames?.[requiredLocale]) || !present(localized.tagline) || !present(localized.description)) {
+      issues.push(mode === 'domestic' ? '国内服简体中文商店资料不完整。' : '全球服英语商店资料不完整。');
+    }
+
+    const skus = skuRows(draft);
+    if (!draft.catalog?.baseGame) issues.push('缺少基础游戏 SKU。');
+    skus.forEach(sku => {
+      const title = sku.title || sku.skuId || 'SKU';
+      if (!present(sku.installContentRef)) issues.push(`${title} 未关联安装内容／包体版本。`);
+      if (!['free', 'paid'].includes(sku.pricingModel)) issues.push(`${title} 未选择免费或单次买断。`);
+      if (sku.pricingModel === 'paid') {
+        if (!validPrice(sku.listPrice)) issues.push(`${title} 售价无效。`);
+        discountIssues(sku).forEach(issue => issues.push(`${title} ${issue}`));
+      }
+    });
+
+    const version = qualificationVersion(submission || draft, submission ? draft : undefined);
+    const referenceId = qualificationVersionId(submission || draft, submission ? draft : undefined);
+    const context = global.PublisherGameQualifications?.contextFor?.(draft);
+    const approved = global.PublisherGameQualifications?.approvedVersionFor?.(draft.qualifications, context);
+    if (!referenceId || !version || !['approved', 'active'].includes(version.status || '') || !approved || ![approved.id, approved.versionId].includes(referenceId)) {
+      issues.push('缺少已审核通过且覆盖当前发行范围的资质版本。');
+    }
+    const license = draft.licenseNumber || release.licenseNumber || version?.snapshot?.domestic?.licenseNumber;
+    if (mode === 'domestic' && !present(license)) issues.push('中国大陆发行缺少游戏版号。');
+    return unique(issues);
+  }
+
+  function legacyApprovalIssues(draft = {}) {
+    const issues = [];
+    const regionComponent = global.PublisherReleaseRegions;
+    const hasTerritories = Object.prototype.hasOwnProperty.call(draft, 'releaseTerritories');
+    const regions = hasTerritories && regionComponent ? regionComponent.regionsFor(draft.releaseTerritories, { fallbackGlobal: false }) : draft.releaseRegions || [];
     if (hasTerritories && (!regionComponent || Object.keys(regionComponent.validate(draft.releaseTerritories)).length)) issues.push('请完整选择有效的发行国家／地区和对应游戏状态。');
-    if (Object.prototype.hasOwnProperty.call(draft || {}, 'releaseStatus') && (!regionComponent?.statuses.includes(draft.releaseStatus) || !Array.isArray(draft.releaseTerritories) || draft.releaseTerritories.some(item => item?.status !== draft.releaseStatus))) issues.push('所选地区的发行状态与统一发行状态不一致，需要重新确认。');
-    if (hasTerritories && [...regions].sort().join(',') !== [...(draft?.releaseRegions || [])].sort().join(',')) issues.push('发行服务与所选国家／地区不一致，需要开发者重新确认。');
+    if (Object.prototype.hasOwnProperty.call(draft, 'releaseStatus') && (!regionComponent?.statuses.includes(draft.releaseStatus) || !Array.isArray(draft.releaseTerritories) || draft.releaseTerritories.some(item => item?.status !== draft.releaseStatus))) issues.push('所选地区的发行状态与统一发行状态不一致，需要重新确认。');
+    if (hasTerritories && [...regions].sort().join(',') !== [...(draft.releaseRegions || [])].sort().join(',')) issues.push('发行服务与所选国家／地区不一致，需要开发者重新确认。');
     if (!regions.length || regions.some(region => !['domestic', 'global'].includes(region))) issues.push('发行范围未明确，需开发者补充国内服或全球服。');
-    // 历史快照没有收费字段，保留其原始含义；已有字段必须按本次发行范围完整审核。
-    if (Object.prototype.hasOwnProperty.call(draft || {}, 'pricing')) {
+    if (Object.prototype.hasOwnProperty.call(draft, 'pricing')) {
       const pricing = draft.pricing;
       if (!['free', 'paid'].includes(pricing?.model)) issues.push('收费方式未明确，需要开发者选择免费或付费。');
       if (pricing?.model === 'paid') {
@@ -48,40 +177,85 @@
       }
     }
     if (regions.includes('domestic')) {
-      if (!String(draft.licenseNumber || '').trim()) issues.push('国内服发行缺少游戏版号。');
-      if (!['gameNameZh', 'taglineZh', 'descriptionZh'].every(key => String(draft[key] || '').trim())) issues.push('国内服中文名称、简介或完整介绍不完整。');
+      if (!present(draft.licenseNumber)) issues.push('国内服发行缺少游戏版号。');
+      if (!['gameNameZh', 'taglineZh', 'descriptionZh'].every(key => present(draft[key]))) issues.push('国内服中文名称、简介或完整介绍不完整。');
     }
-    if (regions.includes('global') && !['gameNameEn', 'tagline', 'description'].every(key => String(draft[key] || '').trim())) issues.push('全球服英语名称、简介或完整介绍不完整。');
-    if (draft?.compliance) {
-      const qualifications = window.PublisherGameQualifications;
-      if (!qualifications) issues.push('资质校验暂不可用，请刷新页面后重新审核。');
-      else issues.push(...new Set(Object.values(qualifications.validate(draft)).map(code => qualifications.text('zh', code))));
+    if (regions.includes('global') && !['gameNameEn', 'tagline', 'description'].every(key => present(draft[key]))) issues.push('全球服英语名称、简介或完整介绍不完整。');
+    if (draft.compliance) {
+      const rules = global.PublisherGameQualifications;
+      if (!rules) issues.push('资质校验暂不可用，请刷新页面后重新审核。');
+      else issues.push(...unique(Object.values(rules.validate(draft)).map(code => rules.text('zh', code))));
     }
-    if (!validFile(draft?.assets?.icon)) issues.push('缺少有效游戏图标文件。');
-    if (!(draft?.assets?.landscape || []).some(validFile) || (draft?.assets?.screenshots || []).filter(validFile).length < 3) issues.push('横版宣传图或至少 3 张游戏截图不完整。');
-    const copyrightOwnership = Boolean(window.PublisherGameQualifications?.hasCopyrightProof(draft));
-    const hasOwnership = draft.relationship === 'publisher' ? validFile(draft?.qualifications?.authorization) : validFile(draft?.qualifications?.rights) || copyrightOwnership;
+    if (!validFile(draft.assets?.icon)) issues.push('缺少有效游戏图标文件。');
+    if (!list(draft.assets?.landscape).some(validFile) || list(draft.assets?.screenshots).filter(validFile).length < 3) issues.push('横版宣传图或至少 3 张游戏截图不完整。');
+    const copyrightOwnership = Boolean(global.PublisherGameQualifications?.hasCopyrightProof(draft));
+    const hasOwnership = draft.relationship === 'publisher' ? validFile(draft.qualifications?.authorization) : validFile(draft.qualifications?.rights) || copyrightOwnership;
     if (!hasOwnership) issues.push('缺少对应权属或发行授权文件。');
-    return issues;
+    return unique(issues);
+  }
+
+  const approvalIssues = (draft, submission) => isV25(draft) ? v25ApprovalIssues(draft, submission) : legacyApprovalIssues(draft);
+
+  const projectName = row => row?.game?.projectName || row?.game?.name || row?.projectName || row?.draft?.projectName || row?.gameKey || '未命名项目';
+  const primaryStoreName = draft => {
+    if (isV25(draft)) {
+      const preferred = draft.storeLocales?.default || (releaseMode(draft) === 'domestic' ? 'zh' : 'en');
+      return draft.gameProfileDraft?.gameNames?.[preferred] || draft.gameProfileDraft?.gameNames?.[releaseMode(draft) === 'domestic' ? 'zh' : 'en'] || '';
+    }
+    return draft?.gameNames?.[draft.defaultNameLanguage] || (releaseMode(draft) === 'domestic' ? draft?.gameNameZh || draft?.gameNameEn : draft?.gameNameEn || draft?.gameNameZh) || '';
   };
-  const loadQueue = async () => {
+
+  function summaryFor(submission, profile) {
+    const draft = submission?.draft || {};
+    const game = submission?.game || profile?.game || {};
+    return {
+      projectName: projectName({ game, draft, gameKey: submission?.gameKey }),
+      storeName: primaryStoreName(draft),
+      submissionId: submission?.id || '',
+      scope: scopeLabel(draft),
+      territory: territorySummary(draft),
+      releaseStatus: releaseStatusLabel(draft),
+      price: priceSummary(draft),
+      qualificationVersionId: qualificationVersionId(submission, draft),
+      legacy: !isV25(draft),
+    };
+  }
+
+  async function loadQueue() {
     const db = await open();
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['profiles', 'submissions'], 'readonly');
       const submissions = transaction.objectStore('submissions').getAll();
       const profiles = transaction.objectStore('profiles').getAll();
       transaction.oncomplete = () => {
-        const byKey = new Map(profiles.result.map(record => [record.gameKey, window.PublisherStorageSchema.normalizeProfile(record)]));
-        resolve(submissions.result.map(submission => {
+        const byKey = new Map((profiles.result || []).map(record => [record.gameKey, global.PublisherStorageSchema.normalizeProfile(record)]));
+        const rows = (submissions.result || []).map(submission => {
           const profile = byKey.get(submission.gameKey);
-          const result = (profile?.reviewRecords || []).find(record => record.submissionId === submission.id) || (profile?.draft?.reviewResult?.submissionId === submission.id ? profile.draft.reviewResult : null);
-          return { ...submission, normalizedDraft: window.PublisherStorageSchema.normalizeDraft(submission.draft, submission.game || profile?.game || {}), game: submission.game || profile?.game || {}, reviewResult: result, status: result?.decision || submission.status || (profile?.draft?.submissionId === submission.id && profile.draft.reviewStatus === 'reviewing' ? 'reviewing' : 'unavailable') };
-        }).sort((a, b) => String(b.submittedAt).localeCompare(String(a.submittedAt))));
+          const reviewResult = (profile?.reviewRecords || []).find(record => record.submissionId === submission.id)
+            || (profile?.draft?.reviewResult?.submissionId === submission.id ? profile.draft.reviewResult : null)
+            || null;
+          const current = profile?.draft?.currentReleaseReview;
+          const inferred = current?.submissionId === submission.id ? current.status : profile?.draft?.submissionId === submission.id ? profile.draft.reviewStatus : '';
+          const status = reviewResult?.decision || submission.status || inferred || 'unavailable';
+          const game = clone(submission.game || profile?.game || {});
+          return {
+            ...clone(submission),
+            game,
+            draft: clone(submission.draft || {}),
+            normalizedDraft: global.PublisherStorageSchema.normalizeDraft(submission.draft || {}, game),
+            reviewResult: clone(reviewResult),
+            status,
+            isLegacy: !isV25(submission.draft),
+            summary: summaryFor(submission, profile),
+          };
+        }).sort((a, b) => String(b.submittedAt || '').localeCompare(String(a.submittedAt || '')));
+        resolve(rows);
       };
       transaction.onerror = transaction.onabort = () => reject(transaction.error || new Error('load-failed'));
     });
-  };
-  const decide = async ({ submissionId, decision, reason = '', reviewer = '运营审核员（本地演示）' }) => {
+  }
+
+  async function decide({ submissionId, decision, reason = '', reviewer = '运营审核员（本地演示）' } = {}) {
     if (!['approved', 'rejected'].includes(decision)) throw new Error('invalid-decision');
     const trimmedReason = String(reason).trim();
     if (decision === 'rejected' && !trimmedReason) throw new Error('reason-required');
@@ -90,35 +264,71 @@
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['profiles', 'submissions'], 'readwrite');
       const profiles = transaction.objectStore('profiles');
-      let error;
+      const submissions = transaction.objectStore('submissions');
       let result;
-      const abort = message => { error = new Error(message); transaction.abort(); };
-      const snapshot = transaction.objectStore('submissions').get(submissionId);
-      snapshot.onsuccess = () => {
-        if (!snapshot.result) { abort('submission-missing'); return; }
-        const request = profiles.get(snapshot.result.gameKey);
-        request.onsuccess = () => {
-          const record = request.result;
-          if (!record || record.draft?.submissionId !== submissionId || record.draft.reviewStatus !== 'reviewing' || record.reviewRecords?.some(item => item.submissionId === submissionId)) { abort('already-reviewed'); return; }
-          if (decision === 'approved' && approvalIssues(snapshot.result.draft).length) { abort('approval-incomplete'); return; }
-          result = { submissionId, decision, reason: decision === 'rejected' ? trimmedReason : '', reviewer, reviewedAt: new Date().toISOString() };
-          record.draft.reviewStatus = decision;
-          record.draft.reviewResult = result;
-          record.draft.currentReleaseReview = { submissionId, status: decision, submittedAt: snapshot.result.submittedAt, reviewedAt: result.reviewedAt };
-          record.draft.releaseSubmissions = (record.draft.releaseSubmissions || []).map(item => item.id === submissionId ? { ...item, status: decision, reviewedAt: result.reviewedAt } : item);
-          record.reviewRecords = [...(record.reviewRecords || []), result];
-          record.draft.reviewRecords = structuredClone(record.reviewRecords);
+      let failure;
+      const abort = code => { failure = new Error(code); transaction.abort(); };
+      const snapshotRequest = submissions.get(submissionId);
+      snapshotRequest.onsuccess = () => {
+        const submission = snapshotRequest.result;
+        if (!submission) { abort('submission-missing'); return; }
+        const profileRequest = profiles.get(submission.gameKey);
+        profileRequest.onsuccess = () => {
+          const record = profileRequest.result;
+          const current = record?.draft?.currentReleaseReview;
+          const currentReviewing = current?.submissionId === submissionId
+            ? current.status === REVIEWING
+            : record?.draft?.submissionId === submissionId && record.draft.reviewStatus === REVIEWING;
+          if (!record || submission.status && submission.status !== REVIEWING || !currentReviewing || list(record.reviewRecords).some(item => item.submissionId === submissionId)) {
+            abort('already-reviewed');
+            return;
+          }
+          if (decision === 'approved' && approvalIssues(submission.draft, submission).length) { abort('approval-incomplete'); return; }
+          const reviewedAt = new Date().toISOString();
+          result = { submissionId, decision, reason: decision === 'rejected' ? trimmedReason : '', reviewer, reviewedAt };
+          record.reviewRecords = [...list(record.reviewRecords), clone(result)];
+          Object.assign(record.draft, {
+            reviewStatus: decision,
+            reviewResult: clone(result),
+            currentReleaseReview: { ...(current || {}), submissionId, status: decision, submittedAt: submission.submittedAt, reviewedAt },
+          });
+          record.draft.reviewRecords = clone(record.reviewRecords);
+          record.draft.releaseSubmissions = list(record.draft.releaseSubmissions).map(item => item.id === submissionId ? { ...item, status: decision, reviewedAt } : item);
           profiles.put(record);
-          snapshot.result.status = decision;
-          transaction.objectStore('submissions').put(snapshot.result);
+          submissions.put({ ...submission, status: decision, reviewedAt });
         };
       };
       transaction.oncomplete = () => {
-        try { const channel = new BroadcastChannel('gamehub-publisher-review'); channel.postMessage({ type: 'review-updated', submissionId }); channel.close(); } catch { /* 刷新与重新聚焦仍可恢复结果。 */ }
-        resolve(result);
+        try {
+          const channel = new BroadcastChannel('gamehub-publisher-review');
+          channel.postMessage({ type: 'review-updated', submissionId, decision });
+          channel.close();
+        } catch { /* 刷新与重新聚焦仍可恢复最新结果。 */ }
+        resolve(clone(result));
       };
-      transaction.onerror = transaction.onabort = () => reject(error || transaction.error || new Error('review-failed'));
+      transaction.onerror = transaction.onabort = () => reject(failure || transaction.error || new Error('review-failed'));
     });
+  }
+
+  global.PublisherGameReviewStore = {
+    loadQueue,
+    decide,
+    approvalIssues,
+    validPrice,
+    validFile,
+    isV25,
+    releaseMode,
+    scopeLabel,
+    territoryCodes,
+    territorySummary,
+    releaseStatus,
+    releaseStatusLabel,
+    skuRows,
+    priceSummary,
+    qualificationVersionId,
+    qualificationVersion,
+    summaryFor,
+    statusLabels,
+    terminalStatuses: TERMINAL,
   };
-  window.PublisherGameReviewStore = { loadQueue, decide, approvalIssues, validPrice };
-})();
+})(window);

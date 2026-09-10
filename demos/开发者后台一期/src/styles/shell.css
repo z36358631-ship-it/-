@@ -73,23 +73,25 @@
 .top-account-menu:hover .top-account-dropdown, .top-account-menu.is-open .top-account-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
 .top-account-dropdown button { width: 100%; min-height: 38px; padding: 0 11px; color: var(--text-secondary); text-align: left; border: 0; border-radius: 7px; background: transparent; cursor: pointer; }
 .top-account-dropdown button:hover { color: var(--text-primary); background: #F2F5F9; }
-.top-help-button, .top-login-button, .top-language-button, .top-console-button { min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; color: #EAF0FA; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(255,255,255,.06); cursor: pointer; }
-.top-help-button, .top-language-button, .top-login-button, .top-console-button { margin-left: 8px; }
-.top-help-button:hover, .top-login-button:hover, .top-language-button:hover, .top-console-button:hover { color: #FFFFFF; border-color: rgba(56,232,255,.44); background: rgba(56,232,255,.08); }
+.top-help-button, .top-login-button, .top-language-button, .top-console-button, .top-portal-switch { min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; color: #EAF0FA; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(255,255,255,.06); cursor: pointer; }
+.top-help-button, .top-language-button, .top-login-button, .top-console-button, .top-portal-switch { margin-left: 8px; }
+.top-help-button:hover, .top-login-button:hover, .top-language-button:hover, .top-console-button:hover, .top-portal-switch:hover { color: #FFFFFF; border-color: rgba(56,232,255,.44); background: rgba(56,232,255,.08); }
 .top-help-button.is-active { color: #071522; border-color: var(--brand-cyan); background: linear-gradient(135deg, var(--brand-cyan), #8BEFFF); }
 .top-help-button.is-active svg { color: #071522; }
 .top-language-button { min-width: 92px; font-weight: 700; }
-.top-help-button svg, .top-login-button svg, .top-console-button svg { width: 16px; height: 16px; color: var(--brand-cyan); }
+.top-help-button svg, .top-login-button svg, .top-console-button svg, .top-portal-switch svg { width: 16px; height: 16px; color: var(--brand-cyan); }
 .top-language-button + .top-account-menu, .top-language-button + .top-account { margin-left: 8px; }
 .top-context + .top-account-menu, .top-context + .top-account, .top-context + .top-login-button, .top-context + .top-help-button { margin-left: auto; }
-.top-login-button[hidden], .top-help-button[hidden], .top-console-button[hidden] { display: none; }
+.top-login-button[hidden], .top-help-button[hidden], .top-console-button[hidden], .top-portal-switch[hidden] { display: none; }
 .product-frame[data-role="developer"] .top-help-button,
 .product-frame[data-role="developer"] .top-language-button,
-.product-frame[data-role="developer"] .top-console-button { color: #C7D1E0; border-color: transparent; background: transparent; }
+.product-frame[data-role="developer"] .top-console-button,
+.product-frame[data-role="developer"] .top-portal-switch { color: #C7D1E0; border-color: transparent; background: transparent; }
 .product-frame[data-role="developer"] > .top-bar > .top-help-button { margin-left: auto; }
 .product-frame[data-role="developer"] .top-help-button:hover,
 .product-frame[data-role="developer"] .top-language-button:hover,
-.product-frame[data-role="developer"] .top-console-button:hover { color: #FFFFFF; border-color: transparent; background: rgba(255,255,255,.06); }
+.product-frame[data-role="developer"] .top-console-button:hover,
+.product-frame[data-role="developer"] .top-portal-switch:hover { color: #FFFFFF; border-color: transparent; background: rgba(255,255,255,.06); }
 .product-frame[data-role="developer"] .top-help-button.is-active { color: var(--brand-cyan); border-color: transparent; background: rgba(56,232,255,.08); }
 .product-frame[data-role="developer"] .top-help-button.is-active svg { color: var(--brand-cyan); }
 .product-frame[data-role="developer"] .top-login-button { color: #071522; font-weight: 700; border-color: transparent; background: linear-gradient(135deg, var(--brand-cyan), #9AF2FF); }
@@ -318,8 +320,10 @@
 .product-frame[data-role="operations"] .top-account:hover { background: #F6F8FA; }
 .product-frame[data-role="operations"] .account-copy strong { color: #2A3444; }
 .product-frame[data-role="operations"] .account-copy span { color: #8A94A4; }
-.product-frame[data-role="operations"] .top-help-button { color: #596577; border-color: #DDE3EB; background: #FFFFFF; }
-.product-frame[data-role="operations"] .top-help-button:hover { color: #3448B7; border-color: #BFC8E8; background: #F7F8FF; }
+.product-frame[data-role="operations"] .top-help-button,
+.product-frame[data-role="operations"] .top-portal-switch { color: #596577; border-color: #DDE3EB; background: #FFFFFF; }
+.product-frame[data-role="operations"] .top-help-button:hover,
+.product-frame[data-role="operations"] .top-portal-switch:hover { color: #3448B7; border-color: #BFC8E8; background: #F7F8FF; }
 .product-frame[data-role="operations"] .side-nav--operations { color: #596577; background: #FFFFFF; border-right-color: #E0E5ED; }
 .product-frame[data-role="operations"] .side-nav--operations .nav-label { color: #9AA3B1; }
 .product-frame[data-role="operations"] .side-nav--operations .nav-item { color: #596577; border-radius: 4px; }

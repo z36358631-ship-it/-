@@ -6,6 +6,21 @@
 .publisher-game-profile :is(button, input, select, textarea):focus-visible { outline: 2px solid #1abcc3; outline-offset: 3px; box-shadow: none; }
 .publisher-game-profile :disabled { cursor: default; }
 .publisher-game-profile button:disabled { opacity: .5; }
+.pgp-access-restriction { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; align-items: center; gap: 13px; margin: 0 0 18px; padding: 15px 16px; color: #50687a; border: 1px solid #cfe4e8; border-radius: 10px; background: #f3fafb; }
+.pgp-access-restriction > span { width: 30px; height: 30px; display: grid; place-items: center; color: #168c98; border-radius: 50%; background: #e2f5f6; font-size: 15px; }
+.pgp-access-restriction > div { min-width: 0; display: grid; gap: 4px; }
+.pgp-access-restriction strong { color: #365466; font-size: 13px; line-height: 1.55; }
+.pgp-access-restriction small { color: #7c909f; font-size: 11px; line-height: 1.6; }
+.pgp-access-restriction button { min-height: 34px; padding: 7px 13px; color: #147f8c; border: 1px solid #92cdd2; border-radius: 6px; background: #fff; font-size: 12px; white-space: nowrap; }
+.pgp-qualification-reference { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 21px 22px; border: 1px solid #dfe7ec; border-radius: 12px; background: #fff; }
+.pgp-qualification-reference > div { min-width: 0; }
+.pgp-qualification-reference h3 { margin: 0; color: #314b60; font-size: 15px; }
+.pgp-qualification-reference p { margin: 7px 0 0; color: #7d90a0; font-size: 12px; line-height: 1.65; }
+.pgp-qualification-readonly-label { display: inline-flex; align-items: center; min-height: 26px; padding: 4px 9px; color: #617586; border-radius: 999px; background: #eef2f5; font-size: 11px; white-space: nowrap; }
+.pgp-version-empty { min-height: 300px; display: grid; place-items: center; align-content: center; gap: 8px; padding: 44px 22px; color: #8192a1; border: 1px dashed #d5e0e7; border-radius: 12px; background: #fafcfd; text-align: center; }
+.pgp-version-empty > span { width: 44px; height: 44px; display: grid; place-items: center; color: #4aa6ad; border-radius: 50%; background: #eaf7f8; font-size: 22px; }
+.pgp-version-empty h3 { margin: 5px 0 0; color: #425d70; font-size: 16px; }
+.pgp-version-empty p { max-width: 520px; margin: 0; color: #7c8f9f; font-size: 12px; line-height: 1.75; }
 .pgp-title { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 4px 0 24px; }
 .pgp-title h2 { margin: 0; color: #26394b; font-size: 27px; font-weight: 650; }
 .pgp-title > div { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
@@ -437,6 +452,12 @@
 .pgp-release-actions [data-profile-save-state] { color: #8998a7; font-size: 12px; }
 .pgp-release-workspace .pgp-release-block { scroll-margin-top: 72px; }
 @media (max-width: 760px) {
+  .pgp-access-restriction { grid-template-columns: 30px minmax(0,1fr); align-items: start; padding: 14px; }
+  .pgp-access-restriction > span { width: 28px; height: 28px; }
+  .pgp-access-restriction button { grid-column: 1 / -1; width: 100%; }
+  .pgp-qualification-reference { align-items: stretch; flex-direction: column; padding: 18px; }
+  .pgp-qualification-reference .pgp-button { width: 100%; }
+  .pgp-version-empty { min-height: 240px; padding: 34px 18px; }
   .pgp-release-toolbar { grid-template-columns: minmax(0, 1fr); gap: 6px; }
   .pgp-release-actions { justify-content: flex-start; overflow-x: auto; }
   .pgp-demo-state-fab { right: 16px; bottom: 18px; }

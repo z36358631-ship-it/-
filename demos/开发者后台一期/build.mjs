@@ -10,13 +10,53 @@ const read = (...parts) => fs.readFileSync(path.join(srcDir, ...parts), 'utf8');
 const readJson = file => JSON.parse(read(file));
 const modules = readJson('modules.json');
 const requestedModuleId = process.argv.find(argument => argument.startsWith('--module='))?.split('=')[1];
-const { routes, fixture, contract: prdContract } = loadLatestPrdFixture({ repoRoot, demoDir, moduleId: requestedModuleId });
+const publisherModuleIds = new Set(['01', '02']);
+const fixtureLoads = requestedModuleId && publisherModuleIds.has(requestedModuleId)
+  ? ['01', '02'].map(moduleId => loadLatestPrdFixture({ repoRoot, demoDir, moduleId }))
+  : [loadLatestPrdFixture({ repoRoot, demoDir, moduleId: requestedModuleId })];
+const [{ routes: loadedRoutes, fixture: loadedFixture, contract: loadedContract }] = fixtureLoads;
+const routes = fixtureLoads.length > 1 ? readJson('routes.json') : loadedRoutes;
+const fixture = fixtureLoads.length > 1
+  ? { ...loadedFixture, pages: Object.assign({}, ...fixtureLoads.map(item => item.fixture.pages)) }
+  : loadedFixture;
+const prdContract = fixtureLoads.length > 1 ? {
+  version: loadedContract.version,
+  counts: Object.assign({}, ...fixtureLoads.map(item => item.contract.counts)),
+  documentCounts: Object.assign({}, ...fixtureLoads.map(item => item.contract.documentCounts)),
+  countText: fixtureLoads.map(item => item.contract.countText).join('/'),
+  routeCountText: fixtureLoads.map(item => item.contract.routeCountText).join('/'),
+  sourceFiles: fixtureLoads.flatMap(item => item.contract.sourceFiles),
+} : loadedContract;
 const cssFiles = ['tokens.css', 'shell.css', 'components.css', 'templates.css'];
 const runtimeFiles = ['icons.js', 'components.js', 'templates.js', 'shell.js', 'app.js'];
 const css = cssFiles.map(file => read('styles', file).trim()).join('\n\n');
 const runtime = runtimeFiles.map(file => read('runtime', file).trim()).join('\n\n')
   .replaceAll('data-demo-action', 'data-portal-action')
   .replaceAll('demoAction', 'portalAction');
+const publisherStyleFiles = [
+  'publisher-release-regions.css',
+  'publisher-game-names.css',
+  'publisher-game-create.css',
+  'publisher-game-profile.css',
+  'publisher-game-builds.css',
+  'publisher-game-review.css',
+];
+const publisherRuntimeFiles = [
+  'publisher-storage-schema.js',
+  'publisher-access-policy.js',
+  'publisher-account-context.js',
+  'publisher-release-regions.js',
+  'publisher-game-names.js',
+  'publisher-game-create.js',
+  'publisher-game-qualifications.js',
+  'publisher-game-builds.js',
+  'publisher-game-profile.js',
+  'publisher-profile-store.js',
+  'publisher-qualification-review-store.js',
+  'publisher-qualification-review.js',
+  'publisher-game-review-store.js',
+  'publisher-game-review.js',
+];
 const escapeJson = value => JSON.stringify(value)
   .replaceAll('&', '\\u0026')
   .replaceAll('<', '\\u003c');
@@ -55,25 +95,34 @@ const publicFixtureFor = pageRoutes => ({
     return [route.id, publicPage];
   })),
 });
+const publisherStyles = publisherStyleFiles.map(file => read('styles', file).trim()).join('\n\n');
+const publisherRuntime = publisherRuntimeFiles.map(file => read('runtime', file).trim()).join('\n\n');
 const documentHtml = ({ title, module, pageRoutes }) => `<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}${module.id === '02' ? read('styles', 'publisher-release-regions.css') + '\n' + read('styles', 'publisher-game-names.css') + '\n' + read('styles', 'publisher-game-create.css') + '\n' + read('styles', 'publisher-game-profile.css') + '\n' + read('styles', 'publisher-game-builds.css') : ''}${module.id === '01' ? read('styles', 'publisher-game-review.css') : ''}</style></head><body>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}${publisherModuleIds.has(module.id) ? `\n\n${publisherStyles}` : ''}</style></head><body>
 <div id="app"></div>
 <textarea id="portal-module" hidden aria-hidden="true">${escapeJson(module)}</textarea>
 <textarea id="portal-modules" hidden aria-hidden="true">${escapeJson(modules)}</textarea>
 <textarea id="portal-routes" hidden aria-hidden="true">${escapeJson(pageRoutes)}</textarea>
 <textarea id="portal-data" hidden aria-hidden="true">${escapeJson(publicFixtureFor(pageRoutes))}</textarea>
-<script>${module.id === '02' ? ['publisher-storage-schema.js', 'publisher-release-regions.js', 'publisher-game-names.js', 'publisher-game-create.js', 'publisher-game-qualifications.js', 'publisher-game-builds.js', 'publisher-game-profile.js', 'publisher-profile-store.js', 'publisher-qualification-review-store.js'].map(file => read('runtime', file)).join('\n') : ''}${module.id === '01' ? ['publisher-storage-schema.js', 'publisher-release-regions.js', 'publisher-game-qualifications.js', 'publisher-qualification-review-store.js', 'publisher-qualification-review.js', 'publisher-game-review-store.js', 'publisher-game-review.js'].map(file => read('runtime', file)).join('\n') : ''}\n${runtime}</script></body></html>
+<script>${publisherModuleIds.has(module.id) ? `${publisherRuntime}\n\n` : ''}${runtime}</script></body></html>
 `;
 
 const targetModules = requestedModuleId ? modules.filter(module => module.id === requestedModuleId) : modules;
 if (requestedModuleId && !targetModules.length) throw new Error(`Unknown module: ${requestedModuleId}`);
-const routesForModule = module => routes.filter(route => route.moduleId === module.id && (!module.routeIds || module.routeIds.includes(route.id)));
+const routesForModule = module => module.routeIds
+  ? module.routeIds.map(id => routes.find(route => route.id === id)).filter(Boolean)
+  : routes.filter(route => route.moduleId === module.id);
 
+let aliasCount = 0;
 for (const module of targetModules) {
   const moduleRoutes = routesForModule(module);
   const html = documentHtml({ title: `${module.name}｜盖世游戏开发者平台`, module, pageRoutes: moduleRoutes });
   fs.writeFileSync(path.join(demoDir, module.output), html, 'utf8');
+  for (const alias of module.aliases || []) {
+    fs.writeFileSync(path.join(demoDir, alias), html, 'utf8');
+    aliasCount += 1;
+  }
 }
 
 process.stdout.write(`Latest PRD contract verified: ${prdContract.sourceFiles.length} documents, ${prdContract.countText} PRD page units; ${routes.length} demo routes (${prdContract.routeCountText}), version ${prdContract.version}.\n`);
-process.stdout.write(`Built ${targetModules.length} public-facing self-contained HTML files with ${targetModules.reduce((count, module) => count + routesForModule(module).length, 0)} routes.\n`);
+process.stdout.write(`Built ${targetModules.length} public-facing self-contained HTML files with ${targetModules.reduce((count, module) => count + routesForModule(module).length, 0)} routes; emitted ${aliasCount} compatibility alias${aliasCount === 1 ? '' : 'es'}.\n`);

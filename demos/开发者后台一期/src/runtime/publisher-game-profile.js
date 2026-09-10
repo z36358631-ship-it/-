@@ -70,6 +70,35 @@
   const releaseMissingCounts = done => Object.fromEntries(releaseModules.map(module => [module, done.missing.filter(item => releaseModuleOf(item.key) === module).length]));
   const labelFor = (lang, key) => key === 'buildPackages.readyFull' ? t(lang, 'readyFull') : key === 'pricing.model' ? t(lang, 'pricingModel') : key === 'qualifications.mainland' ? t(lang, 'mainlandScan') : key.startsWith('gameNames.') ? `${lang === 'en' ? 'Game name' : '游戏名称'} · ${window.PublisherGameNames.label(key.split('.')[1], lang)}` : key.startsWith('requirements.') ? `${key.slice(13)} · ${t(lang, 'requirements')}` : t(lang, key.split('.').pop() === 'scheduledAt' ? 'scheduleTime' : key.split('.').pop());
   const lock = draft => draft.reviewStatus === 'reviewing' || draft.saving || draft.submitting || draft.withdrawing;
+  const accessFor = value => value && typeof value === 'object' ? value : {
+    accountKind: 'enterprise', qualificationStatus: 'approved', canEditReleaseDraft: true,
+    canSubmitRelease: true, canViewReleaseHistory: true, canManageGameQualifications: true,
+    canManageVendor: true, isPublisherReadOnly: false,
+  };
+  const restrictionFor = (access, lang) => {
+    const copy = lang === 'en' ? {
+      unsubmitted: ['Complete developer verification before submitting your application.', 'Apply for developer verification'],
+      pending: ['Company verification is in review. Release submission will open after approval.', 'View verification progress'],
+      rejected: ['Company verification was not approved. Update the requested information.', 'Update verification details'],
+      delisted: ['Company publishing access is suspended. New edits and submissions are unavailable.', 'View verification status'],
+    } : {
+      unsubmitted: ['提交申请前，请先完成开发者认证', '申请开发者认证'],
+      pending: ['企业认证审核中，审核通过后可提交发布审核', '查看认证进度'],
+      rejected: ['企业认证未通过，请按审核意见修改', '修改认证资料'],
+      delisted: ['企业发行权限已暂停，暂不能新建或提交', '查看资格状态'],
+    };
+    return copy[access.qualificationStatus] || null;
+  };
+  const restrictionBanner = (access, lang) => {
+    const restriction = restrictionFor(access, lang);
+    if (!restriction) return '';
+    const detail = access.qualificationStatus === 'unsubmitted'
+      ? ''
+      : access.isPublisherReadOnly
+        ? (lang === 'en' ? 'Historical information remains available in read-only mode.' : '历史资料仍可查看，当前页面为只读状态。')
+        : (lang === 'en' ? 'You can keep preparing and saving release drafts.' : '你仍可提前填写版本资料并保存草稿。');
+    return `<aside class="pgp-access-restriction" role="status" data-publisher-restriction="${esc(access.qualificationStatus)}"><span aria-hidden="true">ⓘ</span><div><strong>${esc(restriction[0])}</strong>${detail ? `<small>${esc(detail)}</small>` : ''}</div><button type="button" data-portal-action="publisher-enterprise-verification">${esc(restriction[1])}</button></aside>`;
+  };
   const contentRequired = (draft, language) => draft.legacyReview ? language === 'en' : language === (draft.releaseConfig?.mode === 'domestic' ? 'zh' : 'en');
   const contentKeys = language => language === 'zh' ? ['gameNameZh', 'taglineZh', 'descriptionZh'] : ['gameNameEn', 'tagline', 'description'];
   const displayName = draft => String(draft.gameNames?.[draft.defaultNameLanguage] || draft.gameName || (draft.releaseRegions?.includes('domestic') ? draft.gameNameZh || draft.gameNameEn : draft.gameNameEn || draft.gameNameZh) || '').trim();
@@ -298,6 +327,8 @@
   function renderQualifications(draft, lang, options = {}) {
     const helper = window.PublisherGameQualifications;
     const embedded = Boolean(options.embedded);
+    const access = accessFor(options.access);
+    const accessReadOnly = !access.canManageGameQualifications;
     const baseContext = helper.contextFor(draft);
     const selectedMode = embedded ? baseContext.mode : draft.ui.qualificationStandaloneMode === 'domestic' ? 'domestic' : 'global';
     const context = { ...baseContext, mode: selectedMode, territoryCodes: selectedMode === 'domestic' ? ['CN'] : baseContext.mode === 'global' ? baseContext.territoryCodes : window.PublisherReleaseRegions.defaultTerritoryCodes() };
@@ -307,15 +338,16 @@
     const pendingMode = pending?.context?.mode || (pending ? selectedMode : '');
     const selectedPending = pending && pendingMode === selectedMode ? pending : null;
     const viewingPending = selectedPending?.status === 'reviewing';
+    const qualificationReadOnly = viewingPending || accessReadOnly;
     const application = viewingPending ? helper.createApplicationDraft(selectedPending.snapshot) : qualificationState.draft;
-    const editorOpen = embedded || Boolean(draft.ui.qualificationEditorOpen || pending?.status === 'supplement_required');
+    const editorOpen = accessReadOnly ? false : embedded || Boolean(draft.ui.qualificationEditorOpen || pending?.status === 'supplement_required');
     const errors = draft.qualificationErrors || {};
     const copy = (zh, en) => lang === 'en' ? en : zh;
     const qError = key => `<p class="pgp-error" data-qualification-error="${esc(key)}"${errors[key] ? ' role="alert"' : ' hidden'}>${errors[key] ? esc(helper.text(lang, errors[key]) || errors[key]) : ''}</p>`;
     const qField = (key, label, { type = 'text', textarea = false, values = null, hint = '', isRequired = false } = {}) => {
       const value = get(application, key) ?? '';
       const groupedError = ['authorization.grantor', 'authorization.grantee'].includes(key) ? 'authorization.parties' : ['authorization.startsAt', 'authorization.endsAt'].includes(key) ? (errors['authorization.term'] ? 'authorization.term' : 'authorization.coverage') : key;
-      const attrs = `data-qualification-field="${esc(key)}" aria-label="${esc(label)}" aria-invalid="${Boolean(errors[key] || errors[groupedError])}"${viewingPending ? ' disabled' : ''}`;
+      const attrs = `data-qualification-field="${esc(key)}" aria-label="${esc(label)}" aria-invalid="${Boolean(errors[key] || errors[groupedError])}"${qualificationReadOnly ? ' disabled' : ''}`;
       const control = values ? `<select ${attrs}><option value="">${esc(t(lang, 'choose'))}</option>${values.map(([option, zh, en]) => `<option value="${esc(option)}"${value === option ? ' selected' : ''}>${esc(copy(zh, en))}</option>`).join('')}</select>` : textarea ? `<textarea ${attrs} rows="3">${esc(value)}</textarea>` : `<input type="${type}" ${attrs} value="${esc(value)}">`;
       const groupedErrorOwner = groupedError === 'authorization.parties' ? 'authorization.grantor' : 'authorization.startsAt';
       const visibleError = errors[key] ? key : groupedError === key || key === groupedErrorOwner ? groupedError : key;
@@ -323,9 +355,9 @@
     };
     const qFiles = (key, card, label, hint, isRequired = false) => {
       const values = Array.isArray(get(application, key)) ? get(application, key) : [];
-      const input = `<input type="file" hidden multiple accept="image/png,image/jpeg" data-qualification-file="${esc(key)}" data-qualification-card-key="${esc(card)}">`;
-      const emptyPicker = viewingPending ? `<p class="pgp-empty-assets">${copy('尚未上传', 'No files uploaded')}</p>` : `<label class="pgp-qualification-upload-trigger"><span aria-hidden="true">⇧</span><strong>${copy('点击上传附件', 'Choose attachments')}</strong><small>${copy('支持 JPG / PNG，可一次选择多张', 'JPG / PNG; multiple files supported')}</small>${input}</label>`;
-      return `<section class="pgp-qualification-upload" data-qualification-upload-card="${esc(card)}"><header><div><h5>${esc(label)} ${isRequired ? required : ''}</h5><p>${esc(hint)}</p></div>${viewingPending || !values.length ? '' : `<label class="pgp-button">${copy('继续上传', 'Add files')}${input}</label>`}</header>${values.length ? `<div class="pgp-qualification-files">${values.map((file, index) => `<article><span aria-hidden="true">◇</span><div><strong>${esc(file.name)}</strong><small>${((file.size || file.blob?.size || 0) / 1024 / 1024).toFixed(2)} MB</small></div>${viewingPending ? '' : `<button type="button" data-qualification-file-remove="${esc(key)}" data-qualification-file-index="${index}">${copy('移除', 'Remove')}</button>`}</article>`).join('')}</div>` : emptyPicker}${qError(key)}</section>`;
+      const input = qualificationReadOnly ? '' : `<input type="file" hidden multiple accept="image/png,image/jpeg" data-qualification-file="${esc(key)}" data-qualification-card-key="${esc(card)}">`;
+      const emptyPicker = qualificationReadOnly ? `<p class="pgp-empty-assets">${copy('尚未上传', 'No files uploaded')}</p>` : `<label class="pgp-qualification-upload-trigger"><span aria-hidden="true">⇧</span><strong>${copy('点击上传附件', 'Choose attachments')}</strong><small>${copy('支持 JPG / PNG，可一次选择多张', 'JPG / PNG; multiple files supported')}</small>${input}</label>`;
+      return `<section class="pgp-qualification-upload" data-qualification-upload-card="${esc(card)}"><header><div><h5>${esc(label)} ${isRequired ? required : ''}</h5><p>${esc(hint)}</p></div>${qualificationReadOnly || !values.length ? '' : `<label class="pgp-button">${copy('继续上传', 'Add files')}${input}</label>`}</header>${values.length ? `<div class="pgp-qualification-files">${values.map((file, index) => `<article><span aria-hidden="true">◇</span><div><strong>${esc(file.name)}</strong><small>${((file.size || file.blob?.size || 0) / 1024 / 1024).toFixed(2)} MB</small></div>${qualificationReadOnly ? '' : `<button type="button" data-qualification-file-remove="${esc(key)}" data-qualification-file-index="${index}">${copy('移除', 'Remove')}</button>`}</article>`).join('')}</div>` : emptyPicker}${qError(key)}</section>`;
     };
     const status = pending?.status || (qualificationState.activeVersion ? 'active' : 'notSubmitted');
     const statusNote = pending ? `<div class="pgp-qualification-state pgp-qualification-state--${esc(pending.status)}" data-qualification-pending="${esc(pending.status)}"><strong>${esc(helper.text(lang, pending.status))} · ${esc(pending.id)}</strong>${pending.reason ? `<p>${esc(pending.reason)}</p>` : ''}${qualificationState.activeVersion ? `<small>${copy('旧批准版本继续生效', 'The previous approved version remains active')} · ${esc(qualificationState.activeVersion.id)}</small>` : ''}</div>` : qualificationState.activeVersion ? `<div class="pgp-qualification-state is-active" data-qualification-active="${esc(qualificationState.activeVersion.id)}"><strong>${copy('当前生效版本', 'Current active version')} · ${esc(qualificationState.activeVersion.id)}</strong><small>${copy('修改资质需重新审核，新版本通过前本版继续生效。', 'Changes require review. This version remains active until the new version is approved.')}</small></div>` : '';
@@ -343,7 +375,8 @@
         const fileCount = mode === 'global'
           ? qualificationState.draft.authorization.files.length
           : qualificationState.draft.authorization.files.length + qualificationState.draft.domestic.publicationApprovalFiles.length + qualificationState.draft.domestic.copyrightFiles.length + qualificationState.draft.domestic.icpFiles.length + qualificationState.draft.domestic.safetyAssessmentFiles.length;
-        return `<article class="pgp-qualification-region-card" data-qualification-region-card="${mode}" data-qualification-region-status="${esc(regionStatus)}"><div class="pgp-qualification-region-card__mark" aria-hidden="true">◇</div><div class="pgp-qualification-region-card__body"><div class="pgp-qualification-region-card__heading"><strong>${copy(zhName, enName)}</strong><span data-qualification-region-status-label>${esc(helper.text(lang, regionStatus))}</span></div><p>${copy(zhHint, enHint)}</p><small>${fileCount} ${copy('个附件', 'attachment(s)')}${regionPending?.id ? ` · ${esc(regionPending.id)}` : regionActive?.id ? ` · ${esc(regionActive.id)}` : ''}</small></div><div class="pgp-qualification-region-card__actions"><button type="button" class="pgp-button${regionStatus === 'reviewing' ? '' : ' pgp-button--primary'}" data-qualification-region-open="${mode}">${actionLabel}</button>${regionPending && ['reviewing', 'supplement_required'].includes(regionStatus) ? `<button type="button" class="pgp-button pgp-button--danger" data-qualification-region-withdraw="${mode}">${copy('撤销审核', 'Withdraw')}</button>` : ''}</div></article>`;
+        const actions = `<button type="button" class="pgp-button${regionStatus === 'reviewing' ? '' : ' pgp-button--primary'}" data-qualification-region-open="${mode}"${accessReadOnly ? ' disabled' : ''}>${actionLabel}</button>${!accessReadOnly && regionPending && ['reviewing', 'supplement_required'].includes(regionStatus) ? `<button type="button" class="pgp-button pgp-button--danger" data-qualification-region-withdraw="${mode}">${copy('撤销审核', 'Withdraw')}</button>` : ''}`;
+        return `<article class="pgp-qualification-region-card" data-qualification-region-card="${mode}" data-qualification-region-status="${esc(regionStatus)}"><div class="pgp-qualification-region-card__mark" aria-hidden="true">◇</div><div class="pgp-qualification-region-card__body"><div class="pgp-qualification-region-card__heading"><strong>${copy(zhName, enName)}</strong><span data-qualification-region-status-label>${esc(helper.text(lang, regionStatus))}</span></div><p>${copy(zhHint, enHint)}</p><small>${fileCount} ${copy('个附件', 'attachment(s)')}${regionPending?.id ? ` · ${esc(regionPending.id)}` : regionActive?.id ? ` · ${esc(regionActive.id)}` : ''}</small></div><div class="pgp-qualification-region-card__actions">${actions}</div></article>`;
       }).join('');
       return `<div data-qualification-profile data-qualification-status="${esc(status)}" data-qualification-context-mode="${selectedMode}"><div class="pgp-qualification-region-grid" data-qualification-region-grid>${cards}</div></div>`;
     }
@@ -351,8 +384,8 @@
     const authorization = `<section class="pgp-qualification-form-section" data-qualification-ownership><h4>${copy('发行权属证明', 'Release-rights evidence')}</h4><p>${esc(helper.text(lang, selectedMode === 'global' ? 'globalQualificationHint' : 'domesticQualificationHint'))}</p>${qFiles('authorization.files', 'rights', copy('资质附件', 'Qualification attachments'), copy('JPG / PNG，1–10 张，支持一次选择多个附件。', 'JPG / PNG, 1–10 images; multiple attachments can be selected at once.'), true)}</section>`;
     const domestic = context.mode === 'domestic' ? `<section class="pgp-qualification-form-section" data-qualification-domestic><h4>${copy('国内服 PC 资质', 'Domestic PC qualifications')}</h4><p>${copy('只收集 PC 发行与实际服务形态命中的材料，不包含手游 APK、移动渠道 SDK 或移动应用备案。', 'Only PC release materials applicable to the actual service are collected. Mobile APK, channel SDK, and mobile-app filing are excluded.')}</p><div class="pgp-form-grid">${qField('domestic.licenseNumber', copy('游戏版号', 'Game publication approval number'), { isRequired: true, hint: copy('版号字段必填，扫描件选填。', 'The approval number is required; a scanned document is optional.') })}${qField('domestic.networkMode', copy('游戏联网方式', 'Game connectivity'), { values: [['offline', '离线单机', 'Offline single-player'], ['online', '提供联网游戏服务', 'Online game services']], isRequired: true, hint: helper.text(lang, 'networkHint') })}</div>${qFiles('domestic.publicationApprovalFiles', 'mainland', copy('游戏版号扫描件（选填）', 'Publication approval document (optional)'), helper.text(lang, 'mainlandScanHint'))}<div class="pgp-form-grid">${qField('domestic.copyrightNumber', copy('软件著作权登记号（选填）', 'Software copyright number (optional)'), { hint: helper.text(lang, 'copyrightHint') })}</div>${qFiles('domestic.copyrightFiles', 'copyright', copy('软件著作权证书（选填）', 'Software copyright certificate (optional)'), helper.text(lang, 'copyrightHint'))}<div class="pgp-form-grid">${qField('domestic.icpStatus', copy('ICP 核准情况（按服务形态选填）', 'ICP status (conditional)'), { values: [['approved', '已核准', 'Approved'], ['not_approved', '暂未核准', 'Not approved'], ['not_applicable', '不适用', 'Not applicable']], hint: helper.text(lang, 'icpHint') })}${application.domestic.icpStatus === 'not_applicable' ? qField('domestic.icpExemptionReason', copy('ICP 不适用说明', 'Why ICP does not apply'), { textarea: true, isRequired: true }) : ''}</div>${application.domestic.icpStatus === 'approved' || application.domestic.icpFiles.length ? qFiles('domestic.icpFiles', 'icp', copy('ICP 核准证明', 'ICP approval evidence'), copy('已核准时请上传 JPG / PNG 证明。', 'Upload JPG / PNG evidence when approved.'), application.domestic.icpStatus === 'approved') : ''}${qFiles('domestic.safetyAssessmentFiles', 'safety', copy('安全评估报告（按服务形态选填）', 'Security assessment report (conditional)'), helper.text(lang, 'safetyHint'))}${application.domestic.networkMode === 'online' && ['demo', 'released'].includes(context.releaseStatus) ? `<section class="pgp-qualification-online" data-qualification-online><h5>${copy('实名与防沉迷', 'Real-name and anti-addiction')}</h5><p>${esc(helper.text(lang, 'onlineHint'))}</p><div class="pgp-form-grid"><div class="pgp-field pgp-wide pgp-compliance-ack" data-qualification-field-wrap="domestic.antiAddictionAcknowledged"><label><input type="checkbox" data-qualification-anti-ack${application.domestic.antiAddictionAcknowledged ? ' checked' : ''}${viewingPending ? ' disabled' : ''}><span>${esc(helper.text(lang, 'antiAddictionAcknowledged'))} ${required}</span></label><a href="${esc(helper.referenceUrl)}" target="_blank" rel="noopener noreferrer">${esc(helper.text(lang, 'referenceNotice'))}</a>${qError('domestic.antiAddictionAcknowledged')}</div>${qField('domestic.gameAntiAddiction', helper.text(lang, 'gameAntiAddiction'), { values: [['connected', '已接入', 'Connected'], ['not_connected', '暂未接入', 'Not connected']], isRequired: true })}${qField('domestic.nationalRealName', helper.text(lang, 'nationalRealName'), { values: [['connected', '已接入', 'Connected'], ['not_connected', '暂未接入', 'Not connected']], isRequired: true })}</div></section>` : ''}</section>` : '';
     const submitLabel = selectedPending?.status === 'supplement_required' ? copy('重新提交补件', 'Resubmit supplement') : qualificationState.activeVersion ? copy('提交修改审核', 'Submit changes for review') : copy('提交资质审核', 'Submit qualification review');
-    const actions = embedded ? '' : viewingPending ? `<div class="pgp-qualification-actions"><button type="button" class="pgp-button" data-qualification-editor-close>${copy('收起', 'Collapse')}</button><button type="button" class="pgp-button pgp-button--danger" data-qualification-withdraw${draft.qualificationWithdrawing ? ' disabled' : ''}>${draft.qualificationWithdrawing ? copy('正在撤销…', 'Withdrawing…') : copy('撤销资质审核', 'Withdraw qualification review')}</button></div>` : `<div class="pgp-qualification-actions"><button type="button" class="pgp-button" data-qualification-editor-close>${copy('取消', 'Cancel')}</button><button type="button" class="pgp-button pgp-button--primary" data-qualification-submit${draft.qualificationSubmitting ? ' disabled' : ''}>${draft.qualificationSubmitting ? copy('正在提交…', 'Submitting…') : submitLabel}</button></div>`;
-    return `<div data-qualification-profile data-qualification-status="${esc(status)}" data-qualification-context-mode="${selectedMode}"${embedded ? ' data-qualification-embedded' : ''}>${embedded ? statusNote : ''}<section class="pgp-qualification-editor" data-qualification-editor data-qualification-readonly="${viewingPending}"><header><div><h4>${copy(selectedMode === 'global' ? '全球（不含中国大陆）发行资质' : '中国大陆发行资质', selectedMode === 'global' ? 'Global release qualification (excluding mainland China)' : 'Mainland China release qualification')}</h4><p>${embedded ? copy('根据当前发行区域随版本提交。', 'Submitted with this version for the current release region.') : copy('可在发布前单独提审；上线后修改会生成新资质版本。', 'Can be reviewed before release; post-launch changes create a new qualification version.')}</p></div>${!embedded && selectedPending ? `<span class="pgp-qualification-editor__status">${esc(helper.text(lang, selectedPending.status))} · ${esc(selectedPending.id)}</span>` : ''}</header>${authorization}${domestic}${Object.keys(errors).length ? `<p class="pgp-error" role="alert" data-qualification-form-error>${copy('请补充标记的资质信息。', 'Complete the marked qualification fields.')}</p>` : ''}${draft.qualificationActionError ? `<p class="pgp-error" role="alert" data-qualification-action-error>${copy('资质操作失败，已保留当前填写内容，请刷新状态后重试。', 'The qualification action failed. Your entries are preserved; refresh the status and try again.')}</p>` : ''}${actions}</section></div>`;
+    const actions = embedded || accessReadOnly ? '' : viewingPending ? `<div class="pgp-qualification-actions"><button type="button" class="pgp-button" data-qualification-editor-close>${copy('收起', 'Collapse')}</button><button type="button" class="pgp-button pgp-button--danger" data-qualification-withdraw${draft.qualificationWithdrawing ? ' disabled' : ''}>${draft.qualificationWithdrawing ? copy('正在撤销…', 'Withdrawing…') : copy('撤销资质审核', 'Withdraw qualification review')}</button></div>` : `<div class="pgp-qualification-actions"><button type="button" class="pgp-button" data-qualification-editor-close>${copy('取消', 'Cancel')}</button><button type="button" class="pgp-button pgp-button--primary" data-qualification-submit${draft.qualificationSubmitting ? ' disabled' : ''}>${draft.qualificationSubmitting ? copy('正在提交…', 'Submitting…') : submitLabel}</button></div>`;
+    return `<div data-qualification-profile data-qualification-status="${esc(status)}" data-qualification-context-mode="${selectedMode}"${embedded ? ' data-qualification-embedded' : ''}>${embedded ? statusNote : ''}<section class="pgp-qualification-editor" data-qualification-editor data-qualification-readonly="${qualificationReadOnly}"><header><div><h4>${copy(selectedMode === 'global' ? '全球（不含中国大陆）发行资质' : '中国大陆发行资质', selectedMode === 'global' ? 'Global release qualification (excluding mainland China)' : 'Mainland China release qualification')}</h4><p>${embedded ? copy('根据当前发行区域随版本提交。', 'Submitted with this version for the current release region.') : copy('可在发布前单独提审；上线后修改会生成新资质版本。', 'Can be reviewed before release; post-launch changes create a new qualification version.')}</p></div>${!embedded && selectedPending ? `<span class="pgp-qualification-editor__status">${esc(helper.text(lang, selectedPending.status))} · ${esc(selectedPending.id)}</span>` : ''}</header>${authorization}${domestic}${Object.keys(errors).length ? `<p class="pgp-error" role="alert" data-qualification-form-error>${copy('请补充标记的资质信息。', 'Complete the marked qualification fields.')}</p>` : ''}${draft.qualificationActionError ? `<p class="pgp-error" role="alert" data-qualification-action-error>${copy('资质操作失败，已保留当前填写内容，请刷新状态后重试。', 'The qualification action failed. Your entries are preserved; refresh the status and try again.')}</p>` : ''}${actions}</section></div>`;
   }
   function asset(draft, lang, key, file, index, inherited = false) {
     const preview = urlFor(draft, file);
@@ -553,10 +586,14 @@
     const versionNumber = versionIndex >= 0 ? records.length - versionIndex : records.length || 1;
     return `<section class="pgp-version-snapshot" data-version-snapshot-state="ready" data-version-snapshot="${esc(record.id)}">${back}<header class="pgp-version-snapshot__header"><div><span>V${versionNumber}</span><h3>${esc(record.id)}</h3><p>${isEnglish ? 'Submitted content is read-only and is not changed by later edits.' : '以下为提交时的只读内容，后续修改不会改变本快照。'}</p></div><strong>${isEnglish ? 'Immutable snapshot' : '不可变快照'}</strong></header><dl class="pgp-version-summary">${versionFact(isEnglish ? 'Submitter' : '提交人', record.submitter || summary.submitter || (isEnglish ? 'Current developer' : '当前开发者'))}${versionFact(isEnglish ? 'Submitted at' : '提交时间', versionDate(lang, record.submittedAt || summary.submittedAt))}${versionFact(isEnglish ? 'Review status' : '审核状态', versionStatusLabel(lang, reviewStatus, true))}${versionFact(isEnglish ? 'Publication status' : '发行状态', publicationStatusLabel(lang, publicationStatus))}${versionFact(isEnglish ? 'Qualification version' : '引用资质版本', qualificationVersionId || (isEnglish ? 'Not recorded' : '历史未记录'), true)}</dl><section class="pgp-version-section" data-version-snapshot-release><header><h4>${isEnglish ? 'Release settings' : '发行设置'}</h4><span>${esc(scope)}</span></header><dl>${versionFact(isEnglish ? 'Release scope' : '发行范围', scope)}${versionFact(isEnglish ? 'Countries / regions' : '国家／地区', countryCount)}${versionFact(isEnglish ? 'Target player interests' : '目标用户游戏兴趣', targetInterestCopy, true)}${versionFact(isEnglish ? 'Target store state' : '目标商店状态', statusCopy)}${versionFact(isEnglish ? 'Effective time' : '生效时间', effectiveCopy)}${mode === 'domestic' ? versionFact(isEnglish ? 'Publication approval number' : '游戏版号', snapshot.licenseNumber || release.licenseNumber || '—', true) : ''}</dl><div class="pgp-version-territories">${territoryCodes.map(code => `<span data-version-territory-code="${esc(code)}"><b>${esc(window.PublisherReleaseRegions.territoryLabel(code, lang))}</b><small>${esc(code)}</small></span>`).join('') || `<p>${isEnglish ? 'No country or region list was recorded.' : '该历史版本未记录国家／地区清单。'}</p>`}</div></section><section class="pgp-version-section" data-version-snapshot-builds><header><h4>${isEnglish ? 'PC builds' : 'PC 包体'}</h4><span>${isEnglish ? `${buildRecords.length} builds` : `${buildRecords.length} 个包体`}</span></header><div class="pgp-version-skus">${buildCards || `<div class="pgp-version-empty-inline">${isEnglish ? 'No PC build was recorded in this historical version.' : '该历史版本未记录 PC 包体。'}</div>`}</div></section><section class="pgp-version-section" data-version-snapshot-locales><header><h4>${isEnglish ? 'Store detail languages' : '商店资料语言'}</h4><span>${isEnglish ? `${localeCodes.length} languages` : `${localeCodes.length} 个语种`}</span></header><div class="pgp-version-locales">${localeCards || `<div class="pgp-version-empty-inline">${isEnglish ? 'No language details were recorded.' : '该历史版本未记录商店资料语言。'}</div>`}</div></section><section class="pgp-version-section" data-version-snapshot-catalog><header><h4>${isEnglish ? 'Products & SKU' : '商品与 SKU'}</h4><span>${isEnglish ? `${skuRecords.length} products` : `${skuRecords.length} 个商品`}</span></header><div class="pgp-version-skus">${skuCards || `<div class="pgp-version-empty-inline">${isEnglish ? 'No product pricing was recorded in this historical version.' : '该历史版本未记录商品与价格。'}</div>`}</div></section><section class="pgp-version-section" data-version-snapshot-review><header><h4>${isEnglish ? 'Review result' : '审核结果'}</h4><span>${esc(versionStatusLabel(lang, reviewStatus, true))}</span></header><dl>${versionFact(isEnglish ? 'Result' : '处理结果', versionStatusLabel(lang, reviewStatus, true))}${versionFact(isEnglish ? 'Reviewer / operator' : '审核人／操作人', reviewer)}${versionFact(isEnglish ? 'Processed at' : '处理时间', versionDate(lang, reviewedAt))}${review?.reason ? versionFact(isEnglish ? 'Review note' : '审核意见', review.reason, true) : ''}</dl></section></section>`;
   }
-  function renderVersions(draft, lang, game = {}) {
+  function renderVersions(draft, lang, game = {}, rawAccess) {
     const isEnglish = lang === 'en';
+    const access = accessFor(rawAccess);
     const profileState = stateFor(draft);
     const storedRecords = [...(draft.releaseSubmissions || [])].sort((a, b) => String(b.submittedAt || b.createdAt).localeCompare(String(a.submittedAt || a.createdAt)));
+    if (access.accountKind === 'personal' && !storedRecords.length) {
+      return `<section class="pgp-versions pgp-version-empty" data-profile-versions data-personal-release-empty><span aria-hidden="true">◇</span><h3>${isEnglish ? 'No release records yet' : '暂无发布记录'}</h3><p>${isEnglish ? 'Release records are created after company verification is approved and a version is submitted.' : '完成企业认证并提交版本后，这里将生成发布记录。当前保存的内容仍保留在版本发布草稿中。'}</p></section>`;
+    }
     const snapshot = { ...draft, releaseSubmissions: [] };
     const fixtureReviewStatus = game.reviewStatus === '审核中' ? 'reviewing' : game.reviewStatus === '需修改' ? 'rejected' : ['已通过', '已上线', '先锋测试', '预发布'].includes(game.reviewStatus) || ['已上线', '已下架', '先锋测试', '预发布'].includes(game.status) ? 'approved' : 'draft';
     const fixturePublicationStatus = game.status === '已下架' ? 'delisted' : game.status === '已上线' ? 'live' : 'offline';
@@ -610,12 +647,13 @@
   }
   function render(draft, language = 'zh', options = {}) {
     const lang = language === 'en' ? 'en' : 'zh';
+    const access = accessFor(options.access);
     const activeModule = ['release-workspace', 'profile', 'catalog', 'release', 'qualifications', 'versions'].includes(options.section) ? options.section : 'release-workspace';
     const releaseWorkspace = activeModule === 'release-workspace';
     const done = completion(draft);
     const missingCounts = releaseMissingCounts(done);
     const busy = stateFor(draft).uploads.size > 0;
-    const readonly = lock(draft);
+    const readonly = lock(draft) || !access.canEditReleaseDraft;
     const contentLanguage = draft.currentNameLanguage || 'en';
     draft.ui.contentLanguage = contentLanguage;
     const languageTabs = (kind = 'content') => `<div class="pgp-language-tabs" role="group" aria-label="${esc(t(lang, 'contentLanguage'))}">${['zh', 'en'].map(value => `<button type="button" data-profile-${kind}-language="${value}" aria-pressed="${contentLanguage === value}" class="${contentLanguage === value ? 'is-active' : ''}">${esc(t(lang, value === 'zh' ? 'contentZh' : 'contentEn'))}<small>${esc(t(lang, contentRequired(draft, value) ? 'contentRequired' : 'contentOptional'))}</small></button>`).join('')}</div>`;
@@ -626,8 +664,9 @@
     const basic = `${window.PublisherGameNames.render(draft, lang, { readonly, idPrefix: 'profile-basic', error: Object.fromEntries(draft.nameLanguages.map(code => [code, t(lang, draft.errors[`gameNames.${code}`] || draft.errors[code === 'zh' ? 'gameNameZh' : code === 'en' ? 'gameNameEn' : ''] || '')])), requiredLanguages: ['zh', 'en'].filter(code => contentRequired(draft, code)) })}<p class="pgp-hint pgp-language-hint">${esc(t(lang, 'contentHint'))}</p><div class="pgp-basic-grid">${uploadSingle(draft, lang, 'assets.icon', t(lang, 'iconHint'), contentLanguage === draft.assetLanguageSettings.defaultNameLanguage)}<div class="pgp-form-grid"><div class="pgp-wide">${field(draft, lang, localizedKeys[1], { isRequired, label: lang === 'en' ? 'Short description' : '一句话介绍' })}</div>${field(draft, lang, localizedKeys[2], { isRequired, textarea: true, label: lang === 'en' ? 'Full description' : '完整介绍' })}</div></div>`;
     const developer = `<div class="pgp-form-grid"><div class="pgp-field"><label>${esc(t(lang, 'company'))}</label><input readonly value="星海互动" aria-label="${esc(t(lang, 'company'))}"></div>${draft.relationship === 'publisher' ? field(draft, lang, 'developerName', { isRequired: true }) : ''}${choiceGroup(draft, lang, 'relationship', relationships, { wide: true, readonly })}</div>`;
     const settings = `<div class="pgp-form-grid"><div class="pgp-wide">${field(draft, lang, 'website')}</div>${field(draft, lang, 'playerGroupName')}${field(draft, lang, 'playerGroupNumber')}</div>`;
-    const qualification = renderQualifications(draft, lang);
-    const qualificationEmbedded = renderQualifications(draft, lang, { embedded: true });
+    const qualification = renderQualifications(draft, lang, { access });
+    const activeQualification = draft.qualifications?.activeVersion;
+    const qualificationReference = `<section class="pgp-qualification-reference" data-release-qualification-reference><div><h3>${lang === 'en' ? 'Qualification version' : '资质版本'}</h3><p>${activeQualification ? `${lang === 'en' ? 'Current reference' : '当前引用'} ${esc(activeQualification.id || activeQualification.versionId)}` : (lang === 'en' ? 'No approved qualification version is available yet.' : '尚无已生效资质版本，提交发布审核前需先完成资质认证。')}</p></div><button type="button" class="pgp-button" data-profile-section-link="qualifications">${lang === 'en' ? 'Open qualifications' : '前往资质认证'}</button></section>`;
     const builds = window.PublisherGameBuilds.render(draft, lang, { readonly });
     const targetInterests = `<fieldset class="pgp-check-group pgp-target-interests pgp-wide" data-profile-field-wrap="targetUserInterests"><legend>${esc(t(lang, 'targetUserInterests'))} ${required}</legend><p class="pgp-hint">${esc(t(lang, 'targetUserInterestsHint'))}</p><div class="pgp-checks">${targetInterestOptions.map(([value, zh, en]) => `<label><input type="checkbox" value="${value}" data-profile-array="targetUserInterests"${draft.targetUserInterests.includes(value) ? ' checked' : ''}${readonly ? ' disabled' : ''}><span>${esc(lang === 'en' ? en : zh)}</span></label>`).join('')}</div>${errorHTML(draft, lang, 'targetUserInterests')}</fieldset>`;
     const publication = `${regionField}${targetInterests}${choiceGroup(draft, lang, 'releaseStatus', releaseStates, { readonly })}<p class="pgp-hint">${esc(t(lang, 'releaseStatusHint'))}</p><div class="pgp-release-timing"><h4>${esc(t(lang, 'effectiveTime'))}</h4><div class="pgp-checks">${['immediate', 'scheduled'].map(mode => `<label><input type="radio" name="profile-publication" data-profile-publication value="${mode}"${draft.publication.mode === mode ? ' checked' : ''}>${esc(t(lang, mode))}</label>`).join('')}</div>${draft.publication.mode === 'scheduled' ? `${field(draft, lang, 'publication.scheduledAt', { isRequired: true, hint: t(lang, 'scheduleHint') })}<p class="pgp-hint" data-profile-timezone>${esc(t(lang, 'timeZone', { zone: Intl.DateTimeFormat().resolvedOptions().timeZone }))}</p>` : ''}</div>`;
@@ -643,19 +682,21 @@
       const accessibilityLabel = count ? (lang === 'en' ? `${label}, ${count} missing` : `${label}，缺失 ${count} 项`) : label;
       return `<button type="button" class="${releaseAnchor === id ? 'is-active' : ''}" data-release-locator="${id}" data-release-label="${esc(label)}" aria-label="${esc(accessibilityLabel)}" aria-current="${releaseAnchor === id ? 'location' : 'false'}"><span>${esc(label)}</span><b class="pgp-release-locator__count" data-release-missing-count${count ? '' : ' hidden'}>${count || ''}</b></button>`;
     }).join('')}</nav>` : '';
-    const releaseWorkspaceBody = `<div class="pgp-release-workspace"><section class="pgp-release-block" data-release-anchor="profile">${profileBody}</section><section class="pgp-release-block" data-release-anchor="builds">${builds}</section><section class="pgp-release-block" data-release-anchor="catalog">${renderPricing(draft, lang)}</section><section class="pgp-release-block" data-release-anchor="release">${card(draft, lang, 'publication', publication)}</section><section class="pgp-release-block" data-release-anchor="qualification">${qualificationEmbedded}</section></div>`;
-    const moduleBody = releaseWorkspace ? releaseWorkspaceBody : activeModule === 'profile' ? profileBody : activeModule === 'catalog' ? renderPricing(draft, lang) : activeModule === 'release' ? card(draft, lang, 'publication', publication) : activeModule === 'qualifications' ? `<section class="pgp-qualification-workspace">${qualification}</section>` : renderVersions(draft, lang, options.game || {});
+    const releaseWorkspaceBody = `<div class="pgp-release-workspace"><section class="pgp-release-block" data-release-anchor="profile">${profileBody}</section><section class="pgp-release-block" data-release-anchor="builds">${builds}</section><section class="pgp-release-block" data-release-anchor="catalog">${renderPricing(draft, lang)}</section><section class="pgp-release-block" data-release-anchor="release">${card(draft, lang, 'publication', publication)}</section><section class="pgp-release-block" data-release-anchor="qualification">${qualificationReference}</section></div>`;
+    const moduleBody = releaseWorkspace ? releaseWorkspaceBody : activeModule === 'profile' ? profileBody : activeModule === 'catalog' ? renderPricing(draft, lang) : activeModule === 'release' ? card(draft, lang, 'publication', publication) : activeModule === 'qualifications' ? `<section class="pgp-qualification-workspace">${qualification}</section>` : renderVersions(draft, lang, options.game || {}, access);
     const moduleTitle = lang === 'en' ? ({ 'release-workspace': 'Version release', profile: 'Game details', catalog: 'Products & SKU', release: 'Release settings', qualifications: 'Qualifications', versions: 'Version records' }[activeModule]) : ({ 'release-workspace': '版本发布', profile: '游戏资料', catalog: '商品与 SKU', release: '发行设置', qualifications: '资质认证', versions: '发布记录' }[activeModule]);
     const releaseActions = releaseWorkspace ? draft.reviewStatus === 'reviewing'
-      ? `<div class="pgp-release-actions"><button type="button" class="pgp-button" data-profile-withdraw${draft.withdrawing ? ' disabled' : ''}>${esc(t(lang, draft.withdrawing ? 'withdrawing' : 'withdraw'))}</button></div>`
-      : `<div class="pgp-release-actions"><span data-profile-save-state>${esc(savedText)}</span><button type="button" class="pgp-button" data-profile-save${readonly || busy ? ' disabled' : ''}>${esc(t(lang, draft.saving ? 'saving' : 'save'))}</button><button type="button" class="pgp-button pgp-button--primary" data-profile-submit${readonly || busy ? ' disabled' : ''}>${esc(t(lang, draft.submitting ? 'submitting' : draft.reviewStatus === 'rejected' ? 'resubmit' : 'submit'))}</button></div>` : '';
+      ? `<div class="pgp-release-actions"><button type="button" class="pgp-button" data-profile-withdraw${draft.withdrawing || !access.canSubmitRelease ? ' disabled' : ''}>${esc(t(lang, draft.withdrawing ? 'withdrawing' : 'withdraw'))}</button></div>`
+      : `<div class="pgp-release-actions"><span data-profile-save-state>${esc(savedText)}</span><button type="button" class="pgp-button" data-profile-save${readonly || busy ? ' disabled' : ''}>${esc(t(lang, draft.saving ? 'saving' : 'save'))}</button><button type="button" class="pgp-button pgp-button--primary" data-profile-submit${readonly || busy || !access.canSubmitRelease ? ' disabled' : ''}>${esc(t(lang, draft.submitting ? 'submitting' : draft.reviewStatus === 'rejected' ? 'resubmit' : 'submit'))}</button></div>` : '';
     const releaseToolbar = releaseWorkspace ? `<div class="pgp-release-toolbar">${releaseLocator}${releaseActions}</div>` : '';
     if (releaseWorkspace) releaseLocator = '';
     const releaseState = releaseWorkspace ? `${releaseLocator}<div class="pgp-version-bar"><div><span>${esc(t(lang, 'currentVersion'))}</span><strong>${esc(draft.versionName)}</strong></div><div><span>${esc(t(lang, 'reviewStatus'))}</span><strong class="pgp-version-status" data-profile-status>${esc(t(lang, draft.reviewStatus))}</strong></div><div><span>${esc(t(lang, 'completion'))}</span><button type="button" data-profile-show-missing><b data-profile-completion>${done.complete} / ${done.total}</b><small>${esc(t(lang, done.missing.length ? 'remaining' : 'completeAll', { count: done.missing.length }))}</small></button></div><div><span>${esc(t(lang, 'publication'))}</span><button type="button" data-profile-publication-toggle>${esc(t(lang, draft.publication.mode === 'scheduled' ? 'scheduled' : 'immediate'))}<i aria-hidden="true">⌄</i></button></div></div>${['reviewing', 'approved'].includes(draft.reviewStatus) ? `<div class="pgp-locked" role="status"><p>${esc(t(lang, draft.reviewStatus === 'approved' ? 'approvedNotice' : 'locked'))}</p><dl class="pgp-submission"><div><dt>${esc(t(lang, 'submissionId'))}</dt><dd data-profile-submission-id>${esc(draft.submissionId)}</dd></div><div><dt>${esc(t(lang, 'submittedAt'))}</dt><dd><time datetime="${esc(submissionTime)}" data-profile-submitted-at>${esc(submissionTime ? new Date(submissionTime).toLocaleString(lang === 'en' ? 'en-GB' : 'zh-CN', { hour12: false }) : '—')}</time></dd></div></dl></div>` : ''}${reviewHTML}${busy ? `<p class="pgp-upload-status" role="status">${esc(t(lang, 'uploading'))}</p>` : ''}${errorHTML(draft, lang, 'save')}${errorHTML(draft, lang, 'submit')}${errorHTML(draft, lang, 'withdraw')}${errorHTML(draft, lang, 'upload')}<div data-profile-missing-slot>${missingHTML(draft, lang)}</div>` : '';
     const backTop = releaseWorkspace ? `<button type="button" class="pgp-back-top" data-profile-back-top aria-label="${lang === 'en' ? 'Back to top' : '返回顶部'}" title="${lang === 'en' ? 'Back to top' : '返回顶部'}" hidden><span aria-hidden="true">↑</span></button>` : '';
     const withdrawKind = draft.ui.withdrawConfirm;
     const withdrawConfirmation = withdrawKind ? `<div class="pgp-confirm" data-profile-withdraw-confirm role="presentation"><button type="button" class="pgp-confirm__backdrop" data-withdraw-confirm-cancel aria-label="${lang === 'en' ? 'Cancel withdrawal' : '取消撤销'}"></button><section class="pgp-confirm__dialog" role="alertdialog" aria-modal="true" aria-labelledby="pgp-withdraw-title" aria-describedby="pgp-withdraw-description"><header><h3 id="pgp-withdraw-title">${lang === 'en' ? 'Withdraw this review?' : withdrawKind === 'release' ? '撤销版本审核？' : '撤销资质审核？'}</h3><button type="button" data-withdraw-confirm-cancel aria-label="${lang === 'en' ? 'Close' : '关闭'}">×</button></header><p id="pgp-withdraw-description">${lang === 'en' ? 'The current review will stop and the submitted content will become editable again.' : withdrawKind === 'release' ? '撤销后，本次版本审核终止，内容恢复可编辑。' : '撤销后，本次资质审核终止，资料恢复可编辑。'}</p><footer><button type="button" class="pgp-button" data-withdraw-confirm-cancel>${lang === 'en' ? 'Cancel' : '取消'}</button><button type="button" class="pgp-button pgp-button--danger" data-withdraw-confirm-submit>${lang === 'en' ? 'Confirm withdrawal' : '确认撤销'}</button></footer></section></div>` : '';
-    return `<section class="publisher-game-profile" data-publisher-profile data-profile-game="${esc(draft.gameKey)}" data-profile-language="${lang}" data-profile-module="${activeModule}"><header class="pgp-title"><h2>${esc(moduleTitle)}</h2></header>${releaseToolbar}${releaseState}<fieldset class="pgp-editable"${readonly ? ' data-profile-locked' : ''}>${moduleBody}</fieldset>${backTop}${withdrawConfirmation}</section>`;
+    const accessNotice = ['release-workspace', 'qualifications'].includes(activeModule) ? restrictionBanner(access, lang) : '';
+    const fieldsetReadonly = !['versions', 'qualifications'].includes(activeModule) && readonly;
+    return `<section class="publisher-game-profile" data-publisher-profile data-publisher-access="${esc(access.accountKind)}" data-qualification-status="${esc(access.qualificationStatus)}" data-profile-game="${esc(draft.gameKey)}" data-profile-language="${lang}" data-profile-module="${activeModule}"><header class="pgp-title"><h2>${esc(moduleTitle)}</h2></header>${accessNotice}${releaseToolbar}${releaseState}<fieldset class="pgp-editable"${fieldsetReadonly ? ' disabled data-profile-locked' : ''}>${moduleBody}</fieldset>${backTop}${withdrawConfirmation}</section>`;
   }
   async function readFile(file, key) {
     if (!file || !file.size) throw 'fileUnavailable';
@@ -691,10 +732,12 @@
       return record;
     } finally { URL.revokeObjectURL(url); }
   }
-  function bind(container, { draft, language = 'zh', onChange = () => {}, onInterfaceLanguage = () => {}, onSectionChange = () => {}, onSave = async () => {}, onSubmit = async () => {}, onWithdraw = async () => {}, onQualificationSubmit = async () => {}, onQualificationWithdraw = async () => {}, onVersionOpen = async () => null, onVersionRefresh = async () => null }) {
+  function bind(container, { draft, language = 'zh', access: rawAccess, onChange = () => {}, onInterfaceLanguage = () => {}, onSectionChange = () => {}, onSave = async () => {}, onSubmit = async () => {}, onWithdraw = async () => {}, onQualificationSubmit = async () => {}, onQualificationWithdraw = async () => {}, onVersionOpen = async () => null, onVersionRefresh = async () => null }) {
     const root = container.matches('[data-publisher-profile]') ? container : container.querySelector('[data-publisher-profile]');
     if (!root) return;
     const lang = language === 'en' ? 'en' : 'zh';
+    const access = accessFor(rawAccess);
+    const editingLocked = () => lock(draft) || !access.canEditReleaseDraft;
     const state = stateFor(draft);
     state.root = root;
     // The parent replaces the entire console, including its scrollable .workspace.
@@ -751,6 +794,7 @@
     }
     if (root.__publisherProfileBound) return;
     root.__publisherProfileBound = true;
+    root.querySelector('[data-profile-section-link="qualifications"]')?.addEventListener('click', () => onSectionChange('qualifications'));
     const backTop = root.querySelector('[data-profile-back-top]');
     const scrollContainer = root.closest('.workspace');
     if (backTop && scrollContainer) {
@@ -899,7 +943,7 @@
         });
       }
     }
-    window.PublisherGameBuilds.bind(root, { draft, readonly: lock(draft), onChanged: changed, repaint: anchor => repaint(null, anchor) });
+    window.PublisherGameBuilds.bind(root, { draft, readonly: editingLocked(), onChanged: changed, repaint: anchor => repaint(null, anchor) });
     function focusField(key) {
       if (['gameNameZh', 'taglineZh', 'descriptionZh', 'developerWordsZh'].includes(key)) draft.currentNameLanguage = draft.ui.contentLanguage = 'zh';
       if (['gameNameEn', 'tagline', 'description', 'developerWords'].includes(key)) draft.currentNameLanguage = draft.ui.contentLanguage = 'en';
@@ -946,11 +990,11 @@
     state.nameConfig = JSON.stringify([draft.nameLanguages, draft.defaultNameLanguage]);
     state.assetConfig = JSON.stringify([draft.assetLanguageSettings.nameLanguages, draft.assetLanguageSettings.defaultNameLanguage]);
     const basicSection = root.querySelector('[data-profile-section="basic"]');
-    if (basicSection) window.PublisherGameNames.bind(basicSection, { draft, language: lang, readonly: lock(draft), idPrefix: 'profile-basic', requiredLanguages: ['zh', 'en'].filter(code => contentRequired(draft, code)), onInput: code => { changed(code === 'zh' ? 'gameNameZh' : code === 'en' ? 'gameNameEn' : `gameNames.${code}`); }, onChange: () => { const config = JSON.stringify([draft.nameLanguages, draft.defaultNameLanguage]); syncContent(); if (config !== state.nameConfig && !lock(draft)) changed('gameNames'); state.nameConfig = config; repaint(null, `[data-profile-section="basic"] [data-name-language="${draft.currentNameLanguage}"]`); } });
+    if (basicSection) window.PublisherGameNames.bind(basicSection, { draft, language: lang, readonly: editingLocked(), idPrefix: 'profile-basic', requiredLanguages: ['zh', 'en'].filter(code => contentRequired(draft, code)), onInput: code => { changed(code === 'zh' ? 'gameNameZh' : code === 'en' ? 'gameNameEn' : `gameNames.${code}`); }, onChange: () => { const config = JSON.stringify([draft.nameLanguages, draft.defaultNameLanguage]); syncContent(); if (config !== state.nameConfig && !editingLocked()) changed('gameNames'); state.nameConfig = config; repaint(null, `[data-profile-section="basic"] [data-name-language="${draft.currentNameLanguage}"]`); } });
     const assetsSection = root.querySelector('[data-profile-section="assets"]');
-    if (assetsSection) window.PublisherGameNames.bind(assetsSection, { draft, language: lang, readonly: lock(draft), hideInput: true, idPrefix: 'profile-assets', title: lang === 'en' ? 'Store detail languages' : '商店资料语言', onChange: () => { const config = JSON.stringify([draft.nameLanguages, draft.defaultNameLanguage]); syncContent(); if (config !== state.assetConfig && !lock(draft)) changed('assets'); state.assetConfig = config; repaint(null, `[data-profile-section="assets"] [data-name-language="${draft.currentNameLanguage}"]`); } });
+    if (assetsSection) window.PublisherGameNames.bind(assetsSection, { draft, language: lang, readonly: editingLocked(), hideInput: true, idPrefix: 'profile-assets', title: lang === 'en' ? 'Store detail languages' : '商店资料语言', onChange: () => { const config = JSON.stringify([draft.nameLanguages, draft.defaultNameLanguage]); syncContent(); if (config !== state.assetConfig && !editingLocked()) changed('assets'); state.assetConfig = config; repaint(null, `[data-profile-section="assets"] [data-name-language="${draft.currentNameLanguage}"]`); } });
     window.PublisherReleaseRegions.bind(root, { releaseConfig: draft.releaseConfig, language: lang, onChange: next => {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
       const hadDomestic = draft.releaseConfig.mode === 'domestic';
       draft.releaseConfig = { ...draft.releaseConfig, ...next };
       draft.releaseRegions = [draft.releaseConfig.mode];
@@ -977,7 +1021,7 @@
     root.querySelectorAll('[data-profile-field]').forEach(control => {
       const key = control.dataset.profileField;
       control.addEventListener(control.tagName === 'SELECT' ? 'change' : 'input', () => {
-        if (lock(draft)) return;
+        if (editingLocked()) return;
         set(draft, key, control.value);
         const aliases = { tagline: ['en', 'tagline'], description: ['en', 'description'], developerWords: ['en', 'developerWords'], taglineZh: ['zh', 'tagline'], descriptionZh: ['zh', 'description'], developerWordsZh: ['zh', 'developerWords'] };
         if (aliases[key]) { const [code, field] = aliases[key]; draft.localizedContent[code][field] = control.value; }
@@ -993,7 +1037,7 @@
       });
     });
     root.querySelector('[data-profile-compliance-ack]')?.addEventListener('change', event => {
-      if (lock(draft) || !draft.compliance) return;
+      if (editingLocked() || !draft.compliance) return;
       draft.compliance.antiAddictionAcknowledged = event.target.checked;
       changed('compliance.antiAddictionAcknowledged');
       event.target.setAttribute('aria-invalid', 'false');
@@ -1019,6 +1063,7 @@
       updateMissingPanel();
     };
     const performQualificationWithdraw = async () => {
+      if (!access.canManageGameQualifications) return;
       const applicationId = draft.qualifications.pendingApplication?.applicationId;
       if (!applicationId || draft.qualificationWithdrawing) return;
       draft.ui.withdrawConfirm = '';
@@ -1040,6 +1085,7 @@
       }
     };
     const performReleaseWithdraw = async () => {
+      if (!access.canSubmitRelease) return;
       if (draft.reviewStatus !== 'reviewing' || draft.withdrawing) return;
       draft.ui.withdrawConfirm = '';
       draft.withdrawing = true;
@@ -1056,16 +1102,19 @@
       repaint(null, `[data-qualification-scope="${draft.ui.qualificationStandaloneMode}"]`);
     }));
     root.querySelectorAll('[data-qualification-card-action]').forEach(button => button.addEventListener('click', () => {
+      if (!access.canManageGameQualifications) return;
       draft.ui.qualificationEditorOpen = true;
       repaint(null, `[data-qualification-card="${button.dataset.qualificationCardAction}"]`);
     }));
     root.querySelectorAll('[data-qualification-region-open]').forEach(button => button.addEventListener('click', () => {
+      if (!access.canManageGameQualifications) return;
       draft.ui.qualificationStandaloneMode = button.dataset.qualificationRegionOpen === 'domestic' ? 'domestic' : 'global';
       draft.ui.qualificationEditorOpen = true;
       draft.qualificationErrors = {};
       repaint();
     }));
     root.querySelectorAll('[data-qualification-region-withdraw]').forEach(button => button.addEventListener('click', () => {
+      if (!access.canManageGameQualifications) return;
       draft.ui.qualificationStandaloneMode = button.dataset.qualificationRegionWithdraw === 'domestic' ? 'domestic' : 'global';
       draft.ui.withdrawConfirm = 'qualification';
       repaint();
@@ -1077,6 +1126,7 @@
       repaint(null, '[data-qualification-cards]');
     });
     root.querySelectorAll('[data-qualification-field]').forEach(control => control.addEventListener(control.tagName === 'SELECT' ? 'change' : 'input', () => {
+      if (!access.canManageGameQualifications) return;
       const key = control.dataset.qualificationField;
       let value = control.value;
       if (['authorization.platforms', 'authorization.territoryCodes'].includes(key)) value = [...new Set(value.split(/[,，]/).map(item => item.trim()).filter(Boolean))];
@@ -1087,15 +1137,18 @@
       if (['rightsRelationship', 'domestic.networkMode', 'domestic.icpStatus'].includes(key)) repaint(null, `[data-qualification-field="${key}"]`);
     }));
     root.querySelector('[data-qualification-declaration]')?.addEventListener('change', event => {
+      if (!access.canManageGameQualifications) return;
       qualificationApplication().rightsDeclarationAccepted = event.target.checked;
       draft.qualifications.rightsDeclarationAccepted = event.target.checked;
       qualificationChanged('rightsDeclarationAccepted');
     });
     root.querySelector('[data-qualification-anti-ack]')?.addEventListener('change', event => {
+      if (!access.canManageGameQualifications) return;
       qualificationApplication().domestic.antiAddictionAcknowledged = event.target.checked;
       qualificationChanged('domestic.antiAddictionAcknowledged');
     });
     root.querySelectorAll('[data-qualification-file]').forEach(input => input.addEventListener('change', async () => {
+      if (!access.canManageGameQualifications) return;
       const key = input.dataset.qualificationFile;
       const selected = Array.from(input.files || []);
       if (!selected.length) return;
@@ -1118,6 +1171,7 @@
       repaint(null, `[data-qualification-upload-card="${input.dataset.qualificationCardKey}"]`);
     }));
     root.querySelectorAll('[data-qualification-file-remove]').forEach(button => button.addEventListener('click', () => {
+      if (!access.canManageGameQualifications) return;
       const key = button.dataset.qualificationFileRemove;
       const files = get(qualificationApplication(), key);
       if (!Array.isArray(files)) return;
@@ -1126,6 +1180,7 @@
       repaint(null, `[data-qualification-upload-card="${button.closest('[data-qualification-upload-card]')?.dataset.qualificationUploadCard || ''}"]`);
     }));
     root.querySelector('[data-qualification-submit]')?.addEventListener('click', async () => {
+      if (!access.canManageGameQualifications) return;
       if (draft.qualificationSubmitting) return;
       const baseContext = window.PublisherGameQualifications.contextFor(draft);
       const selectedMode = root.querySelector('[data-qualification-profile]')?.dataset.qualificationContextMode || baseContext.mode;
@@ -1158,19 +1213,20 @@
       }
     });
     root.querySelector('[data-qualification-withdraw]')?.addEventListener('click', () => {
+      if (!access.canManageGameQualifications) return;
       if (!draft.qualifications.pendingApplication?.applicationId || draft.qualificationWithdrawing) return;
       draft.ui.withdrawConfirm = 'qualification';
       repaint();
     });
     root.querySelectorAll('[data-profile-array]').forEach(control => control.addEventListener('change', () => {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
       const key = control.dataset.profileArray;
       draft[key] = Array.from(root.querySelectorAll(`[data-profile-array="${key}"]:checked`), input => input.value);
       changed(key);
       if (key === 'platforms') repaint(key);
     }));
     root.querySelectorAll('[data-profile-pricing-model]').forEach(input => input.addEventListener('change', () => {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
       draft.pricing ||= { model: '', globalPrice: '', domesticPrice: '' };
       draft.pricing.model = input.value;
       draft.legacyPricing = false;
@@ -1179,7 +1235,7 @@
       repaint(null, `[data-profile-pricing-model="${input.value}"]`);
     }));
     root.querySelectorAll('[data-sku-build]').forEach(select => select.addEventListener('change', () => {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
       const key = select.dataset.skuBuild;
       const sku = key === 'catalog.baseGame' ? draft.catalog.baseGame : draft.catalog.dlcs[Number(key.split('.').pop())];
       if (!sku) return;
@@ -1187,7 +1243,7 @@
       changed(`${key}.installContentRef`);
     }));
     root.querySelectorAll('[data-sku-pricing-model]').forEach(input => input.addEventListener('change', () => {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
       const sku = skuList(draft)[Number(input.dataset.skuPricingModel)];
       if (!sku) return;
       sku.pricingModel = input.value;
@@ -1196,13 +1252,13 @@
       repaint(null, `[data-sku-pricing-model="${input.dataset.skuPricingModel}"][value="${input.value}"]`);
     }));
     root.querySelector('[data-sku-add]')?.addEventListener('click', () => {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
       draft.catalog.dlcs.push(emptySku('dlc', draft.catalog.dlcs.length));
       changed('catalog.dlcs');
       repaint();
     });
     root.querySelectorAll('[data-sku-remove]').forEach(button => button.addEventListener('click', () => {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
       draft.catalog.dlcs.splice(Number(button.dataset.skuRemove), 1);
       changed('catalog.dlcs');
       repaint();
@@ -1210,11 +1266,11 @@
     root.querySelectorAll('[data-profile-asset-tab]').forEach(button => button.addEventListener('click', () => { draft.ui.assetTab = button.dataset.profileAssetTab; repaint(null, `[data-profile-asset-tab="${button.dataset.profileAssetTab}"]`); }));
     root.querySelectorAll('[data-profile-image-category]').forEach(button => button.addEventListener('click', () => { draft.ui.imageCategory = button.dataset.profileImageCategory; repaint(null, `[data-profile-image-category="${button.dataset.profileImageCategory}"]`); }));
     root.querySelector('[data-profile-publication-toggle]')?.addEventListener('click', () => repaint('releaseStatus'));
-    root.querySelectorAll('[data-profile-publication]').forEach(input => input.addEventListener('change', () => { if (!lock(draft)) { draft.publication.mode = input.value; changed('publication.scheduledAt'); repaint(); } }));
+    root.querySelectorAll('[data-profile-publication]').forEach(input => input.addEventListener('change', () => { if (!editingLocked()) { draft.publication.mode = input.value; changed('publication.scheduledAt'); repaint(); } }));
     root.querySelector('[data-profile-show-missing]')?.addEventListener('click', () => { draft.errors = { ...draft.errors, ...validate(draft) }; draft.ui.showMissing = !draft.ui.showMissing; repaint(); });
     root.addEventListener('click', event => { const button = event.target.closest('[data-profile-focus]'); if (button && root.contains(button)) focusField(button.dataset.profileFocus); });
     async function upload(files, key, index) {
-      if (lock(draft) || !files.length) return;
+      if (editingLocked() || !files.length) return;
       const storageKey = resolvedKey(draft, key);
       const currentAtStart = get(draft, storageKey);
       const replacingFile = Array.isArray(currentAtStart) && index !== undefined ? currentAtStart[index] : null;
@@ -1244,12 +1300,12 @@
     }
     root.querySelectorAll('[data-profile-upload]').forEach(input => input.addEventListener('change', () => upload(Array.from(input.files || []), input.dataset.profileUpload, input.hasAttribute('data-profile-index') ? Number(input.dataset.profileIndex) : undefined)));
     root.querySelectorAll('[data-profile-drop]').forEach(zone => {
-      zone.addEventListener('dragover', event => { if (!lock(draft)) { event.preventDefault(); zone.classList.add('is-drag-over'); } });
+      zone.addEventListener('dragover', event => { if (!editingLocked()) { event.preventDefault(); zone.classList.add('is-drag-over'); } });
       zone.addEventListener('dragleave', () => zone.classList.remove('is-drag-over'));
       zone.addEventListener('drop', event => { event.preventDefault(); zone.classList.remove('is-drag-over'); upload(Array.from(event.dataTransfer?.files || []), zone.dataset.profileDrop); });
     });
     root.querySelectorAll('[data-profile-remove]').forEach(button => button.addEventListener('click', () => {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
       const key = button.dataset.profileRemove;
       const current = get(draft, key);
       const index = button.hasAttribute('data-profile-index') ? Number(button.dataset.profileIndex) : undefined;
@@ -1258,7 +1314,8 @@
       changed(key); repaint();
     }));
     async function action(kind) {
-      if (lock(draft)) return;
+      if (editingLocked()) return;
+      if (kind === 'submit' && !access.canSubmitRelease) return;
       if (state.uploads.size) { draft.errors.upload = 'uploadBusy'; repaint(); return; }
       delete draft.errors.save; delete draft.errors.submit;
       if (kind === 'submit') {
@@ -1272,6 +1329,7 @@
       finally { draft[flag] = false; if (state.root?.isConnected) repaint(); }
     }
     root.querySelector('[data-profile-withdraw]')?.addEventListener('click', () => {
+      if (!access.canSubmitRelease) return;
       if (draft.reviewStatus !== 'reviewing' || draft.withdrawing) return;
       draft.ui.withdrawConfirm = 'release';
       repaint();
@@ -1286,7 +1344,7 @@
     });
     root.querySelector('[data-profile-save]')?.addEventListener('click', () => action('save'));
     root.querySelector('[data-profile-submit]')?.addEventListener('click', () => action('submit'));
-    if (lock(draft)) root.querySelectorAll('[data-profile-field], [data-profile-array], [data-profile-upload], [data-profile-remove], [data-profile-listed], [data-profile-publication], [data-profile-pricing-model], [data-profile-compliance-ack]').forEach(control => { control.disabled = true; });
+    if (editingLocked()) root.querySelectorAll('[data-profile-field], [data-profile-array], [data-profile-upload], [data-profile-remove], [data-profile-listed], [data-profile-publication], [data-profile-pricing-model], [data-profile-compliance-ack]').forEach(control => { control.disabled = true; });
     const qualificationTargetFor = key => {
       if (!key) return null;
       if (key === 'rightsDeclarationAccepted') return root.querySelector('[data-qualification-declaration]');

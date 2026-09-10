@@ -5,7 +5,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const e = c.escapeHtml;
   const icon = name => namespace.icons.render(name);
   const roleMeta = {
-    developer: { label: '开发者', roleName: '已认证开发者', description: '维护资料、接入三系统 SDK、提交 Build，并管理 CDKEY、Campaign 与聚合数据。' },
+    developer: { label: '开发者', roleName: '平台开发者', description: '创建游戏项目，维护版本发布、发布记录与游戏资质认证。' },
     operations: { label: '发行运营', roleName: '平台发行运营', description: '维护账号映射、录入线下结果、配置供给并执行版本发布。' },
     tester: { label: '测试人员', roleName: '平台测试人员', description: '仅处理分配给本人的待测任务，历史结果不可覆盖。' },
   };
@@ -28,10 +28,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     'P01-05': '游戏资料',
     'P01-06': 'APPID 与 SDK',
     'P01-07': '测试与发布',
-    'P01-08': '企业认证审核',
+    'P01-08': '发行审核',
     'P01-09': '企业认证内容配置',
     'P01-10': '帮助中心',
-    'P02-01': 'CDKEY 商品与供给',
+    'P02-01': '游戏创建与发行',
     'P02-02': '外部 Key 异常详情',
     'P02-03': '商品与 SKU 管理',
     'P02-04': '外部 Key 供给配置',
@@ -82,9 +82,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const account = redacted || isLogin ? null : portalData.accounts?.[role];
     const isEnglish = language === 'en';
     const help = redacted ? '' : `<button class="top-help-button" type="button" data-help-open data-portal-action="open-help">${icon('info')}<span>${isEnglish && role === 'developer' ? 'Help Center' : '帮助中心'}</span></button>`;
-    const languageSwitch = !redacted && role === 'developer' ? `<button class="top-language-button" type="button" data-portal-action="toggle-interface-language" aria-label="${isEnglish ? 'Switch to Chinese' : '切换英语'}">${isEnglish ? 'Switch to Chinese' : '切换英语'}</button>` : '';
+    const languageSwitch = !redacted && role === 'developer' ? `<button class="top-language-button" type="button" data-portal-action="toggle-interface-language" aria-label="${isEnglish ? '中文' : '英语'}">${isEnglish ? '中文' : '英语'}</button>` : '';
     const login = isLogin ? `<button class="top-login-button" type="button" data-login-open data-portal-action="open-login">${icon('user')}<span>${isEnglish ? 'Sign in' : '登录'}</span></button>` : '';
-    const context = role === 'operations' ? '<div class="top-context"><strong>发行平台后台</strong><span>企业认证与内容运营</span></div>' : '';
+    const context = role === 'operations' ? '<div class="top-context"><strong>发行平台后台</strong><span>企业认证、游戏审核与内容运营</span></div>' : '';
     const accountTier = registration?.accountTier || 'unselected';
     const qualificationRole = accountTier === 'unselected'
       ? (isEnglish ? 'Choose onboarding option' : '待选择入驻方式')
@@ -98,11 +98,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const consoleLink = account && role === 'developer'
       ? `<button class="top-console-button" type="button" data-portal-action="go-console" hidden>${icon('chart')}<span>${isEnglish ? 'Console' : '控制台'}</span></button>`
       : '';
-    const developerTools = `${consoleLink}${help}${languageSwitch}${accountBlock}${login}`;
-    const operationsTools = `${accountBlock}${help}`;
+    const portalSwitch = !redacted && !isLogin && account
+      ? `<button class="top-portal-switch" type="button" data-portal-action="switch-portal-side">${icon('chart')}<span>${role === 'operations' ? '切换开发者前台' : (isEnglish ? 'Switch to operations' : '切换运营后台')}</span></button>`
+      : '';
+    const developerTools = `${consoleLink}${help}${languageSwitch}${portalSwitch}${accountBlock}${login}`;
+    const operationsTools = `${accountBlock}${portalSwitch}${help}`;
     const isPublisherWorkspace = module?.id === '02' && role === 'developer';
-    const brandTitle = role === 'operations' ? 'gamesir-dashboard' : isPublisherWorkspace ? 'PC 发行平台' : '盖世游戏';
-    const brandSubtitle = role === 'operations' ? '运营管理后台' : isPublisherWorkspace ? '开发者中心' : (isEnglish && role === 'developer' ? 'Developer Platform' : '开发者平台');
+    const brandTitle = role === 'operations' ? 'gamesir-dashboard' : isPublisherWorkspace ? (isEnglish ? 'PC Publishing' : 'PC 发行平台') : '盖世游戏';
+    const brandSubtitle = role === 'operations' ? '运营管理后台' : isPublisherWorkspace ? (isEnglish ? 'Developer Center' : '开发者中心') : (isEnglish && role === 'developer' ? 'Developer Platform' : '开发者平台');
     return `<header class="top-bar"><button class="brand-block" type="button" data-portal-action="home" aria-label="${role === 'operations' ? '返回发行平台后台首页' : (isEnglish ? 'Back to developer home' : '返回开发者首页')}"><div class="brand-mark">${icon('logo')}</div><div class="brand-copy"><div class="brand-title">${brandTitle}</div><div class="brand-subtitle">${brandSubtitle}</div></div></button>${context}${role === 'developer' ? developerTools : operationsTools}</header>`;
   };
 
@@ -111,17 +114,23 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const consoleRouteIds = ['P01-04', 'P01-05', 'P01-06', 'P01-07'];
     if (role === 'operations' && route.moduleId === '01') {
       const items = [
-        ['P01-08', 'vendor', '企业认证审核'],
         ['P01-09', 'file', '企业认证内容配置'],
         ['P01-10', 'info', '帮助中心'],
+        ['P01-08', 'review', '发行审核'],
       ];
-      return `<aside class="side-nav side-nav--operations" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">发行平台后台</div><nav class="nav-list" aria-label="发行平台后台">${items.map(([id, iconName, label]) => `<a class="nav-item${route.id === id ? ' is-active' : ''}" href="#/${id}"${route.id === id ? ' aria-current="page"' : ''}>${icon(iconName)}<span>${label}</span></a>`).join('')}<div class="nav-group-label">后续能力</div><span class="nav-item is-disabled">${icon('game')}<span>游戏资料审核</span></span><span class="nav-item is-disabled">${icon('chart')}<span>发行数据管理</span></span></nav></aside>`;
+      return `<aside class="side-nav side-nav--operations" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">发行平台后台</div><nav class="nav-list" aria-label="发行平台后台">${items.map(([id, iconName, label]) => `<a class="nav-item${route.id === id ? ' is-active' : ''}" href="#/${id}"${route.id === id ? ' aria-current="page"' : ''}>${icon(iconName)}<span>${label}</span></a>`).join('')}</nav></aside>`;
     }
     if (role === 'developer' && route.id === 'P02-01') {
       return '';
     }
     if (role === 'developer' && route.id === 'P01-03') {
       const isEnglish = language === 'en';
+      const qualificationFlowOpen = Boolean(
+        qualification?.readOnly
+        || qualification?.editing
+        || (qualification?.status === 'unsubmitted' && Number(qualification?.step) > 0),
+      );
+      if (qualificationFlowOpen) return '';
       const consoleView = registration?.consoleTab || 'games';
       const activeTab = consoleView === 'overview' ? 'overview' : 'games';
       const items = [
