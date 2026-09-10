@@ -22,6 +22,7 @@
       canViewReleaseHistory: signedIn,
       canManageGameQualifications: enterpriseApproved,
       canManageVendor: enterpriseApproved,
+      canViewPublisherData: enterpriseApproved || suspended,
       isPublisherReadOnly: suspended,
     });
   };

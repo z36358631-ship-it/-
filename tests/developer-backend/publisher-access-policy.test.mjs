@@ -11,15 +11,15 @@ vm.runInNewContext(
 const rules = scope.window.PublisherAccessPolicy;
 
 const cases = [
-  ['signed-out', false, 'unsubmitted', false, false, false, false, false, false],
-  ['personal', true, 'unsubmitted', true, true, false, false, false, true],
-  ['pending', true, 'pending', true, true, false, false, false, true],
-  ['rejected', true, 'rejected', true, true, false, false, false, true],
-  ['enterprise', true, 'approved', true, true, true, true, false, true],
-  ['suspended', true, 'delisted', false, false, false, false, true, true],
+  ['signed-out', false, 'unsubmitted', false, false, false, false, false, false, false],
+  ['personal', true, 'unsubmitted', true, true, false, false, false, false, true],
+  ['pending', true, 'pending', true, true, false, false, false, false, true],
+  ['rejected', true, 'rejected', true, true, false, false, false, false, true],
+  ['enterprise', true, 'approved', true, true, true, true, true, false, true],
+  ['suspended', true, 'delisted', false, false, false, false, true, true, true],
 ];
 
-for (const [name, authenticated, status, canCreate, canEdit, canSubmit, canManage, readOnly, canViewHistory] of cases) {
+for (const [name, authenticated, status, canCreate, canEdit, canSubmit, canManage, canViewData, readOnly, canViewHistory] of cases) {
   test(`${name} publisher access`, () => {
     const access = rules.derive({ authenticated, qualification: { status } });
     assert.equal(access.canCreateGameDraft, canCreate);
@@ -27,6 +27,7 @@ for (const [name, authenticated, status, canCreate, canEdit, canSubmit, canManag
     assert.equal(access.canSubmitRelease, canSubmit);
     assert.equal(access.canManageGameQualifications, canManage);
     assert.equal(access.canManageVendor, canManage);
+    assert.equal(access.canViewPublisherData, canViewData);
     assert.equal(access.isPublisherReadOnly, readOnly);
     assert.equal(access.canViewReleaseHistory, canViewHistory);
     assert.equal(Object.isFrozen(access), true);

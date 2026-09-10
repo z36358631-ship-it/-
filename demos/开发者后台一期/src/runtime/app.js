@@ -261,6 +261,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     canViewReleaseHistory: Boolean(memory.session.authenticated),
     canManageGameQualifications: Boolean(memory.session.authenticated && memory.qualification?.status === 'approved'),
     canManageVendor: Boolean(memory.session.authenticated && memory.qualification?.status === 'approved'),
+    canViewPublisherData: Boolean(memory.session.authenticated && ['approved', 'delisted'].includes(memory.qualification?.status)),
     isPublisherReadOnly: Boolean(memory.session.authenticated && memory.qualification?.status === 'delisted'),
   });
   const persistPublisherSession = () => {
@@ -289,9 +290,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const requestedSection = restoredHandoff?.targetTab || restoredPublisherWorkspace.gameSection;
     const resumeSelectedGame = Boolean(selectedGame && (restoredPublisherWorkspace.workspaceView === 'game'
       || (!Object.prototype.hasOwnProperty.call(restoredPublisherWorkspace, 'workspaceView') && memory.session.activeGameId)));
+    const restoredView = ['games', 'vendor', 'data'].includes(restoredPublisherWorkspace.workspaceView) ? restoredPublisherWorkspace.workspaceView : 'games';
+    const dataDashboard = window.PublisherDataDashboard?.createState(restoredPublisherWorkspace.dataDashboard || {}) || restoredPublisherWorkspace.dataDashboard || {};
+    dataDashboard.selectedOrder = '';
+    dataDashboard.scopeOpen = false;
+    delete dataDashboard.__keywordTimer;
     return {
       ...restoredPublisherWorkspace,
-      workspaceView: resumeSelectedGame ? 'game' : 'games',
+      workspaceView: resumeSelectedGame ? 'game' : restoredView,
       gameTab: 'release',
       gameSection: allowedSections.has(requestedSection) ? requestedSection : 'release-workspace',
       selectedGame,
@@ -306,6 +312,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       profileDrafts: restoredPublisherWorkspace.profileDrafts && typeof restoredPublisherWorkspace.profileDrafts === 'object' ? restoredPublisherWorkspace.profileDrafts : {},
       publicationDrafts: {},
       createDraft: null,
+      dataDashboard,
     };
   };
   const loadPublisherWorkspaceForSession = () => {
@@ -1018,14 +1025,19 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
   const persistPublisherWorkspace = () => {
     const { publicationDrafts, ...workspace } = memory.page['P02-01'] || {};
+    const persistableWorkspace = { ...workspace };
+    if (persistableWorkspace.dataDashboard && typeof persistableWorkspace.dataDashboard === 'object') {
+      persistableWorkspace.dataDashboard = { ...persistableWorkspace.dataDashboard, selectedOrder:'', scopeOpen:false };
+      delete persistableWorkspace.dataDashboard.__keywordTimer;
+    }
     if (publisherAccountContext && memory.session.authenticated && memory.session.accountKey) {
-      const activeGameId = String(workspace.selectedGame || memory.session.activeGameId || 'existing');
+      const activeGameId = String(persistableWorkspace.selectedGame || memory.session.activeGameId || 'existing');
       memory.session.activeGameId = activeGameId;
-      publisherAccountContext.saveWorkspace(localStorage, memory.session.accountKey, publisherWorkspaceScopeKey, workspace);
+      publisherAccountContext.saveWorkspace(localStorage, memory.session.accountKey, publisherWorkspaceScopeKey, persistableWorkspace);
       persistPublisherSession();
       return;
     }
-    if (!publisherAccountContext) writeStorage(localStorage, publisherWorkspaceStorageKey, workspace);
+    if (!publisherAccountContext) writeStorage(localStorage, publisherWorkspaceStorageKey, persistableWorkspace);
   };
   const restoreActiveHorizontalItem = (selector, previousLeft = 0) => {
     const scroller = root.querySelector(selector);
@@ -1338,7 +1350,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (route.id === 'P02-01' && action === 'publisher-sidebar-view') {
         const requested = event.currentTarget.dataset.publisherView;
         if (requested === 'vendor' && !publisherAccess().canManageVendor) return;
-        updatePublisherWorkspace({ workspaceView: requested === 'vendor' ? 'vendor' : 'games', addGameOpen: false, gameMenuOpen: '' });
+        if (requested === 'data' && !publisherAccess().canViewPublisherData) return;
+        updatePublisherWorkspace({ workspaceView: ['vendor','data'].includes(requested) ? requested : 'games', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-game-search') {
@@ -2782,6 +2795,20 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         onQualificationWithdraw: application => withdrawPublisherQualification(draft, application),
         onVersionOpen: submissionId => loadPublisherReleaseSubmission(draft, submissionId),
         onVersionRefresh: () => refreshPublisherReleaseSubmissions(draft),
+      });
+    }
+    if (route.id === 'P02-01' && memory.page[route.id]?.workspaceView === 'data' && window.PublisherDataDashboard) {
+      const dashboardState = memory.page[route.id].dataDashboard || (memory.page[route.id].dataDashboard = window.PublisherDataDashboard.createState());
+      window.PublisherDataDashboard.bind(root, {
+        state: dashboardState,
+        onChange: (_next, options = {}) => updatePublisherWorkspace({ dataDashboard:dashboardState }, { preserveScroll:Boolean(options.preserveScroll) }),
+        onFinance: (target, filters) => {
+          persistPublisherWorkspace();
+          const vendorId = memory.session.vendorId || portalData.context?.vendorId || '';
+          const query = new URLSearchParams({ vendor:vendorId, game:filters.game || 'all', fulfillment:filters.fulfillment || 'all', range:filters.range || '30d', ledger_source:'direct_sale' });
+          window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, vendorId, targetRoute:target, filters, ledgerSource:'direct_sale', expiresAt:Date.now() + 30 * 60 * 1000 });
+          location.href = `15-开发者财务结算demo.html#/${target}?${query.toString()}`;
+        },
       });
     }
     if (route.id === 'P01-07' && state === 'default' && memory.page[route.id]?.releaseTab === 'audit') {

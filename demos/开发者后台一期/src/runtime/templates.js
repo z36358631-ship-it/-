@@ -263,7 +263,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const publisherAccessFor = access => access && typeof access === 'object' ? access : {
     accountKind: 'enterprise', qualificationStatus: 'approved', canCreateGameDraft: true,
     canEditReleaseDraft: true, canSubmitRelease: true, canViewReleaseHistory: true,
-    canManageGameQualifications: true, canManageVendor: true, isPublisherReadOnly: false,
+    canManageGameQualifications: true, canManageVendor: true, canViewPublisherData: true, isPublisherReadOnly: false,
   };
   const publisherProfileRelationshipLabels = { developer: '开发商', publisher: '发行商', developer_publisher: '开发商和发行商' };
   const publisherProfileReleasePlanLabels = { reservation: '游戏还没好，先开放预约', test: '先开一次测试', launch: '已有游戏，准备上线' };
@@ -449,8 +449,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   const renderPublisherConsoleSidebar = (active, language = 'zh', rawAccess) => {
     const access = publisherAccessFor(rawAccess);
+    const data = access.canViewPublisherData ? `<section><span>${language === 'en' ? 'Analytics' : '数据'}</span><button type="button" class="${active === 'data' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="data">${icon('chart')}<b>${language === 'en' ? 'Data dashboard' : '数据看板'}</b>${icon('chevron')}</button></section>` : '';
     const vendor = access.canManageVendor ? `<section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section>` : '';
-    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${vendor}</aside>`;
+    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${data}${vendor}</aside>`;
   };
 
   const renderPublisherGameCard = ({ name, gameId, appId, systems, stage, status, updatedAt, gameKey }) => `<button class="publisher-game-card" type="button" data-portal-action="enter-publisher-game" data-publisher-game="${e(gameKey)}" aria-label="进入${e(name)}控制台">
@@ -477,7 +478,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderPublisherData = state => {
+  const renderPublisherData = (state, language = 'zh', rawAccess) => {
+    if (window.PublisherDataDashboard) return window.PublisherDataDashboard.render(state.dataDashboard || (state.dataDashboard = window.PublisherDataDashboard.createState()), language, { access:publisherAccessFor(rawAccess) });
     const games = getPublisherGames(state);
     const hasExistingGame = games.some(game => game.gameKey === 'existing');
     const pendingGames = games.filter(game => ['审核中', '需修改'].includes(game.reviewStatus));
@@ -718,12 +720,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (workspaceState.addGameOpen && window.PublisherGameCreate) {
       return `<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="create"><div class="publisher-console-shell">${renderPublisherConsoleSidebar('games', language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${window.PublisherGameCreate.render(workspaceState.createDraft, language)}</div></main></div></div>`;
     }
-    const requestedView = ['games', 'vendor', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
-    const view = requestedView === 'vendor' && !access.canManageVendor ? 'games' : requestedView;
-    const activeSidebar = view === 'vendor' ? 'vendor' : 'games';
+    const requestedView = ['games', 'vendor', 'data', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
+    const view = (requestedView === 'vendor' && !access.canManageVendor) || (requestedView === 'data' && !access.canViewPublisherData) ? 'games' : requestedView;
+    const activeSidebar = ['vendor','data'].includes(view) ? view : 'games';
     const content = view === 'game'
       ? renderPublisherGameConsole(page, workspaceState, language, access)
-      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings() : renderPublisherGames(workspaceState, access)}</div></main></div>`;
+      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings() : view === 'data' ? renderPublisherData(workspaceState, language, access) : renderPublisherGames(workspaceState, access)}</div></main></div>`;
     return `${storageNotice}<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="${view}">${content}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
   };
 
