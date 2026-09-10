@@ -1,960 +1,428 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>盖世掌游全功能社区 - 任务兑换完美版</title>
-    <style>
-        :root {
-            --bg-dark: #0f1015; 
-            --bg-card: #181920;
-            --bg-steam: linear-gradient(135deg, #2a2536 0%, #16151a 100%);
-            --primary: #1890ff;我的盖世币
-            --coin: #fadb14; /* 盖世币专属金 */
-            --text-p: #ffffff;
-            --text-s: #8a99a8;
-            --border: rgba(255, 255, 255, 0.08);
-            --icon-color: #6b7785;
-            
-            /* 状态色 */
-            --orange: #faad14; /* 填写地址与高亮强调 */
-            --green: #52c41a; /* 已发货状态 */
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #000; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--text-p); padding: 20px; }
-
-        /* 设备外壳与横竖版控制 */
-        .orientation-toggle { margin-bottom: 20px; padding: 10px 20px; border-radius: 20px; border: 1px solid #444; background: #222; color: #fff; cursor: pointer; transition: 0.3s; z-index: 1000;}
-        .orientation-toggle:hover { background: #333; }
-        
-        #device { background: var(--bg-dark); border-radius: 40px; box-shadow: 0 0 0 10px #222, 0 30px 60px rgba(0,0,0,0.8); position: relative; overflow: hidden; transition: width 0.4s, height 0.4s; display: flex; flex-direction: column; }
-        #device.portrait { width: 390px; height: 844px; }
-        #device.landscape { width: 844px; height: 390px; }
-
-        .sys-status-bar { height: 44px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; z-index: 2000; font-size: 14px; font-weight: 600; color: #fff; pointer-events: none; }
-        .sys-icons { display: flex; gap: 7px; align-items: center; }
-        .sys-icons svg { height: 12px; fill: #fff; opacity: 0.9; }
-
-        .device-body { position: relative; flex: 1; overflow: hidden; width: 100%; }
-        .scroller { height: 100%; overflow-y: auto; scroll-behavior: smooth; }
-        .scroller::-webkit-scrollbar { display: none; }
-
-        /* ---------------- 主页布局恢复 (V12) ---------------- */
-        .layout-wrapper { display: flex; height: 100%; position: relative; }
-        .portrait .layout-wrapper { flex-direction: column; }
-        .landscape .layout-wrapper { flex-direction: row; }
-
-        .profile-part { flex-shrink: 0; background: var(--bg-dark); z-index: 2; }
-        .portrait .profile-part { width: 100%; padding-bottom: 15px; }
-        .landscape .profile-part { width: 50%; border-right: 1px solid var(--border); padding-bottom: 20px; overflow-y: auto;}
-        .landscape .profile-part::-webkit-scrollbar { display: none; }
-        .content-part { flex: 1; display: flex; flex-direction: column; background: var(--bg-dark); }
-        .landscape .content-part { width: 50%; }
-
-        /* 顶部控制按钮：【盖世币】在【消息】左侧 */
-        .top-controls { position: absolute; top: 10px; right: 20px; display: flex; gap: 18px; z-index: 20; align-items: center; }
-        .icon-btn { position: relative; cursor: pointer; display: flex; align-items: center; }
-        .icon-btn svg { width: 22px; height: 22px; fill: var(--text-p); opacity: 0.8; transition: 0.2s; }
-        .icon-btn svg:hover { opacity: 1; }
-        .icon-coin svg { fill: var(--coin); opacity: 1; width: 24px; height: 24px;}
-        .main-msg-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #f5222d; border-radius: 50%; border: 2px solid var(--bg-dark); }
-
-        /* 用户信息与数据 */
-        .user-hero-new { display: flex; align-items: center; padding: 0 20px; gap: 15px; margin-bottom: 15px; margin-top: 35px; }
-        .landscape .user-hero-new { margin-top: 10px; }
-        .avatar-container-new { width: 55px; height: 55px; border-radius: 50%; padding: 2px; border: 2px solid var(--primary); flex-shrink: 0; }
-        .avatar-img { width: 100%; height: 100%; border-radius: 50%; background: url('https://api.dicebear.com/7.x/avataaars/svg?seed=GS') center/cover; }
-        .user-info-box { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-        .username { font-size: 17px; font-weight: bold; color: #fff; }
-        .user-desc { font-size: 12px; color: var(--text-s); }
-        .uid { font-size: 11px; color: #55606d; background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 10px; width: fit-content; }
-        
-        .data-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 20px; margin-bottom: 15px; }
-        .stat-item { text-align: center; cursor: pointer; }
-        .stat-item .val { font-size: 17px; font-weight: bold; display: block; margin-bottom: 4px; }
-        .stat-item .lbl { font-size: 12px; color: var(--text-s); }
-
-        /* Steam卡片与Banner恢复 */
-        .steam-card { background: var(--bg-steam); margin: 0 20px 15px; border-radius: 16px; padding: 18px; border: 1px solid rgba(255,255,255,0.05); }
-        .steam-title { font-size: 14px; font-weight: bold; margin-bottom: 12px; color: rgba(255,255,255,0.9); }
-        .steam-user-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .steam-user-left { display: flex; align-items: center; gap: 10px; }
-        .steam-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #5ce1e6; padding: 2px; }
-        .steam-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: url('https://api.dicebear.com/7.x/avataaars/svg?seed=Gamer') center/cover; background-color: #111; }
-        .steam-name { font-size: 13px; color: #fff; width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .steam-level { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #ddd; }
-        .steam-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; position: relative; }
-        .steam-grid::before, .steam-grid::after { content: ''; position: absolute; top: 10%; bottom: 10%; width: 1px; background: rgba(255,255,255,0.1); }
-        .steam-grid::before { left: 33%; } .steam-grid::after { left: 66%; }
-        .steam-grid .l { font-size: 11px; color: var(--text-s); margin-bottom: 6px; }
-        .steam-grid .v { font-size: 15px; font-weight: bold; color: #fff; }
-
-        .op-banner { background: linear-gradient(90deg, #5b285b 0%, #3e1b4b 100%); margin: 0 20px 5px; border-radius: 12px; padding: 14px 15px 20px; display: flex; align-items: center; gap: 12px; position: relative; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .op-banner-icon { width: 42px; height: 42px; background: radial-gradient(circle at top left, #84e8ff, #ff84df, #7e42f5); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .op-banner-text { flex: 1; text-align: center; z-index: 1; }
-        .op-banner-title { font-size: 17px; font-weight: 900; color: #fff; font-style: italic; letter-spacing: 1px; }
-        .op-banner-sub { font-size: 11px; color: #dfcbe6; margin-top: 4px; }
-
-        /* 动态Tab与Feed列表恢复 */
-        .tab-bar { display: flex; gap: 25px; padding: 15px 20px 0; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-dark); z-index: 5; }
-        .tab { color: var(--text-s); font-size: 14px; padding-bottom: 12px; cursor: pointer; position: relative; transition: 0.2s; }
-        .tab.active { color: var(--text-p); font-weight: bold; font-size: 15px;}
-        .tab.active::after { content:''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: var(--primary); border-radius: 2px; }
-
-        .feed-item { padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; }
-        .feed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .feed-user { display: flex; gap: 10px; align-items: center; }
-        .feed-avatar { width: 38px; height: 38px; border-radius: 50%; background: #444 center/cover; }
-        .feed-user-info .name { font-size: 14px; font-weight: bold; color: #fff; }
-        .feed-user-info .meta { font-size: 11px; color: var(--text-s); margin-top: 2px; }
-        .feed-title { font-size: 15px; font-weight: bold; margin-bottom: 6px; color: #fff; }
-        .feed-tags { display: flex; gap: 8px; margin-bottom: 6px; }
-        .tag { color: var(--primary); font-size: 13px; }
-        .feed-text { font-size: 14px; line-height: 1.5; color: #ddd; margin-bottom: 12px; }
-        .feed-actions { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; }
-        .action-btn { display: flex; align-items: center; gap: 6px; color: var(--icon-color); font-size: 13px; }
-        .action-btn svg { width: 18px; height: 18px; fill: currentColor; }
-
-        /* ---------------- 面板与组件 ---------------- */
-        .panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; z-index: 100; transform: translateX(100%); }
-        .panel.show { transform: translateX(0); }
-        .panel-head { display: flex; align-items: center; padding: 15px 20px; background: var(--bg-card); z-index: 5; flex-shrink: 0; border-bottom: 1px solid var(--border); position: sticky; top: 0;}
-        .btn-back { font-size: 24px; margin-right: 15px; cursor: pointer; color: #fff; padding-bottom: 2px; width: 20px;}
-        .panel-title { font-weight: bold; font-size: 16px; flex: 1; text-align: center; margin-right: 10px;}
-        .panel-action { font-size: 13px; color: var(--text-s); cursor: pointer; position: absolute; right: 20px; }
-        
-        .arrow-circle-btn { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center; font-size: 16px; color: #fff; margin-left: 10px; cursor: pointer; line-height: 1;}
-        
-        .gaishi-coin-svg { width: 1.1em; height: 1.1em; vertical-align: -0.15em; fill: var(--coin); margin-right: 4px; }
-
-        /* --- 任务中心 --- */
-        .task-banner { padding: 25px 20px; background: linear-gradient(180deg, #2a2210 0%, var(--bg-dark) 100%); display: flex; justify-content: space-between; align-items: center;}
-        .task-total .t { font-size: 12px; color: var(--text-s); margin-bottom: 5px; }
-        .task-total .v { font-size: 34px; font-weight: 900; color: var(--coin); display: flex; align-items: center; cursor: pointer;}
-        
-        .task-group-title { padding: 15px 20px 10px; font-size: 15px; font-weight: bold; color: #fff; display:flex; align-items:center; }
-        .task-group-title::before { content: ''; display: inline-block; width: 4px; height: 14px; background: var(--coin); border-radius: 2px; margin-right: 8px; }
-        .task-group-title span.limit { font-size:11px; color:var(--text-s); font-weight:normal; margin-left:8px; }
-
-        /* 🌟 任务列表支持网格布局 */
-        .task-grid { display: flex; flex-direction: column; gap: 10px; padding: 0 15px; margin-bottom: 10px;}
-        .task-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--bg-card); border-radius: 12px; height: 100%;}
-        .landscape .task-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
-
-        .task-info { flex: 1; margin-left: 6px;}
-        .task-name { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 6px; display:flex; align-items:center; gap:6px;}
-        .task-reward { color: var(--coin); font-size: 12px; font-weight: bold; display:flex; align-items:center;}
-        .task-desc { font-size: 12px; color: var(--text-s); }
-        .task-progress { font-size: 11px; color: var(--text-s); margin-top:4px;}
-        .task-btn { background: #fff; color: #000; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap;}
-        .task-btn.done { background: rgba(255,255,255,0.1); color: var(--text-s); pointer-events: none; }
-
-        /* --- 兑换商城 --- */
-        .store-header-banner { padding: 15px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .sh-val-box { display: flex; align-items: center; cursor: pointer; }
-        .sh-val-box .val { font-size: 24px; font-weight: 900; color: var(--coin); display:flex; align-items:center;}
-        
-        .store-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 15px; }
-        .landscape .store-grid { grid-template-columns: repeat(4, 1fr); }
-        .store-item { background: var(--bg-card); border-radius: 12px; overflow: hidden; position:relative; cursor: pointer; transition: 0.2s;}
-        .store-item:active { transform: scale(0.98); }
-        .store-tag { position:absolute; top:0; right:0; background:rgba(245, 34, 45, 0.85); color:#fff; font-size:10px; font-weight:bold; padding:4px 8px; border-bottom-left-radius:8px; z-index:2;}
-        .store-img-box { width: 100%; aspect-ratio: 1; background: #222; display: flex; align-items: center; justify-content: center; }
-        .store-img-box img { width: 70%; height: 70%; object-fit: contain; }
-        .store-info { padding: 12px; }
-        .store-name { font-size: 13px; font-weight: bold; color: #fff; margin-bottom: 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-        .store-price-row { display: flex; justify-content: space-between; align-items: center; }
-        .store-price { color: var(--coin); font-size: 15px; font-weight: bold; display: flex; align-items: center;}
-
-        /* --- 弹窗与表单 --- */
-        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .landscape .modal-overlay { align-items: center; }
-        .modal-overlay.show { opacity: 1; pointer-events: auto; }
-        
-        .redeem-box { background: #1e1e24; width: 100%; border-radius: 24px 24px 0 0; padding: 24px; transform: translateY(100%); transition: 0.3s; }
-        .landscape .redeem-box { border-radius: 24px; transform: translateY(20px); width: 400px; margin: auto; }
-        .modal-overlay.show .redeem-box { transform: translateY(0); }
-        
-        .r-header { display: flex; gap: 15px; margin-bottom: 15px; }
-        .r-img { width: 80px; height: 80px; background: #333; border-radius: 12px; padding: 10px;}
-        .r-img img { width:100%; height:100%; object-fit:contain; }
-        .r-price { font-size: 24px; font-weight: bold; color: var(--coin); margin-bottom: 5px; display: flex; align-items: center;}
-        .r-title { font-size: 16px; font-weight: bold; color: #fff; }
-        .r-count-row { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;}
-        .r-step-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #555; background: transparent; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor:pointer;}
-        .btn-confirm { background: #fff; color: #000; border: none; padding: 12px 30px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn-confirm.disabled { background: #444; color: #888; pointer-events: none; }
-
-        .address-box { background: #1e1e24; width: 90%; max-width: 400px; border-radius: 16px; padding: 24px; color: #fff; margin: auto; transform: scale(0.9); transition: 0.3s; }
-        #address-modal { align-items: center; z-index: 3200;}
-        #address-modal.show .address-box { transform: scale(1); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 12px; color: var(--text-s); margin-bottom: 5px; }
-        .form-group input, .form-group textarea { width: 100%; background: #0f1015; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-size: 14px; outline: none; }
-        .form-group textarea { resize: none; height: 80px; }
-        .btn-submit { width: 100%; background: var(--orange); color: #000; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer;}
-
-        /* 🌟 关注公众号二维码弹窗专属样式 */
-        .qrcode-box { background: #1e1e24; width: 90%; max-width: 320px; border-radius: 16px; padding: 24px; margin: auto; transform: scale(0.9); transition: 0.3s; }
-        #qrcode-modal { align-items: center; z-index: 3300;}
-        #qrcode-modal.show .qrcode-box { transform: scale(1); }
-
-        /* --- 规则与明细 --- */
-        .rules-content { padding: 20px 25px; font-size: 14px; line-height: 1.8; color: #ddd; }
-        .rules-content h3 { color: #fff; margin-top: 25px; margin-bottom: 8px; font-size: 15px; }
-        .rules-content h3:first-child { margin-top: 5px; }
-        
-        .history-tabs { display: flex; justify-content: center; gap: 40px; border-bottom: 1px solid var(--border); background: var(--bg-card); padding-top: 10px; flex-shrink: 0;}
-        .h-tab { padding-bottom: 12px; color: var(--text-s); font-size: 14px; cursor: pointer; position: relative; }
-        .h-tab.active { color: #fff; font-weight: bold; }
-        .h-tab.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: var(--coin); border-radius: 2px;}
-        
-        /* 🌟 历史明细横版网格布局 */
-        .history-list { padding: 0 20px; }
-        .history-item { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
-        .landscape .history-list { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 30px; align-items: start; align-content: start; }
-        .landscape .history-item { padding: 16px 10px; }
-
-        .h-title { font-size:15px; color:#fff; margin-bottom:4px; font-weight: 500;}
-        .h-time { font-size:12px; color:var(--text-s); }
-        .h-val { font-size:16px; font-weight:bold; }
-        .h-val.add { color: var(--coin); }
-        .h-val.minus { color: #fff; }
-
-        /* --- 我的奖励弹窗 (暗黑风格完美融合) --- */
-        .rewards-box { background: #1e1e24; width: 90%; max-width: 400px; border-radius: 20px; padding: 24px; transform: scale(0.9); transition: 0.3s; position: relative; max-height: 80vh; display: flex; flex-direction: column; margin: auto; border: 1px solid rgba(255,255,255,0.05);}
-        #rewards-modal { align-items: center; z-index: 3100;}
-        #rewards-modal.show .rewards-box { transform: scale(1); }
-        .rw-header { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; position: relative; }
-        .rw-title { font-size: 18px; font-weight: bold; color: #fff;}
-        .rw-close { position: absolute; right: 0; top: 0; font-size: 24px; color: var(--text-s); cursor: pointer; line-height: 1; padding: 5px;}
-        .rw-list { flex: 1; overflow-y: auto; padding-right: 5px; }
-        
-        .rw-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .rw-info .name { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 8px; }
-        .rw-info .time { font-size: 12px; color: var(--text-s); margin-bottom: 4px;}
-        .rw-info .expire { font-size: 12px; color: var(--orange); }
-        .rw-action { display: flex; flex-direction: column; align-items: flex-end; gap: 8px;}
-        
-        .rw-btn-orange { background: var(--orange); color: #000; border: none; padding: 6px 14px; border-radius: 14px; font-size: 12px; font-weight: bold; cursor: pointer;}
-        .rw-status-grey { color: var(--text-s); font-size: 13px; }
-        .rw-status-green { color: var(--green); font-size: 13px; font-weight: bold; }
-        .rw-track-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 6px; font-size: 11px; color: #ddd; display: flex; align-items: center; gap: 4px; }
-
-        #toast { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.85); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 9999; text-align: center; white-space: nowrap; }
-        #toast.show { opacity: 1; transform: translate(-50%, -60%); }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>盖世游戏｜任务中心与兑换商城</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09090c;
+      --surface: #121217;
+      --surface-2: #18181f;
+      --surface-3: #202028;
+      --line: rgba(255, 255, 255, .08);
+      --text: #f6f6f8;
+      --muted: #92929d;
+      --muted-2: #686873;
+      --accent: #ff7a1a;
+      --accent-2: #ffad42;
+      --success: #42d38b;
+      --danger: #ff5f66;
+      --warning: #ffbd4a;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 22% 10%, rgba(255,122,26,.13), transparent 31%), radial-gradient(circle at 82% 88%, rgba(140,108,255,.11), transparent 34%), #050507;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
+    button, input, textarea { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .demo-stage { display: grid; gap: 18px; justify-items: center; }
+    .demo-caption { color: #777781; font-size: 12px; letter-spacing: .02em; }
+    .phone {
+      width: 390px;
+      height: 844px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 36px;
+      background: var(--bg);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: 0 0 0 8px #17171b, 0 24px 80px rgba(0,0,0,.58);
+      isolation: isolate;
+    }
+    .phone::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); pointer-events: none; z-index: 300; }
+    .status-bar { position: absolute; inset: 0 0 auto; height: 30px; padding: 8px 19px 0; display: flex; align-items: center; justify-content: space-between; background: var(--bg); font-size: 12px; font-weight: 700; z-index: 100; pointer-events: none; }
+    .status-icons { display: flex; align-items: center; gap: 6px; }
+    .signal { display: flex; align-items: end; gap: 1.5px; height: 10px; }
+    .signal i { width: 2px; background: currentColor; border-radius: 2px; }
+    .signal i:nth-child(1) { height: 4px; } .signal i:nth-child(2) { height: 6px; } .signal i:nth-child(3) { height: 8px; } .signal i:nth-child(4) { height: 10px; }
+    .wifi { width: 13px; height: 9px; border-top: 2px solid currentColor; border-radius: 50%; position: relative; }
+    .wifi::after { content: ""; position: absolute; left: 4.5px; bottom: 0; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+    .battery { width: 20px; height: 9px; border: 1.5px solid currentColor; border-radius: 2.5px; padding: 1px; position: relative; }
+    .battery::before { content: ""; display: block; width: 12px; height: 100%; background: currentColor; border-radius: 1px; }
+    .battery::after { content: ""; position: absolute; right: -3px; top: 2px; width: 2px; height: 4px; background: currentColor; border-radius: 0 1px 1px 0; }
+    .view { display: none; position: absolute; inset: 30px 0 0; background: var(--bg); overflow: hidden; }
+    .view.is-active { display: flex; flex-direction: column; }
+    .topbar { height: 54px; flex: 0 0 auto; display: grid; grid-template-columns: 72px 1fr 72px; align-items: center; padding: 0 8px; border-bottom: 1px solid var(--line); background: rgba(9,9,12,.96); z-index: 10; }
+    .topbar h1 { margin: 0; text-align: center; font-size: 17px; line-height: 1; font-weight: 720; letter-spacing: -.01em; }
+    .top-action, .icon-action { min-width: 44px; height: 44px; padding: 0 8px; border: 0; border-radius: 12px; background: transparent; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; }
+    .top-action:last-child { justify-self: end; }
+    .icon-action { width: 44px; color: var(--text); }
+    .top-action:active, .icon-action:active { background: var(--surface-2); transform: scale(.97); }
+    .icon-action svg, .top-action svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .scroll { min-height: 0; flex: 1; overflow: auto; scrollbar-width: none; overscroll-behavior: contain; }
+    .scroll::-webkit-scrollbar { display: none; }
+    .content { padding: 16px 16px 34px; }
+    .points-hero { min-height: 174px; border-radius: 24px; padding: 20px; position: relative; overflow: hidden; background: radial-gradient(circle at 85% 13%, rgba(255,255,255,.22), transparent 14%), linear-gradient(138deg,#2f173f 0%,#7a3523 48%,#eb7620 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 18px 32px rgba(80,32,21,.22); }
+    .points-hero::before, .points-hero::after { content: ""; position: absolute; border: 1px solid rgba(255,255,255,.14); border-radius: 50%; }
+    .points-hero::before { width: 170px; height: 170px; right: -65px; top: -75px; }
+    .points-hero::after { width: 118px; height: 118px; right: 18px; bottom: -74px; }
+    .hero-label { font-size: 13px; color: rgba(255,255,255,.74); position: relative; z-index: 1; }
+    .hero-value { margin-top: 6px; font-size: 38px; line-height: 1; font-weight: 820; letter-spacing: -.04em; position: relative; z-index: 1; }
+    .hero-value small { margin-left: 8px; font-size: 13px; font-weight: 650; letter-spacing: 0; color: rgba(255,255,255,.72); }
+    .hero-tip { margin-top: 9px; color: rgba(255,255,255,.68); font-size: 11px; position: relative; z-index: 1; }
+    .hero-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 17px; position: relative; z-index: 1; }
+    .hero-button { height: 40px; border: 1px solid rgba(255,255,255,.16); border-radius: 13px; background: rgba(9,9,12,.28); color: #fff; display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer; font-size: 13px; font-weight: 650; backdrop-filter: blur(8px); }
+    .hero-button.primary { background: #fff; color: #151519; border-color: #fff; }
+    .hero-button svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .hero-button:active { transform: scale(.98); }
+    .notice { margin-top: 12px; min-height: 42px; padding: 10px 12px; border: 1px solid rgba(255,122,26,.15); border-radius: 14px; background: rgba(255,122,26,.07); display: flex; gap: 9px; align-items: flex-start; color: #c8c8cf; font-size: 11px; line-height: 1.45; }
+    .notice svg { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 1px; stroke: var(--accent-2); fill: none; stroke-width: 1.8; }
+    .section-row { display: flex; align-items: end; justify-content: space-between; margin: 24px 2px 12px; }
+    .section-row h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .section-row span { color: var(--muted); font-size: 11px; }
+    .tabs { display: flex; gap: 8px; overflow: auto; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { height: 36px; flex: 0 0 auto; padding: 0 15px; border: 1px solid var(--line); border-radius: 18px; color: var(--muted); background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 620; }
+    .tab.is-active { color: #111; background: #fff; border-color: #fff; }
+    .task-list { display: grid; gap: 10px; margin-top: 14px; }
+    .task-card { min-height: 94px; display: grid; grid-template-columns: 46px 1fr auto; align-items: center; gap: 12px; padding: 14px; border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018)); }
+    .task-icon { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; background: linear-gradient(145deg,rgba(255,122,26,.24),rgba(255,122,26,.07)); color: var(--accent-2); }
+    .task-icon.purple { color: #aa91ff; background: linear-gradient(145deg,rgba(140,108,255,.24),rgba(140,108,255,.07)); }
+    .task-icon.green { color: #69e6a8; background: linear-gradient(145deg,rgba(66,211,139,.22),rgba(66,211,139,.07)); }
+    .task-icon svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .task-copy { min-width: 0; }
+    .task-name { font-size: 14px; font-weight: 690; line-height: 1.35; }
+    .task-meta { margin-top: 6px; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+    .task-reward { color: var(--accent-2); font-weight: 720; }
+    .progress-line { height: 3px; margin-top: 9px; overflow: hidden; border-radius: 2px; background: var(--surface-3); }
+    .progress-line i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--accent),var(--accent-2)); }
+    .task-button { min-width: 66px; height: 34px; border: 0; border-radius: 17px; padding: 0 14px; color: #111; background: #fff; font-size: 12px; font-weight: 720; cursor: pointer; }
+    .task-button.claim { color: #fff; background: linear-gradient(100deg,var(--accent),#ff9b2f); box-shadow: 0 6px 16px rgba(255,122,26,.2); }
+    .task-button.done { background: var(--surface-3); color: var(--muted-2); cursor: default; }
+    .task-button:active:not(.done) { transform: scale(.96); }
+    .store-balance { margin: 14px 16px 0; padding: 16px 17px; border-radius: 18px; background: linear-gradient(120deg,#1d1921,#242028); border: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+    .store-balance small { display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    .store-balance strong { font-size: 25px; letter-spacing: -.03em; }
+    .store-balance strong em { font-style: normal; font-size: 12px; color: var(--accent-2); margin-left: 6px; }
+    .store-balance span { max-width: 130px; color: var(--muted); font-size: 10px; line-height: 1.45; text-align: right; }
+    .store-tabs { padding: 16px 16px 0; }
+    .product-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding: 14px 16px 34px; }
+    .product-card { min-width: 0; overflow: hidden; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); position: relative; }
+    .product-card.is-disabled { opacity: .62; }
+    .product-art { height: 132px; position: relative; overflow: hidden; display: grid; place-items: center; color: #fff; }
+    .product-art.orange { background: radial-gradient(circle at 76% 22%,rgba(255,255,255,.24),transparent 15%), linear-gradient(145deg,#4b1b15,#e95d21); }
+    .product-art.purple { background: radial-gradient(circle at 76% 22%,rgba(255,255,255,.2),transparent 17%), linear-gradient(145deg,#20163e,#725bd7); }
+    .product-art.blue { background: radial-gradient(circle at 76% 22%,rgba(255,255,255,.21),transparent 17%), linear-gradient(145deg,#112a42,#247abc); }
+    .product-art.gray { background: linear-gradient(145deg,#28282f,#40404a); }
+    .product-art::before { content: ""; position: absolute; width: 104px; height: 104px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; right: -32px; bottom: -36px; }
+    .product-art svg { width: 76px; height: 76px; stroke: currentColor; fill: none; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 8px 18px rgba(0,0,0,.22)); }
+    .product-badge { position: absolute; top: 10px; left: 10px; height: 23px; padding: 0 8px; border-radius: 7px; display: flex; align-items: center; background: rgba(8,8,11,.55); color: rgba(255,255,255,.9); font-size: 10px; backdrop-filter: blur(8px); z-index: 2; }
+    .product-info { padding: 12px; }
+    .product-name { height: 38px; font-size: 13px; font-weight: 680; line-height: 1.45; }
+    .product-meta { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .product-foot { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .product-price { color: var(--accent-2); font-size: 15px; font-weight: 780; white-space: nowrap; }
+    .product-price small { font-size: 10px; font-weight: 620; }
+    .product-button { min-width: 52px; height: 30px; padding: 0 10px; border: 0; border-radius: 15px; background: #fff; color: #121216; font-size: 11px; font-weight: 720; cursor: pointer; }
+    .product-button[disabled] { color: var(--muted-2); background: var(--surface-3); cursor: default; }
+    .product-button:active:not([disabled]) { transform: scale(.95); }
+    .simple-tabs { height: 48px; flex: 0 0 auto; display: flex; padding: 0 16px; border-bottom: 1px solid var(--line); }
+    .simple-tab { height: 48px; padding: 0 16px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--muted); font-size: 13px; cursor: pointer; }
+    .simple-tab.is-active { color: var(--text); border-bottom-color: var(--accent); font-weight: 680; }
+    .record-list { padding: 0 16px 34px; }
+    .record-item { min-height: 74px; padding: 15px 2px; display: flex; justify-content: space-between; align-items: center; gap: 14px; border-bottom: 1px solid var(--line); }
+    .record-title { font-size: 13px; font-weight: 640; }
+    .record-time { margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .record-value { text-align: right; font-size: 15px; font-weight: 760; white-space: nowrap; }
+    .record-value.add { color: var(--success); } .record-value.minus { color: var(--text); }
+    .order-list { display: grid; gap: 11px; padding: 16px 16px 36px; }
+    .order-card { padding: 15px; border: 1px solid var(--line); background: var(--surface); border-radius: 18px; }
+    .order-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .order-title { font-size: 14px; font-weight: 680; }
+    .order-time { margin-top: 5px; color: var(--muted); font-size: 10px; }
+    .status-pill { height: 23px; padding: 0 8px; border-radius: 8px; display: inline-flex; align-items: center; flex: 0 0 auto; font-size: 10px; font-weight: 650; }
+    .status-pill.success { background: rgba(66,211,139,.1); color: var(--success); }
+    .status-pill.warning { background: rgba(255,189,74,.1); color: var(--warning); }
+    .status-pill.info { background: rgba(140,108,255,.1); color: #aa91ff; }
+    .order-foot { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 10px; }
+    .order-foot strong { color: var(--text); font-size: 12px; }
+    .outline-button { min-width: 76px; height: 32px; padding: 0 12px; border: 1px solid rgba(255,255,255,.14); border-radius: 16px; background: var(--surface-2); color: var(--text); font-size: 11px; cursor: pointer; }
+    .rules { padding: 7px 20px 38px; }
+    .rule-card { margin-top: 12px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+    .rule-number { width: 27px; height: 27px; border-radius: 9px; display: grid; place-items: center; margin-bottom: 12px; background: rgba(255,122,26,.12); color: var(--accent-2); font-size: 12px; font-weight: 780; }
+    .rule-card h2 { margin: 0 0 8px; font-size: 14px; }
+    .rule-card p { margin: 0; color: #a8a8b1; font-size: 12px; line-height: 1.75; }
+    .rule-emphasis { color: #fff; font-weight: 680; }
+    .empty { min-height: 300px; display: grid; place-items: center; color: var(--muted); text-align: center; font-size: 12px; }
+    .empty svg { width: 52px; height: 52px; margin-bottom: 12px; stroke: var(--muted-2); fill: none; stroke-width: 1.4; }
+    .modal-layer { position: absolute; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,.7); backdrop-filter: blur(5px); }
+    .modal-layer.is-open { display: flex; }
+    .dialog { width: 100%; max-height: 690px; overflow: auto; border: 1px solid rgba(255,255,255,.12); border-radius: 24px; background: #19191f; box-shadow: 0 24px 70px rgba(0,0,0,.55); padding: 20px; animation: pop .18s ease-out; }
+    @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+    .dialog-head { display: flex; justify-content: space-between; align-items: center; }
+    .dialog-head h2 { margin: 0; font-size: 17px; }
+    .dialog-close { width: 36px; height: 36px; border: 0; border-radius: 12px; background: var(--surface-3); color: var(--muted); cursor: pointer; font-size: 20px; }
+    .dialog-product { margin-top: 16px; display: grid; grid-template-columns: 70px 1fr; gap: 13px; align-items: center; }
+    .dialog-art { width: 70px; height: 70px; display: grid; place-items: center; border-radius: 18px; background: linear-gradient(145deg,#422019,#d25d24); }
+    .dialog-art svg { width: 44px; height: 44px; stroke: #fff; fill: none; stroke-width: 1.4; }
+    .dialog-product h3 { margin: 0; font-size: 14px; }
+    .dialog-product p { margin: 7px 0 0; color: var(--accent-2); font-size: 14px; font-weight: 740; }
+    .dialog-summary { margin-top: 18px; padding: 4px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .summary-row { min-height: 43px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; }
+    .summary-row strong { color: var(--text); font-weight: 680; }
+    .inline-error { display: none; margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(255,95,102,.08); color: #ff858b; font-size: 11px; line-height: 1.5; }
+    .inline-error.is-visible { display: block; }
+    .dialog-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 10px; margin-top: 18px; }
+    .dialog-button { height: 46px; border: 0; border-radius: 15px; font-size: 13px; font-weight: 720; cursor: pointer; }
+    .dialog-button.secondary { color: var(--text); background: var(--surface-3); }
+    .dialog-button.primary { color: #fff; background: linear-gradient(100deg,var(--accent),#ff982b); }
+    .dialog-button.primary[disabled] { color: var(--muted-2); background: var(--surface-3); cursor: default; }
+    .form { margin-top: 16px; display: grid; gap: 13px; }
+    .field label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 11px; }
+    .field input, .field textarea { width: 100%; min-height: 45px; border: 1px solid var(--line); border-radius: 13px; background: #0f0f14; color: var(--text); padding: 11px 12px; outline: none; }
+    .field textarea { min-height: 78px; resize: none; }
+    .field input:focus, .field textarea:focus { border-color: rgba(255,122,26,.65); box-shadow: 0 0 0 3px rgba(255,122,26,.08); }
+    .toast { position: absolute; left: 50%; bottom: 34px; z-index: 260; max-width: 322px; min-height: 42px; padding: 11px 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; background: rgba(35,35,42,.96); color: var(--text); box-shadow: 0 12px 28px rgba(0,0,0,.4); font-size: 12px; line-height: 1.5; text-align: center; opacity: 0; pointer-events: none; transform: translate(-50%,12px); transition: .2s ease; }
+    .toast.is-visible { opacity: 1; transform: translate(-50%,0); }
+    @media (max-width: 460px) { body { padding: 0; background: #000; } .demo-caption { display: none; } .phone { width: 100vw; height: 100vh; min-height: 720px; border: 0; border-radius: 0; box-shadow: none; } .phone::after { display: none; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; } }
+  </style>
 </head>
 <body>
+  <main class="demo-stage">
+    <div class="phone" data-demo-root>
+      <div class="status-bar" aria-hidden="true"><span>9:41</span><span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="wifi"></span><span class="battery"></span></span></div>
 
-    <button class="orientation-toggle" onclick="toggleOrientation()">🔄 切换 横竖版 (当前: 竖版)</button>
-
-    <div id="device" class="portrait">
-        <!-- V12 系统状态栏 -->
-        <div class="sys-status-bar">
-            <span id="sys-time">10:41</span>
-            <div class="sys-icons">
-                <svg viewBox="0 0 24 24"><path d="M2 22h20V2z"/></svg>
-                <svg viewBox="0 0 24 24"><path d="M12.01 21.49L23.64 7c-.45-.34-4.93-4-11.64-4C5.28 3 .81 6.66.36 7l11.63 14.49.01.01.01-.01z"/></svg>
-                <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+      <section class="view is-active" data-view="tasks" aria-label="任务中心">
+        <header class="topbar"><button class="icon-action" type="button" data-action="demo-back" aria-label="返回"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><h1>任务中心</h1><button class="top-action" type="button" data-action="open-rules">规则</button></header>
+        <div class="scroll" data-scroll="tasks"><div class="content">
+          <section class="points-hero" aria-label="盖世积分余额">
+            <div class="hero-label">盖世积分</div><div class="hero-value"><span data-points>5,000</span><small>可用</small></div><div class="hero-tip">完成普通任务获取，可兑换权益和实物商品</div>
+            <div class="hero-actions">
+              <button class="hero-button" type="button" data-action="open-points"><svg viewBox="0 0 24 24"><path d="M5 5h14M5 12h14M5 19h9"/></svg>积分明细</button>
+              <button class="hero-button primary" type="button" data-action="open-store"><svg viewBox="0 0 24 24"><path d="M4 9h16l-1 11H5L4 9Z"/><path d="m7 9 2-5h6l2 5"/></svg>兑换商城</button>
             </div>
-        </div>
+          </section>
+          <div class="notice"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>盖世积分与发行人计划的盖世币分开计算，不可用于兑换京东卡。</span></div>
+          <div class="section-row"><h2>做任务赚积分</h2><span data-task-summary>今日待领取 1 项</span></div>
+          <div class="tabs" role="tablist" aria-label="任务分类"><button class="tab is-active" type="button" data-action="task-tab" data-value="daily">每日任务</button><button class="tab" type="button" data-action="task-tab" data-value="growth">成长任务</button></div>
+          <div class="task-list" data-task-list></div>
+        </div></div>
+      </section>
 
-        <div class="device-body">
-            <!-- ================= 主页 ================= -->
-            <div class="scroller" id="main-scroller">
-                <div class="layout-wrapper">
-                    <div class="top-controls">
-                        <div class="icon-btn icon-coin" onclick="openPanel('task-panel')" title="盖世币中心">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg>
-                        </div>
-                        <div class="icon-btn" title="消息">
-                            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
-                            <div class="main-msg-dot"></div>
-                        </div>
-                        <div class="icon-btn" title="下载"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></div>
-                        <div class="icon-btn" title="设置"><svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg></div>
-                    </div>
+      <section class="view" data-view="store" aria-label="兑换商城">
+        <header class="topbar"><button class="icon-action" type="button" data-action="back-tasks" aria-label="返回任务中心"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><h1>兑换商城</h1><button class="top-action" type="button" data-action="open-orders">兑换记录</button></header>
+        <div class="store-balance"><div><small>盖世积分可用</small><strong><span data-points>5,000</span><em>积分</em></strong></div><span>仅可兑换本商城商品，不与盖世币合并</span></div>
+        <div class="store-tabs tabs" role="tablist" aria-label="商品分类"><button class="tab is-active" type="button" data-action="store-tab" data-value="all">全部</button><button class="tab" type="button" data-action="store-tab" data-value="virtual">虚拟权益</button><button class="tab" type="button" data-action="store-tab" data-value="physical">实物周边</button></div>
+        <div class="scroll" data-scroll="store"><div class="product-grid" data-product-grid></div></div>
+      </section>
 
-                    <div class="profile-part">
-                        <div class="user-hero-new">
-                            <div class="avatar-container-new"><div class="avatar-img"></div></div>
-                            <div class="user-info-box">
-                                <div class="username">盖世小秘书</div>
-                                <div class="user-desc">分享最新游戏资讯与评测，热爱全平台主机游戏。</div>
-                                <div class="uid">UID: 12789457489</div>
-                            </div>
-                        </div>
+      <section class="view" data-view="points" aria-label="积分明细">
+        <header class="topbar"><button class="icon-action" type="button" data-action="back-tasks" aria-label="返回任务中心"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><h1>积分明细</h1><span></span></header>
+        <div class="simple-tabs"><button class="simple-tab is-active" type="button" data-action="point-tab" data-value="income">获取记录</button><button class="simple-tab" type="button" data-action="point-tab" data-value="expense">消耗记录</button></div>
+        <div class="scroll"><div class="record-list" data-point-list></div></div>
+      </section>
 
-                        <div class="data-stats">
-                            <div class="stat-item"><span class="val">128</span><span class="lbl">关注</span></div>
-                            <div class="stat-item"><span class="val">2.4w</span><span class="lbl">粉丝</span></div>
-                            <div class="stat-item"><span class="val">8.9k</span><span class="lbl">获赞与收藏</span></div>
-                        </div>
+      <section class="view" data-view="orders" aria-label="兑换记录">
+        <header class="topbar"><button class="icon-action" type="button" data-action="back-store" aria-label="返回兑换商城"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><h1>兑换记录</h1><span></span></header>
+        <div class="scroll"><div class="order-list" data-order-list></div></div>
+      </section>
 
-                        <div class="steam-card">
-                            <div class="steam-title">Steam 信息</div>
-                            <div class="steam-user-row">
-                                <div class="steam-user-left">
-                                    <div class="steam-avatar"><div class="steam-avatar-inner"></div></div>
-                                    <div class="steam-name">用户用...用户名</div>
-                                </div>
-                                <div class="steam-level">123</div>
-                            </div>
-                            <div class="steam-grid">
-                                <div><div class="l">游玩时长 (h)</div><div class="v">15.6</div></div>
-                                <div><div class="l">账号价值 (￥)</div><div class="v">9999.5K</div></div>
-                                <div><div class="l">游戏数量</div><div class="v">99999</div></div>
-                            </div>
-                        </div>
+      <section class="view" data-view="rules" aria-label="积分规则">
+        <header class="topbar"><button class="icon-action" type="button" data-action="back-from-rules" aria-label="返回"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button><h1>盖世积分规则</h1><span></span></header>
+        <div class="scroll"><div class="rules">
+          <section class="rule-card"><div class="rule-number">01</div><h2>什么是盖世积分？</h2><p>盖世积分是玩家完成签到、启动游戏、社区互动等普通任务后获得的奖励，可在本兑换商城使用。</p></section>
+          <section class="rule-card"><div class="rule-number">02</div><h2>与盖世币如何区分？</h2><p><span class="rule-emphasis">盖世积分和盖世币分开计算，不互换、不合并。</span>发行人计划的充值和任务结算使用盖世币，不进入本页积分余额。</p></section>
+          <section class="rule-card"><div class="rule-number">03</div><h2>可以兑换京东卡吗？</h2><p><span class="rule-emphasis">盖世积分不可兑换京东卡。</span>京东电子卡只能使用参与发行任务并结算所得的可兑换盖世币；充值盖世币也不可兑换。</p></section>
+          <section class="rule-card"><div class="rule-number">04</div><h2>兑换与履约</h2><p>虚拟权益兑换成功后直接发放到当前账号；实物商品需提交收货信息，可在“兑换记录”中查看发货和物流状态。库存不足或商品下架时不扣减积分。</p></section>
+        </div></div>
+      </section>
 
-                        <div class="op-banner">
-                            <div class="op-banner-icon"></div>
-                            <div class="op-banner-text">
-                                <div class="op-banner-title">加入盖世掌游官方游戏圈</div>
-                                <div class="op-banner-sub">▷▷ 更多玩家资讯等你来~ ◁◁</div>
-                            </div>
-                        </div>
-                    </div>
+      <div class="modal-layer" data-dialog="redeem" role="dialog" aria-modal="true" aria-label="确认兑换"><div class="dialog">
+        <div class="dialog-head"><h2>确认兑换</h2><button class="dialog-close" type="button" data-action="close-redeem" aria-label="关闭">×</button></div>
+        <div class="dialog-product"><div class="dialog-art" data-redeem-art></div><div><h3 data-redeem-name>--</h3><p><span data-redeem-cost>0</span> 盖世积分</p></div></div>
+        <div class="dialog-summary"><div class="summary-row"><span>兑换数量</span><strong>1</strong></div><div class="summary-row"><span>当前可用</span><strong><span data-redeem-balance>0</span> 积分</strong></div><div class="summary-row"><span>兑换后余额</span><strong><span data-redeem-remaining>0</span> 积分</strong></div></div>
+        <div class="inline-error" data-redeem-error></div><div class="dialog-actions"><button class="dialog-button secondary" type="button" data-action="close-redeem">再想想</button><button class="dialog-button primary" type="button" data-action="confirm-redeem">确认兑换</button></div>
+      </div></div>
 
-                    <div class="content-part">
-                        <div class="tab-bar">
-                            <div class="tab active">动态</div>
-                            <div class="tab">点赞</div>
-                            <div class="tab">收藏</div>
-                        </div>
-                        <div id="feed-list" class="feed-container"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= 盖世币任务中心 ================= -->
-            <div id="task-panel" class="panel z-110">
-                <div class="panel-head">
-                    <span class="btn-back" onclick="closePanel('task-panel')">‹</span>
-                    <span class="panel-title">任务中心</span>
-                    <span class="panel-action" onclick="openPanel('rules-panel')">规则说明</span>
-                </div>
-                <div class="scroller">
-                    <div class="task-banner">
-                        <div class="task-total">
-                            <div class="t">盖世币余额</div>
-                            <div class="v" onclick="openPanel('history-panel')">
-                                <svg class="gaishi-coin-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg>
-                                <span id="global-points-1">5000</span>
-                                <div class="arrow-circle-btn">›</div>
-                            </div>
-                        </div>
-                        <button class="task-btn" style="background:var(--coin); color:#000; padding: 10px 20px;" onclick="openPanel('store-panel')">兑换商城</button>
-                    </div>
-
-                    <!-- 🌟 每日任务 (被task-grid包裹实现双列) -->
-                    <div class="task-group-title">每日任务 <span class="limit">(每日上限: 积分+50)</span></div>
-                    <div class="task-grid">
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">每日签到 <span class="task-reward">+2</span></div>
-                                <div class="task-progress">限制 2积分/日</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 2, '每日签到')">去签到</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">每日签到（连续7日后） <span class="task-reward">+4</span></div>
-                                <div class="task-progress">限制 4积分/日</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 4, '连续7日签到成功')">去签到</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">通过秒玩/PC模拟器方式启动游戏 <span class="task-reward">+2</span></div>
-                                <div class="task-progress">限制 10积分/日</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 2, '启动游戏')">去启动</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">游戏/动态贴分享 <span class="task-reward">+2</span></div>
-                                <div class="task-progress">限制 6积分/日</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 2, '分享游戏/动态帖')">去分享</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">进入任意一个游戏社区浏览≥3分钟 <span class="task-reward">+10</span></div>
-                                <div class="task-progress">限制 10积分/日</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 10, '浏览游戏社区')">去浏览</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">发布社区动态帖 <span class="task-reward">+2</span></div>
-                                <div class="task-progress">限制 10积分/日</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 2, '发布动态')">去发布</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">评论/点赞社区动态帖 <span class="task-reward">+2</span></div>
-                                <div class="task-progress">限制 10积分/日</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 2, '互动')">去互动</button>
-                        </div>
-                    </div>
-
-                    <!-- 🌟 成长任务 (被task-grid包裹实现双列) -->
-                    <div class="task-group-title">成长任务 <span class="limit">(账号上限: 积分+100)</span></div>
-                    <div class="task-grid">
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">完善个人资料信息 <span class="task-reward">+20</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 20, '完善资料')">去完善</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">开启推送通知 <span class="task-reward">+20</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 20, '开启推送')">去开启</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">首次通过秒玩/PC模拟器方式启动游戏 <span class="task-reward">+10</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 10, '首次启动游戏')">去启动</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">首次加入任意一个社区分区 <span class="task-reward">+10</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 10, '首次加入任意一个社区分区')">去关注</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">首次完成玩家关注 <span class="task-reward">+10</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 10, '首次关注玩家')">去关注</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">首次发布动态帖 <span class="task-reward">+10</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 10, '首次发布动态')">去发布</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">动态帖被官方加入精选 <span class="task-reward">+200</span></div>
-                                <div class="task-progress">限完成10次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 200, '获得精选')">去发帖</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">首次云分享PC游戏设置方案并发布到社区 <span class="task-reward">+10</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 10, '首次分享配置方案')">去分享</button>
-                        </div>
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">首次云分享按键布局方案并发布到社区 <span class="task-reward">+10</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="doTask(this, 10, '首次分享按键布局')">去分享</button>
-                        </div>
-                        <!-- 🌟 关注微信公众号入口 -->
-                        <div class="task-item">
-                            <div class="task-info">
-                                <div class="task-name">首次关注小鸡游戏微信公众号 <span class="task-reward">+10</span></div>
-                                <div class="task-progress">限完成1次/账号</div>
-                            </div>
-                            <button class="task-btn" onclick="openQrcodeTask(this, 10, '首次关注小鸡游戏微信公众号')">去关注</button>
-                        </div>
-                    </div>
-                    
-                    <div style="height:30px;"></div>
-                </div>
-            </div>
-
-            <!-- ================= 兑换商城 ================= -->
-            <div id="store-panel" class="panel z-120">
-                <div class="panel-head">
-                    <span class="btn-back" onclick="closePanel('store-panel')">‹</span>
-                    <span class="panel-title">兑换商城</span>
-                    <span class="panel-action" style="color:#fff;" onclick="openPanel('rewards-modal')">我的奖励</span>
-                </div>
-                
-                <div class="store-header-banner">
-                    <div>
-                        <div style="font-size:12px; color:var(--text-s); margin-bottom:4px;">盖世币余额</div>
-                        <div class="sh-val-box" onclick="openPanel('history-panel')">
-                            <div class="val">
-                                <svg class="gaishi-coin-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg>
-                                <span id="global-points-2">5000</span>
-                            </div>
-                            <div class="arrow-circle-btn">›</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="scroller">
-                    <div class="store-grid">
-                        <div class="store-item" onclick="openRedeem('云游戏时长30分钟', 50, 'https://api.dicebear.com/7.x/shapes/svg?seed=Clock1', 'virtual')">
-                            <div class="store-tag">每日限兑 1 次</div>
-                            <div class="store-img-box"><img src="https://api.dicebear.com/7.x/shapes/svg?seed=Clock1" alt="item"></div>
-                            <div class="store-info">
-                                <div class="store-name">云游戏时长30分钟</div>
-                                <div class="store-price-row">
-                                    <div class="store-price"><svg class="gaishi-coin-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg> 50 </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="store-item" onclick="openRedeem('云游戏时长1小时', 90, 'https://api.dicebear.com/7.x/shapes/svg?seed=Clock2', 'virtual')">
-                            <div class="store-tag">每日限兑 1 次</div>
-                            <div class="store-img-box"><img src="https://api.dicebear.com/7.x/shapes/svg?seed=Clock2" alt="item"></div>
-                            <div class="store-info">
-                                <div class="store-name">云游戏时长1小时</div>
-                                <div class="store-price-row">
-                                    <div class="store-price"><svg class="gaishi-coin-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg> 90 </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="store-item" onclick="openRedeem('云游戏时长2小时', 150, 'https://api.dicebear.com/7.x/shapes/svg?seed=Clock3', 'virtual')">
-                            <div class="store-tag">每日限兑 1 次</div>
-                            <div class="store-img-box"><img src="https://api.dicebear.com/7.x/shapes/svg?seed=Clock3" alt="item"></div>
-                            <div class="store-info">
-                                <div class="store-name">云游戏时长2小时</div>
-                                <div class="store-price-row">
-                                    <div class="store-price"><svg class="gaishi-coin-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg> 150 </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="store-item" onclick="openRedeem('X5lite手柄', 8000, 'https://api.dicebear.com/7.x/shapes/svg?seed=Game', 'physical')">
-                            <div class="store-tag">单用户限 1 次</div>
-                            <div class="store-img-box"><img src="https://api.dicebear.com/7.x/shapes/svg?seed=Game" alt="item"></div>
-                            <div class="store-info">
-                                <div class="store-name">X5lite手柄</div>
-                                <div class="store-price-row">
-                                    <div class="store-price"><svg class="gaishi-coin-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg> 8000 </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= 我的奖励 弹窗 ================= -->
-            <div id="rewards-modal" class="modal-overlay" onclick="closePanel('rewards-modal', event)">
-                <div class="rewards-box" onclick="event.stopPropagation()">
-                    <div class="rw-header">
-                        <div class="rw-title">我的奖励</div>
-                        <div class="rw-close" onclick="closePanel('rewards-modal')">✕</div>
-                    </div>
-                    <div class="rw-list" id="rewards-list-container"></div>
-                </div>
-            </div>
-
-            <!-- ================= 兑换确认弹窗 ================= -->
-            <div id="redeem-modal" class="modal-overlay" onclick="closeRedeem(event)">
-                <div class="redeem-box" onclick="event.stopPropagation()">
-                    <div class="r-header">
-                        <div class="r-img"><img id="r-modal-img" src="" alt="item"></div>
-                        <div style="flex:1;">
-                            <div class="r-price">
-                                <svg class="gaishi-coin-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg> 
-                                <span id="r-modal-price">2000</span>
-                            </div>
-                            <div class="r-title" id="r-modal-title">商品名称</div>
-                        </div>
-                    </div>
-                    <div class="r-count-row">
-                        <span style="font-size:14px; color:#fff;">兑换数量</span>
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            <button class="r-step-btn" onclick="updateQty(-1)">-</button>
-                            <span id="r-qty" style="font-size:16px; font-weight:bold; width:20px; text-align:center;">1</span>
-                            <button class="r-step-btn" onclick="updateQty(1)">+</button>
-                        </div>
-                    </div>
-                    <div class="r-footer" style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-size:13px; color:#ddd;">合计: <span style="font-size:18px; font-weight:bold; color:var(--coin);">
-                                <svg class="gaishi-coin-svg" style="width:16px;height:16px;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.26-.95-2.32-1.81h-1.7c.07 1.39 1.01 2.65 2.53 3.02V19h2.32v-1.67c1.67-.35 2.94-1.42 2.94-2.93 0-2.35-1.93-3.07-3.39-3.46z"/></svg> 
-                                <span id="r-total-price">2000</span></span>
-                            </div>
-                            <div style="font-size:11px; color:var(--text-s);">余额: <span id="r-cur-balance">5000</span></div>
-                        </div>
-                        <button class="btn-confirm" id="btn-do-redeem" onclick="confirmRedeem()">确认兑换</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ================= 填写地址弹窗 ================= -->
-            <div id="address-modal" class="modal-overlay" style="z-index: 3200;" onclick="closePanel('address-modal', event)">
-                <div class="address-box" onclick="event.stopPropagation()">
-                    <h3 style="text-align:center; margin-bottom:20px;">填写收货信息</h3>
-                    <div class="form-group">
-                        <label>收件人姓名</label>
-                        <input type="text" id="addr-name" placeholder="请输入真实姓名">
-                    </div>
-                    <div class="form-group">
-                        <label>联系电话</label>
-                        <input type="tel" id="addr-phone" placeholder="请输入手机号">
-                    </div>
-                    <div class="form-group">
-                        <label>详细地址</label>
-                        <textarea id="addr-detail" placeholder="省/市/区 及 详细街道门牌号"></textarea>
-                    </div>
-                    <button class="btn-submit" onclick="submitAddress()">提交保存</button>
-                </div>
-            </div>
-
-            <!-- 🌟 ================= 关注公众号弹窗 ================= -->
-            <div id="qrcode-modal" class="modal-overlay" onclick="closeQrcodeModal(event)">
-                <div class="qrcode-box" onclick="event.stopPropagation()">
-                    <h3 style="text-align:center; margin-bottom:15px; color:#fff;">关注官方公众号</h3>
-                    <p style="text-align:center; font-size:12px; color:var(--text-s); margin-bottom:15px;">扫码或保存图片微信识别</p>
-                    <div style="width:200px; height:200px; margin:0 auto; background:#fff; padding:10px; border-radius:12px;">
-                        <!-- 请将此处的 src 替换为您上传的真实二维码图片路径 -->
-                        <img src="您的二维码图片地址.png" style="width:100%; height:100%; object-fit:contain;" alt="公众号二维码">
-                    </div>
-                    <button class="btn-submit" style="margin-top:20px; background:var(--orange); color:#000;" onclick="closeAndCompleteQrcode()">我已关注并关闭</button>
-                </div>
-            </div>
-
-            <!-- ================= 规则说明页 ================= -->
-            <div id="rules-panel" class="panel z-130">
-                <div class="panel-head"><span class="btn-back" onclick="closePanel('rules-panel')">‹</span><span class="panel-title">盖世币使用规则</span></div>
-                <div class="scroller rules-content">
-                    <h3>1.什么是盖世币？</h3>
-                    <p>盖世币是在社区内获取的、可用于在兑换商城进行物品兑换的虚拟积分。</p>
-
-                    <h3>2.盖世币的获取方式有哪些？</h3>
-                    <p>用户可通过社区内签到、发帖、互动、分享，或关注小鸡社媒账号获得。</p>
-
-                    <h3>3.盖世币能兑换物品有哪些？</h3>
-                    <p>盖世币可以在兑换商城兑换实物奖励和秒玩时长。</p>
-
-                    <h3>4.每日任务的具体规则是什么呢？</h3>
-                    <p>签到是前往每日签到处签到，浏览、点赞、收藏帖子需要针对不同的帖子操作，对于一个帖子反复操作仅计算一次。</p>
-
-                    <h3>5.怎么查看我的获取记录和兑换记录？</h3>
-                    <p>通过我的-右上角盖世币-点击盖世币旁边的明细，可进行获取记录和兑换记录的查看。</p>
-
-                    <h3>6.盖世币有效期说明</h3>
-                    <p>目前社区仍处于试运营阶段，每笔盖世币获取后，顺延365天后自动失效扣减。</p>
-                </div>
-            </div>
-            
-            <!-- ================= 积分明细页 ================= -->
-            <div id="history-panel" class="panel z-130">
-                <div class="panel-head"><span class="btn-back" onclick="closePanel('history-panel')">‹</span><span class="panel-title">明细查询</span></div>
-                <div class="history-tabs">
-                    <div class="h-tab active" onclick="switchHistoryTab('earn', this)">获取记录</div>
-                    <div class="h-tab" onclick="switchHistoryTab('consume', this)">消耗记录</div>
-                </div>
-                <!-- 历史明细容器 -->
-                <div class="scroller history-list" id="history-list-box"></div>
-            </div>
-
-            <!-- 全局 Toast 提示 -->
-            <div id="toast">提示信息</div>
-        </div>
+      <div class="modal-layer" data-dialog="address" role="dialog" aria-modal="true" aria-label="填写收货地址"><div class="dialog">
+        <div class="dialog-head"><h2>填写收货信息</h2><button class="dialog-close" type="button" data-action="close-address" aria-label="关闭">×</button></div>
+        <div class="notice"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>仅实物商品需要收货地址，虚拟权益不需填写。</span></div>
+        <form class="form" data-address-form novalidate><div class="field"><label for="receiver">收货人</label><input id="receiver" name="receiver" autocomplete="name" placeholder="请填写收货人姓名"></div><div class="field"><label for="mobile">手机号</label><input id="mobile" name="mobile" inputmode="tel" autocomplete="tel" placeholder="请填写 11 位手机号"></div><div class="field"><label for="address">详细地址</label><textarea id="address" name="address" autocomplete="street-address" placeholder="省市区、街道与门牌号"></textarea></div><div class="inline-error" data-address-error></div><button class="dialog-button primary" type="submit">保存地址</button></form>
+      </div></div>
+      <div class="toast" role="status" aria-live="polite" data-toast></div>
     </div>
+    <div class="demo-caption">盖世游戏 · 任务中心与兑换商城 · 竖屏交互 Demo</div>
+  </main>
 
-    <script>
-        function toggleOrientation() {
-            const dev = document.getElementById('device');
-            const btn = document.querySelector('.orientation-toggle');
-            if(dev.classList.contains('portrait')) { 
-                dev.className = 'landscape'; 
-                btn.innerText = '🔄 切换 竖版 (当前: 横版)'; 
-            } else { 
-                dev.className = 'portrait'; 
-                btn.innerText = '🔄 切换 横版 (当前: 竖版)'; 
-            }
-        }
+  <script>
+    const icons = {
+      calendar: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16M8 14h3"/></svg>',
+      game: '<svg viewBox="0 0 24 24"><path d="M8 7h8a5 5 0 0 1 4.7 6.7l-1 3a2.5 2.5 0 0 1-4.2 1l-1.3-1.4H9.8l-1.3 1.4a2.5 2.5 0 0 1-4.2-1l-1-3A5 5 0 0 1 8 7Z"/><path d="M8 11v4M6 13h4M16.5 12h.01M18.5 14h.01"/></svg>',
+      community: '<svg viewBox="0 0 24 24"><path d="M6 17.5 3 20V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6Z"/><path d="M7 9h10M7 13h6"/></svg>',
+      user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>',
+      bell: '<svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>',
+      clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+      controller: '<svg viewBox="0 0 24 24"><path d="M7 8h10a4 4 0 0 1 3.8 5.4l-1 2.8a2.2 2.2 0 0 1-3.7.8l-1.5-1.6H9.4L7.9 17a2.2 2.2 0 0 1-3.7-.8l-1-2.8A4 4 0 0 1 7 8Z"/><path d="M8 11v4M6 13h4M16 12h.01M18 14h.01"/></svg>',
+      badge: '<svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="6"/><path d="m8 15-1 6 5-3 5 3-1-6M9 10l2 2 4-4"/></svg>'
+    };
+    const initialState = () => ({
+      view: 'tasks', returnView: 'tasks', points: 5000, taskTab: 'daily', storeTab: 'all', pointTab: 'income', selectedProductId: null, pendingAddressOrderId: null,
+      tasks: [
+        { id: 'daily-sign', type: 'daily', name: '每日签到', reward: 2, meta: '每日 1 次', status: 'claim', progress: 100, icon: 'calendar', tone: '' },
+        { id: 'daily-launch', type: 'daily', name: '启动 1 款 PC 游戏', reward: 2, meta: '今日 0/1', status: 'go', progress: 0, icon: 'game', tone: 'purple' },
+        { id: 'daily-community', type: 'daily', name: '社区有效浏览 3 分钟', reward: 10, meta: '今日 1/3 分钟', status: 'go', progress: 34, icon: 'community', tone: 'green' },
+        { id: 'daily-done', type: 'daily', name: '点赞 1 条社区动态', reward: 2, meta: '今日已达成', status: 'done', progress: 100, icon: 'community', tone: '' },
+        { id: 'growth-profile', type: 'growth', name: '完善个人资料', reward: 20, meta: '限完成 1 次', status: 'claim', progress: 100, icon: 'user', tone: 'purple' },
+        { id: 'growth-notice', type: 'growth', name: '开启消息推送', reward: 20, meta: '限完成 1 次', status: 'go', progress: 0, icon: 'bell', tone: 'green' },
+        { id: 'growth-first', type: 'growth', name: '首次启动 PC 游戏', reward: 10, meta: '已完成', status: 'done', progress: 100, icon: 'game', tone: '' }
+      ],
+      products: [
+        { id: 'cloud-30', type: 'virtual', name: '秒玩时长 30 分钟', price: 50, stock: 9999, limit: '每日限兑 1 次', art: 'clock', tone: 'orange', badge: '即时发放' },
+        { id: 'cloud-180', type: 'virtual', name: '秒玩时长 3 小时', price: 1200, stock: 86, limit: '每月限兑 2 次', art: 'clock', tone: 'purple', badge: '人气权益' },
+        { id: 'x5-lite', type: 'physical', name: 'X5 Lite 蓝牙游戏手柄', price: 4800, stock: 15, limit: '每人限兑 1 次', art: 'controller', tone: 'blue', badge: '实物商品' },
+        { id: 'x2-pro', type: 'physical', name: 'X2 Pro 手机游戏手柄', price: 6800, stock: 4, limit: '每人限兑 1 次', art: 'controller', tone: 'orange', badge: '实物商品' },
+        { id: 'badge', type: 'virtual', name: '盖世先锋限定徽章', price: 1800, stock: 0, limit: '限时兑换', art: 'badge', tone: 'gray', badge: '已售罄' },
+        { id: 'theme-race', type: 'virtual', name: '露娜幻境主题 30 天', price: 90, stock: 8, limit: '每人限兑 1 次', art: 'badge', tone: 'purple', badge: '并发异常演示', failMode: 'changed' }
+      ],
+      pointRecords: [
+        { id: 'p1', type: 'income', title: '每日签到', time: '09/10 09:41', value: 2 },
+        { id: 'p2', type: 'income', title: '完善个人资料', time: '09/09 18:23', value: 20 },
+        { id: 'p3', type: 'expense', title: '兑换：秒玩时长 3 小时', time: '09/08 20:16', value: 1200 }
+      ],
+      orders: [
+        { id: 'OD20260910001', type: 'virtual', name: '秒玩时长 3 小时', time: '2026-09-10 09:16', price: 1200, status: 'issued' },
+        { id: 'OD20260908003', type: 'physical', name: 'X5 Lite 蓝牙游戏手柄', time: '2026-09-08 18:32', price: 4800, status: 'address' },
+        { id: 'OD20260901008', type: 'physical', name: 'X2 Pro 手机游戏手柄', time: '2026-09-01 12:05', price: 6800, status: 'shipped', tracking: '顺丰 SF1482****963' }
+      ]
+    });
+    let state = initialState();
+    let toastTimer = 0;
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+    const format = (value) => Number(value).toLocaleString('zh-CN');
 
-        const feedData =[
-            { user: '盖世小秘书', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=GS', time: '1小时前 · 广东', title: '【官方】盖世模拟器V2.0重大更新说明', tags:['#官方公告', '#Steam'], body: '新增诸多手柄支持，优化云端画质。' },
-            { user: '资深玩家A', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=A', time: '昨天 · 上海', title: '黑神话隐藏关卡探索指南', tags:['#攻略', '#黑神话'], body: '为大家整理了目前发现的几个隐藏地点，记得带好道具。' }
-        ];
+    function showView(id) {
+      state.view = id;
+      $$('[data-view]').forEach((view) => view.classList.toggle('is-active', view.dataset.view === id));
+      const scroller = $(`[data-scroll="${id}"]`);
+      if (scroller) scroller.scrollTop = 0;
+      if (id === 'store') renderProducts();
+      if (id === 'points') renderPointRecords();
+      if (id === 'orders') renderOrders();
+    }
+    function renderPoints() { $$('[data-points]').forEach((node) => { node.textContent = format(state.points); }); }
+    function renderTasks() {
+      const list = state.tasks.filter((task) => task.type === state.taskTab);
+      $('[data-task-list]').innerHTML = list.map((task) => {
+        const button = task.status === 'claim' ? '<button class="task-button claim" type="button" data-action="claim">领取</button>' : task.status === 'done' ? '<button class="task-button done" type="button" disabled>已完成</button>' : '<button class="task-button" type="button" data-action="task-go">去完成</button>';
+        return `<article class="task-card" data-task-id="${task.id}"><div class="task-icon ${task.tone}">${icons[task.icon]}</div><div class="task-copy"><div class="task-name">${task.name}</div><div class="task-meta"><span class="task-reward">+${task.reward} 积分</span><span>${task.meta}</span></div><div class="progress-line"><i style="width:${task.progress}%"></i></div></div>${button}</article>`;
+      }).join('');
+      const claimCount = state.tasks.filter((task) => task.type === state.taskTab && task.status === 'claim').length;
+      $('[data-task-summary]').textContent = claimCount ? `当前待领取 ${claimCount} 项` : '当前任务已领完';
+      $$('[data-action="task-tab"]').forEach((button) => button.classList.toggle('is-active', button.dataset.value === state.taskTab));
+    }
+    function renderProducts() {
+      const products = state.products.filter((item) => state.storeTab === 'all' || item.type === state.storeTab);
+      $('[data-product-grid]').innerHTML = products.map((item) => {
+        const soldOut = item.stock <= 0;
+        const affordable = state.points >= item.price;
+        const label = soldOut ? '库存不足' : affordable ? '兑换' : '积分不足';
+        return `<article class="product-card ${soldOut ? 'is-disabled' : ''}" data-product-id="${item.id}"><div class="product-art ${item.tone}"><span class="product-badge">${item.badge}</span>${icons[item.art]}</div><div class="product-info"><div class="product-name">${item.name}</div><div class="product-meta">${item.limit}</div><div class="product-foot"><div class="product-price">${format(item.price)} <small>积分</small></div><button class="product-button" type="button" data-action="open-product" ${soldOut ? 'disabled' : ''}>${label}</button></div></div></article>`;
+      }).join('');
+      $$('[data-action="store-tab"]').forEach((button) => button.classList.toggle('is-active', button.dataset.value === state.storeTab));
+    }
+    function renderPointRecords() {
+      const records = state.pointRecords.filter((item) => item.type === state.pointTab);
+      $('[data-point-list]').innerHTML = records.length ? records.map((item) => `<div class="record-item"><div><div class="record-title">${item.title}</div><div class="record-time">${item.time}</div></div><div class="record-value ${item.type === 'income' ? 'add' : 'minus'}">${item.type === 'income' ? '+' : '-'}${format(item.value)}</div></div>`).join('') : `<div class="empty"><div>${icons.clock}<p>暂无记录</p></div></div>`;
+      $$('[data-action="point-tab"]').forEach((button) => button.classList.toggle('is-active', button.dataset.value === state.pointTab));
+    }
+    function orderStatus(order) {
+      if (order.status === 'issued') return { text: '已发放', tone: 'success', action: '' };
+      if (order.status === 'address') return { text: '待填地址', tone: 'warning', action: '填写地址' };
+      if (order.status === 'shipping') return { text: '待发货', tone: 'info', action: '查看详情' };
+      return { text: '已发货', tone: 'success', action: '查看物流' };
+    }
+    function renderOrders() {
+      $('[data-order-list]').innerHTML = state.orders.length ? state.orders.map((order) => {
+        const info = orderStatus(order);
+        return `<article class="order-card" data-order-id="${order.id}"><div class="order-head"><div><div class="order-title">${order.name}</div><div class="order-time">兑换时间 ${order.time}</div></div><span class="status-pill ${info.tone}">${info.text}</span></div><div class="order-foot"><div>订单 ${order.id}<br><strong>${format(order.price)} 盖世积分</strong>${order.tracking ? `<br>${order.tracking}` : ''}</div>${info.action ? `<button class="outline-button" type="button" data-action="order-action">${info.action}</button>` : '<span></span>'}</div></article>`;
+      }).join('') : `<div class="empty"><div>${icons.clock}<p>暂无兑换记录</p></div></div>`;
+    }
+    function claimTask(card) {
+      const task = state.tasks.find((item) => item.id === card.dataset.taskId);
+      if (!task || task.status !== 'claim') return;
+      task.status = 'done'; task.meta = '已领取'; state.points += task.reward;
+      state.pointRecords.unshift({ id: `P${Date.now()}`, type: 'income', title: task.name, time: '刚刚', value: task.reward });
+      renderPoints(); renderTasks(); showToast(`已领取 ${task.reward} 盖世积分`);
+    }
+    function openRedeem(productId) {
+      const item = state.products.find((product) => product.id === productId);
+      if (!item || item.stock <= 0) { showToast('商品库存不足，请选择其他商品'); return; }
+      state.selectedProductId = item.id;
+      $('[data-redeem-name]').textContent = item.name; $('[data-redeem-cost]').textContent = format(item.price); $('[data-redeem-balance]').textContent = format(state.points); $('[data-redeem-remaining]').textContent = format(Math.max(0,state.points-item.price)); $('[data-redeem-art]').innerHTML = icons[item.art];
+      $('[data-redeem-error]').classList.remove('is-visible'); $('[data-redeem-error]').textContent = '';
+      const confirm = $('[data-action="confirm-redeem"]'); confirm.disabled = state.points < item.price; confirm.textContent = confirm.disabled ? '盖世积分不足' : '确认兑换';
+      $('[data-dialog="redeem"]').classList.add('is-open');
+    }
+    function closeDialog(name) { $(`[data-dialog="${name}"]`).classList.remove('is-open'); }
+    function confirmRedeem() {
+      const item = state.products.find((product) => product.id === state.selectedProductId);
+      if (!item || state.points < item.price || item.stock <= 0) return;
+      if (item.failMode === 'changed') { const error = $('[data-redeem-error]'); error.textContent = '商品状态已变化，本次兑换失败，未扣减盖世积分。'; error.classList.add('is-visible'); $('[data-action="confirm-redeem"]').textContent = '重新查看'; return; }
+      state.points -= item.price; item.stock -= 1;
+      const order = { id: `OD${String(Date.now()).slice(-11)}`, type: item.type, name: item.name, time: '刚刚', price: item.price, status: item.type === 'physical' ? 'address' : 'issued' };
+      state.orders.unshift(order); state.pointRecords.unshift({ id: `P${Date.now()}`, type: 'expense', title: `兑换：${item.name}`, time: '刚刚', value: item.price });
+      renderPoints(); closeDialog('redeem');
+      if (item.type === 'physical') { state.pendingAddressOrderId = order.id; $('[data-address-form]').reset(); $('[data-address-error]').classList.remove('is-visible'); $('[data-dialog="address"]').classList.add('is-open'); }
+      else showToast('兑换成功，权益已发放至当前账号');
+      renderProducts();
+    }
+    function openAddress(orderId) { state.pendingAddressOrderId = orderId; $('[data-address-form]').reset(); $('[data-address-error]').classList.remove('is-visible'); $('[data-dialog="address"]').classList.add('is-open'); }
+    function submitAddress(event) {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget); const receiver = String(data.get('receiver')||'').trim(); const mobile = String(data.get('mobile')||'').trim(); const address = String(data.get('address')||'').trim(); const error = $('[data-address-error]');
+      if (!receiver || !/^1\d{10}$/.test(mobile) || address.length < 6) { error.textContent = '请填写完整收货信息，并检查手机号。'; error.classList.add('is-visible'); return; }
+      const order = state.orders.find((item) => item.id === state.pendingAddressOrderId); if (order) order.status = 'shipping';
+      closeDialog('address'); renderOrders(); showToast('收货信息已保存，将尽快安排发货');
+    }
+    function showToast(message) { const toast = $('[data-toast]'); toast.textContent = message; toast.classList.add('is-visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('is-visible'),2200); }
 
-        function renderFeed() {
-            let html = '';
-            feedData.forEach(i => {
-                html += `
-                <div class="feed-item">
-                    <div class="feed-header">
-                        <div class="feed-user">
-                            <div class="feed-avatar" style="background-image:url('${i.avatar}')"></div>
-                            <div class="feed-user-info"><div class="name">${i.user}</div><div class="meta">${i.time}</div></div>
-                        </div>
-                    </div>
-                    <div class="feed-title">${i.title}</div>
-                    <div class="feed-tags">${i.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-                    <div class="feed-text">${i.body}</div>
-                    <div class="feed-actions">
-                        <div class="action-btn">👁 1.3k</div>
-                        <div class="action-btn">♥ 165</div>
-                        <div class="action-btn">★ 1</div>
-                        <div class="action-btn">💬 14</div>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('feed-list').innerHTML = html;
-        }
-        renderFeed();
-
-        let currentPoints = 5000;
-        let r_unitPrice = 0, r_qty = 1, r_itemType = 'virtual', r_itemName = '';
-
-        let rewardsList =[
-            { id: 1, type: 'physical', name: 'X5Lite手柄', time: '2026.03.18 14:32', status: 'address', tracking: '' },
-            { id: 2, type: 'virtual', name: '3小时秒玩时长', time: '2026.03.18 14:32', expire: '2026.03.25 14:32', status: 'issued' },
-            { id: 3, type: 'physical', name: 'X5Lite手柄', time: '2025.01.01 12:00', status: 'shipped', tracking: 'SF1357924680' }
-        ];
-
-        let historyList =[
-            { title: '每日签到（连续7日后）', time: '03/11 09:33', val: 4, type: 'earn' },
-            { title: '兑换: 3小时秒玩时长', time: '03/10 14:00', val: 1200, type: 'consume' },
-            { title: '每日签到', time: '03/10 08:00', val: 2, type: 'earn' },
-            { title: '完善个人资料', time: '03/09 14:20', val: 20, type: 'earn' }
-        ];
-        let currentHistoryTab = 'earn';
-        let targetRewardIdForAddress = null;
-
-        function syncPointsUI() {
-            document.getElementById('global-points-1').innerText = currentPoints;
-            document.getElementById('global-points-2').innerText = currentPoints;
-            document.getElementById('r-cur-balance').innerText = currentPoints;
-            if (document.getElementById('redeem-modal').classList.contains('show')) checkAffordable();
-        }
-
-        function openPanel(id) { 
-            if(id === 'rewards-modal') renderRewards();
-            if(id === 'history-panel') renderHistory();
-            document.getElementById(id).classList.add('show'); 
-        }
-        function closePanel(id, e) { 
-            if(!e || e.target.classList.contains('modal-overlay') || e.target.classList.contains('rw-close')) {
-                document.getElementById(id).classList.remove('show'); 
-            }
-        }
-
-        let toastTimeout;
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg; toast.classList.add('show');
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-
-        // ================= 任务逻辑 =================
-        function doTask(btn, val, msg) {
-            if(btn.parentNode.querySelector('.task-progress') && btn.parentNode.querySelector('.task-progress').innerText.includes('进度:')) {
-                // 不真实限制
-            } else {
-                btn.innerText = "已完成"; btn.classList.add("done");
-            }
-            currentPoints += val; syncPointsUI();
-            addHistoryRecord(msg, val, 'earn');
-            showToast(`${msg}，积分 +${val}`);
-        }
-
-        // 🌟 关注公众号特定逻辑
-        let pendingQrcodeTask = null;
-
-        function openQrcodeTask(btn, val, msg) {
-            if(btn.classList.contains("done")) return;
-            pendingQrcodeTask = { btn, val, msg };
-            document.getElementById('qrcode-modal').classList.add('show');
-        }
-
-        function closeQrcodeModal(e) {
-            if(!e || e.target.classList.contains('modal-overlay')) {
-                closeAndCompleteQrcode();
-            }
-        }
-
-        function closeAndCompleteQrcode() {
-            document.getElementById('qrcode-modal').classList.remove('show');
-            if (pendingQrcodeTask) {
-                doTask(pendingQrcodeTask.btn, pendingQrcodeTask.val, pendingQrcodeTask.msg);
-                pendingQrcodeTask = null;
-            }
-        }
-
-        function switchHistoryTab(tabStr, el) {
-            document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            currentHistoryTab = tabStr;
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const box = document.getElementById('history-list-box');
-            let html = '';
-            const list = historyList.filter(item => item.type === currentHistoryTab);
-            
-            if(list.length === 0) {
-                html = `<div style="text-align:center; padding: 40px; color: var(--text-s); font-size:14px; grid-column: 1 / -1;">- 暂无记录 -</div>`;
-            } else {
-                list.forEach(i => {
-                    const isEarn = i.type === 'earn';
-                    const sign = isEarn ? '+' : '-';
-                    const valCls = isEarn ? 'add' : 'minus';
-                    html += `
-                    <div class="history-item">
-                        <div class="h-left">
-                            <div class="h-title">${i.title}</div>
-                            <div class="h-time">${i.time}</div>
-                        </div>
-                        <div class="h-val ${valCls}">${sign}${i.val}</div>
-                    </div>`;
-                });
-            }
-            box.innerHTML = html;
-        }
-
-        function addHistoryRecord(title, val, type) {
-            const now = new Date();
-            const timeStr = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-            historyList.unshift({ title, time: timeStr, val, type });
-            if (document.getElementById('history-panel').classList.contains('show')) {
-                renderHistory();
-            }
-        }
-
-        function renderRewards() {
-            const container = document.getElementById('rewards-list-container');
-            let html = '';
-            rewardsList.forEach(item => {
-                let rightHtml = '';
-                if (item.status === 'address') {
-                    rightHtml = `<button class="rw-btn-orange" onclick="openAddressModal(${item.id})">修改地址</button>`;
-                } else if (item.status === 'issued') {
-                    rightHtml = `<span class="rw-status-grey">已发放</span>`;
-                } else if (item.status === 'shipped') {
-                    rightHtml = `
-                        <span class="rw-status-green">已发货</span>
-                        <div class="rw-track-box">单号: ${item.tracking} 📋</div>
-                    `;
-                }
-
-                html += `
-                <div class="rw-item">
-                    <div class="rw-info">
-                        <div class="name">${item.name}</div>
-                        <div class="time">兑换时间: ${item.time}</div>
-                        ${item.expire ? `<div class="expire">有效期至: ${item.expire}</div>` : ''}
-                    </div>
-                    <div class="rw-action">
-                        ${rightHtml}
-                    </div>
-                </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function openRedeem(title, price, imgSrc, itemType) {
-            r_itemName = title; r_unitPrice = price; r_itemType = itemType; r_qty = 1;
-            document.getElementById('r-modal-img').src = imgSrc;
-            document.getElementById('r-modal-title').innerText = title;
-            document.getElementById('r-modal-price').innerText = price;
-            updateQtyUI();
-            document.getElementById('redeem-modal').classList.add('show');
-        }
-
-        function closeRedeem(e) { if(!e || e.target.classList.contains('modal-overlay')) document.getElementById('redeem-modal').classList.remove('show'); }
-
-        function updateQty(change) {
-            let next = r_qty + change;
-            if (next >= 1 && next <= 1) { r_qty = next; updateQtyUI(); }
-        }
-
-        function updateQtyUI() {
-            document.getElementById('r-qty').innerText = r_qty;
-            document.getElementById('r-total-price').innerText = r_qty * r_unitPrice;
-            checkAffordable();
-        }
-
-        function checkAffordable() {
-            const btn = document.getElementById('btn-do-redeem');
-            if (currentPoints < r_qty * r_unitPrice) {
-                btn.classList.add('disabled'); btn.innerText = '余额不足';
-            } else {
-                btn.classList.remove('disabled'); btn.innerText = '确认兑换';
-            }
-        }
-
-        function confirmRedeem() {
-            const total = r_qty * r_unitPrice;
-            if (currentPoints >= total) {
-                currentPoints -= total; syncPointsUI();
-                addHistoryRecord(`兑换: ${r_itemName}`, total, 'consume');
-                
-                const now = new Date();
-                const timeStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-                const newReward = { id: Date.now(), name: r_itemName, time: timeStr };
-
-                if (r_itemType === 'physical') {
-                    newReward.type = 'physical';
-                    newReward.status = 'address';
-                    rewardsList.unshift(newReward);
-                    closeRedeem();
-                    showToast("兑换成功，请填写收货地址！");
-                    setTimeout(() => openAddressModal(newReward.id), 800);
-                } else {
-                    newReward.type = 'virtual';
-                    newReward.status = 'issued';
-                    rewardsList.unshift(newReward);
-                    closeRedeem();
-                    showToast("兑换成功，已直接发放至账户！");
-                }
-            }
-        }
-
-        function openAddressModal(rewardId) {
-            targetRewardIdForAddress = rewardId;
-            document.getElementById('address-modal').classList.add('show');
-        }
-
-        function submitAddress() {
-            const name = document.getElementById('addr-name').value;
-            const phone = document.getElementById('addr-phone').value;
-            const detail = document.getElementById('addr-detail').value;
-
-            if(!name || !phone || !detail) { showToast("请填写完整收货信息"); return; }
-
-            let item = rewardsList.find(r => r.id === targetRewardIdForAddress);
-            if(item) {
-                item.status = 'shipped';
-                item.tracking = '发货处理中'; 
-            }
-            
-            showToast("地址提交成功，我们将尽快为您发货！");
-            document.getElementById('addr-name').value = '';
-            document.getElementById('addr-phone').value = '';
-            document.getElementById('addr-detail').value = '';
-            
-            closePanel('address-modal');
-            if(document.getElementById('rewards-modal').classList.contains('show')) {
-                renderRewards();
-            }
-        }
-
-        syncPointsUI();
-    </script>
+    document.addEventListener('click', (event) => {
+      const actionNode = event.target.closest('[data-action]'); if (!actionNode) return; const action = actionNode.dataset.action;
+      if (action === 'demo-back') return showToast('返回“我的”页');
+      if (action === 'open-rules') { state.returnView = 'tasks'; return showView('rules'); }
+      if (action === 'open-points') return showView('points');
+      if (action === 'open-store') return showView('store');
+      if (action === 'open-orders') return showView('orders');
+      if (action === 'back-tasks') return showView('tasks');
+      if (action === 'back-store') return showView('store');
+      if (action === 'back-from-rules') return showView(state.returnView || 'tasks');
+      if (action === 'task-tab') { state.taskTab = actionNode.dataset.value; return renderTasks(); }
+      if (action === 'store-tab') { state.storeTab = actionNode.dataset.value; return renderProducts(); }
+      if (action === 'point-tab') { state.pointTab = actionNode.dataset.value; return renderPointRecords(); }
+      if (action === 'claim') return claimTask(actionNode.closest('[data-task-id]'));
+      if (action === 'task-go') return showToast('将前往对应功能完成任务');
+      if (action === 'open-product') return openRedeem(actionNode.closest('[data-product-id]').dataset.productId);
+      if (action === 'close-redeem') return closeDialog('redeem');
+      if (action === 'confirm-redeem') return confirmRedeem();
+      if (action === 'close-address') return closeDialog('address');
+      if (action === 'order-action') { const order = state.orders.find((item) => item.id === actionNode.closest('[data-order-id]').dataset.orderId); if (!order) return; if (order.status === 'address') return openAddress(order.id); if (order.status === 'shipping') return showToast('当前为待发货状态'); return showToast(order.tracking || '暂无物流更新'); }
+    });
+    $$('[data-dialog]').forEach((layer) => layer.addEventListener('click',(event) => { if (event.target === layer) closeDialog(layer.dataset.dialog); }));
+    $('[data-address-form]').addEventListener('submit', submitAddress);
+    window.demoApi = { showView, openRedeem, reset() { state = initialState(); closeDialog('redeem'); closeDialog('address'); clearTimeout(toastTimer); $('[data-toast]').classList.remove('is-visible'); renderAll(); showView('tasks'); }, getState() { return JSON.parse(JSON.stringify(state)); } };
+    function renderAll() { renderPoints(); renderTasks(); renderProducts(); renderPointRecords(); renderOrders(); }
+    renderAll();
+  </script>
 </body>
 </html>
