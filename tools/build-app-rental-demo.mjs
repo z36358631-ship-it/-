@@ -68,6 +68,10 @@ const requiredBusinessSignatures = Object.freeze([
   'resolveGameDisplayModel',
   'getDiscoveryUserContext',
   'renderDiscoveryDisplay',
+  'PLAY_PC_GAMES',
+  'renderPlayRentalSummary',
+  'play-card-action',
+  'data-play-rental-summary',
   'ORDER_TABS',
   'GAME_SALE_MODES',
   'eligibleCheckoutSkus',
@@ -105,7 +109,12 @@ const requiredBusinessSignatures = Object.freeze([
   'data-rental-intro',
   'renderServiceBenefits',
   'data-action="open-no-reason-policy"',
-  "showToast('登录成功，已返回游戏库')",
+  'resolveGameNotice',
+  'evaluateRefundRisk',
+  'applyRefundResult',
+  '获取并输入验证码',
+  '已同意，待下次启动',
+  "showToast('登录成功，已进入游戏详情')",
 ]);
 
 function assertBusinessScriptSignatures(label, source) {
@@ -136,6 +145,9 @@ function assertBusinessScriptSignatures(label, source) {
   }
   if (source.includes('订单创建失败')) {
     throw new Error(`${label} 仍保留确认订单失败死路`);
+  }
+  if (source.includes('开通会员后可在工作时间联系客服申请远程协助')) {
+    throw new Error(`${label} 会员首次弹窗仍保留远程协助`);
   }
   const removedClientState = ['alloc', 'ating'].join('');
   const removedClientCopies = [
@@ -176,6 +188,20 @@ if (fs.existsSync(annotationPath)) {
   if (!adminFragment.includes('APP_RENTAL_ADMIN_FRAGMENT_START') || !adminFragment.includes('window.__appRentalAdminDemo')) {
     throw new Error('后台片段缺少稳定标记或测试 API');
   }
+  const adminPreviewFragment = adminFragment
+    .replace(
+      '</style>',
+      `  .annotation-admin-link { display: flex; min-height: 38px; align-items: center; padding: 0 10px; border: 1px solid rgb(77 184 232 / 45%); border-radius: 9px; background: rgb(77 184 232 / 14%); color: #9fe2ff; font-size: 11px; text-decoration: none; }
+  .annotation-admin-link:hover { background: rgb(77 184 232 / 22%); color: #c8f0ff; }
+  .annotation-admin-note { margin: 10px 0 0; color: rgb(255 255 255 / 52%); font-size: 10px; line-height: 16px; }
+  #appRentalAdminDemo .admin-readonly-control { border-color: transparent; background: transparent; color: #8c96a5; cursor: default; }
+  #appRentalAdminDemo .admin-toolbar input[readonly],
+  #appRentalAdminDemo .admin-toolbar select:disabled { border-color: #e7eaf0; background: #f7f8fa; color: #9aa3b1; cursor: default; opacity: 1; }
+</style>`,
+    )
+    .replace(/<button class="a-btn([^"]*)" data-admin-action="[^"]+"([^>]*)>([\s\S]*?)<\/button>/g, '<span class="a-btn$1 admin-readonly-control"$2>$3</span>')
+    .replace(/<input([^>]*?)>/g, '<input$1 readonly tabindex="-1">')
+    .replace(/<select([^>]*?)>/g, '<select$1 disabled tabindex="-1">');
 
   let annotation = fs.readFileSync(annotationPath, 'utf8');
   if (!annotation.includes('data-annotation-surface="admin"')) {
@@ -190,6 +216,10 @@ if (fs.existsSync(annotationPath)) {
       '<div id="demoScaleFrame" data-scale="1"><main id="appRentalDemo" data-orientation="portrait" data-screen="home"></main></div><main id="appRentalAdminDemo" hidden></main><!-- APP_RENTAL_ADMIN_INJECT -->',
     );
   }
+  annotation = annotation.replace(
+    /<div class="annotation-surface-switch">[\s\S]*?<\/div><\/div><nav class="admin-module-nav"/,
+    '<div class="annotation-surface-switch"><button class="active" type="button" data-annotation-surface="client">APP（安卓端）客户端</button><button type="button" data-annotation-surface="admin">后台只读预览</button><a class="annotation-admin-link" href="../../Mac端demo/mac端租号功能/Mac端租号功能-标注版.html?mode=admin&page=products" target="_blank" rel="noopener">打开完整统一租号后台 ↗</a></div><p class="annotation-admin-note">前 6 个后台页仅在 Mac 后台基础上新增“APP（安卓端）”Tab；操作记录无端别 Tab。查询、新建、编辑、上下架等交互全部复用 Mac 后台。</p></div><nav class="admin-module-nav"',
+  );
   const styleMarker = '    /* 交互标注文档壳层：完整 Demo 直接内嵌，不使用 iframe。 */';
   const scriptMarker = '  <script>\n    const ANNOTATION_GROUPS = Object.freeze([';
   if (!annotation.includes(styleMarker) || !annotation.includes(scriptMarker)) throw new Error('标注版缺少稳定同步标记');
@@ -206,14 +236,28 @@ if (fs.existsSync(annotationPath)) {
     '订单列表与详情分别使用独立任务页。',
     '订单列表与详情拆页，分别使用独立任务页；所有状态操作按钮完整收在订单卡片边界内。',
   );
-  annotation = annotation.replace(
-    '滚动页展示8款会员游戏；仅支持的游戏显示“支持云存档”。',
-    '滚动页展示8款会员游戏；仅支持的游戏在封面下方信息区显示“支持云存档”。',
+  annotation = annotation.replaceAll(
+    /滚动页展示8款会员游戏；[^']*支持云存档[^']*。/g,
+    '滚动页展示8款会员游戏；卡片只显示游戏名称和灰色“标准版”副标题。',
   );
-  annotation = annotation.replace(
-    '受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；预览卡同步显示云存档支持标识。',
-    '受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；云存档支持标识位于封面下方信息区，不叠加在封面上。',
+  annotation = annotation.replaceAll(
+    /受首屏高度限制预览前4款，完整8款通过“查看全部”进入会员游戏库；[^']*云存档[^']*。/g,
+    '受首屏高度限制预览前4款，完整8款通过“查看更多”进入可搜索的完整会员游戏库。',
   );
+  annotation = annotation.replaceAll('原四项会员权益', '三项会员权益');
+  annotation = annotation.replaceAll('四项权益', '三项权益');
+  annotation = annotation.replaceAll('PC引擎与手柄适配、', '');
+  annotation = annotation.replaceAll('季卡保持推荐锚点。', '默认选中周卡，不显示推荐角标。');
+  annotation = annotation.replaceAll('Demo 暂用周卡¥39、月卡¥129、季卡¥299并推荐季卡；周卡/季卡正式价格与推荐档待运营确认，待支付订单切换套餐时重建。', 'Demo 暂用周卡¥39、月卡¥129、季卡¥299并默认选中周卡；待支付订单切换套餐时重建。');
+  annotation = annotation.replaceAll('个人云存档同步只是三项权益之一', '个人云存档同步是三项权益之一');
+  annotation = annotation.replaceAll('关闭登录方式弹窗，显示登录成功反馈并返回游戏库。', '关闭登录方式弹窗，显示登录成功反馈并进入对应游戏详情。');
+  annotation = annotation.replaceAll('使用相同成功路径并返回横版游戏库。', '使用相同成功路径并进入对应游戏详情。');
+  annotation = annotation.replaceAll('从租赁中订单', '从可使用订单');
+  annotation = annotation.replaceAll('仅租赁中订单', '仅可使用订单');
+  annotation = annotation.replaceAll('租赁中详情为申请售后、登录信息、登录游戏。', '可使用订单详情为申请售后、登录信息、登录游戏。');
+  annotation = annotation.replaceAll('提交账号密码后进入 Steam Guard 二次校验。', '提交账号密码后进入 Steam 验证阶段；到达验证码页后点击“获取并输入验证码”，系统自动输入并进入游戏详情。');
+  annotation = annotation.replaceAll('依赖 orderTab、orderSearch、orderSearchOpen 与六种租号订单状态集合。', '依赖 orderTab、orderSearch、orderSearchOpen 与五种租号订单状态集合。');
+  annotation = annotation.replaceAll('反馈: \'创建售后单，并可继续申请同游戏同版本换号。\'', '反馈: \'提交成功后关闭申请页并提示“售后申请已提交”；订单入口改为“售后详情”，弹窗展示进度并支持撤销。\'');
   annotation = annotation.replace(
     '商品卡在游戏名下用灰色副标题只读显示“标准版”；顺序为商品、五项权益、套餐、游戏原价/订单金额、支付方式和固定支付栏。',
     '商品卡在游戏名下用灰色副标题只读显示“标准版”，下方保留上一版五项租号权益；顺序为商品、租号权益、套餐、游戏原价/订单金额、支付方式和固定支付栏；右上角只显示纯文字“租号介绍”。',
@@ -275,11 +319,17 @@ if (fs.existsSync(annotationPath)) {
   );
   annotation = annotation.replace(
     /<!-- APP_RENTAL_ADMIN_FRAGMENT_START -->[\s\S]*?<!-- APP_RENTAL_ADMIN_FRAGMENT_END -->|<!-- APP_RENTAL_ADMIN_INJECT -->/,
-    adminFragment,
+    adminPreviewFragment,
   );
+  if (!annotation.includes("id: '2A'")) {
+    annotation = annotation.replace(
+      /({ id: '2', type: 'interaction', group: 'discovery',[^\n]+\n)/,
+      `$1      { id: '2A', type: 'interaction', group: 'discovery', title: 'PC游戏卡租号摘要', portraitSelector: '.play-game-card[data-play-game-id]', landscapeSelector: '.landscape-hot-card[data-play-game-id]', trigger: '进入玩游戏并切换到PC游戏。', portrait: '游戏名和原类型/评分下方展示一条租号摘要；有真实人数时再显示在租人数。', landscape: '最近常玩与人气热游复用同一摘要，卡片按内容自然增高。', feedback: '点击卡片非操作区进入详情；点击启动或下载仍执行原操作。', dependency: '优先级为已租号→可畅玩→最低有效租号价→无新增信息。', exception: '价格、库存、资格或摘要失败时隐藏新增信息，不影响原列表和操作。' },\n`,
+    );
+  }
   const requiredAdminSignatures = [
     'APP（安卓端）客户端',
-    '运营后台',
+    '后台只读预览',
     '租号商品管理',
     '会员游戏库管理',
     '会员套餐管理',
@@ -290,6 +340,10 @@ if (fs.existsSync(annotationPath)) {
     'data-admin-client-tab="android"',
     'data-admin-client-tab="mac"',
     'window.__appRentalAdminDemo',
+    '../../Mac端demo/mac端租号功能/Mac端租号功能-标注版.html?mode=admin&page=products',
+    '后台只读预览',
+    '查询、新建、编辑、上下架等交互全部复用 Mac 后台',
+    "id: '2A'",
   ];
   const missingAdminSignatures = requiredAdminSignatures.filter((signature) => !annotation.includes(signature));
   if (missingAdminSignatures.length) throw new Error(`标注版缺少后台签名：${missingAdminSignatures.join('、')}`);

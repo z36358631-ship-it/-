@@ -80,19 +80,19 @@
   const ADMIN_DUAL_CLIENT_PAGES = Object.freeze(ADMIN_PAGES.filter(([id]) => id !== 'audit').map(([id]) => id));
   const ANDROID_DATA = Object.freeze({
     products: Object.freeze([
-      { id: 'APP-PROD-GTA6-STD', game: 'GTA 6', edition: '标准版', mode: '时租', sku: '2—23小时 / 日租 / 周租', price: '¥9.90起', stock: 128, status: '已上架' },
-      { id: 'APP-PROD-SPIRIT-STD', game: 'Spiritfarer', edition: '标准版', mode: '权益方案', sku: '首次体验2小时 / 单游戏永久', price: '¥1.99起', stock: '自动分配', status: '已上架' },
-      { id: 'APP-PROD-RDR2-STD', game: '荒野大镖客：救赎 2', edition: '标准版', mode: '时租', sku: '2—23小时 / 日租 / 周租', price: '¥7.90起', stock: 76, status: '已上架' },
+      { id: 'APP-PROD-SHADOW-STD', game: '影之刃零', platform: 'Steam', region: '国内', edition: '标准版', sku: '首次体验2小时 / 单游戏永久', price: '¥1.90起', stock: 128, notice: '已配置中文 / English', supplier: '同步正常 · 内部备注', updatedAt: '2026-09-10 10:30', status: '已上架' },
+      { id: 'APP-PROD-SPIRIT-STD', game: 'Spiritfarer', platform: 'Steam', region: '国内', edition: '标准版', sku: '首次体验2小时 / 单游戏永久', price: '¥1.99起', stock: 26, notice: '已配置中文', supplier: '同步正常', updatedAt: '2026-09-10 10:18', status: '已上架' },
+      { id: 'APP-PROD-RDR2-STD', game: '荒野大镖客：救赎 2', platform: 'Steam / Rockstar', region: '国内', edition: '标准版', sku: '首次体验2小时 / 单游戏永久', price: '¥1.90起', stock: 76, notice: '已配置中文', supplier: '同步正常 · 内部备注', updatedAt: '2026-09-10 09:56', status: '已上架' },
     ]),
     memberLibrary: Object.freeze([
-      { id: 'APP-LIB-001', game: 'Spiritfarer', edition: '标准版', cloud: '支持云存档', stock: 26, status: '会员可用' },
-      { id: 'APP-LIB-002', game: '双人成行', edition: '标准版', cloud: '支持云存档', stock: 41, status: '会员可用' },
-      { id: 'APP-LIB-003', game: '霍格沃茨之遗', edition: '标准版', cloud: '—', stock: 18, status: '会员可用' },
+      { id: 'APP-LIB-001', game: 'Spiritfarer', edition: '标准版', stock: 26, status: '会员可用' },
+      { id: 'APP-LIB-002', game: '双人成行', edition: '标准版', stock: 41, status: '会员可用' },
+      { id: 'APP-LIB-003', game: '霍格沃茨之遗', edition: '标准版', stock: 18, status: '会员可用' },
     ]),
     memberPlans: Object.freeze([
-      { id: 'weekly', name: '周卡', days: '7天', price: '¥39.00', recommend: '—', status: '已上架' },
-      { id: 'monthly', name: '月卡', days: '30天', price: '¥129.00', recommend: '—', status: '已上架' },
-      { id: 'quarterly', name: '季卡', days: '90天', price: '¥299.00', recommend: '推荐', status: '已上架' },
+      { id: 'weekly', name: '周卡', days: '7天', price: '¥39.00', benefit: '会员库畅玩 / 持续更新 / 云存档', sort: 1, status: '已上架' },
+      { id: 'monthly', name: '月卡', days: '30天', price: '¥129.00', benefit: '会员库畅玩 / 持续更新 / 云存档', sort: 2, status: '已上架' },
+      { id: 'quarterly', name: '季卡', days: '90天', price: '¥299.00', benefit: '会员库畅玩 / 持续更新 / 云存档', sort: 3, status: '已上架' },
     ]),
     accounts: Object.freeze([
       { id: 'APP-ACC-001', game: 'GTA 6', platform: 'Steam / Rockstar Games', account: 'gh_app_***_001', status: '可出租', order: '—', health: '正常' },
@@ -100,25 +100,25 @@
       { id: 'APP-ACC-003', game: 'Spiritfarer', platform: 'Steam', account: 'gh_app_***_026', status: '隔离', order: '—', health: '待复核' },
     ]),
     orders: Object.freeze([
-      { id: 'APP-ORDER-26081101', game: '荒野大镖客：救赎 2', status: '租赁中', amount: '¥15.80', device: 'GameHub 6.1.1 / Android 15 / AYANEO Pocket S', detail: 'CPU 骁龙G3x Gen2 · GPU Adreno A32 · 16GB' },
-      { id: 'APP-ORDER-26081102', game: 'Spiritfarer', status: '已支付', amount: '¥1.99', device: 'GameHub 6.1.1 / Android 14 / OnePlus 12', detail: 'CPU 骁龙8 Gen3 · GPU Adreno 750 · 12GB' },
-      { id: 'APP-ORDER-26081103', game: 'GTA 6', status: '退款中', amount: '¥19.80', device: 'GameHub 6.1.1 / Android 15 / REDMAGIC 10 Pro', detail: 'CPU 骁龙8 Elite · GPU Adreno 830 · 16GB' },
+      { id: 'APP-ORDER-26091001', game: '荒野大镖客：救赎 2', edition: '标准版', benefit: '首次体验·2小时', validity: '2026-09-10 12:20', status: '可使用', afterSales: '无', replacement: '—', amount: '¥1.90', device: 'GameHub 6.1.1 / Android 15 / AYANEO Pocket S', detail: 'CPU 骁龙G3x Gen2 · GPU Adreno A32 · 16GB' },
+      { id: 'APP-ORDER-26091002', game: 'Spiritfarer', edition: '标准版', benefit: '单游戏永久', validity: '长期有效', status: '可使用', afterSales: '处理中', replacement: '已同意，待下次启动', amount: '¥68.00', device: 'GameHub 6.1.1 / Android 14 / OnePlus 12', detail: 'CPU 骁龙8 Gen3 · GPU Adreno 750 · 12GB' },
+      { id: 'APP-ORDER-26091003', game: '影之刃零', edition: '标准版', benefit: '单游戏永久', validity: '已撤销', status: '已退款', afterSales: '已完成', replacement: '—', amount: '¥198.00', device: 'GameHub 6.1.1 / Android 15 / REDMAGIC 10 Pro', detail: 'CPU 骁龙8 Elite · GPU Adreno 830 · 16GB' },
     ]),
     stats: Object.freeze({ kpis: [['支付订单量', '8,426', '↑ 18.6%'], ['支付金额', '¥128,940', '↑ 21.3%'], ['付费用户数', '6,304', '↑ 15.4%'], ['一键上号成功率', '96.8%', '↑ 1.2%'], ['退款率', '2.1%', '↓ 0.5%']], funnel: [['租号曝光', '86,420'], ['点击租号', '24,680'], ['提交订单', '11,932'], ['支付成功', '8,426'], ['一键上号成功', '8,156']] }),
   });
   const MAC_DATA = Object.freeze({
     products: Object.freeze([
-      { id: 'MAC-PROD-GTA6', game: 'GTA 6', edition: '普通版 / 增强版 / 豪华版', mode: '时租', sku: '小时 / 日租 / 周租', price: '¥12.00起', stock: 92, status: '已上架' },
-      { id: 'MAC-PROD-RDR2', game: '荒野大镖客：救赎 2', edition: '标准版', mode: '时租', sku: '小时 / 日租 / 周租', price: '¥9.90起', stock: 55, status: '已上架' },
+      { id: 'MAC-PROD-GTA6', clientType: 'mac', game: 'GTA 6', edition: '标准版', editionId: 'standard', saleMode: 'time-rental', mode: '时租', sku: '2—23小时 / 日租 / 周租', price: '¥12.00起', stock: 92, status: '已上架' },
+      { id: 'MAC-PROD-SPIRIT', clientType: 'mac', game: 'Spiritfarer', edition: '标准版', editionId: 'standard', saleMode: 'entitlement', mode: '权益方案', sku: '首次体验2小时 / 单游戏永久 / 开会员畅玩', price: '¥1.99起', stock: 20, status: '已上架' },
     ]),
     memberLibrary: Object.freeze([
-      { id: 'MAC-LIB-001', game: 'Spiritfarer', edition: '标准版', cloud: '支持云存档', stock: 20, status: '会员可用' },
-      { id: 'MAC-LIB-002', game: '双人成行', edition: '标准版', cloud: '—', stock: 34, status: '会员可用' },
+      { id: 'MAC-LIB-001', game: 'Spiritfarer', edition: '标准版', stock: 20, status: '会员可用' },
+      { id: 'MAC-LIB-002', game: '双人成行', edition: '标准版', stock: 34, status: '会员可用' },
     ]),
     memberPlans: Object.freeze([
-      { id: 'mac-monthly', name: '月度会员', days: '30天', price: '¥129.00', recommend: '—', status: '已上架' },
-      { id: 'mac-yearly', name: '年度会员', days: '365天', price: '¥499.00', recommend: '推荐', status: '已上架' },
-      { id: 'mac-permanent', name: '永久会员', days: '长期有效', price: '¥399.00', recommend: '—', status: '已上架' },
+      { id: 'mac-weekly', name: '周卡', days: '7天', price: '¥39.00', recommend: '—', status: '已上架' },
+      { id: 'mac-monthly', name: '月卡', days: '30天', price: '¥129.00', recommend: '—', status: '已上架' },
+      { id: 'mac-quarterly', name: '季卡', days: '90天', price: '¥299.00', recommend: '—', status: '已上架' },
     ]),
     accounts: Object.freeze([
       { id: 'MAC-ACC-001', game: 'GTA 6', platform: 'Steam / Rockstar Games', account: 'gh_mac_***_001', status: '可出租', order: '—', health: '正常' },
@@ -144,11 +144,11 @@
     toast: '',
   };
   const pageMeta = Object.freeze({
-    products: ['租号商品管理', '配置游戏、版本、售卖模式、价格和上下架状态'],
-    'member-library': ['会员游戏库管理', '维护会员可畅玩游戏、版本、库存和云存档能力'],
-    'member-plans': ['会员套餐管理', '配置各客户端独立套餐、有效期与推荐状态'],
+    products: ['租号商品管理', '首期配置标准版、权益方案、游戏提示语与供应商参考信息'],
+    'member-library': ['会员游戏库管理', '维护会员可畅玩游戏、版本、库存和上下架状态'],
+    'member-plans': ['会员套餐管理', '配置各客户端独立套餐、有效期与上下架状态'],
     accounts: ['账号资源管理', '查看账号库存、健康状态、占用关系和平台信息'],
-    'admin-orders': ['订单与售后', '查询订单、设备环境、履约状态和售后进度'],
+    'admin-orders': ['订单与售后', '查询权益、有效期、退款、售后和换号待执行状态'],
     stats: ['效果统计', '查看租号漏斗、支付结果和履约质量'],
     audit: ['操作记录', '统一查询 APP 与 Mac 后台关键操作和变更快照'],
   });
@@ -163,24 +163,24 @@
   const table = (headers, rows) => `<div class="data-card"><table class="data-table"><thead><tr>${headers.map((header) => `<th>${header}</th>`).join('')}</tr></thead><tbody>${rows || `<tr><td class="admin-empty" colspan="${headers.length}">暂无数据</td></tr>`}</tbody></table></div>`;
   const toolbar = (placeholder, actionLabel = '导出当前数据') => `<div class="admin-toolbar"><input aria-label="搜索当前模块" placeholder="${placeholder}"><select aria-label="状态筛选"><option>全部状态</option><option>已上架</option><option>租用中</option></select><span class="spacer"></span><button class="a-btn" data-admin-action="export">${actionLabel}</button><button class="a-btn primary" data-admin-action="create">新建配置</button></div>`;
   function renderProducts() {
-    const rows = currentData().products.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.edition}</td><td>${item.mode}</td><td>${item.sku}</td><td>${item.price}</td><td>${item.stock}</td><td><span class="status ${statusTone(item.status)}">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
-    return toolbar('搜索游戏名称或商品ID') + table(['游戏 / 商品ID', '版本', '售卖模式', 'SKU', '最低价', '库存', '状态', '操作'], rows);
+    const rows = currentData().products.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.platform || 'Steam'}<span class="subline">${item.region || '国内'}</span></td><td>${item.edition}</td><td>${item.sku}</td><td>${item.price}</td><td>${item.notice || '—'}</td><td>${item.supplier || '—'}<span class="subline">${item.updatedAt || ''}</span></td><td><span class="status ${statusTone(item.status)}">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
+    return toolbar('搜索游戏名称或商品ID', '同步供应商资料') + table(['游戏 / 商品ID', '平台 / 地区', '版本', '权益方案', '最低价', '游戏提示语', '供应商同步 / 内部参考', '状态', '操作'], rows);
   }
   function renderMemberLibrary() {
-    const rows = currentData().memberLibrary.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.edition}</td><td>${item.cloud}</td><td>${item.stock}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
-    return toolbar('搜索会员游戏') + table(['游戏 / 配置ID', '版本', '云存档', '可用库存', '状态', '操作'], rows);
+    const rows = currentData().memberLibrary.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.edition}</td><td>${item.stock}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
+    return toolbar('搜索会员游戏') + table(['游戏 / 配置ID', '版本', '可用库存', '状态', '操作'], rows);
   }
   function renderMemberPlans() {
-    const rows = currentData().memberPlans.map((item) => `<tr><td><strong>${item.name}</strong><span class="subline">${item.id}</span></td><td>${item.days}</td><td>${item.price}</td><td>${item.recommend}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
-    return toolbar('搜索套餐名称') + table(['套餐 / ID', '有效期', '售价', '推荐状态', '状态', '操作'], rows);
+    const rows = currentData().memberPlans.map((item) => `<tr><td><strong>${item.name}</strong><span class="subline">${item.id}</span></td><td>${item.days}</td><td>${item.price}</td><td>${item.benefit || '会员游戏库畅玩'}</td><td>${item.sort ?? '—'}</td><td><span class="status">${item.status}</span></td><td><button class="a-btn" data-admin-action="edit" data-object-id="${item.id}">编辑</button></td></tr>`).join('');
+    return toolbar('搜索套餐名称') + table(['套餐 / ID', '有效期', '售价', '权益文案', '排序', '状态', '操作'], rows);
   }
   function renderAccounts() {
     const rows = currentData().accounts.map((item) => `<tr><td><strong>${item.game}</strong><span class="subline">${item.id}</span></td><td>${item.platform}</td><td>${item.account}</td><td><span class="status ${statusTone(item.status)}">${item.status}</span></td><td>${item.order}</td><td>${item.health}</td><td><button class="a-btn" data-admin-action="inspect" data-object-id="${item.id}">查看</button></td></tr>`).join('');
     return toolbar('搜索游戏、账号资源ID或订单号') + table(['游戏 / 资源ID', '登录平台', '账号（脱敏）', '资源状态', '当前订单', '健康状态', '操作'], rows);
   }
   function renderOrders() {
-    const rows = currentData().orders.map((item) => `<tr><td><strong>${item.id}</strong><span class="subline">clientType: ${currentClientType()}</span></td><td>${item.game}</td><td><span class="status ${statusTone(item.status)}">${item.status}</span></td><td>${item.amount}</td><td><strong>${item.device}</strong><span class="subline">${item.detail}</span></td><td><button class="a-btn" data-admin-action="inspect" data-object-id="${item.id}">查看详情</button></td></tr>`).join('');
-    return toolbar('搜索订单号或游戏名称') + table(['订单号', '游戏', '状态', '实付', currentClientType() === 'android' ? 'APP / Android / 设备环境' : 'Mac 客户端 / 设备环境', '操作'], rows);
+    const rows = currentData().orders.map((item) => `<tr><td><strong>${item.id}</strong><span class="subline">clientType: ${currentClientType()}</span></td><td>${item.game}<span class="subline">${item.edition || '标准版'} · ${item.benefit || '权益方案'}</span></td><td>${item.validity || '—'}</td><td><span class="status ${statusTone(item.status)}">${item.status}</span><span class="subline">售后：${item.afterSales || '—'}</span></td><td>${item.replacement || '—'}</td><td>${item.amount}</td><td><strong>${item.device}</strong><span class="subline">${item.detail}</span></td><td><button class="a-btn" data-admin-action="inspect" data-object-id="${item.id}">查看详情</button></td></tr>`).join('');
+    return toolbar('搜索订单号或游戏名称') + table(['订单号', '游戏 / 权益', '有效期', '状态 / 售后', '换号', '实付', currentClientType() === 'android' ? 'APP / Android / 设备环境' : 'Mac 客户端 / 设备环境', '操作'], rows);
   }
   function renderStats() {
     const stats = currentData().stats;
@@ -245,6 +245,15 @@
     renderAdminApp();
     setTimeout(() => { adminState.toast = ''; renderAdminApp(); }, 1600);
   }
+  function syncSupplierCatalog(payload) {
+    const supportedGameIds = new Set(['APP-PROD-SHADOW-STD', 'APP-PROD-SPIRIT-STD', 'APP-PROD-RDR2-STD']);
+    if (!Array.isArray(payload) || payload.length === 0) {
+      return { applied: false, preservedPreviousCatalog: true, reason: 'empty-or-invalid-response' };
+    }
+    const accepted = payload.filter((item) => item && supportedGameIds.has(item.id));
+    if (accepted.length === 0) return { applied: false, preservedPreviousCatalog: true, reason: 'no-supported-games' };
+    return { applied: true, preservedPreviousCatalog: true, acceptedIds: accepted.map(({ id }) => id), changedOperationStatus: false, overwroteGameNotice: false };
+  }
   document.addEventListener('click', (event) => {
     const surfaceButton = event.target.closest('[data-annotation-surface]');
     if (surfaceButton) { setSurface(surfaceButton.dataset.annotationSurface); return; }
@@ -259,6 +268,7 @@
     navigate,
     setClientType,
     setSurface,
+    syncSupplierCatalog,
     adminRequest(scope, payload = {}) { return { scope, clientType: currentClientType(), payload }; },
     snapshot() { return { page: adminState.page, clientType: currentClientType(), auditCount: adminState.auditLogs.length, dataCount: adminState.page === 'audit' ? adminState.auditLogs.length : (currentData()[dataKeyForPage(adminState.page)]?.length || 0) }; },
     reset() { adminState.page = 'products'; ADMIN_DUAL_CLIENT_PAGES.forEach((pageId) => { adminState.clientByPage[pageId] = 'android'; }); adminState.selectedIds = { android: {}, mac: {} }; adminState.filters = { android: {}, mac: {} }; adminState.auditLogs = [...BASE_AUDIT_LOGS]; adminState.toast = ''; renderAdminApp(); return this.snapshot(); },

@@ -341,6 +341,16 @@
     .feature-info { display: flex; min-height: 57px; align-items: center; gap: 8px; padding: 9px 11px; }
     .feature-info strong { overflow: hidden; flex: 1; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
     .small-pill { min-height: 36px; padding: 0 14px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 100px; background: rgb(255 255 255 / 7%); cursor: pointer; font-size: 11px; }
+    .play-game-card { cursor: pointer; }
+    .play-game-card .small-pill { min-width: 44px; min-height: 44px; flex: 0 0 auto; }
+    .play-game-copy { min-width: 0; }
+    .feature-info.play-game-copy { align-items: flex-start; }
+    .play-game-copy > div { min-width: 0; flex: 1; }
+    .play-game-copy > div > strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .play-game-meta { display: block; overflow: hidden; margin-top: 3px; color: var(--text-muted); font-size: 10px; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .play-rental-summary { display: flex; min-width: 0; flex-direction: column; gap: 1px; margin-top: 5px; }
+    .play-rental-summary > strong { display: block; overflow: hidden; color: #ff9c42; font-family: var(--font-number); font-size: 12px; line-height: 16px; text-overflow: ellipsis; white-space: nowrap; }
+    .play-rental-demand { color: var(--text-muted); font-size: 9px; line-height: 13px; }
 
     .game-list { display: grid; gap: 12px; }
     .game-list-item { display: grid; min-height: 76px; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 11px; }
@@ -547,7 +557,7 @@
     .plan-money { text-align: right; }
     .plan-price { display: block; color: var(--brand-gold); font-family: var(--font-number); font-size: 20px; font-weight: 700; }
     .plan-original { display: block; margin-top: 4px; color: #75767d; font-size: 9px; text-decoration: line-through; }
-    .membership-pay-layout { display: grid; grid-template-columns: minmax(0, 1fr) 92px; gap: 10px; align-items: stretch; }
+    .membership-pay-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
     .membership-payment-method { width: 100%; margin-bottom: 7px; }
     .qr-code { display: grid; min-height: 92px; place-items: center; padding: 8px; border-radius: 12px; background: #f8f8f8; color: #121212; }
     .qr-pattern { width: 58px; height: 58px; background: repeating-conic-gradient(#111 0 25%, #fff 0 50%) 50% / 10px 10px; border: 5px solid #fff; }
@@ -582,7 +592,12 @@
     .member-game-card { min-width: 0; overflow: hidden; padding: 0 0 10px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 15px; background: rgb(255 255 255 / 4%); cursor: pointer; text-align: left; }
     .member-game-cover { width: 100%; height: 92px; border-radius: 14px 14px 8px 8px; }
     .member-game-card strong { display: block; overflow: hidden; margin: 8px 9px 0; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .member-game-card .member-game-version { display: block; margin: 4px 9px 0; color: var(--text-muted); font-size: 9px; }
     .cloud-save-badge { display: inline-flex; align-items: center; margin: 5px 9px 0; padding: 2px 6px; border-radius: 100px; background: rgb(51 143 235 / 13%); color: #7fc1ff; font-size: 8px; line-height: 14px; }
+    .member-library-search { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 44px; margin: 0 0 12px; padding: 0 12px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 12px; background: rgb(255 255 255 / 5%); color: var(--text-muted); }
+    .member-library-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: #fff; font: inherit; font-size: 12px; }
+    .member-library-search button { min-width: 32px; min-height: 32px; border: 0; background: transparent; color: var(--text-muted); cursor: pointer; }
+    .member-library-empty { grid-column: 1 / -1; padding: 42px 16px; border: 1px dashed rgb(255 255 255 / 12%); border-radius: 14px; color: var(--text-muted); text-align: center; }
     .faq-list { display: grid; gap: 7px; margin-top: 14px; }
     .member-faq-item { border: 1px solid rgb(255 255 255 / 8%); border-radius: 12px; background: rgb(255 255 255 / 4%); }
     .member-faq-item summary { min-height: 44px; padding: 13px; cursor: pointer; font-size: 10px; }
@@ -794,6 +809,19 @@
     .landscape-hot-card { min-width: 0; overflow: hidden; border-radius: 11px; background: rgb(255 255 255 / 4%); }
     .landscape-hot-card .landscape-cover { width: 100%; height: 70px; border-radius: 10px; }
     .landscape-hot-card strong { display: block; overflow: hidden; padding: 6px 7px; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .landscape-recent-item.play-game-card { grid-template-columns: 72px minmax(0, 1fr) 44px; }
+    .landscape-recent-item .play-game-copy > strong { padding: 0; font-size: 9px; }
+    .landscape-recent-item .play-game-meta { font-size: 8px; line-height: 11px; }
+    .landscape-recent-item .play-rental-summary { margin-top: 2px; }
+    .landscape-recent-item .play-rental-summary > strong { padding: 0; font-size: 9px; line-height: 12px; }
+    .landscape-hot-card.play-game-card { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: end; }
+    .landscape-hot-card.play-game-card .landscape-cover { grid-column: 1 / -1; }
+    .landscape-hot-card .play-game-copy { align-self: stretch; padding: 6px 7px 7px; }
+    .landscape-hot-card .play-game-copy > strong { padding: 0; }
+    .landscape-hot-card .play-game-meta { font-size: 8px; line-height: 11px; }
+    .landscape-hot-card .play-rental-summary { margin-top: 2px; }
+    .landscape-hot-card .play-rental-summary > strong { padding: 0; font-size: 9px; line-height: 12px; }
+    .landscape-hot-card.play-game-card .small-pill { margin: 0 6px 7px 0; padding: 0 8px; }
 
     .landscape-profile { display: grid; height: 314px; grid-template-columns: .82fr 1.45fr; gap: 12px; }
     .landscape-profile-user { display: flex; min-width: 0; flex-direction: column; align-items: center; padding: 20px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 18px; background: radial-gradient(circle at 50% 0, rgb(21 104 127 / 34%), transparent 53%), rgb(15 18 23 / 84%); text-align: center; }
@@ -850,10 +878,12 @@
     .order-list-card { display: grid; width: 100%; min-height: 106px; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 16px; background: linear-gradient(145deg, rgb(35 37 44 / 92%), rgb(18 19 23 / 92%)); color: #fff; cursor: pointer; text-align: left; }
     .order-list-card.selected { border-color: rgb(255 204 67 / 40%); background: linear-gradient(145deg, rgb(53 46 28 / 92%), rgb(22 21 18 / 94%)); }
     .order-game-icon { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 15px; background: radial-gradient(circle at 32% 20%, #d69b3f, #563516 48%, #181a21 100%); color: #fff2c2; font-family: var(--font-number); font-size: 18px; font-weight: 700; }
-    .order-card-copy { min-width: 0; }
+    .order-card-copy { min-width: 0; flex: 1; }
     .order-card-copy strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
     .order-card-copy span { display: block; margin-top: 6px; color: var(--text-muted); font-size: 10px; }
     .order-card-copy small { display: block; margin-top: 7px; color: rgb(255 255 255 / 60%); font-size: 9px; }
+    .order-card-commerce { display: grid; flex: 0 0 auto; justify-items: end; align-self: stretch; align-content: start; gap: 6px; }
+    .order-card-amount { color: #fff; font-family: var(--font-number); font-size: 13px; font-weight: 650; }
     .order-status-chip { align-self: start; padding: 5px 8px; border-radius: 100px; background: rgb(143 146 154 / 12%); color: #8f929a; font-size: 9px; white-space: nowrap; }
     .order-status-chip[data-tone="danger"] { background: rgb(241 92 99 / 13%); color: #f15c63; }
     .order-status-chip[data-tone="info"] { background: rgb(103 185 247 / 14%); color: #67b9f7; }
@@ -958,6 +988,10 @@
     .refund-progress-timeline span.current { color: #f2b66f; }
     .refund-progress-timeline span.current::before { border-color: #f2a14d; box-shadow: 0 0 0 4px rgb(242 161 77 / 10%); }
     .refund-progress-dialog > .primary-action { width: 100%; min-height: 46px; border: 0; }
+    .after-sales-progress-actions { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.3fr); gap: 8px; }
+    .after-sales-progress-actions button { min-height: 46px; border-radius: 100px; cursor: pointer; font-size: 11px; font-weight: 650; }
+    .after-sales-progress-actions .after-sales-withdraw { margin: 0; border: 1px solid rgb(241 92 99 / 38%); background: rgb(241 92 99 / 9%); color: #ff8b91; }
+    .after-sales-progress-actions .primary-action { border: 0; }
     .demo-toast { position: absolute; z-index: 80; bottom: 92px; left: 50%; max-width: calc(100% - 40px); padding: 10px 14px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 100px; background: rgb(28 29 34 / 94%); box-shadow: 0 10px 30px rgb(0 0 0 / 35%); color: #fff; font-size: 11px; transform: translateX(-50%); white-space: nowrap; }
     .device.landscape .demo-toast { bottom: 18px; }
 
@@ -1059,6 +1093,10 @@
     .after-sales-description textarea { width: 100%; min-height: 92px; resize: vertical; padding: 11px; border: 1px solid #363a44; border-radius: 11px; outline: 0; background: #16171b; color: #fff; font: inherit; line-height: 17px; }
     .after-sales-description textarea:focus { border-color: #ffcc43; }
     .after-sales-submit { width: 100%; min-height: 44px; margin-top: 11px; border: 0; border-radius: 11px; background: linear-gradient(135deg, var(--commerce-primary-start), var(--commerce-primary-end)); color: var(--commerce-primary-text); cursor: pointer; font-size: 11px; font-weight: 650; }
+    .after-sales-withdraw { width: 100%; min-height: 44px; margin-top: 11px; border: 1px solid rgb(241 92 99 / 38%); border-radius: 11px; background: rgb(241 92 99 / 9%); color: #ff8b91; cursor: pointer; font-size: 11px; }
+    .after-sales-detail-copy { display: grid; gap: 8px; margin-top: 12px; padding: 12px; border-radius: 12px; background: rgb(255 255 255 / 4%); }
+    .after-sales-detail-copy span { color: var(--text-muted); font-size: 10px; }
+    .after-sales-detail-copy strong { color: #fff; font-size: 12px; line-height: 18px; }
     .after-sales-result { display: grid; gap: 10px; }
     .after-sales-result-card { padding: 12px; border-radius: 12px; background: rgb(51 216 164 / 9%); color: #b7f2df; font-size: 10px; }
     .refund-progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
@@ -1730,6 +1768,7 @@
     .checkout-option-row > label { color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap; }
     .checkout-entitlement-section > h2 { margin: 0; color: #fff; font-size: 13px; font-weight: 700; line-height: 20px; }
     .checkout-option-buttons { display: grid; min-width: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .checkout-entitlement-section.trial-used .checkout-option-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .checkout-option { min-width: 0; min-height: 44px; padding: 0 5px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 11px; background: rgb(255 255 255 / 4%); color: #d3d5da; cursor: pointer; font-size: 9px; white-space: nowrap; }
     .checkout-option.selected { border-color: rgb(42 157 247 / 68%); background: linear-gradient(135deg, rgb(34 169 255 / 17%), rgb(79 99 255 / 9%)); color: #fff; box-shadow: inset 0 0 0 1px rgb(44 151 245 / 10%); }
     .checkout-option:disabled { cursor: not-allowed; opacity: .42; }
@@ -1785,18 +1824,25 @@
     .checkout-bottom-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .checkout-bottom-bar strong { color: #fff; font-family: var(--font-number); font-size: 15px; white-space: nowrap; }
     .checkout-bottom-bar .primary-action { min-width: 148px; }
+    .game-notice { display: grid; gap: 3px; padding: 9px 11px; border: 1px solid rgb(87 183 255 / 17%); border-radius: 11px; background: rgb(44 132 210 / 8%); color: #cce9ff; font-size: 8px; line-height: 13px; }
+    .game-notice strong { color: #72c8ff; font-size: 9px; }
+    .game-notice span { color: #aebdca; }
+    .checkout-game-notice { margin: 0; }
 
     .order-list-card { display: grid; min-height: 0; grid-template-columns: 1fr; gap: 9px; padding: 12px; }
     .order-card-head, .order-card-main, .order-card-foot { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 10px; }
     .order-card-head > small { overflow: hidden; color: #777a82; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
     .order-card-main { justify-content: flex-start; }
     .order-card-main .order-game-cover { width: 58px; height: 58px; flex: 0 0 58px; border-radius: 12px; }
-    .order-card-copy { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: 8px; }
-    .order-card-copy strong { grid-column: 1 / -1; }
+    .order-card-copy { display: block; min-width: 0; }
+    .order-card-copy strong { display: block; }
     .order-card-copy span { margin-top: 5px; }
     .order-card-copy b { color: #fff; font-family: var(--font-number); font-size: 13px; }
     .order-card-foot { align-items: flex-end; padding-top: 8px; border-top: 1px solid rgb(255 255 255 / 7%); }
     .order-card-foot > small { min-width: 0; flex: 1; color: #8e9199; font-size: 8px; line-height: 13px; }
+    .order-card-notice { padding: 7px 9px; }
+    .order-card-notice strong { font-size: 8px; }
+    .order-card-notice span { overflow: hidden; font-size: 7px; line-height: 11px; text-overflow: ellipsis; white-space: nowrap; }
     .order-card-actions { flex: 0 1 auto; }
     .order-actions-set { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 5px; }
     .order-actions-set button { min-width: 0; min-height: 38px; padding: 0 9px; border: 1px solid var(--commerce-secondary-border); border-radius: 10px; background: var(--commerce-secondary-bg); color: #fff; cursor: pointer; font-size: 8px; white-space: nowrap; }
@@ -1805,6 +1851,9 @@
     .order-detail-actions-dock { display: block; }
     .order-detail-actions-dock .order-actions-set { width: 100%; }
     .order-detail-actions-dock .order-actions-set button { min-height: 48px; flex: 1 1 0; font-size: 10px; }
+    .order-detail-commerce { display: grid; justify-items: end; gap: 7px; }
+    .order-detail-commerce > strong { color: #fff; font-family: var(--font-number); font-size: 14px; }
+    .order-detail-notice { margin: 0; }
     .landscape-order-detail-dock { position: absolute; right: 16px; bottom: 12px; left: 16px; z-index: 5; padding: 9px 12px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 14px; background: rgb(20 21 25 / 94%); box-shadow: 0 12px 30px rgb(0 0 0 / 28%); }
     .landscape-order-detail-dock .order-actions-set button { min-height: 44px; padding: 0 14px; font-size: 9px; }
 
@@ -1829,6 +1878,7 @@
     .landscape-orders .order-toolbar .order-search.expanded { width: 220px; flex: 0 0 220px; }
     .landscape-order-list .order-list-card { display: grid; min-height: 140px; grid-template-columns: 1fr; grid-template-rows: auto minmax(38px, auto) auto; align-content: start; overflow: hidden; }
     .landscape-order-list .order-card-main .order-game-cover { width: 38px; height: 38px; flex-basis: 38px; }
+    .landscape-order-list .order-card-notice { display: none; }
     .landscape-order-list .order-card-foot { align-items: center; }
     .landscape-order-list .order-actions-set button { min-height: 32px; padding: 0 7px; font-size: 7px; }
     .landscape-order-detail .mac-page-frame { position: relative; padding-bottom: 76px; }
@@ -1848,6 +1898,7 @@
     .landscape-checkout .service-benefits .detail-section-head { margin-bottom: 5px; }
     .landscape-checkout .service-benefits .detail-section-head h2 { font-size: 12px; }
     .landscape-checkout .service-benefits .detail-section-head span { font-size: 8px; }
+    .service-benefits .rental-intro-entry { min-height: 32px; border: 0; background: transparent; color: #72c8ff; cursor: pointer; font-size: 10px; }
     .landscape-checkout .checkout-benefit-column .service-benefit-list { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
     .landscape-checkout .checkout-benefit-column .service-benefit-item { min-height: 42px; grid-template-columns: 14px minmax(0, 1fr); gap: 3px; padding: 4px; }
     .landscape-checkout .service-benefit-item .benefit-check { width: 14px; height: 14px; font-size: 7px; }
@@ -1950,6 +2001,7 @@
     .landscape-membership-payment-card .membership-checkout-bar { min-height: 44px; margin-top: auto; padding-top: 8px; border-top: 1px solid rgb(255 255 255 / 8%); }
     .landscape-membership-payment-card .membership-checkout-bar strong { font-size: 10px; }
     .landscape-membership-payment-card .membership-checkout-bar .primary-action { width: auto; min-width: 102px; min-height: 40px; margin: 0; padding: 0 12px; font-size: 10px; }
+    .landscape-member-library-layout.single-column { display: block; }
     .landscape-membership-scroll > .membership-preview,
     .landscape-membership-scroll > .membership-faq-preview { margin-bottom: 12px; }
     .landscape-membership-scroll > .membership-preview { min-height: 0; padding: 12px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 14px; background: #181a1c; }
@@ -2144,8 +2196,76 @@
           inventoryResolved: true,
           eligibilityResolved: true,
         },
+        'red-dead-2': {
+          activeOrderStatus: 'active',
+          expireAt: Date.now() + 6 * 60 * 60 * 1000,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          platform: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        'forza-5': {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: true,
+          installed: true,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          platform: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        hogwarts: {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          platform: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: true,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
+        'witcher-3': {
+          activeOrderStatus: null,
+          expireAt: null,
+          refundActive: false,
+          owned: false,
+          installed: false,
+          imported: false,
+          permanent: false,
+          membershipActive: false,
+          memberLibrary: false,
+          region: 'CN',
+          platform: 'Steam',
+          firstRentalEligible: false,
+          priceResolved: false,
+          inventoryResolved: true,
+          eligibilityResolved: true,
+        },
       },
-      selectedSku: 'trial',
+      selectedSku: 'permanent',
       selectedHours: 2,
       selectedPlatform: 'Steam',
       selectedEditionId: 'standard',
@@ -2155,8 +2275,9 @@
       playTab: 'cloud',
       libraryTab: 'steam',
       selectedPayment: 'alipay',
-      memberPlan: 'quarterly',
+      memberPlan: 'weekly',
       memberPayment: 'alipay',
+      memberLibrarySearch: '',
       membershipStatus: 'none',
       membershipIntroSeen: false,
       membershipIntroOpen: false,
@@ -2173,13 +2294,17 @@
       rentalRiskDecision: {
         extraNoReasonRestricted: false,
         ruleVersion: 'RISK-20260811-01',
+        explicit: false,
       },
+      refundHistory: [],
+      language: 'zh-CN',
       riskReminderOpen: false,
       pendingRentalIntent: null,
       pendingRiskSnapshot: null,
       nonTargetLaunchGuard: null,
       launchRequestResults: {},
       refundProgressOrderId: null,
+      afterSalesProgressOpen: false,
       confirmDeleteOrderId: null,
       hiddenOrderIds: [],
       selectedOrderId: null,
@@ -2212,6 +2337,10 @@
       preparedLaunchRequests: {},
       platformTrialEligibility: { eligible: true, consumedAt: null, orderId: null },
       membershipEntitlement: { planId: null, startsAt: null, expiresAt: null },
+      activeMemberUsage: null,
+      memberUsageReleaseFailed: false,
+      credentialAccessExpiresAt: null,
+      copiedCredential: null,
       toast: null,
       rentalUsage: null,
       rentalUsageSequence: 0,
@@ -2266,12 +2395,21 @@
         maskedPassword: '••••••••••••',
       }),
     });
+    const GAME_NOTICE_CONFIGS = Object.freeze({
+      'shadow-blade-zero': Object.freeze({ defaultLanguage: 'zh-CN', messages: Object.freeze({ 'zh-CN': '首次启动前请先完成 Steam 登录，进入游戏后请勿修改账号资料。', en: 'Sign in to Steam before the first launch and do not change account details.' }) }),
+      spiritfarer: Object.freeze({ defaultLanguage: 'zh-CN', messages: Object.freeze({ 'zh-CN': '首次进入请等待个人存档同步完成，再开始游戏。' }) }),
+      'red-dead-2': Object.freeze({ defaultLanguage: 'zh-CN', messages: Object.freeze({ 'zh-CN': '启动后还需使用页面内的 Rockstar Games 登录信息。' }) }),
+    });
+    const SUPPLIER_SPECIAL_NOTES = Object.freeze({
+      'shadow-blade-zero': '供应商参考：首次启动预留3分钟。',
+      'red-dead-2': '供应商参考：Rockstar 账号与 Steam 成对分配。',
+    });
     const ORDER_STATUS_META = Object.freeze({
       pending: { label: '待支付', note: '请在 30 分钟内完成支付', tone: 'danger' },
-      active: { label: '租赁中', note: '账号已就绪，可登录游戏', tone: 'success' },
-      refunding: { label: '退款中', note: '取号失败，正在自动退款', tone: 'refund' },
+      active: { label: '可使用', note: '权益已生效，可登录游戏', tone: 'success' },
+      refunding: { label: '退款中', note: '退款申请已提交，请查看进度', tone: 'refund' },
       refunded: { label: '已退款', note: '退款已原路返回', tone: 'muted' },
-      ended: { label: '已结束', note: '本次租赁服务已结束', tone: 'muted' },
+      ended: { label: '已结束', note: '本次权益服务已结束', tone: 'muted' },
     });
     const ORDER_ACTIONS_BY_STATUS = Object.freeze({
       pending: Object.freeze([['cancel', '取消订单', 'secondary'], ['pay', '继续支付', 'primary']]),
@@ -2287,11 +2425,11 @@
       ['other', '其他问题'],
     ]);
     const ORDER_FIXTURES = Object.freeze([
-      { id: 'APP-20260803001', orderType: 'rental', status: 'active', gameId: 'red-dead-2', gameName: '荒野大镖客：救赎 2', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '8小时', amount: 36, credentialAvailable: true, createdAt: Date.now() - 2 * 60 * 60 * 1000, updatedAt: Date.now() - 10 * 60 * 1000, paidAt: Date.now() - 90 * 60 * 1000, expireAt: Date.now() + 6 * 60 * 60 * 1000, playedMinutes: 18, refundRuleVersion: 'REFUND-72H-30M-V1' },
-      { id: 'APP-20260803003', orderType: 'rental', status: 'pending', gameId: 'hogwarts', gameName: '霍格沃茨之遗', version: 'Steam · 增强版', editionId: 'enhanced', durationLabel: '24小时', amount: 29.9, credentialAvailable: false, paymentDeadline: Date.now() + 24 * 60 * 1000, createdAt: Date.now() - 6 * 60 * 1000, updatedAt: Date.now() - 2 * 60 * 1000 },
-      { id: 'APP-20260803004', orderType: 'rental', status: 'refunding', gameId: 'witcher-3', gameName: '巫师 3：狂猎', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '2小时', amount: 9.9, credentialAvailable: false, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000, updatedAt: Date.now() - 30 * 60 * 1000 },
-      { id: 'APP-20260803005', orderType: 'rental', status: 'ended', gameId: 'stardew', gameName: '星露谷物语', version: 'Steam · 豪华版', editionId: 'deluxe', durationLabel: '7天', amount: 99, credentialAvailable: false, createdAt: Date.now() - 9 * 24 * 60 * 60 * 1000, updatedAt: Date.now() - 2 * 24 * 60 * 60 * 1000, endedAt: Date.now() - 2 * 24 * 60 * 60 * 1000 },
-      { id: 'APP-20260803006', orderType: 'rental', status: 'refunded', gameId: 'spiritfarer', gameName: 'Spiritfarer', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '2小时', amount: 9.9, credentialAvailable: false, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000, updatedAt: Date.now() - 3 * 24 * 60 * 60 * 1000, refundedAt: Date.now() - 3 * 24 * 60 * 60 * 1000 },
+      { id: 'APP-20260803001', orderType: 'rental', saleMode: 'entitlement', sku: 'trial', benefitType: 'trial_2h', status: 'active', gameId: 'red-dead-2', gameName: '荒野大镖客：救赎 2', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '首次体验 · 2小时', amount: 1.9, credentialAvailable: true, gameNotice: '启动后还需使用页面内的 Rockstar Games 登录信息。', createdAt: Date.now() - 90 * 60 * 1000, updatedAt: Date.now() - 10 * 60 * 1000, paidAt: Date.now() - 90 * 60 * 1000, expireAt: Date.now() + 30 * 60 * 1000, playedMinutes: 18, refundRuleVersion: 'REFUND-72H-30M-V1' },
+      { id: 'APP-20260803003', orderType: 'rental', saleMode: 'entitlement', sku: 'permanent', benefitType: 'single_game_permanent', status: 'pending', gameId: 'hogwarts', gameName: '霍格沃茨之遗', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '单游戏永久', amount: 168, credentialAvailable: false, paymentDeadline: Date.now() + 24 * 60 * 1000, createdAt: Date.now() - 6 * 60 * 1000, updatedAt: Date.now() - 2 * 60 * 1000 },
+      { id: 'APP-20260803004', orderType: 'rental', saleMode: 'entitlement', sku: 'trial', benefitType: 'trial_2h', status: 'refunding', gameId: 'witcher-3', gameName: '巫师 3：狂猎', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '首次体验 · 2小时', amount: 1.9, credentialAvailable: false, createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000, updatedAt: Date.now() - 30 * 60 * 1000, paidAt: Date.now() - 2 * 24 * 60 * 60 * 1000, expireAt: Date.now() - 46 * 60 * 60 * 1000 },
+      { id: 'APP-20260803005', orderType: 'rental', saleMode: 'entitlement', sku: 'trial', benefitType: 'trial_2h', status: 'ended', gameId: 'dont-starve', gameName: '饥荒', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '首次体验 · 2小时', amount: 1.9, credentialAvailable: false, createdAt: Date.now() - 9 * 24 * 60 * 60 * 1000, updatedAt: Date.now() - 2 * 24 * 60 * 60 * 1000, paidAt: Date.now() - 9 * 24 * 60 * 60 * 1000, expireAt: Date.now() - 7 * 24 * 60 * 60 * 1000, endedAt: Date.now() - 2 * 24 * 60 * 60 * 1000 },
+      { id: 'APP-20260803006', orderType: 'rental', saleMode: 'entitlement', sku: 'permanent', benefitType: 'single_game_permanent', status: 'refunded', gameId: 'spiritfarer', gameName: 'Spiritfarer', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '单游戏永久', amount: 68, credentialAvailable: false, entitlementRevoked: true, createdAt: Date.now() - 4 * 24 * 60 * 60 * 1000, updatedAt: Date.now() - 3 * 24 * 60 * 60 * 1000, paidAt: Date.now() - 4 * 24 * 60 * 60 * 1000, refundedAt: Date.now() - 3 * 24 * 60 * 60 * 1000 },
     ]);
     let lastOrderNumber = 0;
     let lastMembershipOrderNumber = 0;
@@ -2307,35 +2445,59 @@
       ['dont-starve', '饥荒', 'ember', 'DON’T STARVE'],
     ];
 
+    const PLAY_PC_GAMES = Object.freeze([
+      { id: 'red-dead-2', name: '荒野大镖客：救赎 2', action: '启动', demand: '在租 99+', meta: '动作冒险 · 评分 9.6', asset: 'landscapeLibrary', crop: [1926, 297, 397, 224] },
+      { id: 'forza-5', name: '极限竞速：地平线 5', action: '启动', demand: '', meta: '竞速驾驶 · 评分 9.3', asset: 'play', crop: [45, 1630, 189, 238] },
+      { id: 'hogwarts', name: '霍格沃茨之遗', action: '下载', demand: '在租 36+', meta: '开放世界 · 评分 9.0', asset: 'landscapeSteamLibrary', crop: [608, 753, 390, 216] },
+      { id: 'witcher-3', name: '巫师 3：狂猎', action: '启动', demand: '', meta: '角色扮演 · 评分 8.7', asset: 'play', crop: [45, 1359, 189, 225] },
+    ]);
+
     const MEMBER_PLANS = Object.freeze([
       { id: 'weekly', name: '周卡', price: 39, note: '7天会员游戏库畅玩' },
       { id: 'monthly', name: '月卡', price: 129, note: '30天会员游戏库畅玩' },
-      { id: 'quarterly', name: '季卡', price: 299, note: '90天会员游戏库畅玩', recommended: true },
+      { id: 'quarterly', name: '季卡', price: 299, note: '90天会员游戏库畅玩' },
     ]);
     const MEMBER_PLAN_DAYS = Object.freeze({ weekly: 7, monthly: 30, quarterly: 90 });
 
-    function createSteamPlatform({ standard = true, enhanced = true, deluxe = true } = {}) {
+    function createSteamPlatform({ standard = true } = {}) {
       return Object.freeze([{
         id: 'Steam',
         name: 'Steam',
         enabled: true,
         editions: Object.freeze([
           { id: 'standard', name: '标准版', enabled: standard, inStock: standard, priceFactor: 1 },
-          { id: 'enhanced', name: '增强版', enabled: enhanced, inStock: enhanced, priceFactor: 1.15 },
-          { id: 'deluxe', name: '豪华版', enabled: deluxe, inStock: deluxe, priceFactor: 1.3 },
         ]),
+      }]);
+    }
+
+    function createFirstPhasePlatform({ trialPrice = 1.99, trialOriginalPrice = 9.9, permanentPrice = 68 } = {}) {
+      return Object.freeze([{
+        id: 'Steam',
+        name: 'Steam',
+        enabled: true,
+        editions: Object.freeze([{
+          id: 'standard',
+          name: '标准版',
+          enabled: true,
+          inStock: true,
+          priceFactor: 1,
+          entitlementSkus: Object.freeze([
+            { id: 'trial', label: '首次体验', packageName: '首次体验', durationLabel: '2小时', price: trialPrice, originalPrice: trialOriginalPrice, enabled: true, inStock: true, region: 'CN', firstOnly: true },
+            { id: 'permanent', label: '单游戏永久', packageName: '单游戏永久', durationLabel: '长期有效', price: permanentPrice, originalPrice: permanentPrice, enabled: true, inStock: true, region: 'CN' },
+          ]),
+        }]),
       }]);
     }
 
     const MEMBER_GAMES = Object.freeze([
       { id: 'elden-ring', name: '艾尔登法环', asset: 'home', crop: [67, 1658, 492, 235], cloudSaveSupported: true, platforms: createSteamPlatform() },
-      { id: 'the-forest', name: 'The Forest', asset: 'landscapeSteamLibrary', crop: [606, 297, 390, 224], cloudSaveSupported: true, platforms: createSteamPlatform({ deluxe: false }) },
-      { id: 'chinese-parents', name: '中国式家长', asset: 'landscapeSteamLibrary', crop: [1049, 297, 390, 224], cloudSaveSupported: true, platforms: createSteamPlatform({ enhanced: false, deluxe: false }) },
+      { id: 'the-forest', name: 'The Forest', asset: 'landscapeSteamLibrary', crop: [606, 297, 390, 224], cloudSaveSupported: true, platforms: createSteamPlatform() },
+      { id: 'chinese-parents', name: '中国式家长', asset: 'landscapeSteamLibrary', crop: [1049, 297, 390, 224], cloudSaveSupported: true, platforms: createSteamPlatform() },
       { id: 'spiritfarer', name: 'Spiritfarer', asset: 'landscapeSteamLibrary', crop: [1486, 297, 383, 224], cloudSaveSupported: true, platforms: createSteamPlatform() },
-      { id: 'dont-starve', name: '饥荒', asset: 'landscapeSteamLibrary', crop: [1926, 297, 397, 224], cloudSaveSupported: true, platforms: createSteamPlatform({ deluxe: false }) },
-      { id: 'little-nightmares-2', name: '小小梦魇 2', asset: 'landscapeSteamLibrary', crop: [169, 753, 383, 216], cloudSaveSupported: false, platforms: createSteamPlatform({ enhanced: false, deluxe: false }) },
+      { id: 'dont-starve', name: '饥荒', asset: 'landscapeSteamLibrary', crop: [1926, 297, 397, 224], cloudSaveSupported: true, platforms: createSteamPlatform() },
+      { id: 'little-nightmares-2', name: '小小梦魇 2', asset: 'landscapeSteamLibrary', crop: [169, 753, 383, 216], cloudSaveSupported: false, platforms: createSteamPlatform() },
       { id: 'hogwarts', name: '霍格沃茨之遗', asset: 'landscapeSteamLibrary', crop: [608, 753, 390, 216], cloudSaveSupported: true, platforms: createSteamPlatform() },
-      { id: 'stardew', name: '星露谷物语', asset: 'landscapeSteamLibrary', crop: [1049, 753, 390, 216], cloudSaveSupported: false, acquisitionMode: 'free', platforms: createSteamPlatform({ enhanced: false, deluxe: false }) },
+      { id: 'stardew', name: '星露谷物语', asset: 'landscapeSteamLibrary', crop: [1049, 753, 390, 216], cloudSaveSupported: false, acquisitionMode: 'free', platforms: createSteamPlatform() },
     ]);
 
     const GAME_SALE_MODES = Object.freeze({
@@ -2351,55 +2513,24 @@
     const DISCOVERY_GAME_CONTEXTS = Object.freeze([
       {
         id: 'shadow-blade-zero', name: '影之刃零', asset: 'home', crop: [584, 1656, 492, 240],
-        saleMode: GAME_SALE_MODES.TIME_RENTAL, defaultSku: 'first-rent-2h',
-        platforms: Object.freeze([{
-          id: 'Steam', name: 'Steam', enabled: true,
-          editions: Object.freeze([
-            { id: 'standard', name: '标准版', enabled: true, inStock: true, priceFactor: 1 },
-            { id: 'enhanced', name: '增强版', enabled: true, inStock: true, priceFactor: 1.15 },
-            { id: 'deluxe', name: '豪华版', enabled: true, inStock: true, priceFactor: 1.3 },
-          ]),
-        }]),
+        saleMode: GAME_SALE_MODES.ENTITLEMENT, defaultSku: 'permanent',
+        platforms: createFirstPhasePlatform({ trialPrice: 1.9, trialOriginalPrice: 9.9, permanentPrice: 198 }),
         rentalSkus: [
-          { id: 'first-rent-2h', label: '首租2小时', packageName: '首租体验套餐', durationLabel: '2小时', price: 1.9, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard', firstOnly: true },
-          { id: 'rent-2h', label: '2小时', packageName: '标准租号套餐', durationLabel: '2小时', price: 9.9, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },
-          { id: 'hourly-8h', label: '8小时', packageName: '按时租号套餐', durationLabel: '8小时', price: 36, originalPrice: 36, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },
-          { id: 'daily', label: '日租', packageName: '日租套餐', durationLabel: '1天', price: 29.9, originalPrice: 29.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },
-          { id: 'weekly', label: '周租', packageName: '周租套餐', durationLabel: '7天', price: 99, originalPrice: 99, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },
+          { id: 'trial', label: '首次体验', packageName: '首次体验', durationLabel: '2小时', price: 1.9, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard', firstOnly: true },
         ],
         purchaseSkus: [
           { id: 'purchase-standard', price: 198, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },
-          { id: 'purchase-enhanced', price: 228, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'enhanced' },
-          { id: 'purchase-deluxe', price: 258, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'deluxe' },
         ],
       },
       {
         id: 'spiritfarer', name: 'Spiritfarer', asset: 'landscapeSteamLibrary', crop: [1486, 297, 383, 224],
-        saleMode: GAME_SALE_MODES.ENTITLEMENT, defaultSku: 'trial',
-        platforms: Object.freeze([{
-          id: 'Steam', name: 'Steam', enabled: true,
-          editions: Object.freeze([
-            { id: 'standard', name: '标准版', enabled: true, inStock: true, priceFactor: 1, entitlementSkus: Object.freeze([
-              { id: 'trial', label: '首次体验', packageName: '首次体验套餐', durationLabel: '2小时', price: 1.99, originalPrice: 7.9, enabled: true, inStock: true, region: 'CN', firstOnly: true },
-              { id: 'permanent', label: '单游戏永久畅玩', packageName: '单游戏畅玩权益', durationLabel: '长期有效', price: 68, originalPrice: 68, enabled: true, inStock: true, region: 'CN' },
-            ]) },
-            { id: 'enhanced', name: '增强版', enabled: true, inStock: true, priceFactor: 1.15, entitlementSkus: Object.freeze([
-              { id: 'trial', label: '首次体验', packageName: '首次体验套餐', durationLabel: '2小时', price: 2.49, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN', firstOnly: true },
-              { id: 'permanent', label: '单游戏永久畅玩', packageName: '单游戏畅玩权益', durationLabel: '长期有效', price: 78, originalPrice: 78, enabled: true, inStock: true, region: 'CN' },
-            ]) },
-            { id: 'deluxe', name: '豪华版', enabled: true, inStock: true, priceFactor: 1.3, entitlementSkus: Object.freeze([
-              { id: 'trial', label: '首次体验', packageName: '首次体验套餐', durationLabel: '2小时', price: 2.99, originalPrice: 12.9, enabled: true, inStock: true, region: 'CN', firstOnly: true },
-              { id: 'permanent', label: '单游戏永久畅玩', packageName: '单游戏畅玩权益', durationLabel: '长期有效', price: 88, originalPrice: 88, enabled: true, inStock: true, region: 'CN' },
-            ]) },
-          ]),
-        }]),
+        saleMode: GAME_SALE_MODES.ENTITLEMENT, defaultSku: 'permanent',
+        platforms: createFirstPhasePlatform({ trialPrice: 1.99, trialOriginalPrice: 7.9, permanentPrice: 68 }),
         rentalSkus: [
           { id: 'trial-standard', label: '首次体验', packageName: '首次体验套餐', durationLabel: '2小时', price: 1.99, originalPrice: 7.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard', firstOnly: true },
         ],
         purchaseSkus: [
           { id: 'purchase-standard', price: 68, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },
-          { id: 'purchase-enhanced', price: 78, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'enhanced' },
-          { id: 'purchase-deluxe', price: 88, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'deluxe' },
         ],
       },
     ]);
@@ -2412,15 +2543,14 @@
     });
 
     const MEMBER_FAQ = Object.freeze([
-      { topic: 'cloud-scope', question: '哪些游戏支持存档云同步？', answer: '仅对会员游戏库中标注“支持云存档”的游戏生效；不支持的游戏不会展示云同步标识。' },
+      { topic: 'cloud-scope', question: '哪些游戏支持存档云同步？', answer: '部分会员游戏支持存档云同步，具体支持范围以对应游戏详情说明为准。' },
       { topic: 'cloud-restore', question: '换设备后如何恢复存档？', answer: '登录同一盖世账号并进入支持的游戏，系统会校验云端最新存档，确认后恢复到当前设备。' },
       { topic: 'cloud-expiry', question: '会员到期后存档会被删除吗？', answer: '到期后暂停新的自动同步，既有云端存档按平台规则保留；重新开通后可继续同步。' },
     ]);
 
     const MEMBERSHIP_BENEFITS = Object.freeze([
       ['会员库内畅玩', '会员有效期内可直接启动会员游戏'],
-      ['游戏持续更新', '新增与下架信息在会员中心说明'],
-      ['PC引擎与手柄适配', '延续现有 PC 游戏体验能力'],
+      ['游戏持续更新', '库存总30W+，游戏库价值持续更新中'],
       ['个人云存档同步', '在支持的游戏中延续个人进度'],
     ]);
 
@@ -2447,10 +2577,9 @@
       if (input.owns) return { primary: 'download', secondary: [] };
       if (input.permanentEntitlement) return { primary: 'launch', secondary: [] };
       if (input.activeRental) return { primary: 'continue', secondary: ['credential', 'renew'] };
-      if (!input.memberLibrary) return { primary: 'rent-2h', secondary: ['more-duration'] };
       if (input.membershipActive) return { primary: 'member-play', secondary: ['membership-status'] };
-      if (input.trialEligible) return { primary: 'trial', secondary: ['more-duration', 'membership'] };
-      return { primary: 'rent-2h', secondary: ['more-duration', 'membership'] };
+      if (input.trialEligible) return { primary: 'trial', secondary: ['permanent', 'membership'] };
+      return { primary: 'permanent', secondary: ['membership'] };
     }
 
     function resolveCurrentAction() {
@@ -2463,18 +2592,37 @@
         launch: 'launch',
         download: 'download',
         continue: 'continue',
-        'rent-2h': 'rent-2h',
+        'rent-2h': 'permanent',
         trial: 'trial',
         permanent: 'permanent',
         'member-play': 'member-play',
-      }[primary] || 'rent-2h';
+      }[primary] || 'permanent';
       state.moreDurationOpen = false;
     }
 
     function getGameContext(gameId) {
-      return DISCOVERY_GAME_CONTEXTS.find(({ id }) => id === gameId)
-        || MEMBER_GAMES.find(({ id }) => id === gameId)
-        || null;
+      const configured = DISCOVERY_GAME_CONTEXTS.find(({ id }) => id === gameId);
+      if (configured) return configured;
+      const memberGame = MEMBER_GAMES.find(({ id }) => id === gameId);
+      if (memberGame) {
+        if (memberGame.acquisitionMode === 'free') return memberGame;
+        return {
+          ...memberGame,
+          saleMode: GAME_SALE_MODES.ENTITLEMENT,
+          defaultSku: 'permanent',
+          platforms: createFirstPhasePlatform({ trialPrice: 1.99, trialOriginalPrice: 9.9, permanentPrice: 168 }),
+          purchaseSkus: [{ id: 'purchase-standard', price: 168, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' }],
+        };
+      }
+      const catalog = GAMES.find(([id]) => id === gameId);
+      return catalog ? {
+        id: catalog[0], name: catalog[1], asset: 'orderCenterReference', crop: [484, 188, 94, 64],
+        saleMode: GAME_SALE_MODES.ENTITLEMENT,
+        defaultSku: 'permanent',
+        platforms: createFirstPhasePlatform({ trialPrice: 1.99, trialOriginalPrice: 9.9, permanentPrice: 168 }),
+        rentalSkus: [{ id: 'trial', label: '首次体验', packageName: '首次体验', durationLabel: '2小时', price: 1.99, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard', firstOnly: true }],
+        purchaseSkus: [{ id: 'purchase-standard', price: 168, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' }],
+      } : null;
     }
 
     function setSelectedGame(gameId, { shouldRender = true } = {}) {
@@ -2496,6 +2644,13 @@
 
     function getSelectedGame() {
       return getGameContext(state.selectedGameId) || MEMBER_GAMES[0];
+    }
+
+    function resolveGameNotice(gameId, language = state.language) {
+      const config = GAME_NOTICE_CONFIGS[gameId];
+      if (!config) return '';
+      const current = String(language || '');
+      return config.messages[current] || config.messages[config.defaultLanguage] || '';
     }
 
     const DEFAULT_TIME_RENTAL_SKUS = Object.freeze([
@@ -2550,7 +2705,7 @@
     }
 
     function getGameSaleMode(gameId) {
-      return getGameContext(gameId)?.saleMode || GAME_SALE_MODES.TIME_RENTAL;
+      return getGameContext(gameId)?.saleMode || GAME_SALE_MODES.ENTITLEMENT;
     }
 
     function getCheckoutEligibilityContext(gameId) {
@@ -2597,9 +2752,7 @@
     function lowestEligibleRentalSku(game, context = {}) {
       if (typeof game === 'string') game = getGameContext(game);
       if (!game) return null;
-      const source = game.rentalSkus || [
-        { id: 'rent-2h', price: 9.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },
-      ];
+      const source = game.rentalSkus || [];
       return source
         .filter((sku) => sku.enabled && sku.inStock && sku.region === (context.region || 'CN'))
         .filter((sku) => !sku.platform || sku.platform === (context.platform || 'Steam'))
@@ -2690,7 +2843,9 @@
         };
       }
       const rental = lowestEligibleRentalSku(getGameContext(gameId), userContext);
-      if (!rental || !userContext.priceResolved || !userContext.inventoryResolved || !userContext.eligibilityResolved) {
+      const permanent = lowestEligiblePurchaseSku(getGameContext(gameId), userContext);
+      const offer = [rental, permanent].filter(Boolean).sort((left, right) => Number(left.price) - Number(right.price))[0] || null;
+      if (!offer || !userContext.priceResolved || !userContext.inventoryResolved || !userContext.eligibilityResolved) {
         return {
           displayType: DISCOVERY_DISPLAY_TYPES.NONE,
           displayText: '',
@@ -2699,13 +2854,13 @@
           reason: 'unresolved-or-unavailable',
         };
       }
-      const formattedAmount = Number(rental.price).toFixed(1);
+      const formattedAmount = Number(offer.price).toFixed(1);
       return {
         displayType: DISCOVERY_DISPLAY_TYPES.RENTAL_PRICE,
         displayText: `¥${formattedAmount} · 租号`,
-        rawAmount: rental.price,
+        rawAmount: offer.price,
         formattedAmount,
-        reason: rental.firstOnly ? 'eligible-first-rental-price' : 'eligible-rental-price',
+        reason: offer.firstOnly ? 'eligible-first-rental-price' : 'eligible-benefit-price',
       };
     }
 
@@ -2718,6 +2873,13 @@
       if (model.displayType === DISCOVERY_DISPLAY_TYPES.NONE) return '';
       const classes = ['discovery-display', className].filter(Boolean).join(' ');
       return `<span class="${classes}" data-discovery-display="${model.displayType}">${model.displayText}</span>`;
+    }
+
+    function renderPlayRentalSummary(gameId, demand = '') {
+      const model = getDiscoveryDisplay(gameId);
+      if (model.displayType === DISCOVERY_DISPLAY_TYPES.NONE) return '';
+      const demandLine = demand ? `<span class="play-rental-demand">${demand}</span>` : '';
+      return `<div class="play-rental-summary" data-play-rental-summary="${model.displayType}"><strong>${model.displayText}</strong>${demandLine}</div>`;
     }
 
     function renderHomeRentalPrice(gameId) {
@@ -2818,6 +2980,7 @@
     }
 
     function selectRentalPlan(plan) {
+      if (getGameSaleMode(state.selectedGameId) !== GAME_SALE_MODES.TIME_RENTAL) return false;
       if (!['hourly', 'daily', 'weekly'].includes(plan)) return false;
       state.rentalPlan = plan;
       state.selectedSku = quoteRentalOffer(plan).id;
@@ -2827,6 +2990,7 @@
     }
 
     function setRentalHours(value) {
+      if (getGameSaleMode(state.selectedGameId) !== GAME_SALE_MODES.TIME_RENTAL) return false;
       const normalized = typeof value === 'string' ? value.trim() : value;
       if (normalized === '' || normalized === null || normalized === undefined) return false;
       const parsed = Number(normalized);
@@ -2856,8 +3020,33 @@
       state.rentalRiskDecision = {
         extraNoReasonRestricted: false,
         ruleVersion: '',
+        explicit: true,
         ...value,
       };
+      return { ...state.rentalRiskDecision };
+    }
+
+    function evaluateRefundRisk(history = state.refundHistory, now = nowFromServer()) {
+      const windowStart = Number(now) - 30 * 24 * 60 * 60 * 1000;
+      const counted = (Array.isArray(history) ? history : []).filter((item) => (
+        item
+        && item.refundType === 'no-reason-3d'
+        && item.channelStatus === 'success'
+        && Number(item.completedAt) >= windowStart
+        && Number(item.completedAt) <= Number(now)
+      ));
+      return {
+        extraNoReasonRestricted: counted.length >= 3,
+        completedNoReasonRefunds30d: counted.length,
+        ruleVersion: 'RISK-30D-3-NO-REASON-V1',
+        explicit: false,
+      };
+    }
+
+    function setRefundHistory(history = []) {
+      state.refundHistory = Array.isArray(history) ? history.map((item) => ({ ...item })) : [];
+      state.rentalRiskDecision = evaluateRefundRisk();
+      renderApp();
       return { ...state.rentalRiskDecision };
     }
 
@@ -2866,7 +3055,8 @@
       if (!game) return { allowed: false, reason: 'game-not-found' };
       state.pendingRentalIntent = { gameId };
       state.pendingRiskSnapshot = null;
-      const decision = state.rentalRiskDecision || {};
+      const decision = state.rentalRiskDecision?.explicit ? state.rentalRiskDecision : evaluateRefundRisk();
+      state.rentalRiskDecision = { ...decision };
       if (decision.extraNoReasonRestricted) {
         state.riskReminderOpen = true;
         renderApp();
@@ -2978,6 +3168,8 @@
         version: `${state.selectedPlatform} · 标准版`,
         packageName: offer.packageName,
         durationLabel: offer.durationLabel,
+        benefitType: offer.sku === 'trial' ? 'trial_2h' : 'single_game_permanent',
+        gameNotice: resolveGameNotice(game.id),
         originalAmount: offer.originalAmount,
         rawAmount: Number(amount),
         paymentMethod: state.selectedPayment,
@@ -3153,6 +3345,7 @@
 
     function orderDurationMs(order) {
       if (order?.sku === 'trial') return 2 * 60 * 60 * 1000;
+      if (order?.sku === 'permanent') return 0;
       const label = String(order?.durationLabel || '');
       const days = Number(label.match(/(\d+)天/)?.[1] || 0);
       if (days > 0) return days * 24 * 60 * 60 * 1000;
@@ -3186,6 +3379,10 @@
             state.discoveryContexts[state.order.gameId].firstRentalEligible = false;
           }
           setScenario('member-library-trial-used', { shouldRender: false });
+        } else if (state.order.sku === 'permanent') {
+          state.order.expiresAt = null;
+          state.order.expireAt = null;
+          if (state.discoveryContexts[state.order.gameId]) state.discoveryContexts[state.order.gameId].permanent = true;
         }
         state.transactionNotice = 'entitlement-active';
       } else {
@@ -3205,18 +3402,65 @@
       return cloneOrder(state.order);
     }
 
-    function prepareAccountForLaunch({ orderId, launchRequestId }) {
+    function prepareAccountForLaunch({ orderId, launchRequestId, inventoryAvailable = true }) {
       if (!orderId || !launchRequestId) return { ok: false, reason: 'request-invalid' };
       if (state.preparedLaunchRequests[launchRequestId]) return { ...state.preparedLaunchRequests[launchRequestId] };
       const order = getOrderCollection().find((item) => item.id === orderId);
       const expiresAt = Number(order?.expiresAt || order?.expireAt || 0);
       const valid = order?.status === 'active' && (!expiresAt || expiresAt > nowFromServer());
-      const result = valid
-        ? { ok: true, orderId, launchRequestId, prepared: true }
-        : { ok: false, orderId, launchRequestId, reason: 'entitlement-expired' };
+      let result;
+      if (!valid) {
+        result = { ok: false, orderId, launchRequestId, reason: 'entitlement-expired' };
+      } else if (!inventoryAvailable && order.sku === 'trial' && !order.firstFulfilledAt) {
+        if (state.order?.id === order.id) {
+          state.order.status = 'refunded';
+          state.order.refundedAt = nowFromServer();
+          state.order.refundSource = 'automatic-no-account';
+          state.order.credentialAvailable = false;
+          state.platformTrialEligibility = { eligible: true, consumedAt: null, orderId: null };
+          if (state.discoveryContexts[order.gameId]) state.discoveryContexts[order.gameId].firstRentalEligible = true;
+        }
+        result = { ok: false, orderId, launchRequestId, reason: 'auto-refunded-no-account', trialEligibilityRestored: true };
+      } else if (!inventoryAvailable) {
+        result = { ok: false, orderId, launchRequestId, reason: 'no-resource', entitlementPreserved: true };
+      } else {
+        const replacement = state.replacementRequest;
+        const replacementApplied = replacement?.status === 'approved-pending-launch' && replacement.orderId === order.id;
+        if (replacementApplied) state.replacementRequest = { ...replacement, status: 'executed', executedAt: nowFromServer(), originalBindingPreserved: false };
+        if (state.order?.id === order.id) {
+          state.order.firstFulfilledAt ||= nowFromServer();
+          state.order.credentialAvailable = true;
+        }
+        result = { ok: true, orderId, launchRequestId, prepared: true, replacementApplied };
+      }
       state.preparedLaunchRequests[launchRequestId] = result;
       if (result.ok) state.accountAllocationCount += 1;
       return { ...result };
+    }
+
+    function releaseMemberGameUsage(reason = 'switch-game') {
+      const usage = state.activeMemberUsage;
+      if (!usage) return { ok: true, released: false };
+      if (state.memberUsageReleaseFailed) return { ok: false, reason: 'release-failed', usage: { ...usage } };
+      state.activeMemberUsage = null;
+      state.accountAllocationCount = Math.max(0, state.accountAllocationCount - 1);
+      clearSensitiveState(reason === 'switch-game' ? 'member-switch' : reason);
+      return { ok: true, released: true, usage: { ...usage, status: 'ended', endedReason: reason } };
+    }
+
+    function startMemberGameUsage(gameId, { usageId = `MEMBER-USAGE-${Date.now()}`, releaseFailed = false } = {}) {
+      if (!gameId || Number(state.membershipEntitlement.expiresAt || 0) <= nowFromServer()) return { ok: false, reason: 'membership-inactive' };
+      const current = state.activeMemberUsage;
+      if (current?.gameId === gameId) return { ok: true, reused: true, usage: { ...current } };
+      if (current) {
+        state.memberUsageReleaseFailed = Boolean(releaseFailed);
+        const released = releaseMemberGameUsage('switch-game');
+        state.memberUsageReleaseFailed = false;
+        if (!released.ok) return { ok: false, reason: 'release-failed', usage: { ...current } };
+      }
+      state.activeMemberUsage = { id: usageId, gameId, status: 'active', startedAt: nowFromServer() };
+      state.accountAllocationCount += 1;
+      return { ok: true, reused: false, usage: { ...state.activeMemberUsage } };
     }
 
     function applyMembershipPayment({ planId, paidAt = nowFromServer(), transactionId }) {
@@ -3261,12 +3505,12 @@
         ...ORDER_FIXTURES[0],
         id: 'APP-SCENARIO-ACTIVE',
         orderType: 'rental',
-        sku: 'hourly-8h',
+        sku: 'trial',
         priceVersion: 'APP-PRICE-2026-08-03',
         paymentMethod: 'alipay',
         scenarioSeed: true,
         updatedAt: now,
-        expireAt: now + 8 * 60 * 60 * 1000,
+        expireAt: now + 90 * 60 * 1000,
       };
       state.selectedOrderId = state.order.id;
       state.accountAllocationCount = 1;
@@ -3276,7 +3520,7 @@
         state.rentalUsage = {
           id: `USAGE-APP-SCENARIO-ACTIVE-${state.rentalUsageSequence}`,
           orderId: state.order.id,
-          expireAt: now + 8 * 60 * 60 * 1000,
+          expireAt: now + 90 * 60 * 1000,
           sessionActive: true,
           rentalSessionRevoked: false,
           shortAuthValid: true,
@@ -3321,7 +3565,7 @@
 
     function rentalOrderTab(order) {
       if (order.status === 'pending') return 'pending';
-      if (order.status === 'active' && Number(order.expireAt) > Date.now()) return 'usable';
+      if (order.status === 'active' && (order.sku === 'permanent' || Number(order.expireAt) > Date.now())) return 'usable';
       return 'all';
     }
 
@@ -3397,6 +3641,12 @@
         state.selectedOrderId = order.id;
         return openAfterSales();
       }
+      if (action === 'after-sales-detail') {
+        state.selectedOrderId = order.id;
+        state.afterSalesProgressOpen = true;
+        renderApp();
+        return true;
+      }
       if (action === 'progress') {
         state.selectedOrderId = order.id;
         state.refundProgressOrderId = order.id;
@@ -3432,16 +3682,19 @@
     }
 
     function startOneClickLogin() {
-      if (!state.loginMethodOpen || getSelectedOrder()?.status !== 'active') return false;
+      const order = getSelectedOrder();
+      if (!state.loginMethodOpen || order?.status !== 'active') return false;
       state.loginMethodOpen = false;
-      state.libraryTab = 'steam';
-      navigate('library', { rememberSource: false });
-      showToast('登录成功，已返回游戏库');
+      setSelectedGame(order.gameId, { shouldRender: false });
+      setScenario('active-rental', { shouldRender: false });
+      navigate('detail', { rememberSource: false, replaceTask: true });
+      showToast('登录成功，已进入游戏详情');
       return true;
     }
 
     function openManualLogin() {
       if (getSelectedOrder()?.status !== 'active') return false;
+      authorizeCredentialAccess();
       state.loginMethodOpen = false;
       state.steamHelpOpen = false;
       navigate('steam-login');
@@ -3456,6 +3709,7 @@
     function openCredentialPanel() {
       const order = getSelectedOrder();
       if (order?.status !== 'active' || order.credentialAvailable === false) return false;
+      authorizeCredentialAccess();
       state.credentialPanelOpen = true;
       state.credentialAccountVisible = false;
       state.credentialPasswordVisible = false;
@@ -3503,6 +3757,9 @@
     }
 
     let toastTimer = null;
+    const CREDENTIAL_AUTH_TTL_MS = 5 * 60 * 1000;
+    const CLIPBOARD_CLEAR_DELAY_MS = 60 * 1000;
+    let clipboardClearTimer = null;
 
     function showToast(message) {
       if (toastTimer) clearTimeout(toastTimer);
@@ -3516,18 +3773,47 @@
       }, 1800);
     }
 
+    function authorizeCredentialAccess(now = Date.now()) {
+      if (getSelectedOrder()?.status !== 'active') return false;
+      state.credentialAccessExpiresAt = now + CREDENTIAL_AUTH_TTL_MS;
+      return state.credentialAccessExpiresAt;
+    }
+
+    function credentialAccessActive(now = Date.now()) {
+      return getSelectedOrder()?.status === 'active' && Number(state.credentialAccessExpiresAt || 0) > now;
+    }
+
+    function clearCopiedCredential(expectedValue = null) {
+      if (expectedValue !== null && state.copiedCredential !== expectedValue) return false;
+      state.copiedCredential = null;
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText('').catch(() => {});
+      return true;
+    }
+
+    function scheduleClipboardClear(value) {
+      if (clipboardClearTimer) clearTimeout(clipboardClearTimer);
+      state.copiedCredential = value;
+      clipboardClearTimer = setTimeout(() => {
+        clipboardClearTimer = null;
+        clearCopiedCredential(value);
+      }, CLIPBOARD_CLEAR_DELAY_MS);
+      return true;
+    }
+
     function copyCredential(field) {
-      if (!['account', 'password'].includes(field)) return false;
+      if (!['account', 'password'].includes(field) || !credentialAccessActive()) return false;
       const value = RENTAL_CREDENTIAL[field];
       if (navigator.clipboard?.writeText) navigator.clipboard.writeText(value).catch(() => {});
+      scheduleClipboardClear(value);
       showToast(`${field === 'account' ? '账号' : '密码'}已复制`);
       return true;
     }
 
     function copyThirdPartyCredential(field) {
       const config = getThirdPartyLoginConfig();
-      if (!config || !['account', 'password'].includes(field)) return false;
+      if (!config || !['account', 'password'].includes(field) || !credentialAccessActive()) return false;
       if (navigator.clipboard?.writeText) navigator.clipboard.writeText(config[field]).catch(() => {});
+      scheduleClipboardClear(config[field]);
       showToast(`${config.platformName}${field === 'account' ? '账号' : '密码'}已复制`);
       return true;
     }
@@ -3537,10 +3823,14 @@
         showToast('请输入 Steam 账号和密码');
         return false;
       }
+      const order = getSelectedOrder();
+      if (!order || order.status !== 'active') return false;
       state.steamForm.submitted = true;
       state.steamForm.requiresGuard = true;
+      state.steamHelpOpen = false;
       renderApp();
-      return true;
+      showToast('请完成 Steam 验证码校验');
+      return 'guard-required';
     }
 
     function guardRemainingSeconds() {
@@ -3549,24 +3839,31 @@
     }
 
     function requestGuardCode() {
-      if (getSelectedOrder()?.status !== 'active' || !state.steamForm.requiresGuard) return false;
-      if (!state.guardCode || guardRemainingSeconds() <= 0) return refreshGuardCode();
-      renderApp();
+      const order = getSelectedOrder();
+      if (order?.status !== 'active') return false;
+      if (!state.steamForm.requiresGuard) {
+        showToast('请在 Steam 登录验证码界面后再尝试点击');
+        return false;
+      }
+      state.guardCode = '48291';
+      state.guardExpiresAt = Date.now() + 30 * 1000;
+      state.guardIssued = true;
+      state.steamForm.requiresGuard = false;
+      setSelectedGame(order.gameId, { shouldRender: false });
+      setScenario('active-rental', { shouldRender: false });
+      navigate('detail', { rememberSource: false, replaceTask: true });
+      showToast('验证码已自动输入，登录成功');
       return true;
     }
 
     function refreshGuardCode() {
-      if (getSelectedOrder()?.status !== 'active' || !state.steamForm.requiresGuard) return false;
-      state.guardCode = '48291';
-      state.guardExpiresAt = Date.now() + 30 * 1000;
-      state.guardIssued = true;
-      renderApp();
-      return true;
+      return requestGuardCode();
     }
 
     function copyGuardCode() {
-      if (!state.guardCode || guardRemainingSeconds() <= 0) return false;
+      if (!credentialAccessActive() || !state.guardCode || guardRemainingSeconds() <= 0) return false;
       if (navigator.clipboard?.writeText) navigator.clipboard.writeText(state.guardCode).catch(() => {});
+      scheduleClipboardClear(state.guardCode);
       showToast('验证码已复制');
       return true;
     }
@@ -3614,8 +3911,9 @@
     }
 
     function copyThirdPartyCode() {
-      if (!getThirdPartyLoginConfig() || !state.thirdPartyCode || thirdPartyCodeRemainingSeconds() <= 0) return false;
+      if (!credentialAccessActive() || !getThirdPartyLoginConfig() || !state.thirdPartyCode || thirdPartyCodeRemainingSeconds() <= 0) return false;
       if (navigator.clipboard?.writeText) navigator.clipboard.writeText(state.thirdPartyCode).catch(() => {});
+      scheduleClipboardClear(state.thirdPartyCode);
       showToast('第三方验证码已复制');
       return true;
     }
@@ -3648,6 +3946,10 @@
     }
 
     function clearSensitiveState(reason = 'manual') {
+      state.credentialAccessExpiresAt = null;
+      if (clipboardClearTimer) clearTimeout(clipboardClearTimer);
+      clipboardClearTimer = null;
+      clearCopiedCredential();
       wipeSensitiveState({ clearAccount: ['order-ended', 't0', 'after-sales', 'background'].includes(reason), closePanels: true });
       renderApp();
       return true;
@@ -3806,6 +4108,30 @@
       return { eligible: false, reason: '当前订单状态不支持3天无理由' };
     }
 
+    function applyRefundResult({ orderId = state.order?.id, refundType = 'fulfillment', initiatedBy = 'user', channelStatus = 'success', entitlementRevoked = true } = {}) {
+      if (!state.order || state.order.id !== orderId || channelStatus !== 'success') return false;
+      const completedAt = nowFromServer();
+      state.order.status = 'refunded';
+      state.order.refundedAt = completedAt;
+      state.order.refundType = refundType;
+      state.order.refundInitiatedBy = initiatedBy;
+      state.order.entitlementRevoked = Boolean(entitlementRevoked);
+      state.order.credentialAvailable = false;
+      state.refundHistory.push({ orderId, refundType, initiatedBy, channelStatus, completedAt });
+      if (state.order.sku === 'trial') {
+        const restore = initiatedBy === 'system' && refundType === 'automatic-no-account' && !state.order.firstFulfilledAt;
+        if (restore) {
+          state.platformTrialEligibility = { eligible: true, consumedAt: null, orderId: null };
+          if (state.discoveryContexts[state.order.gameId]) state.discoveryContexts[state.order.gameId].firstRentalEligible = true;
+        }
+      } else if (state.order.sku === 'permanent' && entitlementRevoked && state.discoveryContexts[state.order.gameId]) {
+        state.discoveryContexts[state.order.gameId].permanent = false;
+      }
+      state.rentalRiskDecision = evaluateRefundRisk();
+      clearSensitiveState('after-sales');
+      return cloneOrder(state.order);
+    }
+
     function openAfterSales() {
       const order = getSelectedOrder();
       if (!order || !['active', 'refunding'].includes(order.status)) return false;
@@ -3844,10 +4170,26 @@
         type: state.afterSalesDraft.type,
         description: state.afterSalesDraft.description.trim(),
         status: 'submitted',
+        submittedAt: Date.now(),
       };
+      state.afterSalesProgressOpen = false;
       wipeSensitiveState({ clearAccount: true, closePanels: true });
-      renderApp();
+      navigate('order-detail', { rememberSource: false, replaceTask: true });
+      showToast('售后申请已提交');
       return cloneOrder(state.afterSalesOrder);
+    }
+
+    function withdrawAfterSales() {
+      const ticket = state.afterSalesOrder;
+      if (!ticket || ticket.status !== 'submitted') return false;
+      const orderId = ticket.orderId;
+      state.afterSalesOrder = null;
+      state.afterSalesProgressOpen = false;
+      state.replacementRequest = null;
+      state.afterSalesDraft = { orderId, type: 'launch', description: '' };
+      navigate('order-detail', { rememberSource: false, replaceTask: true });
+      showToast('售后申请已撤销');
+      return true;
     }
 
     function setAfterSalesInventory(value) {
@@ -3872,11 +4214,12 @@
         return false;
       }
       state.replacementRequest = {
-        status: 'success',
+        status: 'approved-pending-launch',
         orderId: order.id,
         gameId: order.gameId,
         version: order.version,
-        originalBindingPreserved: false,
+        approvedAt: nowFromServer(),
+        originalBindingPreserved: true,
       };
       renderApp();
       return true;
@@ -3934,15 +4277,40 @@
         membershipActive: false, memberLibrary: false, firstRentalEligible: true,
         priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
       });
-      state.selectedSku = 'trial';
+      Object.assign(state.discoveryContexts['red-dead-2'], {
+        activeOrderStatus: 'active', expireAt: Date.now() + 6 * 60 * 60 * 1000, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
+      Object.assign(state.discoveryContexts['forza-5'], {
+        activeOrderStatus: null, expireAt: null, refundActive: false,
+        owned: true, installed: true, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
+      Object.assign(state.discoveryContexts.hogwarts, {
+        activeOrderStatus: null, expireAt: null, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: true, inventoryResolved: true, eligibilityResolved: true,
+      });
+      Object.assign(state.discoveryContexts['witcher-3'], {
+        activeOrderStatus: null, expireAt: null, refundActive: false,
+        owned: false, installed: false, imported: false, permanent: false,
+        membershipActive: false, memberLibrary: false, firstRentalEligible: false,
+        priceResolved: false, inventoryResolved: true, eligibilityResolved: true,
+      });
+      state.selectedSku = 'permanent';
       state.selectedHours = 2;
       state.selectedPlatform = 'Steam';
       state.selectedEditionId = 'standard';
       state.rentalPlan = 'hourly';
       state.searchTab = 'games';
       state.selectedPayment = 'alipay';
-      state.memberPlan = 'quarterly';
+      state.memberPlan = 'weekly';
       state.memberPayment = 'alipay';
+      state.memberLibrarySearch = '';
       state.membershipStatus = 'none';
       state.membershipIntroSeen = false;
       state.membershipIntroOpen = false;
@@ -3956,13 +4324,16 @@
       state.orderSearch = '';
       state.orderSearchOpen = false;
       state.noReasonPolicyOpen = false;
-      state.rentalRiskDecision = { extraNoReasonRestricted: false, ruleVersion: 'RISK-20260811-01' };
+      state.rentalRiskDecision = { extraNoReasonRestricted: false, ruleVersion: 'RISK-30D-3-NO-REASON-V1', explicit: false };
+      state.refundHistory = [];
+      state.language = 'zh-CN';
       state.riskReminderOpen = false;
       state.pendingRentalIntent = null;
       state.pendingRiskSnapshot = null;
       state.nonTargetLaunchGuard = null;
       state.launchRequestResults = {};
       state.refundProgressOrderId = null;
+      state.afterSalesProgressOpen = false;
       state.confirmDeleteOrderId = null;
       state.hiddenOrderIds = [];
       state.selectedOrderId = null;
@@ -4013,7 +4384,10 @@
 
     const CAPTURE_STATE_SETUPS = Object.freeze({
       home: () => navigate('home'),
-      play: () => navigate('play'),
+      play: () => {
+        state.playTab = 'pc';
+        navigate('play');
+      },
       community: () => navigate('community'),
       ranking: () => navigate('ranking'),
       library: () => navigate('library'),
@@ -4029,7 +4403,7 @@
       detail: () => {
         setScenario('not-member-library', { shouldRender: false });
         setSelectedGame('shadow-blade-zero', { shouldRender: false });
-        state.selectedSku = 'rent-2h';
+        state.selectedSku = 'permanent';
         state.entitlementPanelOpen = false;
         navigate('detail');
       },
@@ -4037,9 +4411,7 @@
         setScenario('not-member-library', { shouldRender: false });
         setSelectedGame('shadow-blade-zero', { shouldRender: false });
         state.selectedEditionId = 'standard';
-        state.rentalPlan = 'hourly';
-        state.selectedSku = 'hourly-8h-standard';
-        state.selectedHours = 8;
+        state.selectedSku = 'permanent';
         navigate('checkout');
       },
       membership: () => {
@@ -4083,7 +4455,7 @@
       'payment-success': () => {
         setScenario('not-member-library', { shouldRender: false });
         setSelectedGame('shadow-blade-zero', { shouldRender: false });
-        state.selectedSku = 'rent-2h';
+        state.selectedSku = 'permanent';
         navigate('checkout');
         payOrder();
       },
@@ -4217,6 +4589,17 @@
 
     function renderPlay() {
       const tabLabel = { cloud: '秒玩', pc: '启动', retro: '畅玩' }[state.playTab];
+      if (state.playTab === 'pc') {
+        const featureGames = PLAY_PC_GAMES.slice(0, 2);
+        const listGames = PLAY_PC_GAMES.slice(2);
+        return `${searchRow('搜索PC游戏')}
+          ${pageTabs([['cloud', '云游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']], state.playTab, 'playTab')}
+          <div class="account-card"><span class="avatar-small">${personIcon()}</span><div><strong>欢迎回来，玩家</strong><p>会员游戏库已为你同步</p></div></div>
+          <div class="section-head"><h2>启动人气热游</h2><span>精选</span></div>
+          <div class="feature-scroll">${featureGames.map((game) => `<article class="feature-card play-game-card" data-action="navigate" data-screen="detail" data-game-id="${game.id}" data-play-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 游戏画面`, '')}<div class="feature-info play-game-copy"><div><strong>${game.name}</strong><span class="play-game-meta">${game.meta}</span>${renderPlayRentalSummary(game.id, game.demand)}</div><button class="small-pill" type="button" data-action="play-card-action" data-play-action="${game.action}">${game.action}</button></div></article>`).join('')}</div>
+          <div class="section-head"><h2>全部启动</h2><span>按热度</span></div>
+          <div class="game-list">${listGames.map((game) => `<article class="game-list-item play-game-card" data-action="navigate" data-screen="detail" data-game-id="${game.id}" data-play-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 游戏封面`, '')}<div class="game-list-copy play-game-copy"><strong>${game.name}</strong><span class="play-game-meta">${game.meta}</span>${renderPlayRentalSummary(game.id, game.demand)}</div><button class="small-pill" type="button" data-action="play-card-action" data-play-action="${game.action}">${game.action}</button></article>`).join('')}</div>`;
+      }
       const featureGames = [
         ['极限竞速：地平线 6', [53, 753, 642, 305]],
         ['怪物猎人：世界', [756, 753, 350, 305]],
@@ -4332,7 +4715,7 @@
     }
 
     function renderCheckoutHeader() {
-      return renderTaskHeader('确认订单', '<button class="task-page-action rental-intro-entry" type="button" data-action="open-rental-intro">租号介绍</button>');
+      return renderTaskHeader('确认订单');
     }
 
     function renderCheckoutSkuOptions(game) {
@@ -4348,7 +4731,8 @@
         return `<button class="checkout-option ${state.selectedSku === sku.id ? 'selected' : ''}" type="button" data-action="select-checkout-sku" data-sku="${sku.id}" data-sku-kind="${sku.id}" aria-pressed="${state.selectedSku === sku.id}">${label}</button>`;
       }).join('');
       const membership = '<button class="checkout-option" type="button" data-action="open-membership-from-checkout" data-sku-kind="membership">开会员畅玩</button>';
-      return `<section class="checkout-sku-section checkout-entitlement-section checkout-panel" data-sale-mode="${mode}"><h2>权益方案</h2><div class="checkout-option-buttons" data-checkout-field="entitlement">${optionButtons}${membership}</div>${skus.length ? '' : '<div class="state-alert">当前没有可购买的畅玩方式，请返回详情。</div>'}</section>`;
+      const usedTrial = !context.firstRentalEligible;
+      return `<section class="checkout-sku-section checkout-entitlement-section checkout-panel ${usedTrial ? 'trial-used' : ''}" data-sale-mode="${mode}"><h2>权益方案</h2><div class="checkout-option-buttons" data-checkout-field="entitlement">${optionButtons}${membership}</div>${skus.length ? '' : '<div class="state-alert">当前没有可购买的畅玩方式，请返回详情。</div>'}</section>`;
     }
 
     function detailPrimaryMeta() {
@@ -4370,7 +4754,7 @@
       ];
       if (primary === 'continue') return [...base, { id: 'login', label: '登录游戏', action: 'open-login-method', tone: 'primary' }];
       if (primary === 'download') return [...base, { id: 'download', label: '下载游戏', action: 'feedback', tone: 'primary' }];
-      if (['launch', 'member-play', 'permanent'].includes(primary)) return [...base, { id: 'playable', label: '可畅玩', action: 'feedback', tone: 'primary' }];
+      if (['launch', 'member-play'].includes(primary)) return [...base, { id: 'playable', label: '可畅玩', action: 'feedback', tone: 'primary' }];
       if (game.acquisitionMode === 'free') return [...base, { id: 'acquire', label: '获取游戏', action: 'feedback', tone: 'secondary' }];
       const context = getCheckoutEligibilityContext(game.id);
       const canRent = getGameSaleMode(game.id) === GAME_SALE_MODES.TIME_RENTAL
@@ -4438,6 +4822,11 @@
       return `<article class="game-context-card checkout-product">${realCrop(game.asset, game.crop, `${gameName} 游戏封面`, '', 'checkout-cover')}<div><h2 class="checkout-product-name">${gameName}</h2><p class="checkout-product-edition">标准版</p></div></article>`;
     }
 
+    function renderGameNotice(gameId, notice = resolveGameNotice(gameId), className = '') {
+      if (!notice) return '';
+      return `<aside class="game-notice ${className}" data-game-notice><strong>游戏提示</strong><span>${escapeAttribute(notice)}</span></aside>`;
+    }
+
     function renderServiceBenefits() {
       const benefits = [
         ['100% 正版', '家庭共享官方正版'],
@@ -4446,7 +4835,7 @@
         ['存档无忧', '自动同步个人存档'],
         ['3天无理由', '符合规则可申请退款'],
       ];
-      return `<section class="service-benefits"><div class="detail-section-head"><h2>租号权益</h2><span>5项保障</span></div><div class="service-benefit-list">${benefits.map(([title, note]) => title === '3天无理由' ? `<button class="service-benefit-item policy-entry" type="button" data-action="open-no-reason-policy"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span><b>›</b></button>` : `<div class="service-benefit-item"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span></div>`).join('')}</div></section>`;
+      return `<section class="service-benefits"><div class="detail-section-head"><h2>租号权益</h2><button class="rental-intro-entry" type="button" data-action="open-rental-intro">租号介绍</button></div><div class="service-benefit-list">${benefits.map(([title, note]) => title === '3天无理由' ? `<button class="service-benefit-item policy-entry" type="button" data-action="open-no-reason-policy"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span><b>›</b></button>` : `<div class="service-benefit-item"><span class="benefit-check">✓</span><span><strong>${title}</strong><small>${note}</small></span></div>`).join('')}</div></section>`;
     }
 
     function getCheckoutCompletionMeta(order) {
@@ -4468,7 +4857,7 @@
     }
 
     function checkoutAlert() {
-      if (state.transactionNotice === 'entitlement-active') return '<div class="state-alert success-alert"><strong>支付成功，权益已生效</strong><span>首次体验从支付成功时间开始计时，可直接开始畅玩。</span></div>';
+      if (state.transactionNotice === 'entitlement-active') return `<div class="state-alert success-alert"><strong>支付成功，权益已生效</strong><span>${state.order?.sku === 'trial' ? '首次体验从支付成功时间开始计时2小时。' : '单游戏永久权益已生效，每次启动时自动准备账号。'}</span></div>`;
       if (state.transactionNotice === 'rental-active') return '<div class="state-alert success-alert"><strong>支付成功，租赁已生效</strong><span>账号已就绪，可立即登录开始畅玩。</span></div>';
       if (state.transactionNotice === 'rental-refunding') return '<div class="state-alert"><strong>支付成功，正在退款</strong><span>当前无可用账号，订单已进入自动退款流程。</span></div>';
       if (state.orderQueryError) return `<div class="state-alert network-alert"><strong>网络异常，暂未获取订单状态</strong><span>订单号 ${state.order?.id || '--'} 已保留，请恢复网络后重新查询。</span></div>`;
@@ -4494,6 +4883,7 @@
         ${renderGameContextCard(game, order)}
         ${renderServiceBenefits()}
         ${renderCheckoutSkuOptions(game)}
+        ${renderGameNotice(game.id, order.gameNotice)}
         ${renderCheckoutAmountSummary(order)}
         ${renderCheckoutPaymentMethods()}
       </section>`;
@@ -4525,19 +4915,19 @@
     }
 
     function renderMembershipPlans() {
-      return `<div class="membership-plan-list">${MEMBER_PLANS.map((plan) => `<button class="membership-plan-card ${state.memberPlan === plan.id ? 'selected' : ''} ${plan.recommended ? 'recommended' : ''}" type="button" data-action="select-member-plan" data-plan="${plan.id}">${plan.recommended ? '<span class="plan-recommend">推荐 · 更划算</span>' : ''}<span><strong class="plan-name">${plan.name}</strong><small class="plan-note">${plan.note}</small></span><span class="plan-money"><strong class="plan-price">¥${plan.price}</strong></span></button>`).join('')}</div>`;
+      return `<div class="membership-plan-list">${MEMBER_PLANS.map((plan) => `<button class="membership-plan-card ${state.memberPlan === plan.id ? 'selected' : ''}" type="button" data-action="select-member-plan" data-plan="${plan.id}"><span><strong class="plan-name">${plan.name}</strong><small class="plan-note">${plan.note}</small></span><span class="plan-money"><strong class="plan-price">¥${plan.price}</strong></span></button>`).join('')}</div>`;
     }
 
     function renderMembershipPayment() {
-      return `<div class="membership-pay-layout"><div>${renderPaymentMethods('member')}</div><div class="qr-code" role="img" aria-label="支付二维码"><span class="qr-pattern"></span><small>扫码支付</small></div></div>`;
+      return `<div class="membership-pay-layout">${renderPaymentMethods('member')}</div>`;
     }
 
     function renderMembershipValue() {
-      return `<section class="membership-value-hero"><div class="membership-value-copy"><span>GAMEHUB MEMBER</span><h2>一个会员，畅玩本期精选游戏</h2><p>会员游戏库持续更新，开通后可直接进入支持的游戏。</p></div><div class="membership-hero-covers">${MEMBER_GAMES.slice(0, 3).map((game) => realCrop(game.asset, game.crop, `${game.name}会员游戏`, '', 'membership-hero-cover')).join('')}</div></section><div class="membership-benefit-grid">${MEMBERSHIP_BENEFITS.map(([title, note]) => `<div class="membership-benefit-item"><span>✓</span><strong>${title}</strong><small>${note}</small></div>`).join('')}</div>`;
+      return `<section class="membership-value-hero"><div class="membership-value-copy"><span>GAMEHUB MEMBER</span><h2>一个会员，畅玩本期精选游戏</h2><p>库存总<strong>30W+</strong>，游戏库价值持续更新中</p></div><div class="membership-hero-covers">${MEMBER_GAMES.slice(0, 3).map((game) => realCrop(game.asset, game.crop, `${game.name}会员游戏`, '', 'membership-hero-cover')).join('')}</div></section><div class="membership-benefit-grid">${MEMBERSHIP_BENEFITS.map(([title, note]) => `<div class="membership-benefit-item"><span>✓</span><strong>${title}</strong><small>${note}</small></div>`).join('')}</div>`;
     }
 
     function renderMembershipPreview() {
-      return `<section class="membership-preview"><div class="detail-section-head"><div><h2>会员游戏库</h2><p>${MEMBER_GAMES.length}款支持游戏，云存档标识以游戏卡为准</p></div><button type="button" data-action="navigate" data-screen="member-library">查看全部 ›</button></div>${renderMemberGameGrid()}</section>`;
+      return `<section class="membership-preview"><div class="detail-section-head"><h2>会员游戏库</h2><button type="button" data-action="navigate" data-screen="member-library">查看更多 ›</button></div>${renderMemberGameGrid(MEMBER_GAMES.slice(0, 4))}</section>`;
     }
 
     function renderMembershipFaqPreview() {
@@ -4550,17 +4940,26 @@
         ${subpageHead('会员中心', 'profile')}
         <section class="membership-identity">${realCrop('profile', [482, 302, 156, 158], '盖世玩家用户头像', '', 'membership-avatar real-avatar')}<div><strong>盖世玩家 0525</strong><span>UID GH20260525</span></div>${renderMembershipStatusStack(membership)}</section>
         ${renderMembershipValue()}
-        ${state.membershipNotice ? `<div class="state-alert success-alert"><strong>${state.membershipNotice}</strong></div>` : state.membershipOrder?.status === 'pending' ? `<div class="state-alert">会员订单 ${state.membershipOrder.id} 已创建，请使用所选方式扫码完成支付。</div>` : ''}
-        <div class="detail-section-head membership-plan-head"><div><h2>选择会员套餐</h2><p>可按7天、30天或90天开通，有效期按所选套餐计算</p></div><span>季卡推荐</span></div>
+        ${state.membershipNotice ? `<div class="state-alert success-alert"><strong>${state.membershipNotice}</strong></div>` : state.membershipOrder?.status === 'pending' ? `<div class="state-alert">会员订单 ${state.membershipOrder.id} 已创建，请使用所选支付方式完成支付。</div>` : ''}
+        <div class="detail-section-head membership-plan-head"><div><h2>选择会员套餐</h2><p>可按7天、30天或90天开通，有效期按所选套餐计算</p></div></div>
         ${renderMembershipPlans()}
+        <section class="checkout-panel"><div class="detail-section-head"><h2>支付方式</h2></div>${renderMembershipPayment()}</section>
         ${renderMembershipPreview()}
         ${renderMembershipFaqPreview()}
-        <section class="checkout-panel"><div class="detail-section-head"><h2>支付方式</h2><span>选择后扫码</span></div>${renderMembershipPayment()}</section>
       </section>`;
     }
 
-    function renderMemberGameGrid() {
-      return `<div class="member-game-grid">${MEMBER_GAMES.map((game) => `<button class="member-game-card" type="button" data-action="open-member-game" data-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 会员游戏封面`, '', 'member-game-cover')}<strong>${game.name}</strong>${game.cloudSaveSupported ? '<span class="cloud-save-badge">☁ 支持云存档</span>' : ''}</button>`).join('')}</div>`;
+    function renderMemberGameGrid(games = MEMBER_GAMES) {
+      return `<div class="member-game-grid">${games.length ? games.map((game) => `<button class="member-game-card" type="button" data-action="open-member-game" data-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 会员游戏封面`, '', 'member-game-cover')}<strong>${game.name}</strong><span class="member-game-version">标准版</span></button>`).join('') : '<div class="member-library-empty">未找到相关会员游戏</div>'}</div>`;
+    }
+
+    function filteredMemberGames() {
+      const keyword = state.memberLibrarySearch.trim().toLowerCase();
+      return keyword ? MEMBER_GAMES.filter(({ name }) => name.toLowerCase().includes(keyword)) : [...MEMBER_GAMES];
+    }
+
+    function renderMemberLibrarySearch() {
+      return `<label class="member-library-search"><span aria-hidden="true">⌕</span><input type="search" value="${escapeAttribute(state.memberLibrarySearch)}" placeholder="搜索会员游戏" aria-label="按游戏名称搜索会员游戏库" data-member-library-search-input>${state.memberLibrarySearch ? '<button type="button" data-action="clear-member-library-search" aria-label="清空会员游戏搜索">×</button>' : ''}</label>`;
     }
 
     function renderMemberFaq() {
@@ -4568,7 +4967,7 @@
     }
 
     function renderPortraitMemberLibrary() {
-      return `<section class="portrait-member-library" data-layout="portrait-member-library">${subpageHead('会员游戏库', 'membership')}<div class="detail-section-head"><h2>本期畅玩</h2><span>${MEMBER_GAMES.length}款精选游戏</span></div>${renderMemberGameGrid()}<div class="section-head"><h2>常见问题</h2><span>FAQ</span></div>${renderMemberFaq()}</section>`;
+      return `<section class="portrait-member-library" data-layout="portrait-member-library">${subpageHead('会员游戏库', 'membership')}${renderMemberLibrarySearch()}<div class="detail-section-head"><h2>本期畅玩</h2><span>${filteredMemberGames().length}款游戏</span></div>${renderMemberGameGrid(filteredMemberGames())}</section>`;
     }
 
     function renderOrderTabs() {
@@ -4605,11 +5004,17 @@
 
     function orderTimingCopy(order) {
       if (order.status === 'pending') return `请在 ${formatCountdown(order.paymentDeadline || Date.now())} 内完成支付`;
-      if (order.status === 'active' && Number(order.expireAt) > Date.now()) {
-        const minutes = Math.max(0, Math.floor((Number(order.expireAt) - Date.now()) / 60000));
-        return `租期 ${order.durationLabel} · 剩余 ${formatRentalDuration(minutes, true)}`;
-      }
-      return `${order.durationLabel} · ${ORDER_STATUS_META[order.status]?.note || '订单状态已更新'}`;
+      if (order.sku === 'permanent') return '有效期：长期有效';
+      return Number(order.expireAt) ? `有效期至：${formatOrderDateTime(order.expireAt)}` : '有效期以订单快照为准';
+    }
+
+    function formatOrderDateTime(timestamp) {
+      if (!Number(timestamp)) return '--';
+      const parts = new Intl.DateTimeFormat('zh-CN', {
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+      }).formatToParts(new Date(Number(timestamp)));
+      const value = Object.fromEntries(parts.map(({ type, value: part }) => [type, part]));
+      return `${value.year}-${value.month}-${value.day} ${value.hour}:${value.minute}`;
     }
 
     function formatRentalDuration(totalMinutes, includeMinutes = false) {
@@ -4627,6 +5032,9 @@
     function getOrderActions(order, { surface = 'list' } = {}) {
       let actions = [...(ORDER_ACTIONS_BY_STATUS[order?.status] || [])];
       if (surface === 'list') actions = actions.filter(([id]) => id !== 'after-sales');
+      if (surface === 'detail' && state.afterSalesOrder?.orderId === order?.id && state.afterSalesOrder.status === 'submitted') {
+        actions = actions.map((action) => action[0] === 'after-sales' ? ['after-sales-detail', '售后详情', action[2]] : action);
+      }
       actions = actions.filter(([id]) => id !== 'credentials' || order.credentialAvailable !== false);
       if (['refunded', 'ended'].includes(order?.status)) {
         const next = hasDirectGameEntitlement(order.gameId)
@@ -4649,8 +5057,9 @@
     function renderOrderCard(order) {
       const meta = ORDER_STATUS_META[order.status] || ORDER_STATUS_META.ended;
       return `<article class="order-list-card ${state.selectedOrderId === order.id ? 'selected' : ''}" role="button" tabindex="0" data-action="select-order" data-order-id="${order.id}" data-status="${order.status}" aria-label="查看 ${order.gameName} ${meta.label} 订单">
-        <span class="order-card-head"><small>订单编号：${order.id}</small><span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span></span>
-        <span class="order-card-main">${renderOrderCover(order)}<span class="order-card-copy"><strong>${order.gameName}</strong><span>历史实付</span><b>¥${Number(order.amount).toFixed(2)}</b></span></span>
+        <span class="order-card-head"><small>订单编号：${order.id}</small></span>
+        <span class="order-card-main">${renderOrderCover(order)}<span class="order-card-copy"><strong>${order.gameName}</strong><span>${order.version || 'Steam · 标准版'} · ${order.durationLabel}</span></span><span class="order-card-commerce"><span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span><b class="order-card-amount">¥${Number(order.amount).toFixed(2)}</b></span></span>
+        ${renderGameNotice(order.gameId, order.gameNotice, 'order-card-notice')}
         <span class="order-card-foot"><small>${orderTimingCopy(order)}</small>${renderOrderCardActions(order)}</span>
       </article>`;
     }
@@ -4673,9 +5082,14 @@
     function renderOrderDetailBody(order) {
       if (!order) return '<div class="stub-panel"><div><h2>暂无订单</h2><p>当前筛选下没有可查看的订单。</p></div></div>';
       const meta = ORDER_STATUS_META[order.status] || ORDER_STATUS_META.ended;
-      return `<div class="order-detail-hero">${renderOrderCover(order, 'order-detail-cover')}<div><h2>${order.gameName}</h2><p>${order.version} · ${order.durationLabel}</p></div><span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span></div>
+      const validity = order.sku === 'permanent' ? '长期有效' : formatOrderDateTime(order.expireAt);
+      const automaticRefundRow = order.refundSource === 'automatic-no-account'
+        ? '<div class="order-summary-row"><span>退款说明</span><strong>首次启动暂无可用账号，已自动退款，款项原路退回并恢复首次体验资格</strong></div>'
+        : '';
+      return `<div class="order-detail-hero">${renderOrderCover(order, 'order-detail-cover')}<div><h2>${order.gameName}</h2><p>${order.version} · ${order.durationLabel}</p></div><span class="order-detail-commerce"><span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span><strong>¥${Number(order.amount).toFixed(2)}</strong></span></div>
         ${renderOrderProgress(order)}
-        <div class="order-detail-summary"><div class="order-summary-row"><span>订单编号</span><strong>${order.id}</strong></div><div class="order-summary-row"><span>订单金额</span><strong>¥${Number(order.amount).toFixed(2)}</strong></div><div class="order-summary-row"><span>当前状态</span><strong>${meta.note}</strong></div><div class="order-summary-row"><span>账号服务</span><strong>同一订单 · 同一账号</strong></div></div>`;
+        ${renderGameNotice(order.gameId, order.gameNotice, 'order-detail-notice')}
+        <div class="order-detail-summary"><div class="order-summary-row"><span>订单编号</span><strong>${order.id}</strong></div><div class="order-summary-row"><span>游戏版本</span><strong>${order.version || 'Steam · 标准版'}</strong></div><div class="order-summary-row"><span>权益方案</span><strong>${order.durationLabel}</strong></div>${order.status === 'pending' ? `<div class="order-summary-row"><span>支付截止时间</span><strong>${formatOrderDateTime(order.paymentDeadline)}</strong></div>` : `<div class="order-summary-row"><span>有效期</span><strong>${validity}</strong></div>`}<div class="order-summary-row"><span>订单金额</span><strong>¥${Number(order.amount).toFixed(2)}</strong></div><div class="order-summary-row"><span>当前状态</span><strong>${meta.note}</strong></div>${automaticRefundRow}<div class="order-summary-row"><span>账号服务</span><strong>每次启动自动准备可用账号</strong></div></div>`;
     }
 
     function renderPortraitOrders() {
@@ -4694,28 +5108,37 @@
       let replacementStatus = '';
       if (replacement?.status === 'no-stock') {
         replacementStatus = '<div class="replacement-status"><p>暂无同游戏同版本账号，已保留原绑定，不会影响当前售后处理。</p><div class="replacement-actions"><button type="button" data-action="contact-support">联系客服</button><button class="replacement-primary" type="button" data-action="request-replacement">重试换号</button></div></div>';
-      } else if (replacement?.status === 'success') {
-        replacementStatus = `<div class="replacement-status"><p>换号成功，已匹配同游戏同版本账号：${replacement.version}。</p><div class="replacement-actions"><button type="button" data-action="contact-support">联系客服</button><button class="replacement-primary" type="button" data-action="back-to-orders">查看订单</button></div></div>`;
+      } else if (replacement?.status === 'approved-pending-launch') {
+        replacementStatus = '<div class="replacement-status"><p><strong>已同意，待下次启动</strong><br>当前绑定保留不变；用户下次从游戏详情启动时，再获取同游戏、同标准版、同地区新账号。</p><div class="replacement-actions"><button type="button" data-action="contact-support">联系客服</button><button class="replacement-primary" type="button" data-action="back-to-orders">查看订单</button></div></div>';
+      } else if (replacement?.status === 'executed') {
+        replacementStatus = '<div class="replacement-status"><p>已在下次启动时完成换号，旧凭据已撤销。</p></div>';
       }
       return `<div class="after-sales-result"><div class="after-sales-result-card"><strong>售后单 ${ticket.id} 已提交</strong><br>我们会保留订单信息并同步处理进度。</div><section class="replacement-box"><h3>账号异常处理</h3><p>如登录或启动问题仍未解决，可申请同游戏同版本换号。</p>${replacementStatus || '<div class="replacement-actions"><button type="button" data-action="contact-support">联系客服</button><button class="replacement-primary" type="button" data-action="request-replacement">申请换号</button></div>'}</section></div>`;
     }
 
     function renderAfterSalesPanel() {
       const order = getOrderCollection().find(({ id }) => id === state.afterSalesDraft.orderId) || getSelectedOrder();
+      const ticket = state.afterSalesOrder?.orderId === order?.id ? state.afterSalesOrder : null;
+      if (ticket) {
+        const typeLabel = AFTER_SALES_TYPES.find(([id]) => id === ticket.type)?.[1] || '其他问题';
+        return `<section class="after-sales-panel" aria-label="售后详情"><div class="after-sales-head"><div><h2>售后详情</h2><p>订单 ${order?.id || '--'} · ${order?.gameName || '当前游戏'}</p></div><span class="order-status-chip" data-tone="info">已提交</span></div><div class="after-sales-detail-copy"><span>问题类型</span><strong>${typeLabel}</strong><span>问题描述</span><strong>${escapeAttribute(ticket.description)}</strong><span>提交时间</span><strong>${formatOrderDateTime(ticket.submittedAt)}</strong></div>${renderAfterSalesResult()}<button class="after-sales-withdraw" type="button" data-action="withdraw-after-sales">撤销申请</button></section>`;
+      }
       const typeButtons = AFTER_SALES_TYPES.map(([id, label]) => {
         return `<button class="${state.afterSalesDraft.type === id ? 'selected' : ''}" type="button" data-action="select-after-sales-type" data-after-sales-type="${id}" aria-pressed="${state.afterSalesDraft.type === id}">${label}</button>`;
       }).join('');
-      return `<section class="after-sales-panel" aria-label="申请售后"><div class="after-sales-head"><div><h2>申请售后</h2><p>订单 ${order?.id || '--'} · ${order?.gameName || '当前游戏'}</p></div><span class="order-status-chip" data-tone="info">${state.afterSalesOrder ? '已提交' : '填写中'}</span></div><div class="after-sales-types" role="group" aria-label="问题类型">${typeButtons}</div><label class="after-sales-description" for="after-sales-description"><span>问题描述（必填）</span><textarea id="after-sales-description" maxlength="300" placeholder="请描述出现问题的时间、操作步骤和现象">${escapeAttribute(state.afterSalesDraft.description)}</textarea></label><button class="after-sales-submit" type="button" data-primary-action="true" data-action="submit-after-sales">${state.afterSalesOrder ? '已提交售后申请' : '提交售后申请'}</button>${renderAfterSalesResult()}</section>`;
+      return `<section class="after-sales-panel" aria-label="申请售后"><div class="after-sales-head"><div><h2>申请售后</h2><p>订单 ${order?.id || '--'} · ${order?.gameName || '当前游戏'}</p></div><span class="order-status-chip" data-tone="info">填写中</span></div><div class="after-sales-types" role="group" aria-label="问题类型">${typeButtons}</div><label class="after-sales-description" for="after-sales-description"><span>问题描述（必填）</span><textarea id="after-sales-description" maxlength="300" placeholder="请描述出现问题的时间、操作步骤和现象">${escapeAttribute(state.afterSalesDraft.description)}</textarea></label><button class="after-sales-submit" type="button" data-primary-action="true" data-action="submit-after-sales">提交售后申请</button></section>`;
     }
 
     function renderPortraitAfterSales() {
-      return `<section class="portrait-after-sales" data-layout="portrait-after-sales">${subpageHead('申请售后', 'order-detail')}${renderAfterSalesPanel()}</section>`;
+      const title = state.afterSalesOrder?.orderId === state.afterSalesDraft.orderId ? '售后详情' : '申请售后';
+      return `<section class="portrait-after-sales" data-layout="portrait-after-sales">${subpageHead(title, 'order-detail')}${renderAfterSalesPanel()}</section>`;
     }
 
     function renderLandscapeAfterSales() {
       const order = getOrderCollection().find(({ id }) => id === state.afterSalesDraft.orderId) || getSelectedOrder();
       const meta = ORDER_STATUS_META[order?.status] || ORDER_STATUS_META.ended;
-      return `<section class="landscape-task-page landscape-after-sales" data-layout="landscape-after-sales">${renderTaskHeader('申请售后')}<div class="after-sales-layout"><aside class="order-list-pane"><div class="order-page-head"><div><h1>当前订单</h1><p>提交后保留订单与处理进度</p></div></div><button class="order-list-card selected" type="button" data-action="back-to-orders">${order ? renderOrderCover(order, 'after-sales-order-cover') : '<span class="after-sales-order-cover order-game-icon" aria-hidden="true">游</span>'}<span class="order-list-copy"><strong>${order?.gameName || '当前游戏'}</strong><small>${order?.version || '--'} · ${order?.id || '--'}</small></span><span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span></button></aside>${renderAfterSalesPanel()}</div></section>`;
+      const title = state.afterSalesOrder?.orderId === order?.id ? '售后详情' : '申请售后';
+      return `<section class="landscape-task-page landscape-after-sales" data-layout="landscape-after-sales">${renderTaskHeader(title)}<div class="after-sales-layout"><aside class="order-list-pane"><div class="order-page-head"><div><h1>当前订单</h1><p>售后进度与原订单关联</p></div></div><button class="order-list-card selected" type="button" data-action="back-to-orders">${order ? renderOrderCover(order, 'after-sales-order-cover') : '<span class="after-sales-order-cover order-game-icon" aria-hidden="true">游</span>'}<span class="order-list-copy"><strong>${order?.gameName || '当前游戏'}</strong><small>${order?.version || '--'} · ${order?.id || '--'}</small></span><span class="order-status-chip" data-tone="${meta.tone}">${meta.label}</span></button></aside>${renderAfterSalesPanel()}</div></section>`;
     }
 
     function renderThirdPartyCredentialSection() {
@@ -4736,19 +5159,12 @@
     function renderCredentialFields(closeAction) {
       const account = state.credentialAccountVisible ? RENTAL_CREDENTIAL.account : 'gh_****_2607';
       const password = state.credentialPasswordVisible ? RENTAL_CREDENTIAL.password : '••••••••••••';
-      const remaining = guardRemainingSeconds();
-      const hasCode = Boolean(state.guardCode && remaining > 0);
-      const ready = state.steamForm.requiresGuard;
-      const emptyLabel = state.guardIssued ? '验证码已过期' : '登录后按需获取';
-      const guardActions = hasCode
-        ? '<div class="credential-guard-actions"><button type="button" data-action="copy-guard">复制验证码</button><button type="button" data-action="refresh-guard">刷新验证码</button></div>'
-        : ready ? `<div class="credential-guard-actions"><button type="button" data-action="${state.guardIssued ? 'refresh-guard' : 'request-guard'}">${state.guardIssued ? '刷新验证码' : '获取验证码'}</button></div>` : '';
       return `<div class="credential-head"><div><h2>租号登录信息</h2><p>仅限订单 ${getSelectedOrder()?.id || '--'} 使用，请勿修改账号资料</p></div><button class="dialog-close" type="button" data-action="${closeAction}" aria-label="关闭登录信息">×</button></div>
         <div class="credential-fields">
           <div class="credential-field"><span>账号</span><code data-credential-field="account">${account}</code><button type="button" data-action="toggle-credential" data-field="account">${state.credentialAccountVisible ? '隐藏' : '查看'}</button><button type="button" data-action="copy-credential" data-field="account">复制</button></div>
           <div class="credential-field"><span>密码</span><code data-credential-field="password">${password}</code><button type="button" data-action="toggle-credential" data-field="password">${state.credentialPasswordVisible ? '隐藏' : '查看'}</button><button type="button" data-action="copy-credential" data-field="password">复制</button></div>
         </div>
-        <div class="credential-guard ${hasCode ? 'has-code' : ''}" data-guard-expires-at="${state.guardExpiresAt || ''}"><span>Steam 令牌</span><span class="credential-guard-value">${hasCode ? `<code data-guard-code>${state.guardCode}</code> · <span data-guard-remaining="${remaining}">${remaining}s</span>` : emptyLabel}</span>${guardActions}</div>${renderThirdPartyCredentialSection()}`;
+        ${renderThirdPartyCredentialSection()}`;
     }
 
     function renderCredentialPanel() {
@@ -4797,13 +5213,26 @@
       return `<div class="modal-backdrop" data-action="close-refund-progress" role="presentation"><section class="refund-progress-dialog" role="dialog" aria-modal="true" aria-label="退款进度"><div class="credential-head"><div><h2>退款进度</h2><p>订单 ${order.id}</p></div><button class="dialog-close" type="button" data-action="close-refund-progress" aria-label="关闭退款进度">×</button></div><div class="refund-progress-summary"><strong>${completed ? '退款已完成' : '退款处理中'}</strong><span>退款金额 ¥${Number(order.amount).toFixed(2)}，${completed ? '已按原支付方式退回。' : '正在由原支付渠道处理，到账时间以支付平台为准。'}</span></div><div class="refund-progress-timeline">${steps.map(([label, status]) => `<span class="${status}">${label}</span>`).join('')}</div><button class="primary-action" type="button" data-action="close-refund-progress">我知道了</button></section></div>`;
     }
 
+    function renderAfterSalesProgressDialog() {
+      if (!state.afterSalesProgressOpen) return '';
+      const ticket = state.afterSalesOrder;
+      const order = getOrderCollection().find(({ id }) => id === ticket?.orderId);
+      if (!ticket || !order) return '';
+      const cancellable = ticket.status === 'submitted';
+      const steps = [
+        ['售后申请已提交', 'done'],
+        ['平台处理中', cancellable ? 'current' : 'done'],
+        ['处理完成', cancellable ? '' : 'done'],
+      ];
+      return `<div class="modal-backdrop" data-action="close-after-sales-progress" role="presentation"><section class="refund-progress-dialog after-sales-progress-dialog" role="dialog" aria-modal="true" aria-label="售后进度"><div class="credential-head"><div><h2>售后进度</h2><p>订单 ${order.id}</p></div><button class="dialog-close" type="button" data-action="close-after-sales-progress" aria-label="关闭售后进度">×</button></div><div class="refund-progress-summary"><strong>${cancellable ? '售后处理中' : '售后已完成'}</strong><span>${cancellable ? '申请已提交，平台正在核对订单与使用记录，请留意后续处理结果。' : '本次售后已处理完成，具体结果以订单状态为准。'}</span></div><div class="refund-progress-timeline">${steps.map(([label, status]) => `<span class="${status}">${label}</span>`).join('')}</div><div class="after-sales-progress-actions">${cancellable ? '<button class="after-sales-withdraw" type="button" data-action="withdraw-after-sales">撤销售后</button>' : ''}<button class="primary-action" type="button" data-action="close-after-sales-progress">我知道了</button></div></section></div>`;
+    }
+
     function renderMembershipIntroDialog() {
       if (!state.membershipIntroOpen) return '';
       const items = [
-        '开通会员可畅玩会员游戏，总价值30w+的正版游戏库存（标准版或默认版本）。启动游戏后绝不顶号、挤号。',
-        '会员属于特殊虚拟商品，开通后无法退款。',
-        '会员游戏库定期更新，但并非所有游戏均能第一时间加入会员游戏库，请理解。',
-        '会员游戏账号池共享，非个人所有。一号一游戏，均为Steam正版账号；非盗版、非假入库、非离线。',
+        '开通会员可畅玩会员游戏，总价值30W+的正版游戏库存（标准版或默认版本），启动游戏后绝不顶号、挤号；',
+        '会员属于特殊虚拟商品，开通后不支持主动3天无理由退款，履约异常可申请人工售后；',
+        '会员游戏号池共享、非个人所有，一号一游戏，均为 Steam 正版账号。',
       ];
       return `<div class="modal-backdrop membership-intro-backdrop" role="presentation" data-membership-intro><section class="membership-intro-dialog" role="dialog" aria-modal="true" aria-labelledby="membershipIntroTitle"><header><h2 id="membershipIntroTitle">关于会员</h2><button type="button" data-action="close-membership-intro" aria-label="关闭关于会员">×</button></header><ol>${items.map((item) => `<li>${item}</li>`).join('')}</ol><button class="primary-action" type="button" data-action="close-membership-intro">我已了解</button></section></div>`;
     }
@@ -4828,17 +5257,12 @@
     }
 
     function renderGlobalOverlays() {
-      return `${renderExpiryReminder()}${renderRentalEndedDialog()}${renderNoReasonPolicyDialog()}${renderDeleteOrderConfirm()}${renderRefundProgressDialog()}${renderMembershipIntroDialog()}${renderRentalIntroDialog()}${renderRentalRiskDialog()}${renderNonTargetLaunchGuard()}${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
+      return `${renderExpiryReminder()}${renderRentalEndedDialog()}${renderNoReasonPolicyDialog()}${renderDeleteOrderConfirm()}${renderRefundProgressDialog()}${renderAfterSalesProgressDialog()}${renderMembershipIntroDialog()}${renderRentalIntroDialog()}${renderRentalRiskDialog()}${renderNonTargetLaunchGuard()}${renderLoginMethodDialog()}${renderCredentialPanel()}${state.toast ? `<div class="demo-toast" role="status">${state.toast}</div>` : ''}`;
     }
 
     function renderSteamGuard() {
-      const remaining = guardRemainingSeconds();
-      const ready = state.steamForm.requiresGuard;
-      if (!ready) return '';
-      const hasCode = Boolean(state.guardCode && remaining > 0);
-      const nextAction = state.guardIssued ? 'refresh-guard' : 'request-guard';
-      const nextLabel = state.guardIssued ? '刷新验证码' : '获取验证码';
-      return `<section class="steam-guard ${hasCode ? 'has-code' : ''}" data-guard-expires-at="${state.guardExpiresAt || ''}" aria-label="Steam 令牌验证"><div class="steam-guard-head"><strong>Steam 令牌验证</strong>${hasCode ? '' : `<button type="button" data-action="${nextAction}">${nextLabel}</button>`}</div>${hasCode ? `<div class="steam-guard-code"><code data-guard-code>${state.guardCode}</code><span data-guard-remaining="${remaining}">${remaining}s 后失效</span></div><div class="steam-guard-actions"><button type="button" data-action="copy-guard">复制验证码</button><button type="button" data-action="refresh-guard">刷新验证码</button></div>` : ''}</section>`;
+      if (!state.steamForm.requiresGuard) return '';
+      return '<section class="steam-guard" aria-label="Steam 验证码校验"><div class="steam-guard-head"><strong>Steam 已进入验证码页</strong><button type="button" data-action="request-guard">获取并输入验证码</button></div></section>';
     }
 
     function renderSteamForm() {
@@ -5043,13 +5467,15 @@
           ],
         },
       };
-      const { recent: recentGames, hot: hotGames } = playCatalogs[state.playTab] || playCatalogs.cloud;
+      const showRentalSummary = state.playTab === 'pc';
+      const recentGames = showRentalSummary ? PLAY_PC_GAMES.slice(0, 2) : (playCatalogs[state.playTab] || playCatalogs.cloud).recent;
+      const hotGames = showRentalSummary ? PLAY_PC_GAMES.slice(2) : (playCatalogs[state.playTab] || playCatalogs.cloud).hot;
       return `<section class="landscape-play">
         <div class="landscape-play-toolbar"><div class="landscape-play-tabs" role="tablist">${[['cloud', '云游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']].map(([value, label]) => `<button type="button" role="tab" aria-selected="${state.playTab === value}" class="${state.playTab === value ? 'active' : ''}" data-action="set-tab" data-group="playTab" data-value="${value}">${label}</button>`).join('')}</div><span class="rent-badge">会员游戏库已同步</span></div>
         <div class="landscape-play-grid">
           <section class="landscape-panel landscape-benefit"><div class="landscape-user-line">${realCrop('profile', [482, 302, 156, 158], '盖世玩家头像', '', 'avatar-small')}<div><strong>盖世玩家 0525</strong><span>${state.scenario === 'active-member' ? '畅玩会员生效中' : '登录后同步完整权益'}</span></div></div><h2>你的${tabLabel}权益</h2><div class="benefit-list"><span>极速启动，无需等待下载</span><span>支持云端存档与手柄</span><span>会员库游戏优先畅玩</span></div><button class="primary-action" type="button" data-primary-action="true" data-action="feedback">进入${tabLabel}</button></section>
-          <section class="landscape-panel landscape-recent"><div class="landscape-section-title"><h2>最近常玩</h2><span>继续游戏</span></div><div class="landscape-recent-list">${recentGames.map(([name, crop, asset]) => `<article class="landscape-recent-item">${realCrop(asset, crop, `${name} 最近常玩封面`, '', 'landscape-cover')}<div><strong>${name}</strong><small>上次游玩 23 分钟前</small></div></article>`).join('')}</div></section>
-          <section class="landscape-panel landscape-hot"><div class="landscape-section-title"><h2>人气热游</h2><span>全部游戏</span></div><div class="landscape-hot-wall">${hotGames.map(([name, crop, asset]) => `<article class="landscape-hot-card">${realCrop(asset, crop, `${name} 热游封面`, '', 'landscape-cover')}<strong>${name}</strong></article>`).join('')}</div></section>
+          <section class="landscape-panel landscape-recent"><div class="landscape-section-title"><h2>最近常玩</h2><span>继续游戏</span></div><div class="landscape-recent-list">${showRentalSummary ? recentGames.map((game) => `<article class="landscape-recent-item play-game-card" data-action="navigate" data-screen="detail" data-game-id="${game.id}" data-play-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 最近常玩封面`, '', 'landscape-cover')}<div class="play-game-copy"><strong>${game.name}</strong><span class="play-game-meta">${game.meta}</span>${renderPlayRentalSummary(game.id, game.demand)}</div><button class="small-pill" type="button" data-action="play-card-action" data-play-action="${game.action}">${game.action}</button></article>`).join('') : recentGames.map(([name, crop, asset]) => `<article class="landscape-recent-item">${realCrop(asset, crop, `${name} 最近常玩封面`, '', 'landscape-cover')}<div><strong>${name}</strong><small>上次游玩 23 分钟前</small></div></article>`).join('')}</div></section>
+          <section class="landscape-panel landscape-hot"><div class="landscape-section-title"><h2>人气热游</h2><span>全部游戏</span></div><div class="landscape-hot-wall">${showRentalSummary ? hotGames.map((game) => `<article class="landscape-hot-card play-game-card" data-action="navigate" data-screen="detail" data-game-id="${game.id}" data-play-game-id="${game.id}">${realCrop(game.asset, game.crop, `${game.name} 热游封面`, '', 'landscape-cover')}<div class="play-game-copy"><strong>${game.name}</strong><span class="play-game-meta">${game.meta}</span>${renderPlayRentalSummary(game.id, game.demand)}</div><button class="small-pill" type="button" data-action="play-card-action" data-play-action="${game.action}">${game.action}</button></article>`).join('') : hotGames.map(([name, crop, asset]) => `<article class="landscape-hot-card">${realCrop(asset, crop, `${name} 热游封面`, '', 'landscape-cover')}<strong>${name}</strong></article>`).join('')}</div></section>
         </div>
       </section>`;
     }
@@ -5093,7 +5519,7 @@
       return `<section class="landscape-task-page landscape-checkout mac-derived-checkout" data-layout="landscape-checkout">
         ${renderCheckoutHeader()}
         <div class="mac-checkout-layout">
-          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}${renderServiceBenefits()}</section>
+          <section class="checkout-benefit-column task-scroll-region">${checkoutAlert()}${renderGameContextCard(game, order)}${renderServiceBenefits()}${renderGameNotice(game.id, order.gameNotice, 'checkout-game-notice')}</section>
           <section class="checkout-purchase-column">${renderGamePaymentPanel(game, order)}</section>
         </div>
       </section>`;
@@ -5110,7 +5536,7 @@
           <header class="landscape-member-profilebar"><button class="task-back back-button" type="button" data-action="task-back" aria-label="返回"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>${realCrop('profile', [482, 302, 156, 158], '盖世玩家用户头像', '', 'membership-avatar real-avatar')}<div class="landscape-member-profilecopy"><strong>盖世玩家 0525</strong><span>UID GH20260525</span></div>${renderMembershipStatusStack(membership)}</header>
           ${renderMembershipValue()}
           <div class="landscape-membership-commerce">
-            <section class="landscape-membership-plan-panel"><div class="detail-section-head"><div><h2>选择会员套餐</h2><p>会员权益与会员游戏库在有效期内持续生效</p></div><span>季卡推荐</span></div>${renderMembershipPlans()}</section>
+            <section class="landscape-membership-plan-panel"><div class="detail-section-head"><div><h2>选择会员套餐</h2><p>会员权益与会员游戏库在有效期内持续生效</p></div></div>${renderMembershipPlans()}</section>
             <aside class="landscape-membership-payment-card landscape-membership-pay"><div class="membership-payment-head"><div><span>支付方式</span><small>${validity || (created ? '订单已创建，请完成支付' : `${plan.name}会员 · ${plan.note}`)}</small></div><strong>¥${plan.price}</strong></div>${renderMembershipPayment()}<div class="checkout-bottom-bar membership-checkout-bar"><strong>${purchase.dueText}</strong><button class="primary-action" type="button" data-primary-action="true" data-action="${purchase.action}">立即购买</button></div></aside>
           </div>
           ${renderMembershipPreview()}
@@ -5120,7 +5546,7 @@
     }
 
     function renderLandscapeMemberLibrary() {
-      return `<section class="landscape-task-page landscape-member-library" data-layout="landscape-member-library">${renderTaskHeader('会员游戏库')}<div class="landscape-member-library-layout task-scroll-region"><div><div class="detail-section-head"><h2>本期畅玩</h2><span>${MEMBER_GAMES.length}款精选游戏</span></div>${renderMemberGameGrid()}</div><aside><div class="detail-section-head"><h2>常见问题</h2><span>FAQ</span></div>${renderMemberFaq()}</aside></div></section>`;
+      return `<section class="landscape-task-page landscape-member-library" data-layout="landscape-member-library">${renderTaskHeader('会员游戏库')}<div class="landscape-member-library-layout single-column task-scroll-region"><div>${renderMemberLibrarySearch()}<div class="detail-section-head"><h2>本期畅玩</h2><span>${filteredMemberGames().length}款游戏</span></div>${renderMemberGameGrid(filteredMemberGames())}</div></div></section>`;
     }
 
     function renderLandscapeOrders() {
@@ -5231,6 +5657,12 @@
       if (!target) return;
       const action = target.dataset.action;
       if (target.classList.contains('modal-backdrop') && event.target !== target) return;
+      if (action === 'play-card-action') {
+        event.preventDefault();
+        event.stopPropagation();
+        showToast(`${target.dataset.playAction || '启动'}操作已触发`);
+        return;
+      }
       if (action === 'navigate') {
         if (target.dataset.gameId) setSelectedGame(target.dataset.gameId, { shouldRender: false });
         navigate(target.dataset.screen);
@@ -5295,6 +5727,12 @@
         state.orderSearchOpen = false;
         ensureSelectedOrder();
         renderApp();
+        return;
+      }
+      if (action === 'clear-member-library-search') {
+        state.memberLibrarySearch = '';
+        renderApp();
+        requestAnimationFrame(() => document.querySelector('[data-member-library-search-input]')?.focus());
         return;
       }
       if (action === 'set-search-tab') {
@@ -5427,12 +5865,26 @@
         openAfterSales();
         return;
       }
+      if (action === 'after-sales-detail') {
+        state.afterSalesProgressOpen = true;
+        renderApp();
+        return;
+      }
       if (action === 'select-after-sales-type') {
         setAfterSalesType(target.dataset.afterSalesType);
         return;
       }
       if (action === 'submit-after-sales') {
         submitAfterSales();
+        return;
+      }
+      if (action === 'withdraw-after-sales') {
+        withdrawAfterSales();
+        return;
+      }
+      if (action === 'close-after-sales-progress') {
+        state.afterSalesProgressOpen = false;
+        renderApp();
         return;
       }
       if (action === 'request-replacement') {
@@ -5608,6 +6060,18 @@
         });
         return;
       }
+      if (event.target.matches('[data-member-library-search-input]')) {
+        const value = event.target.value;
+        state.memberLibrarySearch = value;
+        renderApp();
+        requestAnimationFrame(() => {
+          const input = document.querySelector('[data-member-library-search-input]');
+          if (!input) return;
+          input.focus();
+          input.setSelectionRange(value.length, value.length);
+        });
+        return;
+      }
       const field = event.target.dataset.steamField;
       if (field === 'account' || field === 'password') state.steamForm[field] = event.target.value;
       if (field === 'remember') state.steamForm.remember = event.target.checked;
@@ -5639,6 +6103,9 @@
         renderApp();
       } else if (state.refundProgressOrderId) {
         state.refundProgressOrderId = null;
+        renderApp();
+      } else if (state.afterSalesProgressOpen) {
+        state.afterSalesProgressOpen = false;
         renderApp();
       } else if (state.confirmDeleteOrderId) {
         state.confirmDeleteOrderId = null;
@@ -5696,6 +6163,7 @@
       getGameEdition,
       getCheckoutEligibilityContext,
       getGameSaleMode,
+      resolveGameNotice,
       eligibleCheckoutSkus,
       defaultCheckoutSku,
       lowestEligibleRentalSku,
@@ -5725,6 +6193,8 @@
       requestRentalCheckout,
       confirmRentalRisk,
       setRentalRiskDecision,
+      evaluateRefundRisk,
+      setRefundHistory,
       attemptRentalAccountLaunch,
       closeNonTargetLaunchGuard,
       createOrder,
@@ -5734,6 +6204,7 @@
       completeMembershipPayment: payMembershipOrder,
       payOrder,
       confirmGamePayment: payOrder,
+      applyRefundResult,
       setServerNow(value) {
         state.serverNow = Number(value);
         return state.serverNow;
@@ -5765,6 +6236,9 @@
         };
         return { ...state.membershipEntitlement };
       },
+      activeMemberUsage() { return state.activeMemberUsage ? { ...state.activeMemberUsage } : null; },
+      startMemberGameUsage,
+      releaseMemberGameUsage,
       simulateMembershipPayment: applyMembershipPayment,
       ensureScenarioOrder,
       getOrderCollection,
@@ -5781,7 +6255,10 @@
       closeCredentialPanel,
       submitSteamLogin,
       requestGuardCode,
-      getCredentialAccess() { return getSelectedOrder()?.status === 'active'; },
+      getCredentialAccess(now = Date.now()) { return credentialAccessActive(now); },
+      authorizeCredentialAccess,
+      scheduleClipboardClear,
+      clearCopiedCredential,
       refreshGuardCode,
       copyGuardCode,
       expireGuardCode,
@@ -5809,6 +6286,7 @@
       setAfterSalesType,
       setAfterSalesDescription,
       submitAfterSales,
+      withdrawAfterSales,
       setAfterSalesInventory,
       requestReplacement,
       setNetworkAvailable,

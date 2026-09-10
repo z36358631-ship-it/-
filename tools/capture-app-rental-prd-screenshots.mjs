@@ -6,7 +6,9 @@ import { chromium } from 'playwright-core';
 
 const root = path.resolve(import.meta.dirname, '..');
 const demoPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
+const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
 const outputDir = path.join(root, 'public', 'prd', 'app-rental');
+const adminOutputDir = path.join(root, 'public', 'prd', 'app-rental-admin');
 const evidenceDir = path.join(root, 'test-results', 'app-rental-capture');
 const stagingDir = path.join(evidenceDir, 'staging');
 const reportPath = path.join(evidenceDir, 'capture-results.json');
@@ -82,6 +84,16 @@ const shots = Object.freeze([
   { name: '18-membership-success-landscape.png', pageId: 'membership-success', orientation: 'landscape' },
 ]);
 
+const adminShots = Object.freeze([
+  { name: '01-products-android.png', pageId: 'products' },
+  { name: '02-member-library-android.png', pageId: 'member-library' },
+  { name: '03-member-plans-android.png', pageId: 'member-plans' },
+  { name: '04-accounts-android.png', pageId: 'accounts' },
+  { name: '05-orders-after-sales-android.png', pageId: 'admin-orders' },
+  { name: '06-stats-android.png', pageId: 'stats' },
+  { name: '07-audit-all.png', pageId: 'audit' },
+]);
+
 const KNOWN_SECRETS = Object.freeze(['gh_rental_2607', 'G@meHub#8291', '48291', 'rdr2.rental@gamehub.example', 'Rockstar#2607', '739204']);
 const CDKEY_VALUE_PATTERN = /\b(?:[A-Z0-9]{4,6}-){2,4}[A-Z0-9]{4,6}\b/i;
 
@@ -129,6 +141,7 @@ for (const pageId of Object.keys(PAGE_CONTRACTS)) {
 assert(shots.every(({ name, pageId, orientation }) => PAGE_CONTRACTS[pageId]
   && name.endsWith(`-${orientation}.png`)), 'Screenshot name, page ID, or orientation contract is invalid');
 fs.mkdirSync(outputDir, { recursive: true });
+fs.mkdirSync(adminOutputDir, { recursive: true });
 fs.mkdirSync(stagingDir, { recursive: true });
 fs.mkdirSync(landscapeReviewDir, { recursive: true });
 
@@ -160,9 +173,10 @@ function assertNoPageErrors(pageErrors, label) {
 async function withFreshPage(browser, label, run) {
   const { page, pageErrors } = await openFreshPage(browser);
   try {
-    await run(page);
+    const result = await run(page);
     await page.waitForTimeout(0);
     assertNoPageErrors(pageErrors, label);
+    return result;
   } finally {
     await page.close();
   }
@@ -181,7 +195,7 @@ async function runPreflight(browser) {
     await page.locator('#steam-account').fill('preflight-user');
     await page.locator('#steam-password').fill('preflight-secret');
     await page.locator('[data-action="submit-steam-login"]').click();
-    await page.locator('[data-action="request-guard"]').click();
+    await page.locator('.steam-guard [data-action="request-guard"]').click();
     const before = await page.evaluate(() => window.__appRentalDemo.snapshot());
     assert.equal(before.guardCode, '[REDACTED]', 'T0 preflight did not issue a Guard code');
     await page.evaluate(() => window.__appRentalDemo.triggerExpiryMinutes(0));
@@ -200,9 +214,7 @@ async function runPreflight(browser) {
   await withFreshPage(browser, 'preflight-no-inventory', async (page) => {
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
-      window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.setRentalHours(8);
-      window.__appRentalDemo.navigate('checkout');
+      window.__appRentalDemo.openCaptureState('checkout');
       window.__appRentalDemo.setInventoryAvailable(false);
     });
     const result = await page.evaluate(() => ({
@@ -220,9 +232,7 @@ async function runPreflight(browser) {
   await withFreshPage(browser, 'preflight-price-change', async (page) => {
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
-      window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.setRentalHours(8);
-      window.__appRentalDemo.navigate('checkout');
+      window.__appRentalDemo.openCaptureState('checkout');
       window.__appRentalDemo.setPriceChanged(true);
     });
     const result = await page.evaluate(() => ({
@@ -237,24 +247,23 @@ async function runPreflight(browser) {
   passed += 1;
 
   await withFreshPage(browser, 'preflight-account-unavailable', async (page) => {
-    const orderId = await page.evaluate(() => {
-      const order = window.__appRentalDemo.createOrder({ sku: 'rent-2h', amount: 9.9, priceVersion: 'preflight-account-unavailable' });
-      window.__appRentalDemo.payOrder({ accountPrepared: false });
+    const result = await page.evaluate(() => {
+      const order = window.__appRentalDemo.simulateTrialPayment(Date.now());
+      const prepared = window.__appRentalDemo.prepareAccountForLaunch({ orderId: order.id, launchRequestId: 'CAPTURE-NO-ACCOUNT', inventoryAvailable: false });
       window.__appRentalDemo.navigate('orders');
       window.__appRentalDemo.selectOrder(order.id);
-      return order.id;
+      return { orderId: order.id, prepared, snapshot: window.__appRentalDemo.snapshot() };
     });
-    assert(orderId, 'Account-unavailable preflight did not create an order');
-    assert((await page.locator('.portrait-order-detail').innerText()).includes('自动退款'), 'Account-unavailable state is missing automatic-refund copy');
+    assert(result.orderId, 'Account-unavailable preflight did not create an order');
+    assert.equal(result.prepared.reason, 'auto-refunded-no-account', 'First-trial no-account state did not trigger automatic refund');
+    assert.equal(result.snapshot.platformTrialEligibility.eligible, true, 'Automatic no-account refund did not restore first-trial eligibility');
   });
   passed += 1;
 
   await withFreshPage(browser, 'preflight-network-error', async (page) => {
     const orderId = await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('portrait');
-      window.__appRentalDemo.setScenario('not-member-library');
-      window.__appRentalDemo.setRentalHours(8);
-      window.__appRentalDemo.navigate('checkout');
+      window.__appRentalDemo.openCaptureState('checkout');
       window.__appRentalDemo.setNetworkAvailable(false);
       window.__appRentalDemo.queryOrderStatus();
       return window.__appRentalDemo.snapshot().order.id;
@@ -302,9 +311,11 @@ async function setShotState(page, shot) {
       apiMissing: false,
       orientation: snapshot?.orientation ?? demo.snapshot().orientation,
       screen: snapshot?.screen ?? demo.snapshot().screen,
+      playTab: snapshot?.playTab ?? demo.snapshot().playTab,
     };
   }, shot);
   assert(!result.apiMissing, `${shot.name} requires window.__appRentalDemo.openCaptureState(pageId)`);
+  if (shot.pageId === 'play') assert.equal(result.playTab, 'pc', `${shot.name} must open the PC game tab`);
   if (shot.pageId === 'orders') await page.locator('[data-action="toggle-order-search"]').click();
 }
 
@@ -419,15 +430,15 @@ async function verifyShotState(page, shot) {
 
   if (shot.pageId === 'checkout') {
     const checkoutText = await device.innerText();
-    assert.equal(state.selectedSku, 'hourly-8h-standard', `${shot.name} checkout quote must use standard-edition 8-hour SKU`);
-    assert.equal(state.selectedHours, 8, `${shot.name} checkout selected hours mismatch`);
-    assert.equal(state.order?.durationLabel, '8小时', `${shot.name} checkout order duration mismatch`);
-    assert.equal(await page.locator('[data-sale-mode="time-rental"]').count(), 1, `${shot.name} checkout sale mode mismatch`);
+    assert.equal(state.selectedSku, 'permanent', `${shot.name} checkout must default to single-game permanent`);
+    assert.equal(state.order?.durationLabel, '长期有效', `${shot.name} checkout entitlement duration mismatch`);
+    assert.equal(await page.locator('[data-sale-mode="entitlement"]').count(), 1, `${shot.name} checkout sale mode mismatch`);
     assert.equal(await page.locator('[data-checkout-field="edition"], [data-action="select-edition"]').count(), 0, `${shot.name} must not render edition controls`);
     assert.equal((await page.locator('.checkout-product-name').innerText()).trim(), '影之刃零', `${shot.name} product name mismatch`);
     assert.equal((await page.locator('.checkout-product-edition').innerText()).trim(), '标准版', `${shot.name} product edition subtitle mismatch`);
-    assert.equal(await page.locator('[data-checkout-field="rental-plan"] .checkout-option').count(), 3, `${shot.name} rental-plan count mismatch`);
-    assert.equal(await page.locator('[data-hour-shortcut]').count(), 3, `${shot.name} hour shortcut count mismatch`);
+    assert.deepEqual(await page.locator('[data-checkout-field="entitlement"] .checkout-option').allInnerTexts(), ['首次体验 · 2小时', '单游戏永久', '开会员畅玩'], `${shot.name} first-phase entitlement options mismatch`);
+    assert.equal(await page.locator('[data-sku-kind="permanent"].selected').count(), 1, `${shot.name} single-game permanent must be selected by default`);
+    assert.equal(await page.locator('[data-checkout-field="rental-plan"], [data-hour-shortcut]').count(), 0, `${shot.name} must not expose hourly, daily, or weekly rental controls`);
     assert.equal(await page.locator('.service-benefit-item').count(), 5, `${shot.name} must keep the previous five rental benefits`);
     assert.deepEqual(
       await page.locator('.service-benefit-item strong').allInnerTexts(),
@@ -447,10 +458,10 @@ async function verifyShotState(page, shot) {
       });
       assert(firstScreen, `${shot.name} must show dynamic benefits and package selection in the first screen`);
     }
-    for (const label of ['标准版', '租赁套餐', '游戏原价', '订单金额', '支付方式', '需支付', '立即购买']) {
+    for (const label of ['标准版', '权益方案', '首次体验 · 2小时', '单游戏永久', '开会员畅玩', '游戏原价', '订单金额', '支付方式', '需支付', '立即购买']) {
       assert(checkoutText.includes(label), `${shot.name} checkout is missing ${label}`);
     }
-    for (const removed of ['当前报价', '租赁信息', '实付', '协议', '支付有效期', '扫码支付']) {
+    for (const removed of ['按小时', '日租', '周租', '续租', '当前报价', '租赁信息', '实付', '协议', '支付有效期', '扫码支付']) {
       assert(!checkoutText.includes(removed), `${shot.name} checkout still contains removed ${removed}`);
     }
     const paymentGeometry = await page.evaluate(() => {
@@ -465,17 +476,17 @@ async function verifyShotState(page, shot) {
   if (['membership', 'membership-success'].includes(shot.pageId)) {
     assert.deepEqual(
       await page.locator('.membership-benefit-item strong').allInnerTexts(),
-      ['会员库内畅玩', '游戏持续更新', 'PC引擎与手柄适配', '个人云存档同步'],
-      `${shot.name} original membership benefits mismatch`,
+      ['会员库内畅玩', '游戏持续更新', '个人云存档同步'],
+      `${shot.name} membership benefits mismatch`,
     );
     assert((await page.locator('.membership-value-hero').innerText()).includes('一个会员，畅玩本期精选游戏'), `${shot.name} membership value hero mismatch`);
-    assert.equal(await page.locator('.membership-preview .member-game-card').count(), 8, `${shot.name} membership preview count mismatch`);
+    assert.equal(await page.locator('.membership-preview .member-game-card').count(), 4, `${shot.name} membership preview count mismatch`);
     assert.equal(await page.locator('.membership-faq-preview .member-faq-item').count(), 3, `${shot.name} membership FAQ count mismatch`);
     assert.deepEqual(await page.locator('.membership-plan-card .plan-name').allInnerTexts(), ['周卡', '月卡', '季卡'], `${shot.name} membership plan order mismatch`);
-    assert.equal((await page.locator('.membership-plan-card[data-plan="quarterly"] .plan-recommend').innerText()).trim(), '推荐 · 更划算', `${shot.name} quarterly recommendation mismatch`);
-    assert.equal(await page.locator('.membership-plan-card[data-plan="quarterly"].selected').count(), 1, `${shot.name} quarterly plan must be selected by default`);
+    assert.equal(await page.locator('.membership-plan-card .plan-recommend').count(), 0, `${shot.name} must not expose a recommendation badge`);
+    assert.equal(await page.locator('.membership-plan-card[data-plan="weekly"].selected').count(), 1, `${shot.name} weekly plan must be selected by default`);
     assert.equal(await page.locator('.membership-plan-card[data-plan="permanent"], .membership-plan-card[data-plan="annual"]').count(), 0, `${shot.name} must not expose annual or permanent membership plans`);
-    assert.equal((await page.locator('.membership-checkout-bar strong').first().innerText()).trim(), '需支付 ¥299.00', `${shot.name} membership amount summary mismatch`);
+    assert.equal((await page.locator('.membership-checkout-bar strong').first().innerText()).trim(), '需支付 ¥39.00', `${shot.name} membership amount summary mismatch`);
     assert.equal((await page.locator('.membership-checkout-bar [data-primary-action="true"]').first().innerText()).trim(), '立即购买', `${shot.name} membership primary action mismatch`);
     if (shot.orientation === 'landscape') {
       const structure = await page.evaluate(() => {
@@ -493,17 +504,7 @@ async function verifyShotState(page, shot) {
     if (shot.pageId === 'membership-success') {
       assert(/有效期至\s*\d{4}\.\d{2}\.\d{2}/.test(await device.innerText()), `${shot.name} membership validity date is missing after payment`);
     }
-    const cloudBadgeGeometry = await page.evaluate(() => [...document.querySelectorAll('.member-game-card')]
-      .map((card) => {
-        const cover = card.querySelector('.member-game-cover')?.getBoundingClientRect();
-        const badge = card.querySelector('.cloud-save-badge')?.getBoundingClientRect();
-        if (!cover || !badge || badge.width === 0 || badge.height === 0) return null;
-        const overlaps = badge.left < cover.right && badge.right > cover.left && badge.top < cover.bottom && badge.bottom > cover.top;
-        return { overlaps, badgeTop: Math.round(badge.top), coverBottom: Math.round(cover.bottom) };
-      })
-      .filter(Boolean));
-    assert(cloudBadgeGeometry.length > 0, `${shot.name} is missing visible cloud-save badges`);
-    assert(cloudBadgeGeometry.every(({ overlaps, badgeTop, coverBottom }) => !overlaps && badgeTop >= coverBottom - 1), `${shot.name} renders a cloud-save badge on top of a cover: ${JSON.stringify(cloudBadgeGeometry)}`);
+    assert.equal(await page.locator('.member-game-card .cloud-save-badge').count(), 0, `${shot.name} must not expose cloud-save badges`);
   }
 
   if (shot.pageId === 'steam-login') {
@@ -615,6 +616,18 @@ function verifyPng(filePath, shot) {
   return { bytes: buffer.length, width, height, byteDiversity };
 }
 
+function verifyFixedPng(filePath, { width: expectedWidth, height: expectedHeight }) {
+  const buffer = fs.readFileSync(filePath);
+  assert(buffer.subarray(0, 8).equals(PNG_SIGNATURE), `${path.basename(filePath)} is not a PNG`);
+  const width = buffer.readUInt32BE(16);
+  const height = buffer.readUInt32BE(20);
+  assert.equal(width, expectedWidth, `${path.basename(filePath)} PNG width mismatch`);
+  assert.equal(height, expectedHeight, `${path.basename(filePath)} PNG height mismatch`);
+  const byteDiversity = new Set(buffer.subarray(24, Math.min(buffer.length, 64 * 1024))).size;
+  assert(byteDiversity >= 64, `${path.basename(filePath)} PNG appears blank or corrupt (byte diversity ${byteDiversity})`);
+  return { bytes: buffer.length, width, height, byteDiversity };
+}
+
 async function captureShots(browser) {
   const results = [];
   for (const shot of shots) {
@@ -676,11 +689,12 @@ async function captureShots(browser) {
   });
   process.stdout.write(`CAPTURE ${results.length}/${shots.length} PASS\n`);
   process.stdout.write(`CAPTURE_REPORT ${reportPath}\n`);
+  return results;
 }
 
 async function captureLandscapeLoginInfoEvidence(browser) {
   const shot = { name: 'steam-login-info-landscape.png', pageId: 'steam-login', orientation: 'landscape', sensitive: true };
-  await withFreshPage(browser, shot.name, async (page) => {
+  return withFreshPage(browser, shot.name, async (page) => {
     await setShotState(page, shot);
     await page.locator('.steam-help-trigger').click();
     await waitForAssets(page);
@@ -689,12 +703,11 @@ async function captureLandscapeLoginInfoEvidence(browser) {
       const sheet = document.querySelector('.steam-credential-sheet')?.getBoundingClientRect();
       const contentNode = document.querySelector('.steam-credential-sheet .credential-content');
       const content = contentNode?.getBoundingClientRect();
-      const guard = document.querySelector('.steam-credential-sheet .credential-guard')?.getBoundingClientRect();
       const thirdPartyCode = document.querySelector('.steam-credential-sheet .third-party-code')?.getBoundingClientRect();
       const text = document.querySelector('.steam-credential-sheet')?.innerText || '';
       return {
         fullWidth: Boolean(login && sheet && Math.abs(login.left - sheet.left) <= 1 && Math.abs(login.right - sheet.right) <= 1),
-        guardRatio: content && guard ? guard.width / content.width : 0,
+        steamGuardAbsent: !document.querySelector('.steam-credential-sheet .credential-guard'),
         thirdPartyCodeRatio: content && thirdPartyCode ? thirdPartyCode.width / content.width : 0,
         thirdParty: text.includes('Rockstar Games 登录'),
         accountMasked: text.includes('rdr****@gamehub.example'),
@@ -703,7 +716,7 @@ async function captureLandscapeLoginInfoEvidence(browser) {
     });
     assert(
       evidence.fullWidth
-        && evidence.guardRatio >= 0.45 && evidence.guardRatio <= 0.52
+        && evidence.steamGuardAbsent
         && evidence.thirdPartyCodeRatio >= 0.45 && evidence.thirdPartyCodeRatio <= 0.52
         && evidence.thirdParty && evidence.accountMasked && evidence.passwordMasked,
       `Landscape Steam login info evidence mismatch: ${JSON.stringify(evidence)}`,
@@ -712,6 +725,123 @@ async function captureLandscapeLoginInfoEvidence(browser) {
     await page.locator('.device').screenshot({ path: outputPath, animations: 'disabled' });
     const png = verifyPng(outputPath, shot);
     process.stdout.write(`LANDSCAPE_REVIEW ${shot.name} ${png.bytes} bytes PASS\n`);
+    return { ...shot, status: 'pass', ...png, outputPath: path.relative(root, outputPath) };
+  });
+}
+
+async function captureAfterSalesProgressEvidence(browser) {
+  const results = [];
+  for (const orientation of ['portrait', 'landscape']) {
+    const shot = {
+      name: `19-after-sales-progress-${orientation}.png`,
+      pageId: 'after-sales-progress',
+      orientation,
+      sensitive: true,
+    };
+    await withFreshPage(browser, shot.name, async (page) => {
+      await page.evaluate(({ targetOrientation }) => {
+        const demo = window.__appRentalDemo;
+        demo.setScenario('active-rental');
+        demo.setOrientation(targetOrientation);
+        demo.navigate('orders');
+      }, { targetOrientation: orientation });
+      await page.locator('.order-list-card[data-status="active"]').click();
+      await page.getByRole('button', { name: '申请售后', exact: true }).click();
+      await page.locator('[data-after-sales-type="launch"]').click();
+      await page.locator('#after-sales-description').fill('游戏启动后持续闪退，需要协助排查。');
+      await page.evaluate(() => window.__appRentalDemo.submitAfterSales());
+      await page.locator('[data-order-card-action="after-sales-detail"]').click();
+      await waitForAssets(page);
+      const evidence = await page.evaluate(() => {
+        const dialog = document.querySelector('[aria-label="售后进度"]');
+        const steps = [...document.querySelectorAll('.after-sales-progress-dialog .refund-progress-timeline span')];
+        return {
+          dialogVisible: Boolean(dialog),
+          processing: dialog?.textContent.includes('售后处理中') || false,
+          steps: steps.map((node) => ({ text: node.textContent.trim(), className: node.className })),
+          withdraw: dialog?.querySelector('[data-action="withdraw-after-sales"]')?.textContent.trim() || '',
+          text: dialog?.innerText || '',
+        };
+      });
+      assert(evidence.dialogVisible && evidence.processing, `${shot.name} after-sales progress dialog is not visible`);
+      assert.equal(evidence.steps.length, 3, `${shot.name} after-sales progress must contain three stages`);
+      assert(evidence.steps[0].className.includes('done') && evidence.steps[1].className.includes('current'), `${shot.name} after-sales progress stage state mismatch`);
+      assert.equal(evidence.withdraw, '撤销售后', `${shot.name} after-sales progress must allow withdrawal while processing`);
+      for (const secret of KNOWN_SECRETS) assert(!evidence.text.includes(secret), `${shot.name} exposes sensitive value ${secret}`);
+      const outputPath = path.join(outputDir, shot.name);
+      await page.locator('.device').screenshot({ path: outputPath, animations: 'disabled' });
+      const png = verifyPng(outputPath, shot);
+      results.push({ ...shot, status: 'pass', ...png, outputPath: path.relative(root, outputPath) });
+      process.stdout.write(`SUPPLEMENTAL_CAPTURED ${shot.name} ${png.bytes} bytes\n`);
+    });
+  }
+  return results;
+}
+
+async function captureAdminScreenshots(browser) {
+  const page = await browser.newPage({ viewport: { width: 1680, height: 980 }, deviceScaleFactor: 1 });
+  const pageErrors = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') pageErrors.push(`console: ${message.text()}`);
+  });
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  const results = [];
+  try {
+    await page.goto(pathToFileURL(annotationPath).href, { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-annotation-surface="admin"]').click();
+    await page.waitForFunction(() => Boolean(window.__appRentalAdminDemo));
+    await page.evaluate(() => document.fonts.ready.then(() => true));
+    for (const shot of adminShots) {
+      const snapshot = await page.evaluate(({ pageId }) => {
+        const api = window.__appRentalAdminDemo;
+        api.navigate(pageId);
+        if (pageId !== 'audit') api.setClientType('android');
+        return api.snapshot();
+      }, shot);
+      assert.equal(snapshot.page, shot.pageId, `${shot.name} admin page mismatch`);
+      assert.equal(snapshot.clientType, shot.pageId === 'audit' ? 'all' : 'android', `${shot.name} admin client mismatch`);
+      const evidence = await page.evaluate(({ pageId }) => {
+        const rootNode = document.querySelector('#appRentalAdminDemo');
+        const text = rootNode?.innerText || '';
+        return {
+          pageId: rootNode?.querySelector('.admin-page')?.dataset.adminPageId || '',
+          tabCount: rootNode?.querySelectorAll('[data-admin-client-tab]').length || 0,
+          androidActive: Boolean(rootNode?.querySelector('[data-admin-client-tab="android"].active')),
+          readonlyControls: rootNode?.querySelectorAll('.admin-readonly-control').length || 0,
+          forbiddenFirstPhase: pageId === 'products' && /2[—–-]23小时|按小时|日租|周租/.test(text),
+          productFields: pageId !== 'products' || ['标准版', '首次体验2小时 / 单游戏永久', '游戏提示语', '供应商同步 / 内部参考'].every((value) => text.includes(value)),
+          orderFields: pageId !== 'admin-orders' || ['游戏 / 权益', '有效期', '状态 / 售后', '换号', '已同意，待下次启动'].every((value) => text.includes(value)),
+        };
+      }, shot);
+      assert.equal(evidence.pageId, shot.pageId, `${shot.name} admin DOM marker mismatch`);
+      assert.equal(evidence.tabCount, shot.pageId === 'audit' ? 0 : 2, `${shot.name} admin tab count mismatch`);
+      if (shot.pageId !== 'audit') assert(evidence.androidActive, `${shot.name} APP Android tab is not active`);
+      assert(evidence.readonlyControls > 0, `${shot.name} readonly preview controls are missing`);
+      assert.equal(evidence.forbiddenFirstPhase, false, `${shot.name} exposes later-phase time-rental products`);
+      assert(evidence.productFields, `${shot.name} product fields are incomplete`);
+      assert(evidence.orderFields, `${shot.name} order and after-sales fields are incomplete`);
+      const outputPath = path.join(adminOutputDir, shot.name);
+      await page.locator('#appRentalAdminDemo').screenshot({ path: outputPath, animations: 'disabled' });
+      const png = verifyFixedPng(outputPath, { width: 1460, height: 980 });
+      results.push({ ...shot, orientation: 'admin', status: 'pass', ...png, outputPath: path.relative(root, outputPath) });
+      process.stdout.write(`ADMIN_CAPTURED ${shot.name} ${png.bytes} bytes\n`);
+    }
+    assertNoPageErrors(pageErrors, 'admin-screenshots');
+    process.stdout.write(`ADMIN_CAPTURE ${results.length}/${adminShots.length} PASS\n`);
+    return results;
+  } finally {
+    await page.close();
+  }
+}
+
+function appendAdditionalEvidence(additionalEvidence) {
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  writeCaptureReport({
+    ...report,
+    additionalEvidence,
+    evidenceExpected: additionalEvidence.length,
+    evidencePassed: additionalEvidence.filter(({ status }) => status === 'pass').length,
+    evidenceFailed: additionalEvidence.filter(({ status }) => status === 'fail').length,
   });
 }
 
@@ -719,7 +849,13 @@ const browser = await chromium.launch({ executablePath: chromePath, headless: tr
 try {
   await runPreflight(browser);
   await captureShots(browser);
-  await captureLandscapeLoginInfoEvidence(browser);
+  const additionalEvidence = [
+    await captureLandscapeLoginInfoEvidence(browser),
+    ...await captureAfterSalesProgressEvidence(browser),
+    ...await captureAdminScreenshots(browser),
+  ];
+  appendAdditionalEvidence(additionalEvidence);
+  process.stdout.write(`SUPPLEMENTAL_CAPTURE ${additionalEvidence.length}/${additionalEvidence.length} PASS\n`);
 } finally {
   await browser.close();
 }
