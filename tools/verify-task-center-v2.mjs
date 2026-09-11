@@ -67,26 +67,135 @@ async function capture(page, fileName) {
   screenshots.push({ path: path.relative(root, filePath).replaceAll('\\', '/'), width: 390, height: 844, sha256: sha256(filePath) });
 }
 
-async function createFlowImage(context) {
+const expectedFlowStepIds = ['01', '02', '03', '04', '05', '06A', '06B'];
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+async function captureFlowStep(page, id, title, assertState) {
+  if (assertState) await assertState();
+  const png = await page.locator('[data-demo-root]').screenshot({ animations: 'disabled', type: 'png' });
+  return { id, title, src: `data:image/png;base64,${png.toString('base64')}` };
+}
+
+async function createFlowImage(context, pageErrors, failedRequests) {
+  const flowPage = await context.newPage();
+  flowPage.on('pageerror', (error) => pageErrors.push(error.message));
+  flowPage.on('requestfailed', (request) => failedRequests.push(`${request.method()} ${request.url()} ${request.failure()?.errorText ?? ''}`));
+  await flowPage.addInitScript(() => { Date.now = () => 1789090860000; });
+  await flowPage.goto(pathToFileURL(demoPath).href, { waitUntil: 'load' });
+  await flowPage.locator('[data-demo-root]').waitFor({ state: 'visible' });
+
+  const flowSteps = [];
+  await flowPage.evaluate(() => window.demoApi.reset());
+  flowSteps.push(await captureFlowStep(flowPage, '01', '进入任务中心', async () => {
+    assert.equal(await flowPage.locator('[data-view="tasks"].is-active').count(), 1);
+  }));
+
+  await flowPage.locator('[data-task-id="daily-sign"] [data-action="claim"]').click();
+  await flowPage.locator('[data-toast].is-visible').waitFor();
+  flowSteps.push(await captureFlowStep(flowPage, '02', '完成并领取', async () => {
+    const state = await flowPage.evaluate(() => window.demoApi.getState());
+    assert.equal(state.points, 5002);
+    assert.equal(state.tasks.find((task) => task.id === 'daily-sign').status, 'done');
+    assert((await flowPage.locator('[data-toast]').textContent()).includes('已领取 2 盖世积分'));
+  }));
+
+  await flowPage.locator('[data-toast]').evaluate((element) => element.classList.remove('is-visible'));
+  await flowPage.evaluate(() => window.demoApi.showView('points'));
+  flowSteps.push(await captureFlowStep(flowPage, '03', '盖世积分入账', async () => {
+    assert.equal(await flowPage.locator('[data-view="points"].is-active').count(), 1);
+    const firstRecord = await flowPage.locator('[data-point-list] .record-item').first().innerText();
+    assert(firstRecord.includes('每日签到') && firstRecord.includes('+2'));
+  }));
+
+  await flowPage.evaluate(() => { window.demoApi.reset(); window.demoApi.showView('store'); });
+  flowSteps.push(await captureFlowStep(flowPage, '04', '浏览兑换商城', async () => {
+    assert.equal(await flowPage.locator('[data-view="store"].is-active').count(), 1);
+    assert.equal(await flowPage.locator('[data-product-id]').count(), 6);
+  }));
+
+  await flowPage.locator('[data-product-id="cloud-30"] [data-action="open-product"]').click();
+  await flowPage.locator('[data-dialog="redeem"].is-open').waitFor();
+  flowSteps.push(await captureFlowStep(flowPage, '05', '确认兑换', async () => {
+    assert.equal(await flowPage.locator('[data-redeem-cost]').textContent(), '50');
+  }));
+
+  await flowPage.locator('[data-action="confirm-redeem"]').click();
+  await flowPage.locator('[data-toast].is-visible').waitFor();
+  await flowPage.evaluate(() => window.demoApi.showView('orders'));
+  await flowPage.locator('[data-toast]').evaluate((element) => element.classList.remove('is-visible'));
+  flowSteps.push(await captureFlowStep(flowPage, '06A', '虚拟权益发放', async () => {
+    const state = await flowPage.evaluate(() => window.demoApi.getState());
+    assert.equal(state.orders[0].status, 'issued');
+    assert((await flowPage.locator('[data-order-list] .order-card').first().innerText()).includes('已发放'));
+  }));
+
+  await flowPage.evaluate(() => { window.demoApi.reset(); window.demoApi.showView('store'); window.demoApi.openRedeem('x5-lite'); });
+  await flowPage.locator('[data-action="confirm-redeem"]').click();
+  await flowPage.locator('[data-dialog="address"].is-open').waitFor();
+  flowSteps.push(await captureFlowStep(flowPage, '06B', '实物履约', async () => {
+    const state = await flowPage.evaluate(() => window.demoApi.getState());
+    assert.equal(state.orders[0].status, 'address');
+    assert.equal(await flowPage.locator('[data-address-form]').count(), 1);
+  }));
+
+  assert.deepEqual(flowSteps.map(({ id }) => id), expectedFlowStepIds);
+  await flowPage.close();
+
   const page = await context.newPage();
-  await page.setViewportSize({ width: 1900, height: 620 });
+  await page.setViewportSize({ width: 2160, height: 2200 });
+  const stepHtml = flowSteps.map(({ id, title, src }, index) => `<article class="step step-${id.toLowerCase()}" data-flow-step="${id}" style="--order:${index + 1}">
+    <div class="step-heading"><span class="step-id">${id}</span><h2>${escapeHtml(title)}</h2>${id === '06A' ? '<span class="branch-tag virtual">虚拟商品</span>' : id === '06B' ? '<span class="branch-tag physical">实物商品</span>' : ''}</div>
+    <img class="phone" src="${src}" alt="${escapeHtml(title)}实际竖屏界面">
+  </article>`).join('');
   await page.setContent(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><style>
-    *{box-sizing:border-box}body{margin:0;background:#08080b;color:#f7f7f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
-    .flow{width:1900px;height:620px;padding:58px 62px;background:radial-gradient(circle at 9% 8%,rgba(255,122,26,.14),transparent 25%),radial-gradient(circle at 91% 91%,rgba(140,108,255,.12),transparent 28%),#08080b}
-    .kicker{color:#ff9834;font-size:18px;font-weight:700;letter-spacing:.18em}.title{font-size:38px;font-weight:800;margin:12px 0 8px}.sub{color:#94949e;font-size:18px;margin-bottom:52px}
-    .track{display:grid;grid-template-columns:repeat(6,1fr);gap:28px;align-items:center}.step{height:254px;padding:24px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.018));position:relative}.step:not(:last-child):after{content:"";position:absolute;right:-29px;top:126px;width:29px;height:2px;background:linear-gradient(90deg,#ff7a1a,#735d4b)}.step:not(:last-child):before{content:"";position:absolute;right:-29px;top:121px;border-left:8px solid #735d4b;border-top:6px solid transparent;border-bottom:6px solid transparent;z-index:2}
-    .n{width:42px;height:42px;border-radius:14px;background:rgba(255,122,26,.12);color:#ff9c3c;display:grid;place-items:center;font-size:16px;font-weight:800}.step h2{font-size:21px;margin:26px 0 12px}.step p{color:#a5a5ae;font-size:15px;line-height:1.65;margin:0}.branch-wrap{height:254px;display:grid;gap:14px}.branch{height:120px;padding:16px 18px;border-color:rgba(140,108,255,.3);background:linear-gradient(145deg,rgba(140,108,255,.12),rgba(255,255,255,.018));display:grid;grid-template-columns:42px 1fr;column-gap:14px;align-items:center}.branch:after,.branch:before{display:none!important}.branch .n{background:rgba(140,108,255,.15);color:#b29fff}.branch h2{font-size:18px;margin:0 0 6px}.branch p{font-size:13px;line-height:1.45;grid-column:2}.foot{margin-top:38px;padding:16px 20px;border:1px solid rgba(255,122,26,.16);border-radius:16px;background:rgba(255,122,26,.06);color:#bdbdc5;font-size:16px}.foot b{color:#fff}
-  </style><body><main class="flow"><div class="kicker">GAMEHUB PRODUCT FLOW</div><div class="title">任务中心 → 盖世积分 → 兑换商城</div><div class="sub">普通任务奖励与发行人计划盖世币分账，本流程仅消耗盖世积分</div><section class="track">
-    <article class="step"><div class="n">01</div><h2>进入任务中心</h2><p>查看盖世积分余额和每日/成长任务。</p></article>
-    <article class="step"><div class="n">02</div><h2>完成并领取</h2><p>状态由去完成变为可领取，领取后记录流水。</p></article>
-    <article class="step"><div class="n">03</div><h2>盖世积分入账</h2><p>更新积分账余额，不合并盖世币余额。</p></article>
-    <article class="step"><div class="n">04</div><h2>浏览兑换商城</h2><p>选择虚拟权益或实物周边，查看价格和库存。</p></article>
-    <article class="step"><div class="n">05</div><h2>确认兑换</h2><p>校验库存、限兑与积分余额，成功后原子扣减。</p></article>
-    <div class="branch-wrap"><article class="step branch"><div class="n">06A</div><div><h2>虚拟权益发放</h2><p>直接发放到账号；失败时不扣分或原路回滚。</p></div></article><article class="step branch"><div class="n">06B</div><div><h2>实物履约</h2><p>补地址、后台发货，用户查看物流状态。</p></div></article></div>
-  </section><div class="foot"><b>规则：</b>盖世积分不可兑换京东卡；只有参与发行任务并结算所得的盖世币才可在发行人计划兑换商城中兑换京东电子卡。</div></main></body></html>`);
+    *{box-sizing:border-box}html,body{margin:0;width:2160px;height:2200px;overflow:hidden}body{background:#08080b;color:#f7f7f8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    .flow{position:relative;width:2160px;height:2200px;padding:76px 96px 62px;background:radial-gradient(circle at 8% 5%,rgba(255,122,26,.15),transparent 23%),radial-gradient(circle at 91% 91%,rgba(126,96,255,.13),transparent 26%),#08080b;overflow:hidden}
+    .kicker{color:#ff9834;font-size:22px;font-weight:800;letter-spacing:.17em}.title{font-size:48px;font-weight:850;margin:12px 0 10px;letter-spacing:-.02em}.sub{color:#aaaab4;font-size:22px;margin:0}.grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,820px);column-gap:64px;row-gap:188px;margin-top:54px}.step{position:relative;min-width:0}.step-01{grid-column:1;grid-row:1}.step-02{grid-column:2;grid-row:1}.step-03{grid-column:3;grid-row:1}.step-04{grid-column:4;grid-row:1}.step-05{grid-column:1;grid-row:2}.step-06a{grid-column:2;grid-row:2}.step-06b{grid-column:3;grid-row:2}
+    .step-heading{height:76px;display:flex;align-items:center;gap:13px;position:relative}.step-id{min-width:58px;height:42px;padding:0 12px;border-radius:14px;display:grid;place-items:center;color:#ff9b3e;background:rgba(255,122,26,.13);border:1px solid rgba(255,151,62,.28);font-size:18px;font-weight:850}.step h2{font-size:25px;line-height:1.2;margin:0;white-space:nowrap}.branch-tag{position:absolute;right:0;top:21px;padding:5px 10px;border-radius:999px;font-size:15px;font-weight:700}.branch-tag.virtual{color:#b9a8ff;background:rgba(135,102,255,.14);border:1px solid rgba(135,102,255,.28)}.branch-tag.physical{color:#78d8ff;background:rgba(43,169,255,.13);border:1px solid rgba(43,169,255,.26)}
+    .phone{display:block;width:352px;height:auto;max-height:744px;object-fit:contain;margin:0 auto;border:1px solid rgba(255,255,255,.13);border-radius:31px;background:#111114;box-shadow:0 28px 70px rgba(0,0,0,.42)}
+    .connectors{position:absolute;z-index:1;inset:0;width:2160px;height:2200px;pointer-events:none;overflow:visible}.edge{fill:none;stroke:#ff8d32;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(255,122,26,.32));marker-end:url(#arrow)}.edge.branch{stroke:#9a7dff}.edge.physical{stroke:#45bfff}.edge-label{font-size:18px;font-weight:750;fill:#bdbdc6;paint-order:stroke;stroke:#08080b;stroke-width:8px;stroke-linejoin:round}
+    .foot{position:absolute;z-index:2;left:96px;right:96px;bottom:48px;padding:18px 24px;border:1px solid rgba(255,122,26,.19);border-radius:18px;background:rgba(255,122,26,.07);color:#bebec7;font-size:20px;line-height:1.5}.foot b{color:#fff}
+  </style><body><main class="flow"><div class="kicker">GAMEHUB PRODUCT FLOW</div><div class="title">任务中心 → 盖世积分 → 兑换商城</div><p class="sub">每一步均为当前可操作 Demo 的实际竖屏界面</p><section class="grid">${stepHtml}</section>
+    <svg class="connectors" aria-hidden="true"><defs><marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1 1 11 6 1 11Z" fill="context-stroke"/></marker></defs><path class="edge" data-edge="01-02"/><path class="edge" data-edge="02-03"/><path class="edge" data-edge="03-04"/><path class="edge" data-edge="04-05"/><path class="edge branch" data-edge="05-06A"/><path class="edge physical" data-edge="05-06B"/><text class="edge-label" data-label="wrap">继续兑换</text><text class="edge-label" data-label="branch">按商品类型分流</text></svg>
+    <div class="foot"><b>资产边界：</b>本流程只使用盖世积分，不展示盖世币余额或京东卡兑换；确认兑换后由已选 SKU 类型决定虚拟权益或实物履约。</div></main></body></html>`);
+  await page.waitForFunction(() => [...document.images].every((image) => image.complete && image.naturalWidth > 0));
+  await page.evaluate(() => {
+    const phone = (id) => document.querySelector(`[data-flow-step="${id}"] .phone`).getBoundingClientRect();
+    const setPath = (edge, d) => document.querySelector(`[data-edge="${edge}"]`).setAttribute('d', d);
+    const r1 = phone('01'); const r2 = phone('02'); const r3 = phone('03'); const r4 = phone('04');
+    const r5 = phone('05'); const r6a = phone('06A'); const r6b = phone('06B');
+    for (const [edge, from, to] of [['01-02', r1, r2], ['02-03', r2, r3], ['03-04', r3, r4]]) {
+      const y = from.top + from.height * .48;
+      setPath(edge, `M ${from.right + 10} ${y} L ${to.left - 14} ${y}`);
+    }
+    const wrapStartX = r4.left + r4.width / 2;
+    const wrapEndX = r5.left + r5.width / 2;
+    const wrapMidY = (r4.bottom + r5.top) / 2;
+    setPath('04-05', `M ${wrapStartX} ${r4.bottom + 10} C ${wrapStartX} ${wrapMidY}, ${wrapEndX} ${wrapMidY}, ${wrapEndX} ${r5.top - 14}`);
+    const branchY = r5.top + r5.height * .49;
+    setPath('05-06A', `M ${r5.right + 10} ${branchY} L ${r6a.left - 14} ${branchY}`);
+    const routeY = r5.top - 94;
+    const firstGapX = (r5.right + r6a.left) / 2;
+    const secondGapX = (r6a.right + r6b.left) / 2;
+    setPath('05-06B', `M ${r5.right + 10} ${branchY + 28} L ${firstGapX} ${branchY + 28} L ${firstGapX} ${routeY} L ${secondGapX} ${routeY} L ${secondGapX} ${branchY + 28} L ${r6b.left - 14} ${branchY + 28}`);
+    const wrapLabel = document.querySelector('[data-label="wrap"]');
+    wrapLabel.setAttribute('x', String((wrapStartX + wrapEndX) / 2 - 54));
+    wrapLabel.setAttribute('y', String(wrapMidY - 14));
+    const branchLabel = document.querySelector('[data-label="branch"]');
+    branchLabel.setAttribute('x', String((firstGapX + secondGapX) / 2));
+    branchLabel.setAttribute('y', String(routeY - 16));
+    branchLabel.setAttribute('text-anchor', 'middle');
+  });
   const filePath = path.join(outputDir, '00-product-flow.png');
   await page.locator('.flow').screenshot({ path: filePath, animations: 'disabled' });
-  screenshots.push({ path: path.relative(root, filePath).replaceAll('\\', '/'), width: 1900, height: 620, sha256: sha256(filePath) });
+  screenshots.push({ path: path.relative(root, filePath).replaceAll('\\', '/'), width: 2160, height: 2200, sha256: sha256(filePath) });
   await page.close();
 }
 
@@ -175,7 +284,7 @@ try {
   }
   await adminPage.close();
 
-  await createFlowImage(context);
+  await createFlowImage(context, pageErrors, failedRequests);
   assert.deepEqual(pageErrors, [], `Page errors: ${pageErrors.join('; ')}`);
   assert.deepEqual(failedRequests, [], `Failed requests: ${failedRequests.join('; ')}`);
   await context.close();
@@ -208,7 +317,7 @@ if (fs.existsSync(prdPath)) {
 
 const verification = {
   schemaVersion: 1,
-  verifiedOn: '2026-09-10',
+  verifiedOn: '2026-09-11',
   demo: 'demos/任务中心demo.html',
   adminDemo: 'demos/任务中心后台demo.html',
   browser: executablePath,
@@ -223,7 +332,9 @@ const verification = {
     physicalFulfillment: 'pass',
     failedRedemptionRollback: 'pass',
     pointCoinSeparationRules: 'pass',
-    adminTerminology: 'pass'
+    adminTerminology: 'pass',
+    realScreenProductFlow: 'pass',
+    productFlowLayout: '4+3'
   },
   screenshots: expectedImages.map((name) => {
     const filePath = path.join(outputDir, name);
