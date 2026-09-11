@@ -46,6 +46,8 @@ for (const selector of requiredSelectors) {
 assert(!/<script[^>]+src=/i.test(demo), 'C demo must not load external scripts');
 assert(!/<img\b[^>]*\bsrc=/i.test(demo), 'C demo must not depend on image resources');
 assert(!/https?:\/\//i.test(demo), 'C demo must be completely offline');
+assert(!demo.includes('盖世积分与发行人计划的盖世币分开计算，不可用于兑换京东卡'), '任务中心仍展示已取消的首屏资产提示');
+assert(!demo.includes('仅可兑换本商城商品，不与盖世币合并'), '兑换商城仍展示已取消的资产对比提示');
 assert(!/单次奖励\(盖世币\)|新增盖世币任务|消耗的盖世币数量|消耗:\s*<[^>]+>\$\{o\.cost\}<\/span>\s*盖世币/.test(admin), '后台仍存在任务中心盖世币口径');
 assert(admin.includes('单次奖励（盖世积分）'), '后台未显示盖世积分奖励字段');
 assert(admin.includes('待填地址') && admin.includes('已发货') && admin.includes('物流信息'), '后台实物履约能力不完整');
