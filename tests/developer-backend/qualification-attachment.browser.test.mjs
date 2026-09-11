@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
 const root = process.cwd();
-const demoFile = path.join(root, 'demos', '开发者后台一期', '01-开发者平台与资料demo.html');
+const demoFile = path.join(root, 'demos', '开发者后台一期', '发行平台运营后台demo.html');
 const assetDir = path.join(root, 'public', 'prd', 'genuine-game-distribution-phase1', 'developer-backend-final', '01');
 const chrome = [
   process.env.CHROME_PATH,

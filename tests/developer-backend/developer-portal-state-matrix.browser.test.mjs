@@ -9,16 +9,18 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
 const root = process.cwd();
 const demoDir = path.join(root, 'demos', '开发者后台一期');
-const entryFiles = [
+const developerEntryFiles = [
+  '开发者平台demo.html',
   '01-开发者平台与资料demo.html',
   '02-游戏创建与发行demo.html',
+  '02-CDKEY商品与供给demo.html',
 ];
 const chrome = [
   process.env.CHROME_PATH,
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
 ].find(file => file && fs.existsSync(file));
-const unifiedRoutes = ['P01-01', 'P01-03', 'P01-08', 'P01-09', 'P01-10', 'P02-01'];
+const developerRoutes = ['P01-01', 'P01-03', 'P02-01'];
 
 let browser;
 
@@ -28,7 +30,7 @@ const demoUrl = (entryFile, hash) => {
   return url.href;
 };
 
-const seedAccount = async (page, status, accountKey = `matrix:${status}`, entryFile = entryFiles[1]) => {
+const seedAccount = async (page, status, accountKey = `matrix:${status}`, entryFile = developerEntryFiles[0]) => {
   await page.goto(demoUrl(entryFile, '/P01-01'), { waitUntil: 'load' });
   await page.evaluate(({ key, qualificationStatus }) => {
     localStorage.clear();
@@ -113,15 +115,15 @@ before(async () => {
 
 after(async () => { await browser?.close(); });
 
-test('01 与 02 两个正式入口公开相同路由并兼容统一登录门禁', async () => {
+test('开发者正式入口和三个旧文件兼容相同登录门禁与开发者路由', async () => {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   try {
-    for (const entryFile of entryFiles) {
+    for (const entryFile of developerEntryFiles) {
       await page.goto(demoUrl(entryFile, '/P02-01'), { waitUntil: 'load' });
       await page.waitForURL(/#\/P01-01$/);
       const routes = await page.locator('#portal-routes').evaluate(node => JSON.parse(node.value).map(route => route.id));
-      assert.deepEqual(routes, unifiedRoutes);
+      assert.deepEqual(routes, developerRoutes);
       assert.equal(await page.locator('[data-publisher-workspace]').count(), 0);
 
       await seedAccount(page, 'approved', `entry:${entryFile}`, entryFile);

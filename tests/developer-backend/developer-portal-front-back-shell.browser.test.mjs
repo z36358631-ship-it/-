@@ -6,7 +6,8 @@ import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 
 const { chromium } = createRequire(import.meta.url)('playwright-core');
-const demoFile = path.resolve('demos/开发者后台一期/02-游戏创建与发行demo.html');
+const developerDemoFile = path.resolve('demos/开发者后台一期/开发者平台demo.html');
+const operationsDemoFile = path.resolve('demos/开发者后台一期/发行平台运营后台demo.html');
 const chrome = [
   process.env.CHROME_PATH,
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
@@ -15,7 +16,7 @@ const chrome = [
 
 let browser;
 
-const demoUrl = route => {
+const demoUrl = (route, demoFile = developerDemoFile) => {
   const url = pathToFileURL(demoFile);
   url.hash = route;
   return url.href;
@@ -69,26 +70,31 @@ test('首次登录先选择入驻方式，完成注册后进入 02 并使用原�
   } finally { await context.close(); }
 });
 
-test('同一 Demo 可在 02 开发者前台和 01 运营后台之间快速切换', async () => {
+test('开发者平台与运营后台路由隔离且均不展示 Demo 切换入口', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
   try {
     await seedAccount(page, 'approved', 'shell:switch');
-    assert.equal(await page.locator('.top-bar [data-portal-action="switch-portal-side"]').count(), 0);
-    const toOperations = page.locator('.portal-stage > .portal-demo-switch');
-    assert.equal(await toOperations.getAttribute('aria-label'), 'Demo 工具：切换运营后台');
-    await toOperations.click();
+    assert.deepEqual(
+      await page.locator('#portal-routes').evaluate(node => JSON.parse(node.value).map(route => route.id)),
+      ['P01-01', 'P01-03', 'P02-01'],
+    );
+    assert.equal(await page.locator('[data-portal-action="switch-portal-side"]').count(), 0);
+    await page.goto(demoUrl('/P01-08'), { waitUntil: 'load' });
+    await page.waitForURL(/#\/P02-01$/);
+    await page.locator('.publisher-console-sidebar').waitFor();
+
+    await page.goto(demoUrl('/P02-01', operationsDemoFile), { waitUntil: 'load' });
     await page.waitForURL(/#\/P01-08$/);
     await page.locator('.product-frame[data-role="operations"]').waitFor();
     assert.equal(await page.locator('.product-frame[data-role="operations"]').isVisible(), true);
+    assert.deepEqual(
+      await page.locator('#portal-routes').evaluate(node => JSON.parse(node.value).map(route => route.id)),
+      ['P01-08', 'P01-09', 'P01-10'],
+    );
     assert.deepEqual(await page.locator('.side-nav--operations .nav-item').allTextContents(), ['企业认证内容配置', '帮助中心', '发行审核']);
     assert.deepEqual(await page.locator('[data-game-review-tab]').allTextContents(), ['企业认证审核', '游戏发布审核', '游戏资质审核']);
-    const toDeveloper = page.locator('.portal-stage > .portal-demo-switch');
-    assert.equal(await toDeveloper.getAttribute('aria-label'), 'Demo 工具：切换开发者前台');
-    await toDeveloper.click();
-    await page.waitForURL(/#\/P02-01$/);
-    await page.locator('.publisher-console-sidebar').waitFor();
-    assert.equal(await page.locator('.publisher-console-sidebar').isVisible(), true);
+    assert.equal(await page.locator('[data-portal-action="switch-portal-side"]').count(), 0);
   } finally { await context.close(); }
 });
 

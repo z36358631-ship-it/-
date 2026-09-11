@@ -118,7 +118,7 @@ const routesForModule = module => module.routeIds
 let aliasCount = 0;
 for (const module of targetModules) {
   const moduleRoutes = routesForModule(module);
-  const html = documentHtml({ title: `${module.name}｜盖世游戏开发者平台`, module, pageRoutes: moduleRoutes });
+  const html = documentHtml({ title: `${module.name}｜盖世游戏`, module, pageRoutes: moduleRoutes });
   fs.writeFileSync(path.join(demoDir, module.output), html, 'utf8');
   for (const alias of module.aliases || []) {
     fs.writeFileSync(path.join(demoDir, alias), html, 'utf8');

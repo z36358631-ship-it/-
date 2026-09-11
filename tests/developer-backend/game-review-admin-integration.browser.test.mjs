@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 
 const { chromium } = createRequire(import.meta.url)('playwright-core');
 const demoDir = path.resolve('demos/开发者后台一期');
-const demoFile = path.join(demoDir, '01-开发者平台与资料demo.html');
+const demoFile = path.join(demoDir, '发行平台运营后台demo.html');
 const demoUrl = pathToFileURL(demoFile).href + '#/P01-08';
 let browser;
 

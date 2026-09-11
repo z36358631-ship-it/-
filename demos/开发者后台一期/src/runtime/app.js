@@ -354,6 +354,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const query = new URLSearchParams(queryPart);
     const requested = routes.find(item => item.id === routePart);
     let route = requested || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
+    if (!requested && route?.id) {
+      history.replaceState(null, '', `${location.href.split('#')[0]}#/${route.id}`);
+    }
     const previewStatus = requested?.id === 'P01-03' && ['pending', 'approved', 'rejected', 'delisted'].includes(query.get('preview')) ? query.get('preview') : '';
     if (previewStatus) {
       const previewSubmittedAt = '2026-09-02 10:30';
