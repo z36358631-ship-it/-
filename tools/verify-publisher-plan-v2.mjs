@@ -101,6 +101,9 @@ const assertInlineScriptMatches = (html, js, sourceName, label) => {
   assert(!html.includes(`<script src="${sourceName}"></script>`), `${label} still loads external script`);
   const start = html.indexOf(openingTag);
   assert.notEqual(start, -1, `${label} missing inline script marker`);
+  const secondStart = html.indexOf(openingTag, start + openingTag.length);
+  assert.equal(secondStart, -1, `${label} contains duplicate inline script marker`);
+  assert(!/<\/script/i.test(js), `${label} maintenance source contains an HTML script closing sequence`);
   const contentStart = start + openingTag.length;
   const end = html.indexOf('</script>', contentStart);
   assert.notEqual(end, -1, `${label} missing inline script closing tag`);
