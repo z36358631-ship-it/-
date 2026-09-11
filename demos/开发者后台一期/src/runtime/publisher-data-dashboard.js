@@ -4,7 +4,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const clone = value => JSON.parse(JSON.stringify(value));
   const settlementCurrency = 'USD';
   const currencyDigits = Object.freeze({ USD:2, EUR:2, GBP:2, CAD:2, CNY:2, JPY:0, KRW:0 });
-  const defaultFilters = Object.freeze({ range: '30d', game: 'all', product: 'all', fulfillment: 'all', region: 'all', platform: 'all', status: 'all', keyword: '' });
+  const defaultFilters = Object.freeze({ range:'30d', game:'all', product:'all', source:'all', fulfillment:'all', region:'all', platform:'all', status:'all', keyword:'' });
   const statusOrder = ['completed', 'free', 'refund_pending', 'refunded', 'chargeback_open', 'chargeback_won', 'chargeback_lost', 'closed'];
   const orders = Object.freeze([
     { id:'RCN-202609-A8F2K7', orderMask:'ORD-****-1842', date:'2026-09-10 18:42', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-BASE-001', product:'星海远征', productEn:'Stellar Voyage', productType:'base', fulfillment:'account_entitlement', region:'global', country:'日本', countryEn:'Japan', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'JPY', amountMinor:1980, settlementCurrency, convertedMinor:1320, fxRateText:'JPY/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:53, channelFeeMinor:40, platformShareMinor:198, adjustmentMinor:0, settlementMinor:1029, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'completed', delivered:true, delivery:'账号权益已生效', deliveryEn:'Account entitlement active' },
@@ -22,6 +22,36 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     { id:'STMT-2026-06-V1', period:'2026-06', currency:'USD', amountMinor:1548260, outstandingMinor:1548260, status:'locked', paymentStatus:'awaiting_invoice', updatedAt:'2026-09-10 09:30' },
     { id:'STMT-2026-05-V1', period:'2026-05', currency:'USD', amountMinor:1384090, outstandingMinor:0, status:'locked', paymentStatus:'completed', updatedAt:'2026-06-28 16:20' },
   ]);
+  const orderSources = Object.freeze({
+    'RCN-202609-A8F2K7':'home', 'RCN-202609-C4N8M2':'search', 'RCN-202609-H7Q3P5':'campaign',
+    'RCN-202609-Q8F4D1':'discovery', 'RCN-202609-L5V9R4':'direct', 'RCN-202609-T2D6X8':'ranking',
+    'RCN-202609-V3J7S9':'home', 'RCN-202609-W9B4J3':'search', 'RCN-202609-Z6K1E4':'external', 'RCN-202608-M6K2S7':'other',
+  });
+  const conversionStageSeed = Object.freeze([
+    { key:'impression', uv:50000, previousUv:46200 },
+    { key:'card_click', uv:15000, previousUv:13420 },
+    { key:'detail_view', uv:12500, previousUv:11280 },
+    { key:'cta_click', uv:3750, previousUv:3260 },
+    { key:'order_create', uv:3180, previousUv:2790 },
+    { key:'acquisition_success', uv:2862, previousUv:2488 },
+    { key:'fulfillment_success', uv:2776, previousUv:2416 },
+  ]);
+  const conversionSourceSeed = Object.freeze([
+    { key:'home', impression:18200, click:6010, detail:5000, acquired:1120 },
+    { key:'discovery', impression:9200, click:2480, detail:2010, acquired:420 },
+    { key:'ranking', impression:7100, click:2050, detail:1670, acquired:335 },
+    { key:'search', impression:6800, click:2750, detail:2240, acquired:560 },
+    { key:'campaign', impression:5100, click:1320, detail:1080, acquired:245 },
+    { key:'external', impression:3600, click:390, detail:320, acquired:60 },
+    { key:'direct', impression:null, click:null, detail:160, acquired:120 },
+    { key:'other', impression:0, click:0, detail:20, acquired:2 },
+  ]);
+  const conversionTrendSeed = Object.freeze({
+    impression:[6100,6400,6700,6900,7300,7900,8700],
+    detail_view:[1500,1600,1650,1700,1800,2050,2200],
+    cta_click:[420,450,500,510,560,620,690],
+    acquisition_success:[310,340,360,390,420,485,557],
+  });
 
   const copy = (language = 'zh') => {
     const en = language === 'en';
@@ -30,7 +60,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       description: en ? 'Review buyout game and permanent DLC sales, risk and settlement estimates.' : '查看买断游戏与永久 DLC 的销量、逆向交易、预估收入和待结算数据。',
       readonly: en ? 'Read-only analytics' : '只读经营数据', updated: en ? 'Updated to Sep 10, 2026 23:59' : '数据更新至 2026-09-10 23:59',
       tabs: { overview:en ? 'Overview' : '经营概览', orders:en ? 'Order details' : '订单明细', revenue:en ? 'Revenue & settlement' : '收入与结算' },
-      game: en ? 'Game' : '游戏', product: en ? 'Product type' : '商品类型', fulfillment: en ? 'Fulfillment' : '履约方式', region: en ? 'Region' : '地区', platform: en ? 'Platform' : '平台', status: en ? 'Status' : '订单状态', range: en ? 'Time' : '时间', keyword: en ? 'Order ID' : '订单编号',
+      game: en ? 'Game' : '游戏', product: en ? 'Product type' : '商品类型', source: en ? 'Source' : '来源位置', fulfillment: en ? 'Fulfillment' : '履约方式', region: en ? 'Region' : '地区', platform: en ? 'Platform' : '平台', status: en ? 'Status' : '订单状态', range: en ? 'Time' : '时间', keyword: en ? 'Order ID' : '订单编号',
       all: en ? 'All' : '全部', base: en ? 'Base game' : '游戏本体', dlc: en ? 'Permanent DLC' : '永久 DLC', direct: en ? 'Direct purchase' : '直接购买', cdkey:'CDKEY', global: en ? 'Global (excl. Mainland China)' : '全球（不含中国大陆）', domestic: en ? 'Mainland China' : '中国大陆',
       reset: en ? 'Reset' : '重置', scope: en ? 'Metric definitions' : '数据口径', searchPlaceholder: en ? 'Search reconciliation or masked order ID' : '搜索对账流水号或脱敏订单号',
       noData: en ? 'No data for the current filters' : '当前筛选条件下暂无数据', noDataHint: en ? 'Reset filters to view available records.' : '可重置筛选条件查看已有记录。',
@@ -41,7 +71,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const digits = currencyDigits[currency] ?? 2;
     return new Intl.NumberFormat('zh-CN', { style:'currency', currency, minimumFractionDigits:digits, maximumFractionDigits:digits }).format(Number(minor || 0) / (10 ** digits));
   };
-  const createState = seed => ({ tab:'overview', filters:{ ...defaultFilters }, selectedOrder:'', scopeOpen:false, scenario:'ready', ...(seed && typeof seed === 'object' ? clone(seed) : {}), filters:{ ...defaultFilters, ...(seed?.filters || {}) } });
+  const createState = seed => ({ tab:'overview', trendMetric:'impression', filters:{ ...defaultFilters }, selectedOrder:'', scopeOpen:false, scenario:'ready', ...(seed && typeof seed === 'object' ? clone(seed) : {}), filters:{ ...defaultFilters, ...(seed?.filters || {}) } });
   const rangeStart = range => ({ '7d':'2026-09-05', '30d':'2026-08-13', '90d':'2026-06-13', month:'2026-09-01' }[range] || '2026-08-13');
   const filteredOrders = state => {
     const filters = { ...defaultFilters, ...(state?.filters || {}) };
@@ -49,6 +79,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return orders.filter(item => item.date.slice(0, 10) >= rangeStart(filters.range)
       && (filters.game === 'all' || item.game === filters.game)
       && (filters.product === 'all' || item.productType === filters.product)
+      && (filters.source === 'all' || orderSources[item.id] === filters.source)
       && (filters.fulfillment === 'all' || item.fulfillment === filters.fulfillment)
       && (filters.region === 'all' || item.region === filters.region)
       && (filters.platform === 'all' || item.platform === filters.platform)
@@ -72,6 +103,66 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const pendingByCurrency = statements.filter(item => item.status === 'locked' && !['completed','cancelled','carried'].includes(item.paymentStatus)).reduce((result, item) => ({ ...result, [item.currency]:(result[item.currency] || 0) + item.outstandingMinor }), {});
     return { paid:paidRows.length, free:freeRows.length, refundCount:refundedRows.length, refundMinor, chargebackOpen:rows.filter(item => item.status === 'chargeback_open').length, chargebackRiskMinor, chargebackLost:lostRows.length, chargebackLossMinor, netSales:paidRows.length - refundedRows.length - lostRows.length, grossMinor, taxMinor, channelFeeMinor, platformShareMinor, adjustmentMinor, estimatedMinor, settlementCurrency, fxVersion:'FX-20260910-01', pendingByCurrency };
   };
+  const safeRate = (numerator, denominator) => Number.isFinite(numerator) && Number.isFinite(denominator) && denominator > 0 ? numerator / denominator : null;
+  const conversionScale = filters => {
+    const range = { '7d':0.24, '30d':1, '90d':2.6, month:0.37 }[filters.range] || 1;
+    const product = { all:1, base:0.68, dlc:0.32 }[filters.product] || 1;
+    const region = { all:1, global:0.82, domestic:0.18 }[filters.region] || 1;
+    const platform = { all:1, Android:0.61, Mac:0.39 }[filters.platform] || 1;
+    return range * product * region * platform;
+  };
+  const scaleValue = (value, scale) => value === null ? null : Math.round(value * scale);
+  const sourceRows = filters => {
+    const scale = conversionScale(filters);
+    return conversionSourceSeed
+      .filter(item => filters.source === 'all' || item.key === filters.source)
+      .map(item => ({
+        ...item,
+        impression:scaleValue(item.impression,scale),
+        click:scaleValue(item.click,scale),
+        detail:scaleValue(item.detail,scale),
+        acquired:scaleValue(item.acquired,scale),
+      }));
+  };
+  const sumMetric = (rows, key) => {
+    const values = rows.map(item => item[key]).filter(Number.isFinite);
+    return values.length ? values.reduce((sum,value) => sum + value,0) : null;
+  };
+  const conversionSnapshot = state => {
+    const filters = { ...defaultFilters, ...(state?.filters || {}) };
+    const scale = conversionScale(filters);
+    const sources = sourceRows(filters);
+    let stages;
+    if (filters.source === 'all') {
+      stages = conversionStageSeed.map(item => ({ ...item, uv:scaleValue(item.uv,scale), previousUv:scaleValue(item.previousUv,scale) }));
+    } else {
+      const impression = sumMetric(sources,'impression');
+      const click = sumMetric(sources,'click');
+      const detail = sumMetric(sources,'detail') || 0;
+      const acquired = sumMetric(sources,'acquired') || 0;
+      const cta = Math.max(acquired,Math.round(detail * 0.3));
+      const created = Math.max(acquired,Math.round(cta * 0.848));
+      const fulfilled = Math.round(acquired * 0.97);
+      const values = [impression,click,detail,cta,created,acquired,fulfilled];
+      stages = conversionStageSeed.map((item,index) => ({ ...item, uv:values[index], previousUv:values[index] === null ? null : Math.round(values[index] * 0.9) }));
+    }
+    const stageMap = Object.fromEntries(stages.map(item => [item.key,item.uv]));
+    const trendBaseTotals = { impression:50000, detail_view:12500, cta_click:3750, acquisition_success:2862 };
+    const trends = Object.fromEntries(Object.entries(conversionTrendSeed).map(([key,values]) => {
+      const factor = safeRate(stageMap[key],trendBaseTotals[key]) ?? 0;
+      return [key,values.map(value => Math.round(value * factor))];
+    }));
+    return {
+      stages:stages.map((item,index) => ({
+        ...item,
+        stepRate:index ? safeRate(item.uv,stages[index - 1].uv) : null,
+        changeRate:safeRate(item.uv - item.previousUv,item.previousUv),
+      })),
+      sources,
+      trends,
+      overallRate:safeRate(stageMap.acquisition_success,stageMap.impression),
+    };
+  };
   const pendingText = metric => Object.entries(metric.pendingByCurrency).map(([currency, minor]) => money(minor,currency)).join(' / ') || '--';
   const statusMeta = (status, language = 'zh') => {
     const labels = {
@@ -87,24 +178,49 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   const renderFilters = (state, language, options = {}) => {
     const c = copy(language);
-    const en = language === 'en';
     const all = c.all;
     const statusOptions = [['all',all], ...statusOrder.map(value => [value, statusMeta(value, language)[0]])];
+    const transactionFilters = state.tab === 'overview' ? '' : `${filterSelect('fulfillment',c.fulfillment,[['all',all],['account_entitlement',c.direct],['cdkey','CDKEY']],state,language)}${filterSelect('status',c.status,statusOptions,state,language)}`;
     return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-grid">
       ${filterSelect('range',c.range,[['7d',text('近 7 天','Last 7 days',language)],['30d',text('近 30 天','Last 30 days',language)],['90d',text('近 90 天','Last 90 days',language)],['month',text('本月','This month',language)]],state,language)}
-      ${options.game ? '' : filterSelect('game',c.game,[['all',all],['星海远征',en ? 'Stellar Voyage' : '星海远征'],['像素边境',en ? 'Pixel Frontier' : '像素边境']],state,language)}
       ${filterSelect('product',c.product,[['all',all],['base',c.base],['dlc',c.dlc]],state,language)}
-      ${filterSelect('fulfillment',c.fulfillment,[['all',all],['account_entitlement',c.direct],['cdkey','CDKEY']],state,language)}
+      ${filterSelect('source',c.source,[['all',all],['home',text('首页推荐','Home recommendations',language)],['discovery',text('找游戏','Discover',language)],['ranking',text('排行榜','Rankings',language)],['search',text('搜索','Search',language)],['campaign',text('专题活动','Campaigns',language)],['external',text('站外活动','External campaigns',language)],['direct',text('自然直达','Direct',language)],['other',text('其他','Other',language)]],state,language)}
       ${filterSelect('region',c.region,[['all',all],['global',c.global],['domestic',c.domestic]],state,language)}
       ${filterSelect('platform',c.platform,[['all',all],['Android','Android'],['Mac','Mac']],state,language)}
-      ${filterSelect('status',c.status,statusOptions,state,language)}
+      ${transactionFilters}
       ${state.tab === 'orders' ? `<label class="publisher-dashboard-field publisher-dashboard-field--keyword"><span>${c.keyword}</span><input type="search" value="${namespace.components.escapeHtml(state.filters.keyword || '')}" placeholder="${c.searchPlaceholder}" data-dashboard-filter="keyword"></label>` : ''}
-    </div><div class="publisher-dashboard-filter-actions"><span>${text('经营指标与订单使用同一快照；待结算来自财务账单','Analytics and orders share one snapshot; pending settlement comes from finance',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></section>`;
+    </div><div class="publisher-dashboard-filter-actions"><span>${state.tab === 'overview' ? text('漏斗按入口时间统计；交易结果按履约完成时间统计','The funnel uses entry time; transaction results use fulfillment time',language) : text('履约方式和订单状态只作用于交易数据；待结算来自财务账单','Fulfillment and order status only affect transactions; pending settlement comes from finance',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></section>`;
+  };
+
+  const formatUv = (value, language) => value === null ? '--' : new Intl.NumberFormat(language === 'en' ? 'en-US' : 'zh-CN').format(value);
+  const formatRate = value => value === null ? '--' : `${(value * 100).toFixed(1)}%`;
+  const conversionLabels = language => ({
+    impression:text('有效曝光','Qualified impressions',language), card_click:text('游戏卡点击','Game card clicks',language), detail_view:text('详情页访问','Detail visits',language),
+    cta_click:text('购买／领取点击','Buy / claim clicks',language), order_create:text('创建订单','Orders created',language), acquisition_success:text('成功获取','Successful acquisition',language), fulfillment_success:text('履约成功','Fulfillment success',language),
+  });
+  const sourceLabels = language => ({ home:text('首页推荐','Home recommendations',language), discovery:text('找游戏','Discover',language), ranking:text('排行榜','Rankings',language), search:text('搜索','Search',language), campaign:text('专题活动','Campaigns',language), external:text('站外活动','External campaigns',language), direct:text('自然直达','Direct',language), other:text('其他','Other',language) });
+  const renderConversionFunnel = (conversion, language) => {
+    const labels = conversionLabels(language);
+    return `<section class="publisher-dashboard-card publisher-conversion-card"><header><div><span>${text('站内转化','IN-APP CONVERSION',language)}</span><h2>${text('从曝光到履约','From discovery to fulfillment',language)}</h2><p>${text('全链路统一使用去重用户数（UV），成功获取不等于付费销量。','Every stage uses unique visitors; acquisition is not paid sales.',language)}</p></div><div class="publisher-conversion-total"><small>${text('曝光→成功获取','Impression → acquisition',language)}</small><strong>${formatRate(conversion.overallRate)}</strong></div></header><div class="publisher-conversion-funnel">${conversion.stages.map((item,index) => `<article class="publisher-conversion-stage" data-conversion-stage="${item.key}"><span>${String(index + 1).padStart(2,'0')}</span><h3>${labels[item.key]}</h3><strong>${formatUv(item.uv,language)}</strong><small>${index ? `${text('上一步','Previous step',language)} ${formatRate(item.stepRate)}` : 'UV'} · ${text('环比','Period',language)} ${item.changeRate !== null && item.changeRate >= 0 ? '+' : ''}${formatRate(item.changeRate)}</small></article>`).join('')}</div><p class="publisher-conversion-footnote">${text('漏斗按入口时间归因，销量按履约完成时间统计；两组数据不可直接相减。','The funnel uses entry-time attribution while sales use fulfillment time; do not subtract the two groups directly.',language)}</p></section>`;
+  };
+  const renderConversionSources = (conversion, language) => {
+    const labels = sourceLabels(language);
+    return `<section class="publisher-dashboard-card publisher-conversion-sources"><header><div><span>${text('来源分析','SOURCE PERFORMANCE',language)}</span><h2>${text('站内位置与访问来源','Placement and traffic source',language)}</h2><p>${text('定位哪些场景带来有效访问和成功获取。','See which placements generate qualified visits and acquisition.',language)}</p></div></header><div class="publisher-conversion-source-table"><table><thead><tr><th>${text('来源位置','Source',language)}</th><th>${text('曝光 UV','Impressions',language)}</th><th>${text('点击 UV','Clicks',language)}</th><th>${text('详情访问 UV','Detail visits',language)}</th><th>${text('成功获取 UV','Acquired',language)}</th><th>${text('点击率','CTR',language)}</th><th>${text('详情→获取','Detail → acquired',language)}</th></tr></thead><tbody>${conversion.sources.map(item => `<tr data-conversion-source="${item.key}"><td><strong>${labels[item.key]}</strong></td><td>${formatUv(item.impression,language)}</td><td>${formatUv(item.click,language)}</td><td>${formatUv(item.detail,language)}</td><td>${formatUv(item.acquired,language)}</td><td>${formatRate(safeRate(item.click,item.impression))}</td><td>${formatRate(safeRate(item.acquired,item.detail))}</td></tr>`).join('')}</tbody></table></div></section>`;
+  };
+  const renderConversionTrend = (state, conversion, language) => {
+    const labels = conversionLabels(language);
+    const metricKeys = ['impression','detail_view','cta_click','acquisition_success'];
+    const active = metricKeys.includes(state.trendMetric) ? state.trendMetric : 'impression';
+    const values = conversion.trends[active] || [];
+    const max = Math.max(...values,1);
+    const days = ['09-04','09-05','09-06','09-07','09-08','09-09','09-10'];
+    return `<section class="publisher-dashboard-card publisher-conversion-trend" data-conversion-trend data-active-metric="${active}"><header><div><span>${text('趋势','TREND',language)}</span><h2>${text('站内转化趋势','In-app conversion trend',language)}</h2></div><div class="publisher-conversion-trend-tabs">${metricKeys.map(key => `<button type="button" class="${key === active ? 'is-active' : ''}" data-dashboard-action="conversion-trend" data-conversion-trend-metric="${key}">${labels[key]}</button>`).join('')}</div></header><div class="publisher-dashboard-chart">${days.map((day,index) => `<div><i style="height:${Math.max(10,Math.round((values[index] || 0) / max * 100))}%" data-value="${values[index] || 0}"></i><span>${day}</span></div>`).join('')}</div></section>`;
   };
 
   const renderOverview = (state, language) => {
     const rows = filteredOrders(state);
     const m = metrics(rows);
+    const conversion = conversionSnapshot(state);
     const days = ['09-04','09-05','09-06','09-07','09-08','09-09','09-10'];
     const daily = days.map(day => rows.filter(item => item.date.includes(day)).length);
     const max = Math.max(...daily, 1);
@@ -112,7 +228,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const dlcCount = rows.filter(item => item.productType === 'dlc').length;
     const directCount = rows.filter(item => item.fulfillment === 'account_entitlement').length;
     const cdkeyCount = rows.filter(item => item.fulfillment === 'cdkey').length;
-    return `<div class="publisher-dashboard-metrics">
+    return `${renderConversionFunnel(conversion,language)}<div class="publisher-conversion-analysis-grid">${renderConversionTrend(state,conversion,language)}${renderConversionSources(conversion,language)}</div><section class="publisher-dashboard-section-heading"><div><span>${text('交易经营结果','TRANSACTION RESULTS',language)}</span><h2>${text('销量、风险与收入','Sales, risk and revenue',language)}</h2></div><small>${text('按履约完成时间统计','By fulfillment completion time',language)}</small></section><div class="publisher-dashboard-metrics">
       ${metricCard(text('付费销量','Paid sales',language),`${m.paid}`,text(`净销量 ${m.netSales}`,`Net sales ${m.netSales}`,language),'paid')}
       ${metricCard(text('免费领取','Free claims',language),`${m.free}`,text('履约完成的 0 元订单','Fulfilled zero-price orders',language),'free')}
       ${metricCard(text('退款成功','Refunded',language),`${m.refundCount}`,money(m.refundMinor,m.settlementCurrency),'refund')}
@@ -149,6 +265,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const renderScopeDialog = (state, language) => state.scopeOpen ? `<div class="publisher-dashboard-overlay" data-dashboard-action="close-scope"><section class="publisher-dashboard-dialog" role="dialog" aria-modal="true" aria-label="${text('数据口径','Metric definitions',language)}" data-dashboard-stop><header><div><span>${text('口径版本 2026-09','DEFINITION VERSION 2026-09',language)}</span><h2>${text('数据口径','Metric definitions',language)}</h2></div><button type="button" data-dashboard-action="close-scope" aria-label="${text('关闭','Close',language)}">×</button></header><dl>${[
+    [text('站内转化漏斗','In-app conversion funnel',language),text('从有效曝光到履约成功统一使用去重用户数；漏斗按入口时间归因，交易结果按履约完成时间统计。','Unique visitors are used from qualified impression through fulfillment; the funnel uses entry time while transactions use fulfillment time.',language)],
+    [text('来源归因','Source attribution',language),text('按最后一次有效的非直接触点归因；自然直达没有曝光分母时显示“--”。','Uses the last qualified non-direct touchpoint; direct visits show “--” when no impression denominator exists.',language)],
     [text('付费销量','Paid sales',language),text('应付金额大于 0，且直接购买权益生效或 CDKEY 成功交付。','Amount due is above zero and direct entitlement is active or the CDKEY is delivered.',language)],
     [text('免费领取','Free claims',language),text('应付金额为 0 且完成履约；失败或处理中不计入。','Amount due is zero and fulfillment completed; failures and processing orders are excluded.',language)],
     [text('退款与拒付','Refunds & chargebacks',language),text('退款成功和拒付败诉才扣收入；拒付待裁决只显示风险。','Only completed refunds and lost chargebacks reduce revenue; open chargebacks stay as risk.',language)],
@@ -168,8 +286,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (game?.name) state.filters.game = game.name;
     if (!access.canViewPublisherData && !access.isPublisherReadOnly) return `<section class="publisher-dashboard-access" data-publisher-page="data" data-testid="publisher-data-dashboard"><span>${namespace.icons?.render('lock') || ''}</span><strong>${text('暂未开通经营数据权限','Analytics access is not available',language)}</strong><p>${text('完成企业认证并获得厂商数据权限后，可查看销量、订单和结算摘要。','Complete company verification and obtain publisher data access to view sales, orders and settlement summaries.',language)}</p></section>`;
     const body = state.tab === 'orders' ? renderOrders(state,language) : state.tab === 'revenue' ? renderRevenue(state,language) : renderOverview(state,language);
-    const gameContext = game ? `<small class="publisher-dashboard-game-context">${namespace.components.escapeHtml(language === 'en' ? (game.englishName || game.name) : game.name)} · ${namespace.components.escapeHtml(game.gameId || '')}</small>` : '';
-    return `<section class="publisher-data-dashboard" data-publisher-page="data" data-testid="publisher-data-dashboard" data-dashboard-tab="${state.tab}"${game ? ` data-dashboard-game="${namespace.components.escapeHtml(game.gameKey || game.name)}"` : ''}><header class="publisher-dashboard-head"><div><span>${c.eyebrow}</span><h1>${c.title}</h1>${gameContext}<p>${c.description}</p></div><div><button type="button" data-dashboard-action="scope">${c.scope}</button>${tag(c.readonly,'info')}<small>${c.updated}</small></div></header><nav class="publisher-dashboard-tabs" aria-label="${c.title}">${Object.entries(c.tabs).map(([value,label]) => `<button type="button" class="${state.tab === value ? 'is-active' : ''}" data-dashboard-action="tab" data-publisher-data-tab="${value}" aria-selected="${state.tab === value}">${label}</button>`).join('')}</nav>${renderFilters(state,language,{ game })}<div class="publisher-dashboard-content">${body}</div>${renderOrderDrawer(state,language)}${renderScopeDialog(state,language)}</section>`;
+    return `<section class="publisher-data-dashboard" data-publisher-page="data" data-testid="publisher-data-dashboard" data-dashboard-tab="${state.tab}"${game ? ` data-dashboard-game="${namespace.components.escapeHtml(game.gameKey || game.name)}"` : ''}><header class="publisher-dashboard-head"><h1>${c.title}</h1><div><button type="button" data-dashboard-action="scope">${c.scope}</button>${tag(c.readonly,'info')}<small>${c.updated}</small></div></header><nav class="publisher-dashboard-tabs" aria-label="${c.title}">${Object.entries(c.tabs).map(([value,label]) => `<button type="button" class="${state.tab === value ? 'is-active' : ''}" data-dashboard-action="tab" data-publisher-data-tab="${value}" aria-selected="${state.tab === value}">${label}</button>`).join('')}</nav>${renderFilters(state,language,{ game })}<div class="publisher-dashboard-content">${body}</div>${renderOrderDrawer(state,language)}${renderScopeDialog(state,language)}</section>`;
   };
 
   const bind = (root, { state, game, onChange, onFinance } = {}) => {
@@ -193,6 +310,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const action = control.dataset.dashboardAction;
       if (action === 'tab') update({ tab:control.dataset.publisherDataTab || 'overview', selectedOrder:'', scopeOpen:false });
       else if (action === 'reset') update({ filters:{ ...defaultFilters, game:game?.name || 'all' } });
+      else if (action === 'conversion-trend') update({ trendMetric:control.dataset.conversionTrendMetric || 'impression' }, { preserveScroll:true });
       else if (action === 'scope') update({ scopeOpen:true, selectedOrder:'' }, { preserveScroll:true });
       else if (action === 'close-scope') update({ scopeOpen:false }, { preserveScroll:true });
       else if (action === 'open-order') update({ selectedOrder:control.dataset.orderId || '', scopeOpen:false }, { preserveScroll:true });
@@ -209,6 +327,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     });
   };
 
-  window.PublisherDataDashboard = { createState, render, bind, filteredOrders, metrics, orders:() => clone(orders), statements:() => clone(statements), snapshot:state => ({ tab:state?.tab || 'overview', filters:{ ...defaultFilters, ...(state?.filters || {}) }, statuses:[...new Set(filteredOrders(state || createState()).map(item => item.status))], metrics:metrics(filteredOrders(state || createState())) }) };
+  window.PublisherDataDashboard = { createState, render, bind, filteredOrders, metrics, conversionSnapshot, orders:() => clone(orders), statements:() => clone(statements), snapshot:state => ({ tab:state?.tab || 'overview', filters:{ ...defaultFilters, ...(state?.filters || {}) }, statuses:[...new Set(filteredOrders(state || createState()).map(item => item.status))], metrics:metrics(filteredOrders(state || createState())), conversion:conversionSnapshot(state || createState()) }) };
   namespace.publisherDataDashboard = window.PublisherDataDashboard;
 })(window.GameHubDeveloperPortal);

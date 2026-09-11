@@ -19,21 +19,22 @@ def font(size: int, bold: bool = False):
 
 
 steps = [
-    ("02-dashboard-overview.png", "01 进入数据看板", "统一查看经营结果"),
-    ("03-order-list.png", "02 筛选与查看", "同一快照联动指标和列表"),
-    ("04-order-detail.png", "03 定位异常订单", "查看脱敏订单与资金影响"),
-    ("05-income-settlement.png", "04 进入正式对账", "核对预估收入与待结算"),
+    ("02-dashboard-overview.png", "01 查看站内转化", "曝光、访问、下单与履约", 0.20),
+    ("02-dashboard-overview.png", "02 分析来源", "按站内位置定位转化差异", 0.76),
+    ("03-order-list.png", "03 查看交易结果", "销量、退款、拒付与订单", 0.50),
+    ("04-order-detail.png", "04 定位异常订单", "查看脱敏订单与资金影响", 0.50),
+    ("05-income-settlement.png", "05 进入正式对账", "核对预估收入与待结算", 0.50),
 ]
 
-canvas = Image.new("RGB", (2400, 760), "#f5f7fa")
+canvas = Image.new("RGB", (2960, 760), "#f5f7fa")
 draw = ImageDraw.Draw(canvas)
-draw.rounded_rectangle((36, 36, 2364, 724), radius=24, fill="#ffffff", outline="#e4e7ec", width=2)
+draw.rounded_rectangle((36, 36, 2924, 724), radius=24, fill="#ffffff", outline="#e4e7ec", width=2)
 draw.text((76, 66), "发行平台开发者数据看板主流程", fill="#182230", font=font(32, True))
-draw.text((76, 112), "经营概览 → 脱敏订单 → 资金影响 → 财务结算", fill="#667085", font=font(20))
+draw.text((76, 112), "站内转化 → 来源分析 → 交易结果 → 异常定位 → 财务结算", fill="#667085", font=font(20))
 
 card_width, card_height = 500, 500
-start_x, top = 76, 172
-for index, (file_name, title, subtitle) in enumerate(steps):
+start_x, top = 60, 172
+for index, (file_name, title, subtitle, focus_y) in enumerate(steps):
     x = start_x + index * 570
     draw.rounded_rectangle((x, top, x + card_width, top + card_height), radius=18, fill="#ffffff", outline="#d0d5dd", width=2)
     source = Image.open(SOURCE_DIR / file_name).convert("RGB")
@@ -41,7 +42,7 @@ for index, (file_name, title, subtitle) in enumerate(steps):
     ratio = max(target_width / source.width, target_height / source.height)
     resized = source.resize((round(source.width * ratio), round(source.height * ratio)), Image.Resampling.LANCZOS)
     left = max(0, (resized.width - target_width) // 2)
-    upper = max(0, (resized.height - target_height) // 2)
+    upper = max(0, min(resized.height - target_height, round(resized.height * focus_y - target_height / 2)))
     crop = resized.crop((left, upper, left + target_width, upper + target_height))
     canvas.paste(crop, (x + 24, top + 24))
     draw.rounded_rectangle((x + 24, top + 24, x + 476, top + 334), radius=10, outline="#e4e7ec", width=2)

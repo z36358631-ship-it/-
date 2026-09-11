@@ -214,13 +214,42 @@ test('经营数据位于单游戏控制台并锁定当前游戏', async () => {
     const dashboard = await openDashboard(page, 'publisher-dashboard:navigation');
     assert.deepEqual(await page.locator('[data-portal-action="game-console-section"]').allTextContents(), ['版本发布', '发布记录', '资质认证', '经营数据']);
     assert.equal(await dashboard.getAttribute('data-dashboard-game'), 'existing');
-    assert.match(await dashboard.locator('.publisher-dashboard-game-context').innerText(), /星海远征 · GAME-48291/);
+    assert.equal(await dashboard.locator('.publisher-dashboard-head h1').innerText(), '数据看板');
+    assert.equal(await dashboard.locator('.publisher-dashboard-head > div:first-child > span').count(), 0);
+    assert.equal(await dashboard.locator('.publisher-dashboard-game-context').count(), 0);
+    assert.equal(await dashboard.locator('.publisher-dashboard-head p').count(), 0);
     assert.equal(await dashboard.locator('[data-dashboard-filter="game"]').count(), 0);
     assert.deepEqual(
       await dashboard.locator('[data-publisher-data-tab]').allTextContents(),
       ['经营概览', '订单明细', '收入与结算'],
     );
     assert.equal(await dashboard.getAttribute('data-dashboard-tab'), 'overview');
+    assert.deepEqual(
+      await dashboard.locator('[data-conversion-stage]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-conversion-stage'))),
+      ['impression', 'card_click', 'detail_view', 'cta_click', 'order_create', 'acquisition_success', 'fulfillment_success'],
+    );
+    assert.deepEqual(
+      await dashboard.locator('[data-conversion-stage] h3').allTextContents(),
+      ['有效曝光', '游戏卡点击', '详情页访问', '购买／领取点击', '创建订单', '成功获取', '履约成功'],
+    );
+    assert.deepEqual(await page.evaluate(() => {
+      const conversion = window.PublisherDataDashboard.snapshot(window.PublisherDataDashboard.createState()).conversion;
+      return {
+        stages: conversion.stages.map(item => [item.key, item.uv]),
+        overallRate: conversion.overallRate,
+      };
+    }), {
+      stages: [
+        ['impression', 50000],
+        ['card_click', 15000],
+        ['detail_view', 12500],
+        ['cta_click', 3750],
+        ['order_create', 3180],
+        ['acquisition_success', 2862],
+        ['fulfillment_success', 2776],
+      ],
+      overallRate: 0.05724,
+    });
     assert.deepEqual(await page.evaluate(() => window.PublisherDataDashboard.snapshot(
       window.PublisherDataDashboard.createState(),
     ).metrics), {
@@ -247,6 +276,47 @@ test('经营数据位于单游戏控制台并锁定当前游戏', async () => {
     await selectDashboardTab(dashboard, 'orders', '订单明细');
     await selectDashboardTab(dashboard, 'revenue', '收入与结算');
     await selectDashboardTab(dashboard, 'overview', '经营概览');
+  } finally {
+    await context.close();
+  }
+});
+
+test('经营概览展示站内来源并把交易后置筛选限制在订单与收入页签', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:conversion-sources');
+    assert.deepEqual(
+      await dashboard.locator('[data-conversion-source]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-conversion-source'))),
+      ['home', 'discovery', 'ranking', 'search', 'campaign', 'external', 'direct', 'other'],
+    );
+    assert.equal(await dashboard.locator('[data-dashboard-filter="source"]').count(), 1);
+    assert.equal(await dashboard.locator('[data-dashboard-filter="fulfillment"]').count(), 0);
+    assert.equal(await dashboard.locator('[data-dashboard-filter="status"]').count(), 0);
+    assert.match(await dashboard.locator('[data-conversion-source="direct"]').innerText(), /自然直达[\s\S]*--/);
+
+    const originalExposure = await dashboard.locator('[data-conversion-stage="impression"] strong').innerText();
+    await dashboard.locator('[data-dashboard-filter="source"]').selectOption('search');
+    assert.notEqual(await dashboard.locator('[data-conversion-stage="impression"] strong').innerText(), originalExposure);
+
+    await selectDashboardTab(dashboard, 'orders', '订单明细');
+    assert.equal(await dashboard.locator('[data-dashboard-filter="fulfillment"]').count(), 1);
+    assert.equal(await dashboard.locator('[data-dashboard-filter="status"]').count(), 1);
+  } finally {
+    await context.close();
+  }
+});
+
+test('站内转化趋势支持指标切换且不会改变交易筛选', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:conversion-trend');
+    const trend = dashboard.locator('[data-conversion-trend]');
+    assert.equal(await trend.getAttribute('data-active-metric'), 'impression');
+    await dashboard.locator('[data-conversion-trend-metric="detail_view"]').click();
+    assert.equal(await dashboard.locator('[data-conversion-trend]').getAttribute('data-active-metric'), 'detail_view');
+    assert.deepEqual(await horizontalOverflow(page), { document: 0, body: 0 });
   } finally {
     await context.close();
   }

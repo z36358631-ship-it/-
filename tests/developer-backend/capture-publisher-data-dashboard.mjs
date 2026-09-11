@@ -17,7 +17,7 @@ if (!chrome) throw new Error('Chrome or Edge not found');
 fs.mkdirSync(outputDir, { recursive:true });
 
 const browser = await chromium.launch({ headless:true, executablePath:chrome, args:['--allow-file-access-from-files','--disable-background-networking'] });
-const context = await browser.newContext({ viewport:{ width:1440, height:900 }, deviceScaleFactor:1 });
+const context = await browser.newContext({ viewport:{ width:1440, height:1600 }, deviceScaleFactor:1 });
 const page = await context.newPage();
 const url = pathToFileURL(demoFile);
 url.hash = '/P02-01';
@@ -48,9 +48,12 @@ await page.goto(url.href, { waitUntil:'load' });
 await page.locator('[data-portal-action="enter-publisher-game"][data-publisher-game="existing"]').first().click();
 await page.locator('[data-portal-action="game-console-section"][data-game-section="analytics"]').click();
 await page.locator('[data-testid="publisher-data-dashboard"]').waitFor();
+await page.locator('[data-conversion-stage="fulfillment_success"]').waitFor();
+await page.locator('[data-conversion-source="direct"]').waitFor();
 
 await page.screenshot({ path:path.join(outputDir, '02-dashboard-overview.png'), fullPage:true });
 
+await page.setViewportSize({ width:1440, height:900 });
 await page.locator('[data-publisher-data-tab="orders"]').click();
 await page.locator('[data-dashboard-order-id]').first().waitFor();
 await page.screenshot({ path:path.join(outputDir, '03-order-list.png'), fullPage:true });
