@@ -207,7 +207,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     result: Object.create(null),
     upload: Object.create(null),
     business: Object.create(null),
-    shell: { helpOpen: false, scrollTop: 0, language: readStorage(localStorage, languageStorageKey, 'zh') },
+    shell: { helpOpen: false, scrollTop: 0, language: readStorage(localStorage, languageStorageKey, 'zh'), qualificationWithdrawOpen: false },
     session: {
       authenticated: Boolean(storedAccountKey && storedSession?.authenticated),
       accountKey: storedAccountKey,
@@ -1721,7 +1721,20 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'qualification-withdraw') {
+        memory.shell.qualificationWithdrawOpen = true;
+        render();
+        requestAnimationFrame(() => root.querySelector('.qualification-withdraw-modal footer [data-portal-action="qualification-withdraw-cancel"]')?.focus());
+        return;
+      }
+      if (action === 'qualification-withdraw-cancel') {
+        memory.shell.qualificationWithdrawOpen = false;
+        render();
+        requestAnimationFrame(() => root.querySelector('[data-portal-action="qualification-withdraw"]')?.focus());
+        return;
+      }
+      if (action === 'qualification-withdraw-confirm') {
         const withdrawnAt = nowText();
+        memory.shell.qualificationWithdrawOpen = false;
         memory.qualificationPreview = null;
         memory.qualification = {
           ...memory.qualification,
@@ -2747,6 +2760,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, editorMode, content, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, registration: memory.registration });
     if (role === 'developer' && route.id === 'P01-03' && qualificationForView.readOnly && qualificationForView.status === 'pending') {
       root.querySelector('.qualification-pending-note')?.insertAdjacentHTML('beforeend', c.button({ label: memory.shell.language === 'en' ? 'Withdraw application' : '撤回申请', variant: 'danger', action: 'qualification-withdraw', size: 'small' }));
+      if (memory.shell.qualificationWithdrawOpen) {
+        const isEnglish = memory.shell.language === 'en';
+        root.insertAdjacentHTML('beforeend', `<section class="review-action-modal qualification-withdraw-modal" data-qualification-withdraw-modal><button class="review-action-modal__backdrop" type="button" data-portal-action="qualification-withdraw-cancel" aria-label="${isEnglish ? 'Keep application' : '保留申请'}"></button><div class="review-action-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="qualification-withdraw-title" aria-describedby="qualification-withdraw-description"><header><div><h2 id="qualification-withdraw-title">${isEnglish ? 'Withdraw this application?' : '确认撤回本次申请？'}</h2><p id="qualification-withdraw-description">${isEnglish ? 'After withdrawal, this review will stop immediately. You can update the original information and submit it again.' : '撤回后，本次审核立即停止；你可以继续修改原提交资料并重新提交审核。'}</p></div><button type="button" data-portal-action="qualification-withdraw-cancel" aria-label="${isEnglish ? 'Close' : '关闭'}">×</button></header><div class="review-action-modal__body">${c.resultStrip({ title: isEnglish ? 'Please confirm carefully' : '请谨慎确认', detail: isEnglish ? 'After withdrawal, the platform will no longer process the current application.' : '撤回后，平台将不再处理当前申请。', variant: 'warning' })}</div><footer>${c.button({ label: isEnglish ? 'Keep application' : '保留申请', action: 'qualification-withdraw-cancel' })}${c.button({ label: isEnglish ? 'Confirm withdrawal' : '确认撤回', variant: 'danger', action: 'qualification-withdraw-confirm' })}</footer></div></section>`);
+      }
     }
     if (memory.result[route.id] && state === 'default') {
       const target = root.querySelector('[data-runtime-result]');
@@ -2829,13 +2846,16 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   addEventListener('hashchange', () => {
+    memory.shell.qualificationWithdrawOpen = false;
     render();
     resetRouteScroll();
   });
   addEventListener('keydown', event => {
     const existingApplicationModal = root.querySelector('[data-existing-application-modal]');
-    if (event.key === 'Tab' && existingApplicationModal) {
-      const focusable = [...existingApplicationModal.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+    const qualificationWithdrawModal = root.querySelector('[data-qualification-withdraw-modal]');
+    const activeModal = qualificationWithdrawModal || existingApplicationModal;
+    if (event.key === 'Tab' && activeModal) {
+      const focusable = [...activeModal.querySelectorAll('button:not([disabled]):not(.review-action-modal__backdrop), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
         .filter(node => !node.hidden && node.getClientRects().length > 0);
       if (focusable.length) {
         const first = focusable[0];
@@ -2846,6 +2866,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return;
     }
     if (event.key !== 'Escape') return;
+    if (qualificationWithdrawModal) {
+      memory.shell.qualificationWithdrawOpen = false;
+      render();
+      requestAnimationFrame(() => root.querySelector('[data-portal-action="qualification-withdraw"]')?.focus());
+      return;
+    }
     if (existingApplicationModal) {
       const restoreSelector = memory.registration.verificationNoticeSource === 'account-menu'
         ? '[data-portal-action="toggle-account-menu"]'

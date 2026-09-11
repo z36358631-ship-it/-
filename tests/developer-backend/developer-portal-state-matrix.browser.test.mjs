@@ -231,6 +231,38 @@ for (const [status, copy, action] of [
   } finally { await context.close(); }
 });
 
+test('撤回企业认证需二次确认，保留申请不改变审核状态', async () => {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    await seedAccount(page, 'pending', 'matrix:withdraw-confirm');
+    await page.locator('[data-publisher-view="vendor"]').click();
+    await page.getByRole('button', { name: '查看进度', exact: true }).click();
+    await page.waitForURL(/#\/P01-03$/);
+
+    await page.getByRole('button', { name: '撤回申请', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: '确认撤回本次申请？' });
+    assert.equal(await dialog.isVisible(), true);
+    assert.match(await dialog.innerText(), /撤回后，本次审核立即停止[\s\S]*请谨慎确认[\s\S]*平台将不再处理当前申请[\s\S]*保留申请[\s\S]*确认撤回/);
+    assert.equal(await page.locator('[data-qualification-form-page] [name="legalName"]').isDisabled(), true);
+    assert.equal((await page.evaluate(() => document.activeElement?.textContent || '')).trim(), '保留申请');
+
+    await page.keyboard.press('Escape');
+    assert.equal(await dialog.count(), 0);
+
+    await page.getByRole('button', { name: '撤回申请', exact: true }).click();
+    await dialog.getByRole('button', { name: '保留申请', exact: true }).click();
+    assert.equal(await dialog.count(), 0);
+    assert.equal(await page.getByRole('button', { name: '撤回申请', exact: true }).isVisible(), true);
+
+    await page.getByRole('button', { name: '撤回申请', exact: true }).click();
+    await page.getByRole('button', { name: '确认撤回', exact: true }).click();
+    assert.equal(await page.getByRole('dialog', { name: '确认撤回本次申请？' }).count(), 0);
+    assert.equal(await page.locator('[data-qualification-form-page] [name="legalName"]').isEnabled(), true);
+    assert.equal(await page.getByRole('button', { name: '提交审核', exact: true }).isVisible(), true);
+  } finally { await context.close(); }
+});
+
 test('企业开发者拥有发布、记录、游戏资质和厂商管理能力', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
