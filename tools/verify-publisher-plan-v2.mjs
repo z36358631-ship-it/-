@@ -25,9 +25,18 @@ const mustNotContain = (source, values, label) => {
 
 const legacyZeroSettlementTrigger = /(?:不可|无法)(?:\s*正常)?\s*访问|抓取.{0,8}?(?:失败|异常|超时)|无法(?:取得|获取).{0,8}?(?:有效|关键|点赞)?数据|(?:关键数据|点赞数据|点赞数|数据).{0,8}?(?:缺失|无法(?:取得|获取))|(?:作品|内容|链接).{0,8}?(?:被?删除|转为?私密|私密)/u;
 const zeroSettlementOutcomePattern = /(?:按|以)\s*(?:0|零)\s*(?:(?:点赞数|点赞量|点赞)\s*)?结算/gu;
-const zeroSettlementNegationWord = /(?:不允许|不得|不能|不会|不应|不予|不再|不可(?!\s*(?:正常)?\s*访问)|禁止|严禁)/u;
-const directlyNegatedZeroSettlement = /不(?!可\s*(?:正常)?\s*访问).{0,24}?(?:按|以)\s*(?:0|零)\s*(?:(?:点赞数|点赞量|点赞)\s*)?结算/u;
+const zeroSettlementNegationCandidates = /(?:不允许|不得|不能|不会|不应|不予|不再|不可|禁止|严禁|不)/gu;
+const recoveryActionBetweenNegationAndSettlement = /(?:重新?抓取|重抓|恢复|重试)/u;
 const settlementResultBoundary = /(?:否则|则|但|仍|却|,|，|;|；)/u;
+
+const zeroSettlementIsNegated = (lastClause, zeroMatchIndex) => {
+  const beforeSettlement = lastClause.slice(0, zeroMatchIndex);
+  return [...beforeSettlement.matchAll(zeroSettlementNegationCandidates)].some(match => {
+    const between = beforeSettlement.slice(match.index + match[0].length);
+    if (match[0] === '不可' && /^\s*(?:正常)?\s*访问/u.test(between)) return false;
+    return !recoveryActionBetweenNegationAndSettlement.test(between);
+  });
+};
 
 const hasLegacyZeroSettlementRule = text => {
   const normalized = text
@@ -44,10 +53,7 @@ const hasLegacyZeroSettlementRule = text => {
     return [...sentence.matchAll(zeroSettlementOutcomePattern)].some(match => {
       const prefix = sentence.slice(0, match.index);
       const lastClause = prefix.split(settlementResultBoundary).at(-1) || '';
-      const clauseWithOutcome = lastClause + match[0];
-      const isNegated = zeroSettlementNegationWord.test(lastClause)
-        || directlyNegatedZeroSettlement.test(clauseWithOutcome);
-      return !isNegated;
+      return !zeroSettlementIsNegated(lastClause, lastClause.length);
     });
   });
 };
@@ -65,7 +71,11 @@ const legacyZeroSettlementErrorCases = [
   '作品抓取异常，不能重新抓取则按0点赞结算',
   '链接抓取超时，但系统仍按零结算',
   '无法获取点赞数据，否则按0点赞量结算',
-  '内容被删除，却以零结算'
+  '内容被删除，却以零结算',
+  '抓取失败且不能重新抓取时按0结算',
+  '链接不可访问且不能重新抓取时按0结算',
+  '作品删除后不能恢复的按0结算',
+  '抓取超时并且不能重试便以零点赞结算'
 ];
 for (const [index, example] of legacyZeroSettlementErrorCases.entries()) {
   assert(hasLegacyZeroSettlementRule(example), `zero-settlement guard missed error case ${index + 1}`);
