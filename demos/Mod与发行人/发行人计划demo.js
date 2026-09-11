@@ -12,22 +12,21 @@ const platformMap={douyin:'抖音',bilibili:'B站',kuaishou:'快手',xiaohongshu
 const CI='<span class="coin-icon">G</span>';
 
 const tasks=[
-{id:1,title:'中奖概率倍儿高啊啊',gameId:1,badge:'官方',platforms:['douyin','bilibili'],reward:10,maxReward:1000,pool:87100,submissions:51,deadline:'2026-06-15',productIntro:'超刺激的转盘抽奖小游戏，每次转动都有惊喜！玩法简单上手快，适合各年龄段玩家。视频拍摄建议突出"中奖瞬间"的惊喜感。',
-requirements:['视频时长≥15秒','需包含游戏实际游玩画面','视频中需提及"中奖概率倍儿高"相关内容','不可使用他人素材或录屏拼接','投稿内容必须为视频内容，图文内容无效'],
-tiers:[{t:'点赞 ≥ 100',a:5},{t:'点赞 ≥ 500',a:20},{t:'点赞 ≥ 1000',a:50},{t:'点赞 ≥ 5000',a:200}]},
-{id:2,title:'凡人修仙模拟器宣传',gameId:2,badge:null,platforms:['bilibili'],reward:10,maxReward:1000,pool:48830,submissions:11,deadline:'2026-06-10',productIntro:'国风修仙放置类RPG，从凡人一步步修炼成仙。画面精美，剧情丰富，适合喜欢修仙题材的玩家。建议展示核心战斗和升级系统。',
-requirements:['视频时长≥30秒','需展示游戏核心玩法','标题需包含游戏名称','投稿内容必须为视频'],
-tiers:[{t:'点赞 ≥ 100',a:5},{t:'点赞 ≥ 500',a:20},{t:'点赞 ≥ 1000',a:50},{t:'点赞 ≥ 5000',a:200}]},
-{id:3,title:'233购物街可摆摊收打赏啦',gameId:3,badge:'官方',platforms:['douyin','kuaishou','xiaohongshu'],reward:5,maxReward:500,pool:3625,submissions:7,deadline:'2026-06-01',productIntro:'模拟经营类游戏，玩家可以开店摆摊、装修店铺、与好友互动。新版本上线了打赏功能，社交玩法更丰富。',
-requirements:['视频时长≥15秒','需展示摆摊和打赏功能','投稿内容必须为视频'],
-tiers:[{t:'点赞 ≥ 50',a:3},{t:'点赞 ≥ 200',a:10},{t:'点赞 ≥ 1000',a:30}]},
-{id:4,title:'测测你是热梗王吗推广',gameId:4,badge:null,platforms:['douyin','bilibili','kuaishou','xiaohongshu'],reward:5,maxReward:500,pool:3455,submissions:7,deadline:'2026-06-08',productIntro:'趣味答题游戏，涵盖最新网络热梗。答对越多排名越高，适合拍摄"挑战类"短视频，容易引发观众互动。',
-requirements:['视频时长≥15秒','需展示答题过程和结果','推荐使用相关话题标签','投稿内容必须为视频'],
-tiers:[{t:'点赞 ≥ 100',a:5},{t:'点赞 ≥ 500',a:15},{t:'点赞 ≥ 2000',a:50}]},
-{id:5,title:'polo小球角色分享',gameId:5,badge:null,platforms:['xiaohongshu'],reward:10,maxReward:1000,pool:12000,submissions:7,deadline:'2026-06-20',productIntro:'休闲竞技小球对战游戏，角色造型可爱多样。适合在小红书分享角色外观和精彩对战瞬间。',
-requirements:['视频时长≥10秒','需展示角色外观或对战画面','投稿内容必须为视频'],
-tiers:[{t:'点赞 ≥ 50',a:5},{t:'点赞 ≥ 300',a:20},{t:'点赞 ≥ 1000',a:80}]}
+{id:1,title:'中奖概率倍儿高啊啊',gameId:1,badge:'官方',platforms:['douyin','bilibili'],reward:2,maxReward:10000,pool:87100,reserved:30000,submissions:51,deadline:'2026-06-15',snapshotDeadline:'2026-06-18 23:59',status:'进行中',ruleVersion:1,productIntro:'超刺激的转盘抽奖小游戏，每次转动都有惊喜！玩法简单上手快，适合各年龄段玩家。',
+requirements:['视频时长≥15秒','需包含游戏实际游玩画面','投稿内容必须为视频内容']},
+{id:2,title:'凡人修仙模拟器宣传',gameId:2,badge:null,platforms:['bilibili'],reward:1,maxReward:8000,pool:50000,reserved:16000,submissions:11,deadline:'2026-06-10',snapshotDeadline:'2026-06-13 23:59',status:'进行中',ruleVersion:1,productIntro:'国风修仙放置类RPG，从凡人一步步修炼成仙。画面精美，剧情丰富，适合喜欢修仙题材的玩家。建议展示核心战斗和升级系统。',
+requirements:['视频时长≥30秒','需展示游戏核心玩法','标题需包含游戏名称','投稿内容必须为视频']},
+{id:3,title:'233购物街可摆摊收打赏啦',gameId:3,badge:'官方',platforms:['douyin','kuaishou','xiaohongshu'],reward:3,maxReward:6000,pool:30000,reserved:12000,submissions:7,deadline:'2026-06-01',snapshotDeadline:'2026-06-04 23:59',status:'进行中',ruleVersion:1,productIntro:'模拟经营类游戏，玩家可以开店摆摊、装修店铺、与好友互动。新版本上线了打赏功能，社交玩法更丰富。',
+requirements:['视频时长≥15秒','需展示摆摊和打赏功能','投稿内容必须为视频']},
+{id:4,title:'测测你是热梗王吗推广',gameId:4,badge:null,platforms:['douyin','bilibili','kuaishou','xiaohongshu'],reward:2,maxReward:5000,pool:25000,reserved:10000,submissions:7,deadline:'2026-06-08',snapshotDeadline:'2026-06-11 23:59',status:'进行中',ruleVersion:1,productIntro:'趣味答题游戏，涵盖最新网络热梗。答对越多排名越高，适合拍摄"挑战类"短视频，容易引发观众互动。',
+requirements:['视频时长≥15秒','需展示答题过程和结果','推荐使用相关话题标签','投稿内容必须为视频']},
+{id:5,title:'polo小球角色分享',gameId:5,badge:null,platforms:['xiaohongshu'],reward:5,maxReward:15000,pool:60000,reserved:15000,submissions:7,deadline:'2026-06-20',snapshotDeadline:'2026-06-23 23:59',status:'进行中',ruleVersion:1,productIntro:'休闲竞技小球对战游戏，角色造型可爱多样。适合在小红书分享角色外观和精彩对战瞬间。',
+requirements:['视频时长≥10秒','需展示角色外观或对战画面','投稿内容必须为视频']}
 ];
+
+function calculateReward(likes,reward,maxReward){
+  return Math.min(Math.max(0,Number(likes)||0)*reward,maxReward);
+}
 
 const rankData=[
 {name:'Nine9',avatar:'😎',reward:340,link:'https://www.douyin.com/video/example1'},
@@ -74,12 +73,51 @@ const cardOrders=[
 
 let currentTask=null,currentMyTab='joined',currentEarnTab='all',editingTask=null;
 let selectedCardId=null,rulesReturnView='plaza',lastDialogTrigger=null,toastTimer=null;
+const identityState={
+  realNameVerified:true,
+  creatorCertified:true,
+  creatorTag:null
+};
 function G(id){return games.find(g=>g.id===id)}
+
+function requirePublisherIdentity(){
+  if(identityState.realNameVerified)return true;
+  showModal('完成实名认证','发布任务前需要先完成实名认证。',()=>{
+    identityState.realNameVerified=true;
+    showToast('实名认证已完成');
+  });
+  return false;
+}
+
+function requireSubmissionIdentity(){
+  if(!identityState.realNameVerified){
+    showModal('完成实名认证','投稿前需要先完成实名认证。',()=>{
+      identityState.realNameVerified=true;
+      showToast('实名认证已完成，请继续创作者认证');
+    });
+    return false;
+  }
+  if(!identityState.creatorCertified){
+    showModal('完成创作者认证','投稿需通过创作者认证；认证门槛为社区动态不少于 5 篇且粉丝达到运营配置值。',()=>showToast('已进入创作者认证申请'));
+    return false;
+  }
+  return true;
+}
+
+function beginSubmission(){
+  if(!requireSubmissionIdentity())return;
+  const available=currentTask.pool-currentTask.reserved;
+  if(available<currentTask.maxReward){
+    showToast('当前任务奖池名额已满');
+    return;
+  }
+  showView('submit');
+}
 
 function renderTaskList(){
   document.getElementById('task-list').innerHTML=tasks.map(t=>{
     const g=G(t.gameId),pn=t.platforms.map(p=>platformMap[p]).join('/');
-    return `<div class="task-card" onclick="openDetail(${t.id})"><div class="task-card-img" style="background:linear-gradient(135deg,${g.color},${g.color}cc)"><span style="font-size:36px">${g.icon}</span>${t.badge?`<div class="badge">${t.badge}</div>`:''}</div><div class="task-card-body"><div class="task-card-title">${t.title}</div><div class="task-card-info"><span class="task-card-meta">${pn}</span><span class="task-card-reward">${CI} 单价 ${t.reward}</span></div><div class="task-card-footer"><span>${t.submissions}个投稿</span><span style="color:#ff8c00;font-weight:600">奖池 ${CI}${t.pool.toLocaleString()}</span></div></div></div>`;
+    return `<div class="task-card" onclick="openDetail(${t.id})"><div class="task-card-img" style="background:linear-gradient(135deg,${g.color},${g.color}cc)"><span style="font-size:36px">${g.icon}</span>${t.badge?`<div class="badge">${t.badge}</div>`:''}</div><div class="task-card-body"><div class="task-card-title">${t.title}</div><div class="task-card-info"><span class="task-card-meta">${pn}</span><span class="task-card-reward">${CI} 每赞 ${t.reward}</span></div><div class="task-card-footer"><span>${t.submissions}个投稿</span><span style="color:#ff8c00;font-weight:600">奖池 ${CI}${t.pool.toLocaleString()}</span></div></div></div>`;
   }).join('');
 }
 
@@ -88,16 +126,16 @@ function openDetail(id){
   const pn=currentTask.platforms.map(p=>platformMap[p]).join(' / ');
   document.getElementById('detail-content').innerHTML=`
 <div class="detail-banner" style="background:linear-gradient(135deg,${g.color},${g.color}cc)"><span style="font-size:44px">${g.icon}</span><div class="game-name">${currentTask.title}</div></div>
-<div class="section"><div class="detail-stats"><div class="detail-stat-item"><div class="num">${currentTask.submissions}</div><div class="label">已投稿</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.reward}</div><div class="label">奖金单价</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.pool.toLocaleString()}</div><div class="label">奖池剩余</div></div></div></div>
+<div class="section"><div class="detail-stats"><div class="detail-stat-item"><div class="num">${currentTask.submissions}</div><div class="label">已投稿</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.reward}</div><div class="label">每赞奖励</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.pool.toLocaleString()}</div><div class="label">任务奖池</div></div></div></div>
 <div class="section"><div class="section-title">产品介绍</div><div style="font-size:13px;color:#666;line-height:1.8">${currentTask.productIntro||'暂无产品介绍'}</div></div>
 <div class="section"><div class="section-title">投稿平台</div><div style="font-size:13px;color:#666">${pn}</div></div>
 <div class="section"><div class="section-title">投稿要求</div><ul class="requirement-list">${currentTask.requirements.map(r=>`<li>${r}</li>`).join('')}</ul></div>
-<div class="section"><div class="section-title">结算说明</div><div style="font-size:12px;color:#666;line-height:1.8">1. 审核通过后7个工作日内按点赞量发放盖世币奖励<br>2. 后续每隔固定周期统计新增点赞补发<br>3. 活动结束后发放最终统计奖励<br>4. 奖池不足时按交稿时间优先发放</div></div>
+<div class="section"><div class="section-title">奖励与结算</div><div class="rule-copy">每 1 个赞奖励 ${currentTask.reward} 盖世币，单篇最高 ${currentTask.maxReward.toLocaleString()} 盖世币。</div><div class="rule-copy">预计奖励 = min（当前点赞数 × 每赞单价，单稿奖励上限）。最终以点赞统计截止时间 ${currentTask.snapshotDeadline} 的数据快照及人工结算结果为准。</div><div class="rule-copy">投稿数据校验通过时按单稿奖励上限预留奖池；可用预算不足一个单稿上限时停止接收新投稿。</div></div>
 <div class="section"><div class="section-title">收入排行</div>${rankData.map((r,i)=>`<div class="rank-item"><div class="rank-num t${i+1}">${i+1}</div><div class="rank-avatar">${r.avatar}</div><div class="rank-info"><div class="rn">${r.name}</div><div class="rr">投稿奖励 ${CI}${r.reward}</div></div><div class="rank-view" onclick="event.stopPropagation();showToast('打开作品链接')">查看投稿 ›</div></div>`).join('')}</div>
 <div style="height:70px"></div>`;
   const btn=document.getElementById('btn-claim');
   btn.textContent='上传参与作品';
-  btn.onclick=()=>showView('submit');
+  btn.onclick=beginSubmission;
   showView('detail');
 }
 
