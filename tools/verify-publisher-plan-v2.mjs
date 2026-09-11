@@ -9,6 +9,10 @@ const cJs = read('demos/Mod与发行人/发行人计划demo.js');
 const bHtml = read('demos/Mod与发行人/发行人计划-后台demo.html');
 const bJs = read('demos/Mod与发行人/发行人计划-后台demo.js');
 const prd = read('prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md');
+const demoSource = cHtml + cJs + bHtml + bJs;
+const normalizedPublisherSource = (demoSource + prd)
+  .replace(/<[^>]+>/g, ' ')
+  .replace(/\s+/g, ' ');
 
 const mustContain = (source, values, label) => {
   for (const value of values) {
@@ -114,6 +118,9 @@ mustContain(bHtml + bJs, [
   '认证创作者',
   '定向邀请专属标签'
 ], 'B review and settlement flow');
+mustContain(bHtml + bJs, [
+  '不得按 0 点赞结算'
+], 'B inaccessible-work settlement rule');
 mustNotContain(bJs, [
   'warning:',
   '<th>预警</th>',
@@ -121,7 +128,7 @@ mustNotContain(bJs, [
 ], 'B demo');
 mustNotContain(bHtml + bJs, ['收货地址', '物流单号', '已发货'], 'B demo');
 
-mustNotContain(cHtml + cJs + bHtml + bJs + prd, [
+mustNotContain(demoSource, [
   '提交审核（预计24小时内）',
   '提交成功，等待审核',
   '按任务设定的阶梯规则计算奖励',
@@ -131,9 +138,28 @@ mustNotContain(cHtml + cJs + bHtml + bJs + prd, [
   '后续每隔固定周期补发新增点赞奖励',
   '身份标签已下发',
   '个人发布的任务需24小时内审核通过后上架',
-  '视频不可访问</td><td>该条按0结算',
-  '自定义金额'
-], 'retired publisher rules');
+  'id="custom-amt"',
+  'calcCustom(',
+  '<div class="form-label">自定义金额</div>',
+  'placeholder="输入盖世币数量（最低100）"'
+], 'retired publisher demo rules');
+mustNotContain(prd, [
+  '提交成功后提示“提交成功，等待审核”',
+  '页面保留自定义金额、现有支付方式',
+  '用户选择档位或输入自定义金额后',
+  '结算说明包含数据统计周期、周期补发'
+], 'retired publisher PRD capabilities');
+
+const inaccessibleZeroSettlementMatches = [
+  ...normalizedPublisherSource.matchAll(/(?:视频|作品)不可访问.{0,120}?按\s*(?:0|零)(?:\s*点赞)?\s*结算/gu)
+].map(match => match[0]);
+const isNegatedZeroSettlement = value =>
+  /(?:不得|禁止|不能|不可|不应|不予|不再|不)\s*按\s*(?:0|零)(?:\s*点赞)?\s*结算/u.test(value)
+  || /不默认[^\u3002；]{0,24}(?:或|、)\s*按\s*(?:0|零)(?:\s*点赞)?\s*结算/u.test(value);
+assert(
+  inaccessibleZeroSettlementMatches.every(isNegatedZeroSettlement),
+  'retired publisher rules still define inaccessible video/work as zero settlement'
+);
 
 mustContain(prd, [
   '| 修订日期 | 修订内容 | 版本 | 修订人 |',
@@ -168,6 +194,13 @@ mustContain(prd, [
   '创作者认证通过后只授予“认证创作者”身份与投稿权限',
   '专属标签是独立状态'
 ], 'PRD V2.3');
+mustContain(prd, [
+  '不按 0 点赞结算'
+], 'PRD inaccessible-work settlement rule');
+assert(
+  prd.includes('充值仅支持后台预先配置的固定 SKU') || prd.includes('只支持后台固定 SKU'),
+  'PRD V2.3 missing: 充值仅支持后台预先配置的固定 SKU／只支持后台固定 SKU'
+);
 mustNotContain(cHtml + cJs + bHtml + bJs + prd, [
   '发行积分',
   '发行币',
