@@ -10,9 +10,6 @@ const bHtml = read('demos/Mod与发行人/发行人计划-后台demo.html');
 const bJs = read('demos/Mod与发行人/发行人计划-后台demo.js');
 const prd = read('prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md');
 const demoSource = cHtml + cJs + bHtml + bJs;
-const normalizedPublisherSource = (demoSource + prd)
-  .replace(/<[^>]+>/g, ' ')
-  .replace(/\s+/g, ' ');
 
 const mustContain = (source, values, label) => {
   for (const value of values) {
@@ -26,34 +23,54 @@ const mustNotContain = (source, values, label) => {
   }
 };
 
-const zeroSettlementOutcomeSource = String.raw`按\s*(?:0|零)(?:\s*点赞)?\s*结算`;
-const legacyZeroSettlementPatterns = [
-  new RegExp(String.raw`(?:视频|作品|链接).{0,30}?(?:不可|无法).{0,12}?访问[^\u3002；]{0,60}?${zeroSettlementOutcomeSource}`, 'gu'),
-  new RegExp(String.raw`(?:删除|私密)[^\u3002；]{0,60}?${zeroSettlementOutcomeSource}`, 'gu'),
-  new RegExp(String.raw`(?:关键数据|点赞数据).{0,12}?(?:缺失|无法取得)[^\u3002；]{0,60}?${zeroSettlementOutcomeSource}`, 'gu')
-];
-const negatedZeroSettlementPattern = new RegExp(
-  String.raw`(?:(?:不得|不能|不会|不|禁止)\s*按|不默认[^\u3002；]{0,24}(?:或|、)\s*按)\s*(?:0|零)(?:\s*点赞)?\s*结算`,
-  'u'
-);
-const hasLegacyZeroSettlement = source => legacyZeroSettlementPatterns.some(pattern =>
-  [...source.matchAll(pattern)].some(match => !negatedZeroSettlementPattern.test(match[0]))
-);
+const legacyZeroSettlementTrigger = /(?:不可|无法)(?:\s*正常)?\s*访问|抓取\s*失败|作品.{0,12}?(?:删除|私密)|(?:关键数据|点赞数据|点赞数|数据).{0,12}?(?:缺失|无法取得)|无法取得.{0,8}?有效数据/u;
+const zeroSettlementOutcomePattern = /(?:按|以)\s*(?:0|零)\s*(?:(?:点赞数|点赞量|点赞)\s*)?结算/gu;
+const zeroSettlementNegation = /(?:不允许|不得|不能|不会|不应|不予|不再|不可|禁止|严禁|不)(?:\s*(?:直接|再次|再))*\s*$/u;
 
-const legacyZeroSettlementAdversarialCases = [
+const hasLegacyZeroSettlementRule = text => {
+  const normalized = text
+    .replace(/<br\s*\/?\s*>/giu, '\n')
+    .replace(/<\/(?:p|div|li|tr|h[1-6])\s*>/giu, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\r\n?/g, '\n')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/\n+/g, '\n')
+    .trim();
+  const sentences = normalized.split(/[。；;！!？?\n]+/u).filter(Boolean);
+  return sentences.some(sentence => {
+    if (!legacyZeroSettlementTrigger.test(sentence)) return false;
+    return [...sentence.matchAll(zeroSettlementOutcomePattern)].some(match => {
+      const prefix = sentence.slice(Math.max(0, match.index - 12), match.index);
+      return !zeroSettlementNegation.test(prefix);
+    });
+  });
+};
+
+const legacyZeroSettlementErrorCases = [
   '作品无法访问时按0点赞结算',
   '链接不可访问时按0结算',
   '作品删除或转为私密时按零结算',
   '视频不可正常访问时按0结算',
-  '关键数据缺失时按0结算'
+  '关键数据缺失时按0结算',
+  '抓取失败后以零点赞数结算',
+  '点赞数据无法取得时按0点赞量结算',
+  '无法取得有效数据时按零结算',
+  '作品删除，不能重新抓取则按0点赞结算'
 ];
-for (const [index, example] of legacyZeroSettlementAdversarialCases.entries()) {
-  assert(hasLegacyZeroSettlement(example), `zero-settlement guard missed adversarial case ${index + 1}`);
+for (const [index, example] of legacyZeroSettlementErrorCases.entries()) {
+  assert(hasLegacyZeroSettlementRule(example), `zero-settlement guard missed error case ${index + 1}`);
 }
-assert(
-  !hasLegacyZeroSettlement('作品无法访问时不得按0点赞结算，链接不可访问时不按0结算；关键数据缺失时不能按0结算，作品删除后不会按零结算'),
-  'zero-settlement guard rejects correct negated guidance'
-);
+const correctZeroSettlementNegationCases = [
+  '作品无法访问时不得按0点赞结算',
+  '链接不可访问时不按0结算',
+  '抓取失败时不能直接按零点赞数结算',
+  '作品删除时不会再次按0点赞量结算',
+  '点赞数据缺失时禁止再按0结算',
+  '无法取得有效数据时严禁直接以零点赞结算'
+];
+for (const [index, example] of correctZeroSettlementNegationCases.entries()) {
+  assert(!hasLegacyZeroSettlementRule(example), `zero-settlement guard rejected negated case ${index + 1}`);
+}
 
 const assertInlineScriptMatches = (html, js, sourceName, label) => {
   const openingTag = `<script data-maintenance-source="${sourceName}">`;
@@ -180,7 +197,7 @@ mustNotContain(prd, [
 ], 'retired publisher PRD capabilities');
 
 assert(
-  !hasLegacyZeroSettlement(normalizedPublisherSource),
+  !hasLegacyZeroSettlementRule(demoSource + prd),
   'retired publisher rules still define unavailable/deleted/private/missing-data content as zero settlement'
 );
 
