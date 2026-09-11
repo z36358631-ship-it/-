@@ -160,14 +160,15 @@ async function createFlowImage(context, pageErrors, failedRequests) {
     .kicker{color:#ff9834;font-size:22px;font-weight:800;letter-spacing:.17em}.title{font-size:48px;font-weight:850;margin:12px 0 10px;letter-spacing:-.02em}.sub{color:#aaaab4;font-size:22px;margin:0}.grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,820px);column-gap:64px;row-gap:188px;margin-top:54px}.step{position:relative;min-width:0}.step-01{grid-column:1;grid-row:1}.step-02{grid-column:2;grid-row:1}.step-03{grid-column:3;grid-row:1}.step-04{grid-column:4;grid-row:1}.step-05{grid-column:1;grid-row:2}.step-06a{grid-column:2;grid-row:2}.step-06b{grid-column:3;grid-row:2}
     .step-heading{height:76px;display:flex;align-items:center;gap:13px;position:relative}.step-id{min-width:58px;height:42px;padding:0 12px;border-radius:14px;display:grid;place-items:center;color:#ff9b3e;background:rgba(255,122,26,.13);border:1px solid rgba(255,151,62,.28);font-size:18px;font-weight:850}.step h2{font-size:25px;line-height:1.2;margin:0;white-space:nowrap}.branch-tag{position:absolute;right:0;top:21px;padding:5px 10px;border-radius:999px;font-size:15px;font-weight:700}.branch-tag.virtual{color:#b9a8ff;background:rgba(135,102,255,.14);border:1px solid rgba(135,102,255,.28)}.branch-tag.physical{color:#78d8ff;background:rgba(43,169,255,.13);border:1px solid rgba(43,169,255,.26)}
     .phone{display:block;width:352px;height:auto;max-height:744px;object-fit:contain;margin:0 auto;border:1px solid rgba(255,255,255,.13);border-radius:31px;background:#111114;box-shadow:0 28px 70px rgba(0,0,0,.42)}
-    .connectors{position:absolute;z-index:1;inset:0;width:2160px;height:2200px;pointer-events:none;overflow:visible}.edge{fill:none;stroke:#ff8d32;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(255,122,26,.32));marker-end:url(#arrow)}.edge.branch{stroke:#9a7dff}.edge.physical{stroke:#45bfff}.edge-label{font-size:18px;font-weight:750;fill:#bdbdc6;paint-order:stroke;stroke:#08080b;stroke-width:8px;stroke-linejoin:round}
+    .connectors{position:absolute;z-index:1;inset:0;width:2160px;height:2200px;pointer-events:none;overflow:visible}.edge{fill:none;stroke:#ff8d32;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(255,122,26,.28));marker-end:url(#arrow)}.edge.wrap,.edge.branch-bus,.edge.branch-drop{stroke:#7890aa;stroke-width:3;filter:none}.edge.branch-bus{marker-end:none}.connector-pill rect{fill:#111b22;stroke:#567187;stroke-width:1}.connector-pill text{font-size:18px;font-weight:760;fill:#d1e4ee;text-anchor:middle}.connector-pill.branch-pill rect{fill:#10242a;stroke:#3b7480}.connector-pill.branch-pill text{fill:#82d5de}
     .foot{position:absolute;z-index:2;left:96px;right:96px;bottom:48px;padding:18px 24px;border:1px solid rgba(255,122,26,.19);border-radius:18px;background:rgba(255,122,26,.07);color:#bebec7;font-size:20px;line-height:1.5}.foot b{color:#fff}
   </style><body><main class="flow"><div class="kicker">GAMEHUB PRODUCT FLOW</div><div class="title">任务中心 → 盖世积分 → 兑换商城</div><p class="sub">每一步均为当前可操作 Demo 的实际竖屏界面</p><section class="grid">${stepHtml}</section>
-    <svg class="connectors" aria-hidden="true"><defs><marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1 1 11 6 1 11Z" fill="context-stroke"/></marker></defs><path class="edge" data-edge="01-02"/><path class="edge" data-edge="02-03"/><path class="edge" data-edge="03-04"/><path class="edge" data-edge="04-05"/><path class="edge branch" data-edge="05-06A"/><path class="edge physical" data-edge="05-06B"/><text class="edge-label" data-label="wrap">继续兑换</text><text class="edge-label" data-label="branch">按商品类型分流</text></svg>
+    <svg class="connectors" aria-hidden="true"><defs><marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M1 1 11 6 1 11Z" fill="context-stroke"/></marker></defs><path class="edge" data-edge="01-02"/><path class="edge" data-edge="02-03"/><path class="edge" data-edge="03-04"/><path class="edge wrap" data-edge="04-05"/><path class="edge branch-bus" data-edge="05-branch-bus"/><path class="edge branch-drop" data-edge="branch-06A"/><path class="edge branch-drop" data-edge="branch-06B"/><g class="connector-pill" data-label="wrap"><rect x="-68" y="-20" width="136" height="40" rx="20"/><text x="0" y="7">继续兑换</text></g><g class="connector-pill branch-pill" data-label="branch"><rect x="-96" y="-20" width="192" height="40" rx="20"/><text x="0" y="7">按商品类型分流</text></g></svg>
     <div class="foot"><b>资产边界：</b>本流程只使用盖世积分，不展示盖世币余额或京东卡兑换；确认兑换后由已选 SKU 类型决定虚拟权益或实物履约。</div></main></body></html>`);
   await page.waitForFunction(() => [...document.images].every((image) => image.complete && image.naturalWidth > 0));
   await page.evaluate(() => {
     const phone = (id) => document.querySelector(`[data-flow-step="${id}"] .phone`).getBoundingClientRect();
+    const step = (id) => document.querySelector(`[data-flow-step="${id}"]`).getBoundingClientRect();
     const setPath = (edge, d) => document.querySelector(`[data-edge="${edge}"]`).setAttribute('d', d);
     const r1 = phone('01'); const r2 = phone('02'); const r3 = phone('03'); const r4 = phone('04');
     const r5 = phone('05'); const r6a = phone('06A'); const r6b = phone('06B');
@@ -175,23 +176,22 @@ async function createFlowImage(context, pageErrors, failedRequests) {
       const y = from.top + from.height * .48;
       setPath(edge, `M ${from.right + 10} ${y} L ${to.left - 14} ${y}`);
     }
+    const s5 = step('05'); const s6a = step('06A'); const s6b = step('06B');
     const wrapStartX = r4.left + r4.width / 2;
-    const wrapEndX = r5.left + r5.width / 2;
-    const wrapMidY = (r4.bottom + r5.top) / 2;
-    setPath('04-05', `M ${wrapStartX} ${r4.bottom + 10} C ${wrapStartX} ${wrapMidY}, ${wrapEndX} ${wrapMidY}, ${wrapEndX} ${r5.top - 14}`);
-    const branchY = r5.top + r5.height * .49;
-    setPath('05-06A', `M ${r5.right + 10} ${branchY} L ${r6a.left - 14} ${branchY}`);
-    const routeY = r5.top - 94;
-    const firstGapX = (r5.right + r6a.left) / 2;
-    const secondGapX = (r6a.right + r6b.left) / 2;
-    setPath('05-06B', `M ${r5.right + 10} ${branchY + 28} L ${firstGapX} ${branchY + 28} L ${firstGapX} ${routeY} L ${secondGapX} ${routeY} L ${secondGapX} ${branchY + 28} L ${r6b.left - 14} ${branchY + 28}`);
-    const wrapLabel = document.querySelector('[data-label="wrap"]');
-    wrapLabel.setAttribute('x', String((wrapStartX + wrapEndX) / 2 - 54));
-    wrapLabel.setAttribute('y', String(wrapMidY - 14));
-    const branchLabel = document.querySelector('[data-label="branch"]');
-    branchLabel.setAttribute('x', String((firstGapX + secondGapX) / 2));
-    branchLabel.setAttribute('y', String(routeY - 16));
-    branchLabel.setAttribute('text-anchor', 'middle');
+    const wrapEndX = s5.left + 32;
+    const wrapY = (r4.bottom + s5.top) / 2 - 14;
+    setPath('04-05', `M ${wrapStartX} ${r4.bottom + 10} L ${wrapStartX} ${wrapY} L ${wrapEndX} ${wrapY} L ${wrapEndX} ${s5.top - 14}`);
+    document.querySelector('[data-label="wrap"]').setAttribute('transform', `translate(${(wrapStartX + wrapEndX) / 2} ${wrapY})`);
+
+    const branchStartY = r5.top + r5.height * .46;
+    const busY = s5.top - 62;
+    const busStartX = (r5.right + r6a.left) / 2;
+    const branch6aX = s6a.left + s6a.width / 2;
+    const branch6bX = s6b.left + s6b.width / 2;
+    setPath('05-branch-bus', `M ${r5.right + 10} ${branchStartY} L ${busStartX} ${branchStartY} L ${busStartX} ${busY} L ${branch6bX} ${busY}`);
+    setPath('branch-06A', `M ${branch6aX} ${busY} L ${branch6aX} ${s6a.top - 14}`);
+    setPath('branch-06B', `M ${branch6bX} ${busY} L ${branch6bX} ${s6b.top - 14}`);
+    document.querySelector('[data-label="branch"]').setAttribute('transform', `translate(${(branch6aX + branch6bX) / 2} ${busY})`);
   });
   const filePath = path.join(outputDir, '00-product-flow.png');
   await page.locator('.flow').screenshot({ path: filePath, animations: 'disabled' });
