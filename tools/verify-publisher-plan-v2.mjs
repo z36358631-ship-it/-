@@ -23,9 +23,11 @@ const mustNotContain = (source, values, label) => {
   }
 };
 
-const legacyZeroSettlementTrigger = /(?:不可|无法)(?:\s*正常)?\s*访问|抓取\s*失败|作品.{0,12}?(?:删除|私密)|(?:关键数据|点赞数据|点赞数|数据).{0,12}?(?:缺失|无法取得)|无法取得.{0,8}?有效数据/u;
+const legacyZeroSettlementTrigger = /(?:不可|无法)(?:\s*正常)?\s*访问|抓取.{0,8}?(?:失败|异常|超时)|无法(?:取得|获取).{0,8}?(?:有效|关键|点赞)?数据|(?:关键数据|点赞数据|点赞数|数据).{0,8}?(?:缺失|无法(?:取得|获取))|(?:作品|内容|链接).{0,8}?(?:被?删除|转为?私密|私密)/u;
 const zeroSettlementOutcomePattern = /(?:按|以)\s*(?:0|零)\s*(?:(?:点赞数|点赞量|点赞)\s*)?结算/gu;
-const zeroSettlementNegation = /(?:不允许|不得|不能|不会|不应|不予|不再|不可|禁止|严禁|不)(?:\s*(?:直接|再次|再))*\s*$/u;
+const zeroSettlementNegationWord = /(?:不允许|不得|不能|不会|不应|不予|不再|不可(?!\s*(?:正常)?\s*访问)|禁止|严禁)/u;
+const directlyNegatedZeroSettlement = /不(?!可\s*(?:正常)?\s*访问).{0,24}?(?:按|以)\s*(?:0|零)\s*(?:(?:点赞数|点赞量|点赞)\s*)?结算/u;
+const settlementResultBoundary = /(?:否则|则|但|仍|却|,|，|;|；)/u;
 
 const hasLegacyZeroSettlementRule = text => {
   const normalized = text
@@ -40,8 +42,12 @@ const hasLegacyZeroSettlementRule = text => {
   return sentences.some(sentence => {
     if (!legacyZeroSettlementTrigger.test(sentence)) return false;
     return [...sentence.matchAll(zeroSettlementOutcomePattern)].some(match => {
-      const prefix = sentence.slice(Math.max(0, match.index - 12), match.index);
-      return !zeroSettlementNegation.test(prefix);
+      const prefix = sentence.slice(0, match.index);
+      const lastClause = prefix.split(settlementResultBoundary).at(-1) || '';
+      const clauseWithOutcome = lastClause + match[0];
+      const isNegated = zeroSettlementNegationWord.test(lastClause)
+        || directlyNegatedZeroSettlement.test(clauseWithOutcome);
+      return !isNegated;
     });
   });
 };
@@ -55,7 +61,11 @@ const legacyZeroSettlementErrorCases = [
   '抓取失败后以零点赞数结算',
   '点赞数据无法取得时按0点赞量结算',
   '无法取得有效数据时按零结算',
-  '作品删除，不能重新抓取则按0点赞结算'
+  '作品删除，不能重新抓取则按0点赞结算',
+  '作品抓取异常，不能重新抓取则按0点赞结算',
+  '链接抓取超时，但系统仍按零结算',
+  '无法获取点赞数据，否则按0点赞量结算',
+  '内容被删除，却以零结算'
 ];
 for (const [index, example] of legacyZeroSettlementErrorCases.entries()) {
   assert(hasLegacyZeroSettlementRule(example), `zero-settlement guard missed error case ${index + 1}`);
@@ -66,7 +76,11 @@ const correctZeroSettlementNegationCases = [
   '抓取失败时不能直接按零点赞数结算',
   '作品删除时不会再次按0点赞量结算',
   '点赞数据缺失时禁止再按0结算',
-  '无法取得有效数据时严禁直接以零点赞结算'
+  '无法取得有效数据时严禁直接以零点赞结算',
+  '作品无法访问时不得将该投稿按0结算',
+  '抓取异常时不应在没有复核的情况下按零点赞结算',
+  '内容被删除后，不允许直接以0点赞数结算',
+  '点赞数无法获取时不予再次按0点赞量结算'
 ];
 for (const [index, example] of correctZeroSettlementNegationCases.entries()) {
   assert(!hasLegacyZeroSettlementRule(example), `zero-settlement guard rejected negated case ${index + 1}`);
