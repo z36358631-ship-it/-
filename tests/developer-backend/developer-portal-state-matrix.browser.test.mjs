@@ -160,7 +160,16 @@ for (const [status, kind] of [
       const restriction = page.locator(`[data-publisher-vendor-restriction="${status}"]`);
       assert.equal(await restriction.count(), 1);
       assert.match(await restriction.innerText(), status === 'delisted' ? /开发者资格已暂停[\s\S]*查看认证详情/ : /完成开发者认证后才可进行厂商设置/);
-      assert.equal(await restriction.locator('[data-portal-action="publisher-enterprise-verification"]').count(), 1);
+      if (status === 'pending') {
+        const progress = restriction.locator('[data-publisher-verification-progress]');
+        assert.match(await progress.innerText(), /审核进行中[\s\S]*已于 2026-09-02 提出申请[\s\S]*预计于 2026-09-09 前完成审核（5 个工作日）[\s\S]*查看进度/);
+        assert.equal(await progress.locator('[data-portal-action="publisher-enterprise-verification"]').count(), 1);
+        assert.equal(await restriction.locator('.publisher-vendor-placeholder [data-portal-action="publisher-enterprise-verification"]').count(), 0);
+        await progress.getByRole('button', { name: '查看进度', exact: true }).click();
+        await page.waitForURL(/#\/P01-03$/);
+      } else {
+        assert.equal(await restriction.locator('[data-portal-action="publisher-enterprise-verification"]').count(), 1);
+      }
     }
   } finally { await context.close(); }
 });

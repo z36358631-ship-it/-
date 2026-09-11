@@ -503,15 +503,17 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const status = access.qualificationStatus;
     const suspended = access.isPublisherReadOnly;
     const actionLabel = isEnglish
-      ? (status === 'pending' ? 'View verification progress' : status === 'rejected' ? 'Resubmit verification' : suspended ? 'View verification details' : 'Start developer verification')
-      : (status === 'pending' ? '查看认证进度' : status === 'rejected' ? '重新提交认证' : suspended ? '查看认证详情' : '申请开发者认证');
+      ? (status === 'rejected' ? 'Resubmit verification' : suspended ? 'View verification details' : 'Start developer verification')
+      : (status === 'rejected' ? '重新提交认证' : suspended ? '查看认证详情' : '申请开发者认证');
     const detail = isEnglish
       ? (status === 'pending' ? 'Your application is under review. Company settings will become available after approval.' : status === 'rejected' ? 'Update the information based on the review feedback and submit it again.' : suspended ? 'Developer privileges are suspended. Company settings are currently unavailable.' : 'Company information can be managed after developer verification is approved.')
       : (status === 'pending' ? '认证申请正在审核中，通过后将自动开放厂商设置。' : status === 'rejected' ? '请根据审核意见修改资料并重新提交认证。' : suspended ? '开发者资格已暂停，当前暂不可进行厂商设置。' : '认证通过后即可管理厂商信息。');
     const title = suspended
       ? (isEnglish ? 'Developer privileges are suspended' : '开发者资格已暂停，暂不可进行厂商设置')
       : (isEnglish ? 'Complete developer verification before using company settings' : '完成开发者认证后才可进行厂商设置');
-    return `<section class="publisher-vendor-settings" data-publisher-page="vendor" data-publisher-vendor-restriction="${e(status)}"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>${isEnglish ? 'Company settings' : '厂商设置'}</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon(suspended ? 'warning' : 'vendor')}<strong>${e(title)}</strong><p>${e(detail)}</p>${c.button({ label: actionLabel, variant: suspended ? 'default' : 'primary', action: 'publisher-enterprise-verification' })}</div></section>`;
+    const pendingProgress = status === 'pending' ? `<div class="qualification-pending-note publisher-vendor-progress" data-publisher-verification-progress>${icon('info')}<div><strong>${isEnglish ? 'Verification in progress' : '审核进行中'}</strong><p>${isEnglish ? 'Submitted on Sep 2, 2026. Review is expected by Sep 9, 2026 (5 business days).' : '已于 2026-09-02 提出申请，预计于 2026-09-09 前完成审核（5 个工作日）。'}</p></div>${c.button({ label: isEnglish ? 'View progress' : '查看进度', variant: 'secondary', action: 'publisher-enterprise-verification', size: 'small' })}</div>` : '';
+    const cardAction = status === 'pending' ? '' : c.button({ label: actionLabel, variant: suspended ? 'default' : 'primary', action: 'publisher-enterprise-verification' });
+    return `<section class="publisher-vendor-settings" data-publisher-page="vendor" data-publisher-vendor-restriction="${e(status)}"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>${isEnglish ? 'Company settings' : '厂商设置'}</h2></div></header>${pendingProgress}<div class="publisher-empty-state publisher-vendor-placeholder">${icon(suspended ? 'warning' : 'vendor')}<strong>${e(title)}</strong><p>${e(detail)}</p>${cardAction}</div></section>`;
   };
 
   const renderPublisherDeleteGameModal = state => {
