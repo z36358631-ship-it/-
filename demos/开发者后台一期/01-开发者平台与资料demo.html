@@ -161,7 +161,7 @@ svg { display: block; }
 
 .portal-demo-switch {
   position: fixed;
-  top: 68%;
+  bottom: 24px;
   right: 18px;
   z-index: 45;
   min-height: 42px;
@@ -179,11 +179,11 @@ svg { display: block; }
   background: rgba(255, 255, 255, .94);
   box-shadow: 0 10px 28px rgba(16, 31, 54, .18);
   backdrop-filter: blur(14px);
-  transform: translateY(-50%);
+  transform: none;
   cursor: pointer;
   transition: color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
 }
-.portal-demo-switch:hover { color: #3048B6; border-color: rgba(75, 95, 213, .48); box-shadow: 0 12px 32px rgba(16, 31, 54, .24); transform: translate(-2px, -50%); }
+.portal-demo-switch:hover { color: #3048B6; border-color: rgba(75, 95, 213, .48); box-shadow: 0 12px 32px rgba(16, 31, 54, .24); transform: translateX(-2px); }
 .portal-demo-switch:focus-visible { outline: 3px solid rgba(56, 201, 220, .46); outline-offset: 3px; }
 .portal-demo-switch svg { width: 16px; height: 16px; flex: 0 0 auto; color: #4055C8; }
 .portal-demo-switch__badge { min-width: 39px; height: 22px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; color: #086B7A; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; border-radius: 999px; background: #E2F8FB; }
@@ -2594,6 +2594,7 @@ button.review-attachment-card:focus-visible { outline: 3px solid rgba(62,99,221,
 .publisher-game-filter > button svg { width: 14px; height: 14px; }
 .publisher-game-toolbar { min-height: 38px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .publisher-game-toolbar > .gh-button { flex: 0 0 auto; }
+.publisher-game-toolbar__actions { display: flex; align-items: center; gap: 10px; }
 .publisher-game-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .publisher-game-item { position: relative; z-index: 0; min-width: 0; min-height: 172px; display: grid; grid-template-columns: 136px minmax(0, 1fr); overflow: visible; border: 1px solid #DCE3EB; border-radius: 10px; background: #FFFFFF; box-shadow: 0 3px 13px rgba(41,62,90,.05); }
 .publisher-game-item.is-menu-open { z-index: 4; }
@@ -2882,7 +2883,7 @@ button.review-attachment-card:focus-visible { outline: 3px solid rgba(62,99,221,
   .publisher-console-sidebar button.is-active::before { display: none; }
   .publisher-game-library > header, .publisher-access-alert, .publisher-game-toolbar, .publisher-content-title { align-items: flex-start; flex-direction: column; }
   .publisher-game-toolbar { gap: 14px; }
-  .publisher-game-toolbar > .gh-button { align-self: flex-start; }
+  .publisher-game-toolbar__actions { align-self: flex-start; }
   .publisher-game-filter { width: 100%; flex-wrap: wrap; }
   .publisher-game-filter .publisher-search { flex: 1 1 220px; }
   .publisher-search { width: 100%; }
@@ -4166,7 +4167,413 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .pgr-territory-fixed{display:flex;align-items:center;gap:14px;border:1px solid #cfe6e7;border-radius:8px;background:#f1fafa;padding:16px}.pgr-territory-fixed strong,.pgr-territory-fixed small{display:block}.pgr-territory-fixed small{margin-top:4px;color:#749098;font-size:11px}.pgr-territory-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.pgr-territory-groups>section{min-width:0;border:1px solid #dce5ed;border-radius:8px;padding:13px}.pgr-territory-groups>section>header{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px}.pgr-territory-groups>section>header strong{font-size:12px}.pgr-territory-groups>section>header span{color:#8295a2;font-size:11px}.pgr-territory-groups>section>div{display:flex;flex-wrap:wrap;gap:7px}.pgr-territory-groups>section>div>span{border-radius:5px;background:#f3f7f9;padding:5px 7px;color:#526c7d;font-size:11px}.pgr-territory-groups small{color:#91a0aa}
 .pgr-version-reference{display:flex;align-items:center;gap:12px;margin-bottom:20px;border-radius:8px;background:#f1f8fa;padding:15px}.pgr-version-reference span{color:#72909e;font-size:12px}.pgr-version-reference strong{margin-right:auto;color:#183f53;font-size:16px}.pgr-qualification-missing{border-radius:7px;background:#fff4ed;padding:15px;color:#a86636}.pgr-qualification-missing p{margin:6px 0 0;font-size:12px}.pgr-issues{margin:20px 0;border-radius:7px;background:#fff8ed;padding:13px;color:#9b6b25;font-size:12px;line-height:1.8}.pgr-issues ul{margin:8px 0 0;padding-left:18px}.pgr-reason{display:block;margin:20px 0 14px;color:#536c7e;font-size:13px}.pgr-reason span{margin-left:6px;color:#8c9da8;font-size:11px}.pgr-reason textarea{margin-top:10px;resize:vertical}.pgr-actions{display:flex;justify-content:flex-end;gap:10px}.pgr-result{margin-bottom:22px;border-radius:7px;background:#eaf7ee;padding:14px;color:#32714b;line-height:1.7}.pgr-result--rejected{background:#fff2e9;color:#9e6136}.pgr-result--withdrawn{background:#f0f3f6;color:#627584}.pgr-result strong{font-size:14px}.pgr-result p{margin:6px 0;font-size:13px;overflow-wrap:anywhere;white-space:pre-wrap}.pgr-result small{font-size:11px}.pgr-timeline{margin:0;padding-left:18px}.pgr-timeline li{padding:0 0 22px 5px;color:#55a9b3}.pgr-timeline li:last-child{padding-bottom:0}.pgr-timeline strong,.pgr-timeline span,.pgr-timeline small{display:block;color:#4d6373;font-size:12px;line-height:1.8;overflow-wrap:anywhere}.pgr-timeline span,.pgr-timeline small{color:#8a9ba6;font-size:11px}.pgr-timeline p{color:#8a6b4d;font-size:12px;overflow-wrap:anywhere;white-space:pre-wrap}
 @media(max-width:1100px){.pgr-files,.pgr-territory-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:720px){.pgr-list-header,.pgr-detail-header{flex-direction:column;align-items:flex-start}.pgr-detail-header__status{justify-content:flex-start}.pgr-filter{padding:16px}.pgr-filter label,.pgr-filter label:first-child{flex:1 1 100%}.pgr-filter .pgr-button{flex:1 1 90px}.pgr-panel{padding:18px}.pgr-fields,.pgr-files,.pgr-territory-groups{grid-template-columns:minmax(0,1fr)}.pgr-wide{grid-column:auto}.pgr-language-picker{align-items:flex-start;flex-direction:column}.pgr-language-picker select{max-width:none}.pgr-list-header h1,.pgr-detail-header h1{font-size:23px}.pgr-version-reference{align-items:flex-start;flex-wrap:wrap}.pgr-version-reference strong{flex:1 1 100%;margin:0}.pricing-override-row{grid-template-columns:minmax(0,1fr);gap:5px}.pricing-override-row span{display:block}.pgr-actions{flex-direction:column-reverse}.pgr-actions .pgr-button{width:100%}}</style></head><body>
+@media(max-width:720px){.pgr-list-header,.pgr-detail-header{flex-direction:column;align-items:flex-start}.pgr-detail-header__status{justify-content:flex-start}.pgr-filter{padding:16px}.pgr-filter label,.pgr-filter label:first-child{flex:1 1 100%}.pgr-filter .pgr-button{flex:1 1 90px}.pgr-panel{padding:18px}.pgr-fields,.pgr-files,.pgr-territory-groups{grid-template-columns:minmax(0,1fr)}.pgr-wide{grid-column:auto}.pgr-language-picker{align-items:flex-start;flex-direction:column}.pgr-language-picker select{max-width:none}.pgr-list-header h1,.pgr-detail-header h1{font-size:23px}.pgr-version-reference{align-items:flex-start;flex-wrap:wrap}.pgr-version-reference strong{flex:1 1 100%;margin:0}.pricing-override-row{grid-template-columns:minmax(0,1fr);gap:5px}.pricing-override-row span{display:block}.pgr-actions{flex-direction:column-reverse}.pgr-actions .pgr-button{width:100%}}
+
+.publisher-data-dashboard {
+  min-height: 100%;
+  color: #182230;
+}
+.publisher-dashboard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.publisher-dashboard-head > div:first-child > span,
+.publisher-dashboard-card header > div > span {
+  display: block;
+  margin-bottom: 6px;
+  color: #8a6500;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .1em;
+}
+.publisher-dashboard-head h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.25;
+}
+.publisher-dashboard-head p,
+.publisher-dashboard-card header p {
+  margin: 8px 0 0;
+  color: #667085;
+  line-height: 1.65;
+}
+.publisher-dashboard-head > div:last-child {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.publisher-dashboard-head > div:last-child > button,
+.publisher-dashboard-filter-actions button,
+.publisher-dashboard-orders td button,
+.publisher-dashboard-finance-actions button {
+  min-height: 36px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0 13px;
+  background: #fff;
+  color: #344054;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+.publisher-dashboard-head > div:last-child > button:hover,
+.publisher-dashboard-filter-actions button:hover,
+.publisher-dashboard-orders td button:hover,
+.publisher-dashboard-finance-actions button:hover { border-color: #d5a400; color: #755500; }
+.publisher-dashboard-head > div:last-child > small {
+  flex-basis: 100%;
+  color: #667085;
+  font-size: 12px;
+  text-align: right;
+}
+.publisher-dashboard-tag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 24px;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: #eff4ff;
+  color: #3538cd;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.publisher-dashboard-tag.is-success { background: #ecfdf3; color: #027a48; }
+.publisher-dashboard-tag.is-warning { background: #fffaeb; color: #b54708; }
+.publisher-dashboard-tag.is-danger { background: #fef3f2; color: #b42318; }
+.publisher-dashboard-tag.is-info { background: #f2f4f7; color: #475467; }
+.publisher-dashboard-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e4e7ec;
+}
+.publisher-dashboard-tabs button {
+  min-height: 42px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 0 16px;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+.publisher-dashboard-tabs button:hover { color: #344054; }
+.publisher-dashboard-tabs button.is-active { border-bottom-color: #f0b90b; color: #5b4300; }
+.publisher-dashboard-filters {
+  margin-bottom: 18px;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+}
+.publisher-dashboard-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(135px,1fr));
+  gap: 12px;
+}
+.publisher-dashboard-field { display: grid; gap: 6px; min-width: 0; }
+.publisher-dashboard-field > span { color: #667085; font-size: 12px; font-weight: 600; }
+.publisher-dashboard-field select,
+.publisher-dashboard-field input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 0 11px;
+  background: #fff;
+  color: #182230;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.publisher-dashboard-field select:focus,
+.publisher-dashboard-field input:focus { border-color: #d5a400; box-shadow: 0 0 0 3px rgba(240,185,11,.18); }
+.publisher-dashboard-field--keyword { grid-column: span 2; }
+.publisher-dashboard-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 13px;
+}
+.publisher-dashboard-filter-actions span { color: #667085; font-size: 12px; }
+.publisher-dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(6,minmax(130px,1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.publisher-dashboard-metric {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+}
+.publisher-dashboard-metric::after {
+  content: "";
+  position: absolute;
+  top: -28px;
+  right: -28px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #fff5c2;
+}
+.publisher-dashboard-metric span,
+.publisher-dashboard-metric strong,
+.publisher-dashboard-metric small { position: relative; z-index: 1; display: block; }
+.publisher-dashboard-metric span { color: #667085; font-size: 12px; }
+.publisher-dashboard-metric strong { margin: 10px 0 6px; font-size: 22px; font-variant-numeric: tabular-nums; }
+.publisher-dashboard-metric small { overflow: hidden; color: #667085; font-size: 11px; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+.publisher-dashboard-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0,1.6fr) minmax(250px,.7fr);
+  gap: 16px;
+  align-items: start;
+}
+.publisher-dashboard-card {
+  min-width: 0;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  background: #fff;
+}
+.publisher-dashboard-card--wide { grid-row: span 2; }
+.publisher-dashboard-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 17px 18px 14px;
+  border-bottom: 1px solid #eef0f3;
+}
+.publisher-dashboard-card header h2 { margin: 0; font-size: 17px; }
+.publisher-dashboard-card header small,
+.publisher-dashboard-card header > strong { color: #667085; font-size: 12px; }
+.publisher-dashboard-chart {
+  display: grid;
+  grid-template-columns: repeat(7,minmax(32px,1fr));
+  align-items: end;
+  gap: 13px;
+  min-height: 270px;
+  padding: 30px 24px 18px;
+}
+.publisher-dashboard-chart > div {
+  display: grid;
+  grid-template-rows: 210px auto;
+  gap: 8px;
+  align-items: end;
+  color: #667085;
+  font-size: 11px;
+  text-align: center;
+}
+.publisher-dashboard-chart i {
+  position: relative;
+  display: block;
+  width: min(34px,72%);
+  min-height: 10px;
+  justify-self: center;
+  border-radius: 7px 7px 2px 2px;
+  background: linear-gradient(180deg,#ffe58f,#f0b90b);
+}
+.publisher-dashboard-chart i::after {
+  content: attr(data-value);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  color: #475467;
+  font-size: 11px;
+  font-style: normal;
+}
+.publisher-dashboard-breakdown,
+.publisher-dashboard-formula,
+.publisher-dashboard-statement,
+.publisher-dashboard-dialog dl { margin: 0; padding: 4px 18px 12px; }
+.publisher-dashboard-breakdown > div,
+.publisher-dashboard-formula > div,
+.publisher-dashboard-statement > div,
+.publisher-dashboard-dialog dl > div {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef0f3;
+}
+.publisher-dashboard-breakdown > div:last-child,
+.publisher-dashboard-statement > div:last-child,
+.publisher-dashboard-dialog dl > div:last-child { border-bottom: 0; }
+.publisher-dashboard-breakdown dt,
+.publisher-dashboard-formula dt,
+.publisher-dashboard-statement dt,
+.publisher-dashboard-dialog dt { color: #667085; }
+.publisher-dashboard-breakdown dd,
+.publisher-dashboard-formula dd,
+.publisher-dashboard-statement dd,
+.publisher-dashboard-dialog dd { margin: 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.publisher-dashboard-orders > header p { max-width: 720px; }
+.publisher-dashboard-table-wrap { max-width: 100%; overflow-x: auto; }
+.publisher-dashboard-table-wrap table { width: 100%; min-width: 1040px; border-collapse: collapse; }
+.publisher-dashboard-table-wrap th,
+.publisher-dashboard-table-wrap td {
+  border-bottom: 1px solid #eef0f3;
+  padding: 13px 14px;
+  color: #344054;
+  font-size: 13px;
+  text-align: left;
+  vertical-align: top;
+}
+.publisher-dashboard-table-wrap th { background: #f9fafb; color: #667085; font-size: 12px; }
+.publisher-dashboard-table-wrap tr:last-child td { border-bottom: 0; }
+.publisher-dashboard-table-wrap td strong,
+.publisher-dashboard-table-wrap td small { display: block; }
+.publisher-dashboard-table-wrap td small { margin-top: 4px; color: #667085; font-size: 11px; }
+.publisher-dashboard-table-wrap td:nth-child(1) small { font-family: Consolas,"SFMono-Regular",monospace; }
+.publisher-dashboard-aux-state { color: #6941c6 !important; }
+.publisher-dashboard-revenue-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; align-items: start; }
+.publisher-dashboard-formula > div.is-negative dd { color: #b42318; }
+.publisher-dashboard-formula > div.is-positive dd { color: #027a48; }
+.publisher-dashboard-formula > div.is-total {
+  margin-top: 4px;
+  border-top: 1px solid #98a2b3;
+  border-bottom: 0;
+}
+.publisher-dashboard-formula > div.is-total dt,
+.publisher-dashboard-formula > div.is-total dd { color: #182230; font-size: 16px; font-weight: 800; }
+.publisher-dashboard-risk-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 18px 18px;
+  border-radius: 9px;
+  padding: 13px 14px;
+  background: #fffaeb;
+  color: #93370d;
+}
+.publisher-dashboard-risk-note strong { margin-left: auto; }
+.publisher-dashboard-risk-note small { color: #b54708; }
+.publisher-dashboard-pending { display: grid; gap: 6px; padding: 20px 18px 14px; }
+.publisher-dashboard-pending strong { font-size: 32px; font-variant-numeric: tabular-nums; }
+.publisher-dashboard-pending span { color: #667085; font-size: 12px; }
+.publisher-dashboard-finance-actions { display: flex; justify-content: flex-end; gap: 9px; padding: 16px 18px 18px; }
+.publisher-dashboard-finance-actions button.is-primary { border-color: #d9a600; background: #f0b90b; color: #332600; }
+.publisher-dashboard-empty,
+.publisher-dashboard-access {
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  border: 1px dashed #d0d5dd;
+  border-radius: 12px;
+  padding: 32px;
+  background: #fff;
+  text-align: center;
+}
+.publisher-dashboard-empty > span,
+.publisher-dashboard-access > span { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #f2f4f7; color: #667085; font-size: 22px; }
+.publisher-dashboard-empty strong,
+.publisher-dashboard-access strong { margin-top: 15px; font-size: 17px; }
+.publisher-dashboard-empty p,
+.publisher-dashboard-access p { margin: 8px 0 0; color: #667085; }
+.publisher-dashboard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(16,24,40,.44);
+}
+.publisher-dashboard-drawer {
+  width: min(720px,calc(100vw - 36px));
+  height: 100vh;
+  overflow-y: auto;
+  background: #fff;
+  box-shadow: -18px 0 48px rgba(16,24,40,.18);
+}
+.publisher-dashboard-drawer > header,
+.publisher-dashboard-dialog > header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #e4e7ec;
+  padding: 20px 22px;
+  background: #fff;
+}
+.publisher-dashboard-drawer > header span,
+.publisher-dashboard-dialog > header span { color: #8a6500; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.publisher-dashboard-drawer > header h2,
+.publisher-dashboard-dialog > header h2 { margin: 5px 0 0; font-size: 21px; }
+.publisher-dashboard-drawer > header p { margin: 7px 0 0; color: #667085; }
+.publisher-dashboard-drawer > header button,
+.publisher-dashboard-dialog > header button { width: 36px; height: 36px; border: 0; border-radius: 8px; background: #f2f4f7; cursor: pointer; font-size: 22px; }
+.publisher-dashboard-drawer-body { padding: 20px 22px 32px; }
+.publisher-dashboard-drawer-body section { border: 1px solid #e4e7ec; border-radius: 10px; overflow: hidden; }
+.publisher-dashboard-drawer-body section + section { margin-top: 14px; }
+.publisher-dashboard-drawer-body h3 { margin: 0; border-bottom: 1px solid #eef0f3; padding: 14px 16px; font-size: 15px; }
+.publisher-dashboard-drawer-body dl { margin: 0; padding: 4px 16px 10px; }
+.publisher-dashboard-drawer-body dl > div { display: grid; grid-template-columns: minmax(120px,.7fr) minmax(0,1.3fr); gap: 16px; border-bottom: 1px solid #eef0f3; padding: 12px 0; }
+.publisher-dashboard-drawer-body dl > div:last-child { border-bottom: 0; }
+.publisher-dashboard-drawer-body dt { color: #667085; }
+.publisher-dashboard-drawer-body dd { margin: 0; text-align: right; font-weight: 700; overflow-wrap: anywhere; }
+.publisher-dashboard-privacy { margin-top: 14px; border-radius: 9px; padding: 13px 15px; background: #f9fafb; color: #667085; line-height: 1.65; }
+.publisher-dashboard-dialog {
+  width: min(640px,calc(100vw - 32px));
+  max-height: min(720px,calc(100vh - 40px));
+  align-self: center;
+  margin: auto;
+  overflow-y: auto;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(16,24,40,.22);
+}
+.publisher-dashboard-dialog dd { max-width: 360px; font-weight: 500; line-height: 1.6; }
+
+@media (max-width: 1260px) {
+  .publisher-dashboard-metrics { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 980px) {
+  .publisher-dashboard-filter-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .publisher-dashboard-overview-grid,
+  .publisher-dashboard-revenue-grid { grid-template-columns: 1fr; }
+  .publisher-dashboard-card--wide { grid-row: auto; }
+}
+@media (max-width: 720px) {
+  .publisher-dashboard-head { display: grid; gap: 12px; }
+  .publisher-dashboard-head h1 { font-size: 24px; }
+  .publisher-dashboard-head > div:last-child { justify-content: flex-start; }
+  .publisher-dashboard-head > div:last-child > small { text-align: left; }
+  .publisher-dashboard-tabs { overflow-x: auto; }
+  .publisher-dashboard-tabs button { flex: 0 0 auto; }
+  .publisher-dashboard-filter-grid { grid-template-columns: 1fr; }
+  .publisher-dashboard-field--keyword { grid-column: auto; }
+  .publisher-dashboard-filter-actions { align-items: flex-start; flex-direction: column; }
+  .publisher-dashboard-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .publisher-dashboard-chart { overflow-x: auto; grid-template-columns: repeat(7,52px); }
+  .publisher-dashboard-drawer { width: 100%; }
+  .publisher-dashboard-drawer-body dl > div,
+  .publisher-dashboard-dialog dl > div { grid-template-columns: 1fr; gap: 5px; }
+  .publisher-dashboard-drawer-body dd,
+  .publisher-dashboard-dialog dd { max-width: none; text-align: left; }
+  .publisher-dashboard-finance-actions { align-items: stretch; flex-direction: column; }
+}
+@media (max-width: 420px) {
+  .publisher-dashboard-metrics { grid-template-columns: 1fr; }
+  .publisher-dashboard-metric small { white-space: normal; }
+}</style></head><body>
 <div id="app"></div>
 <textarea id="portal-module" hidden aria-hidden="true">{"id":"01","name":"开发者平台与企业认证","description":"开发者首页、弹窗登录、帮助中心、平台注册、企业认证申请与状态、运营审核和中英文内容配置闭环。","output":"01-开发者平台与资料demo.html","defaultRoute":"P01-01","routeIds":["P01-01","P01-03","P01-08","P01-09","P01-10","P02-01"]}</textarea>
 <textarea id="portal-modules" hidden aria-hidden="true">[{"id":"01","name":"开发者平台与企业认证","description":"开发者首页、弹窗登录、帮助中心、平台注册、企业认证申请与状态、运营审核和中英文内容配置闭环。","output":"01-开发者平台与资料demo.html","defaultRoute":"P01-01","routeIds":["P01-01","P01-03","P01-08","P01-09","P01-10","P02-01"]},{"id":"02","name":"游戏创建与发行","description":"创建游戏项目，维护版本发布、发布记录与游戏资质认证。","output":"02-游戏创建与发行demo.html","aliases":["02-CDKEY商品与供给demo.html"],"defaultRoute":"P02-01","routeIds":["P01-01","P01-03","P01-08","P01-09","P01-10","P02-01"]},{"id":"03","name":"包体测试与版本发布","description":"Windows、macOS、Linux 的 Build／Manifest、测试、Release Pointer 发布与历史 Build 回滚。","output":"03-包体测试与发布demo.html","defaultRoute":"P03-01"},{"id":"04","name":"精准化投放与发行数据","description":"经营看板、Campaign／UTM、人工资源执行、渠道归因及聚合导出。","output":"04-精准投放与数据demo.html","defaultRoute":"P04-01"}]</textarea>
@@ -4506,6 +4913,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
       canViewReleaseHistory: signedIn,
       canManageGameQualifications: enterpriseApproved,
       canManageVendor: enterpriseApproved,
+      canViewPublisherData: enterpriseApproved || suspended,
       isPublisherReadOnly: suspended,
     });
   };
@@ -8921,6 +9329,218 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 
 window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
+(function registerPublisherDataDashboard(namespace) {
+  const clone = value => JSON.parse(JSON.stringify(value));
+  const settlementCurrency = 'USD';
+  const currencyDigits = Object.freeze({ USD:2, EUR:2, GBP:2, CAD:2, CNY:2, JPY:0, KRW:0 });
+  const defaultFilters = Object.freeze({ range: '30d', game: 'all', product: 'all', fulfillment: 'all', region: 'all', platform: 'all', status: 'all', keyword: '' });
+  const statusOrder = ['completed', 'free', 'refund_pending', 'refunded', 'chargeback_open', 'chargeback_won', 'chargeback_lost', 'closed'];
+  const orders = Object.freeze([
+    { id:'RCN-202609-A8F2K7', orderMask:'ORD-****-1842', date:'2026-09-10 18:42', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-BASE-001', product:'星海远征', productEn:'Stellar Voyage', productType:'base', fulfillment:'account_entitlement', region:'global', country:'日本', countryEn:'Japan', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'JPY', amountMinor:1980, settlementCurrency, convertedMinor:1320, fxRateText:'JPY/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:53, channelFeeMinor:40, platformShareMinor:198, adjustmentMinor:0, settlementMinor:1029, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'completed', delivered:true, delivery:'账号权益已生效', deliveryEn:'Account entitlement active' },
+    { id:'RCN-202609-C4N8M2', orderMask:'ORD-****-1826', date:'2026-09-10 16:26', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-101', product:'深空回声 DLC', productEn:'Deep Space Echoes DLC', productType:'dlc', fulfillment:'cdkey', region:'global', country:'美国', countryEn:'United States', platform:'Android', channel:'Google Play Billing', channelEn:'Google Play Billing', currency:'USD', amountMinor:599, settlementCurrency, convertedMinor:599, fxRateText:'USD/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:24, channelFeeMinor:18, platformShareMinor:90, adjustmentMinor:0, settlementMinor:467, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'completed', delivered:true, delivery:'CDKEY 已交付', deliveryEn:'CDKEY delivered' },
+    { id:'RCN-202609-H7Q3P5', orderMask:'ORD-****-1798', date:'2026-09-10 14:08', game:'像素边境', gameEn:'Pixel Frontier', sku:'SKU-BASE-007', product:'像素边境', productEn:'Pixel Frontier', productType:'base', fulfillment:'account_entitlement', region:'global', country:'德国', countryEn:'Germany', platform:'Android', channel:'0 元订单', channelEn:'Zero-price order', currency:'EUR', amountMinor:0, settlementCurrency, convertedMinor:0, fxRateText:'EUR/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'', statementStatus:'none', paymentStatus:'none', status:'free', delivered:true, delivery:'账号权益已生效', deliveryEn:'Account entitlement active' },
+    { id:'RCN-202609-Q8F4D1', orderMask:'ORD-****-1715', date:'2026-09-09 21:15', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-205', product:'曙光舰队 DLC', productEn:'Dawn Fleet DLC', productType:'dlc', fulfillment:'account_entitlement', region:'global', country:'英国', countryEn:'United Kingdom', platform:'Android', channel:'第三方支付', channelEn:'Third-party payment', currency:'GBP', amountMinor:999, settlementCurrency, convertedMinor:1340, fxRateText:'GBP/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:54, channelFeeMinor:40, platformShareMinor:201, adjustmentMinor:0, settlementMinor:1045, statementId:'STMT-2026-08-V1', statementStatus:'pending', paymentStatus:'not_ready', status:'refund_pending', delivered:true, delivery:'账号权益已撤销，退款处理中', deliveryEn:'Entitlement revoked; refund processing' },
+    { id:'RCN-202609-L5V9R4', orderMask:'ORD-****-1644', date:'2026-09-09 10:44', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-BASE-001', product:'星海远征', productEn:'Stellar Voyage', productType:'base', fulfillment:'cdkey', region:'domestic', country:'中国大陆', countryEn:'Mainland China', platform:'Android', channel:'第三方支付', channelEn:'Third-party payment', currency:'CNY', amountMinor:12800, settlementCurrency, convertedMinor:1770, fxRateText:'CNY/USD · FX-20260910-01', refundConvertedMinor:1770, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'refunded', delivered:true, delivery:'CDKEY 已交付，退款成功', deliveryEn:'CDKEY delivered; refund completed' },
+    { id:'RCN-202609-T2D6X8', orderMask:'ORD-****-1603', date:'2026-09-08 19:03', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-101', product:'深空回声 DLC', productEn:'Deep Space Echoes DLC', productType:'dlc', fulfillment:'cdkey', region:'global', country:'加拿大', countryEn:'Canada', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'CAD', amountMinor:549, settlementCurrency, convertedMinor:400, fxRateText:'CAD/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:400, chargebackLossMinor:0, taxMinor:16, channelFeeMinor:12, platformShareMinor:60, adjustmentMinor:0, settlementMinor:312, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'chargeback_open', delivered:true, delivery:'CDKEY 已交付', deliveryEn:'CDKEY delivered' },
+    { id:'RCN-202609-V3J7S9', orderMask:'ORD-****-1586', date:'2026-09-08 12:16', game:'像素边境', gameEn:'Pixel Frontier', sku:'SKU-BASE-007', product:'像素边境', productEn:'Pixel Frontier', productType:'base', fulfillment:'account_entitlement', region:'global', country:'法国', countryEn:'France', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'EUR', amountMinor:1299, settlementCurrency, convertedMinor:1520, fxRateText:'EUR/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:61, channelFeeMinor:46, platformShareMinor:228, adjustmentMinor:85, settlementMinor:1270, statementId:'STMT-2026-08-V1', statementStatus:'pending', paymentStatus:'not_ready', status:'chargeback_won', delivered:true, delivery:'账号权益保持有效', deliveryEn:'Account entitlement remains active', userListDeleted:true },
+    { id:'RCN-202609-W9B4J3', orderMask:'ORD-****-1522', date:'2026-09-07 15:22', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-101', product:'深空回声 DLC', productEn:'Deep Space Echoes DLC', productType:'dlc', fulfillment:'account_entitlement', region:'global', country:'新加坡', countryEn:'Singapore', platform:'Android', channel:'Google Play Billing', channelEn:'Google Play Billing', currency:'USD', amountMinor:599, settlementCurrency, convertedMinor:599, fxRateText:'USD/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:599, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'chargeback_lost', delivered:true, delivery:'账号权益已撤销', deliveryEn:'Account entitlement revoked' },
+    { id:'RCN-202609-Z6K1E4', orderMask:'ORD-****-1488', date:'2026-09-06 20:48', game:'像素边境', gameEn:'Pixel Frontier', sku:'SKU-DLC-311', product:'机械荒原 DLC', productEn:'Mechanical Wastes DLC', productType:'dlc', fulfillment:'account_entitlement', region:'global', country:'韩国', countryEn:'South Korea', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'KRW', amountMinor:9900, settlementCurrency, convertedMinor:710, fxRateText:'KRW/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'', statementStatus:'none', paymentStatus:'none', status:'closed', delivered:false, delivery:'未完成支付，订单已关闭', deliveryEn:'Payment not completed; order closed' },
+    { id:'RCN-202608-M6K2S7', orderMask:'ORD-****-9421', date:'2026-08-05 11:27', game:'像素边境', gameEn:'Pixel Frontier', sku:'SKU-BASE-007', product:'像素边境', productEn:'Pixel Frontier', productType:'base', fulfillment:'cdkey', region:'global', country:'澳大利亚', countryEn:'Australia', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'USD', amountMinor:1299, settlementCurrency, convertedMinor:1299, fxRateText:'USD/USD · FX-20260805-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:52, channelFeeMinor:39, platformShareMinor:195, adjustmentMinor:0, settlementMinor:1013, statementId:'STMT-2026-05-V1', statementStatus:'locked', paymentStatus:'completed', status:'completed', delivered:true, delivery:'CDKEY 已交付', deliveryEn:'CDKEY delivered' },
+  ]);
+  const statements = Object.freeze([
+    { id:'STMT-2026-06-V1', period:'2026-06', currency:'USD', amountMinor:1548260, outstandingMinor:1548260, status:'locked', paymentStatus:'awaiting_invoice', updatedAt:'2026-09-10 09:30' },
+    { id:'STMT-2026-05-V1', period:'2026-05', currency:'USD', amountMinor:1384090, outstandingMinor:0, status:'locked', paymentStatus:'completed', updatedAt:'2026-06-28 16:20' },
+  ]);
+
+  const copy = (language = 'zh') => {
+    const en = language === 'en';
+    return {
+      title: en ? 'Data dashboard' : '数据看板', eyebrow: en ? 'PUBLISHING ANALYTICS' : '发行经营数据',
+      description: en ? 'Review buyout game and permanent DLC sales, risk and settlement estimates.' : '查看买断游戏与永久 DLC 的销量、逆向交易、预估收入和待结算数据。',
+      readonly: en ? 'Read-only analytics' : '只读经营数据', updated: en ? 'Updated to Sep 10, 2026 23:59' : '数据更新至 2026-09-10 23:59',
+      tabs: { overview:en ? 'Overview' : '经营概览', orders:en ? 'Order details' : '订单明细', revenue:en ? 'Revenue & settlement' : '收入与结算' },
+      game: en ? 'Game' : '游戏', product: en ? 'Product type' : '商品类型', fulfillment: en ? 'Fulfillment' : '履约方式', region: en ? 'Region' : '地区', platform: en ? 'Platform' : '平台', status: en ? 'Status' : '订单状态', range: en ? 'Time' : '时间', keyword: en ? 'Order ID' : '订单编号',
+      all: en ? 'All' : '全部', base: en ? 'Base game' : '游戏本体', dlc: en ? 'Permanent DLC' : '永久 DLC', direct: en ? 'Direct purchase' : '直接购买', cdkey:'CDKEY', global: en ? 'Global (excl. Mainland China)' : '全球（不含中国大陆）', domestic: en ? 'Mainland China' : '中国大陆',
+      reset: en ? 'Reset' : '重置', scope: en ? 'Metric definitions' : '数据口径', searchPlaceholder: en ? 'Search reconciliation or masked order ID' : '搜索对账流水号或脱敏订单号',
+      noData: en ? 'No data for the current filters' : '当前筛选条件下暂无数据', noDataHint: en ? 'Reset filters to view available records.' : '可重置筛选条件查看已有记录。',
+    };
+  };
+  const text = (zh, en, language) => language === 'en' ? en : zh;
+  const money = (minor, currency = settlementCurrency) => {
+    const digits = currencyDigits[currency] ?? 2;
+    return new Intl.NumberFormat('zh-CN', { style:'currency', currency, minimumFractionDigits:digits, maximumFractionDigits:digits }).format(Number(minor || 0) / (10 ** digits));
+  };
+  const createState = seed => ({ tab:'overview', filters:{ ...defaultFilters }, selectedOrder:'', scopeOpen:false, scenario:'ready', ...(seed && typeof seed === 'object' ? clone(seed) : {}), filters:{ ...defaultFilters, ...(seed?.filters || {}) } });
+  const rangeStart = range => ({ '7d':'2026-09-05', '30d':'2026-08-13', '90d':'2026-06-13', month:'2026-09-01' }[range] || '2026-08-13');
+  const filteredOrders = state => {
+    const filters = { ...defaultFilters, ...(state?.filters || {}) };
+    const keyword = String(filters.keyword || '').trim().toLowerCase();
+    return orders.filter(item => item.date.slice(0, 10) >= rangeStart(filters.range)
+      && (filters.game === 'all' || item.game === filters.game)
+      && (filters.product === 'all' || item.productType === filters.product)
+      && (filters.fulfillment === 'all' || item.fulfillment === filters.fulfillment)
+      && (filters.region === 'all' || item.region === filters.region)
+      && (filters.platform === 'all' || item.platform === filters.platform)
+      && (filters.status === 'all' || item.status === filters.status)
+      && (!keyword || `${item.id} ${item.orderMask}`.toLowerCase().includes(keyword)));
+  };
+  const metrics = rows => {
+    const paidRows = rows.filter(item => item.delivered && item.amountMinor > 0);
+    const freeRows = rows.filter(item => item.delivered && item.amountMinor === 0);
+    const refundedRows = paidRows.filter(item => item.status === 'refunded');
+    const lostRows = paidRows.filter(item => item.status === 'chargeback_lost' && item.status !== 'refunded');
+    const grossMinor = paidRows.reduce((sum, item) => sum + item.convertedMinor, 0);
+    const refundMinor = rows.reduce((sum, item) => sum + item.refundConvertedMinor, 0);
+    const chargebackRiskMinor = rows.reduce((sum, item) => sum + item.chargebackRiskMinor, 0);
+    const chargebackLossMinor = rows.reduce((sum, item) => sum + item.chargebackLossMinor, 0);
+    const taxMinor = rows.reduce((sum, item) => sum + item.taxMinor, 0);
+    const channelFeeMinor = rows.reduce((sum, item) => sum + item.channelFeeMinor, 0);
+    const platformShareMinor = rows.reduce((sum, item) => sum + item.platformShareMinor, 0);
+    const adjustmentMinor = rows.reduce((sum, item) => sum + item.adjustmentMinor, 0);
+    const estimatedMinor = grossMinor - refundMinor - chargebackLossMinor - taxMinor - channelFeeMinor - platformShareMinor + adjustmentMinor;
+    const pendingByCurrency = statements.filter(item => item.status === 'locked' && !['completed','cancelled','carried'].includes(item.paymentStatus)).reduce((result, item) => ({ ...result, [item.currency]:(result[item.currency] || 0) + item.outstandingMinor }), {});
+    return { paid:paidRows.length, free:freeRows.length, refundCount:refundedRows.length, refundMinor, chargebackOpen:rows.filter(item => item.status === 'chargeback_open').length, chargebackRiskMinor, chargebackLost:lostRows.length, chargebackLossMinor, netSales:paidRows.length - refundedRows.length - lostRows.length, grossMinor, taxMinor, channelFeeMinor, platformShareMinor, adjustmentMinor, estimatedMinor, settlementCurrency, fxVersion:'FX-20260910-01', pendingByCurrency };
+  };
+  const pendingText = metric => Object.entries(metric.pendingByCurrency).map(([currency, minor]) => money(minor,currency)).join(' / ') || '--';
+  const statusMeta = (status, language = 'zh') => {
+    const labels = {
+      completed:[text('交易完成','Completed',language),'success'], free:[text('免费领取','Free claim',language),'info'], refund_pending:[text('退款处理中','Refund processing',language),'warning'], refunded:[text('已退款','Refunded',language),'warning'], chargeback_open:[text('拒付待裁决','Chargeback open',language),'danger'], chargeback_won:[text('拒付胜诉','Chargeback won',language),'success'], chargeback_lost:[text('拒付败诉','Chargeback lost',language),'danger'], closed:[text('已关闭','Closed',language),'info'],
+    };
+    return labels[status] || [status,'info'];
+  };
+  const tag = (label, tone = 'info') => `<span class="publisher-dashboard-tag is-${tone}">${label}</span>`;
+  const empty = language => `<div class="publisher-dashboard-empty" data-testid="publisher-dashboard-empty"><span>∅</span><strong>${copy(language).noData}</strong><p>${copy(language).noDataHint}</p></div>`;
+  const option = (value, label, selected) => `<option value="${value}"${selected === value ? ' selected' : ''}>${label}</option>`;
+  const filterSelect = (key, label, choices, state, language) => `<label class="publisher-dashboard-field"><span>${label}</span><select data-dashboard-filter="${key}">${choices.map(([value, name]) => option(value, name, state.filters[key])).join('')}</select></label>`;
+  const metricCard = (label, value, hint, key) => `<article class="publisher-dashboard-metric" data-dashboard-metric="${key}"><span>${label}</span><strong>${value}</strong><small>${hint}</small></article>`;
+
+  const renderFilters = (state, language) => {
+    const c = copy(language);
+    const en = language === 'en';
+    const all = c.all;
+    const statusOptions = [['all',all], ...statusOrder.map(value => [value, statusMeta(value, language)[0]])];
+    return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-grid">
+      ${filterSelect('range',c.range,[['7d',text('近 7 天','Last 7 days',language)],['30d',text('近 30 天','Last 30 days',language)],['90d',text('近 90 天','Last 90 days',language)],['month',text('本月','This month',language)]],state,language)}
+      ${filterSelect('game',c.game,[['all',all],['星海远征',en ? 'Stellar Voyage' : '星海远征'],['像素边境',en ? 'Pixel Frontier' : '像素边境']],state,language)}
+      ${filterSelect('product',c.product,[['all',all],['base',c.base],['dlc',c.dlc]],state,language)}
+      ${filterSelect('fulfillment',c.fulfillment,[['all',all],['account_entitlement',c.direct],['cdkey','CDKEY']],state,language)}
+      ${filterSelect('region',c.region,[['all',all],['global',c.global],['domestic',c.domestic]],state,language)}
+      ${filterSelect('platform',c.platform,[['all',all],['Android','Android'],['Mac','Mac']],state,language)}
+      ${filterSelect('status',c.status,statusOptions,state,language)}
+      ${state.tab === 'orders' ? `<label class="publisher-dashboard-field publisher-dashboard-field--keyword"><span>${c.keyword}</span><input type="search" value="${namespace.components.escapeHtml(state.filters.keyword || '')}" placeholder="${c.searchPlaceholder}" data-dashboard-filter="keyword"></label>` : ''}
+    </div><div class="publisher-dashboard-filter-actions"><span>${text('经营指标与订单使用同一快照；待结算来自财务账单','Analytics and orders share one snapshot; pending settlement comes from finance',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></section>`;
+  };
+
+  const renderOverview = (state, language) => {
+    const rows = filteredOrders(state);
+    const m = metrics(rows);
+    const days = ['09-04','09-05','09-06','09-07','09-08','09-09','09-10'];
+    const daily = days.map(day => rows.filter(item => item.date.includes(day)).length);
+    const max = Math.max(...daily, 1);
+    const baseCount = rows.filter(item => item.productType === 'base').length;
+    const dlcCount = rows.filter(item => item.productType === 'dlc').length;
+    const directCount = rows.filter(item => item.fulfillment === 'account_entitlement').length;
+    const cdkeyCount = rows.filter(item => item.fulfillment === 'cdkey').length;
+    return `<div class="publisher-dashboard-metrics">
+      ${metricCard(text('付费销量','Paid sales',language),`${m.paid}`,text(`净销量 ${m.netSales}`,`Net sales ${m.netSales}`,language),'paid')}
+      ${metricCard(text('免费领取','Free claims',language),`${m.free}`,text('履约完成的 0 元订单','Fulfilled zero-price orders',language),'free')}
+      ${metricCard(text('退款成功','Refunded',language),`${m.refundCount}`,money(m.refundMinor,m.settlementCurrency),'refund')}
+      ${metricCard(text('拒付风险','Chargeback risk',language),`${m.chargebackOpen}`,text(`${money(m.chargebackRiskMinor,m.settlementCurrency)} 待裁决`,`${money(m.chargebackRiskMinor,m.settlementCurrency)} pending`,language),'chargeback')}
+      ${metricCard(text('预估收入','Estimated revenue',language),money(m.estimatedMinor,m.settlementCurrency),text(`结算币种 · ${m.fxVersion}`,`Settlement currency · ${m.fxVersion}`,language),'estimated')}
+      ${metricCard(text('待结算','Pending settlement',language),pendingText(m),text('按结算币种展示，不作经营分摊','Shown by settlement currency; not allocated by analytics',language),'pending')}
+    </div><div class="publisher-dashboard-overview-grid"><section class="publisher-dashboard-card publisher-dashboard-card--wide"><header><div><span>${text('趋势','TREND',language)}</span><h2>${text('成交与领取趋势','Sales and claims trend',language)}</h2></div><small>${text('按履约完成时间','By fulfillment completion time',language)}</small></header><div class="publisher-dashboard-chart">${days.map((day,index) => `<div><i style="height:${Math.max(10, Math.round(daily[index] / max * 100))}%" data-value="${daily[index]}"></i><span>${day}</span></div>`).join('')}</div></section>
+      <section class="publisher-dashboard-card"><header><div><span>${text('构成','MIX',language)}</span><h2>${text('商品与履约','Product & fulfillment',language)}</h2></div></header><dl class="publisher-dashboard-breakdown"><div><dt>${copy(language).base}</dt><dd>${baseCount}</dd></div><div><dt>${copy(language).dlc}</dt><dd>${dlcCount}</dd></div><div><dt>${copy(language).direct}</dt><dd>${directCount}</dd></div><div><dt>CDKEY</dt><dd>${cdkeyCount}</dd></div></dl></section>
+      <section class="publisher-dashboard-card"><header><div><span>${text('风险','RISK',language)}</span><h2>${text('退款与拒付','Refunds & chargebacks',language)}</h2></div></header><dl class="publisher-dashboard-breakdown"><div><dt>${text('退款处理中','Refund processing',language)}</dt><dd>${rows.filter(item => item.status === 'refund_pending').length}</dd></div><div><dt>${text('拒付待裁决','Chargeback open',language)}</dt><dd>${m.chargebackOpen}</dd></div><div><dt>${text('拒付败诉','Chargeback lost',language)}</dt><dd>${m.chargebackLost}</dd></div><div><dt>${text('败诉扣减','Loss deduction',language)}</dt><dd>${money(m.chargebackLossMinor,m.settlementCurrency)}</dd></div></dl></section></div>`;
+  };
+
+  const renderOrders = (state, language) => {
+    const rows = filteredOrders(state);
+    if (!rows.length) return empty(language);
+    return `<section class="publisher-dashboard-card publisher-dashboard-orders"><header><div><span>${text('脱敏订单','REDACTED ORDERS',language)}</span><h2>${text('订单明细','Order details',language)}</h2><p>${text('完整对账流水号可用于核账，平台订单号仅展示脱敏片段。','The reconciliation ID supports verification; platform order IDs stay masked.',language)}</p></div><strong>${rows.length} ${text('笔','records',language)}</strong></header><div class="publisher-dashboard-table-wrap"><table><thead><tr><th>${text('时间／订单','Time / order',language)}</th><th>${text('游戏／商品','Game / product',language)}</th><th>${text('履约方式','Fulfillment',language)}</th><th>${text('地区／平台','Region / platform',language)}</th><th>${text('金额','Amount',language)}</th><th>${text('状态','Status',language)}</th><th>${text('操作','Action',language)}</th></tr></thead><tbody>${rows.map(item => { const sm=statusMeta(item.status,language); return `<tr data-dashboard-order-id="${item.id}"><td><strong>${item.date}</strong><small>${item.id}</small><small>${item.orderMask}</small></td><td><strong>${language === 'en' ? item.gameEn : item.game}</strong><small>${item.sku} · ${item.productType === 'base' ? copy(language).base : copy(language).dlc}</small></td><td><strong>${item.fulfillment === 'account_entitlement' ? copy(language).direct : 'CDKEY'}</strong><small>${language === 'en' ? item.deliveryEn : item.delivery}</small></td><td><strong>${language === 'en' ? item.countryEn : item.country}</strong><small>${item.platform} · ${language === 'en' ? item.channelEn : item.channel}</small></td><td><strong>${money(item.amountMinor,item.currency)}</strong><small>${item.currency}</small></td><td>${tag(sm[0],sm[1])}${item.userListDeleted ? `<small class="publisher-dashboard-aux-state">${text('用户端已删除','Deleted in user list',language)}</small>` : ''}</td><td><button type="button" data-dashboard-action="open-order" data-order-id="${item.id}">${text('查看详情','View',language)}</button></td></tr>`; }).join('')}</tbody></table></div></section>`;
+  };
+
+  const renderRevenue = (state, language) => {
+    const rows = filteredOrders(state);
+    const m = metrics(rows);
+    const locked = statements.find(item => item.status === 'locked');
+    const line = (label, value, tone = '') => `<div${tone ? ` class="is-${tone}"` : ''}><dt>${label}</dt><dd>${value}</dd></div>`;
+    return `<div class="publisher-dashboard-revenue-grid"><section class="publisher-dashboard-card"><header><div><span>${text('动态预估','ESTIMATE',language)}</span><h2>${text('预估收入','Estimated revenue',language)}</h2><p>${text('随退款、拒付和费用更新，不作为正式付款依据。','Updates with refunds, chargebacks and fees; not a payment basis.',language)}</p></div>${tag(text('以结算单为准','Statement is final',language),'warning')}</header><dl class="publisher-dashboard-formula">
+      ${line(text('销售额','Gross sales',language),money(m.grossMinor,m.settlementCurrency))}${line(text('退款成功','Refunds',language),`− ${money(m.refundMinor,m.settlementCurrency)}`,'negative')}${line(text('拒付败诉','Chargeback losses',language),`− ${money(m.chargebackLossMinor,m.settlementCurrency)}`,'negative')}${line(text('税费','Taxes',language),`− ${money(m.taxMinor,m.settlementCurrency)}`,'negative')}${line(text('渠道费','Provider fees',language),`− ${money(m.channelFeeMinor,m.settlementCurrency)}`,'negative')}${line(text('平台分成','Platform share',language),`− ${money(m.platformShareMinor,m.settlementCurrency)}`,'negative')}${line(text('调整项','Adjustments',language),`${m.adjustmentMinor >= 0 ? '+' : '−'} ${money(Math.abs(m.adjustmentMinor),m.settlementCurrency)}`,m.adjustmentMinor >= 0 ? 'positive' : 'negative')}<div class="is-total"><dt>${text('预估收入','Estimated revenue',language)}</dt><dd>${money(m.estimatedMinor,m.settlementCurrency)}</dd></div></dl><div class="publisher-dashboard-risk-note"><span>${text('拒付待裁决风险','Open chargeback risk',language)}</span><strong>${money(m.chargebackRiskMinor,m.settlementCurrency)}</strong><small>${text(`尚未扣减 · ${m.fxVersion}`,`Not deducted · ${m.fxVersion}`,language)}</small></div></section>
+      <section class="publisher-dashboard-card"><header><div><span>${text('锁定账单','LOCKED STATEMENT',language)}</span><h2>${text('待结算','Pending settlement',language)}</h2><p>${text('按结算币种汇总，不随游戏等经营筛选分摊。','Grouped by settlement currency and not allocated by analytics filters.',language)}</p></div></header><div class="publisher-dashboard-pending"><strong>${pendingText(m)}</strong><span>${text('当前厂商与账期的未清偿金额','Outstanding amount for the company and period',language)}</span></div>${locked ? `<dl class="publisher-dashboard-statement"><div><dt>${text('账期','Period',language)}</dt><dd>${locked.period}</dd></div><div><dt>${text('结算单','Statement',language)}</dt><dd>${locked.id}</dd></div><div><dt>${text('付款状态','Payment status',language)}</dt><dd>${text('待发票','Awaiting invoice',language)}</dd></div><div><dt>${text('更新时间','Updated',language)}</dt><dd>${locked.updatedAt}</dd></div></dl>` : ''}<div class="publisher-dashboard-finance-actions"><button type="button" data-dashboard-action="finance-flows">${text('查看对账流水','View reconciliation flows',language)}</button><button type="button" class="is-primary" data-dashboard-action="finance-settlement">${text('前往对账结算','Go to settlement',language)}</button></div></section></div>`;
+  };
+
+  const renderOrderDrawer = (state, language) => {
+    const item = orders.find(order => order.id === state.selectedOrder);
+    if (!item) return '';
+    const sm = statusMeta(item.status,language);
+    const impact = item.status === 'refunded' ? `− ${money(item.refundConvertedMinor,item.settlementCurrency)}` : item.status === 'chargeback_lost' ? `− ${money(item.chargebackLossMinor,item.settlementCurrency)}` : item.status === 'chargeback_open' ? `${money(item.chargebackRiskMinor,item.settlementCurrency)} ${text('风险','risk',language)}` : money(item.convertedMinor,item.settlementCurrency);
+    return `<div class="publisher-dashboard-overlay" data-dashboard-action="close-order"><aside class="publisher-dashboard-drawer" role="dialog" aria-modal="true" aria-label="${text('订单详情','Order details',language)}" data-testid="publisher-order-drawer" data-dashboard-stop><header><div><span>${text('脱敏订单详情','REDACTED ORDER DETAIL',language)}</span><h2>${item.id}</h2><p>${item.orderMask} · ${item.date}</p></div><button type="button" data-dashboard-action="close-order" aria-label="${text('关闭','Close',language)}">×</button></header><div class="publisher-dashboard-drawer-body"><section><h3>${text('订单快照','Order snapshot',language)}</h3><dl>${[['游戏',language === 'en' ? item.gameEn : item.game],['SKU',item.sku],['商品',language === 'en' ? item.productEn : item.product],['商品类型',item.productType === 'base' ? copy(language).base : copy(language).dlc],['地区',language === 'en' ? item.countryEn : item.country],['平台',item.platform],['渠道',language === 'en' ? item.channelEn : item.channel]].map(([label,value]) => `<div><dt>${text(label,({游戏:'Game',商品:'Product',商品类型:'Product type',地区:'Region',平台:'Platform',渠道:'Channel'}[label] || label),language)}</dt><dd>${value}</dd></div>`).join('')}</dl></section><section><h3>${text('履约与资金影响','Fulfillment & financial impact',language)}</h3><dl><div><dt>${text('履约方式','Fulfillment',language)}</dt><dd>${item.fulfillment === 'account_entitlement' ? copy(language).direct : 'CDKEY'}</dd></div><div><dt>${text('履约结果','Delivery result',language)}</dt><dd>${language === 'en' ? item.deliveryEn : item.delivery}</dd></div><div><dt>${text('订单状态','Order status',language)}</dt><dd>${tag(sm[0],sm[1])}</dd></div><div><dt>${text('交易原币','Original amount',language)}</dt><dd>${money(item.amountMinor,item.currency)}</dd></div><div><dt>${text('结算币折算','Converted amount',language)}</dt><dd>${money(item.convertedMinor,item.settlementCurrency)} · ${item.fxRateText}</dd></div><div><dt>${text('当前资金影响','Current financial impact',language)}</dt><dd>${impact}</dd></div>${item.userListDeleted ? `<div><dt>${text('用户侧列表','User order list',language)}</dt><dd>${text('已删除，不影响统计与对账','Deleted; analytics and reconciliation are unchanged',language)}</dd></div>` : ''}</dl></section><div class="publisher-dashboard-privacy">${text('本页不展示玩家身份、设备、支付账号、支付凭证、Key 明文和内部处理材料。','Player identity, device, payment account, payment proof, plain-text keys and internal materials are hidden.',language)}</div></div></aside></div>`;
+  };
+
+  const renderScopeDialog = (state, language) => state.scopeOpen ? `<div class="publisher-dashboard-overlay" data-dashboard-action="close-scope"><section class="publisher-dashboard-dialog" role="dialog" aria-modal="true" aria-label="${text('数据口径','Metric definitions',language)}" data-dashboard-stop><header><div><span>${text('口径版本 2026-09','DEFINITION VERSION 2026-09',language)}</span><h2>${text('数据口径','Metric definitions',language)}</h2></div><button type="button" data-dashboard-action="close-scope" aria-label="${text('关闭','Close',language)}">×</button></header><dl>${[
+    [text('付费销量','Paid sales',language),text('应付金额大于 0，且直接购买权益生效或 CDKEY 成功交付。','Amount due is above zero and direct entitlement is active or the CDKEY is delivered.',language)],
+    [text('免费领取','Free claims',language),text('应付金额为 0 且完成履约；失败或处理中不计入。','Amount due is zero and fulfillment completed; failures and processing orders are excluded.',language)],
+    [text('退款与拒付','Refunds & chargebacks',language),text('退款成功和拒付败诉才扣收入；拒付待裁决只显示风险。','Only completed refunds and lost chargebacks reduce revenue; open chargebacks stay as risk.',language)],
+    [text('多币种','Multiple currencies',language),text('订单展示交易原币；销售额、逆向金额和预估收入按汇率版本折算为财务主体结算币种。','Orders show original currency; sales, reversals and estimated revenue are converted to the finance entity settlement currency using the displayed FX version.',language)],
+    [text('预估收入','Estimated revenue',language),text('逐项扣除税费、渠道费和平台分成，不使用固定比例；最终以结算单为准。','Taxes, provider fees and platform share are deducted line by line; no fixed ratio is used.',language)],
+    [text('待结算','Pending settlement',language),text('按财务主体、账期和结算币种汇总，不随游戏、商品或履约筛选分摊。','Grouped by finance entity, period and settlement currency; not allocated by game, product or fulfillment filters.',language)],
+    [text('更新时间与正式金额','Update time & final amount',language),text('交易数据小时级更新；正式金额以财务结算模块为准，付款状态也从该模块读取。','Transaction data updates hourly; final amounts and payment status follow the finance settlement module.',language)],
+    [text('脱敏范围','Redaction',language),text('对账流水号可用于核账；玩家、Key 明文和支付敏感信息不展示。','Reconciliation IDs support verification; player, key and payment-sensitive data stay hidden.',language)],
+  ].map(([label,value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl></section></div>` : '';
+
+  const render = (stateInput, language = 'zh', options = {}) => {
+    const state = stateInput || createState();
+    state.filters = { ...defaultFilters, ...(state.filters || {}) };
+    const c = copy(language);
+    const access = options.access || {};
+    if (!access.canViewPublisherData && !access.isPublisherReadOnly) return `<section class="publisher-dashboard-access" data-publisher-page="data" data-testid="publisher-data-dashboard"><span>${namespace.icons?.render('lock') || ''}</span><strong>${text('暂未开通经营数据权限','Analytics access is not available',language)}</strong><p>${text('完成企业认证并获得厂商数据权限后，可查看销量、订单和结算摘要。','Complete company verification and obtain publisher data access to view sales, orders and settlement summaries.',language)}</p></section>`;
+    const body = state.tab === 'orders' ? renderOrders(state,language) : state.tab === 'revenue' ? renderRevenue(state,language) : renderOverview(state,language);
+    return `<section class="publisher-data-dashboard" data-publisher-page="data" data-testid="publisher-data-dashboard" data-dashboard-tab="${state.tab}"><header class="publisher-dashboard-head"><div><span>${c.eyebrow}</span><h1>${c.title}</h1><p>${c.description}</p></div><div><button type="button" data-dashboard-action="scope">${c.scope}</button>${tag(c.readonly,'info')}<small>${c.updated}</small></div></header><nav class="publisher-dashboard-tabs" aria-label="${c.title}">${Object.entries(c.tabs).map(([value,label]) => `<button type="button" class="${state.tab === value ? 'is-active' : ''}" data-dashboard-action="tab" data-publisher-data-tab="${value}" aria-selected="${state.tab === value}">${label}</button>`).join('')}</nav>${renderFilters(state,language)}<div class="publisher-dashboard-content">${body}</div>${renderOrderDrawer(state,language)}${renderScopeDialog(state,language)}</section>`;
+  };
+
+  const bind = (root, { state, onChange, onFinance } = {}) => {
+    const host = root.querySelector('[data-testid="publisher-data-dashboard"]');
+    if (!host || !state) return;
+    const update = (patch = {}, options = {}) => {
+      Object.assign(state, patch);
+      if (typeof onChange === 'function') onChange(state, options);
+    };
+    host.querySelectorAll('[data-dashboard-filter]').forEach(control => control.addEventListener(control.matches('input') ? 'input' : 'change', () => {
+      state.filters = { ...defaultFilters, ...(state.filters || {}), [control.dataset.dashboardFilter]: control.value };
+      if (control.matches('input')) {
+        clearTimeout(state.__keywordTimer);
+        state.__keywordTimer = setTimeout(() => update({}, { preserveScroll:true }), 180);
+      } else update({}, { preserveScroll:true });
+    }));
+    host.addEventListener('click', event => {
+      const control = event.target.closest('[data-dashboard-action]');
+      if (!control) return;
+      if (event.target.closest('[data-dashboard-stop]') && control === event.target.closest('[data-dashboard-stop]')) return;
+      const action = control.dataset.dashboardAction;
+      if (action === 'tab') update({ tab:control.dataset.publisherDataTab || 'overview', selectedOrder:'', scopeOpen:false });
+      else if (action === 'reset') update({ filters:{ ...defaultFilters } });
+      else if (action === 'scope') update({ scopeOpen:true, selectedOrder:'' }, { preserveScroll:true });
+      else if (action === 'close-scope') update({ scopeOpen:false }, { preserveScroll:true });
+      else if (action === 'open-order') update({ selectedOrder:control.dataset.orderId || '', scopeOpen:false }, { preserveScroll:true });
+      else if (action === 'close-order') update({ selectedOrder:'' }, { preserveScroll:true });
+      else if (action === 'finance-settlement' || action === 'finance-flows') {
+        const target = action === 'finance-flows' ? 'settlement/flows' : 'settlement';
+        if (typeof onFinance === 'function') onFinance(target, clone(state.filters));
+      }
+    });
+    host.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      if (state.selectedOrder) update({ selectedOrder:'' }, { preserveScroll:true });
+      else if (state.scopeOpen) update({ scopeOpen:false }, { preserveScroll:true });
+    });
+  };
+
+  window.PublisherDataDashboard = { createState, render, bind, filteredOrders, metrics, orders:() => clone(orders), statements:() => clone(statements), snapshot:state => ({ tab:state?.tab || 'overview', filters:{ ...defaultFilters, ...(state?.filters || {}) }, statuses:[...new Set(filteredOrders(state || createState()).map(item => item.status))], metrics:metrics(filteredOrders(state || createState())) }) };
+  namespace.publisherDataDashboard = window.PublisherDataDashboard;
+})(window.GameHubDeveloperPortal);
+
+window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
+
 (function registerIcons(namespace) {
   const paths = {
     logo: '<path d="M29.7825 9.09231C29.9715 9.09231 30.1478 9.18557 30.2521 9.34061L32.112 12.1066L32.1122 12.1071L34.0737 15.0453L35.9066 17.7713C36.0311 17.9566 36.0311 18.1971 35.9066 18.3823L34.0737 21.1084L32.1122 24.0466L32.112 24.0471L30.136 26.9857L28.2906 29.7502C28.1865 29.9061 28.0096 30 27.82 30H24.8191C24.3712 30 24.1026 29.5104 24.3484 29.1421L25.9117 26.8003L25.9121 26.7998L27.888 23.8612L29.8493 20.923L29.8497 20.9225L31.5576 18.3823C31.6822 18.1971 31.6822 17.9566 31.5576 17.7713L29.8497 15.2311L29.8493 15.2307L28.1053 12.618C28.0012 12.4621 27.8242 12.3681 27.6346 12.3681H12.995C12.5462 12.3681 12.2778 11.8769 12.5254 11.5088L13.9832 9.34061C14.0875 9.18556 14.2639 9.09231 14.4529 9.09231H29.7825ZM11.1868 6C11.6352 6 11.9037 6.49052 11.6568 6.85876L4.44386 17.6182C4.31986 17.8032 4.31986 18.0431 4.44386 18.228L7.89982 23.3829C8.00401 23.5383 8.18064 23.6319 8.3699 23.6319H23.0095C23.4575 23.6319 23.7261 24.1216 23.48 24.4898L22.0318 26.658C21.9276 26.8138 21.7508 26.9077 21.5612 26.9077H6.20804C6.01868 26.9077 5.84198 26.814 5.73782 26.6585L0.092826 18.228C-0.0310117 18.0431 -0.0309333 17.8033 0.0930093 17.6185L7.7152 6.24893C7.8194 6.09352 7.99603 6 8.18529 6H11.1868ZM12.8435 14.9538C13.0508 14.9538 13.2189 15.1192 13.2189 15.3231V16.5041C13.2189 16.708 13.3869 16.8733 13.5943 16.8733H14.8097C15.017 16.8733 15.1851 17.0386 15.1851 17.2426V18.7574C15.1851 18.9614 15.017 19.1267 14.8097 19.1267H13.5943C13.3869 19.1267 13.2189 19.292 13.2189 19.4959V20.6769C13.2189 20.8808 13.0508 21.0462 12.8435 21.0462H11.2861C11.0788 21.0462 10.9108 20.8808 10.9108 20.6769V19.4959C10.9108 19.292 10.7427 19.1267 10.5354 19.1267H9.31992C9.11261 19.1267 8.94456 18.9614 8.94455 18.7574V17.2426C8.94456 17.0386 9.11261 16.8733 9.31992 16.8733H10.5354C10.7427 16.8733 10.9108 16.708 10.9108 16.5041V15.3231C10.9108 15.1192 11.0788 14.9538 11.2861 14.9538H12.8435ZM20.2057 16.1077C21.2681 16.1077 22.1294 16.9549 22.1294 18C22.1294 19.0451 21.2681 19.8923 20.2057 19.8923C19.1432 19.8923 18.2819 19.0451 18.2819 18C18.2819 16.9549 19.1432 16.1077 20.2057 16.1077ZM25.8831 16.1077C26.9456 16.1077 27.8069 16.9549 27.8069 18C27.8069 19.0451 26.9456 19.8923 25.8831 19.8923C24.8207 19.8923 23.9594 19.0451 23.9594 18C23.9594 16.9549 24.8207 16.1077 25.8831 16.1077Z"/>',
@@ -9368,7 +9988,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const publisherAccessFor = access => access && typeof access === 'object' ? access : {
     accountKind: 'enterprise', qualificationStatus: 'approved', canCreateGameDraft: true,
     canEditReleaseDraft: true, canSubmitRelease: true, canViewReleaseHistory: true,
-    canManageGameQualifications: true, canManageVendor: true, isPublisherReadOnly: false,
+    canManageGameQualifications: true, canManageVendor: true, canViewPublisherData: true, isPublisherReadOnly: false,
   };
   const publisherProfileRelationshipLabels = { developer: '开发商', publisher: '发行商', developer_publisher: '开发商和发行商' };
   const publisherProfileReleasePlanLabels = { reservation: '游戏还没好，先开放预约', test: '先开一次测试', launch: '已有游戏，准备上线' };
@@ -9552,9 +10172,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return records[game.gameKey] || records[game.detailVariant] || [];
   };
 
-  const renderPublisherConsoleSidebar = (active, language = 'zh', rawAccess) => {
-    const access = publisherAccessFor(rawAccess);
-    const vendor = access.canManageVendor ? `<section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section>` : '';
+  const renderPublisherConsoleSidebar = (active, language = 'zh') => {
+    const vendor = `<section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section>`;
     return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${vendor}</aside>`;
   };
 
@@ -9575,14 +10194,16 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       : `<div class="publisher-game-list-empty">${icon('game')}<strong>暂无游戏</strong><small>点击“添加游戏”创建第一个游戏项目。</small></div>`;
     const resultCopy = query || statusFilter !== 'all' ? `筛选出 ${visibleGames.length} 款游戏` : `共 ${games.length} 款·按最近更新时间排序`;
     const accessAlert = access.isPublisherReadOnly || state.publisherAccessDisabled ? `<section class="publisher-access-alert" role="alert">${icon('warning')}<span><strong>${access.isPublisherReadOnly ? '企业发行权限已暂停' : '企业认证状态异常，当前发行权限已暂停'}</strong><small>历史资料仍可查看，当前不能新建游戏或提交发行申请。如有疑问，请通过邮箱 <a href="mailto:dev@xiaoji.com">dev@xiaoji.com</a> 提交问题反馈。</small></span><em>需要处理</em></section>` : '';
+    const dataAction = access.canViewPublisherData ? c.button({ label: '经营数据', action: 'publisher-open-data', iconName: 'chart' }) : '';
     return `<section class="publisher-platform-page" data-publisher-page="games">
       ${accessAlert}
-      <div class="publisher-game-toolbar"><div class="publisher-game-filter"><label class="publisher-search">${icon('search')}<input type="search" value="${e(state.gameSearch || '')}" placeholder="搜索游戏名称" data-publisher-game-search></label><label class="publisher-status-filter"><select aria-label="游戏状态" data-publisher-game-status><option value="all" ${statusFilter === 'all' ? 'selected' : ''}>全部状态</option>${publisherStatusFilters.map(([value, label]) => `<option value="${e(value)}" ${statusFilter === value ? 'selected' : ''}>${e(label)}</option>`).join('')}</select></label><button type="button" data-portal-action="publisher-game-search">查询 ${icon('search')}</button></div>${c.button({ label: '添加游戏', variant: 'primary', action: 'open-add-game', iconName: 'plus', disabled: !access.canCreateGameDraft })}</div>
+      <div class="publisher-game-toolbar"><div class="publisher-game-filter"><label class="publisher-search">${icon('search')}<input type="search" value="${e(state.gameSearch || '')}" placeholder="搜索游戏名称" data-publisher-game-search></label><label class="publisher-status-filter"><select aria-label="游戏状态" data-publisher-game-status><option value="all" ${statusFilter === 'all' ? 'selected' : ''}>全部状态</option>${publisherStatusFilters.map(([value, label]) => `<option value="${e(value)}" ${statusFilter === value ? 'selected' : ''}>${e(label)}</option>`).join('')}</select></label><button type="button" data-portal-action="publisher-game-search">查询 ${icon('search')}</button></div><div class="publisher-game-toolbar__actions">${dataAction}${c.button({ label: '添加游戏', variant: 'primary', action: 'open-add-game', iconName: 'plus', disabled: !access.canCreateGameDraft })}</div></div>
       <section class="publisher-game-library"><header><div><h2>全部游戏</h2><p>${resultCopy}</p></div></header><div class="publisher-game-list">${gameRows || emptyRow}</div></section>
     </section>`;
   };
 
-  const renderPublisherData = state => {
+  const renderPublisherData = (state, language = 'zh', rawAccess) => {
+    if (window.PublisherDataDashboard) return window.PublisherDataDashboard.render(state.dataDashboard || (state.dataDashboard = window.PublisherDataDashboard.createState()), language, { access:publisherAccessFor(rawAccess) });
     const games = getPublisherGames(state);
     const hasExistingGame = games.some(game => game.gameKey === 'existing');
     const pendingGames = games.filter(game => ['审核中', '需修改'].includes(game.reviewStatus));
@@ -9600,7 +10221,23 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderPublisherVendorSettings = () => `<section class="publisher-vendor-settings" data-publisher-page="vendor"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>厂商设置</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon('file')}<strong>厂商设置功能占位</strong><p>具体功能、字段与交互见《开发者平台与资料》PRD。</p></div></section>`;
+  const renderPublisherVendorSettings = (language = 'zh', rawAccess) => {
+    const access = publisherAccessFor(rawAccess);
+    const isEnglish = language === 'en';
+    if (access.canManageVendor) return `<section class="publisher-vendor-settings" data-publisher-page="vendor"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>${isEnglish ? 'Company settings' : '厂商设置'}</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon('file')}<strong>${isEnglish ? 'Company settings placeholder' : '厂商设置功能占位'}</strong><p>${isEnglish ? 'See the Developer Platform and Profile PRD for detailed fields and interactions.' : '具体功能、字段与交互见《开发者平台与资料》PRD。'}</p></div></section>`;
+    const status = access.qualificationStatus;
+    const suspended = access.isPublisherReadOnly;
+    const actionLabel = isEnglish
+      ? (status === 'pending' ? 'View verification progress' : status === 'rejected' ? 'Resubmit verification' : suspended ? 'View verification details' : 'Start developer verification')
+      : (status === 'pending' ? '查看认证进度' : status === 'rejected' ? '重新提交认证' : suspended ? '查看认证详情' : '申请开发者认证');
+    const detail = isEnglish
+      ? (status === 'pending' ? 'Your application is under review. Company settings will become available after approval.' : status === 'rejected' ? 'Update the information based on the review feedback and submit it again.' : suspended ? 'Developer privileges are suspended. Company settings are currently unavailable.' : 'Company information can be managed after developer verification is approved.')
+      : (status === 'pending' ? '认证申请正在审核中，通过后将自动开放厂商设置。' : status === 'rejected' ? '请根据审核意见修改资料并重新提交认证。' : suspended ? '开发者资格已暂停，当前暂不可进行厂商设置。' : '认证通过后即可管理厂商信息。');
+    const title = suspended
+      ? (isEnglish ? 'Developer privileges are suspended' : '开发者资格已暂停，暂不可进行厂商设置')
+      : (isEnglish ? 'Complete developer verification before using company settings' : '完成开发者认证后才可进行厂商设置');
+    return `<section class="publisher-vendor-settings" data-publisher-page="vendor" data-publisher-vendor-restriction="${e(status)}"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>${isEnglish ? 'Company settings' : '厂商设置'}</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon(suspended ? 'warning' : 'vendor')}<strong>${e(title)}</strong><p>${e(detail)}</p>${c.button({ label: actionLabel, variant: suspended ? 'default' : 'primary', action: 'publisher-enterprise-verification' })}</div></section>`;
+  };
 
   const renderPublisherDeleteGameModal = state => {
     if (!state.deleteGameKey) return '';
@@ -9823,12 +10460,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (workspaceState.addGameOpen && window.PublisherGameCreate) {
       return `<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="create"><div class="publisher-console-shell">${renderPublisherConsoleSidebar('games', language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${window.PublisherGameCreate.render(workspaceState.createDraft, language)}</div></main></div></div>`;
     }
-    const requestedView = ['games', 'vendor', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
-    const view = requestedView === 'vendor' && !access.canManageVendor ? 'games' : requestedView;
+    const requestedView = ['games', 'vendor', 'data', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
+    const view = requestedView === 'data' && !access.canViewPublisherData ? 'games' : requestedView;
     const activeSidebar = view === 'vendor' ? 'vendor' : 'games';
     const content = view === 'game'
       ? renderPublisherGameConsole(page, workspaceState, language, access)
-      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings() : renderPublisherGames(workspaceState, access)}</div></main></div>`;
+      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings(language, access) : view === 'data' ? renderPublisherData(workspaceState, language, access) : renderPublisherGames(workspaceState, access)}</div></main></div>`;
     return `${storageNotice}<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="${view}">${content}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
   };
 
@@ -11026,6 +11663,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     canViewReleaseHistory: Boolean(memory.session.authenticated),
     canManageGameQualifications: Boolean(memory.session.authenticated && memory.qualification?.status === 'approved'),
     canManageVendor: Boolean(memory.session.authenticated && memory.qualification?.status === 'approved'),
+    canViewPublisherData: Boolean(memory.session.authenticated && ['approved', 'delisted'].includes(memory.qualification?.status)),
     isPublisherReadOnly: Boolean(memory.session.authenticated && memory.qualification?.status === 'delisted'),
   });
   const persistPublisherSession = () => {
@@ -11054,9 +11692,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const requestedSection = restoredHandoff?.targetTab || restoredPublisherWorkspace.gameSection;
     const resumeSelectedGame = Boolean(selectedGame && (restoredPublisherWorkspace.workspaceView === 'game'
       || (!Object.prototype.hasOwnProperty.call(restoredPublisherWorkspace, 'workspaceView') && memory.session.activeGameId)));
+    const restoredView = ['games', 'vendor', 'data'].includes(restoredPublisherWorkspace.workspaceView) ? restoredPublisherWorkspace.workspaceView : 'games';
+    const dataDashboard = window.PublisherDataDashboard?.createState(restoredPublisherWorkspace.dataDashboard || {}) || restoredPublisherWorkspace.dataDashboard || {};
+    dataDashboard.selectedOrder = '';
+    dataDashboard.scopeOpen = false;
+    delete dataDashboard.__keywordTimer;
     return {
       ...restoredPublisherWorkspace,
-      workspaceView: resumeSelectedGame ? 'game' : 'games',
+      workspaceView: resumeSelectedGame ? 'game' : restoredView,
       gameTab: 'release',
       gameSection: allowedSections.has(requestedSection) ? requestedSection : 'release-workspace',
       selectedGame,
@@ -11071,6 +11714,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       profileDrafts: restoredPublisherWorkspace.profileDrafts && typeof restoredPublisherWorkspace.profileDrafts === 'object' ? restoredPublisherWorkspace.profileDrafts : {},
       publicationDrafts: {},
       createDraft: null,
+      dataDashboard,
     };
   };
   const loadPublisherWorkspaceForSession = () => {
@@ -11161,10 +11805,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
     }
     if (route?.role === 'developer') {
-      if (requested?.id === 'P01-01') route = requested;
-      else if (!memory.session.authenticated) route = routes.find(item => item.id === 'P01-01') || route;
+      if (!memory.session.authenticated) route = routes.find(item => item.id === 'P01-01') || route;
       else if (memory.registration?.accountTier === 'unselected') route = routes.find(item => item.id === 'P01-03') || route;
       else if (route.id === 'P02-01') route = requested || route;
+      else if (requested?.id === 'P01-01' && hasPublisherRoute) route = routes.find(item => item.id === 'P02-01') || route;
       else if (memory.qualification.status !== 'approved') route = routes.find(item => item.id === 'P01-03') || route;
       else if (!requested && route.id === 'P01-01') route = routes.find(item => item.id === 'P01-02') || route;
     }
@@ -11783,14 +12427,19 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
   const persistPublisherWorkspace = () => {
     const { publicationDrafts, ...workspace } = memory.page['P02-01'] || {};
+    const persistableWorkspace = { ...workspace };
+    if (persistableWorkspace.dataDashboard && typeof persistableWorkspace.dataDashboard === 'object') {
+      persistableWorkspace.dataDashboard = { ...persistableWorkspace.dataDashboard, selectedOrder:'', scopeOpen:false };
+      delete persistableWorkspace.dataDashboard.__keywordTimer;
+    }
     if (publisherAccountContext && memory.session.authenticated && memory.session.accountKey) {
-      const activeGameId = String(workspace.selectedGame || memory.session.activeGameId || 'existing');
+      const activeGameId = String(persistableWorkspace.selectedGame || memory.session.activeGameId || 'existing');
       memory.session.activeGameId = activeGameId;
-      publisherAccountContext.saveWorkspace(localStorage, memory.session.accountKey, publisherWorkspaceScopeKey, workspace);
+      publisherAccountContext.saveWorkspace(localStorage, memory.session.accountKey, publisherWorkspaceScopeKey, persistableWorkspace);
       persistPublisherSession();
       return;
     }
-    if (!publisherAccountContext) writeStorage(localStorage, publisherWorkspaceStorageKey, workspace);
+    if (!publisherAccountContext) writeStorage(localStorage, publisherWorkspaceStorageKey, persistableWorkspace);
   };
   const restoreActiveHorizontalItem = (selector, previousLeft = 0) => {
     const scroller = root.querySelector(selector);
@@ -12102,8 +12751,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'publisher-sidebar-view') {
         const requested = event.currentTarget.dataset.publisherView;
-        if (requested === 'vendor' && !publisherAccess().canManageVendor) return;
         updatePublisherWorkspace({ workspaceView: requested === 'vendor' ? 'vendor' : 'games', addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-open-data') {
+        if (!publisherAccess().canViewPublisherData) return;
+        updatePublisherWorkspace({ workspaceView: 'data', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-game-search') {
@@ -13547,6 +14200,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         onQualificationWithdraw: application => withdrawPublisherQualification(draft, application),
         onVersionOpen: submissionId => loadPublisherReleaseSubmission(draft, submissionId),
         onVersionRefresh: () => refreshPublisherReleaseSubmissions(draft),
+      });
+    }
+    if (route.id === 'P02-01' && memory.page[route.id]?.workspaceView === 'data' && window.PublisherDataDashboard) {
+      const dashboardState = memory.page[route.id].dataDashboard || (memory.page[route.id].dataDashboard = window.PublisherDataDashboard.createState());
+      window.PublisherDataDashboard.bind(root, {
+        state: dashboardState,
+        onChange: (_next, options = {}) => updatePublisherWorkspace({ dataDashboard:dashboardState }, { preserveScroll:Boolean(options.preserveScroll) }),
+        onFinance: (target, filters) => {
+          persistPublisherWorkspace();
+          const lockedStatement = window.PublisherDataDashboard.statements().find(item => item.status === 'locked');
+          const query = target === 'settlement/flows'
+            ? new URLSearchParams({ game:filters.game || 'all', fulfillment:filters.fulfillment || 'all', range:filters.range || '30d', ledger_source:'direct_sale' })
+            : new URLSearchParams({ statement:lockedStatement?.id || '', ledger_source:'direct_sale' });
+          window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? filters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
+          location.href = `15-开发者财务结算demo.html#/${target}?${query.toString()}`;
+        },
       });
     }
     if (route.id === 'P01-07' && state === 'default' && memory.page[route.id]?.releaseTab === 'audit') {

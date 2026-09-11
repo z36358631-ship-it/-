@@ -147,7 +147,21 @@ for (const [status, kind] of [
     await workspace.waitFor();
     assert.equal(await page.evaluate(() => JSON.parse(sessionStorage.getItem('gamehub-developer-session-v2') || 'null')?.qualificationStatus), status);
     assert.equal(await page.locator('[data-portal-action="open-add-game"]').isDisabled(), status === 'delisted');
-    assert.equal(await page.locator('[data-publisher-view="vendor"]').count(), status === 'approved' ? 1 : 0);
+    assert.deepEqual(await page.locator('.publisher-console-sidebar [data-publisher-view]').allTextContents(), ['游戏管理', '厂商设置']);
+    const vendorEntry = page.locator('[data-publisher-view="vendor"]');
+    assert.equal(await vendorEntry.count(), 1);
+    await vendorEntry.click();
+    await page.locator('[data-publisher-page="vendor"]').waitFor();
+    assert.equal(await page.locator('[data-publisher-workspace]').getAttribute('data-workspace-view'), 'vendor');
+    if (status === 'approved') {
+      assert.equal(await page.locator('[data-publisher-vendor-restriction]').count(), 0);
+      assert.match(await page.locator('[data-publisher-page="vendor"]').innerText(), /厂商设置功能占位/);
+    } else {
+      const restriction = page.locator(`[data-publisher-vendor-restriction="${status}"]`);
+      assert.equal(await restriction.count(), 1);
+      assert.match(await restriction.innerText(), status === 'delisted' ? /开发者资格已暂停[\s\S]*查看认证详情/ : /完成开发者认证后才可进行厂商设置/);
+      assert.equal(await restriction.locator('[data-portal-action="publisher-enterprise-verification"]').count(), 1);
+    }
   } finally { await context.close(); }
 });
 
@@ -214,7 +228,7 @@ test('企业开发者拥有发布、记录、游戏资质和厂商管理能力',
   try {
     await seedAccount(page, 'approved');
     const vendorEntry = page.locator('[data-publisher-view="vendor"]');
-    assert.equal(await vendorEntry.isVisible(), true);
+    await vendorEntry.waitFor();
     await vendorEntry.click();
     assert.equal(await page.locator('[data-publisher-page="vendor"]').isVisible(), true);
     await page.locator('[data-publisher-view="games"]').click();
@@ -244,8 +258,8 @@ test('资格暂停账号只能查看历史，版本和资质均不可编辑', as
   const page = await context.newPage();
   try {
     await seedAccount(page, 'delisted');
-    assert.equal(await page.locator('[data-publisher-access="suspended"]').count() > 0, true);
-    assert.equal(await page.locator('[data-publisher-view="vendor"]').count(), 0);
+    await page.locator('[data-publisher-workspace][data-publisher-access="suspended"]').waitFor();
+    assert.equal(await page.locator('[data-publisher-view="vendor"]').count(), 1);
     await openDraftGame(page);
     const release = page.locator('[data-publisher-profile][data-profile-module="release-workspace"]');
     assert.match(await release.locator('[data-publisher-restriction="delisted"]').innerText(), /企业发行权限已暂停[\s\S]*只读状态/);

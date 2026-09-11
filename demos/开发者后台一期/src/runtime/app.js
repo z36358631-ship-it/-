@@ -403,10 +403,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
     }
     if (route?.role === 'developer') {
-      if (requested?.id === 'P01-01') route = requested;
-      else if (!memory.session.authenticated) route = routes.find(item => item.id === 'P01-01') || route;
+      if (!memory.session.authenticated) route = routes.find(item => item.id === 'P01-01') || route;
       else if (memory.registration?.accountTier === 'unselected') route = routes.find(item => item.id === 'P01-03') || route;
       else if (route.id === 'P02-01') route = requested || route;
+      else if (requested?.id === 'P01-01' && hasPublisherRoute) route = routes.find(item => item.id === 'P02-01') || route;
       else if (memory.qualification.status !== 'approved') route = routes.find(item => item.id === 'P01-03') || route;
       else if (!requested && route.id === 'P01-01') route = routes.find(item => item.id === 'P01-02') || route;
     }
@@ -1349,9 +1349,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'publisher-sidebar-view') {
         const requested = event.currentTarget.dataset.publisherView;
-        if (requested === 'vendor' && !publisherAccess().canManageVendor) return;
-        if (requested === 'data' && !publisherAccess().canViewPublisherData) return;
-        updatePublisherWorkspace({ workspaceView: ['vendor','data'].includes(requested) ? requested : 'games', addGameOpen: false, gameMenuOpen: '' });
+        updatePublisherWorkspace({ workspaceView: requested === 'vendor' ? 'vendor' : 'games', addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'publisher-open-data') {
+        if (!publisherAccess().canViewPublisherData) return;
+        updatePublisherWorkspace({ workspaceView: 'data', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-game-search') {

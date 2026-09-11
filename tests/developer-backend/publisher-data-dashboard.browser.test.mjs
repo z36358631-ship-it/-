@@ -50,7 +50,7 @@ async function seedApprovedAccount(page, accountKey) {
 
 async function openDashboard(page, accountKey) {
   await seedApprovedAccount(page, accountKey);
-  const entry = page.locator('[data-publisher-view="data"]');
+  const entry = page.locator('[data-portal-action="publisher-open-data"]');
   await entry.waitFor();
   await entry.click();
   const dashboard = page.locator('[data-publisher-page="data"]');
@@ -92,14 +92,14 @@ before(async () => {
 
 after(async () => { await browser?.close(); });
 
-test('开发者侧边栏进入数据看板且只提供经营概览、订单明细、收入与结算三个页签', async () => {
+test('开发者从游戏管理进入数据看板，侧边栏只保留游戏管理和厂商设置', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
   try {
     const dashboard = await openDashboard(page, 'publisher-dashboard:navigation');
     assert.deepEqual(
       await page.locator('.publisher-console-sidebar [data-publisher-view]').allTextContents(),
-      ['游戏管理', '数据看板', '厂商设置'],
+      ['游戏管理', '厂商设置'],
     );
     assert.deepEqual(
       await dashboard.locator('[data-publisher-data-tab]').allTextContents(),

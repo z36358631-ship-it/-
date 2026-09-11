@@ -92,6 +92,18 @@ test('同一 Demo 可在 02 开发者前台和 01 运营后台之间快速切换
   } finally { await context.close(); }
 });
 
+test('已注册开发者访问 01 首页时进入 02 左侧工作台', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    await seedAccount(page, 'approved', 'shell:approved-home');
+    await page.goto(demoUrl('/P01-01'), { waitUntil: 'load' });
+    await page.waitForURL(/#\/P02-01$/);
+    assert.equal(await page.locator('[data-platform-tab-bar]').count(), 0);
+    assert.deepEqual(await page.locator('.publisher-console-sidebar [data-publisher-view]').allTextContents(), ['游戏管理', '厂商设置']);
+  } finally { await context.close(); }
+});
+
 test('从 02 申请主体认证时直接打开已预填的 01 认证表单', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();

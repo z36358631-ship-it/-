@@ -447,11 +447,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return records[game.gameKey] || records[game.detailVariant] || [];
   };
 
-  const renderPublisherConsoleSidebar = (active, language = 'zh', rawAccess) => {
-    const access = publisherAccessFor(rawAccess);
-    const data = access.canViewPublisherData ? `<section><span>${language === 'en' ? 'Analytics' : '数据'}</span><button type="button" class="${active === 'data' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="data">${icon('chart')}<b>${language === 'en' ? 'Data dashboard' : '数据看板'}</b>${icon('chevron')}</button></section>` : '';
-    const vendor = access.canManageVendor ? `<section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section>` : '';
-    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${data}${vendor}</aside>`;
+  const renderPublisherConsoleSidebar = (active, language = 'zh') => {
+    const vendor = `<section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section>`;
+    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${vendor}</aside>`;
   };
 
   const renderPublisherGameCard = ({ name, gameId, appId, systems, stage, status, updatedAt, gameKey }) => `<button class="publisher-game-card" type="button" data-portal-action="enter-publisher-game" data-publisher-game="${e(gameKey)}" aria-label="进入${e(name)}控制台">
@@ -471,9 +469,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       : `<div class="publisher-game-list-empty">${icon('game')}<strong>暂无游戏</strong><small>点击“添加游戏”创建第一个游戏项目。</small></div>`;
     const resultCopy = query || statusFilter !== 'all' ? `筛选出 ${visibleGames.length} 款游戏` : `共 ${games.length} 款·按最近更新时间排序`;
     const accessAlert = access.isPublisherReadOnly || state.publisherAccessDisabled ? `<section class="publisher-access-alert" role="alert">${icon('warning')}<span><strong>${access.isPublisherReadOnly ? '企业发行权限已暂停' : '企业认证状态异常，当前发行权限已暂停'}</strong><small>历史资料仍可查看，当前不能新建游戏或提交发行申请。如有疑问，请通过邮箱 <a href="mailto:dev@xiaoji.com">dev@xiaoji.com</a> 提交问题反馈。</small></span><em>需要处理</em></section>` : '';
+    const dataAction = access.canViewPublisherData ? c.button({ label: '经营数据', action: 'publisher-open-data', iconName: 'chart' }) : '';
     return `<section class="publisher-platform-page" data-publisher-page="games">
       ${accessAlert}
-      <div class="publisher-game-toolbar"><div class="publisher-game-filter"><label class="publisher-search">${icon('search')}<input type="search" value="${e(state.gameSearch || '')}" placeholder="搜索游戏名称" data-publisher-game-search></label><label class="publisher-status-filter"><select aria-label="游戏状态" data-publisher-game-status><option value="all" ${statusFilter === 'all' ? 'selected' : ''}>全部状态</option>${publisherStatusFilters.map(([value, label]) => `<option value="${e(value)}" ${statusFilter === value ? 'selected' : ''}>${e(label)}</option>`).join('')}</select></label><button type="button" data-portal-action="publisher-game-search">查询 ${icon('search')}</button></div>${c.button({ label: '添加游戏', variant: 'primary', action: 'open-add-game', iconName: 'plus', disabled: !access.canCreateGameDraft })}</div>
+      <div class="publisher-game-toolbar"><div class="publisher-game-filter"><label class="publisher-search">${icon('search')}<input type="search" value="${e(state.gameSearch || '')}" placeholder="搜索游戏名称" data-publisher-game-search></label><label class="publisher-status-filter"><select aria-label="游戏状态" data-publisher-game-status><option value="all" ${statusFilter === 'all' ? 'selected' : ''}>全部状态</option>${publisherStatusFilters.map(([value, label]) => `<option value="${e(value)}" ${statusFilter === value ? 'selected' : ''}>${e(label)}</option>`).join('')}</select></label><button type="button" data-portal-action="publisher-game-search">查询 ${icon('search')}</button></div><div class="publisher-game-toolbar__actions">${dataAction}${c.button({ label: '添加游戏', variant: 'primary', action: 'open-add-game', iconName: 'plus', disabled: !access.canCreateGameDraft })}</div></div>
       <section class="publisher-game-library"><header><div><h2>全部游戏</h2><p>${resultCopy}</p></div></header><div class="publisher-game-list">${gameRows || emptyRow}</div></section>
     </section>`;
   };
@@ -497,7 +496,23 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderPublisherVendorSettings = () => `<section class="publisher-vendor-settings" data-publisher-page="vendor"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>厂商设置</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon('file')}<strong>厂商设置功能占位</strong><p>具体功能、字段与交互见《开发者平台与资料》PRD。</p></div></section>`;
+  const renderPublisherVendorSettings = (language = 'zh', rawAccess) => {
+    const access = publisherAccessFor(rawAccess);
+    const isEnglish = language === 'en';
+    if (access.canManageVendor) return `<section class="publisher-vendor-settings" data-publisher-page="vendor"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>${isEnglish ? 'Company settings' : '厂商设置'}</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon('file')}<strong>${isEnglish ? 'Company settings placeholder' : '厂商设置功能占位'}</strong><p>${isEnglish ? 'See the Developer Platform and Profile PRD for detailed fields and interactions.' : '具体功能、字段与交互见《开发者平台与资料》PRD。'}</p></div></section>`;
+    const status = access.qualificationStatus;
+    const suspended = access.isPublisherReadOnly;
+    const actionLabel = isEnglish
+      ? (status === 'pending' ? 'View verification progress' : status === 'rejected' ? 'Resubmit verification' : suspended ? 'View verification details' : 'Start developer verification')
+      : (status === 'pending' ? '查看认证进度' : status === 'rejected' ? '重新提交认证' : suspended ? '查看认证详情' : '申请开发者认证');
+    const detail = isEnglish
+      ? (status === 'pending' ? 'Your application is under review. Company settings will become available after approval.' : status === 'rejected' ? 'Update the information based on the review feedback and submit it again.' : suspended ? 'Developer privileges are suspended. Company settings are currently unavailable.' : 'Company information can be managed after developer verification is approved.')
+      : (status === 'pending' ? '认证申请正在审核中，通过后将自动开放厂商设置。' : status === 'rejected' ? '请根据审核意见修改资料并重新提交认证。' : suspended ? '开发者资格已暂停，当前暂不可进行厂商设置。' : '认证通过后即可管理厂商信息。');
+    const title = suspended
+      ? (isEnglish ? 'Developer privileges are suspended' : '开发者资格已暂停，暂不可进行厂商设置')
+      : (isEnglish ? 'Complete developer verification before using company settings' : '完成开发者认证后才可进行厂商设置');
+    return `<section class="publisher-vendor-settings" data-publisher-page="vendor" data-publisher-vendor-restriction="${e(status)}"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>${isEnglish ? 'Company settings' : '厂商设置'}</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon(suspended ? 'warning' : 'vendor')}<strong>${e(title)}</strong><p>${e(detail)}</p>${c.button({ label: actionLabel, variant: suspended ? 'default' : 'primary', action: 'publisher-enterprise-verification' })}</div></section>`;
+  };
 
   const renderPublisherDeleteGameModal = state => {
     if (!state.deleteGameKey) return '';
@@ -721,11 +736,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return `<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="create"><div class="publisher-console-shell">${renderPublisherConsoleSidebar('games', language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${window.PublisherGameCreate.render(workspaceState.createDraft, language)}</div></main></div></div>`;
     }
     const requestedView = ['games', 'vendor', 'data', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
-    const view = (requestedView === 'vendor' && !access.canManageVendor) || (requestedView === 'data' && !access.canViewPublisherData) ? 'games' : requestedView;
-    const activeSidebar = ['vendor','data'].includes(view) ? view : 'games';
+    const view = requestedView === 'data' && !access.canViewPublisherData ? 'games' : requestedView;
+    const activeSidebar = view === 'vendor' ? 'vendor' : 'games';
     const content = view === 'game'
       ? renderPublisherGameConsole(page, workspaceState, language, access)
-      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings() : view === 'data' ? renderPublisherData(workspaceState, language, access) : renderPublisherGames(workspaceState, access)}</div></main></div>`;
+      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings(language, access) : view === 'data' ? renderPublisherData(workspaceState, language, access) : renderPublisherGames(workspaceState, access)}</div></main></div>`;
     return `${storageNotice}<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="${view}">${content}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
   };
 
