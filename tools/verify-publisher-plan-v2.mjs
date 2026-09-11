@@ -26,6 +26,35 @@ const mustNotContain = (source, values, label) => {
   }
 };
 
+const zeroSettlementOutcomeSource = String.raw`按\s*(?:0|零)(?:\s*点赞)?\s*结算`;
+const legacyZeroSettlementPatterns = [
+  new RegExp(String.raw`(?:视频|作品|链接).{0,30}?(?:不可|无法).{0,12}?访问[^\u3002；]{0,60}?${zeroSettlementOutcomeSource}`, 'gu'),
+  new RegExp(String.raw`(?:删除|私密)[^\u3002；]{0,60}?${zeroSettlementOutcomeSource}`, 'gu'),
+  new RegExp(String.raw`(?:关键数据|点赞数据).{0,12}?(?:缺失|无法取得)[^\u3002；]{0,60}?${zeroSettlementOutcomeSource}`, 'gu')
+];
+const negatedZeroSettlementPattern = new RegExp(
+  String.raw`(?:(?:不得|不能|不会|不|禁止)\s*按|不默认[^\u3002；]{0,24}(?:或|、)\s*按)\s*(?:0|零)(?:\s*点赞)?\s*结算`,
+  'u'
+);
+const hasLegacyZeroSettlement = source => legacyZeroSettlementPatterns.some(pattern =>
+  [...source.matchAll(pattern)].some(match => !negatedZeroSettlementPattern.test(match[0]))
+);
+
+const legacyZeroSettlementAdversarialCases = [
+  '作品无法访问时按0点赞结算',
+  '链接不可访问时按0结算',
+  '作品删除或转为私密时按零结算',
+  '视频不可正常访问时按0结算',
+  '关键数据缺失时按0结算'
+];
+for (const [index, example] of legacyZeroSettlementAdversarialCases.entries()) {
+  assert(hasLegacyZeroSettlement(example), `zero-settlement guard missed adversarial case ${index + 1}`);
+}
+assert(
+  !hasLegacyZeroSettlement('作品无法访问时不得按0点赞结算，链接不可访问时不按0结算；关键数据缺失时不能按0结算，作品删除后不会按零结算'),
+  'zero-settlement guard rejects correct negated guidance'
+);
+
 const assertInlineScriptMatches = (html, js, sourceName, label) => {
   const openingTag = `<script data-maintenance-source="${sourceName}">`;
   assert(!html.includes(`<script src="${sourceName}"></script>`), `${label} still loads external script`);
@@ -150,15 +179,9 @@ mustNotContain(prd, [
   '结算说明包含数据统计周期、周期补发'
 ], 'retired publisher PRD capabilities');
 
-const inaccessibleZeroSettlementMatches = [
-  ...normalizedPublisherSource.matchAll(/(?:视频|作品)不可访问.{0,120}?按\s*(?:0|零)(?:\s*点赞)?\s*结算/gu)
-].map(match => match[0]);
-const isNegatedZeroSettlement = value =>
-  /(?:不得|禁止|不能|不可|不应|不予|不再|不)\s*按\s*(?:0|零)(?:\s*点赞)?\s*结算/u.test(value)
-  || /不默认[^\u3002；]{0,24}(?:或|、)\s*按\s*(?:0|零)(?:\s*点赞)?\s*结算/u.test(value);
 assert(
-  inaccessibleZeroSettlementMatches.every(isNegatedZeroSettlement),
-  'retired publisher rules still define inaccessible video/work as zero settlement'
+  !hasLegacyZeroSettlement(normalizedPublisherSource),
+  'retired publisher rules still define unavailable/deleted/private/missing-data content as zero settlement'
 );
 
 mustContain(prd, [
