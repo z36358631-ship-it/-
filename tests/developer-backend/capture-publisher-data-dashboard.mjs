@@ -45,7 +45,8 @@ await page.addInitScript(demoName => {
   }));
 }, path.basename(demoFile));
 await page.goto(url.href, { waitUntil:'load' });
-await page.locator('[data-publisher-view="data"]').click();
+await page.locator('[data-portal-action="enter-publisher-game"][data-publisher-game="existing"]').first().click();
+await page.locator('[data-portal-action="game-console-section"][data-game-section="analytics"]').click();
 await page.locator('[data-testid="publisher-data-dashboard"]').waitFor();
 
 await page.screenshot({ path:path.join(outputDir, '02-dashboard-overview.png'), fullPage:true });

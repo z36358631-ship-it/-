@@ -4216,6 +4216,13 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   font-size: 28px;
   line-height: 1.25;
 }
+.publisher-dashboard-game-context {
+  display: block;
+  margin-top: 6px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
 .publisher-dashboard-head p,
 .publisher-dashboard-card header p {
   margin: 8px 0 0;
@@ -4595,6 +4602,68 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 @media (max-width: 420px) {
   .publisher-dashboard-metrics { grid-template-columns: 1fr; }
   .publisher-dashboard-metric small { white-space: normal; }
+}
+
+.publisher-vendor-settings { min-width: 0; }
+.publisher-vendor-title { min-height: 42px; margin: 0 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #23344A; background: transparent; }
+.publisher-vendor-title h1 { margin: 0; color: #23344A; font-size: 24px; line-height: 1.35; }
+.publisher-vendor-title > div { display: flex; align-items: center; gap: 10px; }
+.publisher-vendor-card { overflow: hidden; border: 1px solid #E0E5EC; border-radius: 12px; background: #FFFFFF; box-shadow: 0 7px 24px rgba(41,62,90,.06); }
+.vendor-settings-tabs { min-height: 58px; padding: 0 20px; display: flex; align-items: stretch; gap: 30px; overflow-x: auto; border-bottom: 1px solid #E0E5EC; background: #FFFFFF; scrollbar-width: none; }
+.vendor-settings-tabs::-webkit-scrollbar { display: none; }
+.vendor-settings-tab { position: relative; min-width: max-content; padding: 0 2px; color: #66758A; font-size: 14px; font-weight: 650; border: 0; background: transparent; cursor: pointer; }
+.vendor-settings-tab::after { content: ""; position: absolute; right: 0; bottom: -1px; left: 0; height: 3px; border-radius: 3px 3px 0 0; background: transparent; }
+.vendor-settings-tab:hover, .vendor-settings-tab.is-active { color: #087F86; }
+.vendor-settings-tab.is-active::after { background: #08B9C0; }
+.vendor-settings-tab .status-dot { width: 7px; height: 7px; margin-left: 7px; display: inline-block; vertical-align: 1px; border-radius: 50%; background: #AAB4C2; }
+.vendor-settings-tab .status-dot.is-pending { background: #E9A23B; }
+.vendor-settings-tab .status-dot.is-rejected { background: #E25555; }
+.vendor-settings-tab .status-dot.is-approved { background: #19A974; }
+.vendor-settings-panel { padding: 22px 20px 0; }
+.vendor-settings-panel[hidden] { display: none; }
+.vendor-settings-panel__notice { margin-bottom: 18px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px; color: #536277; border: 1px solid #DCE4EE; border-radius: 9px; background: #F7F9FC; line-height: 1.6; }
+.vendor-settings-panel__notice svg { width: 18px; height: 18px; margin-top: 2px; flex: 0 0 auto; color: #08AFC3; }
+.vendor-settings-panel__notice.is-pending { color: #74511F; border-color: #F0D49B; background: #FFF9ED; }
+.vendor-settings-panel__notice.is-pending svg { color: #D79124; }
+.vendor-settings-panel__notice.is-rejected { color: #8C3434; border-color: #F0C3C3; background: #FFF4F4; }
+.vendor-settings-panel__notice.is-rejected svg { color: #D34D4D; }
+.vendor-settings-panel__notice.is-approved { color: #207458; border-color: #BDE5D6; background: #F0FBF7; }
+.vendor-settings-panel__notice.is-approved svg { color: #15936B; }
+.vendor-settings-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 20px; }
+.vendor-settings-form-grid:not(.is-mainland) .field:has([data-mainland-region-detail]) { display: none; }
+.vendor-settings-form-grid .field.is-wide { grid-column: 1 / -1; }
+.vendor-settings-form-grid .field-hint { max-width: 58%; text-align: right; }
+.vendor-settings-form-grid input:disabled, .vendor-settings-form-grid textarea:disabled, .vendor-settings-form-grid select:disabled { color: #586579; opacity: 1; background: #F6F8FB; cursor: not-allowed; }
+.vendor-settings-form-grid [aria-invalid="true"] { border-color: #D94A4A; box-shadow: 0 0 0 2px rgba(217,74,74,.08); }
+.vendor-settings-effective-value { min-height: 18px; margin-top: 5px; display: block; color: #8A96A8; font-size: 11px; line-height: 1.5; }
+.vendor-settings-file { min-height: 76px; display: grid; align-content: center; gap: 7px; }
+.vendor-settings-file__box { min-height: 42px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #27364D; border: 1px solid #D6DEE9; border-radius: 8px; background: #FFFFFF; }
+.vendor-settings-file__box > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vendor-settings-file__box [aria-invalid="true"] { color: #B43434; }
+.vendor-settings-file__upload { position: relative; min-width: 74px; min-height: 30px; display: inline-flex; align-items: center; justify-content: center; color: #087F86; font-size: 12px; font-weight: 700; border: 1px solid #A9DDE0; border-radius: 7px; background: #F2FBFB; cursor: pointer; }
+.vendor-settings-file__upload input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.vendor-settings-file__box.is-disabled { color: #657287; background: #F6F8FB; }
+.vendor-settings-panel__footer { min-height: 72px; margin: 22px -20px 0; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-top: 1px solid #E0E5EC; background: #FAFBFD; }
+.vendor-settings-panel__footer > span { color: #66758A; font-size: 12px; line-height: 1.6; }
+.vendor-settings-panel__footer .form-actions { flex: 0 0 auto; }
+.vendor-review-demo { margin-top: 14px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #647188; border: 1px dashed #CBD5E2; border-radius: 10px; background: #F8FAFD; }
+.vendor-review-demo strong { color: #344258; font-size: 12px; }
+.publisher-vendor-support { margin-top: 14px; padding: 13px 15px; display: flex; align-items: center; gap: 9px; color: #66758A; font-size: 12px; border: 1px solid #DCE4EE; border-radius: 9px; background: #FFFFFF; }
+.publisher-vendor-support svg { width: 17px; height: 17px; color: #08AFC3; }
+.publisher-vendor-support a { color: #087F86; font-weight: 700; }
+
+@media (max-width: 760px) {
+  .publisher-vendor-title { align-items: flex-start; flex-direction: column; }
+  .vendor-settings-tabs { min-height: 52px; padding: 0 14px; gap: 22px; }
+  .vendor-settings-panel { padding: 18px 14px 0; }
+  .vendor-settings-form-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .vendor-settings-form-grid .field.is-wide { grid-column: auto; }
+  .vendor-settings-form-grid .field-hint { max-width: 62%; }
+  .vendor-settings-panel__footer { margin: 20px -14px 0; padding: 14px; align-items: stretch; flex-direction: column; }
+  .vendor-settings-panel__footer .form-actions, .vendor-settings-panel__footer .gh-button { width: 100%; }
+  .vendor-review-demo { align-items: stretch; flex-direction: column; }
+  .vendor-review-demo .form-actions, .vendor-review-demo .gh-button { width: 100%; }
+  .publisher-vendor-support { align-items: flex-start; }
 }</style></head><body>
 <div id="app"></div>
 <textarea id="portal-module" hidden aria-hidden="true">{"id":"02","name":"开发者平台","description":"完成开发者登录与认证，并管理游戏创建、发行资料、资质和经营数据。","output":"开发者平台demo.html","aliases":["01-开发者平台与资料demo.html","02-游戏创建与发行demo.html","02-CDKEY商品与供给demo.html"],"defaultRoute":"P02-01","routeIds":["P01-01","P01-03","P02-01"],"surface":"developer","standalone":true}</textarea>
@@ -9361,14 +9430,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const orders = Object.freeze([
     { id:'RCN-202609-A8F2K7', orderMask:'ORD-****-1842', date:'2026-09-10 18:42', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-BASE-001', product:'星海远征', productEn:'Stellar Voyage', productType:'base', fulfillment:'account_entitlement', region:'global', country:'日本', countryEn:'Japan', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'JPY', amountMinor:1980, settlementCurrency, convertedMinor:1320, fxRateText:'JPY/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:53, channelFeeMinor:40, platformShareMinor:198, adjustmentMinor:0, settlementMinor:1029, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'completed', delivered:true, delivery:'账号权益已生效', deliveryEn:'Account entitlement active' },
     { id:'RCN-202609-C4N8M2', orderMask:'ORD-****-1826', date:'2026-09-10 16:26', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-101', product:'深空回声 DLC', productEn:'Deep Space Echoes DLC', productType:'dlc', fulfillment:'cdkey', region:'global', country:'美国', countryEn:'United States', platform:'Android', channel:'Google Play Billing', channelEn:'Google Play Billing', currency:'USD', amountMinor:599, settlementCurrency, convertedMinor:599, fxRateText:'USD/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:24, channelFeeMinor:18, platformShareMinor:90, adjustmentMinor:0, settlementMinor:467, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'completed', delivered:true, delivery:'CDKEY 已交付', deliveryEn:'CDKEY delivered' },
-    { id:'RCN-202609-H7Q3P5', orderMask:'ORD-****-1798', date:'2026-09-10 14:08', game:'像素边境', gameEn:'Pixel Frontier', sku:'SKU-BASE-007', product:'像素边境', productEn:'Pixel Frontier', productType:'base', fulfillment:'account_entitlement', region:'global', country:'德国', countryEn:'Germany', platform:'Android', channel:'0 元订单', channelEn:'Zero-price order', currency:'EUR', amountMinor:0, settlementCurrency, convertedMinor:0, fxRateText:'EUR/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'', statementStatus:'none', paymentStatus:'none', status:'free', delivered:true, delivery:'账号权益已生效', deliveryEn:'Account entitlement active' },
+    { id:'RCN-202609-H7Q3P5', orderMask:'ORD-****-1798', date:'2026-09-10 14:08', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-BASE-001', product:'星海远征', productEn:'Stellar Voyage', productType:'base', fulfillment:'account_entitlement', region:'global', country:'德国', countryEn:'Germany', platform:'Android', channel:'0 元订单', channelEn:'Zero-price order', currency:'EUR', amountMinor:0, settlementCurrency, convertedMinor:0, fxRateText:'EUR/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'', statementStatus:'none', paymentStatus:'none', status:'free', delivered:true, delivery:'账号权益已生效', deliveryEn:'Account entitlement active' },
     { id:'RCN-202609-Q8F4D1', orderMask:'ORD-****-1715', date:'2026-09-09 21:15', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-205', product:'曙光舰队 DLC', productEn:'Dawn Fleet DLC', productType:'dlc', fulfillment:'account_entitlement', region:'global', country:'英国', countryEn:'United Kingdom', platform:'Android', channel:'第三方支付', channelEn:'Third-party payment', currency:'GBP', amountMinor:999, settlementCurrency, convertedMinor:1340, fxRateText:'GBP/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:54, channelFeeMinor:40, platformShareMinor:201, adjustmentMinor:0, settlementMinor:1045, statementId:'STMT-2026-08-V1', statementStatus:'pending', paymentStatus:'not_ready', status:'refund_pending', delivered:true, delivery:'账号权益已撤销，退款处理中', deliveryEn:'Entitlement revoked; refund processing' },
     { id:'RCN-202609-L5V9R4', orderMask:'ORD-****-1644', date:'2026-09-09 10:44', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-BASE-001', product:'星海远征', productEn:'Stellar Voyage', productType:'base', fulfillment:'cdkey', region:'domestic', country:'中国大陆', countryEn:'Mainland China', platform:'Android', channel:'第三方支付', channelEn:'Third-party payment', currency:'CNY', amountMinor:12800, settlementCurrency, convertedMinor:1770, fxRateText:'CNY/USD · FX-20260910-01', refundConvertedMinor:1770, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'refunded', delivered:true, delivery:'CDKEY 已交付，退款成功', deliveryEn:'CDKEY delivered; refund completed' },
     { id:'RCN-202609-T2D6X8', orderMask:'ORD-****-1603', date:'2026-09-08 19:03', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-101', product:'深空回声 DLC', productEn:'Deep Space Echoes DLC', productType:'dlc', fulfillment:'cdkey', region:'global', country:'加拿大', countryEn:'Canada', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'CAD', amountMinor:549, settlementCurrency, convertedMinor:400, fxRateText:'CAD/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:400, chargebackLossMinor:0, taxMinor:16, channelFeeMinor:12, platformShareMinor:60, adjustmentMinor:0, settlementMinor:312, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'chargeback_open', delivered:true, delivery:'CDKEY 已交付', deliveryEn:'CDKEY delivered' },
-    { id:'RCN-202609-V3J7S9', orderMask:'ORD-****-1586', date:'2026-09-08 12:16', game:'像素边境', gameEn:'Pixel Frontier', sku:'SKU-BASE-007', product:'像素边境', productEn:'Pixel Frontier', productType:'base', fulfillment:'account_entitlement', region:'global', country:'法国', countryEn:'France', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'EUR', amountMinor:1299, settlementCurrency, convertedMinor:1520, fxRateText:'EUR/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:61, channelFeeMinor:46, platformShareMinor:228, adjustmentMinor:85, settlementMinor:1270, statementId:'STMT-2026-08-V1', statementStatus:'pending', paymentStatus:'not_ready', status:'chargeback_won', delivered:true, delivery:'账号权益保持有效', deliveryEn:'Account entitlement remains active', userListDeleted:true },
+    { id:'RCN-202609-V3J7S9', orderMask:'ORD-****-1586', date:'2026-09-08 12:16', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-BASE-001', product:'星海远征', productEn:'Stellar Voyage', productType:'base', fulfillment:'account_entitlement', region:'global', country:'法国', countryEn:'France', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'EUR', amountMinor:1299, settlementCurrency, convertedMinor:1520, fxRateText:'EUR/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:61, channelFeeMinor:46, platformShareMinor:228, adjustmentMinor:85, settlementMinor:1270, statementId:'STMT-2026-08-V1', statementStatus:'pending', paymentStatus:'not_ready', status:'chargeback_won', delivered:true, delivery:'账号权益保持有效', deliveryEn:'Account entitlement remains active', userListDeleted:true },
     { id:'RCN-202609-W9B4J3', orderMask:'ORD-****-1522', date:'2026-09-07 15:22', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-101', product:'深空回声 DLC', productEn:'Deep Space Echoes DLC', productType:'dlc', fulfillment:'account_entitlement', region:'global', country:'新加坡', countryEn:'Singapore', platform:'Android', channel:'Google Play Billing', channelEn:'Google Play Billing', currency:'USD', amountMinor:599, settlementCurrency, convertedMinor:599, fxRateText:'USD/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:599, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'STMT-2026-06-V1', statementStatus:'locked', paymentStatus:'awaiting_invoice', status:'chargeback_lost', delivered:true, delivery:'账号权益已撤销', deliveryEn:'Account entitlement revoked' },
-    { id:'RCN-202609-Z6K1E4', orderMask:'ORD-****-1488', date:'2026-09-06 20:48', game:'像素边境', gameEn:'Pixel Frontier', sku:'SKU-DLC-311', product:'机械荒原 DLC', productEn:'Mechanical Wastes DLC', productType:'dlc', fulfillment:'account_entitlement', region:'global', country:'韩国', countryEn:'South Korea', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'KRW', amountMinor:9900, settlementCurrency, convertedMinor:710, fxRateText:'KRW/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'', statementStatus:'none', paymentStatus:'none', status:'closed', delivered:false, delivery:'未完成支付，订单已关闭', deliveryEn:'Payment not completed; order closed' },
-    { id:'RCN-202608-M6K2S7', orderMask:'ORD-****-9421', date:'2026-08-05 11:27', game:'像素边境', gameEn:'Pixel Frontier', sku:'SKU-BASE-007', product:'像素边境', productEn:'Pixel Frontier', productType:'base', fulfillment:'cdkey', region:'global', country:'澳大利亚', countryEn:'Australia', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'USD', amountMinor:1299, settlementCurrency, convertedMinor:1299, fxRateText:'USD/USD · FX-20260805-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:52, channelFeeMinor:39, platformShareMinor:195, adjustmentMinor:0, settlementMinor:1013, statementId:'STMT-2026-05-V1', statementStatus:'locked', paymentStatus:'completed', status:'completed', delivered:true, delivery:'CDKEY 已交付', deliveryEn:'CDKEY delivered' },
+    { id:'RCN-202609-Z6K1E4', orderMask:'ORD-****-1488', date:'2026-09-06 20:48', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-DLC-205', product:'曙光舰队 DLC', productEn:'Dawn Fleet DLC', productType:'dlc', fulfillment:'account_entitlement', region:'global', country:'韩国', countryEn:'South Korea', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'KRW', amountMinor:9900, settlementCurrency, convertedMinor:710, fxRateText:'KRW/USD · FX-20260910-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:0, channelFeeMinor:0, platformShareMinor:0, adjustmentMinor:0, settlementMinor:0, statementId:'', statementStatus:'none', paymentStatus:'none', status:'closed', delivered:false, delivery:'未完成支付，订单已关闭', deliveryEn:'Payment not completed; order closed' },
+    { id:'RCN-202608-M6K2S7', orderMask:'ORD-****-9421', date:'2026-08-05 11:27', game:'星海远征', gameEn:'Stellar Voyage', sku:'SKU-BASE-001', product:'星海远征', productEn:'Stellar Voyage', productType:'base', fulfillment:'cdkey', region:'global', country:'澳大利亚', countryEn:'Australia', platform:'Mac', channel:'第三方支付', channelEn:'Third-party payment', currency:'USD', amountMinor:1299, settlementCurrency, convertedMinor:1299, fxRateText:'USD/USD · FX-20260805-01', refundConvertedMinor:0, chargebackRiskMinor:0, chargebackLossMinor:0, taxMinor:52, channelFeeMinor:39, platformShareMinor:195, adjustmentMinor:0, settlementMinor:1013, statementId:'STMT-2026-05-V1', statementStatus:'locked', paymentStatus:'completed', status:'completed', delivered:true, delivery:'CDKEY 已交付', deliveryEn:'CDKEY delivered' },
   ]);
   const statements = Object.freeze([
     { id:'STMT-2026-06-V1', period:'2026-06', currency:'USD', amountMinor:1548260, outstandingMinor:1548260, status:'locked', paymentStatus:'awaiting_invoice', updatedAt:'2026-09-10 09:30' },
@@ -9437,14 +9506,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const filterSelect = (key, label, choices, state, language) => `<label class="publisher-dashboard-field"><span>${label}</span><select data-dashboard-filter="${key}">${choices.map(([value, name]) => option(value, name, state.filters[key])).join('')}</select></label>`;
   const metricCard = (label, value, hint, key) => `<article class="publisher-dashboard-metric" data-dashboard-metric="${key}"><span>${label}</span><strong>${value}</strong><small>${hint}</small></article>`;
 
-  const renderFilters = (state, language) => {
+  const renderFilters = (state, language, options = {}) => {
     const c = copy(language);
     const en = language === 'en';
     const all = c.all;
     const statusOptions = [['all',all], ...statusOrder.map(value => [value, statusMeta(value, language)[0]])];
     return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-grid">
       ${filterSelect('range',c.range,[['7d',text('近 7 天','Last 7 days',language)],['30d',text('近 30 天','Last 30 days',language)],['90d',text('近 90 天','Last 90 days',language)],['month',text('本月','This month',language)]],state,language)}
-      ${filterSelect('game',c.game,[['all',all],['星海远征',en ? 'Stellar Voyage' : '星海远征'],['像素边境',en ? 'Pixel Frontier' : '像素边境']],state,language)}
+      ${options.game ? '' : filterSelect('game',c.game,[['all',all],['星海远征',en ? 'Stellar Voyage' : '星海远征'],['像素边境',en ? 'Pixel Frontier' : '像素边境']],state,language)}
       ${filterSelect('product',c.product,[['all',all],['base',c.base],['dlc',c.dlc]],state,language)}
       ${filterSelect('fulfillment',c.fulfillment,[['all',all],['account_entitlement',c.direct],['cdkey','CDKEY']],state,language)}
       ${filterSelect('region',c.region,[['all',all],['global',c.global],['domestic',c.domestic]],state,language)}
@@ -9470,7 +9539,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ${metricCard(text('退款成功','Refunded',language),`${m.refundCount}`,money(m.refundMinor,m.settlementCurrency),'refund')}
       ${metricCard(text('拒付风险','Chargeback risk',language),`${m.chargebackOpen}`,text(`${money(m.chargebackRiskMinor,m.settlementCurrency)} 待裁决`,`${money(m.chargebackRiskMinor,m.settlementCurrency)} pending`,language),'chargeback')}
       ${metricCard(text('预估收入','Estimated revenue',language),money(m.estimatedMinor,m.settlementCurrency),text(`结算币种 · ${m.fxVersion}`,`Settlement currency · ${m.fxVersion}`,language),'estimated')}
-      ${metricCard(text('待结算','Pending settlement',language),pendingText(m),text('按结算币种展示，不作经营分摊','Shown by settlement currency; not allocated by analytics',language),'pending')}
+      ${metricCard(text('待结算','Pending settlement',language),pendingText(m),text('当前厂商账单，不按单游戏分摊','Company statement; not allocated to one game',language),'pending')}
     </div><div class="publisher-dashboard-overview-grid"><section class="publisher-dashboard-card publisher-dashboard-card--wide"><header><div><span>${text('趋势','TREND',language)}</span><h2>${text('成交与领取趋势','Sales and claims trend',language)}</h2></div><small>${text('按履约完成时间','By fulfillment completion time',language)}</small></header><div class="publisher-dashboard-chart">${days.map((day,index) => `<div><i style="height:${Math.max(10, Math.round(daily[index] / max * 100))}%" data-value="${daily[index]}"></i><span>${day}</span></div>`).join('')}</div></section>
       <section class="publisher-dashboard-card"><header><div><span>${text('构成','MIX',language)}</span><h2>${text('商品与履约','Product & fulfillment',language)}</h2></div></header><dl class="publisher-dashboard-breakdown"><div><dt>${copy(language).base}</dt><dd>${baseCount}</dd></div><div><dt>${copy(language).dlc}</dt><dd>${dlcCount}</dd></div><div><dt>${copy(language).direct}</dt><dd>${directCount}</dd></div><div><dt>CDKEY</dt><dd>${cdkeyCount}</dd></div></dl></section>
       <section class="publisher-dashboard-card"><header><div><span>${text('风险','RISK',language)}</span><h2>${text('退款与拒付','Refunds & chargebacks',language)}</h2></div></header><dl class="publisher-dashboard-breakdown"><div><dt>${text('退款处理中','Refund processing',language)}</dt><dd>${rows.filter(item => item.status === 'refund_pending').length}</dd></div><div><dt>${text('拒付待裁决','Chargeback open',language)}</dt><dd>${m.chargebackOpen}</dd></div><div><dt>${text('拒付败诉','Chargeback lost',language)}</dt><dd>${m.chargebackLost}</dd></div><div><dt>${text('败诉扣减','Loss deduction',language)}</dt><dd>${money(m.chargebackLossMinor,m.settlementCurrency)}</dd></div></dl></section></div>`;
@@ -9516,12 +9585,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     state.filters = { ...defaultFilters, ...(state.filters || {}) };
     const c = copy(language);
     const access = options.access || {};
+    const game = options.game || null;
+    if (game?.name) state.filters.game = game.name;
     if (!access.canViewPublisherData && !access.isPublisherReadOnly) return `<section class="publisher-dashboard-access" data-publisher-page="data" data-testid="publisher-data-dashboard"><span>${namespace.icons?.render('lock') || ''}</span><strong>${text('暂未开通经营数据权限','Analytics access is not available',language)}</strong><p>${text('完成企业认证并获得厂商数据权限后，可查看销量、订单和结算摘要。','Complete company verification and obtain publisher data access to view sales, orders and settlement summaries.',language)}</p></section>`;
     const body = state.tab === 'orders' ? renderOrders(state,language) : state.tab === 'revenue' ? renderRevenue(state,language) : renderOverview(state,language);
-    return `<section class="publisher-data-dashboard" data-publisher-page="data" data-testid="publisher-data-dashboard" data-dashboard-tab="${state.tab}"><header class="publisher-dashboard-head"><div><span>${c.eyebrow}</span><h1>${c.title}</h1><p>${c.description}</p></div><div><button type="button" data-dashboard-action="scope">${c.scope}</button>${tag(c.readonly,'info')}<small>${c.updated}</small></div></header><nav class="publisher-dashboard-tabs" aria-label="${c.title}">${Object.entries(c.tabs).map(([value,label]) => `<button type="button" class="${state.tab === value ? 'is-active' : ''}" data-dashboard-action="tab" data-publisher-data-tab="${value}" aria-selected="${state.tab === value}">${label}</button>`).join('')}</nav>${renderFilters(state,language)}<div class="publisher-dashboard-content">${body}</div>${renderOrderDrawer(state,language)}${renderScopeDialog(state,language)}</section>`;
+    const gameContext = game ? `<small class="publisher-dashboard-game-context">${namespace.components.escapeHtml(language === 'en' ? (game.englishName || game.name) : game.name)} · ${namespace.components.escapeHtml(game.gameId || '')}</small>` : '';
+    return `<section class="publisher-data-dashboard" data-publisher-page="data" data-testid="publisher-data-dashboard" data-dashboard-tab="${state.tab}"${game ? ` data-dashboard-game="${namespace.components.escapeHtml(game.gameKey || game.name)}"` : ''}><header class="publisher-dashboard-head"><div><span>${c.eyebrow}</span><h1>${c.title}</h1>${gameContext}<p>${c.description}</p></div><div><button type="button" data-dashboard-action="scope">${c.scope}</button>${tag(c.readonly,'info')}<small>${c.updated}</small></div></header><nav class="publisher-dashboard-tabs" aria-label="${c.title}">${Object.entries(c.tabs).map(([value,label]) => `<button type="button" class="${state.tab === value ? 'is-active' : ''}" data-dashboard-action="tab" data-publisher-data-tab="${value}" aria-selected="${state.tab === value}">${label}</button>`).join('')}</nav>${renderFilters(state,language,{ game })}<div class="publisher-dashboard-content">${body}</div>${renderOrderDrawer(state,language)}${renderScopeDialog(state,language)}</section>`;
   };
 
-  const bind = (root, { state, onChange, onFinance } = {}) => {
+  const bind = (root, { state, game, onChange, onFinance } = {}) => {
     const host = root.querySelector('[data-testid="publisher-data-dashboard"]');
     if (!host || !state) return;
     const update = (patch = {}, options = {}) => {
@@ -9541,7 +9613,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (event.target.closest('[data-dashboard-stop]') && control === event.target.closest('[data-dashboard-stop]')) return;
       const action = control.dataset.dashboardAction;
       if (action === 'tab') update({ tab:control.dataset.publisherDataTab || 'overview', selectedOrder:'', scopeOpen:false });
-      else if (action === 'reset') update({ filters:{ ...defaultFilters } });
+      else if (action === 'reset') update({ filters:{ ...defaultFilters, game:game?.name || 'all' } });
       else if (action === 'scope') update({ scopeOpen:true, selectedOrder:'' }, { preserveScroll:true });
       else if (action === 'close-scope') update({ scopeOpen:false }, { preserveScroll:true });
       else if (action === 'open-order') update({ selectedOrder:control.dataset.orderId || '', scopeOpen:false }, { preserveScroll:true });
@@ -9561,6 +9633,167 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   window.PublisherDataDashboard = { createState, render, bind, filteredOrders, metrics, orders:() => clone(orders), statements:() => clone(statements), snapshot:state => ({ tab:state?.tab || 'overview', filters:{ ...defaultFilters, ...(state?.filters || {}) }, statuses:[...new Set(filteredOrders(state || createState()).map(item => item.status))], metrics:metrics(filteredOrders(state || createState())) }) };
   namespace.publisherDataDashboard = window.PublisherDataDashboard;
 })(window.GameHubDeveloperPortal);
+
+/* 厂商设置：企业认证通过后管理三类生效资料，修改按页签独立审核。 */
+(function registerPublisherVendorSettings(scope) {
+  'use strict';
+
+  const groupKeys = ['subject', 'profile', 'finance'];
+  const clone = value => JSON.parse(JSON.stringify(value));
+  const emptyReview = () => ({
+    applicationId:'', status:'idle', pendingData:null, draftData:null, submittedData:null,
+    effectiveData:null, changedFields:[], submittedAt:'', reviewedAt:'', rejectReason:'',
+  });
+  const createReviews = () => Object.fromEntries(groupKeys.map(key => [key, emptyReview()]));
+  const normalizeReviews = reviews => {
+    const defaults = createReviews();
+    return Object.fromEntries(groupKeys.map((key, index) => {
+      const merged = { ...defaults[key], ...(reviews?.[key] || {}) };
+      if (!['idle', 'pending', 'approved', 'rejected'].includes(merged.status)) merged.status = 'idle';
+      if (merged.status !== 'idle' && !merged.applicationId) merged.applicationId = `CHG-20260904-${String(index + 1).padStart(3, '0')}`;
+      if (!merged.submittedData && merged.pendingData) merged.submittedData = clone(merged.pendingData);
+      return [key, merged];
+    }));
+  };
+  const nextApplicationId = (reviews, nowText = '') => {
+    const date = String(nowText || '2026-09-11').slice(0, 10).replaceAll('/', '').replaceAll('-', '');
+    const prefix = `CHG-${date}-`;
+    const latest = Object.values(reviews || {}).reduce((max, review) => {
+      const id = String(review?.applicationId || '');
+      return id.startsWith(prefix) ? Math.max(max, Number(id.slice(prefix.length)) || 0) : max;
+    }, 0);
+    return `${prefix}${String(latest + 1).padStart(3, '0')}`;
+  };
+
+  const text = (zh, en, language) => language === 'en' ? en : zh;
+  const groupsFor = language => ({
+    subject: {
+      label:text('企业主体信息','Company information',language),
+      fields:[
+        { key:'subjectType', label:text('主体类型','Entity type',language), type:'select', options:['公司／企业'], required:true },
+        { key:'region', label:text('注册地区','Registration region',language), type:'select', options:language === 'en' ? [
+          { label:'Mainland China', value:'中国大陆' }, { label:'Hong Kong, China', value:'中国香港' },
+          { label:'Macao, China', value:'中国澳门' }, { label:'United States', value:'美国' },
+          { label:'Singapore', value:'新加坡' }, { label:'Other country or region', value:'其他国家或地区' },
+        ] : ['中国大陆','中国香港','中国澳门','美国','新加坡','其他国家或地区'], required:true },
+        { key:'province', label:text('省／自治区／直辖市','Province / municipality',language), required:true, mainlandOnly:true },
+        { key:'city', label:text('市／地区','City / prefecture',language), required:true, mainlandOnly:true },
+        { key:'district', label:text('区／县','District / county',language), required:true, mainlandOnly:true },
+        { key:'legalName', label:text('企业法定名称','Legal company name',language), required:true, hint:text('需与企业登记证明完全一致','Must match the registration certificate',language) },
+        { key:'legalEnglishName', label:text('企业英文名称','Legal name in English',language), hint:text('选填','Optional',language) },
+        { key:'registrationNumber', label:text('企业登记编号／统一社会信用代码','Company registration number',language), required:true },
+        { key:'registeredAddress', label:text('企业注册地址','Registered address',language), type:'textarea', required:true, wide:true },
+        { key:'mailingAddress', label:text('通信地址','Mailing address',language), type:'textarea', hint:text('选填，与注册地址不同时填写','Optional when different from the registered address',language), wide:true },
+        { key:'businessLicenseName', label:text('企业登记证明附件','Company registration proof',language), type:'file', required:true, wide:true },
+      ],
+    },
+    profile: {
+      label:text('厂商资料','Publisher profile',language),
+      fields:[
+        { key:'vendorName', label:text('厂商品牌名称','Publisher brand name',language), required:true },
+        { key:'vendorEnglishName', label:text('厂商英文名称','Publisher name in English',language), hint:text('选填','Optional',language) },
+        { key:'vendorIntro', label:text('厂商简介','Publisher profile',language), type:'textarea', required:true, hint:text('用于介绍厂商及游戏发行业务','Introduce the studio and publishing business',language), wide:true },
+        { key:'contactName', label:text('业务联系人','Business contact',language), required:true },
+        { key:'email', label:text('联系邮箱','Contact email',language), type:'email', required:true, hint:text('用于接收重要业务通知','Receives important business notices',language) },
+        { key:'mobile', label:text('联系电话','Mobile',language), hint:text('选填','Optional',language) },
+      ],
+    },
+    finance: {
+      label:text('财务信息','Financial information',language),
+      fields:[
+        { key:'bankAccountName', label:text('银行账户户名','Account holder name',language), required:true, hint:text('必须与企业法定名称一致','Must match the legal company name',language) },
+        { key:'bankName', label:text('开户银行','Bank name',language), required:true },
+        { key:'bankAccountNumber', label:text('银行账号','Bank account number',language), required:true },
+        { key:'bankBranch', label:text('开户支行／联行信息','Branch / routing information',language), required:true },
+        { key:'bankProofName', label:text('银行账户证明附件','Bank account proof',language), type:'file', required:true, wide:true },
+      ],
+    },
+  });
+
+  const render = ({ language = 'zh', access = {}, qualification = {}, registration = {} } = {}) => {
+    const portal = window.GameHubDeveloperPortal;
+    const c = portal.components;
+    const e = c.escapeHtml;
+    const icon = name => portal.icons.render(name);
+    const isEnglish = language === 'en';
+    const title = isEnglish ? 'Company settings' : '厂商设置';
+    const pageTitle = `<header class="publisher-vendor-title"><h1>${title}</h1></header>`;
+
+    if (!access.canManageVendor && !access.isPublisherReadOnly) {
+      const status = access.qualificationStatus || 'unsubmitted';
+      const actionLabel = status === 'rejected'
+        ? text('修改认证资料','Update verification',language)
+        : status === 'pending'
+          ? text('查看进度','View progress',language)
+          : text('申请开发者认证','Apply for verification',language);
+      const progress = status === 'pending' ? `<div class="qualification-pending-note publisher-vendor-progress" data-publisher-verification-progress>${icon('info')}<div><strong>${text('审核进行中','Verification in progress',language)}</strong><p>${text('已于 2026-09-02 提交，预计于 2026-09-09 前完成审核（5 个工作日）。','Submitted on Sep 2, 2026. Review is expected by Sep 9, 2026 (5 business days).',language)}</p></div>${c.button({ label:actionLabel, variant:'secondary', action:'publisher-enterprise-verification', size:'small' })}</div>` : '';
+      const action = status === 'pending' ? '' : c.button({ label:actionLabel, variant:'primary', action:'publisher-enterprise-verification' });
+      return `<section class="publisher-vendor-settings" data-publisher-page="vendor" data-publisher-vendor-restriction="${e(status)}">${pageTitle}${progress}<div class="publisher-empty-state publisher-vendor-placeholder">${icon('vendor')}<strong>${text('提交申请前，请先完成开发者认证','Complete developer verification before submitting an application',language)}</strong>${action}</div></section>`;
+    }
+
+    const status = access.qualificationStatus || qualification.status || 'approved';
+    const suspended = Boolean(access.isPublisherReadOnly);
+    const groups = groupsFor(language);
+    const activeTab = groupKeys.includes(registration.vendorSettingsTab) ? registration.vendorSettingsTab : 'subject';
+    const reviews = normalizeReviews(registration.vendorReviews);
+    const effectiveData = qualification.form || {};
+
+    const renderField = ({ field, value, effectiveValue, editable, pending, mainlandSelected }) => {
+      const originalValue = String(effectiveValue ?? '');
+      const currentValue = String(value ?? '');
+      const fieldEditable = editable && (!field.mainlandOnly || mainlandSelected);
+      const common = `data-vendor-setting-field="${e(field.key)}" data-original-value="${e(originalValue)}"${field.mainlandOnly ? ' data-mainland-region-detail' : ''}`;
+      const effectiveHint = pending && currentValue !== originalValue
+        ? `<small class="vendor-settings-effective-value">${text('当前生效','Currently active',language)}：${e(originalValue || text('未填写','Not provided',language))}</small>`
+        : '';
+      if (field.type === 'file') {
+        return `<label class="field vendor-settings-file${field.wide ? ' is-wide' : ''}"><span class="field-label"><span>${e(field.label)}${field.required ? '<span class="field-required">*</span>' : ''}</span><span class="field-hint">${text('支持 JPG、PNG、WEBP，单张不超过 10 MB','JPG, PNG or WEBP; up to 10 MB',language)}</span></span><span class="vendor-settings-file__box${editable ? '' : ' is-disabled'}"><span data-vendor-setting-field="${e(field.key)}" data-original-value="${e(originalValue)}" data-current-value="${e(currentValue)}">${e(currentValue || text('未上传','No file uploaded',language))}</span>${editable ? `<label class="vendor-settings-file__upload">${text('重新上传','Replace',language)}<input type="file" accept="image/jpeg,image/png,image/webp" data-vendor-settings-file="${e(field.key)}"></label>` : ''}</span>${effectiveHint}</label>`;
+      }
+      if (field.type === 'textarea') return `${c.textarea({ label:field.label, name:field.key, value:currentValue, required:field.required, hint:field.hint || '', disabled:!fieldEditable, extra:common })}${effectiveHint}`;
+      if (field.type === 'select') return `<label class="field"><span class="field-label"><span>${e(field.label)}${field.required ? '<span class="field-required">*</span>' : ''}</span></span><select class="gh-select" name="${e(field.key)}" ${common}${fieldEditable ? '' : ' disabled aria-disabled="true"'}>${field.options.map(option => { const optionValue = typeof option === 'object' ? option.value : option; const optionLabel = typeof option === 'object' ? option.label : option; return `<option value="${e(optionValue)}"${currentValue === optionValue ? ' selected' : ''}>${e(optionLabel)}</option>`; }).join('')}</select>${effectiveHint}</label>`;
+      return `${c.input({ label:field.label, name:field.key, type:field.type || 'text', value:currentValue, required:field.required, hint:field.hint || '', disabled:!fieldEditable, extra:common })}${effectiveHint}`;
+    };
+
+    const tabs = groupKeys.map(key => {
+      const reviewStatus = reviews[key].status || 'idle';
+      const dotStatus = ['pending','rejected','approved'].includes(reviewStatus) ? reviewStatus : '';
+      return `<button type="button" class="vendor-settings-tab${activeTab === key ? ' is-active' : ''}" data-portal-action="vendor-settings-tab" data-vendor-settings-tab="${e(key)}" role="tab" aria-selected="${activeTab === key}">${e(groups[key].label)}<i class="status-dot${dotStatus ? ` is-${dotStatus}` : ''}"></i></button>`;
+    }).join('');
+
+    const panels = groupKeys.map(key => {
+      const group = groups[key];
+      const review = reviews[key];
+      const reviewStatus = review.status || 'idle';
+      const candidateData = review.draftData || review.pendingData || {};
+      const displayedData = ['pending','rejected'].includes(reviewStatus) || review.draftData ? { ...effectiveData, ...candidateData } : effectiveData;
+      const editable = !suspended && status === 'approved' && reviewStatus !== 'pending';
+      const changedFields = group.fields.filter(field => String(displayedData[field.key] ?? '') !== String(effectiveData[field.key] ?? ''));
+      const notice = suspended
+        ? { tone:'is-rejected', copy:text('企业发行资格已暂停，当前资料仅支持查看。','Publishing access is suspended. The current information is read-only.',language) }
+        : reviewStatus === 'pending'
+          ? { tone:'is-pending', copy:text(`本次变更已于 ${review.submittedAt || '—'} 提交。审核通过前，当前已生效资料继续使用。`,`Changes were submitted at ${review.submittedAt || '—'}. Current active information remains in use until approval.`,language) }
+          : reviewStatus === 'rejected'
+            ? { tone:'is-rejected', copy:text(`资料修改审核未通过，原因：${review.rejectReason || '请核对本次提交内容。'} 修改后可重新提交。`,`Changes were rejected: ${review.rejectReason || 'Please check the submitted information.'}`,language) }
+            : reviewStatus === 'approved'
+              ? { tone:'is-approved', copy:text(`资料修改已于 ${review.reviewedAt || '—'} 审核通过并生效。`,`Changes were approved at ${review.reviewedAt || '—'} and are now active.`,language) }
+              : { tone:'', copy:text('以下为当前已生效资料。修改后需提交平台人工审核，通过后生效。','The current approved information is shown below. Any change requires platform review.',language) };
+      const statusLabel = suspended ? text('仅查看','Read-only',language) : reviewStatus === 'pending' ? text('审核中','Pending',language) : reviewStatus === 'rejected' ? text('未通过','Rejected',language) : text('已生效','Active',language);
+      const statusTone = suspended || reviewStatus === 'rejected' ? 'danger' : reviewStatus === 'pending' ? 'warning' : 'success';
+      const submitHint = reviewStatus === 'pending'
+        ? text(`本次共修改 ${changedFields.length} 项，正在等待审核。`,`${changedFields.length} changed field(s) are waiting for review.`,language)
+        : suspended
+          ? text('当前只能查看已生效资料。','Only active information can be viewed.',language)
+          : text('仅提交本次变更项；审核期间不影响当前已生效资料。','Only changed fields are submitted. Active values remain unchanged during review.',language);
+      const demoReview = reviewStatus === 'pending' ? `<section class="vendor-review-demo"><strong>${text('Demo：资料修改审核结果','Demo: review result',language)}</strong><div class="form-actions">${c.button({ label:text('模拟通过','Approve',language), variant:'primary', action:'vendor-settings-review-preview', size:'small', extra:`data-vendor-settings-group="${e(key)}" data-vendor-review-result="approved"` })}${c.button({ label:text('模拟拒绝','Reject',language), variant:'danger', action:'vendor-settings-review-preview', size:'small', extra:`data-vendor-settings-group="${e(key)}" data-vendor-review-result="rejected"` })}</div></section>` : '';
+      const mainlandSelected = displayedData.region === '中国大陆';
+      return `<section class="vendor-settings-panel" data-vendor-settings-panel="${e(key)}"${activeTab === key ? '' : ' hidden'} role="tabpanel"><div class="vendor-settings-panel__notice ${notice.tone}">${icon(notice.tone === 'is-rejected' ? 'warning' : notice.tone === 'is-approved' ? 'check' : 'info')}<span>${e(notice.copy)}</span></div><form class="vendor-settings-form-grid${mainlandSelected ? ' is-mainland' : ''}" data-vendor-settings-form="${e(key)}">${group.fields.map(field => renderField({ field, value:displayedData[field.key], effectiveValue:effectiveData[field.key], editable, pending:reviewStatus === 'pending', mainlandSelected })).join('')}</form><footer class="vendor-settings-panel__footer"><span>${e(submitHint)}</span><div class="form-actions">${c.statusTag(statusLabel,statusTone)}${suspended ? '' : c.button({ label:reviewStatus === 'pending' ? text('审核中','Pending review',language) : text('提交审核','Submit for review',language), variant:'primary', action:'vendor-settings-submit', disabled:!editable || !changedFields.length, extra:`data-vendor-settings-group="${e(key)}"` })}</div></footer>${demoReview}</section>`;
+    }).join('');
+
+    return `<section class="publisher-vendor-settings" data-publisher-page="vendor" data-vendor-qualification-status="${e(status)}">${pageTitle}<section class="publisher-vendor-card"><nav class="vendor-settings-tabs" role="tablist" aria-label="${text('厂商资料','Company information',language)}">${tabs}</nav>${panels}</section><aside class="publisher-vendor-support">${icon('info')}<span>${text('如有资料变更或审核疑问，请联系开发者支持：','For information changes or review questions, contact developer support:',language)} <a href="mailto:dev@xiaoji.com">dev@xiaoji.com</a></span></aside></section>`;
+  };
+
+  scope.PublisherVendorSettings = Object.freeze({ groupKeys, groupsFor, createReviews, normalizeReviews, nextApplicationId, render });
+})(window);
 
 window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
@@ -10217,16 +10450,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       : `<div class="publisher-game-list-empty">${icon('game')}<strong>暂无游戏</strong><small>点击“添加游戏”创建第一个游戏项目。</small></div>`;
     const resultCopy = query || statusFilter !== 'all' ? `筛选出 ${visibleGames.length} 款游戏` : `共 ${games.length} 款·按最近更新时间排序`;
     const accessAlert = access.isPublisherReadOnly || state.publisherAccessDisabled ? `<section class="publisher-access-alert" role="alert">${icon('warning')}<span><strong>${access.isPublisherReadOnly ? '企业发行权限已暂停' : '企业认证状态异常，当前发行权限已暂停'}</strong><small>历史资料仍可查看，当前不能新建游戏或提交发行申请。如有疑问，请通过邮箱 <a href="mailto:dev@xiaoji.com">dev@xiaoji.com</a> 提交问题反馈。</small></span><em>需要处理</em></section>` : '';
-    const dataAction = access.canViewPublisherData ? c.button({ label: '经营数据', action: 'publisher-open-data', iconName: 'chart' }) : '';
     return `<section class="publisher-platform-page" data-publisher-page="games">
       ${accessAlert}
-      <div class="publisher-game-toolbar"><div class="publisher-game-filter"><label class="publisher-search">${icon('search')}<input type="search" value="${e(state.gameSearch || '')}" placeholder="搜索游戏名称" data-publisher-game-search></label><label class="publisher-status-filter"><select aria-label="游戏状态" data-publisher-game-status><option value="all" ${statusFilter === 'all' ? 'selected' : ''}>全部状态</option>${publisherStatusFilters.map(([value, label]) => `<option value="${e(value)}" ${statusFilter === value ? 'selected' : ''}>${e(label)}</option>`).join('')}</select></label><button type="button" data-portal-action="publisher-game-search">查询 ${icon('search')}</button></div><div class="publisher-game-toolbar__actions">${dataAction}${c.button({ label: '添加游戏', variant: 'primary', action: 'open-add-game', iconName: 'plus', disabled: !access.canCreateGameDraft })}</div></div>
+      <div class="publisher-game-toolbar"><div class="publisher-game-filter"><label class="publisher-search">${icon('search')}<input type="search" value="${e(state.gameSearch || '')}" placeholder="搜索游戏名称" data-publisher-game-search></label><label class="publisher-status-filter"><select aria-label="游戏状态" data-publisher-game-status><option value="all" ${statusFilter === 'all' ? 'selected' : ''}>全部状态</option>${publisherStatusFilters.map(([value, label]) => `<option value="${e(value)}" ${statusFilter === value ? 'selected' : ''}>${e(label)}</option>`).join('')}</select></label><button type="button" data-portal-action="publisher-game-search">查询 ${icon('search')}</button></div><div class="publisher-game-toolbar__actions">${c.button({ label: '添加游戏', variant: 'primary', action: 'open-add-game', iconName:'plus', disabled: !access.canCreateGameDraft })}</div></div>
       <section class="publisher-game-library"><header><div><h2>全部游戏</h2><p>${resultCopy}</p></div></header><div class="publisher-game-list">${gameRows || emptyRow}</div></section>
     </section>`;
   };
 
-  const renderPublisherData = (state, language = 'zh', rawAccess) => {
-    if (window.PublisherDataDashboard) return window.PublisherDataDashboard.render(state.dataDashboard || (state.dataDashboard = window.PublisherDataDashboard.createState()), language, { access:publisherAccessFor(rawAccess) });
+  const renderPublisherData = (state, language = 'zh', rawAccess, game = null) => {
+    if (window.PublisherDataDashboard) return window.PublisherDataDashboard.render(state.dataDashboard || (state.dataDashboard = window.PublisherDataDashboard.createState()), language, { access:publisherAccessFor(rawAccess), game });
     const games = getPublisherGames(state);
     const hasExistingGame = games.some(game => game.gameKey === 'existing');
     const pendingGames = games.filter(game => ['审核中', '需修改'].includes(game.reviewStatus));
@@ -10244,10 +10476,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderPublisherVendorSettings = (language = 'zh', rawAccess) => {
+  const renderPublisherVendorSettings = (language = 'zh', rawAccess, qualification = {}, registration = {}) => {
     const access = publisherAccessFor(rawAccess);
     const isEnglish = language === 'en';
-    if (access.canManageVendor) return `<section class="publisher-vendor-settings" data-publisher-page="vendor"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>${isEnglish ? 'Company settings' : '厂商设置'}</h2></div></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon('file')}<strong>${isEnglish ? 'Company settings placeholder' : '厂商设置功能占位'}</strong><p>${isEnglish ? 'See the Developer Platform and Profile PRD for detailed fields and interactions.' : '具体功能、字段与交互见《开发者平台与资料》PRD。'}</p></div></section>`;
+    if (window.PublisherVendorSettings) return window.PublisherVendorSettings.render({ language, access, qualification, registration });
+    if (access.canManageVendor) return `<section class="publisher-vendor-settings" data-publisher-page="vendor"><header class="publisher-vendor-title"><h1>${isEnglish ? 'Company settings' : '厂商设置'}</h1></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon('warning')}<strong>${isEnglish ? 'Company settings failed to load' : '厂商设置加载失败'}</strong></div></section>`;
     const status = access.qualificationStatus;
     const suspended = access.isPublisherReadOnly;
     const actionLabel = isEnglish
@@ -10261,7 +10494,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       : (isEnglish ? 'Complete developer verification before using company settings' : '完成开发者认证后才可进行厂商设置');
     const pendingProgress = status === 'pending' ? `<div class="qualification-pending-note publisher-vendor-progress" data-publisher-verification-progress>${icon('info')}<div><strong>${isEnglish ? 'Verification in progress' : '审核进行中'}</strong><p>${isEnglish ? 'Submitted on Sep 2, 2026. Review is expected by Sep 9, 2026 (5 business days).' : '已于 2026-09-02 提出申请，预计于 2026-09-09 前完成审核（5 个工作日）。'}</p></div>${c.button({ label: isEnglish ? 'View progress' : '查看进度', variant: 'secondary', action: 'publisher-enterprise-verification', size: 'small' })}</div>` : '';
     const cardAction = status === 'pending' ? '' : c.button({ label: actionLabel, variant: suspended ? 'default' : 'primary', action: 'publisher-enterprise-verification' });
-    return `<section class="publisher-vendor-settings" data-publisher-page="vendor" data-publisher-vendor-restriction="${e(status)}"><header class="publisher-content-title"><div><span>VENDOR SETTINGS</span><h2>${isEnglish ? 'Company settings' : '厂商设置'}</h2></div></header>${pendingProgress}<div class="publisher-empty-state publisher-vendor-placeholder">${icon(suspended ? 'warning' : 'vendor')}<strong>${e(title)}</strong><p>${e(detail)}</p>${cardAction}</div></section>`;
+    return `<section class="publisher-vendor-settings" data-publisher-page="vendor" data-publisher-vendor-restriction="${e(status)}"><header class="publisher-vendor-title"><h1>${isEnglish ? 'Company settings' : '厂商设置'}</h1></header>${pendingProgress}<div class="publisher-empty-state publisher-vendor-placeholder">${icon(suspended ? 'warning' : 'vendor')}<strong>${e(title)}</strong>${cardAction}</div></section>`;
   };
 
   const renderPublisherDeleteGameModal = state => {
@@ -10461,36 +10694,41 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selectedKey = state.selectedGame || 'existing';
     const game = getPublisherGame(state, selectedKey) || getPublisherGame(state, 'existing') || getPublisherGames(state)[0];
     if (!game) return '';
-    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
+    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '经营数据': 'Analytics', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
     const profileComponent = window.PublisherGameProfile;
     let publicationDraft;
     if (profileComponent) {
       state.publicationDrafts = state.publicationDrafts || {};
       publicationDraft = state.publicationDrafts[game.gameKey] || (state.publicationDrafts[game.gameKey] = profileComponent.createDraft(game, game.profileDraft || resolvePublisherProfile(game)));
     }
-    const allowed = publisherGameConsoleSections.map(([id]) => id);
+    const availableSections = access.canViewPublisherData
+      ? [...publisherGameConsoleSections, ['analytics', '经营数据', 'chart', '销量 免费领取 退款 拒付 订单 预估收入 待结算']]
+      : publisherGameConsoleSections;
+    const allowed = availableSections.map(([id]) => id);
     const gameSection = allowed.includes(state.gameSection) ? state.gameSection : 'release-workspace';
-    const detail = profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '' }) : renderPublisherReleaseProfile(game);
-    const currentSectionLabel = publisherGameConsoleSections.find(([id]) => id === gameSection)?.[1] || '版本发布';
+    const detail = gameSection === 'analytics'
+      ? renderPublisherData(state, language, access, game)
+      : profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '' }) : renderPublisherReleaseProfile(game);
+    const currentSectionLabel = availableSections.find(([id]) => id === gameSection)?.[1] || '版本发布';
     const functionSearch = state.gameFunctionSearch || '';
     const normalizedSearch = String(functionSearch).trim().toLocaleLowerCase();
-    const visibleSections = publisherGameConsoleSections.filter(([, title, , searchText]) => !normalizedSearch || `${title} ${label(title)} ${searchText}`.toLocaleLowerCase().includes(normalizedSearch));
+    const visibleSections = availableSections.filter(([, title, , searchText]) => !normalizedSearch || `${title} ${label(title)} ${searchText}`.toLocaleLowerCase().includes(normalizedSearch));
     const gameNavigation = `<label class="publisher-game-nav__search">${icon('search')}<input type="search" value="${e(functionSearch)}" placeholder="${language === 'en' ? 'Search functions' : '搜索功能'}" aria-label="${language === 'en' ? 'Search functions' : '搜索功能'}" data-publisher-function-search></label>${visibleSections.map(([id, title, itemIcon, searchText]) => `<button type="button" class="publisher-game-nav__tab${gameSection === id ? ' is-active' : ''}" data-portal-action="game-console-section" data-game-section="${id}" data-function-search="${e(searchText)}">${icon(itemIcon)}<span>${e(label(title))}</span></button>`).join('')}<p class="publisher-game-nav__empty"${visibleSections.length ? ' hidden' : ''}>${language === 'en' ? 'No matching function' : '未找到匹配功能'}</p>`;
     return `<section class="publisher-game-console" data-publisher-game-console data-publisher-access="${e(access.accountKind)}" data-qualification-status="${e(access.qualificationStatus)}" data-game-tab="${gameSection}" data-game-section="${gameSection}" data-selected-game="${e(game.gameKey)}"><div class="publisher-game-layout"><aside class="publisher-game-sidebar"><nav class="publisher-game-nav" aria-label="${language === 'en' ? 'Game console' : '单游戏控制台'}">${gameNavigation}</nav></aside><main class="publisher-game-main"><nav class="publisher-game-context" aria-label="${language === 'en' ? 'Current location' : '当前位置'}"><button type="button" data-portal-action="back-publisher-games">${icon('arrow-left')}<span>${label('游戏管理')}</span></button><i>/</i><span class="publisher-game-context__game"><strong>${e(game.projectName || game.name)}</strong></span><i>/</i><span>${e(label(currentSectionLabel))}</span></nav>${detail}</main></div></section>`;
   };
 
-  const renderPublisherWorkspace = ({ page, workspaceState = {}, language = 'zh', rawAccess, demoState = {} }) => {
+  const renderPublisherWorkspace = ({ page, workspaceState = {}, language = 'zh', rawAccess, qualification = {}, registration = {}, demoState = {} }) => {
     const access = publisherAccessFor(rawAccess);
     const storageNotice = workspaceState.publicationLoadError ? c.resultStrip({ title: language === 'en' ? 'Saved game details could not be loaded' : '暂时无法读取已保存的游戏资料', detail: language === 'en' ? 'Reload this page before saving or submitting game details.' : '请刷新重试后再保存或提交游戏资料。', variant: 'warning' }) : '';
     if (workspaceState.addGameOpen && window.PublisherGameCreate) {
       return `<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="create"><div class="publisher-console-shell">${renderPublisherConsoleSidebar('games', language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${window.PublisherGameCreate.render(workspaceState.createDraft, language)}</div></main></div></div>`;
     }
-    const requestedView = ['games', 'vendor', 'data', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
-    const view = requestedView === 'data' && !access.canViewPublisherData ? 'games' : requestedView;
+    const requestedView = ['games', 'vendor', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
+    const view = requestedView;
     const activeSidebar = view === 'vendor' ? 'vendor' : 'games';
     const content = view === 'game'
       ? renderPublisherGameConsole(page, workspaceState, language, access, demoState)
-      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings(language, access) : view === 'data' ? renderPublisherData(workspaceState, language, access) : renderPublisherGames(workspaceState, access)}</div></main></div>`;
+      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings(language, access, qualification, registration) : renderPublisherGames(workspaceState, access)}</div></main></div>`;
     return `${storageNotice}<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="${view}">${content}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
   };
 
@@ -10906,13 +11144,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       <div class="span-12">${panel({ title: '发行数据', description: '正式上线后展示交易、退款与收入趋势', body: `<div class="data-placeholder"><div class="data-placeholder__chart"><i></i><i></i><i></i><i></i><i></i><i></i></div><div><strong>暂无正式发行数据</strong><p>当前游戏仍处于预发布阶段，正式上线后开始统计。</p></div></div>` })}</div></div>
   </div>`;
 
-  const renderT03 = ({ route, page, qualification, operationsReview, workspaceState, language, access, demoState }) => {
+  const renderT03 = ({ route, page, qualification, operationsReview, registration, workspaceState, language, access, demoState }) => {
     if (route.id === 'P01-08') {
       const tab = ['games', 'qualifications'].includes(operationsReview?.tab) ? operationsReview.tab : 'company';
       const body = tab === 'games' ? '<div data-game-release-review-host></div>' : tab === 'qualifications' ? '<div data-game-qualification-review-host></div>' : renderQualificationOperations({ qualification, operationsReview });
       return `<nav class="operations-audit-tabs" role="tablist" aria-label="审核类型"><button type="button" role="tab" aria-selected="${tab === 'company'}" data-game-review-tab="company" class="${tab === 'company' ? 'is-active' : ''}">企业认证审核</button><button type="button" role="tab" aria-selected="${tab === 'games'}" data-game-review-tab="games" class="${tab === 'games' ? 'is-active' : ''}">游戏发布审核</button><button type="button" role="tab" aria-selected="${tab === 'qualifications'}" data-game-review-tab="qualifications" class="${tab === 'qualifications' ? 'is-active' : ''}">游戏资质审核</button></nav>${body}`;
     }
-    if (route.id === 'P02-01') return renderPublisherWorkspace({ page, workspaceState, language, rawAccess: access, demoState });
+    if (route.id === 'P02-01') return renderPublisherWorkspace({ page, workspaceState, language, rawAccess: access, qualification, registration, demoState });
     if (route.id === 'P01-04') return renderGameDashboard();
     const view = listViews[route.id];
     const fallback = { tabs: ['全部', '待处理', '已完成'], placeholder: '输入名称或 ID', filters: [{ label: '业务状态', options: ['全部状态', '待处理', '处理中', '已完成'] }], headers: ['对象', '状态', '更新时间', '操作'], rows: [] };
@@ -11487,6 +11725,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const publisherAccountContext = window.PublisherAccountContext || null;
   const hasPublisherRoute = routes.some(route => route.id === 'P02-01');
   const publisherFixtureGameKeys = new Set(['draft', 'reviewing', 'existing', 'pioneer', 'prerelease', 'live', 'delisted']);
+  const vendorSettingsRuntime = window.PublisherVendorSettings || null;
+  const createVendorReviews = () => vendorSettingsRuntime?.createReviews?.() || {
+    subject:{ status:'idle' }, profile:{ status:'idle' }, finance:{ status:'idle' },
+  };
+  const normalizeVendorReviews = reviews => vendorSettingsRuntime?.normalizeReviews?.(reviews) || { ...createVendorReviews(), ...(reviews || {}) };
   const createQualification = (prefill = true) => ({
     applicationId: 'ENT-20260903-001',
     status: 'unsubmitted',
@@ -11506,7 +11749,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     submissions: [],
     currentSubmission: null,
     form: prefill ? {
-      subjectType: '公司／企业', region: '中国大陆', legalName: '深圳星海互动科技有限公司', registrationNumber: '9144XXXXXXXXXXXXXX', registeredAddress: '广东省深圳市南山区科技园示例路 88 号', businessLicenseName: '营业执照.jpg',
+      subjectType: '公司／企业', region: '中国大陆', province: '广东省', city: '深圳市', district: '南山区', legalName: '深圳星海互动科技有限公司', registrationNumber: '9144XXXXXXXXXXXXXX', registeredAddress: '广东省深圳市南山区科技园示例路 88 号', businessLicenseName: '营业执照.jpg',
       legalEnglishName: 'Shenzhen Xinghai Interactive Technology Co., Ltd.', mailingAddress: '广东省深圳市南山区科技园示例路 88 号',
       bankAccountName: '深圳星海互动科技有限公司', bankName: '中国建设银行深圳科技园支行', bankAccountNumber: '6222000000008899', bankBranch: '中国建设银行深圳科技园支行', bankProofName: '银行开户证明.jpg',
       vendorName: '星海互动', vendorEnglishName: 'Xinghai Interactive', vendorIntro: '专注于 PC 游戏研发与发行。', logoName: '',
@@ -11551,6 +11794,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     accountTier: restoredQualification.status === 'approved' ? 'enterprise' : (storedRegistration?.accountTier === 'unselected' ? 'unselected' : 'registered'),
     registeredAt: storedRegistration?.registeredAt || restoredQualification.submittedAt || '',
     consoleTab: storedRegistration?.consoleTab || 'games',
+    vendorSettingsTab: ['subject', 'profile', 'finance'].includes(storedRegistration?.vendorSettingsTab) ? storedRegistration.vendorSettingsTab : 'subject',
+    vendorReviews: normalizeVendorReviews(storedRegistration?.vendorReviews),
   };
   if (!restoredQualification.currentSubmission && Number(restoredQualification.revision) > 0) {
     restoredQualification.currentSubmission = {
@@ -11747,11 +11992,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selectedGame = publisherFixtureGameKeys.has(requestedGame)
       ? requestedGame
       : (createdGames.find(game => game?.gameKey === requestedGame || game?.gameId === requestedGame)?.gameKey || '');
-    const allowedSections = new Set(['release-workspace', 'versions', 'qualifications']);
+    const allowedSections = new Set(['release-workspace', 'versions', 'qualifications', 'analytics']);
     const requestedSection = restoredHandoff?.targetTab || restoredPublisherWorkspace.gameSection;
     const resumeSelectedGame = Boolean(selectedGame && (restoredPublisherWorkspace.workspaceView === 'game'
       || (!Object.prototype.hasOwnProperty.call(restoredPublisherWorkspace, 'workspaceView') && memory.session.activeGameId)));
-    const restoredView = ['games', 'vendor', 'data'].includes(restoredPublisherWorkspace.workspaceView) ? restoredPublisherWorkspace.workspaceView : 'games';
+    const restoredView = ['games', 'vendor'].includes(restoredPublisherWorkspace.workspaceView) ? restoredPublisherWorkspace.workspaceView : 'games';
     const dataDashboard = window.PublisherDataDashboard?.createState(restoredPublisherWorkspace.dataDashboard || {}) || restoredPublisherWorkspace.dataDashboard || {};
     dataDashboard.selectedOrder = '';
     dataDashboard.scopeOpen = false;
@@ -11945,8 +12190,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         accountTier: memory.qualification.status === 'approved' ? 'enterprise' : (accountRegistration.accountTier === 'unselected' ? 'unselected' : 'registered'),
         registeredAt: accountRegistration.registeredAt || memory.qualification.submittedAt || '',
         consoleTab: accountRegistration.consoleTab || 'games',
+        vendorSettingsTab: ['subject', 'profile', 'finance'].includes(accountRegistration.vendorSettingsTab) ? accountRegistration.vendorSettingsTab : 'subject',
+        vendorReviews: normalizeVendorReviews(accountRegistration.vendorReviews),
       }
-      : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games' };
+      : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
     memory.qualificationPreview = null;
     memory.demoPreview = { open: false, releaseStatus: '' };
     delete memory.result['P01-03'];
@@ -12020,6 +12267,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         accountTier: nextQualificationStatus === 'approved' ? 'enterprise' : (storedAccountRegistration?.accountTier === 'unselected' ? 'unselected' : 'registered'),
         registeredAt: storedAccountRegistration?.registeredAt || memory.qualification.submittedAt || '',
         consoleTab: storedAccountRegistration?.consoleTab || 'games',
+        vendorSettingsTab: ['subject', 'profile', 'finance'].includes(storedAccountRegistration?.vendorSettingsTab) ? storedAccountRegistration.vendorSettingsTab : 'subject',
+        vendorReviews: normalizeVendorReviews(storedAccountRegistration?.vendorReviews),
       };
       memory.qualificationPreview = null;
       memory.demoPreview = { open: false, releaseStatus: '' };
@@ -12032,6 +12281,43 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return accountChanged || activeGameChanged || qualificationChanged;
   };
   const nowText = () => new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+  const vendorQualificationForView = () => memory.qualificationPreview || memory.qualification;
+  const rememberVendorPreviewState = () => {
+    if (!memory.qualificationPreview || memory.demoPreview.vendorReviewsSnapshot) return;
+    memory.demoPreview.vendorReviewsSnapshot = cloneJson(memory.registration.vendorReviews || createVendorReviews());
+  };
+  const persistVendorSettings = () => {
+    if (memory.qualificationPreview) return;
+    persistRegistration();
+  };
+  const collectVendorSettingsForm = (group, form = root.querySelector(`[data-vendor-settings-form="${group}"]`)) => {
+    if (!form || !['subject', 'profile', 'finance'].includes(group)) return {};
+    const values = {};
+    form.querySelectorAll('[data-vendor-setting-field]').forEach(field => {
+      const key = field.dataset.vendorSettingField;
+      if (!key || Object.prototype.hasOwnProperty.call(values, key)) return;
+      values[key] = field.matches('input, textarea, select')
+        ? String(field.value || '').trim()
+        : String(field.dataset.currentValue || field.textContent || '').trim();
+    });
+    if (group === 'subject' && values.region !== '中国大陆') {
+      values.province = '';
+      values.city = '';
+      values.district = '';
+    }
+    return values;
+  };
+  const vendorChangedFields = (values, qualification = vendorQualificationForView()) => Object.keys(values || {})
+    .filter(key => String(values[key] ?? '') !== String(qualification?.form?.[key] ?? ''));
+  const saveVendorSettingsDraft = (group, values) => {
+    const reviews = normalizeVendorReviews(memory.registration.vendorReviews);
+    if (!reviews[group] || reviews[group].status === 'pending') return reviews;
+    rememberVendorPreviewState();
+    reviews[group] = { ...reviews[group], draftData:cloneJson(values) };
+    memory.registration = { ...memory.registration, vendorSettingsTab:group, vendorReviews:reviews };
+    persistVendorSettings();
+    return reviews;
+  };
   const sanitizeManagedHtml = value => {
     const template = document.createElement('template');
     template.innerHTML = String(value || '').trim();
@@ -12862,7 +13148,96 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'publisher-open-data') {
         if (!publisherAccessForView().canViewPublisherData) return;
-        updatePublisherWorkspace({ workspaceView: 'data', addGameOpen: false, gameMenuOpen: '' });
+        updatePublisherWorkspace({ workspaceView: 'game', gameSection: 'analytics', gameTab: 'analytics', addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'vendor-settings-tab') {
+        const currentGroup = root.querySelector('[data-vendor-settings-panel]:not([hidden])')?.dataset.vendorSettingsPanel;
+        if (currentGroup) saveVendorSettingsDraft(currentGroup, collectVendorSettingsForm(currentGroup));
+        const requestedTab = event.currentTarget.dataset.vendorSettingsTab || 'subject';
+        memory.registration = {
+          ...memory.registration,
+          vendorSettingsTab:['subject', 'profile', 'finance'].includes(requestedTab) ? requestedTab : 'subject',
+        };
+        persistVendorSettings();
+        render();
+        requestAnimationFrame(() => root.querySelector(`[data-vendor-settings-tab="${memory.registration.vendorSettingsTab}"]`)?.focus());
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'vendor-settings-submit') {
+        const group = event.currentTarget.dataset.vendorSettingsGroup || '';
+        if (!['subject', 'profile', 'finance'].includes(group)) return;
+        if (!publisherAccessForView().canManageVendor) {
+          resultMessage(route.id, '暂不可提交', '企业认证通过后，才可修改厂商资料并提交审核。', 'warning');
+          return;
+        }
+        const reviews = normalizeVendorReviews(memory.registration.vendorReviews);
+        if (reviews[group].status === 'pending') return;
+        const form = root.querySelector(`[data-vendor-settings-form="${group}"]`);
+        const pendingData = collectVendorSettingsForm(group, form);
+        const requiredByGroup = {
+          subject:['subjectType','region','legalName','registrationNumber','registeredAddress','businessLicenseName'],
+          profile:['vendorName','vendorIntro','contactName','email'],
+          finance:['bankAccountName','bankName','bankAccountNumber','bankBranch','bankProofName'],
+        };
+        if (group === 'subject' && pendingData.region === '中国大陆') requiredByGroup.subject.push('province','city','district');
+        form?.querySelectorAll('[aria-invalid="true"]').forEach(field => field.removeAttribute('aria-invalid'));
+        const missing = requiredByGroup[group].filter(key => !String(pendingData[key] || '').trim());
+        missing.forEach(key => form?.querySelector(`[data-vendor-setting-field="${key}"]`)?.setAttribute('aria-invalid','true'));
+        if (missing.length) {
+          resultMessage(route.id, '请完善必填信息', `仍有 ${missing.length} 项必填信息未填写。`, 'warning');
+          form?.querySelector('[aria-invalid="true"]')?.focus?.();
+          return;
+        }
+        if (group === 'profile' && pendingData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pendingData.email)) {
+          form?.querySelector('[name="email"]')?.setAttribute('aria-invalid','true');
+          resultMessage(route.id, '邮箱格式不正确', '请填写可正常接收重要业务通知的邮箱。', 'warning');
+          return;
+        }
+        const changedFields = vendorChangedFields(pendingData);
+        if (!changedFields.length) {
+          resultMessage(route.id, '没有需要审核的修改', '请修改资料后再提交审核。', 'warning');
+          return;
+        }
+        const submittedAt = nowText();
+        rememberVendorPreviewState();
+        reviews[group] = {
+          ...reviews[group],
+          applicationId:vendorSettingsRuntime?.nextApplicationId?.(reviews, submittedAt) || `CHG-${Date.now()}`,
+          status:'pending', pendingData:cloneJson(pendingData), draftData:null, submittedData:cloneJson(pendingData),
+          effectiveData:cloneJson(vendorQualificationForView().form || {}), changedFields, submittedAt, reviewedAt:'', rejectReason:'',
+        };
+        memory.registration = { ...memory.registration, vendorSettingsTab:group, vendorReviews:reviews };
+        persistVendorSettings();
+        memory.result[route.id] = { title:'资料修改申请已提交', detail:'平台审核通过前，继续使用当前已生效资料。', variant:'success' };
+        render();
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'vendor-settings-review-preview') {
+        const group = event.currentTarget.dataset.vendorSettingsGroup || '';
+        const result = event.currentTarget.dataset.vendorReviewResult || '';
+        if (!['subject','profile','finance'].includes(group) || !['approved','rejected'].includes(result)) return;
+        const reviews = normalizeVendorReviews(memory.registration.vendorReviews);
+        const review = reviews[group];
+        if (review.status !== 'pending' || !review.pendingData) return;
+        const reviewedAt = nowText();
+        rememberVendorPreviewState();
+        if (result === 'approved') {
+          const qualification = vendorQualificationForView();
+          const nextQualification = { ...qualification, form:{ ...(qualification.form || {}), ...cloneJson(review.pendingData) } };
+          if (memory.qualificationPreview) memory.qualificationPreview = nextQualification;
+          else {
+            memory.qualification = nextQualification;
+            persistQualification();
+          }
+          reviews[group] = { ...review, status:'approved', pendingData:null, draftData:null, reviewedAt, rejectReason:'' };
+        } else {
+          reviews[group] = { ...review, status:'rejected', draftData:null, reviewedAt, rejectReason:'提交资料与当前登记信息不一致，请核对变更内容及证明附件后重新提交。' };
+        }
+        memory.registration = { ...memory.registration, vendorSettingsTab:group, vendorReviews:reviews };
+        persistVendorSettings();
+        delete memory.result[route.id];
+        render();
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-game-search') {
@@ -12964,8 +13339,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'game-console-section') {
         const requested = event.currentTarget.dataset.gameSection || 'release-workspace';
-        const allowed = ['release-workspace', 'versions', 'qualifications'];
+        const allowed = ['release-workspace', 'versions', 'qualifications', 'analytics'];
         if (!allowed.includes(requested)) return;
+        if (requested === 'analytics' && !publisherAccessForView().canViewPublisherData) return;
         updatePublisherWorkspace({ gameTab: 'release', gameSection: requested }, { preserveScroll: true });
         return;
       }
@@ -13138,7 +13514,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'register-platform-developer') {
-        memory.registration = { accountTier: 'registered', registeredAt: nowText(), consoleTab: 'games' };
+        memory.registration = { accountTier: 'registered', registeredAt: nowText(), consoleTab: 'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
         persistRegistration();
         if (hasPublisherRoute) {
           navigate({ routeId: 'P02-01', state: 'default' });
@@ -13321,7 +13697,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (action === 'back-to-entry-choice') {
         if (memory.qualification.status !== 'unsubmitted' || Number(memory.qualification.revision) > 0) return;
-        memory.registration = { accountTier: 'unselected', registeredAt: memory.registration.registeredAt || '' };
+        memory.registration = { accountTier: 'unselected', registeredAt: memory.registration.registeredAt || '', consoleTab:'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
         memory.qualification = { ...memory.qualification, step: 0, editing: false };
         persistRegistration();
         render();
@@ -13519,6 +13895,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'demo-state-reset') {
+        if (memory.demoPreview.vendorReviewsSnapshot) {
+          memory.registration = { ...memory.registration, vendorReviews:cloneJson(memory.demoPreview.vendorReviewsSnapshot) };
+        }
         memory.qualificationPreview = null;
         memory.demoPreview = { open: false, releaseStatus: '' };
         delete memory.result[route.id];
@@ -13548,7 +13927,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const nextStatus = event.currentTarget.dataset.demoReleaseStatus || '';
         if (!['draft', 'reviewing', 'approved', 'rejected', 'withdrawn', 'live', 'delisted'].includes(nextStatus)) return;
         if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
-        memory.demoPreview = { open: false, releaseStatus: nextStatus };
+        memory.demoPreview = { ...memory.demoPreview, open: false, releaseStatus: nextStatus };
         memory.page['P02-01'] = {
           ...(memory.page['P02-01'] || {}),
           workspaceView: 'game',
@@ -14208,6 +14587,67 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       tabs[targetIndex].click();
       requestAnimationFrame(() => root.querySelector(`[data-platform-console-tab="${targetValue}"]`)?.focus());
     }));
+    root.querySelectorAll('[data-vendor-settings-tab]').forEach((tab, index, tabs) => tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+      event.preventDefault();
+      const targetIndex = event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? tabs.length - 1
+          : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[targetIndex].click();
+    }));
+    const updateVendorSubmitState = form => {
+      if (!form) return;
+      const group = form.dataset.vendorSettingsForm || '';
+      const reviews = normalizeVendorReviews(memory.registration.vendorReviews);
+      const submit = root.querySelector(`[data-portal-action="vendor-settings-submit"][data-vendor-settings-group="${group}"]`);
+      if (!submit) return;
+      const values = collectVendorSettingsForm(group, form);
+      const enabled = publisherAccessForView().canManageVendor && reviews[group]?.status !== 'pending' && vendorChangedFields(values).length > 0;
+      submit.disabled = !enabled;
+      submit.setAttribute('aria-disabled', String(!enabled));
+    };
+    root.querySelectorAll('[data-vendor-settings-form] input:not([type="file"]), [data-vendor-settings-form] textarea, [data-vendor-settings-form] select').forEach(field => {
+      const handleVendorInput = event => {
+        const form = event.currentTarget.closest('[data-vendor-settings-form]');
+        event.currentTarget.removeAttribute('aria-invalid');
+        if (event.currentTarget.name === 'region') {
+          const isMainland = event.currentTarget.value === '中国大陆';
+          form?.classList.toggle('is-mainland', isMainland);
+          form?.querySelectorAll('[data-mainland-region-detail]').forEach(input => {
+            input.disabled = !isMainland || !publisherAccessForView().canManageVendor;
+            input.setAttribute('aria-disabled', String(input.disabled));
+            if (!isMainland) input.value = '';
+          });
+        }
+        const group = form?.dataset.vendorSettingsForm || '';
+        if (group) saveVendorSettingsDraft(group, collectVendorSettingsForm(group, form));
+        updateVendorSubmitState(form);
+      };
+      field.addEventListener('input', handleVendorInput);
+      field.addEventListener('change', handleVendorInput);
+    });
+    root.querySelectorAll('[data-vendor-settings-file]').forEach(input => input.addEventListener('change', event => {
+      const file = event.currentTarget.files?.[0];
+      const fieldName = event.currentTarget.dataset.vendorSettingsFile;
+      if (!file || !fieldName) return;
+      if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+        event.currentTarget.value = '';
+        resultMessage(route.id, '图片不符合要求', '请上传不超过 10 MB 的 JPG、PNG 或 WEBP 图片。', 'warning');
+        return;
+      }
+      const form = event.currentTarget.closest('[data-vendor-settings-form]');
+      const value = form?.querySelector(`[data-vendor-setting-field="${fieldName}"]`);
+      if (value) {
+        value.dataset.currentValue = file.name;
+        value.textContent = file.name;
+        value.removeAttribute('aria-invalid');
+      }
+      const group = form?.dataset.vendorSettingsForm || '';
+      if (group) saveVendorSettingsDraft(group, collectVendorSettingsForm(group, form));
+      updateVendorSubmitState(form);
+    }));
     root.querySelectorAll('[data-qualification-file]').forEach(input => input.addEventListener('change', event => {
       const file = event.currentTarget.files?.[0];
       const nameField = event.currentTarget.dataset.qualificationFile;
@@ -14350,18 +14790,21 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         onVersionRefresh: () => refreshPublisherReleaseSubmissions(draft),
       });
     }
-    if (route.id === 'P02-01' && memory.page[route.id]?.workspaceView === 'data' && window.PublisherDataDashboard) {
+    if (route.id === 'P02-01' && memory.page[route.id]?.workspaceView === 'game' && memory.page[route.id]?.gameSection === 'analytics' && window.PublisherDataDashboard) {
       const dashboardState = memory.page[route.id].dataDashboard || (memory.page[route.id].dataDashboard = window.PublisherDataDashboard.createState());
+      const dashboardGame = window.GameHubDeveloperPortal.templates.publisherGame(memory.page[route.id], memory.page[route.id].selectedGame || 'existing');
       window.PublisherDataDashboard.bind(root, {
         state: dashboardState,
+        game: dashboardGame,
         onChange: (_next, options = {}) => updatePublisherWorkspace({ dataDashboard:dashboardState }, { preserveScroll:Boolean(options.preserveScroll) }),
         onFinance: (target, filters) => {
           persistPublisherWorkspace();
           const lockedStatement = window.PublisherDataDashboard.statements().find(item => item.status === 'locked');
+          const flowFilters = { ...filters, game:dashboardGame?.gameId || '' };
           const query = target === 'settlement/flows'
-            ? new URLSearchParams({ game:filters.game || 'all', fulfillment:filters.fulfillment || 'all', range:filters.range || '30d', ledger_source:'direct_sale' })
+            ? new URLSearchParams({ game:flowFilters.game, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
             : new URLSearchParams({ statement:lockedStatement?.id || '', ledger_source:'direct_sale' });
-          window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? filters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
+          window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
           location.href = `15-开发者财务结算demo.html#/${target}?${query.toString()}`;
         },
       });

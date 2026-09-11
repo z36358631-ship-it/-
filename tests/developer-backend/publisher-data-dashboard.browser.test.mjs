@@ -55,7 +55,11 @@ async function seedApprovedAccount(page, accountKey) {
 
 async function openDashboard(page, accountKey) {
   await seedApprovedAccount(page, accountKey);
-  const entry = page.locator('[data-portal-action="publisher-open-data"]');
+  const gameEntry = page.locator('[data-portal-action="enter-publisher-game"][data-publisher-game="existing"]').first();
+  await gameEntry.waitFor();
+  await gameEntry.click();
+  await page.locator('[data-publisher-game-console][data-selected-game="existing"]').waitFor();
+  const entry = page.locator('[data-portal-action="game-console-section"][data-game-section="analytics"]');
   await entry.waitFor();
   await entry.click();
   const dashboard = page.locator('[data-publisher-page="data"]');
@@ -103,7 +107,8 @@ test('未认证与审核中账号不展示经营数据入口', async () => {
     const page = await context.newPage();
     try {
       await seedAccount(page, `publisher-dashboard:hidden:${status}`, status);
-      assert.equal(await page.locator('[data-portal-action="publisher-open-data"]').count(), 0, status);
+      await page.locator('[data-portal-action="enter-publisher-game"][data-publisher-game="existing"]').first().click();
+      assert.equal(await page.locator('[data-game-section="analytics"]').count(), 0, status);
       assert.equal(await page.locator('[data-publisher-page="data"]').count(), 0, status);
     } finally {
       await context.close();
@@ -133,13 +138,14 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
       })), { document: 0, body: 0 });
 
       await page.locator('[data-publisher-workspace][data-publisher-access="enterprise"]').waitFor();
-      const entry = page.locator('[data-portal-action="publisher-open-data"]');
+      await page.locator('[data-portal-action="enter-publisher-game"][data-publisher-game="existing"]').first().click();
+      const entry = page.locator('[data-portal-action="game-console-section"][data-game-section="analytics"]');
       await entry.waitFor();
       await entry.click();
       await page.locator('[data-publisher-page="data"]').waitFor();
 
       await page.reload({ waitUntil: 'load' });
-      assert.equal(await page.locator('[data-portal-action="publisher-open-data"]').count(), 0);
+      assert.equal(await page.locator('[data-game-section="analytics"]').count(), 0);
     } finally {
       await context.close();
     }
@@ -174,7 +180,10 @@ test('统一演示菜单覆盖企业认证与游戏发布状态且不改写真�
       await qualificationGroup.getByRole('radio', { name: label, exact: true }).click();
       const workspace = page.locator(`[data-publisher-workspace][data-publisher-access="${access}"]`);
       await workspace.waitFor();
-      assert.equal(await workspace.locator('[data-portal-action="publisher-open-data"]').count(), canViewData ? 1 : 0, label);
+      if (await workspace.getAttribute('data-workspace-view') === 'games') {
+        await workspace.locator('[data-portal-action="enter-publisher-game"][data-publisher-game="existing"]').first().click();
+      }
+      assert.equal(await page.locator('[data-game-section="analytics"]').count(), canViewData ? 1 : 0, label);
     }
 
     for (const [label, status, reviewStatus, publicationStatus] of states) {
@@ -198,15 +207,15 @@ test('统一演示菜单覆盖企业认证与游戏发布状态且不改写真�
   }
 });
 
-test('开发者从游戏管理进入数据看板，侧边栏只保留游戏管理和厂商设置', async () => {
+test('经营数据位于单游戏控制台并锁定当前游戏', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
   try {
     const dashboard = await openDashboard(page, 'publisher-dashboard:navigation');
-    assert.deepEqual(
-      await page.locator('.publisher-console-sidebar [data-publisher-view]').allTextContents(),
-      ['游戏管理', '厂商设置'],
-    );
+    assert.deepEqual(await page.locator('[data-portal-action="game-console-section"]').allTextContents(), ['版本发布', '发布记录', '资质认证', '经营数据']);
+    assert.equal(await dashboard.getAttribute('data-dashboard-game'), 'existing');
+    assert.match(await dashboard.locator('.publisher-dashboard-game-context').innerText(), /星海远征 · GAME-48291/);
+    assert.equal(await dashboard.locator('[data-dashboard-filter="game"]').count(), 0);
     assert.deepEqual(
       await dashboard.locator('[data-publisher-data-tab]').allTextContents(),
       ['经营概览', '订单明细', '收入与结算'],
@@ -250,7 +259,7 @@ test('所有筛选共享同一快照并能得到明确的组合筛选空态', as
     const dashboard = await openDashboard(page, 'publisher-dashboard:filters');
     await selectDashboardTab(dashboard, 'orders', '订单明细');
     const filters = dashboard.locator('select[data-dashboard-filter]');
-    assert.ok(await filters.count() >= 6, '缺少游戏、商品、履约、地区、平台、状态等组合筛选');
+    assert.ok(await filters.count() >= 6, '缺少时间、商品、履约、地区、平台、状态等组合筛选');
 
     const candidates = await filters.evaluateAll(nodes => nodes.map(node => ({
       key: node.dataset.dashboardFilter,
@@ -354,7 +363,7 @@ test('收入与结算提供两个准确的财务模块跳转 URL 并携带当前
     assert.equal(settlementQuery.has('game'), false);
     assert.equal(settlementQuery.has('fulfillment'), false);
     const flowQuery = new URLSearchParams(new URL(flowsUrl).hash.split('?')[1]);
-    assert.equal(flowQuery.get('game'), 'all');
+    assert.equal(flowQuery.get('game'), 'GAME-48291');
     assert.equal(flowQuery.get('fulfillment'), 'all');
     assert.equal(flowQuery.get('range'), '30d');
     assert.equal(flowQuery.get('ledger_source'), 'direct_sale');

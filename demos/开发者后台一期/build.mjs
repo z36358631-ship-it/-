@@ -41,6 +41,7 @@ const publisherStyleFiles = [
   'publisher-game-builds.css',
   'publisher-game-review.css',
   'publisher-data-dashboard.css',
+  'publisher-vendor-settings.css',
 ];
 const publisherRuntimeFiles = [
   'publisher-storage-schema.js',
@@ -58,6 +59,7 @@ const publisherRuntimeFiles = [
   'publisher-game-review-store.js',
   'publisher-game-review.js',
   'publisher-data-dashboard.js',
+  'publisher-vendor-settings.js',
 ];
 const escapeJson = value => JSON.stringify(value)
   .replaceAll('&', '\\u0026')

@@ -155,16 +155,23 @@ for (const [status, kind] of [
     await vendorEntry.click();
     await page.locator('[data-publisher-page="vendor"]').waitFor();
     assert.equal(await page.locator('[data-publisher-workspace]').getAttribute('data-workspace-view'), 'vendor');
-    if (status === 'approved') {
+    if (status === 'approved' || status === 'delisted') {
       assert.equal(await page.locator('[data-publisher-vendor-restriction]').count(), 0);
-      assert.match(await page.locator('[data-publisher-page="vendor"]').innerText(), /厂商设置功能占位/);
+      assert.deepEqual(await page.locator('[data-vendor-settings-tab]').allTextContents(), ['企业主体信息', '厂商资料', '财务信息']);
+      assert.equal(await page.locator('[data-publisher-page="vendor"] .publisher-vendor-title h1').innerText(), '厂商设置');
+      assert.equal(await page.locator('.publisher-content-title').count(), 0);
+      assert.doesNotMatch(await page.locator('[data-publisher-page="vendor"]').innerText(), /占位|VENDOR SETTINGS/);
+      if (status === 'delisted') {
+        assert.match(await page.locator('[data-publisher-page="vendor"]').innerText(), /企业发行资格已暂停[\s\S]*当前资料仅支持查看/);
+        assert.equal(await page.locator('[data-vendor-settings-form] input:not([type="file"]):not([disabled]), [data-vendor-settings-form] textarea:not([disabled]), [data-vendor-settings-form] select:not([disabled])').count(), 0);
+      }
     } else {
       const restriction = page.locator(`[data-publisher-vendor-restriction="${status}"]`);
       assert.equal(await restriction.count(), 1);
-      assert.match(await restriction.innerText(), status === 'delisted' ? /开发者资格已暂停[\s\S]*查看认证详情/ : /完成开发者认证后才可进行厂商设置/);
+      assert.match(await restriction.innerText(), status === 'delisted' ? /开发者资格已暂停[\s\S]*查看认证详情/ : /提交申请前，请先完成开发者认证/);
       if (status === 'pending') {
         const progress = restriction.locator('[data-publisher-verification-progress]');
-        assert.match(await progress.innerText(), /审核进行中[\s\S]*已于 2026-09-02 提出申请[\s\S]*预计于 2026-09-09 前完成审核（5 个工作日）[\s\S]*查看进度/);
+        assert.match(await progress.innerText(), /审核进行中[\s\S]*已于 2026-09-02 提交[\s\S]*预计于 2026-09-09 前完成审核（5 个工作日）[\s\S]*查看进度/);
         assert.equal(await progress.locator('[data-portal-action="publisher-enterprise-verification"]').count(), 1);
         assert.equal(await restriction.locator('.publisher-vendor-placeholder [data-portal-action="publisher-enterprise-verification"]').count(), 0);
         await progress.getByRole('button', { name: '查看进度', exact: true }).click();
@@ -335,7 +342,7 @@ test('02 工作台中英文切换生效且语言按钮显示目标语言', async
     assert.equal(await page.locator('[data-profile-module="release-workspace"] .pgp-title h2').innerText(), 'Version release');
     assert.deepEqual(
       await page.locator('[data-portal-action="game-console-section"]').allTextContents(),
-      ['Version release', 'Version records', 'Qualifications'],
+      ['Version release', 'Version records', 'Qualifications', 'Analytics'],
     );
     assert.equal(await page.locator('[data-portal-action="toggle-interface-language"]').innerText(), '中文');
   } finally { await context.close(); }

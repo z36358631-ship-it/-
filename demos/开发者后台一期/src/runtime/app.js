@@ -32,6 +32,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const publisherAccountContext = window.PublisherAccountContext || null;
   const hasPublisherRoute = routes.some(route => route.id === 'P02-01');
   const publisherFixtureGameKeys = new Set(['draft', 'reviewing', 'existing', 'pioneer', 'prerelease', 'live', 'delisted']);
+  const vendorSettingsRuntime = window.PublisherVendorSettings || null;
+  const createVendorReviews = () => vendorSettingsRuntime?.createReviews?.() || {
+    subject:{ status:'idle' }, profile:{ status:'idle' }, finance:{ status:'idle' },
+  };
+  const normalizeVendorReviews = reviews => vendorSettingsRuntime?.normalizeReviews?.(reviews) || { ...createVendorReviews(), ...(reviews || {}) };
   const createQualification = (prefill = true) => ({
     applicationId: 'ENT-20260903-001',
     status: 'unsubmitted',
@@ -51,7 +56,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     submissions: [],
     currentSubmission: null,
     form: prefill ? {
-      subjectType: '公司／企业', region: '中国大陆', legalName: '深圳星海互动科技有限公司', registrationNumber: '9144XXXXXXXXXXXXXX', registeredAddress: '广东省深圳市南山区科技园示例路 88 号', businessLicenseName: '营业执照.jpg',
+      subjectType: '公司／企业', region: '中国大陆', province: '广东省', city: '深圳市', district: '南山区', legalName: '深圳星海互动科技有限公司', registrationNumber: '9144XXXXXXXXXXXXXX', registeredAddress: '广东省深圳市南山区科技园示例路 88 号', businessLicenseName: '营业执照.jpg',
       legalEnglishName: 'Shenzhen Xinghai Interactive Technology Co., Ltd.', mailingAddress: '广东省深圳市南山区科技园示例路 88 号',
       bankAccountName: '深圳星海互动科技有限公司', bankName: '中国建设银行深圳科技园支行', bankAccountNumber: '6222000000008899', bankBranch: '中国建设银行深圳科技园支行', bankProofName: '银行开户证明.jpg',
       vendorName: '星海互动', vendorEnglishName: 'Xinghai Interactive', vendorIntro: '专注于 PC 游戏研发与发行。', logoName: '',
@@ -96,6 +101,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     accountTier: restoredQualification.status === 'approved' ? 'enterprise' : (storedRegistration?.accountTier === 'unselected' ? 'unselected' : 'registered'),
     registeredAt: storedRegistration?.registeredAt || restoredQualification.submittedAt || '',
     consoleTab: storedRegistration?.consoleTab || 'games',
+    vendorSettingsTab: ['subject', 'profile', 'finance'].includes(storedRegistration?.vendorSettingsTab) ? storedRegistration.vendorSettingsTab : 'subject',
+    vendorReviews: normalizeVendorReviews(storedRegistration?.vendorReviews),
   };
   if (!restoredQualification.currentSubmission && Number(restoredQualification.revision) > 0) {
     restoredQualification.currentSubmission = {
@@ -292,11 +299,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selectedGame = publisherFixtureGameKeys.has(requestedGame)
       ? requestedGame
       : (createdGames.find(game => game?.gameKey === requestedGame || game?.gameId === requestedGame)?.gameKey || '');
-    const allowedSections = new Set(['release-workspace', 'versions', 'qualifications']);
+    const allowedSections = new Set(['release-workspace', 'versions', 'qualifications', 'analytics']);
     const requestedSection = restoredHandoff?.targetTab || restoredPublisherWorkspace.gameSection;
     const resumeSelectedGame = Boolean(selectedGame && (restoredPublisherWorkspace.workspaceView === 'game'
       || (!Object.prototype.hasOwnProperty.call(restoredPublisherWorkspace, 'workspaceView') && memory.session.activeGameId)));
-    const restoredView = ['games', 'vendor', 'data'].includes(restoredPublisherWorkspace.workspaceView) ? restoredPublisherWorkspace.workspaceView : 'games';
+    const restoredView = ['games', 'vendor'].includes(restoredPublisherWorkspace.workspaceView) ? restoredPublisherWorkspace.workspaceView : 'games';
     const dataDashboard = window.PublisherDataDashboard?.createState(restoredPublisherWorkspace.dataDashboard || {}) || restoredPublisherWorkspace.dataDashboard || {};
     dataDashboard.selectedOrder = '';
     dataDashboard.scopeOpen = false;
@@ -490,8 +497,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         accountTier: memory.qualification.status === 'approved' ? 'enterprise' : (accountRegistration.accountTier === 'unselected' ? 'unselected' : 'registered'),
         registeredAt: accountRegistration.registeredAt || memory.qualification.submittedAt || '',
         consoleTab: accountRegistration.consoleTab || 'games',
+        vendorSettingsTab: ['subject', 'profile', 'finance'].includes(accountRegistration.vendorSettingsTab) ? accountRegistration.vendorSettingsTab : 'subject',
+        vendorReviews: normalizeVendorReviews(accountRegistration.vendorReviews),
       }
-      : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games' };
+      : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
     memory.qualificationPreview = null;
     memory.demoPreview = { open: false, releaseStatus: '' };
     delete memory.result['P01-03'];
@@ -565,6 +574,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         accountTier: nextQualificationStatus === 'approved' ? 'enterprise' : (storedAccountRegistration?.accountTier === 'unselected' ? 'unselected' : 'registered'),
         registeredAt: storedAccountRegistration?.registeredAt || memory.qualification.submittedAt || '',
         consoleTab: storedAccountRegistration?.consoleTab || 'games',
+        vendorSettingsTab: ['subject', 'profile', 'finance'].includes(storedAccountRegistration?.vendorSettingsTab) ? storedAccountRegistration.vendorSettingsTab : 'subject',
+        vendorReviews: normalizeVendorReviews(storedAccountRegistration?.vendorReviews),
       };
       memory.qualificationPreview = null;
       memory.demoPreview = { open: false, releaseStatus: '' };
@@ -577,6 +588,43 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return accountChanged || activeGameChanged || qualificationChanged;
   };
   const nowText = () => new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+  const vendorQualificationForView = () => memory.qualificationPreview || memory.qualification;
+  const rememberVendorPreviewState = () => {
+    if (!memory.qualificationPreview || memory.demoPreview.vendorReviewsSnapshot) return;
+    memory.demoPreview.vendorReviewsSnapshot = cloneJson(memory.registration.vendorReviews || createVendorReviews());
+  };
+  const persistVendorSettings = () => {
+    if (memory.qualificationPreview) return;
+    persistRegistration();
+  };
+  const collectVendorSettingsForm = (group, form = root.querySelector(`[data-vendor-settings-form="${group}"]`)) => {
+    if (!form || !['subject', 'profile', 'finance'].includes(group)) return {};
+    const values = {};
+    form.querySelectorAll('[data-vendor-setting-field]').forEach(field => {
+      const key = field.dataset.vendorSettingField;
+      if (!key || Object.prototype.hasOwnProperty.call(values, key)) return;
+      values[key] = field.matches('input, textarea, select')
+        ? String(field.value || '').trim()
+        : String(field.dataset.currentValue || field.textContent || '').trim();
+    });
+    if (group === 'subject' && values.region !== '中国大陆') {
+      values.province = '';
+      values.city = '';
+      values.district = '';
+    }
+    return values;
+  };
+  const vendorChangedFields = (values, qualification = vendorQualificationForView()) => Object.keys(values || {})
+    .filter(key => String(values[key] ?? '') !== String(qualification?.form?.[key] ?? ''));
+  const saveVendorSettingsDraft = (group, values) => {
+    const reviews = normalizeVendorReviews(memory.registration.vendorReviews);
+    if (!reviews[group] || reviews[group].status === 'pending') return reviews;
+    rememberVendorPreviewState();
+    reviews[group] = { ...reviews[group], draftData:cloneJson(values) };
+    memory.registration = { ...memory.registration, vendorSettingsTab:group, vendorReviews:reviews };
+    persistVendorSettings();
+    return reviews;
+  };
   const sanitizeManagedHtml = value => {
     const template = document.createElement('template');
     template.innerHTML = String(value || '').trim();
@@ -1407,7 +1455,96 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'publisher-open-data') {
         if (!publisherAccessForView().canViewPublisherData) return;
-        updatePublisherWorkspace({ workspaceView: 'data', addGameOpen: false, gameMenuOpen: '' });
+        updatePublisherWorkspace({ workspaceView: 'game', gameSection: 'analytics', gameTab: 'analytics', addGameOpen: false, gameMenuOpen: '' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'vendor-settings-tab') {
+        const currentGroup = root.querySelector('[data-vendor-settings-panel]:not([hidden])')?.dataset.vendorSettingsPanel;
+        if (currentGroup) saveVendorSettingsDraft(currentGroup, collectVendorSettingsForm(currentGroup));
+        const requestedTab = event.currentTarget.dataset.vendorSettingsTab || 'subject';
+        memory.registration = {
+          ...memory.registration,
+          vendorSettingsTab:['subject', 'profile', 'finance'].includes(requestedTab) ? requestedTab : 'subject',
+        };
+        persistVendorSettings();
+        render();
+        requestAnimationFrame(() => root.querySelector(`[data-vendor-settings-tab="${memory.registration.vendorSettingsTab}"]`)?.focus());
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'vendor-settings-submit') {
+        const group = event.currentTarget.dataset.vendorSettingsGroup || '';
+        if (!['subject', 'profile', 'finance'].includes(group)) return;
+        if (!publisherAccessForView().canManageVendor) {
+          resultMessage(route.id, '暂不可提交', '企业认证通过后，才可修改厂商资料并提交审核。', 'warning');
+          return;
+        }
+        const reviews = normalizeVendorReviews(memory.registration.vendorReviews);
+        if (reviews[group].status === 'pending') return;
+        const form = root.querySelector(`[data-vendor-settings-form="${group}"]`);
+        const pendingData = collectVendorSettingsForm(group, form);
+        const requiredByGroup = {
+          subject:['subjectType','region','legalName','registrationNumber','registeredAddress','businessLicenseName'],
+          profile:['vendorName','vendorIntro','contactName','email'],
+          finance:['bankAccountName','bankName','bankAccountNumber','bankBranch','bankProofName'],
+        };
+        if (group === 'subject' && pendingData.region === '中国大陆') requiredByGroup.subject.push('province','city','district');
+        form?.querySelectorAll('[aria-invalid="true"]').forEach(field => field.removeAttribute('aria-invalid'));
+        const missing = requiredByGroup[group].filter(key => !String(pendingData[key] || '').trim());
+        missing.forEach(key => form?.querySelector(`[data-vendor-setting-field="${key}"]`)?.setAttribute('aria-invalid','true'));
+        if (missing.length) {
+          resultMessage(route.id, '请完善必填信息', `仍有 ${missing.length} 项必填信息未填写。`, 'warning');
+          form?.querySelector('[aria-invalid="true"]')?.focus?.();
+          return;
+        }
+        if (group === 'profile' && pendingData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pendingData.email)) {
+          form?.querySelector('[name="email"]')?.setAttribute('aria-invalid','true');
+          resultMessage(route.id, '邮箱格式不正确', '请填写可正常接收重要业务通知的邮箱。', 'warning');
+          return;
+        }
+        const changedFields = vendorChangedFields(pendingData);
+        if (!changedFields.length) {
+          resultMessage(route.id, '没有需要审核的修改', '请修改资料后再提交审核。', 'warning');
+          return;
+        }
+        const submittedAt = nowText();
+        rememberVendorPreviewState();
+        reviews[group] = {
+          ...reviews[group],
+          applicationId:vendorSettingsRuntime?.nextApplicationId?.(reviews, submittedAt) || `CHG-${Date.now()}`,
+          status:'pending', pendingData:cloneJson(pendingData), draftData:null, submittedData:cloneJson(pendingData),
+          effectiveData:cloneJson(vendorQualificationForView().form || {}), changedFields, submittedAt, reviewedAt:'', rejectReason:'',
+        };
+        memory.registration = { ...memory.registration, vendorSettingsTab:group, vendorReviews:reviews };
+        persistVendorSettings();
+        memory.result[route.id] = { title:'资料修改申请已提交', detail:'平台审核通过前，继续使用当前已生效资料。', variant:'success' };
+        render();
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'vendor-settings-review-preview') {
+        const group = event.currentTarget.dataset.vendorSettingsGroup || '';
+        const result = event.currentTarget.dataset.vendorReviewResult || '';
+        if (!['subject','profile','finance'].includes(group) || !['approved','rejected'].includes(result)) return;
+        const reviews = normalizeVendorReviews(memory.registration.vendorReviews);
+        const review = reviews[group];
+        if (review.status !== 'pending' || !review.pendingData) return;
+        const reviewedAt = nowText();
+        rememberVendorPreviewState();
+        if (result === 'approved') {
+          const qualification = vendorQualificationForView();
+          const nextQualification = { ...qualification, form:{ ...(qualification.form || {}), ...cloneJson(review.pendingData) } };
+          if (memory.qualificationPreview) memory.qualificationPreview = nextQualification;
+          else {
+            memory.qualification = nextQualification;
+            persistQualification();
+          }
+          reviews[group] = { ...review, status:'approved', pendingData:null, draftData:null, reviewedAt, rejectReason:'' };
+        } else {
+          reviews[group] = { ...review, status:'rejected', draftData:null, reviewedAt, rejectReason:'提交资料与当前登记信息不一致，请核对变更内容及证明附件后重新提交。' };
+        }
+        memory.registration = { ...memory.registration, vendorSettingsTab:group, vendorReviews:reviews };
+        persistVendorSettings();
+        delete memory.result[route.id];
+        render();
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-game-search') {
@@ -1509,8 +1646,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'game-console-section') {
         const requested = event.currentTarget.dataset.gameSection || 'release-workspace';
-        const allowed = ['release-workspace', 'versions', 'qualifications'];
+        const allowed = ['release-workspace', 'versions', 'qualifications', 'analytics'];
         if (!allowed.includes(requested)) return;
+        if (requested === 'analytics' && !publisherAccessForView().canViewPublisherData) return;
         updatePublisherWorkspace({ gameTab: 'release', gameSection: requested }, { preserveScroll: true });
         return;
       }
@@ -1683,7 +1821,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'register-platform-developer') {
-        memory.registration = { accountTier: 'registered', registeredAt: nowText(), consoleTab: 'games' };
+        memory.registration = { accountTier: 'registered', registeredAt: nowText(), consoleTab: 'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
         persistRegistration();
         if (hasPublisherRoute) {
           navigate({ routeId: 'P02-01', state: 'default' });
@@ -1866,7 +2004,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (action === 'back-to-entry-choice') {
         if (memory.qualification.status !== 'unsubmitted' || Number(memory.qualification.revision) > 0) return;
-        memory.registration = { accountTier: 'unselected', registeredAt: memory.registration.registeredAt || '' };
+        memory.registration = { accountTier: 'unselected', registeredAt: memory.registration.registeredAt || '', consoleTab:'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
         memory.qualification = { ...memory.qualification, step: 0, editing: false };
         persistRegistration();
         render();
@@ -2064,6 +2202,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'demo-state-reset') {
+        if (memory.demoPreview.vendorReviewsSnapshot) {
+          memory.registration = { ...memory.registration, vendorReviews:cloneJson(memory.demoPreview.vendorReviewsSnapshot) };
+        }
         memory.qualificationPreview = null;
         memory.demoPreview = { open: false, releaseStatus: '' };
         delete memory.result[route.id];
@@ -2093,7 +2234,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const nextStatus = event.currentTarget.dataset.demoReleaseStatus || '';
         if (!['draft', 'reviewing', 'approved', 'rejected', 'withdrawn', 'live', 'delisted'].includes(nextStatus)) return;
         if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
-        memory.demoPreview = { open: false, releaseStatus: nextStatus };
+        memory.demoPreview = { ...memory.demoPreview, open: false, releaseStatus: nextStatus };
         memory.page['P02-01'] = {
           ...(memory.page['P02-01'] || {}),
           workspaceView: 'game',
@@ -2753,6 +2894,67 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       tabs[targetIndex].click();
       requestAnimationFrame(() => root.querySelector(`[data-platform-console-tab="${targetValue}"]`)?.focus());
     }));
+    root.querySelectorAll('[data-vendor-settings-tab]').forEach((tab, index, tabs) => tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+      event.preventDefault();
+      const targetIndex = event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? tabs.length - 1
+          : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[targetIndex].click();
+    }));
+    const updateVendorSubmitState = form => {
+      if (!form) return;
+      const group = form.dataset.vendorSettingsForm || '';
+      const reviews = normalizeVendorReviews(memory.registration.vendorReviews);
+      const submit = root.querySelector(`[data-portal-action="vendor-settings-submit"][data-vendor-settings-group="${group}"]`);
+      if (!submit) return;
+      const values = collectVendorSettingsForm(group, form);
+      const enabled = publisherAccessForView().canManageVendor && reviews[group]?.status !== 'pending' && vendorChangedFields(values).length > 0;
+      submit.disabled = !enabled;
+      submit.setAttribute('aria-disabled', String(!enabled));
+    };
+    root.querySelectorAll('[data-vendor-settings-form] input:not([type="file"]), [data-vendor-settings-form] textarea, [data-vendor-settings-form] select').forEach(field => {
+      const handleVendorInput = event => {
+        const form = event.currentTarget.closest('[data-vendor-settings-form]');
+        event.currentTarget.removeAttribute('aria-invalid');
+        if (event.currentTarget.name === 'region') {
+          const isMainland = event.currentTarget.value === '中国大陆';
+          form?.classList.toggle('is-mainland', isMainland);
+          form?.querySelectorAll('[data-mainland-region-detail]').forEach(input => {
+            input.disabled = !isMainland || !publisherAccessForView().canManageVendor;
+            input.setAttribute('aria-disabled', String(input.disabled));
+            if (!isMainland) input.value = '';
+          });
+        }
+        const group = form?.dataset.vendorSettingsForm || '';
+        if (group) saveVendorSettingsDraft(group, collectVendorSettingsForm(group, form));
+        updateVendorSubmitState(form);
+      };
+      field.addEventListener('input', handleVendorInput);
+      field.addEventListener('change', handleVendorInput);
+    });
+    root.querySelectorAll('[data-vendor-settings-file]').forEach(input => input.addEventListener('change', event => {
+      const file = event.currentTarget.files?.[0];
+      const fieldName = event.currentTarget.dataset.vendorSettingsFile;
+      if (!file || !fieldName) return;
+      if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+        event.currentTarget.value = '';
+        resultMessage(route.id, '图片不符合要求', '请上传不超过 10 MB 的 JPG、PNG 或 WEBP 图片。', 'warning');
+        return;
+      }
+      const form = event.currentTarget.closest('[data-vendor-settings-form]');
+      const value = form?.querySelector(`[data-vendor-setting-field="${fieldName}"]`);
+      if (value) {
+        value.dataset.currentValue = file.name;
+        value.textContent = file.name;
+        value.removeAttribute('aria-invalid');
+      }
+      const group = form?.dataset.vendorSettingsForm || '';
+      if (group) saveVendorSettingsDraft(group, collectVendorSettingsForm(group, form));
+      updateVendorSubmitState(form);
+    }));
     root.querySelectorAll('[data-qualification-file]').forEach(input => input.addEventListener('change', event => {
       const file = event.currentTarget.files?.[0];
       const nameField = event.currentTarget.dataset.qualificationFile;
@@ -2895,18 +3097,21 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         onVersionRefresh: () => refreshPublisherReleaseSubmissions(draft),
       });
     }
-    if (route.id === 'P02-01' && memory.page[route.id]?.workspaceView === 'data' && window.PublisherDataDashboard) {
+    if (route.id === 'P02-01' && memory.page[route.id]?.workspaceView === 'game' && memory.page[route.id]?.gameSection === 'analytics' && window.PublisherDataDashboard) {
       const dashboardState = memory.page[route.id].dataDashboard || (memory.page[route.id].dataDashboard = window.PublisherDataDashboard.createState());
+      const dashboardGame = window.GameHubDeveloperPortal.templates.publisherGame(memory.page[route.id], memory.page[route.id].selectedGame || 'existing');
       window.PublisherDataDashboard.bind(root, {
         state: dashboardState,
+        game: dashboardGame,
         onChange: (_next, options = {}) => updatePublisherWorkspace({ dataDashboard:dashboardState }, { preserveScroll:Boolean(options.preserveScroll) }),
         onFinance: (target, filters) => {
           persistPublisherWorkspace();
           const lockedStatement = window.PublisherDataDashboard.statements().find(item => item.status === 'locked');
+          const flowFilters = { ...filters, game:dashboardGame?.gameId || '' };
           const query = target === 'settlement/flows'
-            ? new URLSearchParams({ game:filters.game || 'all', fulfillment:filters.fulfillment || 'all', range:filters.range || '30d', ledger_source:'direct_sale' })
+            ? new URLSearchParams({ game:flowFilters.game, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
             : new URLSearchParams({ statement:lockedStatement?.id || '', ledger_source:'direct_sale' });
-          window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? filters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
+          window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
           location.href = `15-开发者财务结算demo.html#/${target}?${query.toString()}`;
         },
       });
