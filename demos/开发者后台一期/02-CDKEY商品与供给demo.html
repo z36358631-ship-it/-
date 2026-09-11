@@ -189,6 +189,34 @@ svg { display: block; }
 .portal-demo-switch__badge { min-width: 39px; height: 22px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; color: #086B7A; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; border-radius: 999px; background: #E2F8FB; }
 .portal-demo-switch__label--short { display: none; }
 
+.developer-demo-state-switcher { position: fixed; right: 24px; bottom: 24px; z-index: 70; }
+.developer-demo-state-fab { min-height: 44px; padding: 0 16px 0 9px; display: inline-flex; align-items: center; gap: 9px; color: #F7FBFF; border: 1px solid rgba(56,232,255,.34); border-radius: 999px; background: linear-gradient(135deg, rgba(12,29,52,.97), rgba(28,54,85,.97)); box-shadow: 0 12px 32px rgba(9,25,46,.28); backdrop-filter: blur(16px); font-size: 12px; font-weight: 700; cursor: pointer; }
+.developer-demo-state-fab:hover { border-color: rgba(56,232,255,.7); box-shadow: 0 15px 38px rgba(9,25,46,.34); transform: translateY(-1px); }
+.developer-demo-state-fab:focus-visible,
+.developer-demo-state-panel button:focus-visible { outline: 3px solid rgba(56,201,220,.45); outline-offset: 3px; }
+.developer-demo-state-fab__mark { min-width: 38px; height: 26px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; color: #062030; border-radius: 999px; background: linear-gradient(135deg, var(--brand-cyan), #96F2FF); font-size: 10px; font-weight: 850; letter-spacing: .05em; text-transform: uppercase; }
+.developer-demo-state-panel { position: absolute; right: 0; bottom: 56px; width: min(410px, calc(100vw - 32px)); max-height: min(650px, calc(100vh - 104px)); padding: 18px; overflow-y: auto; color: #52677A; border: 1px solid #D8E2EB; border-radius: 16px; background: rgba(255,255,255,.98); box-shadow: 0 22px 64px rgba(14,31,52,.25); backdrop-filter: blur(18px); }
+.developer-demo-state-panel > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid #E7ECF1; }
+.developer-demo-state-panel > header > div { min-width: 0; display: grid; gap: 4px; }
+.developer-demo-state-panel > header strong { color: #20354B; font-size: 15px; }
+.developer-demo-state-panel > header small { color: #8392A0; font-size: 11px; line-height: 1.55; }
+.developer-demo-state-panel > header > button { width: 28px; height: 28px; flex: 0 0 auto; padding: 0; color: #63778A; border: 0; border-radius: 50%; background: #F0F4F7; font-size: 18px; cursor: pointer; }
+.developer-demo-state-panel > header > button:hover { color: #30485D; background: #E8EEF3; }
+.developer-demo-state-group { padding-top: 16px; }
+.developer-demo-state-group > div:first-child { display: grid; gap: 4px; margin-bottom: 10px; }
+.developer-demo-state-group > div:first-child strong { color: #344D63; font-size: 13px; }
+.developer-demo-state-group > div:first-child small { color: #8999A7; font-size: 10px; line-height: 1.55; }
+.developer-demo-state-options { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+.developer-demo-state-options button { min-width: 0; min-height: 36px; padding: 7px 8px; color: #5F7385; border: 1px solid #D9E2E9; border-radius: 8px; background: #FFFFFF; font-size: 11px; cursor: pointer; }
+.developer-demo-state-options button:hover { color: #147D92; border-color: #9BCBD4; background: #F8FCFD; }
+.developer-demo-state-options button.is-active { color: #0E788D; border-color: #72C4D0; background: #EAF8FA; box-shadow: inset 0 0 0 1px rgba(114,196,208,.18); font-weight: 700; }
+.developer-demo-state-panel > footer { margin-top: 17px; padding-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid #E7ECF1; }
+.developer-demo-state-panel > footer span { color: #8594A1; font-size: 10px; line-height: 1.5; }
+.developer-demo-state-panel > footer button { min-height: 32px; padding: 0 11px; flex: 0 0 auto; color: #187C90; border: 1px solid #9ED0D8; border-radius: 7px; background: #F2FBFC; font-size: 11px; cursor: pointer; }
+.developer-demo-state-panel > footer button:hover { background: #E7F7F9; }
+.developer-demo-state-panel > footer button:disabled { color: #9AA6B0; border-color: #E1E6EB; background: #F5F7F8; cursor: default; }
+.portal-stage:has(.developer-demo-state-switcher) .pgp-back-top { bottom: 82px; }
+
 .side-nav {
   position: absolute;
   inset: 56px auto 0 0;
@@ -447,6 +475,11 @@ svg { display: block; }
   .portal-demo-switch__label--full { display: none; }
   .portal-demo-switch__label--short { display: inline; }
   .portal-demo-switch__badge { min-width: 35px; height: 20px; padding: 0 6px; font-size: 9px; }
+  .developer-demo-state-switcher { right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); }
+  .developer-demo-state-fab { min-height: 42px; padding-right: 13px; }
+  .developer-demo-state-panel { right: 0; bottom: 52px; width: min(390px, calc(100vw - 24px)); max-height: calc(100dvh - 82px - env(safe-area-inset-bottom)); padding: 16px; }
+  .developer-demo-state-options { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .portal-stage:has(.developer-demo-state-switcher) .pgp-back-top { right: 16px; bottom: calc(72px + env(safe-area-inset-bottom)); }
 
   .platform-tab-bar { height: 52px; }
   .platform-tab-list { width: 100%; padding: 0 14px; gap: 28px; }
@@ -528,6 +561,10 @@ svg { display: block; }
   .top-help-button { margin-left: auto; }
   .top-account-menu { margin-left: 4px; }
   .portal-demo-switch { right: 8px; bottom: calc(70px + env(safe-area-inset-bottom)); max-width: calc(100vw - 16px); }
+  .developer-demo-state-fab > span:last-child { display: none; }
+  .developer-demo-state-fab { width: 48px; min-height: 48px; padding: 0; justify-content: center; }
+  .developer-demo-state-fab__mark { min-width: 34px; height: 24px; padding: 0 5px; font-size: 9px; }
+  .developer-demo-state-panel { width: calc(100vw - 16px); right: -4px; }
   .side-nav { padding-right: 8px; padding-left: 8px; }
   .help-breadcrumb { flex-wrap: wrap; }
   .help-search input { padding-left: 10px; }
@@ -1625,11 +1662,6 @@ svg { display: block; }
 .future-capability-grid article p { margin: 8px 0 0; color: var(--text-secondary); line-height: 1.7; }
 .future-capability-note { margin-top: 16px; padding: 13px 14px; display: flex; align-items: center; gap: 9px; color: var(--text-secondary); border: 1px solid rgba(57,118,217,.16); border-radius: 10px; background: rgba(57,118,217,.045); }
 .future-capability-note svg { width: 17px; height: 17px; color: var(--info); }
-.demo-status-switcher { position: fixed; right: 18px; bottom: 18px; z-index: 40; width: min(520px, calc(100vw - 36px)); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid #C7D0DE; border-radius: 12px; background: rgba(255,255,255,.96); box-shadow: 0 12px 34px rgba(15,28,50,.18); backdrop-filter: blur(14px); }
-.demo-status-switcher > strong { flex: 0 0 auto; white-space: nowrap; }
-.demo-status-switcher .form-actions { flex-wrap: nowrap; }
-.demo-status-switcher strong, .demo-status-switcher span { display: block; }
-.demo-status-switcher span { margin-top: 4px; color: var(--text-tertiary); font-size: 12px; }
 
 .qualification-application { max-width: none; }
 .qualification-view-tabs { height: 54px; margin-bottom: 16px; padding: 0 6px; display: flex; align-items: stretch; gap: 4px; border: 1px solid var(--line); border-radius: 12px; background: #FFFFFF; box-shadow: var(--shadow-card); }
@@ -2061,17 +2093,7 @@ button.review-attachment-card:focus-visible { outline: 3px solid rgba(62,99,221,
   .review-document dl > div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
   .review-document > i { right: 28px; bottom: 28px; width: 88px; height: 88px; padding: 16px 10px; font-size: 10px; }
 
-  .demo-status-switcher {
-    right: 12px;
-    bottom: 12px;
-    width: calc(100vw - 24px);
-    padding: 10px 12px;
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .demo-status-switcher .form-actions { width: 100%; }
-  .demo-status-switcher .gh-button { flex: 1 1 80px; }
-  .platform-developer-console { padding-bottom: 104px; }
+  .platform-developer-console { padding-bottom: 72px; }
 }
 
 /* 平台开发者控制台：数据总览、游戏管理、接入资料 */
@@ -7007,6 +7029,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     return `<span class="pgp-version-status-group"><b data-version-review-status="${esc(reviewStatus)}">${esc(versionStatusLabel(lang, reviewStatus, true))}</b><b data-version-publication-status="${esc(publicationStatus)}">${esc(publicationStatusLabel(lang, publicationStatus))}</b></span>`;
   };
   const demoStatusPair = status => ({
+    draft: { reviewStatus: 'draft', publicationStatus: 'offline' },
     reviewing: { reviewStatus: 'reviewing', publicationStatus: 'offline' },
     approved: { reviewStatus: 'approved', publicationStatus: 'offline' },
     rejected: { reviewStatus: 'rejected', publicationStatus: 'offline' },
@@ -7167,7 +7190,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
     const versionNumber = versionIndex >= 0 ? records.length - versionIndex : records.length || 1;
     return `<section class="pgp-version-snapshot" data-version-snapshot-state="ready" data-version-snapshot="${esc(record.id)}">${back}<header class="pgp-version-snapshot__header"><div><span>V${versionNumber}</span><h3>${esc(record.id)}</h3><p>${isEnglish ? 'Submitted content is read-only and is not changed by later edits.' : '以下为提交时的只读内容，后续修改不会改变本快照。'}</p></div><strong>${isEnglish ? 'Immutable snapshot' : '不可变快照'}</strong></header><dl class="pgp-version-summary">${versionFact(isEnglish ? 'Submitter' : '提交人', record.submitter || summary.submitter || (isEnglish ? 'Current developer' : '当前开发者'))}${versionFact(isEnglish ? 'Submitted at' : '提交时间', versionDate(lang, record.submittedAt || summary.submittedAt))}${versionFact(isEnglish ? 'Review status' : '审核状态', versionStatusLabel(lang, reviewStatus, true))}${versionFact(isEnglish ? 'Publication status' : '发行状态', publicationStatusLabel(lang, publicationStatus))}${versionFact(isEnglish ? 'Qualification version' : '引用资质版本', qualificationVersionId || (isEnglish ? 'Not recorded' : '历史未记录'), true)}</dl><section class="pgp-version-section" data-version-snapshot-release><header><h4>${isEnglish ? 'Release settings' : '发行设置'}</h4><span>${esc(scope)}</span></header><dl>${versionFact(isEnglish ? 'Release scope' : '发行范围', scope)}${versionFact(isEnglish ? 'Countries / regions' : '国家／地区', countryCount)}${versionFact(isEnglish ? 'Target player interests' : '目标用户游戏兴趣', targetInterestCopy, true)}${versionFact(isEnglish ? 'Target store state' : '目标商店状态', statusCopy)}${versionFact(isEnglish ? 'Effective time' : '生效时间', effectiveCopy)}${mode === 'domestic' ? versionFact(isEnglish ? 'Publication approval number' : '游戏版号', snapshot.licenseNumber || release.licenseNumber || '—', true) : ''}</dl><div class="pgp-version-territories">${territoryCodes.map(code => `<span data-version-territory-code="${esc(code)}"><b>${esc(window.PublisherReleaseRegions.territoryLabel(code, lang))}</b><small>${esc(code)}</small></span>`).join('') || `<p>${isEnglish ? 'No country or region list was recorded.' : '该历史版本未记录国家／地区清单。'}</p>`}</div></section><section class="pgp-version-section" data-version-snapshot-builds><header><h4>${isEnglish ? 'PC builds' : 'PC 包体'}</h4><span>${isEnglish ? `${buildRecords.length} builds` : `${buildRecords.length} 个包体`}</span></header><div class="pgp-version-skus">${buildCards || `<div class="pgp-version-empty-inline">${isEnglish ? 'No PC build was recorded in this historical version.' : '该历史版本未记录 PC 包体。'}</div>`}</div></section><section class="pgp-version-section" data-version-snapshot-locales><header><h4>${isEnglish ? 'Store detail languages' : '商店资料语言'}</h4><span>${isEnglish ? `${localeCodes.length} languages` : `${localeCodes.length} 个语种`}</span></header><div class="pgp-version-locales">${localeCards || `<div class="pgp-version-empty-inline">${isEnglish ? 'No language details were recorded.' : '该历史版本未记录商店资料语言。'}</div>`}</div></section><section class="pgp-version-section" data-version-snapshot-catalog><header><h4>${isEnglish ? 'Products & SKU' : '商品与 SKU'}</h4><span>${isEnglish ? `${skuRecords.length} products` : `${skuRecords.length} 个商品`}</span></header><div class="pgp-version-skus">${skuCards || `<div class="pgp-version-empty-inline">${isEnglish ? 'No product pricing was recorded in this historical version.' : '该历史版本未记录商品与价格。'}</div>`}</div></section><section class="pgp-version-section" data-version-snapshot-review><header><h4>${isEnglish ? 'Review result' : '审核结果'}</h4><span>${esc(versionStatusLabel(lang, reviewStatus, true))}</span></header><dl>${versionFact(isEnglish ? 'Result' : '处理结果', versionStatusLabel(lang, reviewStatus, true))}${versionFact(isEnglish ? 'Reviewer / operator' : '审核人／操作人', reviewer)}${versionFact(isEnglish ? 'Processed at' : '处理时间', versionDate(lang, reviewedAt))}${review?.reason ? versionFact(isEnglish ? 'Review note' : '审核意见', review.reason, true) : ''}</dl></section></section>`;
   }
-  function renderVersions(draft, lang, game = {}, rawAccess) {
+  function renderVersions(draft, lang, game = {}, rawAccess, demoReleaseStatus = '') {
     const isEnglish = lang === 'en';
     const access = accessFor(rawAccess);
     const profileState = stateFor(draft);
@@ -7202,16 +7225,16 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
       const publicationStatus = publicationStatusFor(record);
       return { ...record, reviewStatus, publicationStatus, status: reviewStatus, versionName: record.versionName || draft.versionName, packageSummary: record.packageSummary || (Number(game.builds || 0) ? `${game.builds} 个 PC Build` : '—'), operationLogs: record.operationLogs || defaultOperations(reviewStatus, publicationStatus) };
     }) : fallbackRecords;
-    const demoState = profileState.demoReleaseState ||= { open: false, active: false, status: 'reviewing' };
-    const demoPair = demoStatusPair(demoState.status);
-    const records = demoState.active ? baseRecords.map((record, index) => index ? record : { ...record, ...demoPair, status: demoPair.reviewStatus, displayStatus: '', isDemoPresentation: true, operationLogs: defaultOperations(demoPair.reviewStatus, demoPair.publicationStatus), reviewResult: demoPair.reviewStatus === 'rejected' ? { decision: 'rejected', reviewer: '平台运营', reviewedAt: '2026-09-07 21:05', reason: isEnglish ? 'The store screenshots contain third-party copyrighted material. Replace them and submit again.' : '商店截图含第三方版权素材，请替换后重新提交。' } : demoState.status === 'delisted' ? { decision: 'approved', reviewer: '平台运营', reviewedAt: '2026-09-07 21:05', reason: isEnglish ? 'The version was delisted after a valid complaint. Review the operation record for details.' : '收到有效投诉后版本已下架，请通过操作记录查看详情。' } : demoPair.reviewStatus === 'approved' ? { decision: 'approved', reviewer: '平台运营', reviewedAt: '2026-09-07 21:05' } : null }) : baseRecords;
+    const previewStatuses = new Set(['draft', 'reviewing', 'approved', 'rejected', 'withdrawn', 'live', 'delisted']);
+    const previewStatus = previewStatuses.has(demoReleaseStatus) ? demoReleaseStatus : '';
+    const demoPair = demoStatusPair(previewStatus);
+    const records = previewStatus ? baseRecords.map((record, index) => index ? record : { ...record, ...demoPair, status: demoPair.reviewStatus, displayStatus: '', isDemoPresentation: true, operationLogs: defaultOperations(demoPair.reviewStatus, demoPair.publicationStatus), reviewResult: demoPair.reviewStatus === 'rejected' ? { decision: 'rejected', reviewer: '平台运营', reviewedAt: '2026-09-07 21:05', reason: isEnglish ? 'The store screenshots contain third-party copyrighted material. Replace them and submit again.' : '商店截图含第三方版权素材，请替换后重新提交。' } : previewStatus === 'delisted' ? { decision: 'approved', reviewer: '平台运营', reviewedAt: '2026-09-07 21:05', reason: isEnglish ? 'The version was delisted after a valid complaint. Review the operation record for details.' : '收到有效投诉后版本已下架，请通过操作记录查看详情。' } : demoPair.reviewStatus === 'approved' ? { decision: 'approved', reviewer: '平台运营', reviewedAt: '2026-09-07 21:05' } : null }) : baseRecords;
     profileState.displayedVersionRecords = records;
     profileState.expandedVersionIds ||= new Set(records.filter(record => record.openByDefault).map(record => record.id));
     const storedViewer = profileState.versionViewer || { status: 'list', submissionId: '', record: null };
     const displayedViewerRecord = records.find(record => record.id === storedViewer.submissionId && record.isDemoPresentation);
     const viewer = displayedViewerRecord && storedViewer.status === 'ready' ? { ...storedViewer, record: displayedViewerRecord } : storedViewer;
-    const simulator = renderDemoStateSwitcher(draft, lang, profileState, records[0]);
-    if (viewer.status !== 'list') return `${renderVersionSnapshot(draft, lang, records, viewer)}${simulator}`;
+    if (viewer.status !== 'list') return renderVersionSnapshot(draft, lang, records, viewer);
     const current = records[0];
     const pageCount = Math.max(1, Math.ceil(records.length / VERSION_PAGE_SIZE));
     profileState.versionPage = Math.min(Math.max(Number(profileState.versionPage) || 1, 1), pageCount);
@@ -7224,7 +7247,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
       const reminder = item.reviewResult?.reason ? `<aside class="pgp-version-reminder"><strong>${isEnglish ? 'Review note' : '审核提醒'}</strong><p>${esc(item.reviewResult.reason)}</p></aside>` : '';
       return `<article class="pgp-version-record${expanded ? ' is-expanded' : ''}" data-version-record="${esc(item.id)}"><div class="pgp-version-record__row"><div class="pgp-version-record__name"><span aria-hidden="true">◇</span><div><strong>${esc(item.versionName || item.id)}</strong><button type="button" data-version-open="${esc(item.id)}">${isEnglish ? 'Version details' : '版本详情'}</button></div></div><time>${esc(versionDate(lang, item.createdAt || item.submittedAt))}</time>${versionStatusTags(lang, item)}<span>${esc(item.packageSummary || '—')}</span><button type="button" class="pgp-version-record__toggle" data-version-toggle="${esc(item.id)}" aria-expanded="${expanded}">${isEnglish ? `${logs.length} actions` : `${logs.length} 条操作记录`}<i aria-hidden="true">⌄</i></button></div><section class="pgp-version-operations"${expanded ? '' : ' hidden'} data-version-operations="${esc(item.id)}">${reminder}<div class="pgp-version-operation-head"><span>${isEnglish ? 'Time' : '操作时间'}</span><span>${isEnglish ? 'Description' : '描述'}</span><span>${isEnglish ? 'Version name' : '版本名称'}</span><span>${isEnglish ? 'Version number' : '版本号'}</span></div>${logs.map(log => `<div class="pgp-version-operation-row"><time>${esc(versionDate(lang, log.at))}</time><p>${esc(log.description)}</p><span>${esc(log.versionName || item.versionName || '—')}</span><span>${esc(log.versionNumber || item.id || '—')}</span></div>`).join('')}</section></article>`;
     }).join('');
-    return `<section class="pgp-versions" data-profile-versions><section class="pgp-current-version"><header><h3>${isEnglish ? 'Current version status' : '当前版本状态'}</h3><p>${isEnglish ? `The latest record is ${current.versionName}. Review and publication are tracked separately.` : `最新记录为 ${current.versionName}，审核与发行状态分别记录。`}</p></header><div><span>${isEnglish ? 'Current version' : '当前版本'} <strong>${esc(current.versionName || current.id)}</strong></span><span>${isEnglish ? 'Status' : '当前状态'} ${versionStatusTags(lang, current)}</span></div></section><header class="pgp-version-list-head"><div><h3>${isEnglish ? 'Version list' : '版本列表'} <small>${isEnglish ? `${records.length} records` : `共 ${records.length} 条记录`}</small></h3><p>${isEnglish ? 'Review each version’s created time, review and publication status, PC build and operation log.' : '按版本查看创建时间、审核与发行状态、PC 包体及操作记录。'}</p></div><div>${refreshed}<button type="button" data-version-refresh aria-label="${isEnglish ? 'Refresh version list' : '刷新版本列表'}">↻</button></div></header><div class="pgp-version-table-scroll" role="region" aria-label="${isEnglish ? 'Version records table' : '版本记录表格'}" tabindex="0"><div class="pgp-version-table-head"><span>${isEnglish ? 'Version' : '版本号'}</span><span>${isEnglish ? 'Created' : '创建时间'}</span><span>${isEnglish ? 'Review / publication status' : '审核／发行状态'}</span><span>${isEnglish ? 'PC build' : 'PC 包体'}</span><span>${isEnglish ? 'Actions' : '操作'}</span></div><div class="pgp-version-list">${rows}</div></div><footer class="pgp-version-pagination"><span>${isEnglish ? `${VERSION_PAGE_SIZE} per page · Total ${records.length}` : `每页 ${VERSION_PAGE_SIZE} 条 · 共 ${records.length} 条`}</span><button type="button" data-version-page="${page - 1}"${page <= 1 ? ' disabled' : ''} aria-label="${isEnglish ? 'Previous page' : '上一页'}">‹</button><b>${page} / ${pageCount}</b><button type="button" data-version-page="${page + 1}"${page >= pageCount ? ' disabled' : ''} aria-label="${isEnglish ? 'Next page' : '下一页'}">›</button></footer></section>${simulator}`;
+    return `<section class="pgp-versions" data-profile-versions${previewStatus ? ` data-demo-release-status="${esc(previewStatus)}"` : ''}><section class="pgp-current-version"><header><h3>${isEnglish ? 'Current version status' : '当前版本状态'}</h3><p>${isEnglish ? `The latest record is ${current.versionName}. Review and publication are tracked separately.` : `最新记录为 ${current.versionName}，审核与发行状态分别记录。`}</p></header><div><span>${isEnglish ? 'Current version' : '当前版本'} <strong>${esc(current.versionName || current.id)}</strong></span><span>${isEnglish ? 'Status' : '当前状态'} ${versionStatusTags(lang, current)}</span></div></section><header class="pgp-version-list-head"><div><h3>${isEnglish ? 'Version list' : '版本列表'} <small>${isEnglish ? `${records.length} records` : `共 ${records.length} 条记录`}</small></h3><p>${isEnglish ? 'Review each version’s created time, review and publication status, PC build and operation log.' : '按版本查看创建时间、审核与发行状态、PC 包体及操作记录。'}</p></div><div>${refreshed}<button type="button" data-version-refresh aria-label="${isEnglish ? 'Refresh version list' : '刷新版本列表'}">↻</button></div></header><div class="pgp-version-table-scroll" role="region" aria-label="${isEnglish ? 'Version records table' : '版本记录表格'}" tabindex="0"><div class="pgp-version-table-head"><span>${isEnglish ? 'Version' : '版本号'}</span><span>${isEnglish ? 'Created' : '创建时间'}</span><span>${isEnglish ? 'Review / publication status' : '审核／发行状态'}</span><span>${isEnglish ? 'PC build' : 'PC 包体'}</span><span>${isEnglish ? 'Actions' : '操作'}</span></div><div class="pgp-version-list">${rows}</div></div><footer class="pgp-version-pagination"><span>${isEnglish ? `${VERSION_PAGE_SIZE} per page · Total ${records.length}` : `每页 ${VERSION_PAGE_SIZE} 条 · 共 ${records.length} 条`}</span><button type="button" data-version-page="${page - 1}"${page <= 1 ? ' disabled' : ''} aria-label="${isEnglish ? 'Previous page' : '上一页'}">‹</button><b>${page} / ${pageCount}</b><button type="button" data-version-page="${page + 1}"${page >= pageCount ? ' disabled' : ''} aria-label="${isEnglish ? 'Next page' : '下一页'}">›</button></footer></section>`;
   }
   function render(draft, language = 'zh', options = {}) {
     const lang = language === 'en' ? 'en' : 'zh';
@@ -7264,7 +7287,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
       return `<button type="button" class="${releaseAnchor === id ? 'is-active' : ''}" data-release-locator="${id}" data-release-label="${esc(label)}" aria-label="${esc(accessibilityLabel)}" aria-current="${releaseAnchor === id ? 'location' : 'false'}"><span>${esc(label)}</span><b class="pgp-release-locator__count" data-release-missing-count${count ? '' : ' hidden'}>${count || ''}</b></button>`;
     }).join('')}</nav>` : '';
     const releaseWorkspaceBody = `<div class="pgp-release-workspace"><section class="pgp-release-block" data-release-anchor="profile">${profileBody}</section><section class="pgp-release-block" data-release-anchor="builds">${builds}</section><section class="pgp-release-block" data-release-anchor="catalog">${renderPricing(draft, lang)}</section><section class="pgp-release-block" data-release-anchor="release">${card(draft, lang, 'publication', publication)}</section><section class="pgp-release-block" data-release-anchor="qualification">${qualificationReference}</section></div>`;
-    const moduleBody = releaseWorkspace ? releaseWorkspaceBody : activeModule === 'profile' ? profileBody : activeModule === 'catalog' ? renderPricing(draft, lang) : activeModule === 'release' ? card(draft, lang, 'publication', publication) : activeModule === 'qualifications' ? `<section class="pgp-qualification-workspace">${qualification}</section>` : renderVersions(draft, lang, options.game || {}, access);
+    const moduleBody = releaseWorkspace ? releaseWorkspaceBody : activeModule === 'profile' ? profileBody : activeModule === 'catalog' ? renderPricing(draft, lang) : activeModule === 'release' ? card(draft, lang, 'publication', publication) : activeModule === 'qualifications' ? `<section class="pgp-qualification-workspace">${qualification}</section>` : renderVersions(draft, lang, options.game || {}, access, options.demoReleaseStatus || '');
     const moduleTitle = lang === 'en' ? ({ 'release-workspace': 'Version release', profile: 'Game details', catalog: 'Products & SKU', release: 'Release settings', qualifications: 'Qualifications', versions: 'Version records' }[activeModule]) : ({ 'release-workspace': '版本发布', profile: '游戏资料', catalog: '商品与 SKU', release: '发行设置', qualifications: '资质认证', versions: '发布记录' }[activeModule]);
     const releaseActions = releaseWorkspace ? draft.reviewStatus === 'reviewing'
       ? `<div class="pgp-release-actions"><button type="button" class="pgp-button" data-profile-withdraw${draft.withdrawing || !access.canSubmitRelease ? ' disabled' : ''}>${esc(t(lang, draft.withdrawing ? 'withdrawing' : 'withdraw'))}</button></div>`
@@ -10433,7 +10456,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="publisher-detail-section"><header class="publisher-content-title"><div><span>CORE METRICS</span><h2>核心数据</h2><p>${isLive ? '展示正式发行阶段' : isDelisted ? '展示下架前保留的历史' : '当前为测试或预发布阶段，展示已产生的'}浏览、下载与启动数据。</p></div><span class="publisher-context-chip">${isDelisted ? '历史累计' : '近 30 天'}</span></header><div class="publisher-analytics-metrics">${c.metricCard({ label: '浏览量', value: metrics[0], trend: '商店详情页' })}${c.metricCard({ label: '成功下载', value: metrics[1], trend: '支持系统聚合' })}${c.metricCard({ label: '首次启动', value: metrics[2], trend: 'uid＋app_id 去重' })}${c.metricCard({ label: '下载转化', value: metrics[3], trend: '浏览至成功下载' })}</div><div class="publisher-chart"><header><span><strong>浏览、下载与首次启动趋势</strong><small>客户端数据 T+1 更新</small></span><em>成功下载</em></header><div class="publisher-chart__plot"><i style="height:38%"></i><i style="height:52%"></i><i style="height:45%"></i><i style="height:68%"></i><i style="height:62%"></i><i style="height:79%"></i><i style="height:72%"></i><span></span></div></div></section>`;
   };
 
-  const renderPublisherGameConsole = (page, state, language = 'zh', rawAccess) => {
+  const renderPublisherGameConsole = (page, state, language = 'zh', rawAccess, demoState = {}) => {
     const access = publisherAccessFor(rawAccess);
     const selectedKey = state.selectedGame || 'existing';
     const game = getPublisherGame(state, selectedKey) || getPublisherGame(state, 'existing') || getPublisherGames(state)[0];
@@ -10447,7 +10470,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }
     const allowed = publisherGameConsoleSections.map(([id]) => id);
     const gameSection = allowed.includes(state.gameSection) ? state.gameSection : 'release-workspace';
-    const detail = profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access }) : renderPublisherReleaseProfile(game);
+    const detail = profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '' }) : renderPublisherReleaseProfile(game);
     const currentSectionLabel = publisherGameConsoleSections.find(([id]) => id === gameSection)?.[1] || '版本发布';
     const functionSearch = state.gameFunctionSearch || '';
     const normalizedSearch = String(functionSearch).trim().toLocaleLowerCase();
@@ -10456,7 +10479,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="publisher-game-console" data-publisher-game-console data-publisher-access="${e(access.accountKind)}" data-qualification-status="${e(access.qualificationStatus)}" data-game-tab="${gameSection}" data-game-section="${gameSection}" data-selected-game="${e(game.gameKey)}"><div class="publisher-game-layout"><aside class="publisher-game-sidebar"><nav class="publisher-game-nav" aria-label="${language === 'en' ? 'Game console' : '单游戏控制台'}">${gameNavigation}</nav></aside><main class="publisher-game-main"><nav class="publisher-game-context" aria-label="${language === 'en' ? 'Current location' : '当前位置'}"><button type="button" data-portal-action="back-publisher-games">${icon('arrow-left')}<span>${label('游戏管理')}</span></button><i>/</i><span class="publisher-game-context__game"><strong>${e(game.projectName || game.name)}</strong></span><i>/</i><span>${e(label(currentSectionLabel))}</span></nav>${detail}</main></div></section>`;
   };
 
-  const renderPublisherWorkspace = ({ page, workspaceState = {}, language = 'zh', rawAccess }) => {
+  const renderPublisherWorkspace = ({ page, workspaceState = {}, language = 'zh', rawAccess, demoState = {} }) => {
     const access = publisherAccessFor(rawAccess);
     const storageNotice = workspaceState.publicationLoadError ? c.resultStrip({ title: language === 'en' ? 'Saved game details could not be loaded' : '暂时无法读取已保存的游戏资料', detail: language === 'en' ? 'Reload this page before saving or submitting game details.' : '请刷新重试后再保存或提交游戏资料。', variant: 'warning' }) : '';
     if (workspaceState.addGameOpen && window.PublisherGameCreate) {
@@ -10466,7 +10489,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const view = requestedView === 'data' && !access.canViewPublisherData ? 'games' : requestedView;
     const activeSidebar = view === 'vendor' ? 'vendor' : 'games';
     const content = view === 'game'
-      ? renderPublisherGameConsole(page, workspaceState, language, access)
+      ? renderPublisherGameConsole(page, workspaceState, language, access, demoState)
       : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings(language, access) : view === 'data' ? renderPublisherData(workspaceState, language, access) : renderPublisherGames(workspaceState, access)}</div></main></div>`;
     return `${storageNotice}<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="${view}">${content}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
   };
@@ -10601,7 +10624,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="platform-console-panel" data-platform-console-panel="resources"${activeTab === 'resources' ? '' : ' hidden'}><header class="platform-section-header"><div><span>${isEnglish ? 'DOCUMENTATION' : '接入资料'}</span><h1>${isEnglish ? 'Integration guide' : '开发者接入指南'}</h1><p>${isEnglish ? 'Start with the quick guide, then open detailed SDK, build or channel delivery instructions.' : '先按快速开始完成首次接入，再根据开发进度查看 SDK、包体发布与渠道交付说明。'}</p></div>${c.button({ label: isEnglish ? 'Open Help Center' : '进入帮助中心', action: 'open-help' })}</header><div class="platform-resource-library"><aside><strong>${isEnglish ? 'Documentation' : '文档目录'}</strong><nav>${categories.map(([id, label], index) => `<button type="button" data-portal-action="resource-category" data-resource-category="${id}" class="${index === 0 ? 'is-active' : ''}">${icon(id === 'quickstart' ? 'file' : id === 'sdk' || id === 'builds' ? 'build' : 'key')}<span>${e(label)}</span>${icon('chevron')}</button>`).join('')}</nav><div class="platform-resource-support">${icon('info')}<span><strong>${isEnglish ? 'Need help?' : '需要协助？'}</strong><small>${isEnglish ? 'Contact developer support' : '联系开发者支持'}<br>dev@xiaoji.com</small></span></div></aside><main>${documents.map(([id, title, description, steps], index) => `<article data-resource-document="${id}"${index === 0 ? '' : ' hidden'}><div class="resource-breadcrumb">${isEnglish ? 'Integration resources' : '接入资料'}<span>/</span>${e(title)}</div><h2>${e(title)}</h2><p class="resource-lead">${e(description)}</p><section><h3>${isEnglish ? 'Recommended steps' : '推荐接入步骤'}</h3><ol>${steps.map((step, stepIndex) => `<li><span>${String(stepIndex + 1).padStart(2, '0')}</span><strong>${e(step)}</strong></li>`).join('')}</ol></section><section class="resource-deliverables"><h3>${isEnglish ? 'Before you continue' : '继续前请准备'}</h3><div>${(deliverables[id] || []).map(item => `<span>${icon('check')}${e(item)}</span>`).join('')}</div></section><footer><span>${isEnglish ? 'The formal interface address and credentials are provided after authorization.' : '正式接口地址与生产凭据将在授权后由商务线下提供。'}</span>${id === 'cdkey' ? c.button({ label: isEnglish ? 'Open CDKEY console' : '进入 CDKEY 控制台', variant: 'primary', action: 'open-cdkey-console' }) : c.button({ label: isEnglish ? 'View detailed article' : '查看详细说明', action: 'open-help' })}</footer></article>`).join('')}</main></div></section>`;
   };
 
-  const renderPlatformDeveloperAccount = ({ registration, qualification, language }) => {
+  const renderPlatformDeveloperAccount = ({ registration, qualification, language, demoState }) => {
     const isEnglish = language === 'en';
     const consoleView = registration?.consoleTab || 'games';
     const activeTab = consoleView === 'overview' ? 'overview' : 'games';
@@ -10610,7 +10633,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const accessEnabled = status === 'approved';
     const hasGame = Boolean(registration?.createdGame || accessEnabled);
     const vendorName = qualificationValue(qualification, 'vendorName', isEnglish ? "Zheng Qunchao's Studio" : '郑群超的工作室') || (isEnglish ? "Zheng Qunchao's Studio" : '郑群超的工作室');
-    const reviewSwitcher = status === 'unsubmitted' ? '' : `<section class="demo-status-switcher" aria-label="${isEnglish ? 'Review result switcher' : '审核结果切换'}"><strong>${isEnglish ? 'Review result' : '审核结果切换'}</strong><div class="form-actions">${c.button({ label: isEnglish ? 'Under review' : '审核中', action: 'qualification-preview-pending', disabled: status === 'pending', size: 'small' })}${c.button({ label: isEnglish ? 'Approved' : '审核通过', variant: 'primary', action: 'qualification-preview-approved', disabled: status === 'approved', size: 'small' })}${c.button({ label: isEnglish ? 'Rejected' : '审核未通过', variant: 'danger', action: 'qualification-preview-rejected', disabled: status === 'rejected', size: 'small' })}${c.button({ label: isEnglish ? 'Exception' : '异常（已下架）', variant: 'danger', action: 'qualification-preview-delisted', disabled: status === 'delisted', size: 'small' })}</div></section>`;
     const existingApplicationModal = registration?.verificationNoticeOpen && status === 'pending' ? `<section class="review-action-modal platform-existing-application" data-existing-application-modal><button class="review-action-modal__backdrop" type="button" data-portal-action="qualification-existing-close" aria-label="${isEnglish ? 'Close' : '关闭'}"></button><div class="review-action-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="existing-application-title"><header><div><h2 id="existing-application-title">${isEnglish ? 'Notice' : '提示'}</h2><p>${isEnglish ? 'An enterprise verification application is already under review.' : '当前账号已有企业认证申请正在审核。'}</p></div><button type="button" data-portal-action="qualification-existing-close" aria-label="${isEnglish ? 'Close' : '关闭'}">×</button></header><div class="review-action-modal__body"><p>${isEnglish ? `This account already has one enterprise developer identity application (publisher: ${e(vendorName)}) under review. Submitted on Sep 2, 2026; expected to complete by Sep 9, 2026 (5 business days).` : `当前账号下已有 1 个认证开发者（厂商名称：${e(vendorName)}）身份正在申请中。已于 2026-09-02 提出申请，预计于 2026-09-09 前完成审核（5 个工作日）。`}</p><div class="summary-grid">${readonlyField({ label: isEnglish ? 'Application ID' : '申请编号', value: qualification.applicationId || 'ENT-20260903-001' })}${readonlyField({ label: isEnglish ? 'Status' : '当前状态', value: verificationLabel })}${readonlyField({ label: isEnglish ? 'Submitted at' : '提交时间', value: '2026-09-02 10:30' })}${readonlyField({ label: isEnglish ? 'Expected review' : '预计完成', value: isEnglish ? 'Before Sep 9, 2026 (5 business days)' : '2026-09-09 前（5 个工作日）' })}</div></div><footer>${c.button({ label: isEnglish ? 'Got it' : '确认', variant: 'primary', action: 'qualification-existing-close' })}</footer></div></section>` : '';
     const verificationNotice = status === 'pending'
       ? `<section class="platform-verification-notice is-pending" role="status">${icon('info')}<p>${isEnglish ? `This account already has one enterprise developer identity (publisher: ${e(vendorName)}) under review. Submitted on Sep 2, 2026; expected to complete by Sep 9, 2026 (5 business days).` : `当前账号下已有 1 个认证开发者（厂商名称：${e(vendorName)}）身份正在申请中。已于 2026-09-02 提出申请，预计于 2026-09-09 前完成审核（5 个工作日）。`}</p><button type="button" data-portal-action="qualification-existing-open">${isEnglish ? 'View details' : '查看详情'}</button></section>`
@@ -10626,7 +10648,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const gameCard = hasGame ? `<button class="platform-game-card" type="button" data-portal-action="enter-game-console"><span class="platform-game-card__cover">${icon('game')}<em>${accessEnabled ? (isEnglish ? 'Pre-release' : '预发布') : (isEnglish ? 'Draft' : '资料填写中')}</em></span><span class="platform-game-card__body"><span class="platform-game-card__title"><span><strong>${isEnglish ? 'Ocean Expedition' : '星海远征'}</strong><small>Windows／macOS／Linux</small></span>${c.statusTag(accessEnabled ? (isEnglish ? 'Changes required' : '需修改') : (isEnglish ? 'Draft' : '草稿'), accessEnabled ? 'warning' : 'info')}</span><span class="platform-game-card__ids"><span><small>Game ID</small><strong>GAME-48291</strong></span><span><small>APPID</small><strong>${accessEnabled ? 'APP-7F3A9C' : (isEnglish ? 'Generated after submission' : '提交后生成')}</strong></span></span><span class="platform-game-card__steps"><i class="is-done"></i><i class="${accessEnabled ? 'is-done' : ''}"></i><i class="${accessEnabled ? 'is-warning' : ''}"></i><i></i></span><span class="platform-game-card__result"><span><small>${isEnglish ? 'Latest progress' : '最新进度'}</small><strong>${accessEnabled ? (isEnglish ? 'Pre-release application needs changes' : '预发布申请需修改') : (isEnglish ? 'Continue completing game information' : '继续完善游戏资料')}</strong></span><time>2026-09-04 10:30</time></span></span></button>` : '';
     const gameCreate = `<section class="platform-game-create"><header><button type="button" data-portal-action="back-to-game-management">${icon('arrow-left')}${isEnglish ? 'Back to game management' : '返回游戏管理'}</button><div><span>${isEnglish ? 'CREATE GAME' : '创建游戏'}</span><h1>${isEnglish ? 'Create a game project' : '创建游戏项目'}</h1><p>${isEnglish ? 'Complete the basic information first. Publishing fields and review rules follow the later game PRD.' : '先填写游戏基础信息建立项目；发行字段与审核规则由后续游戏 PRD 定义。'}</p></div></header>${panel({ title: isEnglish ? 'Basic information' : '游戏基础信息', body: `<div class="form-grid">${c.input({ label: isEnglish ? 'Game name' : '游戏名称', placeholder: isEnglish ? 'Enter the game name' : '请输入游戏名称', required: true })}${c.input({ label: isEnglish ? 'Developer' : '开发商', placeholder: isEnglish ? 'Enter the developer name' : '请输入开发商名称', required: true })}${c.select({ label: isEnglish ? 'Supported system' : '支持系统', options: ['Windows／macOS／Linux'], value: 'Windows／macOS／Linux' })}${c.input({ label: isEnglish ? 'Short description' : '一句话简介', placeholder: isEnglish ? 'Briefly introduce the game' : '请简要介绍游戏', required: true })}${c.textarea({ label: isEnglish ? 'Game introduction' : '游戏介绍', placeholder: isEnglish ? 'Describe the gameplay and highlights' : '请填写玩法与特色', required: true })}</div><footer class="form-footer"><span>${isEnglish ? 'A Game ID is generated after creation.' : '创建后生成唯一 Game ID。'}</span><div class="form-actions">${c.button({ label: isEnglish ? 'Cancel' : '取消', action: 'back-to-game-management' })}${c.button({ label: isEnglish ? 'Create project' : '创建游戏项目', variant: 'primary', action: 'create-game-project' })}</div></footer>` })}</section>`;
     const gameEmptyState = hasGame ? '' : `<div class="platform-game-empty-state" role="status">${icon('game')}<strong>${isEnglish ? 'No games yet' : '暂无游戏'}</strong><p>${isEnglish ? 'Create your first game to get started.' : '请先创建一款游戏'}</p></div>`;
-    const games = `<section class="platform-console-panel" data-platform-console-panel="games"${activeTab === 'games' ? '' : ' hidden'}>${consoleView === 'game-create' ? gameCreate : `${verificationNotice}<header class="platform-section-header"><div><span>${isEnglish ? 'GAME MANAGEMENT' : '游戏管理'}</span><h1>${isEnglish ? 'My games' : '我的游戏'}</h1><p>${isEnglish ? 'This area is reserved for the follow-up game management PRD. This phase keeps only game creation and the empty state.' : '本区块暂作占位，具体游戏管理能力由后续 PRD 定义；本期仅保留创建游戏入口与空状态。'}</p></div>${c.button({ label: isEnglish ? 'Create game' : '创建游戏', variant: 'primary', action: 'create-game' })}</header><section class="platform-game-library"><header><div><h2>${isEnglish ? 'All games' : '全部游戏'}</h2><p>${hasGame ? (isEnglish ? '1 game · sorted by latest update' : '共 1 款 · 按最近更新时间排序') : (isEnglish ? 'No games yet' : '暂未创建游戏')}</p></div></header><div class="platform-game-grid${hasGame ? '' : ' is-empty'}"><button class="platform-create-game" type="button" data-portal-action="create-game"><i>+</i><strong>${isEnglish ? 'Create game' : '创建游戏'}</strong><small>${isEnglish ? 'Start with the basic information' : '填写基础资料并建立项目'}</small></button>${gameCard}${gameEmptyState}</div></section>${reviewSwitcher}`}${existingApplicationModal}</section>`;
+    const games = `<section class="platform-console-panel" data-platform-console-panel="games"${activeTab === 'games' ? '' : ' hidden'}>${consoleView === 'game-create' ? gameCreate : `${verificationNotice}<header class="platform-section-header"><div><span>${isEnglish ? 'GAME MANAGEMENT' : '游戏管理'}</span><h1>${isEnglish ? 'My games' : '我的游戏'}</h1><p>${isEnglish ? 'This area is reserved for the follow-up game management PRD. This phase keeps only game creation and the empty state.' : '本区块暂作占位，具体游戏管理能力由后续 PRD 定义；本期仅保留创建游戏入口与空状态。'}</p></div>${c.button({ label: isEnglish ? 'Create game' : '创建游戏', variant: 'primary', action: 'create-game' })}</header><section class="platform-game-library"><header><div><h2>${isEnglish ? 'All games' : '全部游戏'}</h2><p>${hasGame ? (isEnglish ? '1 game · sorted by latest update' : '共 1 款 · 按最近更新时间排序') : (isEnglish ? 'No games yet' : '暂未创建游戏')}</p></div></header><div class="platform-game-grid${hasGame ? '' : ' is-empty'}"><button class="platform-create-game" type="button" data-portal-action="create-game"><i>+</i><strong>${isEnglish ? 'Create game' : '创建游戏'}</strong><small>${isEnglish ? 'Start with the basic information' : '填写基础资料并建立项目'}</small></button>${gameCard}${gameEmptyState}</div></section>`}${existingApplicationModal}</section>`;
     const overview = `<section class="platform-console-panel" data-platform-console-panel="overview"${activeTab === 'overview' ? '' : ' hidden'}><header class="platform-console-hero"><div><span>${isEnglish ? 'GAME PERFORMANCE' : '游戏数据'}</span><h1>${isEnglish ? 'Game data overview' : '游戏数据总览'}</h1><p>${isEnglish ? 'This area is reserved for a follow-up analytics PRD.' : '本区块暂作占位，指标、图表、筛选和结算口径由后续数据 PRD 定义。'}</p></div></header>${panel({ title: isEnglish ? 'Data overview placeholder' : '数据总览占位', description: isEnglish ? 'No data definition is included in this phase.' : '本期不定义数据口径与展示组件。', body: `<div class="data-placeholder"><div>${icon('chart')}<strong>${isEnglish ? 'Coming in a follow-up PRD' : '待后续 PRD 补充'}</strong><p>${isEnglish ? 'Views, downloads, reservations, conversion and revenue will be defined separately.' : '浏览量、下载量、预约量、转化效果与收益金额将在后续文档中统一定义。'}</p></div></div>` })}</section>`;
     return `<section class="platform-developer-console" data-platform-developer-console>${games}${overview}</section>`;
   };
@@ -10884,13 +10906,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       <div class="span-12">${panel({ title: '发行数据', description: '正式上线后展示交易、退款与收入趋势', body: `<div class="data-placeholder"><div class="data-placeholder__chart"><i></i><i></i><i></i><i></i><i></i><i></i></div><div><strong>暂无正式发行数据</strong><p>当前游戏仍处于预发布阶段，正式上线后开始统计。</p></div></div>` })}</div></div>
   </div>`;
 
-  const renderT03 = ({ route, page, qualification, operationsReview, workspaceState, language, access }) => {
+  const renderT03 = ({ route, page, qualification, operationsReview, workspaceState, language, access, demoState }) => {
     if (route.id === 'P01-08') {
       const tab = ['games', 'qualifications'].includes(operationsReview?.tab) ? operationsReview.tab : 'company';
       const body = tab === 'games' ? '<div data-game-release-review-host></div>' : tab === 'qualifications' ? '<div data-game-qualification-review-host></div>' : renderQualificationOperations({ qualification, operationsReview });
       return `<nav class="operations-audit-tabs" role="tablist" aria-label="审核类型"><button type="button" role="tab" aria-selected="${tab === 'company'}" data-game-review-tab="company" class="${tab === 'company' ? 'is-active' : ''}">企业认证审核</button><button type="button" role="tab" aria-selected="${tab === 'games'}" data-game-review-tab="games" class="${tab === 'games' ? 'is-active' : ''}">游戏发布审核</button><button type="button" role="tab" aria-selected="${tab === 'qualifications'}" data-game-review-tab="qualifications" class="${tab === 'qualifications' ? 'is-active' : ''}">游戏资质审核</button></nav>${body}`;
     }
-    if (route.id === 'P02-01') return renderPublisherWorkspace({ page, workspaceState, language, rawAccess: access });
+    if (route.id === 'P02-01') return renderPublisherWorkspace({ page, workspaceState, language, rawAccess: access, demoState });
     if (route.id === 'P01-04') return renderGameDashboard();
     const view = listViews[route.id];
     const fallback = { tabs: ['全部', '待处理', '已完成'], placeholder: '输入名称或 ID', filters: [{ label: '业务状态', options: ['全部状态', '待处理', '处理中', '已完成'] }], headers: ['对象', '状态', '更新时间', '操作'], rows: [] };
@@ -10898,7 +10920,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return renderListView(config);
   };
 
-  const renderT04 = ({ qualification, language, managedContent, registration }) => {
+  const renderT04 = ({ qualification, language, managedContent, registration, demoState }) => {
     const accountTier = registration?.accountTier || 'unselected';
     if (qualification.status === 'unsubmitted' && accountTier === 'unselected') return renderDeveloperEntryChoice({ language });
     const qualificationFlowOpen = Boolean(
@@ -10908,7 +10930,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     );
     return qualificationFlowOpen
       ? renderQualificationWizard({ qualification, language, managedContent, registration })
-      : renderPlatformDeveloperAccount({ registration, qualification, language });
+      : renderPlatformDeveloperAccount({ registration, qualification, language, demoState });
   };
 
   const renderT05 = ({ editorMode = 'edit' }) => {
@@ -11126,10 +11148,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   namespace.templates = {
     publisherGame: getPublisherGame,
     registry,
-    render({ route, page, state = 'default', editorMode = 'edit', qualification, language = 'zh', managedContent, contentEditor, operationsReview, registration, authenticated = false, workspaceState, access }) {
+    render({ route, page, state = 'default', editorMode = 'edit', qualification, language = 'zh', managedContent, contentEditor, operationsReview, registration, authenticated = false, workspaceState, access, demoState }) {
       if (state !== 'default') return c.statePanel({ state, primaryAction: page?.primaryAction, onRetry: state === 'error' });
       const renderer = registry[route.templateId] || registry.T03;
-      return `<section class="page-template template-${route.templateId.toLowerCase()}" data-page-state="default">${renderer({ route, page, editorMode, qualification, language, managedContent, contentEditor, operationsReview, registration, authenticated, workspaceState, access })}</section>`;
+      return `<section class="page-template template-${route.templateId.toLowerCase()}" data-page-state="default">${renderer({ route, page, editorMode, qualification, language, managedContent, contentEditor, operationsReview, registration, authenticated, workspaceState, access, demoState })}</section>`;
     },
   };
 })(window.GameHubDeveloperPortal);
@@ -11251,6 +11273,34 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const shortLabel = role === 'operations' ? '开发者前台' : (isEnglish ? 'Operations' : '运营后台');
     const assistiveLabel = role === 'operations' ? 'Demo 工具：切换开发者前台' : (isEnglish ? 'Demo tool: switch to operations' : 'Demo 工具：切换运营后台');
     return `<button class="portal-demo-switch" type="button" data-portal-action="switch-portal-side" aria-label="${assistiveLabel}" title="${assistiveLabel}"><span class="portal-demo-switch__badge" aria-hidden="true">Demo</span>${icon('chart')}<span class="portal-demo-switch__label portal-demo-switch__label--full" aria-hidden="true">${fullLabel}</span><span class="portal-demo-switch__label portal-demo-switch__label--short" aria-hidden="true">${shortLabel}</span></button>`;
+  };
+
+  const renderDeveloperDemoStateSwitcher = ({ module, role, redacted, isLogin, language, demoState = {} }) => {
+    if (module?.standalone !== true || role !== 'developer' || redacted || isLogin) return '';
+    const isEnglish = language === 'en';
+    const qualificationStatus = demoState.qualificationStatus || 'unsubmitted';
+    const releaseStatus = demoState.releaseStatus || '';
+    const qualificationOptions = [
+      ['unsubmitted', '未提交', 'Not submitted'],
+      ['pending', '审核中', 'In review'],
+      ['approved', '审核通过', 'Approved'],
+      ['rejected', '审核未通过', 'Not approved'],
+      ['delisted', '资格已暂停', 'Access suspended'],
+    ];
+    const releaseOptions = [
+      ['draft', '草稿', 'Draft'],
+      ['reviewing', '审核中', 'In review'],
+      ['approved', '审核通过', 'Approved'],
+      ['rejected', '审核未通过', 'Not approved'],
+      ['withdrawn', '已撤销', 'Withdrawn'],
+      ['live', '已上线', 'Live'],
+      ['delisted', '已下架', 'Delisted'],
+    ];
+    const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
+    const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
+    if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
+    const option = ([value, zh, en], kind, current) => `<button type="button" role="radio" aria-checked="${current === value}" class="${current === value ? 'is-active' : ''}" data-portal-action="demo-${kind}-status" data-demo-${kind}-status="${value}">${isEnglish ? en : zh}</button>`;
+    return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Page-state preview' : '页面状态预览'}</strong><small>${isEnglish ? 'Demo only. Refresh to restore saved data.' : '仅影响当前演示，刷新后恢复已保存状态'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Company verification' : '企业认证'}</strong><small>${isEnglish ? 'Controls publisher access and analytics visibility' : '联动发行权限与经营数据入口'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Company verification status' : '企业认证状态'}">${qualificationOptions.map(item => option(item, 'qualification', qualificationStatus)).join('')}</div></section><section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Game release application' : '游戏发布申请'}</strong><small>${isEnglish ? 'Opens the selected status in version records' : '选择后进入发布记录查看对应状态'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Game release status' : '游戏发布申请状态'}">${releaseOptions.map(item => option(item, 'release', releaseStatus)).join('')}</div></section><footer><span>${demoState.active ? (isEnglish ? 'Preview is active' : '当前已启用预览状态') : (isEnglish ? 'Showing saved account state' : '当前为已保存账号状态')}</span><button type="button" data-portal-action="demo-state-reset"${demoState.active ? '' : ' disabled'}>${isEnglish ? 'Restore saved state' : '恢复已保存状态'}</button></footer></aside></section>`;
   };
 
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
@@ -11383,7 +11433,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderBusiness = ({ module, routes, route, page, portalData, role, state, editorMode = 'edit', content, qualification, language, managedContent, registration }) => {
+  const renderBusiness = ({ module, routes, route, page, portalData, role, state, editorMode = 'edit', content, qualification, language, managedContent, registration, demoState }) => {
     const redacted = state === 'permission';
     const isLogin = route.id === 'P01-01' && !redacted;
     const accountTier = registration?.accountTier || 'unselected';
@@ -11398,7 +11448,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
     const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}`;
     const showContext = !isLogin && !isOnboarding && !isConfiguration && !showPlatformConsole && !isPublisherWorkspace && route.id !== 'P01-08';
-    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main>${renderPortalDemoSwitch({ module, portalData, role, redacted, isLogin, language })}</div>`;
+    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main>${renderPortalDemoSwitch({ module, portalData, role, redacted, isLogin, language })}${renderDeveloperDemoStateSwitcher({ module, role, redacted, isLogin, language, demoState })}</div>`;
   };
   namespace.shell = { roleMeta, publicTitle, hashFor, renderBusiness };
 })(window.GameHubDeveloperPortal);
@@ -11623,6 +11673,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     registration: restoredRegistration,
     qualification: restoredQualification,
     qualificationPreview: null,
+    demoPreview: { open: false, releaseStatus: '' },
     managedContent,
     operationsReview: { view: 'list', actionMode: '', attachmentMode: '', selectedApplicationId: '' },
     contentEditor: {
@@ -11669,6 +11720,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     canViewPublisherData: Boolean(memory.session.authenticated && ['approved', 'delisted'].includes(memory.qualification?.status)),
     isPublisherReadOnly: Boolean(memory.session.authenticated && memory.qualification?.status === 'delisted'),
   });
+  const publisherAccessForView = () => window.PublisherAccessPolicy?.derive({
+    authenticated: memory.session.authenticated,
+    registration: memory.registration,
+    qualification: memory.qualificationPreview || memory.qualification,
+  }) || publisherAccess();
   const persistPublisherSession = () => {
     if (!publisherAccountContext || !memory.session.authenticated || !memory.session.accountKey) return false;
     const expiresAt = Math.max(Number(memory.session.expiresAt || 0), Date.now() + 8 * 60 * 60 * 1000);
@@ -11892,6 +11948,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games' };
     memory.qualificationPreview = null;
+    memory.demoPreview = { open: false, releaseStatus: '' };
     delete memory.result['P01-03'];
     memory.session.expiresAt = Date.now() + 8 * 60 * 60 * 1000;
     persistPublisherSession();
@@ -11965,6 +12022,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         consoleTab: storedAccountRegistration?.consoleTab || 'games',
       };
       memory.qualificationPreview = null;
+      memory.demoPreview = { open: false, releaseStatus: '' };
     }
     if (accountChanged || activeGameChanged) {
       loadPublisherWorkspaceForSession();
@@ -12232,6 +12290,48 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         subject: '盖世游戏开发者认证审核结果通知',
         content: `您好，${statusCopy}。\n\n如需进一步协助，请联系 dev@xiaoji.com。`,
       },
+    };
+  };
+  const buildQualificationPreview = nextStatus => {
+    const allowed = new Set(['unsubmitted', 'pending', 'approved', 'rejected', 'delisted']);
+    if (!allowed.has(nextStatus)) return null;
+    const reviewedAt = ['approved', 'rejected', 'delisted'].includes(nextStatus) ? nowText() : '';
+    const isEnglish = memory.shell.language === 'en';
+    const sourceHistory = memory.qualification.history || [];
+    const lastSubmissionIndex = sourceHistory.findLastIndex(item => /\u63d0\u4ea4\u4f01\u4e1a\u8ba4\u8bc1\u7533\u8bf7|submitted company verification/i.test(String(item?.action || '')));
+    const previewHistory = cloneJson(lastSubmissionIndex >= 0 ? sourceHistory.slice(0, lastSubmissionIndex + 1) : sourceHistory.filter(item => !item.previewStatus));
+    if (nextStatus === 'approved') previewHistory.push({ action: isEnglish ? 'Company verification approved' : '\u4f01\u4e1a\u8ba4\u8bc1\u5ba1\u6838\u901a\u8fc7', actor: isEnglish ? 'Platform operations' : '\u5e73\u53f0\u8fd0\u8425 \u674e\u7136', time: reviewedAt, previewStatus: true });
+    if (nextStatus === 'rejected') previewHistory.push({ action: isEnglish ? 'Company verification rejected: The business license image is unclear.' : '\u4f01\u4e1a\u8ba4\u8bc1\u5ba1\u6838\u62d2\u7edd\uff1a\u5de5\u5546\u6267\u7167\u8bc1\u660e\u56fe\u7247\u4e0d\u6e05\u6670\uff0c\u8bf7\u4e0a\u4f20\u5b8c\u6574\u3001\u65e0\u906e\u6321\u7684\u5f69\u8272\u626b\u63cf\u4ef6\u3002', actor: isEnglish ? 'Platform operations' : '\u5e73\u53f0\u8fd0\u8425 \u674e\u7136', time: reviewedAt, previewStatus: true });
+    if (nextStatus === 'delisted') previewHistory.push({ action: isEnglish ? 'Publishing access suspended: Contact developer support.' : '\u4f01\u4e1a\u53d1\u884c\u8d44\u683c\u5df2\u6682\u505c\uff1a\u8bf7\u8054\u7cfb\u5f00\u53d1\u8005\u652f\u6301\u3002', actor: isEnglish ? 'Platform operations' : '\u5e73\u53f0\u8fd0\u8425 \u674e\u7136', time: reviewedAt, previewStatus: true });
+    const previewForm = { ...createQualification(true).form, ...(memory.qualification.form || {}) };
+    return {
+      ...memory.qualification,
+      status: nextStatus,
+      step: 0,
+      view: 'intro',
+      readOnly: false,
+      editing: false,
+      repairReason: '',
+      revision: nextStatus === 'unsubmitted' ? 0 : Math.max(1, Number(memory.qualification.revision) || 0),
+      submittedAt: nextStatus === 'unsubmitted' ? '' : (memory.qualification.submittedAt || '2026-09-02 10:30'),
+      reviewedAt,
+      reviewer: reviewedAt ? (isEnglish ? 'Platform operations' : '\u5e73\u53f0\u8fd0\u8425 \u674e\u7136') : '',
+      rejectReason: nextStatus === 'rejected'
+        ? (isEnglish ? 'The business license image is unclear. Upload a complete, unobstructed color scan.' : '\u5de5\u5546\u6267\u7167\u8bc1\u660e\u56fe\u7247\u4e0d\u6e05\u6670\uff0c\u8bf7\u4e0a\u4f20\u5b8c\u6574\u3001\u65e0\u906e\u6321\u7684\u5f69\u8272\u626b\u63cf\u4ef6\u3002')
+        : '',
+      delistReason: nextStatus === 'delisted'
+        ? (isEnglish ? 'Company publishing access is suspended. Contact developer support to confirm recovery conditions.' : '\u53d1\u73b0\u4f01\u4e1a\u4e3b\u4f53\u4fe1\u606f\u53d1\u751f\u53d8\u66f4\uff0c\u8bf7\u8054\u7cfb\u5f00\u53d1\u8005\u652f\u6301\u786e\u8ba4\u6062\u590d\u6761\u4ef6\u3002')
+        : '',
+      notification: ['approved', 'rejected', 'delisted'].includes(nextStatus) ? buildReviewNotification({
+        status: nextStatus,
+        vendorName: previewForm.vendorName,
+        email: previewForm.email,
+        mobile: previewForm.mobile,
+        sentAt: reviewedAt,
+        mode: 'preview',
+      }) : null,
+      form: previewForm,
+      history: previewHistory,
     };
   };
   const applyQualificationReview = (routeId, nextStatus, reason = '') => {
@@ -12761,7 +12861,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-open-data') {
-        if (!publisherAccess().canViewPublisherData) return;
+        if (!publisherAccessForView().canViewPublisherData) return;
         updatePublisherWorkspace({ workspaceView: 'data', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
@@ -13032,6 +13132,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         loadPublisherWorkspaceForSession();
         window.name = '';
         memory.shell.helpOpen = false;
+        memory.qualificationPreview = null;
+        memory.demoPreview = { open: false, releaseStatus: '' };
         navigate({ routeId: 'P01-01', state: 'default' });
         return;
       }
@@ -13409,43 +13511,57 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         root.querySelector('[data-portal-action="qualification-review-filter"]')?.click();
         return;
       }
-      if (['qualification-preview-pending', 'qualification-preview-approved', 'qualification-preview-rejected', 'qualification-preview-delisted'].includes(action)) {
-        const nextStatus = action.replace('qualification-preview-', '');
-        const reviewedAt = nextStatus === 'pending' ? '' : nowText();
-        const isEnglish = memory.shell.language === 'en';
-        const sourceHistory = memory.qualification.history || [];
-        const lastSubmissionIndex = sourceHistory.findLastIndex(item => /提交企业认证申请|submitted company verification/i.test(String(item?.action || '')));
-        const previewHistory = cloneJson(lastSubmissionIndex >= 0 ? sourceHistory.slice(0, lastSubmissionIndex + 1) : sourceHistory.filter(item => !item.previewStatus));
-        if (nextStatus === 'approved') previewHistory.push({ action: isEnglish ? 'Company verification approved' : '企业认证审核通过', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
-        if (nextStatus === 'rejected') previewHistory.push({ action: isEnglish ? 'Company verification rejected: The business license image is unclear.' : '企业认证审核拒绝：工商执照证明图片不清晰，请上传完整、无遮挡的彩色扫描件。', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
-        if (nextStatus === 'delisted') previewHistory.push({ action: isEnglish ? 'Publishing access delisted: Contact developer support.' : '企业发行合作资格已下架：请联系开发者支持。', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
-        const previewForm = { ...createQualification(true).form, ...(memory.qualification.form || {}) };
-        memory.qualificationPreview = {
-          ...memory.qualification,
-          status: nextStatus,
-          editing: false,
-          repairReason: '',
-          reviewedAt,
-          reviewer: nextStatus === 'pending' ? '' : (isEnglish ? 'Platform operations' : '平台运营 李然'),
-          rejectReason: nextStatus === 'rejected'
-            ? (isEnglish ? 'The business license image is unclear. Upload a complete, unobstructed color scan.' : '工商执照证明图片不清晰，请上传完整、无遮挡的彩色扫描件。')
-            : '',
-          delistReason: nextStatus === 'delisted'
-            ? (isEnglish ? 'Company publishing access was delisted. Contact developer support to confirm recovery conditions.' : '发现企业主体信息发生变更，请联系开发者支持确认恢复条件。')
-            : '',
-          notification: nextStatus === 'pending' ? null : buildReviewNotification({
-            status: nextStatus,
-            vendorName: previewForm.vendorName,
-            email: previewForm.email,
-            mobile: previewForm.mobile,
-            sentAt: reviewedAt,
-            mode: 'preview',
-          }),
-          history: previewHistory,
-        };
+      if (action === 'demo-state-toggle') {
+        const open = !memory.demoPreview.open;
+        memory.demoPreview.open = open;
+        render();
+        requestAnimationFrame(() => root.querySelector(open ? '[data-demo-state-panel] > header > button' : '.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-state-reset') {
+        memory.qualificationPreview = null;
+        memory.demoPreview = { open: false, releaseStatus: '' };
         delete memory.result[route.id];
         clearPreviewQuery();
         render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-qualification-status' || action.startsWith('qualification-preview-')) {
+        const nextStatus = action === 'demo-qualification-status'
+          ? event.currentTarget.dataset.demoQualificationStatus
+          : action.replace('qualification-preview-', '');
+        const preview = buildQualificationPreview(nextStatus);
+        if (!preview) return;
+        memory.qualificationPreview = preview;
+        memory.demoPreview.open = false;
+        delete memory.result[route.id];
+        clearPreviewQuery();
+        if (nextStatus === 'approved' && hasPublisherRoute && route.id !== 'P02-01') {
+          memory.page['P02-01'] = { ...(memory.page['P02-01'] || {}), workspaceView: 'games', addGameOpen: false, gameMenuOpen: '' };
+          navigate({ routeId: 'P02-01', state: 'default' });
+        } else render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-release-status') {
+        const nextStatus = event.currentTarget.dataset.demoReleaseStatus || '';
+        if (!['draft', 'reviewing', 'approved', 'rejected', 'withdrawn', 'live', 'delisted'].includes(nextStatus)) return;
+        if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
+        memory.demoPreview = { open: false, releaseStatus: nextStatus };
+        memory.page['P02-01'] = {
+          ...(memory.page['P02-01'] || {}),
+          workspaceView: 'game',
+          selectedGame: 'existing',
+          gameTab: 'release',
+          gameSection: 'versions',
+          addGameOpen: false,
+          gameMenuOpen: '',
+        };
+        clearPreviewQuery();
+        if (route.id === 'P02-01') render();
+        else navigate({ routeId: 'P02-01', state: 'default' });
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
         return;
       }
       if (action === 'qualification-approve') {
@@ -14155,17 +14271,26 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   const render = () => {
     const { route, role, state, cdkeyTab } = parseLocation();
-    const access = publisherAccess();
+    const access = role === 'developer' ? publisherAccessForView() : publisherAccess();
     const page = portalData.pages?.[route.id] || fallbackPage(route);
     const editorMode = route.id === 'P01-05' ? (memory.page[route.id]?.editorMode || 'edit') : 'edit';
-    const qualificationForView = role === 'developer' && route.id === 'P01-03' && memory.qualificationPreview
+    const qualificationForView = role === 'developer' && memory.qualificationPreview
       ? memory.qualificationPreview
       : memory.qualification;
+    const registrationForView = role === 'developer' && memory.qualificationPreview
+      ? { ...memory.registration, accountTier: qualificationForView.status === 'approved' ? 'enterprise' : 'registered' }
+      : memory.registration;
+    const demoState = {
+      open: memory.demoPreview.open,
+      qualificationStatus: qualificationForView.status || 'unsubmitted',
+      releaseStatus: memory.demoPreview.releaseStatus,
+      active: Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
+    };
     document.documentElement.lang = memory.shell.language === 'en' && role === 'developer' ? 'en' : 'zh-CN';
-      const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: memory.registration, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {}, access });
+      const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: registrationForView, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {}, access, demoState });
     memory.qualificationReviewController?.destroy?.();
     memory.qualificationReviewController = null;
-    root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, editorMode, content, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, registration: memory.registration });
+    root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, editorMode, content, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, registration: registrationForView, demoState });
     if (role === 'developer' && route.id === 'P01-03' && qualificationForView.readOnly && qualificationForView.status === 'pending') {
       root.querySelector('.qualification-pending-note')?.insertAdjacentHTML('beforeend', c.button({ label: memory.shell.language === 'en' ? 'Withdraw application' : '撤回申请', variant: 'danger', action: 'qualification-withdraw', size: 'small' }));
       if (memory.shell.qualificationWithdrawOpen) {
@@ -14274,6 +14399,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return;
     }
     if (event.key !== 'Escape') return;
+    if (memory.demoPreview.open) {
+      memory.demoPreview.open = false;
+      render();
+      requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+      return;
+    }
     if (qualificationWithdrawModal) {
       memory.shell.qualificationWithdrawOpen = false;
       render();
@@ -14291,6 +14422,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return;
     }
     root.querySelectorAll('[data-qualification-example-modal]:not([hidden])').forEach(modal => modal.setAttribute('hidden', ''));
+  });
+  addEventListener('click', event => {
+    if (!memory.demoPreview.open || event.target.closest('.developer-demo-state-switcher')) return;
+    memory.demoPreview.open = false;
+    render();
   });
   addEventListener('storage', event => {
     if (event.key === managedContentStorageKey && event.newValue) {

@@ -22,8 +22,8 @@ const demoUrl = route => {
   return url.href;
 };
 
-async function seedApprovedAccount(page, accountKey) {
-  await page.addInitScript(({ key, demoName }) => {
+async function seedAccount(page, accountKey, qualificationStatus = 'approved') {
+  await page.addInitScript(({ key, demoName, status }) => {
     if (!decodeURIComponent(location.pathname).endsWith(`/${demoName}`)) return;
     localStorage.clear();
     sessionStorage.clear();
@@ -34,17 +34,22 @@ async function seedApprovedAccount(page, accountKey) {
       accountKey: key,
       vendorId: 'VENDOR-STAR-001',
       activeGameId: '',
-      qualificationStatus: 'approved',
+      qualificationStatus: status,
       expiresAt: Date.now() + 8 * 60 * 60 * 1000,
     }));
     localStorage.setItem('gamehub-developer-account-states-v1', JSON.stringify({
       [key]: {
-        registration: { accountTier: 'enterprise', registeredAt: '2026-09-10 10:00', consoleTab: 'games' },
-        qualification: { status: 'approved', revision: 1, step: 5, view: 'form', form: {}, history: [], submissions: [] },
+        registration: { accountTier: status === 'approved' ? 'enterprise' : 'registered', registeredAt: '2026-09-10 10:00', consoleTab: 'games' },
+        qualification: { status, revision: status === 'unsubmitted' ? 0 : 1, step: status === 'unsubmitted' ? 0 : 5, view: status === 'unsubmitted' ? 'intro' : 'form', form: {}, history: [], submissions: [] },
       },
     }));
-  }, { key: accountKey, demoName: path.basename(demoFile) });
+  }, { key: accountKey, demoName: path.basename(demoFile), status: qualificationStatus });
   await page.goto(demoUrl('/P02-01'), { waitUntil: 'load' });
+  await page.locator('[data-publisher-workspace]').waitFor();
+}
+
+async function seedApprovedAccount(page, accountKey) {
+  await seedAccount(page, accountKey, 'approved');
   await page.locator('[data-publisher-workspace][data-publisher-access="enterprise"]').waitFor();
 }
 
@@ -91,6 +96,107 @@ before(async () => {
 });
 
 after(async () => { await browser?.close(); });
+
+test('未认证与审核中账号不展示经营数据入口', async () => {
+  for (const status of ['unsubmitted', 'pending']) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await context.newPage();
+    try {
+      await seedAccount(page, `publisher-dashboard:hidden:${status}`, status);
+      assert.equal(await page.locator('[data-portal-action="publisher-open-data"]').count(), 0, status);
+      assert.equal(await page.locator('[data-publisher-page="data"]').count(), 0, status);
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+  test(`${viewport.width}px 下企业认证演示菜单切到通过后即时开放经营数据，刷新恢复真实状态`, async () => {
+    const context = await browser.newContext({ viewport });
+    const page = await context.newPage();
+    try {
+      await seedAccount(page, `publisher-dashboard:preview:${viewport.width}`, 'pending');
+      await page.evaluate(() => { location.hash = '/P01-03'; });
+      await page.locator('[data-platform-developer-console]').waitFor();
+      const trigger = page.locator('.developer-demo-state-fab');
+      assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
+      await trigger.click();
+      assert.equal(await trigger.getAttribute('aria-expanded'), 'true');
+      const panel = page.locator('[data-demo-state-panel]');
+      await panel.waitFor();
+      const qualificationGroup = panel.getByRole('radiogroup', { name: '企业认证状态' });
+      await qualificationGroup.getByRole('radio', { name: '审核通过', exact: true }).click();
+      assert.deepEqual(await page.evaluate(() => ({
+        document: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        body: document.body.scrollWidth - document.body.clientWidth,
+      })), { document: 0, body: 0 });
+
+      await page.locator('[data-publisher-workspace][data-publisher-access="enterprise"]').waitFor();
+      const entry = page.locator('[data-portal-action="publisher-open-data"]');
+      await entry.waitFor();
+      await entry.click();
+      await page.locator('[data-publisher-page="data"]').waitFor();
+
+      await page.reload({ waitUntil: 'load' });
+      assert.equal(await page.locator('[data-portal-action="publisher-open-data"]').count(), 0);
+    } finally {
+      await context.close();
+    }
+  });
+}
+
+test('统一演示菜单覆盖企业认证与游戏发布状态且不改写真实认证数据', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  const accountKey = 'publisher-dashboard:release-preview';
+  const states = [
+    ['草稿', 'draft', 'draft', 'offline'],
+    ['审核中', 'reviewing', 'reviewing', 'offline'],
+    ['审核通过', 'approved', 'approved', 'offline'],
+    ['审核未通过', 'rejected', 'rejected', 'offline'],
+    ['已撤销', 'withdrawn', 'withdrawn', 'offline'],
+    ['已上线', 'live', 'approved', 'live'],
+    ['已下架', 'delisted', 'approved', 'delisted'],
+  ];
+  try {
+    await seedAccount(page, accountKey, 'pending');
+    const qualificationStates = [
+      ['未提交', 'personal', false],
+      ['审核中', 'personal', false],
+      ['审核未通过', 'personal', false],
+      ['资格已暂停', 'suspended', true],
+      ['审核通过', 'enterprise', true],
+    ];
+    for (const [label, access, canViewData] of qualificationStates) {
+      await page.locator('.developer-demo-state-fab').click();
+      const qualificationGroup = page.locator('[data-demo-state-panel]').getByRole('radiogroup', { name: '企业认证状态' });
+      await qualificationGroup.getByRole('radio', { name: label, exact: true }).click();
+      const workspace = page.locator(`[data-publisher-workspace][data-publisher-access="${access}"]`);
+      await workspace.waitFor();
+      assert.equal(await workspace.locator('[data-portal-action="publisher-open-data"]').count(), canViewData ? 1 : 0, label);
+    }
+
+    for (const [label, status, reviewStatus, publicationStatus] of states) {
+      await page.locator('.developer-demo-state-fab').click();
+      const releaseGroup = page.locator('[data-demo-state-panel]').getByRole('radiogroup', { name: '游戏发布申请状态' });
+      await releaseGroup.getByRole('radio', { name: label, exact: true }).click();
+      const versions = page.locator(`[data-profile-versions][data-demo-release-status="${status}"]`);
+      await versions.waitFor();
+      const firstRecord = versions.locator('[data-version-record]').first();
+      assert.equal(await firstRecord.locator('[data-version-review-status]').getAttribute('data-version-review-status'), reviewStatus, label);
+      assert.equal(await firstRecord.locator('[data-version-publication-status]').getAttribute('data-version-publication-status'), publicationStatus, label);
+      assert.equal(await page.locator('.pgp-demo-state-fab').count(), 0, '页面内旧状态入口不应重复渲染');
+    }
+
+    assert.deepEqual(await page.evaluate(key => ({
+      qualification: JSON.parse(localStorage.getItem('gamehub-developer-account-states-v1'))?.[key]?.qualification?.status,
+      session: JSON.parse(sessionStorage.getItem('gamehub-developer-session-v2'))?.qualificationStatus,
+    }), accountKey), { qualification: 'pending', session: 'pending' });
+  } finally {
+    await context.close();
+  }
+});
 
 test('开发者从游戏管理进入数据看板，侧边栏只保留游戏管理和厂商设置', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });

@@ -56,12 +56,14 @@ test('两个正式 Demo 在桌面端均不渲染前后台悬浮切换入口', as
     await seedApprovedAccount(page, 'standalone:desktop');
     assert.equal(await page.locator('.portal-demo-switch').count(), 0);
     assert.equal(await page.locator('[data-portal-action="switch-portal-side"]').count(), 0);
+    assert.equal(await page.locator('.developer-demo-state-switcher').count(), 1);
     assert.equal(await page.locator('.product-frame[data-role="developer"]').isVisible(), true);
 
     await page.goto(demoUrl(operationsDemoFile, '/P01-08'), { waitUntil: 'load' });
     await page.locator('.product-frame[data-role="operations"]').waitFor();
     assert.equal(await page.locator('.portal-demo-switch').count(), 0);
     assert.equal(await page.locator('[data-portal-action="switch-portal-side"]').count(), 0);
+    assert.equal(await page.locator('.developer-demo-state-switcher').count(), 0);
     assert.deepEqual(runtimeErrors, []);
   } finally {
     await context.close();
@@ -74,11 +76,13 @@ test('两个正式 Demo 在 390px 下无切换入口且没有页面级横向溢�
   try {
     await seedApprovedAccount(page, 'standalone:narrow');
     assert.equal(await page.locator('.portal-demo-switch').count(), 0);
+    assert.equal(await page.locator('.developer-demo-state-switcher').count(), 1);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
 
     await page.goto(demoUrl(operationsDemoFile, '/P01-08'), { waitUntil: 'load' });
     await page.locator('.product-frame[data-role="operations"]').waitFor();
     assert.equal(await page.locator('.portal-demo-switch').count(), 0);
+    assert.equal(await page.locator('.developer-demo-state-switcher').count(), 0);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   } finally {
     await context.close();

@@ -218,6 +218,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     registration: restoredRegistration,
     qualification: restoredQualification,
     qualificationPreview: null,
+    demoPreview: { open: false, releaseStatus: '' },
     managedContent,
     operationsReview: { view: 'list', actionMode: '', attachmentMode: '', selectedApplicationId: '' },
     contentEditor: {
@@ -264,6 +265,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     canViewPublisherData: Boolean(memory.session.authenticated && ['approved', 'delisted'].includes(memory.qualification?.status)),
     isPublisherReadOnly: Boolean(memory.session.authenticated && memory.qualification?.status === 'delisted'),
   });
+  const publisherAccessForView = () => window.PublisherAccessPolicy?.derive({
+    authenticated: memory.session.authenticated,
+    registration: memory.registration,
+    qualification: memory.qualificationPreview || memory.qualification,
+  }) || publisherAccess();
   const persistPublisherSession = () => {
     if (!publisherAccountContext || !memory.session.authenticated || !memory.session.accountKey) return false;
     const expiresAt = Math.max(Number(memory.session.expiresAt || 0), Date.now() + 8 * 60 * 60 * 1000);
@@ -487,6 +493,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games' };
     memory.qualificationPreview = null;
+    memory.demoPreview = { open: false, releaseStatus: '' };
     delete memory.result['P01-03'];
     memory.session.expiresAt = Date.now() + 8 * 60 * 60 * 1000;
     persistPublisherSession();
@@ -560,6 +567,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         consoleTab: storedAccountRegistration?.consoleTab || 'games',
       };
       memory.qualificationPreview = null;
+      memory.demoPreview = { open: false, releaseStatus: '' };
     }
     if (accountChanged || activeGameChanged) {
       loadPublisherWorkspaceForSession();
@@ -827,6 +835,48 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         subject: '盖世游戏开发者认证审核结果通知',
         content: `您好，${statusCopy}。\n\n如需进一步协助，请联系 dev@xiaoji.com。`,
       },
+    };
+  };
+  const buildQualificationPreview = nextStatus => {
+    const allowed = new Set(['unsubmitted', 'pending', 'approved', 'rejected', 'delisted']);
+    if (!allowed.has(nextStatus)) return null;
+    const reviewedAt = ['approved', 'rejected', 'delisted'].includes(nextStatus) ? nowText() : '';
+    const isEnglish = memory.shell.language === 'en';
+    const sourceHistory = memory.qualification.history || [];
+    const lastSubmissionIndex = sourceHistory.findLastIndex(item => /\u63d0\u4ea4\u4f01\u4e1a\u8ba4\u8bc1\u7533\u8bf7|submitted company verification/i.test(String(item?.action || '')));
+    const previewHistory = cloneJson(lastSubmissionIndex >= 0 ? sourceHistory.slice(0, lastSubmissionIndex + 1) : sourceHistory.filter(item => !item.previewStatus));
+    if (nextStatus === 'approved') previewHistory.push({ action: isEnglish ? 'Company verification approved' : '\u4f01\u4e1a\u8ba4\u8bc1\u5ba1\u6838\u901a\u8fc7', actor: isEnglish ? 'Platform operations' : '\u5e73\u53f0\u8fd0\u8425 \u674e\u7136', time: reviewedAt, previewStatus: true });
+    if (nextStatus === 'rejected') previewHistory.push({ action: isEnglish ? 'Company verification rejected: The business license image is unclear.' : '\u4f01\u4e1a\u8ba4\u8bc1\u5ba1\u6838\u62d2\u7edd\uff1a\u5de5\u5546\u6267\u7167\u8bc1\u660e\u56fe\u7247\u4e0d\u6e05\u6670\uff0c\u8bf7\u4e0a\u4f20\u5b8c\u6574\u3001\u65e0\u906e\u6321\u7684\u5f69\u8272\u626b\u63cf\u4ef6\u3002', actor: isEnglish ? 'Platform operations' : '\u5e73\u53f0\u8fd0\u8425 \u674e\u7136', time: reviewedAt, previewStatus: true });
+    if (nextStatus === 'delisted') previewHistory.push({ action: isEnglish ? 'Publishing access suspended: Contact developer support.' : '\u4f01\u4e1a\u53d1\u884c\u8d44\u683c\u5df2\u6682\u505c\uff1a\u8bf7\u8054\u7cfb\u5f00\u53d1\u8005\u652f\u6301\u3002', actor: isEnglish ? 'Platform operations' : '\u5e73\u53f0\u8fd0\u8425 \u674e\u7136', time: reviewedAt, previewStatus: true });
+    const previewForm = { ...createQualification(true).form, ...(memory.qualification.form || {}) };
+    return {
+      ...memory.qualification,
+      status: nextStatus,
+      step: 0,
+      view: 'intro',
+      readOnly: false,
+      editing: false,
+      repairReason: '',
+      revision: nextStatus === 'unsubmitted' ? 0 : Math.max(1, Number(memory.qualification.revision) || 0),
+      submittedAt: nextStatus === 'unsubmitted' ? '' : (memory.qualification.submittedAt || '2026-09-02 10:30'),
+      reviewedAt,
+      reviewer: reviewedAt ? (isEnglish ? 'Platform operations' : '\u5e73\u53f0\u8fd0\u8425 \u674e\u7136') : '',
+      rejectReason: nextStatus === 'rejected'
+        ? (isEnglish ? 'The business license image is unclear. Upload a complete, unobstructed color scan.' : '\u5de5\u5546\u6267\u7167\u8bc1\u660e\u56fe\u7247\u4e0d\u6e05\u6670\uff0c\u8bf7\u4e0a\u4f20\u5b8c\u6574\u3001\u65e0\u906e\u6321\u7684\u5f69\u8272\u626b\u63cf\u4ef6\u3002')
+        : '',
+      delistReason: nextStatus === 'delisted'
+        ? (isEnglish ? 'Company publishing access is suspended. Contact developer support to confirm recovery conditions.' : '\u53d1\u73b0\u4f01\u4e1a\u4e3b\u4f53\u4fe1\u606f\u53d1\u751f\u53d8\u66f4\uff0c\u8bf7\u8054\u7cfb\u5f00\u53d1\u8005\u652f\u6301\u786e\u8ba4\u6062\u590d\u6761\u4ef6\u3002')
+        : '',
+      notification: ['approved', 'rejected', 'delisted'].includes(nextStatus) ? buildReviewNotification({
+        status: nextStatus,
+        vendorName: previewForm.vendorName,
+        email: previewForm.email,
+        mobile: previewForm.mobile,
+        sentAt: reviewedAt,
+        mode: 'preview',
+      }) : null,
+      form: previewForm,
+      history: previewHistory,
     };
   };
   const applyQualificationReview = (routeId, nextStatus, reason = '') => {
@@ -1356,7 +1406,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-open-data') {
-        if (!publisherAccess().canViewPublisherData) return;
+        if (!publisherAccessForView().canViewPublisherData) return;
         updatePublisherWorkspace({ workspaceView: 'data', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
@@ -1627,6 +1677,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         loadPublisherWorkspaceForSession();
         window.name = '';
         memory.shell.helpOpen = false;
+        memory.qualificationPreview = null;
+        memory.demoPreview = { open: false, releaseStatus: '' };
         navigate({ routeId: 'P01-01', state: 'default' });
         return;
       }
@@ -2004,43 +2056,57 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         root.querySelector('[data-portal-action="qualification-review-filter"]')?.click();
         return;
       }
-      if (['qualification-preview-pending', 'qualification-preview-approved', 'qualification-preview-rejected', 'qualification-preview-delisted'].includes(action)) {
-        const nextStatus = action.replace('qualification-preview-', '');
-        const reviewedAt = nextStatus === 'pending' ? '' : nowText();
-        const isEnglish = memory.shell.language === 'en';
-        const sourceHistory = memory.qualification.history || [];
-        const lastSubmissionIndex = sourceHistory.findLastIndex(item => /提交企业认证申请|submitted company verification/i.test(String(item?.action || '')));
-        const previewHistory = cloneJson(lastSubmissionIndex >= 0 ? sourceHistory.slice(0, lastSubmissionIndex + 1) : sourceHistory.filter(item => !item.previewStatus));
-        if (nextStatus === 'approved') previewHistory.push({ action: isEnglish ? 'Company verification approved' : '企业认证审核通过', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
-        if (nextStatus === 'rejected') previewHistory.push({ action: isEnglish ? 'Company verification rejected: The business license image is unclear.' : '企业认证审核拒绝：工商执照证明图片不清晰，请上传完整、无遮挡的彩色扫描件。', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
-        if (nextStatus === 'delisted') previewHistory.push({ action: isEnglish ? 'Publishing access delisted: Contact developer support.' : '企业发行合作资格已下架：请联系开发者支持。', actor: isEnglish ? 'Platform operations' : '平台运营 李然', time: reviewedAt, previewStatus: true });
-        const previewForm = { ...createQualification(true).form, ...(memory.qualification.form || {}) };
-        memory.qualificationPreview = {
-          ...memory.qualification,
-          status: nextStatus,
-          editing: false,
-          repairReason: '',
-          reviewedAt,
-          reviewer: nextStatus === 'pending' ? '' : (isEnglish ? 'Platform operations' : '平台运营 李然'),
-          rejectReason: nextStatus === 'rejected'
-            ? (isEnglish ? 'The business license image is unclear. Upload a complete, unobstructed color scan.' : '工商执照证明图片不清晰，请上传完整、无遮挡的彩色扫描件。')
-            : '',
-          delistReason: nextStatus === 'delisted'
-            ? (isEnglish ? 'Company publishing access was delisted. Contact developer support to confirm recovery conditions.' : '发现企业主体信息发生变更，请联系开发者支持确认恢复条件。')
-            : '',
-          notification: nextStatus === 'pending' ? null : buildReviewNotification({
-            status: nextStatus,
-            vendorName: previewForm.vendorName,
-            email: previewForm.email,
-            mobile: previewForm.mobile,
-            sentAt: reviewedAt,
-            mode: 'preview',
-          }),
-          history: previewHistory,
-        };
+      if (action === 'demo-state-toggle') {
+        const open = !memory.demoPreview.open;
+        memory.demoPreview.open = open;
+        render();
+        requestAnimationFrame(() => root.querySelector(open ? '[data-demo-state-panel] > header > button' : '.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-state-reset') {
+        memory.qualificationPreview = null;
+        memory.demoPreview = { open: false, releaseStatus: '' };
         delete memory.result[route.id];
         clearPreviewQuery();
         render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-qualification-status' || action.startsWith('qualification-preview-')) {
+        const nextStatus = action === 'demo-qualification-status'
+          ? event.currentTarget.dataset.demoQualificationStatus
+          : action.replace('qualification-preview-', '');
+        const preview = buildQualificationPreview(nextStatus);
+        if (!preview) return;
+        memory.qualificationPreview = preview;
+        memory.demoPreview.open = false;
+        delete memory.result[route.id];
+        clearPreviewQuery();
+        if (nextStatus === 'approved' && hasPublisherRoute && route.id !== 'P02-01') {
+          memory.page['P02-01'] = { ...(memory.page['P02-01'] || {}), workspaceView: 'games', addGameOpen: false, gameMenuOpen: '' };
+          navigate({ routeId: 'P02-01', state: 'default' });
+        } else render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-release-status') {
+        const nextStatus = event.currentTarget.dataset.demoReleaseStatus || '';
+        if (!['draft', 'reviewing', 'approved', 'rejected', 'withdrawn', 'live', 'delisted'].includes(nextStatus)) return;
+        if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
+        memory.demoPreview = { open: false, releaseStatus: nextStatus };
+        memory.page['P02-01'] = {
+          ...(memory.page['P02-01'] || {}),
+          workspaceView: 'game',
+          selectedGame: 'existing',
+          gameTab: 'release',
+          gameSection: 'versions',
+          addGameOpen: false,
+          gameMenuOpen: '',
+        };
+        clearPreviewQuery();
+        if (route.id === 'P02-01') render();
+        else navigate({ routeId: 'P02-01', state: 'default' });
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
         return;
       }
       if (action === 'qualification-approve') {
@@ -2750,17 +2816,26 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   const render = () => {
     const { route, role, state, cdkeyTab } = parseLocation();
-    const access = publisherAccess();
+    const access = role === 'developer' ? publisherAccessForView() : publisherAccess();
     const page = portalData.pages?.[route.id] || fallbackPage(route);
     const editorMode = route.id === 'P01-05' ? (memory.page[route.id]?.editorMode || 'edit') : 'edit';
-    const qualificationForView = role === 'developer' && route.id === 'P01-03' && memory.qualificationPreview
+    const qualificationForView = role === 'developer' && memory.qualificationPreview
       ? memory.qualificationPreview
       : memory.qualification;
+    const registrationForView = role === 'developer' && memory.qualificationPreview
+      ? { ...memory.registration, accountTier: qualificationForView.status === 'approved' ? 'enterprise' : 'registered' }
+      : memory.registration;
+    const demoState = {
+      open: memory.demoPreview.open,
+      qualificationStatus: qualificationForView.status || 'unsubmitted',
+      releaseStatus: memory.demoPreview.releaseStatus,
+      active: Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
+    };
     document.documentElement.lang = memory.shell.language === 'en' && role === 'developer' ? 'en' : 'zh-CN';
-      const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: memory.registration, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {}, access });
+      const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: registrationForView, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {}, access, demoState });
     memory.qualificationReviewController?.destroy?.();
     memory.qualificationReviewController = null;
-    root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, editorMode, content, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, registration: memory.registration });
+    root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, editorMode, content, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, registration: registrationForView, demoState });
     if (role === 'developer' && route.id === 'P01-03' && qualificationForView.readOnly && qualificationForView.status === 'pending') {
       root.querySelector('.qualification-pending-note')?.insertAdjacentHTML('beforeend', c.button({ label: memory.shell.language === 'en' ? 'Withdraw application' : '撤回申请', variant: 'danger', action: 'qualification-withdraw', size: 'small' }));
       if (memory.shell.qualificationWithdrawOpen) {
@@ -2869,6 +2944,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return;
     }
     if (event.key !== 'Escape') return;
+    if (memory.demoPreview.open) {
+      memory.demoPreview.open = false;
+      render();
+      requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+      return;
+    }
     if (qualificationWithdrawModal) {
       memory.shell.qualificationWithdrawOpen = false;
       render();
@@ -2886,6 +2967,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return;
     }
     root.querySelectorAll('[data-qualification-example-modal]:not([hidden])').forEach(modal => modal.setAttribute('hidden', ''));
+  });
+  addEventListener('click', event => {
+    if (!memory.demoPreview.open || event.target.closest('.developer-demo-state-switcher')) return;
+    memory.demoPreview.open = false;
+    render();
   });
   addEventListener('storage', event => {
     if (event.key === managedContentStorageKey && event.newValue) {

@@ -117,6 +117,34 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<button class="portal-demo-switch" type="button" data-portal-action="switch-portal-side" aria-label="${assistiveLabel}" title="${assistiveLabel}"><span class="portal-demo-switch__badge" aria-hidden="true">Demo</span>${icon('chart')}<span class="portal-demo-switch__label portal-demo-switch__label--full" aria-hidden="true">${fullLabel}</span><span class="portal-demo-switch__label portal-demo-switch__label--short" aria-hidden="true">${shortLabel}</span></button>`;
   };
 
+  const renderDeveloperDemoStateSwitcher = ({ module, role, redacted, isLogin, language, demoState = {} }) => {
+    if (module?.standalone !== true || role !== 'developer' || redacted || isLogin) return '';
+    const isEnglish = language === 'en';
+    const qualificationStatus = demoState.qualificationStatus || 'unsubmitted';
+    const releaseStatus = demoState.releaseStatus || '';
+    const qualificationOptions = [
+      ['unsubmitted', '未提交', 'Not submitted'],
+      ['pending', '审核中', 'In review'],
+      ['approved', '审核通过', 'Approved'],
+      ['rejected', '审核未通过', 'Not approved'],
+      ['delisted', '资格已暂停', 'Access suspended'],
+    ];
+    const releaseOptions = [
+      ['draft', '草稿', 'Draft'],
+      ['reviewing', '审核中', 'In review'],
+      ['approved', '审核通过', 'Approved'],
+      ['rejected', '审核未通过', 'Not approved'],
+      ['withdrawn', '已撤销', 'Withdrawn'],
+      ['live', '已上线', 'Live'],
+      ['delisted', '已下架', 'Delisted'],
+    ];
+    const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
+    const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
+    if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
+    const option = ([value, zh, en], kind, current) => `<button type="button" role="radio" aria-checked="${current === value}" class="${current === value ? 'is-active' : ''}" data-portal-action="demo-${kind}-status" data-demo-${kind}-status="${value}">${isEnglish ? en : zh}</button>`;
+    return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Page-state preview' : '页面状态预览'}</strong><small>${isEnglish ? 'Demo only. Refresh to restore saved data.' : '仅影响当前演示，刷新后恢复已保存状态'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Company verification' : '企业认证'}</strong><small>${isEnglish ? 'Controls publisher access and analytics visibility' : '联动发行权限与经营数据入口'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Company verification status' : '企业认证状态'}">${qualificationOptions.map(item => option(item, 'qualification', qualificationStatus)).join('')}</div></section><section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Game release application' : '游戏发布申请'}</strong><small>${isEnglish ? 'Opens the selected status in version records' : '选择后进入发布记录查看对应状态'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Game release status' : '游戏发布申请状态'}">${releaseOptions.map(item => option(item, 'release', releaseStatus)).join('')}</div></section><footer><span>${demoState.active ? (isEnglish ? 'Preview is active' : '当前已启用预览状态') : (isEnglish ? 'Showing saved account state' : '当前为已保存账号状态')}</span><button type="button" data-portal-action="demo-state-reset"${demoState.active ? '' : ' disabled'}>${isEnglish ? 'Restore saved state' : '恢复已保存状态'}</button></footer></aside></section>`;
+  };
+
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
     const allowed = routes.filter(item => item.role === role && item.id !== 'P01-01');
     const consoleRouteIds = ['P01-04', 'P01-05', 'P01-06', 'P01-07'];
@@ -247,7 +275,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderBusiness = ({ module, routes, route, page, portalData, role, state, editorMode = 'edit', content, qualification, language, managedContent, registration }) => {
+  const renderBusiness = ({ module, routes, route, page, portalData, role, state, editorMode = 'edit', content, qualification, language, managedContent, registration, demoState }) => {
     const redacted = state === 'permission';
     const isLogin = route.id === 'P01-01' && !redacted;
     const accountTier = registration?.accountTier || 'unselected';
@@ -262,7 +290,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
     const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}`;
     const showContext = !isLogin && !isOnboarding && !isConfiguration && !showPlatformConsole && !isPublisherWorkspace && route.id !== 'P01-08';
-    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main>${renderPortalDemoSwitch({ module, portalData, role, redacted, isLogin, language })}</div>`;
+    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main>${renderPortalDemoSwitch({ module, portalData, role, redacted, isLogin, language })}${renderDeveloperDemoStateSwitcher({ module, role, redacted, isLogin, language, demoState })}</div>`;
   };
   namespace.shell = { roleMeta, publicTitle, hashFor, renderBusiness };
 })(window.GameHubDeveloperPortal);
