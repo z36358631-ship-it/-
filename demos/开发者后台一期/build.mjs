@@ -10,6 +10,10 @@ const read = (...parts) => fs.readFileSync(path.join(srcDir, ...parts), 'utf8');
 const readJson = file => JSON.parse(read(file));
 const modules = readJson('modules.json');
 const requestedModuleId = process.argv.find(argument => argument.startsWith('--module='))?.split('=')[1];
+const requestedVariant = process.argv.find(argument => argument.startsWith('--variant='))?.split('=')[1] || '';
+const financeIntegrated = requestedModuleId === '02' && requestedVariant === 'finance-integrated';
+const financeRoutes = financeIntegrated ? readJson('finance-routes.json') : [];
+const financePages = financeIntegrated ? readJson('finance-pages.json') : {};
 const publisherModuleIds = new Set(['01', '02']);
 const fixtureLoads = requestedModuleId && publisherModuleIds.has(requestedModuleId)
   ? ['01', '02'].map(moduleId => loadLatestPrdFixture({ repoRoot, demoDir, moduleId }))
@@ -87,7 +91,7 @@ const publicFixtureFor = pageRoutes => ({
   helpCenter: fixture.helpCenter,
   managedContent: fixture.managedContent,
   pages: Object.fromEntries(pageRoutes.map(route => {
-    const page = fixture.pages[route.id] || {};
+    const page = fixture.pages[route.id] || financePages[route.id] || {};
     const publicPage = {
       summary: publicCopy(page.summary),
       status: page.status,
@@ -99,8 +103,14 @@ const publicFixtureFor = pageRoutes => ({
     return [route.id, publicPage];
   })),
 });
-const publisherStyles = publisherStyleFiles.map(file => read('styles', file).trim()).join('\n\n');
-const publisherRuntime = publisherRuntimeFiles.map(file => read('runtime', file).trim()).join('\n\n');
+const publisherStyles = [
+  ...publisherStyleFiles.map(file => read('styles', file).trim()),
+  ...(financeIntegrated ? [read('styles', 'publisher-finance.css').trim(), read('demo15', 'styles.css').trim()] : []),
+].join('\n\n');
+const publisherRuntime = [
+  ...publisherRuntimeFiles.map(file => read('runtime', file).trim()),
+  ...(financeIntegrated ? [`window.__PUBLISHER_FINANCE_EMBEDDED__ = true;\n${read('demo15', 'app.js').trim()}`] : []),
+].join('\n\n');
 const documentHtml = ({ title, module, pageRoutes }) => `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}${publisherModuleIds.has(module.id) ? `\n\n${publisherStyles}` : ''}</style></head><body>
 <div id="app"></div>
@@ -119,9 +129,14 @@ const routesForModule = module => module.routeIds
 
 let aliasCount = 0;
 for (const module of targetModules) {
-  const moduleRoutes = routesForModule(module);
+  const moduleRoutes = financeIntegrated ? [...routesForModule(module), ...financeRoutes] : routesForModule(module);
   const html = documentHtml({ title: `${module.name}｜盖世游戏`, module, pageRoutes: moduleRoutes });
-  fs.writeFileSync(path.join(demoDir, module.output), html, 'utf8');
+  const outputName = financeIntegrated ? '开发者平台财务整合demo.html' : module.output;
+  fs.writeFileSync(path.join(demoDir, outputName), html, 'utf8');
+  if (financeIntegrated) {
+    process.stdout.write(`Built developer finance integration with ${moduleRoutes.length} routes.\n`);
+    continue;
+  }
   for (const alias of module.aliases || []) {
     fs.writeFileSync(path.join(demoDir, alias), html, 'utf8');
     aliasCount += 1;
@@ -129,4 +144,5 @@ for (const module of targetModules) {
 }
 
 process.stdout.write(`Latest PRD contract verified: ${prdContract.sourceFiles.length} documents, ${prdContract.countText} PRD page units; ${routes.length} demo routes (${prdContract.routeCountText}), version ${prdContract.version}.\n`);
-process.stdout.write(`Built ${targetModules.length} public-facing self-contained HTML files with ${targetModules.reduce((count, module) => count + routesForModule(module).length, 0)} routes; emitted ${aliasCount} compatibility alias${aliasCount === 1 ? '' : 'es'}.\n`);
+const builtRouteCount = targetModules.reduce((count, module) => count + routesForModule(module).length + (financeIntegrated ? financeRoutes.length : 0), 0);
+process.stdout.write(`Built ${targetModules.length} public-facing self-contained HTML files with ${builtRouteCount} routes; emitted ${aliasCount} compatibility alias${aliasCount === 1 ? '' : 'es'}.\n`);

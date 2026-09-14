@@ -45,6 +45,10 @@
 .publisher-vendor-support { margin-top: 14px; padding: 13px 15px; display: flex; align-items: center; gap: 9px; color: #66758A; font-size: 12px; border: 1px solid #DCE4EE; border-radius: 9px; background: #FFFFFF; }
 .publisher-vendor-support svg { width: 17px; height: 17px; color: #08AFC3; }
 .publisher-vendor-support a { color: #087F86; font-weight: 700; }
+.vendor-finance-summary__list { margin: 0; padding: 6px 24px 22px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.vendor-finance-summary__list > div { min-width: 0; padding: 16px; border: 1px solid #E0E5EC; border-radius: 10px; background: #F7F9FC; }
+.vendor-finance-summary__list dt { color: #66758A; font-size: 12px; }
+.vendor-finance-summary__list dd { margin: 8px 0 0; color: #23344A; font-size: 16px; font-weight: 700; }
 
 @media (max-width: 760px) {
   .publisher-vendor-title { align-items: flex-start; flex-direction: column; }
@@ -58,4 +62,5 @@
   .vendor-review-demo { align-items: stretch; flex-direction: column; }
   .vendor-review-demo .form-actions, .vendor-review-demo .gh-button { width: 100%; }
   .publisher-vendor-support { align-items: flex-start; }
+  .vendor-finance-summary__list { grid-template-columns: minmax(0, 1fr); padding-inline: 14px; }
 }

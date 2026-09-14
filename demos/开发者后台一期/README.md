@@ -50,6 +50,16 @@
 - 平台直销、外部 Key 采购和盖世 Key 渠道使用独立账本；页面和导出保留来源字段。
 - 开发者确认账单后进入已确认，平台锁单与付款不属于开发者操作。
 
+## 开发者平台财务整合版
+
+- 文件：`开发者平台财务整合demo.html`。这是新增入口，不覆盖 `开发者平台demo.html` 和 `15-开发者财务结算demo.html`。
+- 统一侧栏按使用场景分为“游戏／财务／厂商管理”，包含游戏管理、财务主体、对账结算、厂商设置四个入口。
+- `#/P15-01` 为财务主体；`#/P15-02` 为对账结算；`#/P15-03` 为对账流水，侧栏继续高亮“对账结算”。
+- 厂商设置中的财务信息只读展示，点击“前往财务主体”在站内进入统一维护页。
+- 财务页面复用开发者平台顶栏、侧栏、中英文切换和唯一 Demo 状态悬浮球；默认展示穷举态，可切换缺省态。
+- 构建：`node demos/开发者后台一期/build.mjs --module=02 --variant=finance-integrated`。
+- 验证：`node --test --test-concurrency=1 tests/developer-backend/developer-platform-finance-integration.browser.test.mjs`。
+
 ## 构建与验收
 
 在仓库根目录执行：

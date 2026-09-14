@@ -31,6 +31,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const publisherWorkspaceScopeKey = 'publisher-console';
   const publisherAccountContext = window.PublisherAccountContext || null;
   const hasPublisherRoute = routes.some(route => route.id === 'P02-01');
+  const financeRouteIds = new Set(window.PublisherFinance?.routeIds || []);
+  const hasFinanceRoutes = routes.some(route => financeRouteIds.has(route.id));
   const publisherFixtureGameKeys = new Set(['draft', 'reviewing', 'existing', 'pioneer', 'prerelease', 'live', 'delisted']);
   const vendorSettingsRuntime = window.PublisherVendorSettings || null;
   const createVendorReviews = () => vendorSettingsRuntime?.createReviews?.() || {
@@ -226,6 +228,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     qualification: restoredQualification,
     qualificationPreview: null,
     demoPreview: { open: false, releaseStatus: '' },
+    finance: hasFinanceRoutes ? window.PublisherFinance.createState() : null,
     managedContent,
     operationsReview: { view: 'list', actionMode: '', attachmentMode: '', selectedApplicationId: '' },
     contentEditor: {
@@ -1429,6 +1432,25 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (action === 'go-console') {
         memory.shell.helpOpen = false;
         navigate({ routeId: developerLandingRoute(), state: 'default' });
+        return;
+      }
+      if (action === 'open-finance-entity' && hasFinanceRoutes) {
+        window.PublisherFinance?.applyEntryContext(memory.finance, { source:'vendor-settings' });
+        navigate({ routeId:'P15-01', state:'default' });
+        return;
+      }
+      if (action === 'open-finance-settlement' && hasFinanceRoutes) {
+        window.PublisherFinance?.applyEntryContext(memory.finance, { source:'publisher-sidebar' });
+        navigate({ routeId:'P15-02', state:'default' });
+        return;
+      }
+      if (action === 'open-vendor-settings' && hasPublisherRoute) {
+        updatePublisherWorkspace({ workspaceView:'vendor', addGameOpen:false, gameMenuOpen:'' });
+        navigate({ routeId:'P02-01', state:'default' });
+        return;
+      }
+      if (action === 'demo-finance-scenario' && hasFinanceRoutes) {
+        window.PublisherFinance?.setScenario(memory.finance, event.currentTarget.dataset.financeScenario || 'exhaustive');
         return;
       }
       if (action === 'switch-portal-side') {
@@ -3016,7 +3038,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }));
   };
 
-  const render = () => {
+  const render = (options = {}) => {
+    const previousScrollTop = options.preserveScroll ? (root.querySelector('.workspace')?.scrollTop || 0) : 0;
     const { route, role, state, cdkeyTab } = parseLocation();
     const access = role === 'developer' ? publisherAccessForView() : publisherAccess();
     const page = portalData.pages?.[route.id] || fallbackPage(route);
@@ -3032,9 +3055,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       qualificationStatus: qualificationForView.status || 'unsubmitted',
       releaseStatus: memory.demoPreview.releaseStatus,
       active: Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
+      financeMode: financeRouteIds.has(route.id),
+      financeScenario: memory.finance?.demoScenario || 'exhaustive',
     };
     document.documentElement.lang = memory.shell.language === 'en' && role === 'developer' ? 'en' : 'zh-CN';
-      const content = namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: registrationForView, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {}, access, demoState });
+    const content = financeRouteIds.has(route.id) && window.PublisherFinance
+      ? window.PublisherFinance.render(memory.finance, { routeId:route.id, language:memory.shell.language, access })
+      : namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: registrationForView, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {}, access, demoState });
     memory.qualificationReviewController?.destroy?.();
     memory.qualificationReviewController = null;
     root.innerHTML = namespace.shell.renderBusiness({ module: moduleConfig, routes, route, page, portalData, role, state, editorMode, content, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, registration: registrationForView, demoState });
@@ -3052,6 +3079,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (memory.page[route.id]?.savedAt) root.querySelectorAll('[data-save-state]').forEach(node => { node.textContent = `最近保存：${memory.page[route.id].savedAt}`; });
     applyBusinessState(route.id);
     bindInteractions({ route, role, state });
+    if (financeRouteIds.has(route.id) && window.PublisherFinance) {
+      window.PublisherFinance.bind(root, {
+        onChange:nextOptions => render({ preserveScroll:Boolean(nextOptions?.preserveScroll) }),
+        onNavigate:routeId => navigate({ routeId, state:'default' }),
+      });
+    }
     window.PublisherGameReview?.dispose();
     if (route.id === 'P01-08') {
       root.querySelectorAll('[data-game-review-tab]').forEach(button => button.addEventListener('click', () => {
@@ -3108,6 +3141,17 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           persistPublisherWorkspace();
           const lockedStatement = window.PublisherDataDashboard.statements().find(item => item.status === 'locked');
           const flowFilters = { ...filters, game:dashboardGame?.gameId || '' };
+          if (hasFinanceRoutes && window.PublisherFinance) {
+            const routeId = target === 'settlement/flows' ? 'P15-03' : 'P15-02';
+            window.PublisherFinance.applyEntryContext(memory.finance, {
+              source:'publisher-data-dashboard',
+              target,
+              game:dashboardGame?.gameId || '',
+              filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' },
+            });
+            navigate({ routeId, state:'default' });
+            return;
+          }
           const query = target === 'settlement/flows'
             ? new URLSearchParams({ game:flowFilters.game, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
             : new URLSearchParams({ statement:lockedStatement?.id || '', ledger_source:'direct_sale' });
@@ -3126,9 +3170,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (memory.shell.helpOpen) toggleHelp(true);
     requestAnimationFrame(() => root.querySelector('.platform-tab.is-active')?.scrollIntoView({ block: 'nearest', inline: 'center' }));
     if (route.id === 'P02-01' && state === 'default') setCdkeyTab(route.id, cdkeyTab ?? memory.page[route.id]?.cdkeyTab ?? 0, false);
+    if (options.preserveScroll) requestAnimationFrame(() => root.querySelector('.workspace')?.scrollTo({ top:previousScrollTop, left:0 }));
   };
 
   addEventListener('hashchange', () => {
+    window.PublisherFinance?.closeOverlays(memory.finance);
     memory.shell.qualificationWithdrawOpen = false;
     render();
     resetRouteScroll();

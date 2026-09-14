@@ -42,6 +42,21 @@ test('开发者平台与运营后台可分别构建独立入口', () => {
   assert.match(p02Output, /emitted 3 compatibility aliases\./);
 });
 
+test('财务整合变体生成新入口且不覆盖原开发者平台', () => {
+  const originalPath = path.join(demoDir, '开发者平台demo.html');
+  const original = fs.readFileSync(originalPath);
+  const output = execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), '--module=02', '--variant=finance-integrated'], {
+    stdio:'pipe', encoding:'utf8',
+  });
+  const integratedPath = path.join(demoDir, '开发者平台财务整合demo.html');
+  const integrated = fs.readFileSync(integratedPath, 'utf8');
+  assert.match(output, /Built developer finance integration with 6 routes\./);
+  assert.match(output, /with 6 routes; emitted 0 compatibility aliases\./);
+  for (const routeId of ['P15-01','P15-02','P15-03']) assert.ok(integrated.includes(routeId), routeId);
+  assert.doesNotMatch(integrated, /<iframe/i);
+  assert.deepEqual(fs.readFileSync(originalPath), original);
+});
+
 test('仅校验 outputs 中 4 个正式 HTML 自包含且可重复构建', () => {
   execFileSync(process.execPath, [path.join(demoDir, 'build.mjs')], { stdio: 'pipe' });
   assert.equal(fs.existsSync(path.join(demoDir, '开发者后台一期总览demo.html')), false);

@@ -58,6 +58,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     'P04-06': '发行资源需求',
     'P04-07': '渠道归因分析',
     'P04-08': '数据导出与说明',
+    'P15-01': '财务主体',
+    'P15-02': '对账结算',
+    'P15-03': '对账流水',
   };
   const pageMeta = {
     'P01-04': { summary: '查看当前游戏的发行准备、阶段结果与核心数据。', status: '预发布需修改', primaryAction: '编辑游戏资料', action: 'edit-game-profile' },
@@ -120,6 +123,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderDeveloperDemoStateSwitcher = ({ module, role, redacted, isLogin, language, demoState = {} }) => {
     if (module?.standalone !== true || role !== 'developer' || redacted || isLogin) return '';
     const isEnglish = language === 'en';
+    if (demoState.financeMode) {
+      const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
+      const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
+      if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
+      const scenarios = [['exhaustive','穷举态','Exhaustive'],['empty','缺省态','Empty']];
+      return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Finance scenarios' : '财务场景'}</strong><small>${isEnglish ? 'Switch the current finance dataset.' : '切换当前财务数据。'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Finance scenario' : '财务场景'}">${scenarios.map(([value, zh, en]) => `<button type="button" role="radio" aria-checked="${demoState.financeScenario === value}" class="${demoState.financeScenario === value ? 'is-active' : ''}" data-portal-action="demo-finance-scenario" data-finance-scenario="${value}">${isEnglish ? en : zh}</button>`).join('')}</div></section></aside></section>`;
+    }
     const qualificationStatus = demoState.qualificationStatus || 'unsubmitted';
     const releaseStatus = demoState.releaseStatus || '';
     const qualificationOptions = [
@@ -148,6 +158,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
     const allowed = routes.filter(item => item.role === role && item.id !== 'P01-01');
     const consoleRouteIds = ['P01-04', 'P01-05', 'P01-06', 'P01-07'];
+    if (role === 'developer' && ['P15-01','P15-02','P15-03'].includes(route.id)) {
+      const isEnglish = language === 'en';
+      const settlementActive = route.id === 'P15-02' || route.id === 'P15-03';
+      return `<aside class="side-nav side-nav--finance" data-side-nav data-component="SideNav" data-variant="dark"><div class="nav-label">${isEnglish ? 'Games' : '游戏'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Developer navigation' : '开发者导航'}"><a class="nav-item" href="#/P02-01">${icon('game')}<span>${isEnglish ? 'Game management' : '游戏管理'}</span></a></nav><div class="nav-label">${isEnglish ? 'Finance' : '财务'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Finance navigation' : '财务导航'}"><a class="nav-item${route.id === 'P15-01' ? ' is-active' : ''}" href="#/P15-01"${route.id === 'P15-01' ? ' aria-current="page"' : ''}>${icon('vendor')}<span>${isEnglish ? 'Finance entity' : '财务主体'}</span></a><a class="nav-item${settlementActive ? ' is-active' : ''}" href="#/P15-02"${settlementActive ? ' aria-current="page"' : ''}>${icon('chart')}<span>${isEnglish ? 'Reconciliation & settlement' : '对账结算'}</span></a></nav><div class="nav-label">${isEnglish ? 'Company' : '厂商管理'}</div><nav class="nav-list"><button type="button" class="nav-item" data-portal-action="open-vendor-settings">${icon('vendor')}<span>${isEnglish ? 'Company settings' : '厂商设置'}</span></button></nav></aside>`;
+    }
     if (role === 'operations' && route.moduleId === '01') {
       const items = [
         ['P01-09', 'file', '企业认证内容配置'],
@@ -194,9 +209,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<aside class="side-nav" data-side-nav data-component="SideNav" data-variant="dark"><div class="nav-label">功能导航</div><nav class="nav-list" aria-label="业务导航">${allowed.map(item => `<a class="nav-item${item.id === route.id ? ' is-active' : ''}" data-component="NavItem" data-variant="${item.id === route.id ? 'active' : 'default'}" href="${e(hashFor(item, role))}"${item.id === route.id ? ' aria-current="page"' : ''}>${icon(routeIcon(item))}<span>${e(publicTitle(item))}</span></a>`).join('')}</nav></aside>`;
   };
 
-  const renderContext = ({ portalData, redacted, route, editorMode = 'edit' }) => {
+  const renderContext = ({ portalData, redacted, route, editorMode = 'edit', language = 'zh' }) => {
     if (redacted) return '';
     const context = portalData.context || {};
+    if (['P15-01','P15-02','P15-03'].includes(route.id)) {
+      const isEnglish = language === 'en';
+      const end = route.id === 'P15-01' ? (isEnglish ? 'Finance entity' : '财务主体') : route.id === 'P15-02' ? (isEnglish ? 'Reconciliation & settlement' : '对账结算') : (isEnglish ? 'Reconciliation & settlement / Reconciliation flows' : '对账结算 / 对账流水');
+      return `<div class="context-bar"><span>${isEnglish ? 'Developer platform' : '开发者平台'}</span><span class="context-divider">/</span><span>${isEnglish ? 'Finance' : '财务'}</span><span class="context-divider">/</span><span class="context-value">${end}</span></div>`;
+    }
     if (route.id === 'P01-02') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span><span>厂商工作台</span></div>`;
     if (route.id === 'P01-05' && editorMode === 'create') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span>创建游戏</span></div>`;
     if (route.id === 'P02-01') return '';
@@ -204,7 +224,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span>${icon('game')}<span class="context-value">${e(context.gameName || '未选择游戏')}</span><span class="context-divider">/</span><span>${e(context.versionName || '未选择版本')}</span></div>`;
   };
 
-  const renderPageHeader = ({ route, page, state, redacted, editorMode = 'edit' }) => {
+  const renderPageHeader = ({ route, page, state, redacted, editorMode = 'edit', language = 'zh' }) => {
+    if (['P15-01','P15-02','P15-03'].includes(route.id)) {
+      const EnglishTitles = { 'P15-01':'Finance entity', 'P15-02':'Reconciliation & settlement', 'P15-03':'Reconciliation flows' };
+      return `<header class="page-header"><div><h1 class="page-title" data-page-title>${e(language === 'en' ? EnglishTitles[route.id] : publicTitle(route))}</h1></div></header>`;
+    }
     if (['P01-01', 'P01-02', 'P01-03', 'P01-08', 'P01-09', 'P01-10', 'P02-01'].includes(route.id)) return '';
     const meta = pageMeta[route.id] || {};
     const safeSummary = redacted
@@ -286,11 +310,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const isEntryChoice = isOnboarding && accountTier === 'unselected' && qualification?.status === 'unsubmitted';
     const isConfiguration = ['P01-09', 'P01-10'].includes(route.id);
     const isPublisherWorkspace = route.id === 'P02-01';
+    const isFinanceWorkspace = ['P15-01','P15-02','P15-03'].includes(route.id);
     const helpLanguage = role === 'developer' ? language : 'zh';
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
-    const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}`;
+    const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}${isFinanceWorkspace ? ' is-finance-workspace' : ''}`;
     const showContext = !isLogin && !isOnboarding && !isConfiguration && !showPlatformConsole && !isPublisherWorkspace && route.id !== 'P01-08';
-    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main>${renderPortalDemoSwitch({ module, portalData, role, redacted, isLogin, language })}${renderDeveloperDemoStateSwitcher({ module, role, redacted, isLogin, language, demoState })}</div>`;
+    return `<div class="portal-stage"><main class="product-frame${frameClass}" data-role="${e(role)}" data-page-state="${e(state)}" data-qualification-status="${e(qualification?.status || 'not-applicable')}">${renderTopBar({ module, portalData, role, redacted, isLogin, isOnboarding, qualification, language, registration })}${isLogin || isOnboarding ? '' : renderSideNav({ routes, route, role, editorMode, registration, qualification, language })}<section class="workspace">${showContext ? renderContext({ portalData, redacted, route, editorMode, language }) : ''}<div class="page-wrap">${renderPageHeader({ route, page, state, redacted, editorMode, language })}<div data-runtime-result></div>${content}</div>${redacted ? '' : renderHelpCenter(helpContent, helpLanguage)}</section></main>${renderPortalDemoSwitch({ module, portalData, role, redacted, isLogin, language })}${renderDeveloperDemoStateSwitcher({ module, role, redacted, isLogin, language, demoState })}</div>`;
   };
   namespace.shell = { roleMeta, publicTitle, hashFor, renderBusiness };
 })(window.GameHubDeveloperPortal);

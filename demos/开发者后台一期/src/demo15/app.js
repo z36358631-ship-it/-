@@ -1,5 +1,9 @@
 (function developerFinanceSettlementDemo() {
   const app = document.querySelector('#app');
+  const embedded = Boolean(window.__PUBLISHER_FINANCE_EMBEDDED__);
+  let embeddedRerender = null;
+  let embeddedNavigate = routeId => { location.hash = '#/' + routeId; };
+  let embeddedLanguage = 'zh';
   const PAGE_SIZE = 20;
   const routes = {
     entity: { title: '财务主体', icon: '主' },
@@ -607,6 +611,9 @@
 
   function routeFromHash() {
     const raw = location.hash.replace(/^#\/?/, '').split('?')[0];
+    if (raw === 'P15-01') return 'entity';
+    if (raw === 'P15-02') return 'settlement';
+    if (raw === 'P15-03') return 'settlement/flows';
     if (raw === 'reconciliation') return 'settlement';
     if (raw === 'payments' || raw === 'settlement/payments') return 'settlement';
     if (raw === 'settlement/flows') return 'settlement/flows';
@@ -1462,6 +1469,10 @@
   }
 
   function render() {
+    if (embedded) {
+      if (typeof embeddedRerender === 'function') embeddedRerender({ preserveScroll:true });
+      return;
+    }
     state.route = state.route === 'settlement/flows' || routes[state.route] ? state.route : 'entity';
     const rawRoute = location.hash.replace(/^#\/?/, '').split('?')[0];
     if (rawRoute === 'reconciliation' && state.route === 'settlement') {
@@ -1474,6 +1485,39 @@
       scenarioSwitcher() + statementDrawer() + historyDrawer() + confirmDialog() + (state.toast ? '<div class="gh-toast" role="status">' + esc(state.toast) + '</div>' : '') + '</div>';
     document.body.style.overflow = state.activeStatement || state.selectedHistory || state.dialog ? 'hidden' : '';
     syncOverlayA11y();
+  }
+
+  function embeddedContent(routeId, language) {
+    embeddedLanguage = language === 'en' ? 'en' : 'zh';
+    state.route = routeId === 'P15-03' ? 'settlement/flows' : routeId === 'P15-02' ? 'settlement' : 'entity';
+    const page = state.route === 'entity' ? entityPage() : state.route === 'settlement/flows' ? flowQueryPage() : settlementPage();
+    const html = '<section class="publisher-finance" data-testid="developer-finance-demo" data-finance-route="' + esc(routeId) + '">' +
+      page + statementDrawer() + historyDrawer() + confirmDialog() +
+      (state.toast ? '<div class="gh-toast" role="status">' + esc(state.toast) + '</div>' : '') + '</section>';
+    return embeddedLanguage === 'en' ? translateEmbeddedHtml(html) : html;
+  }
+
+  function translateEmbeddedHtml(html) {
+    const pairs = [
+      ['尚未配置财务主体','Finance entity is not configured'],['配置财务主体','Configure finance entity'],['申请变更','Request change'],
+      ['当前状态','Current status'],['生效版本','Effective version'],['结算币种','Settlement currency'],['付款状态','Payment status'],
+      ['企业信息','Company information'],['合作规则','Cooperation terms'],['收款账户','Payout account'],['税务资料','Tax information'],
+      ['当前申请','Current application'],['历史版本','Version history'],['查看','View'],['撤销审核','Withdraw review'],
+      ['提交审核','Submit for review'],['重新提交','Resubmit'],['保存','Save'],['取消','Cancel'],['关闭','Close'],
+      ['资料审核中','Information under review'],['变更审核中','Change under review'],['请补充资料','More information required'],
+      ['已生效','Effective'],['审核中','In review'],['需补充','More information required'],['暂停结算','Settlement paused'],
+      ['查询流水','View reconciliation flows'],['导出流水','Export flows'],['导出','Export'],['查询','Search'],['重置','Reset'],
+      ['结算单','Statement'],['账期','Period'],['业务来源','Business source'],['对账状态','Reconciliation status'],['发票状态','Invoice status'],
+      ['当前待办','Current task'],['更新时间','Updated'],['操作','Action'],['应结算金额','Amount due'],['每页','Per page'],['条','items'],
+      ['返回对账结算','Back to reconciliation'],['流水','Flow'],['游戏与 SKU','Game and SKU'],['交易类型','Transaction type'],
+      ['交易原币','Original currency'],['汇率与折算','FX and conversion'],['税费','Tax'],['平台分成','Platform share'],['结算金额','Settlement amount'],
+      ['账单汇总','Statement summary'],['来源构成','Source breakdown'],['对账流水','Reconciliation flows'],['差异记录','Disputes'],['发票','Invoice'],['付款','Payment'],
+      ['确认账单','Confirm statement'],['提交差异','Submit dispute'],['差异类型','Dispute type'],['差异说明','Dispute details'],['附件','Attachment'],
+      ['待确认','Pending confirmation'],['已确认','Confirmed'],['有异议','Disputed'],['已锁定','Locked'],['已作废','Voided'],
+      ['待提交','Pending submission'],['已通过','Approved'],['已退回','Returned'],['不需要','Not required'],
+      ['待付款','Pending payment'],['处理中','Processing'],['已汇出','Remitted'],['已完成','Completed'],['失败','Failed'],['已结转','Carried forward'],['已取消','Cancelled']
+    ];
+    return pairs.reduce((value, pair) => value.replaceAll(pair[0], pair[1]), html);
   }
 
   function setToast(message) {
@@ -1687,7 +1731,8 @@
     if (route) {
       state.route = route.dataset.route;
       clearRouteOverlays();
-      location.hash = '/' + state.route;
+      if (embedded) embeddedNavigate(state.route === 'entity' ? 'P15-01' : 'P15-02');
+      else location.hash = '/' + state.route;
       render();
       return;
     }
@@ -1705,12 +1750,14 @@
     if (action === 'open-flow-query') {
       clearRouteOverlays();
       state.route = 'settlement/flows';
-      location.hash = '/settlement/flows';
+      if (embedded) embeddedNavigate('P15-03');
+      else location.hash = '/settlement/flows';
       render();
     } else if (action === 'back-settlement') {
       clearRouteOverlays();
       state.route = 'settlement';
-      location.hash = '/settlement';
+      if (embedded) embeddedNavigate('P15-02');
+      else location.hash = '/settlement';
       render();
     } else if (action === 'jump-settlement-section') {
       const section = app.querySelector('[data-settlement-section="' + actionNode.dataset.sectionTarget + '"]');
@@ -1978,7 +2025,8 @@
       prepareOverlayClose();
       state.activeStatement = '';
       state.route = 'entity';
-      location.hash = '/entity';
+      if (embedded) embeddedNavigate('P15-01');
+      else location.hash = '/entity';
       render();
     } else if (action === 'export-statements') {
       saveTextFile('结算记录.csv',exportCsv('statement'));
@@ -1999,6 +2047,7 @@
   });
 
   window.addEventListener('hashchange', () => {
+    if (embedded) return;
     state.route = routeFromHash();
     clearRouteOverlays();
     applyHashContext();
@@ -2048,7 +2097,7 @@
     state.scenarioMenuOpen = false;
     render();
   });
-  window.__developerFinanceDemo = {
+  const financeDemoApi = {
     snapshot:() => {
       const audit = auditLedgerData(auditFixture());
       const currentStatements = activeStatements();
@@ -2113,5 +2162,48 @@
     },
     reset:() => location.reload(),
   };
-  render();
+  window.__developerFinanceDemo = financeDemoApi;
+  if (embedded) {
+    window.PublisherFinance = {
+      routeIds:['P15-01','P15-02','P15-03'],
+      createState:() => state,
+      render:(_financeState, options = {}) => embeddedContent(options.routeId || 'P15-01', options.language || 'zh'),
+      bind:(_root, options = {}) => {
+        embeddedRerender = typeof options.onChange === 'function' ? options.onChange : null;
+        embeddedNavigate = typeof options.onNavigate === 'function' ? options.onNavigate : embeddedNavigate;
+        document.body.classList.toggle('finance-overlay-open', Boolean(state.activeStatement || state.selectedHistory || state.dialog));
+        syncOverlayA11y();
+      },
+      closeOverlays:() => {
+        clearRouteOverlays();
+        document.body.classList.remove('finance-overlay-open');
+      },
+      applyEntryContext:(_financeState, context = {}) => {
+        const filters = context.filters || {};
+        if (context.target === 'settlement/flows') {
+          state.flowFilters = {
+            ...state.flowFilters,
+            game:filters.game || context.game || 'all',
+            fulfillment:filters.fulfillment || 'all',
+            range:filters.range || '30d',
+            source:filters.ledgerSource || filters.ledger_source || 'direct_sale',
+          };
+          state.filterKeywordDrafts.flow = '';
+          state.flowPage = 1;
+        } else {
+          const statement = filters.statement || context.statement || '';
+          state.settlementFilters = { ...state.settlementFilters, keyword:statement, source:filters.ledgerSource || filters.ledger_source || 'direct_sale' };
+          state.filterKeywordDrafts.settlement = statement;
+          state.settlementPage = 1;
+        }
+      },
+      setScenario:(_financeState, scenario) => setDemoScenario(scenario),
+      auditLedger:financeDemoApi.auditLedger,
+      auditPayments:financeDemoApi.auditPayments,
+      snapshot:financeDemoApi.snapshot,
+      exportCsv:financeDemoApi.exportCsv,
+    };
+  } else {
+    render();
+  }
 })();

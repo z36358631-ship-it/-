@@ -448,8 +448,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const renderPublisherConsoleSidebar = (active, language = 'zh') => {
+    const finance = window.PublisherFinance
+      ? `<section><span>${language === 'en' ? 'Finance' : '财务'}</span><button type="button" data-portal-action="open-finance-entity">${icon('vendor')}<b>${language === 'en' ? 'Finance entity' : '财务主体'}</b>${icon('chevron')}</button><button type="button" data-portal-action="open-finance-settlement">${icon('chart')}<b>${language === 'en' ? 'Reconciliation & settlement' : '对账结算'}</b>${icon('chevron')}</button></section>`
+      : '';
     const vendor = `<section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section>`;
-    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${vendor}</aside>`;
+    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${finance}${vendor}</aside>`;
   };
 
   const renderPublisherGameCard = ({ name, gameId, appId, systems, stage, status, updatedAt, gameKey }) => `<button class="publisher-game-card" type="button" data-portal-action="enter-publisher-game" data-publisher-game="${e(gameKey)}" aria-label="进入${e(name)}控制台">
