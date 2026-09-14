@@ -2,12 +2,12 @@
   "schemaVersion": 1,
   "runId": "5b5fe1f2-9cff-43a0-8f69-29ef1ed5ade0",
   "requirementId": "GUANWANGGAID-41",
-  "revision": 121,
+  "revision": 122,
   "status": "passed",
   "createdAt": "2026-08-31T03:22:01.3837637Z",
-  "updatedAt": "2026-09-14T04:47:43.6168860Z",
+  "updatedAt": "2026-09-14T05:11:55.6834050Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
-  "cardHash": "014DA26E2A3210D4CDBC5644D32E3380696EEC40B179C7574EEABA8A101B4373",
+  "cardHash": "9151A3D14CD6ECAFC90A82EAB6791CD92480E004671A8884BA07692E8B706DE8",
   "contract": {
     "deliverables": [
       "可操作C/B Demo",
@@ -28,9 +28,10 @@
       "任务机审明确通过后自动发布，不确定结果转人工异常处理",
       "投稿内容与数据完整获取并校验通过后自动进入待人工结算",
       "最终发奖由人工确认，金额由系统公式只读计算",
-      "功能总开关与20%／50%／100%稳定灰度保护存量履约"
+      "功能总开关与20%／50%／100%稳定灰度保护存量履约",
+      "发布任务与兑换均要求实名认证，认证成功后只恢复原动作，最终提交二次校验"
     ],
-    "goal": "完成发行人计划V2.4机审发布、投稿自动取数、任务级人工结算、功能灰度及既有资产改造的同源交付",
+    "goal": "完成发行人计划V2.5机审发布、投稿自动取数、人工结算、功能灰度、资产改造及发布／兑换实名认证门槛的同源交付",
     "inScope": [
       "发行人计划C端Demo",
       "发行人计划B端Demo",
@@ -41,7 +42,8 @@
       "任务机审与人工异常处理",
       "投稿自动取数、异常分流与预算预留",
       "任务级人工结算与只读金额",
-      "功能总开关与稳定灰度"
+      "功能总开关与稳定灰度",
+      "发布任务与兑换实名认证前置及最终二次校验"
     ],
     "outOfScope": [
       "发行人计划实体京东卡、收货地址与物流",
@@ -60,7 +62,9 @@
       "用户确认任务中心方案A",
       "GameHub X-03页面配方与竖屏组件契约",
       "用户确认机审发布、自动取数、人工发奖与灰度规则",
-      "2026-09-11与2026-09-14发行人计划增量设计和实施计划"
+      "2026-09-11与2026-09-14发行人计划增量设计和实施计划",
+      "用户确认发布任务与兑换均要求实名认证",
+      "2026-09-14发行人计划实名认证门槛设计和实施计划"
     ]
   },
   "steps": [
@@ -111,11 +115,11 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 10,
+      "attempt": 11,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
-          "sha256": "014DA26E2A3210D4CDBC5644D32E3380696EEC40B179C7574EEABA8A101B4373"
+          "sha256": "9151A3D14CD6ECAFC90A82EAB6791CD92480E004671A8884BA07692E8B706DE8"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\specs\\2026-09-11-publisher-plan-automated-review-manual-settlement-design.md",
@@ -128,19 +132,29 @@
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\plans\\2026-09-11-publisher-plan-automated-review-manual-settlement.md",
           "sha256": "F78E7A8361057C299AE4849BAFA7D90D7066215B8A71C38BCFAE4D781BB6204D"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\specs\\2026-09-14-publisher-plan-real-name-gates-design.md",
+          "sha256": "884DF54EF37B1B3F56DDA3C684A2033FF19BD718BD1CA5C9D808E2453CFD96BB"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\plans\\2026-09-14-publisher-plan-real-name-gates.md",
+          "sha256": "0E37E02BE27670DC5D09C0F39C54614F0220FC9924E435C59886455C56129029"
         }
       ],
       "outputs": [
         "任务机审明确通过后自动发布，不确定结果转人工异常处理",
         "投稿完整取数并校验通过后自动进入待人工结算，最终发奖由人工确认且金额只读",
-        "灰度只控制功能准入，关闭或缩量不影响存量履约"
+        "灰度只控制功能准入，关闭或缩量不影响存量履约",
+        "发布任务和兑换未实名时拉起实名认证，成功后只恢复原动作，最终提交二次校验"
       ],
       "evidence": [
         "用户确认机审发布、自动取数和最终人工发奖",
         "用户确认总开关、20%／50%／100%稳定灰度及存量保护",
-        "D-012至D-017"
+        "D-012至D-017",
+        "用户确认D-018发布与兑换实名认证门槛"
       ],
-      "validation": "本轮变化已编译，C/B Demo、PRD、截图、验证器、状态卡和Git均受影响",
+      "validation": "本轮变化已编译，C端Demo、PRD、截图、验证器、状态卡和Git受影响；B端业务无变化",
       "error": null,
       "reviewer": null
     },
@@ -193,15 +207,15 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 8,
+      "attempt": 9,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.html",
-          "sha256": "69B6A9A3E2F5053AB39F1D1810760C772CDA2877573C40591F3890888B18DF94"
+          "sha256": "2A888552258A73B1ED66A131258E7BF41B023E0BA0BFC79745A93B8EA223C4E1"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.js",
-          "sha256": "8FB7CDEC2CAD671352D72D56E6A8978E1B6BA7DF96C33F7F736E145334CEC41B"
+          "sha256": "B83B711121BA201A0AD5830049A51591B5050188F7F0413AA84F1A957FA12FBB"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.html",
@@ -213,7 +227,7 @@
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【Prd】《盖世游戏》发行人计划需求.md",
-          "sha256": "489AAC48FD8AAEA5106F8B80A6BD87A5E75A630868120EDDBFD7A2539811D572"
+          "sha256": "E2D1A76CEDD1D37F7EDDD902F51463DF9F3FD845D6BD9445D375C062B3453F2A"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\00-product-flow.png",
@@ -225,18 +239,26 @@
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-public-preview.mjs",
-          "sha256": "57F470F006F4F6BD9295557E71B97779E7AEA56DEE63ED3C16BBBC36C43C60C1"
+          "sha256": "6911F31A6198A5CDFB21CC6819616FD84342E6BC2A7ED70C3603DDD5CF5067C4"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\25-publish-real-name-gate.png",
+          "sha256": "D820DF52286B50AB16D4765602FBC611FAB8C0F21B03A7B5EAB32A74AD4508D4"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\26-redeem-real-name-gate.png",
+          "sha256": "3C5ED86D959854DAC3C375804ABA8CFBF45A8DB43B33C74745382D39ACBC61EE"
         }
       ],
       "outputs": [
-        "C端任务机审、投稿自动取数、固定充值SKU与存量灰度准入",
-        "B端机器记录、异常处理、任务级人工结算、认证标签分离与功能外放设置",
-        "V2.4 PRD、25张固定图片及扩展公网点击验证器"
+        "C端发布与兑换实名认证前置、认证后安全恢复原动作及最终二次拦截",
+        "B端机器记录、异常处理、任务级人工结算、认证标签分离与功能外放设置保持不变",
+        "V2.5 PRD、27张固定图片及扩展公网点击验证器"
       ],
       "evidence": [
-        "实现与图片提交28814dee404787f72b1003bcf8c2c663df7cdc39",
-        "V2.4 PRD与公网验证提交3283e71ae89014e1280abd62f76cd0e9d50f05bf",
-        "PRD图片固定引用28814dee404787f72b1003bcf8c2c663df7cdc39"
+        "实名认证门槛设计提交09c78a43",
+        "实现与图片提交5bb4b32eaa6ece410627dd25a4f4040ed03f97a1",
+        "PRD图片固定引用5bb4b32eaa6ece410627dd25a4f4040ed03f97a1"
       ],
       "validation": "本轮业务产物与文档已同步，未扩展真实支付、真实卡密或线上发布",
       "error": null,
@@ -250,19 +272,19 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 8,
+      "attempt": 9,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-v2.mjs",
-          "sha256": "6B4A716D6D5E8195DBB6EB098D8BDAADA2F547E7662D7333E7CD00EBBEB26A27"
+          "sha256": "9496A4133154C65CEDF284A53D1AEAC0CE97E85125B1D68494B3E064EB068A53"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-v2-ui.mjs",
-          "sha256": "772A9D7CB46BEC0616D1EA56D2CD98CF996E0132F6C9D14A9B5E17FB31A1D84B"
+          "sha256": "CA98ED77B4128504E9FCF0DEA8C4940873836666D13B721F3D5829800DCC13AA"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-public-preview.mjs",
-          "sha256": "57F470F006F4F6BD9295557E71B97779E7AEA56DEE63ED3C16BBBC36C43C60C1"
+          "sha256": "6911F31A6198A5CDFB21CC6819616FD84342E6BC2A7ED70C3603DDD5CF5067C4"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\build-publisher-plan-v2-visual-evidence.py",
@@ -278,27 +300,27 @@
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【Prd】《盖世游戏》发行人计划需求.md",
-          "sha256": "489AAC48FD8AAEA5106F8B80A6BD87A5E75A630868120EDDBFD7A2539811D572"
+          "sha256": "E2D1A76CEDD1D37F7EDDD902F51463DF9F3FD845D6BD9445D375C062B3453F2A"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\evidence\\publisher-plan-v2\\verification.json",
-          "sha256": "62980609F42F435E05392753255310E43ED6704D6830FCE49FD20AD6345B95A2"
+          "sha256": "29BD595E22733AB8FF1E335DE4A775047A369C4F93484B091BD210E9AC8E0A83"
         }
       ],
       "outputs": [
         "PRD质量校验0错误0警告",
-        "静态合同与25张离线UI截图通过",
+        "静态合同与27张离线UI截图通过",
         "严格视觉回归通过",
-        "25张公网图片状态与MIME通过",
+        "27张公网图片状态与MIME通过",
         "固定提交C/B扩展点击通过"
       ],
       "evidence": [
         "validate-prd-quality.ps1：0错误、0警告",
         "node tools/verify-publisher-plan-v2.mjs：PASS",
-        "node tools/verify-publisher-plan-v2-ui.mjs：PASS，25张截图",
+        "node tools/verify-publisher-plan-v2-ui.mjs：PASS，27张截图",
         "python tools/build-publisher-plan-v2-visual-evidence.py：PASS",
-        "validate-prd-images.ps1 -VerifyRemote：25/25",
-        "node tools/verify-publisher-plan-public-preview.mjs 3283e71ae89014e1280abd62f76cd0e9d50f05bf：PASS"
+        "validate-prd-images.ps1 -VerifyRemote：27/27",
+        "node tools/verify-publisher-plan-public-preview.mjs 5bb4b32eaa6ece410627dd25a4f4040ed03f97a1：PASS"
       ],
       "validation": "机器验证覆盖本地合同、离线交互、视觉回归、远程图片和公网核心点击",
       "error": null,
@@ -312,15 +334,15 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 8,
+      "attempt": 9,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【Prd】《盖世游戏》发行人计划需求.md",
-          "sha256": "489AAC48FD8AAEA5106F8B80A6BD87A5E75A630868120EDDBFD7A2539811D572"
+          "sha256": "E2D1A76CEDD1D37F7EDDD902F51463DF9F3FD845D6BD9445D375C062B3453F2A"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.html",
-          "sha256": "69B6A9A3E2F5053AB39F1D1810760C772CDA2877573C40591F3890888B18DF94"
+          "sha256": "2A888552258A73B1ED66A131258E7BF41B023E0BA0BFC79745A93B8EA223C4E1"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.html",
@@ -348,7 +370,15 @@
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\evidence\\publisher-plan-v2\\verification.json",
-          "sha256": "62980609F42F435E05392753255310E43ED6704D6830FCE49FD20AD6345B95A2"
+          "sha256": "29BD595E22733AB8FF1E335DE4A775047A369C4F93484B091BD210E9AC8E0A83"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\25-publish-real-name-gate.png",
+          "sha256": "D820DF52286B50AB16D4765602FBC611FAB8C0F21B03A7B5EAB32A74AD4508D4"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\public\\prd\\publisher-plan-v2\\26-redeem-real-name-gate.png",
+          "sha256": "3C5ED86D959854DAC3C375804ABA8CFBF45A8DB43B33C74745382D39ACBC61EE"
         }
       ],
       "outputs": [
@@ -356,7 +386,8 @@
         "投稿完整取数后自动待人工结算，异常不按0点赞结算",
         "最终发奖由人工确认且金额、点赞、单价和上限只读",
         "灰度控制功能准入且存量履约不受关闭或缩量影响",
-        "PRD、Demo、截图和验证合同口径一致"
+        "PRD、Demo、截图和验证合同口径一致",
+        "发布与兑换实名认证门槛一致，认证回调未造成自动提交或资产变更"
       ],
       "evidence": [
         "原尺寸审看提交投稿、任务审核、视频审核、结算管理和功能外放设置截图",
@@ -378,19 +409,19 @@
         "S7"
       ],
       "status": "passed",
-      "attempt": 10,
+      "attempt": 11,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
-          "sha256": "014DA26E2A3210D4CDBC5644D32E3380696EEC40B179C7574EEABA8A101B4373"
+          "sha256": "9151A3D14CD6ECAFC90A82EAB6791CD92480E004671A8884BA07692E8B706DE8"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【Prd】《盖世游戏》发行人计划需求.md",
-          "sha256": "489AAC48FD8AAEA5106F8B80A6BD87A5E75A630868120EDDBFD7A2539811D572"
+          "sha256": "E2D1A76CEDD1D37F7EDDD902F51463DF9F3FD845D6BD9445D375C062B3453F2A"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.html",
-          "sha256": "69B6A9A3E2F5053AB39F1D1810760C772CDA2877573C40591F3890888B18DF94"
+          "sha256": "2A888552258A73B1ED66A131258E7BF41B023E0BA0BFC79745A93B8EA223C4E1"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.html",
@@ -398,27 +429,27 @@
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\tools\\verify-publisher-plan-public-preview.mjs",
-          "sha256": "57F470F006F4F6BD9295557E71B97779E7AEA56DEE63ED3C16BBBC36C43C60C1"
+          "sha256": "6911F31A6198A5CDFB21CC6819616FD84342E6BC2A7ED70C3603DDD5CF5067C4"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\evidence\\publisher-plan-v2\\verification.json",
-          "sha256": "62980609F42F435E05392753255310E43ED6704D6830FCE49FD20AD6345B95A2"
+          "sha256": "29BD595E22733AB8FF1E335DE4A775047A369C4F93484B091BD210E9AC8E0A83"
         }
       ],
       "outputs": [
-        "源文件｜通过：C/B Demo、V2.4 PRD、25张图、验证器和状态卡已同步",
-        "机器验证｜通过：PRD质量0错误0警告、静态合同、25张离线UI截图和严格视觉回归通过",
-        "专业判断｜通过：机审发布、自动取数、人工发奖、灰度与存量保护口径一致",
-        "Git｜通过：业务、图片、PRD和扩展验证器已推送至3283e71ae89014e1280abd62f76cd0e9d50f05bf",
-        "公开预览｜通过：固定提交C/B页面可打开，机审、投稿、结算、50%灰度和京东卡核心点击通过",
-        "远程资源｜通过：PRD 25张图片HTTP状态与MIME通过；飞书真实导入未执行"
+        "源文件｜通过：C/B Demo、V2.5 PRD、27张图、验证器和状态卡已同步",
+        "机器验证｜通过：PRD质量0错误0警告、静态合同、27张离线UI截图和严格视觉回归通过",
+        "专业判断｜通过：实名门槛、机审发布、自动取数、人工发奖、灰度与存量保护口径一致",
+        "Git｜通过：实名认证门槛、业务、图片和验证器已推送至5bb4b32eaa6ece410627dd25a4f4040ed03f97a1",
+        "公开预览｜通过：固定提交C/B页面可打开，实名门槛、机审、投稿、结算、50%灰度和京东卡核心点击通过",
+        "远程资源｜通过：PRD 27张图片HTTP状态与MIME通过；飞书真实导入未执行"
       ],
       "evidence": [
-        "状态卡D-012至D-017及产物登记已更新",
-        "固定图片提交28814dee404787f72b1003bcf8c2c663df7cdc39",
-        "V2.4 PRD与公网验证提交3283e71ae89014e1280abd62f76cd0e9d50f05bf"
+        "状态卡D-012至D-018及产物登记已更新",
+        "固定图片与实现提交5bb4b32eaa6ece410627dd25a4f4040ed03f97a1",
+        "V2.5 PRD固定引用5bb4b32eaa6ece410627dd25a4f4040ed03f97a1"
       ],
-      "validation": "发行人计划V2.4完成本地、Git、公网与远程图片对账，保持待用户验收",
+      "validation": "发行人计划V2.5完成本地、Git、公网与远程图片对账，保持待用户验收",
       "error": null,
       "reviewer": null
     }
