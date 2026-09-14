@@ -42,26 +42,40 @@ test('运营财务独立生成且默认进入主体汇总',async () => {
   assert.equal(await page.getByRole('tab',{ name:'主体汇总' }).getAttribute('aria-selected'),'true');
   assert.equal(await page.locator('[data-fo-filter="month"]').inputValue(),'2026-08');
   const text = await page.locator('[data-finance-operations]').innerText();
-  for (const label of ['用户实付','退款／拒付','销售税','支付费','平台分成','预扣税','应结算金额','收款账户','最近导出']) assert.match(text,new RegExp(label));
+  for (const label of ['用户实付','退款／拒付','销售税','支付费','平台分成','预扣税','应结算金额','CNY金额','收款账户']) assert.match(text,new RegExp(label));
+  assert.doesNotMatch(text,/最近导出|查看明细/);
   assert.doesNotMatch(text,/调整额|付款条件|发票|付款成功|付款失败|付款凭证|付款尝试/);
 });
 
-test('查看明细切换页签并带入精确聚合键且金额一致',async () => {
+test('游戏明细页签保留且金额与主体汇总一致',async () => {
   await open();
-  const entityRow = page.locator('[data-fo-entity-row]').first();
-  const payable = Number(await entityRow.getAttribute('data-payable-minor'));
-  const entityText = await entityRow.innerText();
-  await entityRow.getByRole('button',{ name:'查看明细' }).click();
+  const snapshot = await page.evaluate(() => window.__financeOperationsDemo.snapshot());
+  const entity = snapshot.entityRows[0];
+  const gamePayable = snapshot.gameRows.filter(row => row.entityKey === entity.key).reduce((sum,row) => sum + row.payableMinor,0);
+  assert.equal(gamePayable,entity.payableMinor);
+  await page.getByRole('tab',{ name:'游戏明细' }).click();
   assert.equal(await page.getByRole('tab',{ name:'游戏明细' }).getAttribute('aria-selected'),'true');
-  const linked = await page.locator('[data-fo-linked-filter]').innerText();
-  assert.match(linked,/主体版本 FIN-/);
-  assert.match(linked,/账户版本 ACC-/);
   assert.equal(await page.locator('[data-fo-filter="month"]').inputValue(),'2026-08');
-  assert.match(entityText,new RegExp(await page.locator('[data-fo-linked-filter] span').first().innerText().then(value => value.replace('主体版本 ',''))));
-  const gameRows = page.locator('[data-fo-game-row]');
-  assert.ok(await gameRows.count() > 0);
-  const gamePayable = await gameRows.evaluateAll(rows => rows.reduce((sum,row) => sum + Number(row.dataset.payableMinor),0));
-  assert.equal(gamePayable,payable);
+  assert.ok(await page.locator('[data-fo-game-row]').count() > 0);
+});
+
+test('主表金额不重复展示币种且主体汇总提供人民币金额',async () => {
+  await open();
+  const headers = await page.locator('[data-testid="entity-summary-table"] thead th').allTextContents();
+  assert.deepEqual(headers.slice(-3),['应结算金额','CNY金额','收款账户']);
+  const entityAmounts = await page.locator('[data-testid="entity-summary-table"] [data-fo-amount]').allTextContents();
+  assert.ok(entityAmounts.length > 0);
+  entityAmounts.forEach(value => assert.doesNotMatch(value,/^(?:USD|CNY)\s/));
+
+  const usdRow = page.locator('[data-fo-entity-row][data-currency="USD"]').first();
+  assert.equal(Number(await usdRow.getAttribute('data-cny-minor')),Math.round(Number(await usdRow.getAttribute('data-payable-minor')) * 7.12));
+  const cnyRow = page.locator('[data-fo-entity-row][data-currency="CNY"]').first();
+  assert.equal(await cnyRow.getAttribute('data-cny-minor'),await cnyRow.getAttribute('data-payable-minor'));
+
+  await page.getByRole('tab',{ name:'游戏明细' }).click();
+  const gameAmounts = await page.locator('[data-testid="game-detail-table"] [data-fo-amount]').allTextContents();
+  assert.ok(gameAmounts.length > 0);
+  gameAmounts.forEach(value => assert.doesNotMatch(value,/^(?:USD|CNY)\s/));
 });
 
 test('游戏明细每页20条并支持独立筛选与重置',async () => {
@@ -80,10 +94,9 @@ test('游戏明细每页20条并支持独立筛选与重置',async () => {
   assert.equal(await page.locator('[data-fo-filter="month"]').inputValue(),'2026-08');
 });
 
-test('主体导出含完整账户并回写最近导出',async () => {
+test('主体导出含完整账户且页面不维护导出状态',async () => {
   await open();
-  const target = page.locator('[data-fo-entity-row]').filter({ hasText:'未导出' }).first();
-  const key = await target.getAttribute('data-row-key');
+  const target = page.locator('[data-fo-entity-row]').first();
   await target.locator('[data-fo-select-row]').check();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button',{ name:'导出选中（1）' }).click();
@@ -93,31 +106,28 @@ test('主体导出含完整账户并回写最近导出',async () => {
   assert.match(csv,/银行账号/);
   assert.match(csv,/\t(?:0848019237826|001920003188|012875009066|60138200001909066)/);
   assert.doesNotMatch(csv,/调整额|付款状态|发票/);
-  const updated = page.locator(`[data-fo-entity-row][data-row-key="${key}"]`);
-  assert.match(await updated.innerText(),/2026-09-14 18:30\s+平台运营 李然/);
+  assert.match(await page.locator('[data-fo-export-status]').innerText(),/已导出 1 条主体汇总/);
+  assert.equal(await page.getByText('最近导出',{ exact:true }).count(),0);
 });
 
-test('游戏明细导出不改变主体最近导出',async () => {
+test('游戏明细可独立导出',async () => {
   await open();
-  const before = await page.evaluate(() => JSON.stringify(window.__financeOperationsDemo.snapshot().entityRows.map(row => [row.key,row.lastExportedAt])));
   await page.getByRole('tab',{ name:'游戏明细' }).click();
   await page.locator('[data-fo-game-row]').first().locator('[data-fo-select-row]').check();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button',{ name:'导出选中（1）' }).click();
-  await downloadPromise;
-  const afterValue = await page.evaluate(() => JSON.stringify(window.__financeOperationsDemo.snapshot().entityRows.map(row => [row.key,row.lastExportedAt])));
-  assert.equal(afterValue,before);
+  const download = await downloadPromise;
+  assert.equal(download.suggestedFilename(),'游戏结算明细_2026-08.csv');
+  assert.match(await page.locator('[data-fo-export-status]').innerText(),/已导出 1 条游戏明细/);
 });
 
-test('导出失败不回写最近导出',async () => {
+test('导出失败给出重试提示',async () => {
   await open();
-  const target = page.locator('[data-fo-entity-row]').filter({ hasText:'未导出' }).first();
-  const key = await target.getAttribute('data-row-key');
+  const target = page.locator('[data-fo-entity-row]').first();
   await target.locator('[data-fo-select-row]').check();
   await page.evaluate(() => { URL.createObjectURL = () => { throw new Error('mock failure'); }; });
   await page.getByRole('button',{ name:'导出选中（1）' }).click();
-  assert.match(await page.locator('[data-fo-export-status]').innerText(),/导出失败/);
-  assert.match(await page.locator(`[data-fo-entity-row][data-row-key="${key}"]`).innerText(),/未导出/);
+  assert.equal(await page.locator('[data-fo-export-status]').innerText(),'导出失败，请重试');
 });
 
 test('交易流水只展示支付商税费汇率事实',async () => {
