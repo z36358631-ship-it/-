@@ -40,7 +40,7 @@ const myPublished=[
 ];
 const myJoined=[
 {taskId:1,status:'进行中',statusColor:'#ff8c00',note:'剩余48小时'},
-{taskId:2,status:'审核中',statusColor:'#1890ff',note:''},
+{taskId:2,status:'数据校验通过，待人工结算',statusColor:'#1890ff',note:'已预留 8,000 盖世币'},
 {taskId:3,status:'已结算',statusColor:'#52c41a',note:'+150盖世币'}
 ];
 const earnRecords=[
@@ -123,6 +123,59 @@ const identityState={
   creatorCertified:true,
   creatorTag:null
 };
+const ALLOWED_ROLLOUT_PERCENTS=[20,50,100];
+const publisherRollout={
+  enabled:true,
+  rolloutPercent:20,
+  rolloutSeed:'publisher-plan-round-1',
+  configVersion:1,
+  updatedBy:'运营管理员',
+  updatedAt:'2026-09-14 11:30'
+};
+const publisherRolloutSubject={accountId:'u10002',installationId:'install-demo-001',loggedIn:true};
+
+function stableRolloutBucket(value){
+  let hash=2166136261;
+  for(let i=0;i<value.length;i+=1){
+    hash^=value.charCodeAt(i);
+    hash=Math.imul(hash,16777619);
+  }
+  return (hash>>>0)%100;
+}
+
+function hasExistingPublisherRelationship(){
+  return myPublished.length>0||myJoined.length>0;
+}
+
+function getPublisherRolloutDecision({
+  subjectId=publisherRolloutSubject.loggedIn?publisherRolloutSubject.accountId:publisherRolloutSubject.installationId,
+  hasExistingRelation=hasExistingPublisherRelationship(),
+  config=publisherRollout
+}={}){
+  const percent=ALLOWED_ROLLOUT_PERCENTS.includes(config.rolloutPercent)?config.rolloutPercent:0;
+  const bucket=stableRolloutBucket(`${subjectId}|publisher_plan|${config.rolloutSeed}`);
+  const canStartNew=Boolean(config.enabled)&&bucket<percent;
+  return {
+    bucket,
+    canStartNew,
+    canManageExisting:Boolean(hasExistingRelation),
+    configVersion:config.configVersion,
+    rolloutPercent:percent
+  };
+}
+
+function canStartNewPublisherAction(){
+  return getPublisherRolloutDecision().canStartNew;
+}
+
+function openCreateTask(){
+  if(!canStartNewPublisherAction())return false;
+  editingTask=null;
+  document.getElementById('create-title').textContent='创建发行任务';
+  renderCreateForm();
+  showView('create');
+  return true;
+}
 function G(id){return games.find(g=>g.id===id)}
 
 function requirePublisherIdentity(){
@@ -150,6 +203,7 @@ function requireSubmissionIdentity(){
 }
 
 function beginSubmission(){
+  if(!canStartNewPublisherAction())return false;
   if(!requireSubmissionIdentity())return;
   const available=currentTask.pool-currentTask.reserved;
   if(available<currentTask.maxReward){

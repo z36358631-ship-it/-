@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "checkedAt": "2026-09-10T05:16:24.089Z",
+  "checkedAt": "2026-09-14T04:13:19.444Z",
   "contract": {
     "totalBefore": 3650,
     "redeemableBefore": 2650,
@@ -10,6 +10,20 @@
     "rechargeAfterJd20": 1000,
     "physicalCardOrLogistics": false,
     "mallTitle": "兑换商城",
+    "dailyTaskLimit": 10,
+    "taskBudgetMin": 5000,
+    "taskBudgetMax": 10000000,
+    "rewardFormula": "min(likes * coinPerLike, perSubmissionCap)",
+    "submissionReserve": "perSubmissionCap",
+    "taskReview": "machine-auto-publish",
+    "settlement": "manual-confirm-system-calculated",
+    "rolloutPercents": [
+      20,
+      50,
+      100
+    ],
+    "rolloutBucket": "stable-subject",
+    "existingFulfillmentProtected": true,
     "globalAlertThreshold": 3,
     "alertScope": "per-sku",
     "repeatHours": 24,
@@ -67,64 +81,64 @@
       "name": "00-product-flow",
       "title": "产品流程",
       "path": "public/prd/publisher-plan-v2/00-product-flow.png",
-      "bytes": 268200,
-      "width": 2180,
-      "height": 800,
-      "sha256": "8b6d1a57d63f4730e2c50e1aa528c2636cc8a97a611b150c34a7565915f65b27"
+      "bytes": 403967,
+      "width": 1800,
+      "height": 1540,
+      "sha256": "962d0262c80b8b5b34d337c2325eb9986a5ecda5d7f51e499a6bdc797d7dde8c"
     },
     {
       "name": "01-task-plaza",
       "title": "找任务",
       "path": "public/prd/publisher-plan-v2/01-task-plaza.png",
-      "bytes": 66474,
+      "bytes": 66456,
       "width": 376,
       "height": 812,
-      "sha256": "240a5867567f3dc9604e4a04414229a3348cf488219912e8fcdcf51a1ed04c73"
+      "sha256": "4e2093d9b91e9454dc0120d50ac6a22222539d7348d03fabcdb33ddd9542d574"
     },
     {
       "name": "02-play-rules",
       "title": "玩法说明",
       "path": "public/prd/publisher-plan-v2/02-play-rules.png",
-      "bytes": 46417,
+      "bytes": 44248,
       "width": 376,
       "height": 812,
-      "sha256": "92f71d267fed939ad4e88dbb017b6b3331896cd0d567da39a11d7e9c45f53042"
+      "sha256": "1bd6afdb13db9f1488e1e74bf0767b4494ca70b7b8cc4da9bcfe1d6e3c874cff"
     },
     {
       "name": "03-task-detail",
       "title": "任务详情",
       "path": "public/prd/publisher-plan-v2/03-task-detail.png",
-      "bytes": 49407,
+      "bytes": 48361,
       "width": 376,
       "height": 812,
-      "sha256": "cef356c2bbe2d65f0ba93c650d2f67725fda19c54b4e2e453d79659404a71cd6"
+      "sha256": "3dc32d233c03594da23e7f311faeb1612da5d9b76b07bd4dda7ed30741a3f91c"
     },
     {
       "name": "04-my-tasks",
       "title": "做任务",
       "path": "public/prd/publisher-plan-v2/04-my-tasks.png",
-      "bytes": 23950,
+      "bytes": 25939,
       "width": 376,
       "height": 812,
-      "sha256": "34c284fdb10e09feee7c8ca5f54f8135c4873cb0bdb584998924e06a300d92ee"
+      "sha256": "ee4c91306ac5f7add7563f3bbeb1a49cbdf5333bf216a66b3428d59a4a21a107"
     },
     {
       "name": "05-submit-work",
       "title": "提交投稿",
       "path": "public/prd/publisher-plan-v2/05-submit-work.png",
-      "bytes": 25212,
+      "bytes": 34386,
       "width": 376,
       "height": 812,
-      "sha256": "a5dfe204e89ae6ab394d315c653a549ed1c0c1705d012c355c60c867efd02c86"
+      "sha256": "c1af54058d5e1e8c7eb1dd63c047152dda9b041595fbcef40a2762647c8f9c8a"
     },
     {
       "name": "06-create-task",
       "title": "创建发行任务",
       "path": "public/prd/publisher-plan-v2/06-create-task.png",
-      "bytes": 34593,
+      "bytes": 36221,
       "width": 376,
       "height": 812,
-      "sha256": "2e6d0506794a498cb092d98ed6e9dc6af50408859216ed3a35f6a0946efd1c66"
+      "sha256": "7aad8a38ec38d41fa34404851b44fd92e09c39bc86862ab7c072a4766385b22a"
     },
     {
       "name": "07-wallet",
@@ -139,10 +153,10 @@
       "name": "08-recharge",
       "title": "充值盖世币",
       "path": "public/prd/publisher-plan-v2/08-recharge.png",
-      "bytes": 35282,
+      "bytes": 34295,
       "width": 376,
       "height": 812,
-      "sha256": "46d8d1b5488e990c6f91b39c94dea2567f0d475550c4c201be761df08acafba9"
+      "sha256": "c943d1319465f8b837ee86c8d111c06c73b9519bf68e1e1b23b0d2a3a8aa57d8"
     },
     {
       "name": "09-card-store",
@@ -184,100 +198,109 @@
       "name": "13-dashboard",
       "title": "数据看板",
       "path": "public/prd/publisher-plan-v2/13-dashboard.png",
-      "bytes": 73437,
+      "bytes": 78336,
       "width": 1440,
       "height": 900,
-      "sha256": "d09648983eae37487b237a2fc8650a9a17420d88c83b1da3cffb90cfbca7a91d"
+      "sha256": "3078933d53aad41790ebc666792cfd6e3f3dd7995372455891d92866e4bc8f44"
     },
     {
       "name": "14-task-management",
       "title": "任务管理",
       "path": "public/prd/publisher-plan-v2/14-task-management.png",
-      "bytes": 72523,
+      "bytes": 78895,
       "width": 1440,
       "height": 900,
-      "sha256": "d500b48cad78ba809bc38f3e17142b86b79fcd5d77fc79707da36faea5532c9b"
+      "sha256": "af45cf94aa74f4094283e5ecde6354ceee74b64c6903e4c7c68f95c5abf5de33"
     },
     {
       "name": "15-task-review",
       "title": "任务审核",
       "path": "public/prd/publisher-plan-v2/15-task-review.png",
-      "bytes": 42497,
+      "bytes": 46023,
       "width": 1440,
       "height": 900,
-      "sha256": "4c4e1509a0fa6bd1569e50b35812388c971bfbb5ebe5377e43de64fe96e3accd"
+      "sha256": "e0b226ea25ecf41cf497a6e6951a8eb907e9f3f91ad4b27b85bb749caebe7559"
     },
     {
       "name": "16-video-review",
       "title": "视频审核",
       "path": "public/prd/publisher-plan-v2/16-video-review.png",
-      "bytes": 61988,
+      "bytes": 70192,
       "width": 1440,
       "height": 900,
-      "sha256": "8c6147057306fa9a4a1892650e467643d89d7ed94f3c3b22a71dc56c44e39dab"
+      "sha256": "dfaa8a259cc681f4f1351f8fc6c838d7b4e9459308d21acb1092a2ca76c15b98"
     },
     {
       "name": "17-settlement",
       "title": "结算管理",
       "path": "public/prd/publisher-plan-v2/17-settlement.png",
-      "bytes": 58585,
+      "bytes": 62923,
       "width": 1440,
       "height": 900,
-      "sha256": "56a840880ca95d3f2b4798b2d175632be525b48aeade9aa194010f011c71be2d"
+      "sha256": "8edbd4f773f0930f18fd4a9201efed8038848fa1ac8386f969b817db41f87bac"
     },
     {
       "name": "18-risk",
       "title": "风控中心",
       "path": "public/prd/publisher-plan-v2/18-risk.png",
-      "bytes": 79451,
+      "bytes": 82480,
       "width": 1440,
       "height": 900,
-      "sha256": "8d7c7701d08e3103af41c8747ae9185209605457c65d4fe43ec0118ce6f1c4ee"
+      "sha256": "40e02cdbe8f648aa96decdf3d4b525a92afa83dd5ca589c992245d3813e82a59"
     },
     {
       "name": "19-creator-review",
       "title": "创作者审核",
       "path": "public/prd/publisher-plan-v2/19-creator-review.png",
-      "bytes": 89377,
+      "bytes": 106122,
       "width": 1440,
       "height": 900,
-      "sha256": "278db50d8185ff885ed7459747e230af36b52bb8c251098ec9dfe4a6f9f2d835"
+      "sha256": "a55a32a24d8c8368af436b6df0105afd63152fac307c12e4368ca771ba6c8d44"
     },
     {
       "name": "20-card-products",
       "title": "京东卡商品配置",
       "path": "public/prd/publisher-plan-v2/20-card-products.png",
-      "bytes": 55553,
+      "bytes": 57983,
       "width": 1440,
       "height": 900,
-      "sha256": "368c675c1464cb408b46c757bd4da2cfea0eb98c9977b6ca42c51b587ba27817"
+      "sha256": "4161325a12f3c8f8c1245be0ada7fbd6480404b26143166b58d02054d1f2c0fc"
     },
     {
       "name": "21-card-inventory",
       "title": "卡密库存",
       "path": "public/prd/publisher-plan-v2/21-card-inventory.png",
-      "bytes": 73134,
+      "bytes": 75402,
       "width": 1440,
       "height": 900,
-      "sha256": "fb45176ef4c2c46ef8761ee30e940c53d27c27ab8b29dc64df82b15e09d314e6"
+      "sha256": "de4e4bcc6b7a889c0493c99d934c300353c6bb7113682e76b43d301b25510689"
     },
     {
       "name": "22-card-orders",
       "title": "京东卡兑换订单",
       "path": "public/prd/publisher-plan-v2/22-card-orders.png",
-      "bytes": 72946,
+      "bytes": 72961,
       "width": 1440,
       "height": 900,
-      "sha256": "01d1c491635e38a529a8765d536080dcb3c1e87838383d86de0bd09afc98448a"
+      "sha256": "6be47d576f427a1af9865ab4de23afdb70eeba89b37a6463dac959a8fd410183"
     },
     {
       "name": "23-card-alert-settings",
       "title": "库存告警设置",
       "path": "public/prd/publisher-plan-v2/23-card-alert-settings.png",
-      "bytes": 82283,
+      "bytes": 84322,
       "width": 1440,
       "height": 900,
-      "sha256": "1bd7fdc82409d43fd53e13993faa5374b25b2cf620765cea8a34813d284890e5"
+      "sha256": "4d62235b80e9544e364410031c2a71d77f3c9e4f8b1dddbf68187425628a9f30"
+    },
+    {
+      "name": "24-feature-rollout-settings",
+      "title": "发行人计划外放设置",
+      "path": "public/prd/publisher-plan-v2/24-feature-rollout-settings.png",
+      "bytes": 85365,
+      "width": 1440,
+      "height": 900,
+      "sha256": "425237c1b9a0844b9fd9b5eaec3cc312679b4f812b990b486a5c785ea8bdf9fc"
     }
   ],
   "componentEvidence": [
@@ -312,10 +335,10 @@
       "name": "B-CARD-TABS",
       "title": "京东卡管理 Tab",
       "path": "docs/evidence/publisher-plan-v2/components/b-card-tabs.png",
-      "bytes": 1860,
+      "bytes": 2724,
       "width": 1172,
       "height": 47,
-      "sha256": "db9549d66883e3c033641f6fa14b7d2df3fac039fbefb2eb6cdcf6ce3c103dab"
+      "sha256": "d35c8e088c052a7e4d3dfee8fe146820262d585a6079fbd9656456fe2c15e4f9"
     },
     {
       "name": "C-TOPBAR-V1",
@@ -329,28 +352,14 @@
   ],
   "visualComparison": {
     "status": "pass",
-    "checkedAt": "2026-09-10T05:16:24.089Z",
+    "checkedAt": "2026-09-14T04:13:19.444Z",
     "method": "full-resolution RGB MAE similarity, Canny edge XOR, uniform-window SSIM, CIEDE2000 P95 and component geometry",
     "noResize": true,
     "geometryThresholdPx": 2,
     "strictComponentPassed": true,
     "manualReview": {
-      "status": "pass",
-      "reviewer": "Codex 产品与视觉复核",
-      "note": "按原尺寸检查玩法说明、钱包、兑换商城、确认与结果弹窗、京东卡商品、卡密库存、兑换订单、库存告警设置和横向产品流程；新文案无裁切、重叠或溢出，未新增页面或流程。",
-      "files": [
-        "public/prd/publisher-plan-v2/00-product-flow.png",
-        "public/prd/publisher-plan-v2/02-play-rules.png",
-        "public/prd/publisher-plan-v2/07-wallet.png",
-        "public/prd/publisher-plan-v2/09-card-store.png",
-        "public/prd/publisher-plan-v2/10-card-confirm.png",
-        "public/prd/publisher-plan-v2/11-card-success.png",
-        "public/prd/publisher-plan-v2/12-card-history.png",
-        "public/prd/publisher-plan-v2/20-card-products.png",
-        "public/prd/publisher-plan-v2/21-card-inventory.png",
-        "public/prd/publisher-plan-v2/22-card-orders.png",
-        "public/prd/publisher-plan-v2/23-card-alert-settings.png"
-      ]
+      "status": "pending",
+      "reviewer": null
     },
     "pairs": [
       {
@@ -391,10 +400,10 @@
           "height": 900
         },
         "metrics": {
-          "rgbSimilarity": 0.999195,
-          "edgeSimilarity": 0.998592,
-          "ssim": 0.994983,
-          "deltaE2000P95": 0.0
+          "rgbSimilarity": 0.970755,
+          "edgeSimilarity": 0.919626,
+          "ssim": 0.813233,
+          "deltaE2000P95": 7.710558
         },
         "thresholds": {
           "rgbSimilarityMin": 0.95,
@@ -402,7 +411,7 @@
           "ssimMin": 0.95,
           "deltaE2000P95Max": 3.0
         },
-        "automaticPassed": true,
+        "automaticPassed": false,
         "files": {
           "original": "docs/evidence/publisher-plan-v2/visual/dashboard-shell-regression/original.png",
           "implementation": "docs/evidence/publisher-plan-v2/visual/dashboard-shell-regression/implementation.png",

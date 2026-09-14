@@ -144,6 +144,12 @@ mustContain(cHtml + cJs, [
   '最终以点赞统计截止时间的数据快照及人工结算结果为准',
   '当前任务奖池名额已满'
 ], 'C publishing flow');
+mustContain(cHtml + cJs, [
+  'publisherRollout',
+  'stableRolloutBucket',
+  'getPublisherRolloutDecision',
+  'canStartNewPublisherAction'
+], 'C feature rollout');
 mustNotContain(cHtml + cJs, [
   'handleWithdraw',
   '确认提现',
@@ -191,6 +197,16 @@ mustContain(bHtml + bJs, [
   '认证创作者',
   '定向邀请专属标签'
 ], 'B review and settlement flow');
+mustContain(bHtml + bJs, [
+  '发行人计划外放设置',
+  '功能开关',
+  '20%',
+  '50%',
+  '100%',
+  '已关闭',
+  '已开启 ·',
+  'publisherRolloutChangeLog'
+], 'B feature rollout');
 mustContain(bHtml + bJs, [
   '不得按 0 点赞结算'
 ], 'B inaccessible-work settlement rule');
@@ -262,6 +278,15 @@ mustContain(prd, [
   '专属标签是独立状态'
 ], 'PRD V2.3');
 mustContain(prd, [
+  'V2.4',
+  '功能总开关',
+  '20%、50%、100%',
+  '稳定分桶',
+  '存量履约',
+  'publisher_rollout_gate_result',
+  'publisher_rollout_config_update'
+], 'PRD feature rollout');
+mustContain(prd, [
   '不按 0 点赞结算'
 ], 'PRD inaccessible-work settlement rule');
 assert(
@@ -272,7 +297,11 @@ mustNotContain(cHtml + cJs + bHtml + bJs + prd, [
   '发行积分',
   '发行币',
   '共创币',
-  '创作者计划'
+  '创作者计划',
+  '投稿作品外放灰度',
+  '自定义灰度比例',
+  '自动扩量',
+  '自动回滚'
 ], 'publisher currency terminology');
 mustNotContain(prd, [
   '__' + 'IMAGE_COMMIT_SHA' + '__',
@@ -286,7 +315,7 @@ assert(
 );
 
 const imagePaths = [...prd.matchAll(/publisher-plan-v2\/(\d{2}-[a-z0-9-]+\.png)/g)].map(match => match[1]);
-assert.equal(new Set(imagePaths).size, 24, 'PRD must reference exactly 24 unique publisher-plan-v2 images');
+assert.equal(new Set(imagePaths).size, 25, 'PRD must reference exactly 25 unique publisher-plan-v2 images');
 
 const eventNames = [...prd.matchAll(/\| `([a-z][a-z0-9_]+)` \|/g)].map(match => match[1]);
 assert.equal(new Set(eventNames).size, eventNames.length, 'PRD contains duplicate event names');

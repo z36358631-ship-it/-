@@ -128,6 +128,31 @@ try {
   const page = c.page;
   await page.locator('.phone').waitFor({ state: 'visible' });
 
+  assert.equal(await page.evaluate(() => calculateReward(3800, 2, 10000)), 7600);
+  assert.equal(await page.evaluate(() => calculateReward(8000, 2, 10000)), 10000);
+  const rolloutResult = await page.evaluate(() => {
+    const config20 = { ...publisherRollout, enabled: true, rolloutPercent: 20 };
+    const config50 = { ...publisherRollout, enabled: true, rolloutPercent: 50 };
+    const config100 = { ...publisherRollout, enabled: true, rolloutPercent: 100 };
+    const off = { ...publisherRollout, enabled: false, rolloutPercent: 50 };
+    const subjectId = 'u10002';
+    return {
+      first: stableRolloutBucket(`${subjectId}|publisher_plan|${publisherRollout.rolloutSeed}`),
+      second: stableRolloutBucket(`${subjectId}|publisher_plan|${publisherRollout.rolloutSeed}`),
+      at20: getPublisherRolloutDecision({ subjectId, hasExistingRelation: false, config: config20 }).canStartNew,
+      at50: getPublisherRolloutDecision({ subjectId, hasExistingRelation: false, config: config50 }).canStartNew,
+      at100: getPublisherRolloutDecision({ subjectId, hasExistingRelation: false, config: config100 }).canStartNew,
+      off: getPublisherRolloutDecision({ subjectId, hasExistingRelation: false, config: off }).canStartNew,
+      existing: getPublisherRolloutDecision({ subjectId, hasExistingRelation: true, config: off }).canManageExisting
+    };
+  });
+  assert.equal(rolloutResult.first, rolloutResult.second, 'same subject must stay in one bucket');
+  assert.equal(rolloutResult.at20, true, 'fixture account must be inside the first 20 percent');
+  assert.equal(rolloutResult.at50, true, '20 percent users must remain in 50 percent');
+  assert.equal(rolloutResult.at100, true);
+  assert.equal(rolloutResult.off, false);
+  assert.equal(rolloutResult.existing, true);
+
   await captureC(page, '01-task-plaza', '找任务');
   await page.evaluate(() => showRules('plaza'));
   await captureC(page, '02-play-rules', '玩法说明');
@@ -136,6 +161,8 @@ try {
   assert.equal(await page.getByText('只有参与发行任务并结算获得的盖世币可兑换京东电子卡', { exact: false }).count() > 0, true);
 
   await page.evaluate(() => openDetail(1));
+  assert.equal(await page.getByText('每 1 个赞奖励 2 盖世币', { exact: false }).count() > 0, true);
+  assert.equal(await page.getByText('单篇最高 10,000 盖世币', { exact: false }).count() > 0, true);
   await captureC(page, '03-task-detail', '任务详情');
   await page.evaluate(() => showView('mytask'));
   await captureC(page, '04-my-tasks', '做任务');
@@ -167,6 +194,7 @@ try {
   await page.evaluate(() => showView('recharge'));
   await captureC(page, '08-recharge', '充值盖世币');
   assert.equal(await page.getByText('充值所得仅可用于发布任务，不计入兑换余额', { exact: false }).count() > 0, true);
+  assert.equal(await page.locator('#custom-amt').count(), 0, '充值不得支持自定义金额');
 
   await page.evaluate(() => showView('card-store'));
   assert.equal(await page.locator('#view-card-store .header .title').innerText(), '兑换商城');
@@ -213,6 +241,94 @@ try {
   const rechargeBalances = await rechargeCheck.page.evaluate(() => ({ ...wallet }));
   assert.deepEqual(rechargeBalances, { totalBalance: 8650, redeemableBalance: 2650, rechargeBalance: 6000 });
 
+  const identityCheck = await openTracked(cDemo, { width: 520, height: 980 });
+  await identityCheck.page.evaluate(() => {
+    identityState.realNameVerified = false;
+    requirePublisherIdentity();
+  });
+  assert.equal(await identityCheck.page.getByText('完成实名认证', { exact: true }).count(), 1);
+  await identityCheck.page.evaluate(() => {
+    closeModal();
+    identityState.realNameVerified = true;
+    identityState.creatorCertified = false;
+    currentTask = tasks[0];
+    beginSubmission();
+  });
+  assert.equal(await identityCheck.page.getByText('完成创作者认证', { exact: true }).count(), 1);
+
+  const taskFlow = await openTracked(cDemo, { width: 520, height: 980 });
+  await taskFlow.page.evaluate(() => {
+    wallet.totalBalance = 50000;
+    wallet.rechargeBalance = 50000;
+    wallet.redeemableBalance = 0;
+    openCreateTask();
+    selectGame(1);
+  });
+  await taskFlow.page.locator('#cr-name').fill('机器审核自动发布测试');
+  await taskFlow.page.locator('#cr-price').fill('2');
+  await taskFlow.page.locator('#cr-max').fill('10000');
+  await taskFlow.page.locator('#cr-pool').fill('10000');
+  await taskFlow.page.locator('#cr-submit-deadline').fill('2026-09-25T23:59');
+  await taskFlow.page.locator('#cr-like-deadline').fill('2026-09-28T23:59');
+
+  await taskFlow.page.evaluate(() => { publisherState.submittedToday = 10; });
+  await taskFlow.page.locator('#submit-task-btn').click();
+  assert.equal(await taskFlow.page.getByText('同一实名主体每天最多提交 10 个任务', { exact: true }).count(), 1);
+
+  await taskFlow.page.evaluate(() => { publisherState.submittedToday = 9; });
+  await taskFlow.page.locator('#cr-pool').fill('4999');
+  await taskFlow.page.locator('#submit-task-btn').click();
+  assert.equal(await taskFlow.page.getByText('任务预算需为 5,000～10,000,000 盖世币', { exact: true }).count(), 1);
+
+  await taskFlow.page.locator('#cr-pool').fill('10000001');
+  await taskFlow.page.locator('#submit-task-btn').click();
+  assert.equal(await taskFlow.page.getByText('任务预算需为 5,000～10,000,000 盖世币', { exact: true }).count(), 1);
+
+  await taskFlow.page.locator('#cr-pool').fill('10000');
+  await taskFlow.page.locator('#submit-task-btn').click();
+  assert.equal(await taskFlow.page.evaluate(() => myPublished[0].status), '机器审核中');
+  await taskFlow.page.waitForTimeout(650);
+  assert.equal(await taskFlow.page.evaluate(() => myPublished[0].status), '进行中');
+  assert.equal(await taskFlow.page.getByText('机器审核通过后自动发布，任务已上架', { exact: true }).count(), 1);
+
+  const submissionCheck = await openTracked(cDemo, { width: 520, height: 980 });
+  await submissionCheck.page.evaluate(() => {
+    currentTask = tasks[0];
+    showView('submit');
+  });
+  const beforeReserved = await submissionCheck.page.evaluate(() => currentTask.reserved);
+  await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/valid-001');
+  await submissionCheck.page.getByRole('button', { name: '提交投稿' }).click();
+  assert.equal(await submissionCheck.page.getByText('数据校验通过，待人工结算', { exact: false }).count() > 0, true);
+  const submissionResult = await submissionCheck.page.evaluate(before => ({
+    status: submissions[0].status,
+    likes: submissions[0].likes,
+    expectedReward: submissions[0].expectedReward,
+    reservedDelta: currentTask.reserved - before
+  }), beforeReserved);
+  assert.deepEqual(submissionResult, { status: '数据校验通过，待人工结算', likes: 3800, expectedReward: 7600, reservedDelta: 10000 });
+
+  await submissionCheck.page.evaluate(() => showView('submit'));
+  await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/timeout-001');
+  await submissionCheck.page.getByRole('button', { name: '提交投稿' }).click();
+  assert.equal(await submissionCheck.page.evaluate(() => submissions[0].status), '抓取重试');
+  assert.deepEqual(await submissionCheck.page.evaluate(() => ({ expectedReward: submissions[0].expectedReward, reservedCoin: submissions[0].reservedCoin })), { expectedReward: null, reservedCoin: 0 });
+
+  const beforeDuplicate = await submissionCheck.page.evaluate(() => submissions.length);
+  await submissionCheck.page.evaluate(() => showView('submit'));
+  await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/valid-001');
+  await submissionCheck.page.getByRole('button', { name: '提交投稿' }).click();
+  assert.equal(await submissionCheck.page.getByText('该作品已提交过，不能重复投稿', { exact: true }).count(), 1);
+  assert.equal(await submissionCheck.page.evaluate(() => submissions.length), beforeDuplicate);
+
+  await submissionCheck.page.evaluate(() => {
+    currentTask.reserved = currentTask.pool - currentTask.maxReward + 1;
+    showView('submit');
+  });
+  await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/valid-002');
+  await submissionCheck.page.getByRole('button', { name: '提交投稿' }).click();
+  assert.equal(await submissionCheck.page.getByText('当前任务奖池名额已满', { exact: true }).count(), 1);
+
   const b = await openTracked(bDemo, { width: 1440, height: 900 });
   const adminPage = b.page;
   const adminScreens = [
@@ -229,6 +345,59 @@ try {
     await captureB(adminPage, name, title);
   }
   assert.equal(await adminPage.locator('img').count(), 0, '后台应无远程头像图片');
+
+  await adminPage.evaluate(() => switchPage('audit-task'));
+  assert.equal(await adminPage.getByText('任务机器审核记录', { exact: true }).count(), 1);
+  assert.equal(await adminPage.getByRole('button', { name: '通过', exact: true }).count(), 0, '正常任务不得进入人工发布通过队列');
+
+  await adminPage.evaluate(() => switchPage('audit-video'));
+  for (const text of ['数据校验通过，待人工结算', '抓取重试', '风险挂起', '重新抓取']) {
+    assert.equal(await adminPage.getByText(text, { exact: false }).count() > 0, true, `missing ${text}`);
+  }
+
+  await adminPage.evaluate(() => switchPage('settlement'));
+  assert.equal(await adminPage.getByText('任务级结算批次', { exact: false }).count() > 0, true);
+  assert.equal(await adminPage.locator('input[data-settlement-amount]').count(), 0);
+  const beforeSettlementStatus = await adminPage.evaluate(() => settlementBatches[0].status);
+  await adminPage.evaluate(() => settleBatch('BATCH20260911001'));
+  const afterFirstSettlement = await adminPage.evaluate(() => settlementBatches[0].status);
+  await adminPage.evaluate(() => settleBatch('BATCH20260911001'));
+  const afterSecondSettlement = await adminPage.evaluate(() => settlementBatches[0].status);
+  assert.deepEqual([beforeSettlementStatus, afterFirstSettlement, afterSecondSettlement], ['待人工结算', '已结算', '已结算']);
+
+  await adminPage.evaluate(() => switchPage('creator-audit'));
+  assert.equal(await adminPage.getByText('实名状态', { exact: true }).count() > 0, true);
+  await adminPage.evaluate(() => auditCreator('CA001', 'pass'));
+  assert.equal(await adminPage.evaluate(() => creatorApps.find(item => item.id === 'CA001').creatorTag), null);
+  await adminPage.evaluate(() => inviteCreatorTag('CA001'));
+  assert.equal(await adminPage.evaluate(() => creatorApps.find(item => item.id === 'CA001').creatorTag), '优质视频创作者');
+
+  await adminPage.evaluate(() => switchPage('dashboard'));
+  await adminPage.getByRole('button', { name: '设置', exact: true }).click();
+  await adminPage.locator('#publisher-rollout-percent').selectOption('50');
+  await adminPage.getByRole('button', { name: '保存设置' }).click();
+  assert.equal(await adminPage.getByText('已开启 · 50%', { exact: true }).count(), 1);
+  assert.deepEqual(await adminPage.evaluate(() => ({
+    percent: publisherRolloutConfig.rolloutPercent,
+    version: publisherRolloutConfig.configVersion,
+    logCount: publisherRolloutChangeLog.length
+  })), { percent: 50, version: 2, logCount: 1 });
+
+  await adminPage.getByRole('button', { name: '设置', exact: true }).click();
+  await adminPage.locator('#publisher-rollout-enabled').uncheck();
+  assert.equal(await adminPage.locator('#publisher-rollout-percent').isDisabled(), true);
+  await adminPage.getByRole('button', { name: '保存设置' }).click();
+  assert.equal(await adminPage.getByText('已关闭', { exact: true }).count(), 1);
+  assert.equal(await adminPage.evaluate(() => publisherRolloutConfig.rolloutPercent), 50, 'disable must retain last percent');
+  await adminPage.getByRole('button', { name: '设置', exact: true }).click();
+  await capture(
+    adminPage.locator('#modal'),
+    path.join(outputDir, '24-feature-rollout-settings.png'),
+    screenshots,
+    '24-feature-rollout-settings',
+    '发行人计划外放设置'
+  );
+  await adminPage.evaluate(() => closeModal());
 
   await adminPage.evaluate(() => switchPage('jd-cards'));
   assert.equal(await adminPage.getByText('京东电子卡商品').count(), 1);
@@ -352,19 +521,25 @@ try {
     'V1 后台看板原稿'
   );
 
-  const flowPage = await (await browser.newContext({ viewport: { width: 2200, height: 820 }, deviceScaleFactor: 1 })).newPage();
+  const flowContext = await browser.newContext({ viewport: { width: 1800, height: 1540 }, deviceScaleFactor: 1 });
+  pagesToClose.push(flowContext);
+  const flowPage = await flowContext.newPage();
   const flowSteps = [
-    ['1', '任务奖励到账', '07-wallet.png'],
-    ['2', '查看可兑换余额', '09-card-store.png'],
-    ['3', '选择面额', '09-card-store.png'],
-    ['4', '确认兑换', '10-card-confirm.png'],
-    ['5', '自动发放卡密', '11-card-success.png']
+    ['1', '实名后创建任务', '06-create-task.png'],
+    ['2', '配置图片与奖励', '06-create-task.png'],
+    ['3', '机器审核自动发布', '04-my-tasks.png'],
+    ['4', '认证创作者查看任务', '03-task-detail.png'],
+    ['5', '提交外站作品链接', '05-submit-work.png'],
+    ['6', '数据校验并预留预算', '04-my-tasks.png'],
+    ['7', '任务级人工结算', '04-my-tasks.png'],
+    ['8', '盖世币奖励到账', '07-wallet.png']
   ];
   const stepHtml = flowSteps.map(([index, label, file], position) => {
     const data = fs.readFileSync(path.join(outputDir, file)).toString('base64');
-    return `<section class="step"><div class="step-title"><b>${index}</b><span>${label}</span></div><img src="data:image/png;base64,${data}">${position < flowSteps.length - 1 ? '<i>→</i>' : ''}</section>`;
+    const arrow = position < 3 ? '→' : position === 3 ? '↓' : position < 7 ? '←' : '';
+    return `<section class="step p${position + 1}"><div class="step-title"><b>${index}</b><span>${label}</span></div><img src="data:image/png;base64,${data}">${arrow ? `<i>${arrow}</i>` : ''}</section>`;
   }).join('');
-  await flowPage.setContent(`<!doctype html><meta charset="utf-8"><style>*{box-sizing:border-box}body{margin:0;background:#111;color:#f5f5f5;font-family:"Microsoft YaHei",sans-serif}.flow{width:2180px;height:800px;padding:28px 24px;display:flex;align-items:center;justify-content:center;gap:14px;background:linear-gradient(135deg,#111,#21180f)}.step{position:relative;width:398px;height:744px;padding:16px;border:1px solid rgba(255,140,0,.35);border-radius:24px;background:#1b1b1d;display:flex;flex-direction:column;align-items:center}.step-title{height:54px;display:flex;align-items:center;gap:12px;font-size:21px;font-weight:700}.step-title b{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#ff8c00;color:#111}.step img{width:330px;height:660px;object-fit:contain;object-position:top;border-radius:18px;background:#eee}.step i{position:absolute;right:-30px;top:355px;z-index:2;color:#ff8c00;font-size:34px;font-style:normal}</style><div class="flow" id="flow">${stepHtml}</div>`);
+  await flowPage.setContent(`<!doctype html><meta charset="utf-8"><style>*{box-sizing:border-box}body{margin:0;background:#111;color:#f5f5f5;font-family:"Microsoft YaHei",sans-serif}.flow{width:1800px;height:1540px;padding:28px 34px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);gap:24px;background:linear-gradient(135deg,#111,#21180f)}.step{position:relative;padding:14px;border:1px solid rgba(255,140,0,.35);border-radius:24px;background:#1b1b1d;display:flex;flex-direction:column;align-items:center;min-width:0}.p1{grid-column:1;grid-row:1}.p2{grid-column:2;grid-row:1}.p3{grid-column:3;grid-row:1}.p4{grid-column:4;grid-row:1}.p5{grid-column:4;grid-row:2}.p6{grid-column:3;grid-row:2}.p7{grid-column:2;grid-row:2}.p8{grid-column:1;grid-row:2}.step-title{height:48px;display:flex;align-items:center;gap:10px;font-size:19px;font-weight:700;text-align:center}.step-title b{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:32px;height:32px;border-radius:50%;background:#ff8c00;color:#111}.step img{width:330px;height:660px;object-fit:contain;object-position:top;border-radius:18px;background:#eee}.step i{position:absolute;z-index:2;color:#ff8c00;font-size:34px;font-style:normal}.p1 i,.p2 i,.p3 i{right:-31px;top:350px}.p4 i{bottom:-32px;left:calc(50% - 10px)}.p5 i,.p6 i,.p7 i{left:-31px;top:350px}</style><div class="flow" id="flow">${stepHtml}</div>`);
   await capture(
     flowPage.locator('#flow'),
     path.join(outputDir, '00-product-flow.png'),
@@ -374,11 +549,11 @@ try {
   );
 
   screenshots.sort((left, right) => left.name.localeCompare(right.name));
-  assert.equal(screenshots.length, 24, 'Expected exactly 24 PRD screenshots');
+  assert.equal(screenshots.length, 25, 'Expected exactly 25 PRD screenshots');
   for (const item of screenshots) {
     assert(item.width > 300 && item.height > 300, `${item.name} dimensions are too small`);
   }
-  for (const tracked of [c, rechargeCheck, b]) {
+  for (const tracked of [c, rechargeCheck, identityCheck, taskFlow, submissionCheck, b]) {
     assert.deepEqual(tracked.externalRequests, [], 'Current demo made external requests');
     assert.deepEqual(tracked.pageErrors, [], 'Current demo emitted page errors');
     assert.deepEqual(tracked.consoleErrors, [], 'Current demo emitted console errors');
@@ -396,6 +571,16 @@ try {
       rechargeAfterJd20: 1000,
       physicalCardOrLogistics: false,
       mallTitle: '兑换商城',
+      dailyTaskLimit: 10,
+      taskBudgetMin: 5000,
+      taskBudgetMax: 10000000,
+      rewardFormula: 'min(likes * coinPerLike, perSubmissionCap)',
+      submissionReserve: 'perSubmissionCap',
+      taskReview: 'machine-auto-publish',
+      settlement: 'manual-confirm-system-calculated',
+      rolloutPercents: [20, 50, 100],
+      rolloutBucket: 'stable-subject',
+      existingFulfillmentProtected: true,
       globalAlertThreshold: 3,
       alertScope: 'per-sku',
       repeatHours: 24,
@@ -441,7 +626,7 @@ try {
     }
   };
   fs.writeFileSync(evidencePath, `${JSON.stringify(verification, null, 2)}\n`, 'utf8');
-  console.log('PASS: publisher plan V2 UI, 24 screenshots captured');
+  console.log('PASS: publisher plan V2 UI, 25 screenshots captured');
 } finally {
   for (const context of pagesToClose) await context.close().catch(() => {});
   await browser.close();
