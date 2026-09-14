@@ -50,6 +50,29 @@ async function openApprovedDeveloper(routePath = '/P15-01') {
   else await page.locator('[data-publisher-workspace]').waitFor();
 }
 
+async function openRegisteredDeveloper(routePath = '/P02-01') {
+  await page.goto(url('/P01-01'), { waitUntil:'load' });
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    sessionStorage.setItem('gamehub-developer-session-v1', JSON.stringify({ authenticated:true, accountKey:'finance:registered' }));
+    localStorage.setItem('gamehub-developer-account-states-v1', JSON.stringify({
+      'finance:registered':{
+        registration:{ accountTier:'registered', registeredAt:'2026-09-01 09:00', consoleTab:'games', vendorSettingsTab:'finance' },
+        qualification:{
+          applicationId:'', status:'unsubmitted', step:0, view:'intro', editing:false, revision:0,
+          submittedAt:'', form:{}, history:[], submissions:[],
+        },
+      },
+    }));
+  });
+  const target = new URL(url(routePath));
+  target.searchParams.set('testRun', `${Date.now()}-${Math.random()}`);
+  await page.goto(target.href, { waitUntil:'load' });
+  if (routePath.startsWith('/P15-')) await page.locator('[data-testid="developer-finance-demo"]').waitFor();
+  else await page.locator('[data-publisher-workspace]').waitFor();
+}
+
 before(() => {
   assert.ok(chrome, 'Chrome or Edge not found');
   execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), '--module=02', '--variant=finance-integrated']);
@@ -83,6 +106,20 @@ test('财务整合版复用唯一平台壳和厂商级导航', async () => {
   assert.deepEqual(await page.locator('.side-nav .nav-item').allTextContents(), ['游戏管理','财务主体','对账结算','厂商设置']);
   assert.equal(await page.getByRole('heading', { level:1, name:'对账结算' }).count(), 1);
   assert.equal(await page.locator('.developer-demo-state-fab').count(), 1);
+});
+
+test('已完成平台注册但企业认证未提交时可直接进入财务页面', async () => {
+  await openRegisteredDeveloper('/P02-01');
+
+  await page.getByRole('button', { name:'财务主体', exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P15-01');
+  assert.equal(await page.getByRole('heading', { level:1, name:'财务主体' }).count(), 1);
+
+  await page.locator('.side-nav').getByText('游戏管理', { exact:true }).click();
+  await page.locator('[data-publisher-workspace]').waitFor();
+  await page.getByRole('button', { name:'对账结算', exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P15-02');
+  assert.equal(await page.getByRole('heading', { level:1, name:'对账结算' }).count(), 1);
 });
 
 test('对账流水保持对账结算高亮和四级定位', async () => {

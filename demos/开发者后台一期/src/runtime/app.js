@@ -425,6 +425,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (!memory.session.authenticated) route = routes.find(item => item.id === 'P01-01') || route;
       else if (memory.registration?.accountTier === 'unselected') route = routes.find(item => item.id === 'P01-03') || route;
       else if (route.id === 'P02-01') route = requested || route;
+      else if (financeRouteIds.has(route.id)) route = requested || route;
       else if (requested?.id === 'P01-01' && hasPublisherRoute) route = routes.find(item => item.id === 'P02-01') || route;
       else if (memory.qualification.status !== 'approved') route = routes.find(item => item.id === 'P01-03') || route;
       else if (!requested && route.id === 'P01-01') route = routes.find(item => item.id === 'P01-02') || route;
