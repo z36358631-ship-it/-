@@ -541,6 +541,19 @@ test('逐日图表按日期分栏命中并在区域任意高度显示当日数�
     assert.ok(adjacentBox);
     await page.mouse.move(adjacentBox.x + adjacentBox.width / 2, adjacentBox.y + 3);
     await assert.doesNotReject(() => tooltip.getByText('2026-09-06', { exact:true }).waitFor());
+
+    const chart = detail.locator('.publisher-detail-chart');
+    const chartBox = await chart.boundingBox();
+    assert.ok(chartBox);
+    const outsideX = hitBox.x + hitBox.width / 2;
+    const outsideY = hitBox.y - 4;
+    await page.mouse.move(outsideX,outsideY);
+    await tooltip.waitFor({ state:'hidden' });
+
+    await page.mouse.move(adjacentBox.x + adjacentBox.width / 2,adjacentBox.y + 3);
+    await tooltip.waitFor({ state:'visible' });
+    await page.mouse.move(5,5);
+    await tooltip.waitFor({ state:'hidden' });
   } finally {
     await context.close();
   }

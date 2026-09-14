@@ -825,6 +825,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const trigger = event.target.closest('[data-metric-help]');
       if (trigger && !trigger.contains(event.relatedTarget) && document.activeElement !== trigger) closeMetricTooltips();
     });
+    host.addEventListener('pointermove',event => {
+      const point = event.target.closest('[data-detail-point]');
+      host.querySelectorAll('.publisher-detail-chart').forEach(chart => {
+        if (!point || point.closest('.publisher-detail-chart') !== chart) hideDetailHover(chart);
+      });
+    });
+    host.addEventListener('pointerleave',() => {
+      host.querySelectorAll('.publisher-detail-chart').forEach(hideDetailHover);
+    });
+    host.querySelectorAll('.publisher-detail-chart').forEach(chart => {
+      chart.addEventListener('pointerleave',() => hideDetailHover(chart));
+    });
     host.addEventListener('focusin',event => {
       const field = event.target.closest('.publisher-dashboard-filter-scroll .publisher-dashboard-field');
       if (field) field.scrollIntoView({ block:'nearest',inline:'nearest' });
