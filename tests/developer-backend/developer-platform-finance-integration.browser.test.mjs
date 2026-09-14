@@ -79,10 +79,19 @@ test('厂商设置移除财务主体页签且旧保存值回退有效页签',asy
 test('财务主体与对账结算仍是两个独立入口',async () => {
   await open('/P15-01');
   assert.equal(await page.getByRole('heading',{ level:1,name:'财务主体' }).count(),1);
+  assert.equal(await page.locator('[data-d15-entity-summary]').count(),1);
+  assert.equal(await page.locator('[data-d15-entity-details]').count(),1);
+  const entityText = await page.locator('[data-testid="developer-finance-demo"]').innerText();
+  assert.match(entityText,/财务主体、收款资料与审核状态/);
+  assert.doesNotMatch(entityText,/主体列表|选择财务主体/);
   await page.locator('.side-nav').getByText('对账结算',{ exact:true }).click();
   await page.waitForFunction(() => location.hash === '#/P15-02');
   assert.equal(await page.getByRole('heading',{ level:1,name:'对账结算' }).count(),1);
   assert.equal(await page.locator('[data-testid="settlement-table"]').count(),1);
+  assert.deepEqual(await page.locator('[data-d15-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.d15Filter)),['month','game']);
+  assert.equal(await page.locator('[data-d15-settlement-row]').count(),3);
+  assert.equal(await page.locator('[data-testid="settlement-table"] tbody td').filter({ hasText:/USD/ }).count(),0);
+  assert.match(await page.locator('[data-d15-cny-reference]').first().innerText(),/^约 ¥/);
   assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/调整额|付款状态|发票|付款尝试/);
 });
 

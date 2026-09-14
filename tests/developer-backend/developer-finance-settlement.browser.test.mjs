@@ -40,24 +40,37 @@ test('财务模块只保留两个入口且使用浅色选中态',async () => {
   assert.notEqual(colors.color,'rgb(255, 255, 255)');
   assert.notEqual(colors.background,'rgb(31, 58, 104)');
   const mainText = await page.locator('main').innerText();
-  for (const label of ['认证主体','合作规则','收款账户','税务资料','历史版本']) assert.match(mainText,new RegExp(label));
+  for (const label of ['财务主体、收款资料与审核状态','财务主体资料','查看变更历史','修改','开户银行','税务居民地']) assert.match(mainText,new RegExp(label));
+  assert.equal(await page.locator('[data-d15-entity-summary]').count(),1);
+  assert.equal(await page.locator('[data-d15-entity-details]').count(),1);
+  assert.doesNotMatch(mainText,/主体列表|选择财务主体/);
   assert.doesNotMatch(mainText,/付款状态|发票|付款尝试/);
 });
 
-test('开发者结算按月主体币种汇总且金额来自不可变快照',async () => {
+test('开发者结算按月汇总并支持全部游戏或单款游戏筛选',async () => {
   await open('/settlement');
   const table = page.locator('[data-testid="settlement-table"]');
   for (const label of ['用户实付','退款／拒付','销售税','支付费','平台分成','预扣税','应结算金额']) assert.match(await table.innerText(),new RegExp(label));
-  assert.equal(await page.locator('[data-d15-settlement-row]').count(),4);
+  assert.deepEqual(await page.locator('[data-d15-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.d15Filter)),['month','game']);
+  assert.equal(await page.locator('[data-d15-settlement-row]').count(),3);
+  assert.equal(await table.locator('tbody td').filter({ hasText:/USD/ }).count(),0);
+  assert.equal(await table.locator('[data-d15-cny-reference]').count(),3);
+  assert.match(await table.locator('[data-d15-cny-reference]').first().innerText(),/^约 ¥/);
   assert.equal(await page.locator('[data-d15-pagination]').getAttribute('data-page-size'),'20');
   const audit = await page.evaluate(() => window.__developerFinanceDemo.snapshot());
   assert.equal(audit.immutable,true);
   assert.match(audit.snapshotId,/SETTLEMENT-SNAPSHOT/);
   for (const settlement of audit.settlements) {
-    const games = audit.games.filter(game => game.entityKey === settlement.key);
+    const games = audit.games.filter(game => game.month === settlement.month);
     assert.ok(games.length > 0);
     assert.equal(games.reduce((sum,game) => sum + game.payableMinor,0),settlement.payableMinor);
   }
+  const allPayable = audit.settlements.reduce((sum,row) => sum + row.payableMinor,0);
+  await page.locator('[data-d15-filter="game"]').selectOption({ index:1 });
+  await page.getByRole('button',{ name:'查询' }).click();
+  const filtered = await page.evaluate(() => window.__developerFinanceDemo.snapshot().visibleSettlements);
+  assert.ok(filtered.length > 0);
+  assert.ok(filtered.reduce((sum,row) => sum + row.payableMinor,0) < allPayable);
   assert.equal(await page.getByText('调整额').count(),0);
 });
 
@@ -75,7 +88,8 @@ test('结算详情保持单层并同时展示游戏构成和第三方支付流�
 
 test('筛选无结果与缺省态使用不同文案',async () => {
   await open('/settlement');
-  await page.locator('[data-d15-filter="keyword"]').fill('不存在的主体');
+  await page.locator('[data-d15-filter="month"]').selectOption('2026-06');
+  await page.locator('[data-d15-filter="game"]').selectOption('GAME-48291');
   await page.getByRole('button',{ name:'查询' }).click();
   assert.equal(await page.getByText('未找到符合条件的记录').isVisible(),true);
   await page.locator('[data-testid="scenario-orb"]').click();
@@ -92,6 +106,8 @@ test('开发者可导出当前结算结果',async () => {
   const csv = fs.readFileSync(await download.path(),'utf8');
   assert.match(csv,/用户实付/);
   assert.match(csv,/预扣税/);
+  assert.match(csv,/人民币参考额/);
+  assert.match(csv,/锁定汇率/);
   assert.doesNotMatch(csv,/调整额|付款状态|发票/);
 });
 
