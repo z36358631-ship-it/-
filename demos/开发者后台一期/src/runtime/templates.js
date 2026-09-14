@@ -260,6 +260,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     ['versions', '发布记录', 'chart', '版本记录 审核记录 提交记录 版本快照'],
     ['qualifications', '资质认证', 'file', '权属证明 发行授权 国内发行资质'],
   ];
+  const publisherChannelConsoleSections = [
+    ['channel-overview', '渠道分销', 'key', '渠道 授权 计划 销售 兑换 结算'],
+    ['channel-batches', 'Key 批次', 'key', 'Key 批次 额度 状态 有效期'],
+    ['channel-data', '渠道数据', 'chart', '渠道 SKU 地区 销售 兑换 退款'],
+    ['channel-settlement', '收益与结算', 'finance', '月结 收益 应收 退款 拒付 调整'],
+  ];
   const publisherAccessFor = access => access && typeof access === 'object' ? access : {
     accountKind: 'enterprise', qualificationStatus: 'approved', canCreateGameDraft: true,
     canEditReleaseDraft: true, canSubmitRelease: true, canViewReleaseHistory: true,
@@ -716,26 +722,30 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selectedKey = state.selectedGame || 'existing';
     const game = getPublisherGame(state, selectedKey) || getPublisherGame(state, 'existing') || getPublisherGames(state)[0];
     if (!game) return '';
-    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '经营数据': 'Analytics', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
+    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '经营数据': 'Analytics', '渠道分销': 'Channel distribution', 'Key 批次': 'Key batches', '渠道数据': 'Channel data', '收益与结算': 'Revenue & settlement', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
     const profileComponent = window.PublisherGameProfile;
     let publicationDraft;
     if (profileComponent) {
       state.publicationDrafts = state.publicationDrafts || {};
       publicationDraft = state.publicationDrafts[game.gameKey] || (state.publicationDrafts[game.gameKey] = profileComponent.createDraft(game, game.profileDraft || resolvePublisherProfile(game)));
     }
+    const channelSectionsForAccess = access.qualificationStatus === 'approved' ? publisherChannelConsoleSections : [];
     const availableSections = access.canViewPublisherData
-      ? [...publisherGameConsoleSections, ['analytics', '经营数据', 'chart', '销量 免费领取 退款 拒付 订单 预估收入 待结算']]
-      : publisherGameConsoleSections;
+      ? [...publisherGameConsoleSections, ['analytics', '经营数据', 'chart', '销量 免费领取 退款 拒付 订单 预估收入 待结算'], ...channelSectionsForAccess]
+      : [...publisherGameConsoleSections, ...channelSectionsForAccess];
     const allowed = availableSections.map(([id]) => id);
     const gameSection = allowed.includes(state.gameSection) ? state.gameSection : 'release-workspace';
-    const detail = gameSection === 'analytics'
-      ? renderPublisherData(state, language, access, game)
-      : profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '' }) : renderPublisherReleaseProfile(game);
+    const channelSections = new Set(publisherChannelConsoleSections.map(([id]) => id));
+    const detail = channelSections.has(gameSection) && window.PublisherChannelDistribution
+      ? window.PublisherChannelDistribution.render({ section:gameSection, language, state, game, access, demoState })
+      : gameSection === 'analytics'
+        ? renderPublisherData(state, language, access, game)
+        : profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '' }) : renderPublisherReleaseProfile(game);
     const currentSectionLabel = availableSections.find(([id]) => id === gameSection)?.[1] || '版本发布';
     const functionSearch = state.gameFunctionSearch || '';
     const normalizedSearch = String(functionSearch).trim().toLocaleLowerCase();
     const visibleSections = availableSections.filter(([, title, , searchText]) => !normalizedSearch || `${title} ${label(title)} ${searchText}`.toLocaleLowerCase().includes(normalizedSearch));
-    const gameNavigation = `<label class="publisher-game-nav__search">${icon('search')}<input type="search" value="${e(functionSearch)}" placeholder="${language === 'en' ? 'Search functions' : '搜索功能'}" aria-label="${language === 'en' ? 'Search functions' : '搜索功能'}" data-publisher-function-search></label>${visibleSections.map(([id, title, itemIcon, searchText]) => `<button type="button" class="publisher-game-nav__tab${gameSection === id ? ' is-active' : ''}" data-portal-action="game-console-section" data-game-section="${id}" data-function-search="${e(searchText)}">${icon(itemIcon)}<span>${e(label(title))}</span></button>`).join('')}<p class="publisher-game-nav__empty"${visibleSections.length ? ' hidden' : ''}>${language === 'en' ? 'No matching function' : '未找到匹配功能'}</p>`;
+    const gameNavigation = `<label class="publisher-game-nav__search">${icon('search')}<input type="search" value="${e(functionSearch)}" placeholder="${language === 'en' ? 'Search functions' : '搜索功能'}" aria-label="${language === 'en' ? 'Search functions' : '搜索功能'}" data-publisher-function-search></label>${visibleSections.map(([id, title, itemIcon, searchText]) => `${id === 'channel-overview' ? `<span class="publisher-game-nav__group">${language === 'en' ? 'PUBLISHING & SUPPLY' : '发行与供给'}</span>` : ''}<button type="button" class="publisher-game-nav__tab${gameSection === id ? ' is-active' : ''}" data-portal-action="game-console-section" data-game-section="${id}" data-function-search="${e(searchText)}">${icon(itemIcon)}<span>${e(label(title))}</span></button>`).join('')}<p class="publisher-game-nav__empty"${visibleSections.length ? ' hidden' : ''}>${language === 'en' ? 'No matching function' : '未找到匹配功能'}</p>`;
     return `<section class="publisher-game-console" data-publisher-game-console data-publisher-access="${e(access.accountKind)}" data-qualification-status="${e(access.qualificationStatus)}" data-game-tab="${gameSection}" data-game-section="${gameSection}" data-selected-game="${e(game.gameKey)}"><div class="publisher-game-layout"><aside class="publisher-game-sidebar"><nav class="publisher-game-nav" aria-label="${language === 'en' ? 'Game console' : '单游戏控制台'}">${gameNavigation}</nav></aside><main class="publisher-game-main"><nav class="publisher-game-context" aria-label="${language === 'en' ? 'Current location' : '当前位置'}"><button type="button" data-portal-action="back-publisher-games">${icon('arrow-left')}<span>${label('游戏管理')}</span></button><i>/</i><span class="publisher-game-context__game"><strong>${e(game.projectName || game.name)}</strong></span><i>/</i><span>${e(label(currentSectionLabel))}</span></nav>${detail}</main></div></section>`;
   };
 

@@ -227,7 +227,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     registration: restoredRegistration,
     qualification: restoredQualification,
     qualificationPreview: null,
-    demoPreview: { open: false, releaseStatus: '' },
+    demoPreview: { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' },
     finance: hasFinanceRoutes ? window.PublisherFinance.createState() : null,
     managedContent,
     operationsReview: { view: 'list', actionMode: '', attachmentMode: '', selectedApplicationId: '' },
@@ -302,7 +302,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selectedGame = publisherFixtureGameKeys.has(requestedGame)
       ? requestedGame
       : (createdGames.find(game => game?.gameKey === requestedGame || game?.gameId === requestedGame)?.gameKey || '');
-    const allowedSections = new Set(['release-workspace', 'versions', 'qualifications', 'analytics']);
+    const allowedSections = new Set(['release-workspace', 'versions', 'qualifications', 'analytics', 'channel-overview', 'channel-batches', 'channel-data', 'channel-settlement']);
     const requestedSection = restoredHandoff?.targetTab || restoredPublisherWorkspace.gameSection;
     const resumeSelectedGame = Boolean(selectedGame && (restoredPublisherWorkspace.workspaceView === 'game'
       || (!Object.prototype.hasOwnProperty.call(restoredPublisherWorkspace, 'workspaceView') && memory.session.activeGameId)));
@@ -323,6 +323,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       gameStatusFilter: String(restoredPublisherWorkspace.gameStatusFilter || 'all'),
       gameMenuOpen: '',
       deleteGameKey: '',
+      channelDialog: '',
       deletedGameKeys: Array.isArray(restoredPublisherWorkspace.deletedGameKeys) ? restoredPublisherWorkspace.deletedGameKeys : [],
       createdGames,
       profileDrafts: restoredPublisherWorkspace.profileDrafts && typeof restoredPublisherWorkspace.profileDrafts === 'object' ? restoredPublisherWorkspace.profileDrafts : {},
@@ -506,7 +507,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
     memory.qualificationPreview = null;
-    memory.demoPreview = { open: false, releaseStatus: '' };
+    memory.demoPreview = { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' };
     delete memory.result['P01-03'];
     memory.session.expiresAt = Date.now() + 8 * 60 * 60 * 1000;
     persistPublisherSession();
@@ -582,7 +583,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         vendorReviews: normalizeVendorReviews(storedAccountRegistration?.vendorReviews),
       };
       memory.qualificationPreview = null;
-      memory.demoPreview = { open: false, releaseStatus: '' };
+      memory.demoPreview = { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' };
     }
     if (accountChanged || activeGameChanged) {
       loadPublisherWorkspaceForSession();
@@ -1669,10 +1670,83 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'game-console-section') {
         const requested = event.currentTarget.dataset.gameSection || 'release-workspace';
-        const allowed = ['release-workspace', 'versions', 'qualifications', 'analytics'];
+        const allowed = ['release-workspace', 'versions', 'qualifications', 'analytics', 'channel-overview', 'channel-batches', 'channel-data', 'channel-settlement'];
         if (!allowed.includes(requested)) return;
         if (requested === 'analytics' && !publisherAccessForView().canViewPublisherData) return;
-        updatePublisherWorkspace({ gameTab: 'release', gameSection: requested }, { preserveScroll: true });
+        updatePublisherWorkspace({ gameTab: 'release', gameSection: requested, channelDialog: '' }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-export') {
+        resultMessage(route.id, '数据已导出', '已按当前渠道、SKU、地区和月份生成脱敏数据。', 'success');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-plan-detail') {
+        updatePublisherWorkspace({ channelDialog: 'plan-detail' }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-batch-create') {
+        if ((memory.demoPreview.channelStatus || 'active') !== 'active') return;
+        updatePublisherWorkspace({ channelDialog: 'batch-create' }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-batch-submit') {
+        const input = root.querySelector('[data-channel-batch-quantity]');
+        const error = root.querySelector('[data-channel-batch-error]');
+        const quantity = Number(input?.value || 0);
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000 || quantity > 3360) {
+          if (input) input.setAttribute('aria-invalid', 'true');
+          if (error) error.textContent = memory.shell.language === 'en' ? 'Enter an integer from 1 to 1,000.' : '请输入 1—1,000 的整数。';
+          input?.focus();
+          return;
+        }
+        const selectedOutcome = ['generated','pending','rejected','failed'].includes(memory.demoPreview.channelBatchOutcome)
+          ? memory.demoPreview.channelBatchOutcome
+          : 'generated';
+        const purpose = root.querySelector('[data-channel-batch-purpose]')?.value || 'commercial';
+        const delivery = root.querySelector('[data-channel-batch-delivery]')?.value || 'api';
+        const outcome = selectedOutcome === 'generated' && (purpose !== 'commercial' || delivery !== 'api') ? 'pending' : selectedOutcome;
+        updatePublisherWorkspace({
+          gameSection:'channel-batches',
+          channelDialog:'',
+          channelBatchDraft:{ quantity, purpose, delivery },
+          channelSubmission:{ status:outcome, quantity, purpose, delivery, submittedAt:'2026-09-14 16:30' },
+        });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-batch-edit') {
+        memory.demoPreview.channelBatchOutcome = 'pending';
+        updatePublisherWorkspace({ channelDialog:'batch-create', channelBatchDraft:{ quantity:Number(memory.page['P02-01']?.channelSubmission?.quantity || 500) } }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-batch-retry') {
+        memory.demoPreview.channelBatchOutcome = 'generated';
+        updatePublisherWorkspace({ channelSubmission:{ ...(memory.page['P02-01']?.channelSubmission || {}), status:'generated', quantity:Number(memory.page['P02-01']?.channelSubmission?.quantity || 500) } }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-batch-detail') {
+        updatePublisherWorkspace({ channelDialog: 'batch-detail' }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-data-tab') {
+        const nextTab = event.currentTarget.dataset.channelDataTab || 'delivery';
+        if (!['delivery','sales','anomalies'].includes(nextTab)) return;
+        updatePublisherWorkspace({ channelDataTab:nextTab, channelDialog:'' }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-anomaly-detail') {
+        updatePublisherWorkspace({ channelDialog:'anomaly-detail' }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-settlement-detail') {
+        updatePublisherWorkspace({ channelDialog:'settlement-detail' }, { preserveScroll: true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-finance-entry') {
+        navigate({ routeId:'P15-02', state:'default' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-dialog-close') {
+        updatePublisherWorkspace({ channelDialog: '' }, { preserveScroll: true });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-profile-anchor') {
@@ -1839,7 +1913,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         window.name = '';
         memory.shell.helpOpen = false;
         memory.qualificationPreview = null;
-        memory.demoPreview = { open: false, releaseStatus: '' };
+        memory.demoPreview = { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' };
         navigate({ routeId: 'P01-01', state: 'default' });
         return;
       }
@@ -2229,7 +2303,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           memory.registration = { ...memory.registration, vendorReviews:cloneJson(memory.demoPreview.vendorReviewsSnapshot) };
         }
         memory.qualificationPreview = null;
-        memory.demoPreview = { open: false, releaseStatus: '' };
+        memory.demoPreview = { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' };
+        if (memory.page['P02-01']?.channelSubmission) {
+          memory.page['P02-01'].channelSubmission = { ...memory.page['P02-01'].channelSubmission, status:'generated' };
+          persistPublisherWorkspace();
+        }
         delete memory.result[route.id];
         clearPreviewQuery();
         render();
@@ -2250,6 +2328,33 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           memory.page['P02-01'] = { ...(memory.page['P02-01'] || {}), workspaceView: 'games', addGameOpen: false, gameMenuOpen: '' };
           navigate({ routeId: 'P02-01', state: 'default' });
         } else render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-channel-status') {
+        const nextStatus = event.currentTarget.dataset.demoChannelStatus || '';
+        if (!['unopened','active','paused'].includes(nextStatus)) return;
+        if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
+        memory.demoPreview = { ...memory.demoPreview, open:false, channelStatus:nextStatus };
+        clearPreviewQuery();
+        render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-channel-batch-outcome') {
+        const nextOutcome = event.currentTarget.dataset.demoChannelBatchOutcome || '';
+        if (!['generated','pending','rejected','failed'].includes(nextOutcome)) return;
+        if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
+        memory.demoPreview = { ...memory.demoPreview, open:false, channelStatus:'active', channelBatchOutcome:nextOutcome };
+        memory.page['P02-01'] = {
+          ...(memory.page['P02-01'] || {}),
+          workspaceView:'game', selectedGame:'existing', gameSection:'channel-batches', channelDialog:'',
+          channelSubmission:{ status:nextOutcome, quantity:Number(memory.page['P02-01']?.channelSubmission?.quantity || 500), submittedAt:'2026-09-14 16:30' },
+        };
+        persistPublisherWorkspace();
+        clearPreviewQuery();
+        if (route.id === 'P02-01') render();
+        else navigate({ routeId:'P02-01', state:'default' });
         requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
         return;
       }
@@ -3051,11 +3156,19 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const registrationForView = role === 'developer' && memory.qualificationPreview
       ? { ...memory.registration, accountTier: qualificationForView.status === 'approved' ? 'enterprise' : 'registered' }
       : memory.registration;
+    const channelMode = route.id === 'P02-01' && String(memory.page['P02-01']?.gameSection || '').startsWith('channel-');
+    const channelStatus = memory.demoPreview.channelStatus || 'active';
+    const channelBatchOutcome = memory.demoPreview.channelBatchOutcome || 'generated';
     const demoState = {
       open: memory.demoPreview.open,
       qualificationStatus: qualificationForView.status || 'unsubmitted',
       releaseStatus: memory.demoPreview.releaseStatus,
-      active: Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
+      channelMode,
+      channelStatus,
+      channelBatchOutcome,
+      active: channelMode
+        ? Boolean(channelStatus !== 'active' || channelBatchOutcome !== 'generated')
+        : Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
       financeMode: financeRouteIds.has(route.id),
       financeScenario: memory.finance?.demoScenario || 'exhaustive',
     };
@@ -3196,6 +3309,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return;
     }
     if (event.key !== 'Escape') return;
+    if (root.querySelector('.publisher-channel-dialog-layer')) {
+      updatePublisherWorkspace({ channelDialog:'' }, { preserveScroll:true });
+      return;
+    }
     if (memory.demoPreview.open) {
       memory.demoPreview.open = false;
       render();
