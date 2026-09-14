@@ -6,7 +6,7 @@
 |---|---|
 | 任务编号 | GUANWANGGAID-41 |
 | 需求名称 | 发行人计划v2版 |
-| 当前阶段 | 发行人计划 V2.5 发布与兑换实名认证增量已完成，待用户验收 |
+| 当前阶段 | 发行人计划 V2.6 提交按钮文案调整已完成，待用户验收 |
 | 最后更新时间 | 2026-09-14 |
 
 ## 问题与证据
@@ -58,6 +58,7 @@
 | D-016 | 创作者认证只授予投稿资格，专属标签由运营根据后续产出另行定向邀请。 | 用户确认既有修改继续纳入 | 2026-09-14 | 新增身份与标签边界 |
 | D-017 | 充值页只使用后台配置的固定 SKU，不提供自定义充值金额；充值所得盖世币只用于任务预算。 | 用户确认既有修改继续纳入 | 2026-09-14 | 补充 D-002 的充值交互 |
 | D-018 | 点击发布任务或可兑换商品时，未实名先拉起实名认证；成功后只恢复创建页或兑换确认弹窗，最终提交由服务端再次校验，不自动发布、兑换或扣币。 | 用户明确确认 | 2026-09-14 | 新增发布与兑换身份门槛 |
+| D-019 | 创建发行任务页底部主按钮文案使用“提交”，机器审核规则保留在按钮下方说明中。 | 用户截图并明确要求 | 2026-09-14 | 替代“提交并进行机器审核”按钮文案 |
 
 ## 产物登记
 
@@ -69,18 +70,18 @@
 | 发布与兑换实名设计与计划 | `docs/superpowers/specs/2026-09-14-publisher-plan-real-name-gates-design.md`；`docs/superpowers/plans/2026-09-14-publisher-plan-real-name-gates.md` | 已同步 | D-018、恢复原动作与最终二次校验已记录；设计提交 `09c78a43`，实施提交 `5bb4b32eaa6ece410627dd25a4f4040ed03f97a1` |
 | C 端 Demo | `demos/Mod与发行人/发行人计划demo.html`、同名 JS | 已同步 | 业务内容不变；脚本已内嵌为可独立运行的单文件并与维护源严格一致；提交 `9eaa1574` |
 | B 端 Demo | `demos/Mod与发行人/发行人计划-后台demo.html`、同名 JS | 已同步 | 业务内容不变；脚本已内嵌为可独立运行的单文件并与维护源严格一致；提交 `9eaa1574` |
-| V2.5 PRD | `prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md` | 已同步 | D-012—D-018、27 张固定图片、状态与埋点已同步；质量校验 0 错误、0 警告 |
+| V2.6 PRD | `prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md` | 已同步 | D-012—D-019、28 张固定图片、状态与埋点已同步；质量校验 0 错误、0 警告 |
 | 任务中心 C/B Demo | `demos/任务中心demo.html`；`demos/任务中心后台demo.html` | 已同步 | C 端为无远程资源的竖屏单文件，已取消任务中心与商城首屏资产对比提示；B 端资产单位为盖世积分；Demo 提交 `4d024e123cb82f2705b800d27e0531284dd98520` |
 | 任务中心 V2.1 PRD | `prd/【Prd】《盖世游戏》任务中心与兑换商城需求.md` | 已同步 | C/B 分端、9 张页面六要素、资产分账、9 个事件、24 个参数和待确认项已按 to-prd 模板重写；产品流程使用真实竖屏界面并按 4+3 排布 |
 | 任务中心图片与验证 | `public/prd/task-center-v2/`；`docs/evidence/task-center-v2/verification.json`；`tools/verify-task-center-v2.mjs`；`tools/verify-task-center-public-preview.mjs` | 已同步 | 1 张真实竖屏步骤合成流程图 + 9 张页面图；固定图片提交 `4d024e123cb82f2705b800d27e0531284dd98520`；本地交互与固定提交公网点击通过 |
-| 产品流程与页面图 | `public/prd/publisher-plan-v2/00-product-flow.png` 至 `26-redeem-real-name-gate.png` | 已同步 | 27 张截图固定到 `5bb4b32eaa6ece410627dd25a4f4040ed03f97a1` |
-| 机器与视觉证据 | `docs/evidence/publisher-plan-v2/verification.json` | 已同步 | 静态、离线 UI、PRD、严格组件与原尺寸审图通过；27/27 截图生成成功 |
+| 产品流程与页面图 | `public/prd/publisher-plan-v2/00-product-flow.png` 至 `27-create-task-submit.png` | 已同步 | 28 张截图固定到 `232d9fbaadb5f2d45c2c431c2e232bb733db95b5` |
+| 机器与视觉证据 | `docs/evidence/publisher-plan-v2/verification.json` | 已同步 | 静态、离线 UI、PRD、严格组件与原尺寸审图通过；28/28 截图生成成功 |
 | 静态与 UI 合同 | `tools/verify-publisher-plan-v2.mjs`；`tools/verify-publisher-plan-v2-ui.mjs`；`tools/verify-publisher-plan-public-preview.mjs` | 已同步 | 单文件脚本一致性、离线完整交互和固定提交公网点击均通过；覆盖发布／兑换实名认证、认证后不自动操作、机审发布、投稿取数、人工结算、50% 灰度与京东卡路径 |
-| Git | `origin/codex/guanwanggaid-41-publisher-plan-v2-20260910` | 已同步 | V2.5 实名门槛、验证与 27 张固定图片提交 `5bb4b32eaa6ece410627dd25a4f4040ed03f97a1` |
+| Git | `origin/codex/guanwanggaid-41-publisher-plan-v2-20260910` | 已同步 | V2.6 按钮文案、验证与 28 张固定图片提交 `232d9fbaadb5f2d45c2c431c2e232bb733db95b5` |
 | 任务板 | `GUANWANGGAID-41` | 已同步 | 已追加 D-010 完成评论并移到 `in_review`；已绑定推送分支，版本 11 |
-| 公开预览 | [C 端](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5bb4b32eaa6ece410627dd25a4f4040ed03f97a1/demos/Mod%E4%B8%8E%E5%8F%91%E8%A1%8C%E4%BA%BA/%E5%8F%91%E8%A1%8C%E4%BA%BA%E8%AE%A1%E5%88%92demo.html)；[B 端](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5bb4b32eaa6ece410627dd25a4f4040ed03f97a1/demos/Mod%E4%B8%8E%E5%8F%91%E8%A1%8C%E4%BA%BA/%E5%8F%91%E8%A1%8C%E4%BA%BA%E8%AE%A1%E5%88%92-%E5%90%8E%E5%8F%B0demo.html) | 已同步 | 固定提交 `5bb4b32eaa6ece410627dd25a4f4040ed03f97a1`：C 端发布／兑换实名认证、机审发布、投稿取数、钱包与兑换商城通过；B 端任务机审、投稿异常、人工结算、50% 灰度、京东卡与订单通过；页面脚本错误和 HTTP 失败资源为 0 |
+| 公开预览 | [C 端](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@232d9fbaadb5f2d45c2c431c2e232bb733db95b5/demos/Mod%E4%B8%8E%E5%8F%91%E8%A1%8C%E4%BA%BA/%E5%8F%91%E8%A1%8C%E4%BA%BA%E8%AE%A1%E5%88%92demo.html)；[B 端](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@232d9fbaadb5f2d45c2c431c2e232bb733db95b5/demos/Mod%E4%B8%8E%E5%8F%91%E8%A1%8C%E4%BA%BA/%E5%8F%91%E8%A1%8C%E4%BA%BA%E8%AE%A1%E5%88%92-%E5%90%8E%E5%8F%B0demo.html) | 已同步 | 固定提交 `232d9fbaadb5f2d45c2c431c2e232bb733db95b5`：C 端提交按钮、发布／兑换实名认证、机审发布、投稿取数、钱包与兑换商城通过；B 端任务机审、投稿异常、人工结算、50% 灰度、京东卡与订单通过；页面脚本错误和 HTTP 失败资源为 0 |
 | 任务中心公开预览 | [竖屏 C 端](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4d024e123cb82f2705b800d27e0531284dd98520/demos/%E4%BB%BB%E5%8A%A1%E4%B8%AD%E5%BF%83demo.html)；[B 端](https://htmlpreview.github.io/?https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@4d024e123cb82f2705b800d27e0531284dd98520/demos/%E4%BB%BB%E5%8A%A1%E4%B8%AD%E5%BF%83%E5%90%8E%E5%8F%B0demo.html) | 已同步 | 固定提交 `4d024e123cb82f2705b800d27e0531284dd98520`：C 端“任务中心→兑换商城→确认兑换”通过，两处首屏资产对比提示已删除；B 端任务配置、奖品配置和兑换与发货导航通过；页面脚本错误和 HTTP 失败资源为 0 |
-| 远程图片 | PRD 使用固定图片提交 SHA `5bb4b32eaa6ece410627dd25a4f4040ed03f97a1` | 已同步 | 公网 HTTP 状态与图片 MIME 27/27 通过；飞书转存未验证 |
+| 远程图片 | PRD 使用固定图片提交 SHA `232d9fbaadb5f2d45c2c431c2e232bb733db95b5` | 已同步 | 公网 HTTP 状态与图片 MIME 28/28 通过；飞书转存未验证 |
 | 任务中心远程图片 | PRD 使用固定图片提交 SHA `4d024e123cb82f2705b800d27e0531284dd98520` | 已同步 | 新任务中心和兑换商城图片公网 HTTP 状态与 `image/png` MIME 通过；飞书转存另行验证 |
 | 飞书转存 | 无 | 未执行 | 未执行飞书导入或图片转存验证 |
 
@@ -99,9 +100,10 @@
 | 2026-09-11 | 任务机审发布、投稿自动取数、最后人工发奖 | 明确通过自动发布；投稿完整取数后自动进入待人工结算；异常重抓／挂起／驳回；金额系统只读、任务级人工确认 | C/B Demo、V2.3 PRD、静态与 UI 合同、截图 | 静态合同、离线 UI 与视觉验证通过；异常不按 0 点赞结算，发奖幂等 |
 | 2026-09-14 | 增加总开关与 20%／50%／100% 灰度，并确认前述改动全部纳入 | 增加稳定分桶、功能准入与存量履约保护；同步固定充值 SKU、认证与标签分离；PRD 升级 V2.4 | C/B Demo、V2.4 PRD、25 张图、验证器、状态卡 | PRD 质量 0 错误、0 警告；静态合同、25 张离线 UI 截图和严格视觉回归通过；25 张公网图片与固定提交 C/B 扩展点击通过 |
 | 2026-09-14 | 发布任务和兑换均要求实名认证 | 两个入口未实名时拉起实名认证；认证成功后只恢复创建页或兑换确认弹窗；最终提交二次校验 | C 端 Demo、V2.5 PRD、27 张图、验证器、状态卡 | PRD 质量 0 错误、0 警告；静态合同、27 张离线 UI 截图、严格视觉回归、27 张公网图片和固定提交 C/B 点击通过 |
+| 2026-09-14 | 创建任务按钮文案改成“提交” | 删除按钮内的“并进行机器审核”，机器审核说明和实际流程保持不变 | C 端 Demo、V2.6 PRD、28 张图、验证器、状态卡 | 静态合同、28 张离线 UI 截图、原尺寸审图和 PRD 质量校验通过 |
 
 ## 待确认与风险
 
 - 必须确认：正式支持的外站平台与取数接口；内容安全与 OCR 服务及重试次数；创作者粉丝门槛；高金额结算是否双人复核；正式充值 SKU；正式京东卡面额、兑换价格与限兑；京东卡采购、税务、劳务报酬、凭证与协议口径；混合来源预算冻结顺序；存量盖世币是否可追溯；卡密单次导入上限。
 - 默认建议：混合来源先冻结充值来源、再冻结任务奖励来源，逐笔记录来源并按原明细退回；无法追溯来源的存量盖世币不得静默计入可兑换余额。
-- 已知风险：外站接口、内容安全服务、粉丝门槛、高金额复核和正式充值 SKU 未确认前会阻塞对应能力上线。真实线上旧 SKU 阈值若不一致，启用前需由运营确认唯一全局值；Webhook 加密、权限、发送日志和重试需按 PRD 实现。任务中心未读取 Figma `88688:6274` 真实 Frame，不标记 Figma 像素比对通过。发行人计划图片固定到 `5bb4b32eaa6ece410627dd25a4f4040ed03f97a1`，公网图片和固定提交 C/B 预览均已验证；飞书导入或转存未执行，线上功能发布不在本期范围。
+- 已知风险：外站接口、内容安全服务、粉丝门槛、高金额复核和正式充值 SKU 未确认前会阻塞对应能力上线。真实线上旧 SKU 阈值若不一致，启用前需由运营确认唯一全局值；Webhook 加密、权限、发送日志和重试需按 PRD 实现。任务中心未读取 Figma `88688:6274` 真实 Frame，不标记 Figma 像素比对通过。发行人计划图片固定到 `232d9fbaadb5f2d45c2c431c2e232bb733db95b5`，公网图片和固定提交 C/B 预览均已验证；飞书导入或转存未执行，线上功能发布不在本期范围。
