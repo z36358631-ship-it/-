@@ -37,9 +37,57 @@ try {
   await c.getByText('兑换商城', { exact: true }).first().click();
   await c.locator('#view-card-store.active').waitFor({ state: 'visible' });
 
+  await c.evaluate(() => {
+    wallet.totalBalance = 50000;
+    wallet.rechargeBalance = 50000;
+    wallet.redeemableBalance = 0;
+    openCreateTask();
+    selectGame(1);
+  });
+  await c.locator('#cr-name').fill('公网机审自动发布测试');
+  await c.locator('#cr-price').fill('2');
+  await c.locator('#cr-max').fill('10000');
+  await c.locator('#cr-pool').fill('10000');
+  await c.locator('#cr-submit-deadline').fill('2026-09-25T23:59');
+  await c.locator('#cr-like-deadline').fill('2026-09-28T23:59');
+  await c.locator('#submit-task-btn').click();
+  await c.waitForTimeout(700);
+  assert.equal(await c.evaluate(() => myPublished[0].status), '进行中');
+
+  await c.evaluate(() => {
+    currentTask = tasks[0];
+    showView('submit');
+  });
+  await c.locator('#video-link').fill('https://www.douyin.com/video/public-valid-001');
+  await c.getByRole('button', { name: '提交投稿' }).click();
+  assert.equal(await c.getByText('数据校验通过，待人工结算', { exact: false }).count() > 0, true);
+
   const b = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   track(b, 'B');
   await b.goto(preview('%E5%8F%91%E8%A1%8C%E4%BA%BA%E8%AE%A1%E5%88%92-%E5%90%8E%E5%8F%B0demo.html'), { waitUntil: 'networkidle', timeout: 60_000 });
+
+  await b.evaluate(() => switchPage('audit-task'));
+  assert.equal(await b.getByText('任务机器审核记录', { exact: true }).count(), 1);
+  assert.equal(await b.getByRole('button', { name: '通过', exact: true }).count(), 0);
+
+  await b.evaluate(() => switchPage('audit-video'));
+  assert.equal(await b.getByText('数据校验通过，待人工结算', { exact: false }).count() > 0, true);
+
+  await b.evaluate(() => switchPage('settlement'));
+  assert.equal(await b.locator('input[data-settlement-amount]').count(), 0);
+  const beforeSettlement = await b.evaluate(() => settlementBatches[0].status);
+  await b.evaluate(() => settleBatch('BATCH20260911001'));
+  const afterFirstSettlement = await b.evaluate(() => settlementBatches[0].status);
+  await b.evaluate(() => settleBatch('BATCH20260911001'));
+  const afterSecondSettlement = await b.evaluate(() => settlementBatches[0].status);
+  assert.deepEqual([beforeSettlement, afterFirstSettlement, afterSecondSettlement], ['待人工结算', '已结算', '已结算']);
+
+  await b.evaluate(() => switchPage('dashboard'));
+  await b.getByRole('button', { name: '设置', exact: true }).click();
+  await b.locator('#publisher-rollout-percent').selectOption('50');
+  await b.getByRole('button', { name: '保存设置' }).click();
+  assert.equal(await b.getByText('已开启 · 50%', { exact: true }).count(), 1);
+
   await b.getByText('京东卡管理', { exact: true }).click();
   await b.getByText('京东电子卡商品', { exact: true }).waitFor({ state: 'visible' });
   await b.getByText('兑换订单', { exact: true }).first().click();
