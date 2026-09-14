@@ -58,7 +58,7 @@ after(async () => {
   await browser?.close();
 });
 
-test('运营财务整合版新增独立入口且不覆盖原运营后台', async () => {
+test('财务结算台账独立生成且不覆盖原运营后台', async () => {
   assert.deepEqual(fs.readFileSync(baseDemo), baseBefore);
   const html = fs.readFileSync(outputDemo, 'utf8');
   assert.match(html, /P16-01/);
@@ -68,110 +68,113 @@ test('运营财务整合版新增独立入口且不覆盖原运营后台', async
   assert.deepEqual(await page.locator('.side-nav .nav-item').allTextContents(), ['企业认证内容配置','帮助中心','发行审核','财务结算']);
   assert.match(await page.locator('[data-fo-breadcrumb]').innerText(), /发行平台后台\s*\/\s*财务结算/);
   assert.equal(await page.getByRole('heading', { level:1, name:'财务结算' }).count(), 1);
-  assert.deepEqual(await page.locator('[data-fo-tab]').allTextContents(), ['待付款记录','打款批次']);
+  assert.equal(await page.getByRole('tab').count(), 0);
+  assert.equal(await page.getByRole('dialog').count(), 0);
+  assert.doesNotMatch(await page.locator('[data-finance-operations]').innerText(), /付款条件|发票待审核|账单尚未锁定|打款批次|付款成功|付款失败|付款凭证/);
 });
 
-test('待付款记录每页20条并区分可付款和阻塞原因', async () => {
+test('默认按月展示游戏结算明细且每页20条', async () => {
   await openFinance();
-  assert.equal(await page.locator('[data-fo-statement-row]').count(), 20);
-  assert.match(await page.locator('[data-fo-pagination]').innerText(), /共 26 条，每页 20 条/);
-  assert.equal(await page.locator('[data-fo-select-statement]:not([disabled])').count() > 0, true);
-  assert.equal(await page.locator('[data-fo-select-statement][disabled]').count() > 0, true);
-  assert.match(await page.locator('[data-fo-statement-row]').nth(1).innerText(), /发票待审核|主体资料变更中|已进入打款批次/);
-});
-
-test('跨主体或币种选择自动拆批并生成CSV', async () => {
-  await openFinance();
-  for (const id of ['STMT-2026-08-V1','STMT-2026-07-V1','STMT-2026-06-V1']) {
-    await page.locator(`[data-fo-select-statement="${id}"]`).check();
-  }
-  await page.getByRole('button', { name:'生成并导出打款批次' }).click();
-  const dialog = page.getByRole('dialog');
-  assert.match(await dialog.innerText(), /已选 3 条/);
-  assert.match(await dialog.innerText(), /将生成 2 个打款批次/);
-  const downloadPromise = page.waitForEvent('download');
-  await dialog.getByRole('button', { name:'确认生成并导出' }).click();
-  await downloadPromise;
-  assert.equal(await page.locator('[data-fo-tab="batches"]').getAttribute('aria-selected'), 'true');
-  assert.equal(await page.getByRole('dialog').count(), 1);
-  assert.match(await page.getByRole('dialog').innerText(), /已导出待财务/);
-});
-
-test('打款批次每页20条且详情使用单层右侧抽屉', async () => {
-  await openFinance();
-  await page.locator('[data-fo-tab="batches"]').click();
-  assert.equal(await page.locator('[data-fo-batch-row]').count(), 20);
+  assert.equal(await page.locator('[data-fo-filter="month"]').inputValue(), '2026-08');
+  assert.equal(await page.locator('[data-fo-record-row]').count(), 20);
   assert.match(await page.locator('[data-fo-pagination]').innerText(), /共 24 条，每页 20 条/);
-  await page.locator('[data-fo-open-batch="PAYB-202609-004"]').click();
-  assert.equal(await page.getByRole('dialog').count(), 1);
-  const detail = await page.getByRole('dialog').innerText();
-  for (const copy of ['批次概要','付款单','导出记录','操作记录']) assert.match(detail, new RegExp(copy));
+  const firstRow = await page.locator('[data-fo-record-row]').first().innerText();
+  for (const copy of ['2026-08','星海远征','星海互动','销售','USD']) {
+    if (copy === '销售') continue;
+    assert.match(firstRow, new RegExp(copy));
+  }
+  const headers = await page.locator('.fo-table thead th').allTextContents();
+  assert.deepEqual(headers.slice(1), ['结算月／记录号','游戏','开发者／财务主体','销售额','退款','平台分成','调整额','应付金额','收款账户','最近导出']);
 });
 
-test('失败付款可在原付款单追加重试记录', async () => {
+test('分页、筛选和重置保持单表逻辑', async () => {
   await openFinance();
-  await page.locator('[data-fo-tab="batches"]').click();
-  await page.locator('[data-fo-open-batch="PAYB-202609-004"]').click();
-  await page.getByRole('button', { name:'回填付款结果' }).click();
-  assert.equal(await page.getByRole('dialog').count(), 1);
-  await page.getByLabel('付款结果').selectOption('failed');
-  await page.getByLabel('失败、退回或暂缓原因').fill('收款行退回，需核对账户信息');
-  await page.getByRole('button', { name:'提交结果' }).click();
-  assert.match(await page.getByRole('dialog').innerText(), /第 2 次付款尝试/);
-  assert.match(await page.getByRole('dialog').innerText(), /平台运营 李然/);
-});
+  await page.getByRole('button', { name:'下一页' }).click();
+  assert.equal(await page.locator('[data-fo-record-row]').count(), 4);
+  await page.locator('[data-fo-select-record]').first().check();
+  assert.match(await page.getByRole('button', { name:/导出选中/ }).innerText(), /1/);
 
-test('初次回填从第1次开始且筛选后清空选择', async () => {
-  await openFinance();
-  await page.locator('[data-fo-select-statement]:not([disabled])').first().check();
-  assert.match(await page.locator('.fo-bulk').innerText(), /已选 1 条/);
-  await page.locator('[data-fo-filter="statement-currency"]').selectOption('CNY');
+  await page.locator('[data-fo-filter="keyword"]').fill('远光');
   await page.getByRole('button', { name:'查询' }).click();
-  assert.match(await page.locator('.fo-bulk').innerText(), /已选 0 条/);
-  assert.equal(await page.getByRole('button', { name:'生成并导出打款批次' }).isDisabled(), true);
-
-  await page.locator('[data-fo-tab="batches"]').click();
-  await page.locator('[data-fo-open-batch="PAYB-202609-001"]').click();
-  assert.match(await page.getByRole('dialog').innerText(), /尚未登记付款结果/);
-  await page.getByRole('button', { name:'登记付款结果' }).click();
-  assert.match(await page.getByRole('dialog').innerText(), /当前为第 1 次付款尝试/);
+  assert.equal(await page.locator('[data-fo-record-row]').count(), 6);
+  assert.equal(await page.getByRole('button', { name:/导出当前结果/ }).count(), 1);
+  await page.getByRole('button', { name:'重置' }).click();
+  assert.equal(await page.locator('[data-fo-record-row]').count(), 20);
+  assert.equal(await page.locator('[data-fo-filter="month"]').inputValue(), '2026-08');
 });
 
-test('回填要求复核人、准确金额和付款凭证', async () => {
+test('导出选中记录包含完整收款信息并回写导出记录', async () => {
   await openFinance();
-  await page.locator('[data-fo-tab="batches"]').click();
-  await page.locator('[data-fo-open-batch="PAYB-202609-001"]').click();
-  await page.getByRole('button', { name:'登记付款结果' }).click();
-  await page.getByLabel('付款结果').selectOption('completed');
-  await page.getByLabel('复核人').fill('');
-  await page.getByLabel('实付金额').fill('0.01');
-  await page.getByLabel('银行流水号').fill('BANK-TEST-001');
-  await page.getByLabel('付款凭证').setInputFiles({ name:'付款回单.pdf', mimeType:'application/pdf', buffer:Buffer.from('%PDF-1.4') });
-  await page.getByRole('button', { name:'提交结果' }).click();
-  assert.equal(await page.getByText('请填写复核人').isVisible(), true);
-  assert.equal(await page.getByText(/实付金额应为/).isVisible(), true);
-  assert.match(await page.getByRole('dialog').innerText(), /USD/);
+  const rows = page.locator('[data-fo-record-row]');
+  await rows.nth(0).locator('[data-fo-select-record]').check();
+  await rows.nth(1).locator('[data-fo-select-record]').check();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name:'导出选中（2）' }).click();
+  const download = await downloadPromise;
+  assert.equal(download.suggestedFilename(), '游戏结算表_2026-08.csv');
+  const saved = await download.path();
+  const csv = fs.readFileSync(saved, 'utf8');
+  assert.match(csv, /银行账号/);
+  assert.match(csv, /848019237826|012875009066/);
+  assert.equal(csv.trim().split(/\r?\n/).length, 3);
+  assert.match(await page.locator('[data-fo-record-row]').nth(0).innerText(), /2026-09-14 17:20\s+平台运营 李然/);
+  assert.equal(await page.getByRole('button', { name:/导出选中/ }).count(), 0);
 });
 
-test('已进入批次的结算单可回溯且部分完成由多笔付款构成', async () => {
+test('无选择时导出全部筛选结果', async () => {
   await openFinance();
-  await page.locator('[data-fo-tab="batches"]').click();
-  await page.locator('[data-fo-open-batch="PAYB-202609-002"]').click();
-  assert.match(await page.getByRole('dialog').innerText(), /STMT-2026-04-V1/);
-  await page.locator('.fo-drawer-footer [data-fo-action="close-drawer"]').click();
-  await page.locator('[data-fo-open-batch="PAYB-202609-005"]').click();
-  assert.equal(await page.locator('.fo-order').count(), 2);
-  assert.match(await page.getByRole('dialog').innerText(), /部分完成/);
+  await page.locator('[data-fo-filter="keyword"]').fill('远光');
+  await page.getByRole('button', { name:'查询' }).click();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name:'导出当前结果（6）' }).click();
+  const download = await downloadPromise;
+  const saved = await download.path();
+  const csv = fs.readFileSync(saved, 'utf8');
+  assert.equal(csv.trim().split(/\r?\n/).length, 7);
+});
+
+test('CSV金额保持数值格式且银行账号保留前导0', async () => {
+  await openFinance();
+  const targetRow = page.locator('[data-fo-record-row]').nth(9);
+  await targetRow.locator('[data-fo-select-record]').check();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name:'导出选中（1）' }).click();
+  const download = await downloadPromise;
+  const saved = await download.path();
+  const csv = fs.readFileSync(saved, 'utf8');
+  assert.match(csv, /,-90\.00,/);
+  assert.match(csv, /\t012875009066/);
+  assert.doesNotMatch(csv, /"-90\.00"/);
+});
+
+test('导出创建失败时不回写最近导出', async () => {
+  await openFinance();
+  await page.evaluate(() => {
+    URL.createObjectURL = () => { throw new Error('mock createObjectURL failure'); };
+  });
+  const firstRow = page.locator('[data-fo-record-row]').first();
+  await firstRow.locator('[data-fo-select-record]').check();
+  await page.getByRole('button', { name:'导出选中（1）' }).click();
+  assert.match(await page.locator('[data-fo-record-row]').first().innerText(), /未导出/);
+  assert.equal(await page.getByRole('button', { name:'导出选中（1）' }).count(), 1);
+});
+
+test('筛选无结果显示查询空态且隐藏分页', async () => {
+  await openFinance();
+  await page.locator('[data-fo-filter="keyword"]').fill('不存在的游戏或主体');
+  await page.getByRole('button', { name:'查询' }).click();
+  assert.equal(await page.getByText('未找到符合条件的记录').isVisible(), true);
+  assert.equal(await page.locator('[data-fo-record-row]').count(), 0);
+  assert.equal(await page.locator('[data-fo-pagination]').count(), 0);
 });
 
 test('默认穷举态并可切换缺省态', async () => {
   await openFinance();
   await page.locator('[data-fo-demo-toggle]').click();
   await page.locator('[data-fo-scenario="empty"]').click();
-  assert.equal(await page.getByText('暂无待付款记录').isVisible(), true);
-  assert.equal(await page.locator('[data-fo-statement-row]').count(), 0);
-  await page.locator('[data-fo-tab="batches"]').click();
-  assert.equal(await page.getByText('暂无打款批次').isVisible(), true);
+  assert.equal(await page.getByText('暂无结算记录').isVisible(), true);
+  assert.equal(await page.locator('[data-fo-record-row]').count(), 0);
+  assert.equal(await page.getByRole('button', { name:/导出当前结果/ }).isDisabled(), true);
 });
 
 for (const viewport of [{ width:1280, height:800 }, { width:390, height:844 }]) {
@@ -182,14 +185,3 @@ for (const viewport of [{ width:1280, height:800 }, { width:390, height:844 }]) 
     assert.equal(dimensions.scroll, dimensions.client);
   });
 }
-
-test('390px下批次抽屉与回填表单无页面级溢出', async () => {
-  await page.setViewportSize({ width:390, height:844 });
-  await openFinance();
-  await page.locator('[data-fo-tab="batches"]').click();
-  await page.locator('[data-fo-open-batch="PAYB-202609-001"]').click();
-  await page.getByRole('button', { name:'登记付款结果' }).click();
-  const dimensions = await page.evaluate(() => ({ client:document.documentElement.clientWidth, scroll:document.documentElement.scrollWidth }));
-  assert.equal(dimensions.scroll, dimensions.client);
-  assert.equal(await page.getByRole('button', { name:'提交结果' }).isVisible(), true);
-});

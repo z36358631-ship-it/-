@@ -30,8 +30,8 @@ html = replaceJsonTextarea(html, 'portal-routes', routes => {
 html = replaceJsonTextarea(html, 'portal-data', data => {
   data.pages ||= {};
   data.pages['P16-01'] = {
-    summary:'运营导出打款批次并回填线下付款结果。',
-    status:'待处理',
+    summary:'按月查询并导出游戏结算记录，供财务线下对账和打款。',
+    status:'月度台账',
     primaryAction:'',
     primaryActionDisabled:true,
     actions:[],
