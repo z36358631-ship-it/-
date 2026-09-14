@@ -5388,6 +5388,195 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   .publisher-metric-tooltip { width: min(250px,calc(100vw - 48px)); }
 }
 
+/* V1.6 指标下钻看板 */
+.publisher-dashboard-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(7,minmax(148px,1fr));
+  gap: 10px;
+  overflow-x: auto;
+  border-radius: 12px;
+  padding: 8px;
+  background: #f2f4f7;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+.publisher-dashboard-metric {
+  position: relative;
+  display: grid;
+  align-content: space-between;
+  min-width: 0;
+  min-height: 126px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 15px 16px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16,24,40,.05);
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+.publisher-dashboard-metric:hover { border-color: #d0d5dd; transform: translateY(-1px); }
+.publisher-dashboard-metric.is-selected {
+  border-color: #d9a600;
+  box-shadow: 0 0 0 2px rgba(240,185,11,.17),0 5px 16px rgba(16,24,40,.08);
+}
+.publisher-metric-card-head { position: relative; display: flex; align-items: flex-start; gap: 6px; min-width: 0; }
+.publisher-metric-select {
+  min-width: 0;
+  min-height: 28px;
+  flex: 1;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #344054;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: left;
+}
+.publisher-metric-select::after {
+  content: '';
+  position: absolute;
+  inset: -15px -16px;
+  z-index: 0;
+  border-radius: 9px;
+}
+.publisher-metric-select > span { position: relative; z-index: 1; }
+.publisher-metric-select:focus-visible { outline: 2px solid #8a6500; outline-offset: 3px; border-radius: 4px; }
+.publisher-metric-card-head .publisher-metric-help { position: relative; z-index: 2; flex: 0 0 auto; }
+.publisher-dashboard-metric > strong {
+  margin: 13px 0 5px;
+  color: #182230;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+.publisher-dashboard-metric > small { min-height: 31px; color: #667085; font-size: 11px; line-height: 1.45; }
+
+.publisher-user-metric-strip {
+  display: grid;
+  grid-template-columns: minmax(176px,1fr) minmax(176px,1fr) minmax(492px,2.55fr) minmax(176px,1fr);
+  gap: 10px;
+  overflow-x: auto;
+  border-radius: 12px;
+  padding: 8px;
+  background: #f2f4f7;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+.publisher-user-metric.publisher-dashboard-metric { min-height: 132px; padding: 15px 16px; }
+.publisher-user-retention {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(154px,1fr));
+  gap: 8px;
+  min-width: 492px;
+}
+.publisher-user-retention .publisher-dashboard-metric { min-height: 132px; }
+.publisher-user-retention strong { margin-top: 13px; font-size: 23px; }
+
+.publisher-dashboard-detail {
+  position: relative;
+  overflow: visible;
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16,24,40,.04);
+}
+.publisher-dashboard-detail.is-fullscreen {
+  position: fixed;
+  inset: 16px;
+  z-index: 10020;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-color: #d0d5dd;
+  box-shadow: 0 0 0 100vmax rgba(16,24,40,.46),0 24px 80px rgba(16,24,40,.24);
+}
+.publisher-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid #eef0f3;
+  padding: 17px 18px 15px;
+}
+.publisher-detail-head > div:first-child { min-width: 0; }
+.publisher-detail-head > div:first-child > span { color: #8a6500; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.publisher-detail-head h2 { margin: 4px 0 3px; color: #182230; font-size: 18px; }
+.publisher-detail-head small { color: #667085; font-size: 11px; }
+.publisher-detail-tools { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+.publisher-detail-tools > button,
+.publisher-detail-view-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 36px;
+  border: 1px solid #d0d5dd;
+  border-radius: 7px;
+  padding: 0 10px;
+  background: #fff;
+  color: #475467;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.publisher-detail-tools > button:hover,
+.publisher-detail-view-switch button:hover { border-color: #98a2b3; color: #182230; }
+.publisher-detail-tools > button:focus-visible,
+.publisher-detail-view-switch button:focus-visible { outline: 2px solid #8a6500; outline-offset: 2px; }
+.publisher-detail-tools > button:disabled { cursor: progress; opacity: .58; }
+.publisher-detail-tools svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.publisher-detail-view-switch { display: inline-flex; border: 1px solid #d0d5dd; border-radius: 8px; padding: 2px; background: #f9fafb; }
+.publisher-detail-view-switch button { min-height: 30px; border: 0; border-radius: 6px; padding: 0 10px; background: transparent; }
+.publisher-detail-view-switch button.is-active { background: #fff; color: #755500; box-shadow: 0 1px 3px rgba(16,24,40,.12); }
+.publisher-detail-body { min-height: 326px; overflow: auto; padding: 14px 18px 4px; }
+.publisher-dashboard-detail.is-fullscreen .publisher-detail-body { min-height: 0; flex: 1; padding: 22px 26px 6px; }
+.publisher-dashboard-detail.is-refreshing .publisher-detail-body { opacity: .45; }
+.publisher-detail-chart { min-width: 720px; height: 306px; }
+.publisher-dashboard-detail.is-fullscreen .publisher-detail-chart { height: 100%; min-height: 360px; }
+.publisher-detail-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.publisher-detail-chart text { fill: #98a2b3; font-size: 10px; font-variant-numeric: tabular-nums; }
+.publisher-detail-axis { stroke: #e4e7ec; stroke-width: 1; }
+.publisher-detail-line { fill: none; stroke: #c99500; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; }
+.publisher-detail-chart circle { fill: #f0b90b; stroke: #fff; stroke-width: 2; }
+.publisher-detail-empty { display: grid; place-items: center; min-height: 290px; color: #667085; }
+.publisher-detail-table-wrap { max-height: 420px; overflow: auto; border: 1px solid #e4e7ec; border-radius: 9px; }
+.publisher-dashboard-detail.is-fullscreen .publisher-detail-table-wrap { max-height: none; height: 100%; }
+.publisher-detail-table-wrap table { width: 100%; min-width: 620px; border-collapse: collapse; }
+.publisher-detail-table-wrap th,
+.publisher-detail-table-wrap td { border-bottom: 1px solid #eef0f3; padding: 11px 14px; text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; }
+.publisher-detail-table-wrap th { position: sticky; top: 0; z-index: 2; background: #f9fafb; color: #667085; font-size: 11px; }
+.publisher-detail-table-wrap th:first-child,
+.publisher-detail-table-wrap td:first-child { position: sticky; left: 0; z-index: 1; background: #fff; text-align: left; }
+.publisher-detail-table-wrap th:first-child { z-index: 3; background: #f9fafb; }
+.publisher-detail-table-wrap tr:last-child td { border-bottom: 0; }
+.publisher-detail-table-wrap td strong { color: #182230; }
+.publisher-detail-note { margin: 0; border-top: 1px solid #eef0f3; padding: 11px 18px 13px; color: #667085; font-size: 11px; line-height: 1.55; }
+
+@media (max-width: 1180px) {
+  .publisher-dashboard-metric-strip { grid-template-columns: repeat(7,154px); }
+  .publisher-user-metric-strip { grid-template-columns: 176px 176px 492px 176px; }
+}
+@media (max-width: 760px) {
+  .publisher-dashboard-metric-strip { grid-template-columns: repeat(7,166px); padding: 7px; }
+  .publisher-user-metric-strip { grid-template-columns: 172px 172px 486px 172px; padding: 7px; }
+  .publisher-dashboard-metric,
+  .publisher-user-metric.publisher-dashboard-metric { min-height: 120px; }
+  .publisher-detail-head { align-items: flex-start; flex-direction: column; }
+  .publisher-detail-tools { width: 100%; overflow-x: auto; padding-bottom: 2px; }
+  .publisher-detail-tools > button { min-width: 44px; min-height: 40px; }
+  .publisher-detail-body { min-height: 300px; padding-inline: 12px; }
+  .publisher-detail-note { padding-inline: 12px; }
+  .publisher-dashboard-detail.is-fullscreen { inset: 8px; }
+  .publisher-dashboard-detail.is-fullscreen .publisher-detail-head { max-height: 148px; overflow-y: auto; }
+}
+
 .publisher-vendor-settings { min-width: 0; }
 .publisher-vendor-title { min-height: 42px; margin: 0 0 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: #23344A; background: transparent; }
 .publisher-vendor-title h1 { margin: 0; color: #23344A; font-size: 24px; line-height: 1.35; }
@@ -5459,8 +5648,8 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .publisher-channel button,.publisher-channel select,.publisher-channel input{font:inherit}
 .publisher-channel button{cursor:pointer}.publisher-channel button:disabled{cursor:not-allowed;opacity:.46}
 .publisher-channel-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;min-width:0}
-.publisher-channel-head>div:first-child{min-width:0}.publisher-channel-head>div>span,.publisher-channel-card>header span:first-child{display:block;color:var(--brand-blue);font-size:11px;font-weight:750;letter-spacing:.1em}
-.publisher-channel-head h1{margin:5px 0 6px;font-size:26px;line-height:1.2}.publisher-channel-head p,.publisher-channel-card header p{margin:0;color:var(--text-secondary)}
+.publisher-channel-head>div:first-child{min-width:0}
+.publisher-channel-head h1{margin:0;font-size:26px;line-height:1.2}.publisher-channel-card header p{margin:0;color:var(--text-secondary)}
 .publisher-channel-head__actions,.publisher-channel-card__actions,.publisher-channel-dialog>footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
 .publisher-channel-primary,.publisher-channel-secondary{min-height:38px;padding:0 16px;border-radius:var(--radius-sm);font-weight:650}
 .publisher-channel-primary{border:1px solid var(--brand-deep);background:var(--brand-deep);color:#fff}.publisher-channel-primary:hover:not(:disabled){filter:brightness(1.06)}
@@ -5479,9 +5668,9 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .publisher-channel-table-wrap{max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch}.publisher-channel-table{width:100%;min-width:760px;border-collapse:collapse}.publisher-channel-table th,.publisher-channel-table td{padding:12px 13px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.publisher-channel-table th{background:var(--surface-soft);color:var(--text-secondary);font-size:12px}.publisher-channel-table tr:last-child td{border-bottom:0}.publisher-channel-table tbody tr:hover{background:#fafbfd}.publisher-channel-table code{font-family:var(--font-number);font-size:12px}.publisher-channel-link{padding:0;border:0;background:none;color:var(--info)}.publisher-channel-link:hover{text-decoration:underline}
 .publisher-channel-filters{display:flex;gap:12px;flex-wrap:wrap}.publisher-channel-filters label{display:grid;gap:5px}.publisher-channel-filters span{color:var(--text-secondary);font-size:12px}.publisher-channel-filters select{min-width:150px;padding:9px 34px 9px 11px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary)}
 .publisher-channel-tabs{display:flex;gap:28px;margin:-4px 0 16px;border-bottom:1px solid var(--line);overflow-x:auto}.publisher-channel-tabs button{position:relative;flex:0 0 auto;padding:10px 2px 12px;border:0;background:none;color:var(--text-secondary);font-weight:650}.publisher-channel-tabs button.is-active{color:var(--brand-deep)}.publisher-channel-tabs button.is-active::after{content:"";position:absolute;right:0;bottom:-1px;left:0;height:3px;border-radius:3px 3px 0 0;background:var(--brand-deep)}
-.publisher-channel-empty{display:grid;justify-items:center;padding:54px 22px;text-align:center}.publisher-channel-empty__mark{display:grid;place-items:center;width:58px;height:58px;margin-bottom:14px;border-radius:18px;background:#edf3ff;color:var(--brand-deep);font-weight:800}.publisher-channel-empty h2,.publisher-channel-empty p{margin:0}.publisher-channel-empty p{max-width:610px;margin-top:8px;color:var(--text-secondary);line-height:1.7}.publisher-channel-empty a{margin-top:12px;color:var(--info)}
+.publisher-channel-empty{display:grid;justify-items:center;padding:28px 22px;text-align:center}.publisher-channel-empty h2,.publisher-channel-empty p{margin:0}.publisher-channel-empty p{max-width:610px;margin-top:8px;color:var(--text-secondary);line-height:1.7}
 .publisher-channel-dialog-layer{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:20px}.publisher-channel-dialog-backdrop{position:absolute;inset:0;border:0;background:rgba(11,18,32,.52)}.publisher-channel-dialog{position:relative;width:min(640px,100%);max-height:min(86vh,760px);overflow:auto;border-radius:var(--radius-md);background:var(--surface);box-shadow:0 24px 72px rgba(11,18,32,.25)}
-.publisher-channel-dialog>header{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;gap:16px;padding:20px 22px 16px;border-bottom:1px solid var(--line);background:var(--surface)}.publisher-channel-dialog h2{margin:3px 0 0}.publisher-channel-dialog header span{color:var(--brand-blue);font-size:11px;font-weight:750;letter-spacing:.1em}.publisher-channel-dialog header button{border:0;background:none;font-size:24px}.publisher-channel-dialog__body{padding:20px 22px}.publisher-channel-dialog>footer{position:sticky;bottom:0;padding:14px 22px;border-top:1px solid var(--line);background:var(--surface)}
+.publisher-channel-dialog>header{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;gap:16px;padding:20px 22px 16px;border-bottom:1px solid var(--line);background:var(--surface)}.publisher-channel-dialog h2{margin:0}.publisher-channel-dialog header button{border:0;background:none;font-size:24px}.publisher-channel-dialog__body{padding:20px 22px}.publisher-channel-dialog>footer{position:sticky;bottom:0;padding:14px 22px;border-top:1px solid var(--line);background:var(--surface)}
 .publisher-channel-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}.publisher-channel-detail-grid div{min-width:0;padding:13px;border:1px solid var(--line);border-radius:var(--radius-sm)}.publisher-channel-detail-grid dt{color:var(--text-secondary);font-size:12px}.publisher-channel-detail-grid dd{margin:4px 0 0;overflow-wrap:anywhere}
 .publisher-channel-dialog__note{margin:16px 0 0;padding:12px;border-radius:var(--radius-sm);background:#f1f6ff;color:#315c9b;line-height:1.65}.publisher-channel-dialog__note.is-warning{background:#fff8e8;color:#885e12}
 .publisher-channel-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.publisher-channel-form label{display:grid;align-content:start;gap:7px}.publisher-channel-form label:first-child{grid-column:1/-1}.publisher-channel-form label>span{font-size:13px;font-weight:650}.publisher-channel-form input,.publisher-channel-form select{width:100%;min-height:40px;padding:0 11px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary)}.publisher-channel-form input[readonly]{background:var(--surface-soft);color:var(--text-secondary)}.publisher-channel-form small{color:var(--text-secondary)}.publisher-channel-form em{min-height:16px;color:#ba4741;font-size:12px;font-style:normal}
@@ -11114,13 +11303,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       id:'ST-202609-CH001', period:'2026-09', sold:1282, refunds:14,
       chargebacks:0, adjustment:'0.00', net:1268, amount:'16,467.32',
     },
-    maskedKeys:['GH26-••••-••••-9K2Q','GH26-••••-••••-21JM','GH26-••••-••••-R8WL'],
+    maskedKeys:['GH26-••••-••••-9K2Q','GH26-••••-••••-21JM','GH26-••••-••••-R8WL','GH26-••••-••••-4F7N','GH26-••••-••••-X5DP'],
   });
 
   const status = (label, tone = 'success') => `<span class="publisher-channel-status is-${e(tone)}">${e(label)}</span>`;
-  const metric = (label, value, note) => `<article class="publisher-channel-metric"><span>${e(label)}</span><strong class="number">${e(value)}</strong><small>${e(note)}</small></article>`;
+  const metric = (label, value, note = '') => `<article class="publisher-channel-metric"><span>${e(label)}</span><strong class="number">${e(value)}</strong>${note ? `<small>${e(note)}</small>` : ''}</article>`;
   const button = (label, action, options = {}) => `<button type="button" class="${options.secondary ? 'publisher-channel-secondary' : 'publisher-channel-primary'}" data-portal-action="${e(action)}"${options.disabled ? ' disabled' : ''}>${e(label)}</button>`;
-  const head = (language, eyebrow, title, description, action = '') => `<header class="publisher-channel-head"><div><span>${e(eyebrow)}</span><h1>${e(title)}</h1><p>${e(description)}</p></div>${action ? `<div class="publisher-channel-head__actions">${action}</div>` : ''}</header>`;
+  const head = (language, eyebrow, title, description, action = '') => `<header class="publisher-channel-head"><div><h1>${e(title)}</h1></div>${action ? `<div class="publisher-channel-head__actions">${action}</div>` : ''}</header>`;
   const table = (headers, rows) => `<div class="publisher-channel-table-wrap"><table class="publisher-channel-table"><thead><tr>${headers.map(item => `<th>${e(item)}</th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr>${row.map(value => `<td>${value}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   const field = (label, value) => `<div><dt>${e(label)}</dt><dd>${e(value)}</dd></div>`;
 
@@ -11165,22 +11354,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="publisher-channel-result is-${e(meta.tone)}" data-channel-batch-result="${e(outcome)}"><div><span>${status(meta.label, meta.tone)}</span><h2>${e(meta.title)}</h2><p>${e(meta.detail)}</p><small>${tx(language,'申请编号','Request ID')}：BR-20260914-001 · ${tx(language,'数量','Quantity')}：${e(quantity)} · ${fixture.program.id}</small></div>${recovery}</section>`;
   };
 
-  const dialogShell = (language, id, eyebrow, title, body, footer = '') => `<div class="publisher-channel-dialog-layer"><button type="button" class="publisher-channel-dialog-backdrop" data-portal-action="channel-dialog-close" aria-label="${tx(language,'关闭','Close')}"></button><section class="publisher-channel-dialog" role="dialog" aria-modal="true" aria-labelledby="${e(id)}"><header><div><span>${e(eyebrow)}</span><h2 id="${e(id)}">${e(title)}</h2></div><button type="button" data-portal-action="channel-dialog-close" aria-label="${tx(language,'关闭','Close')}">×</button></header><div class="publisher-channel-dialog__body">${body}</div>${footer ? `<footer>${footer}</footer>` : ''}</section></div>`;
+  const dialogShell = (language, id, eyebrow, title, body, footer = '') => `<div class="publisher-channel-dialog-layer"><button type="button" class="publisher-channel-dialog-backdrop" data-portal-action="channel-dialog-close" aria-label="${tx(language,'关闭','Close')}"></button><section class="publisher-channel-dialog" role="dialog" aria-modal="true" aria-labelledby="${e(id)}"><header><div><h2 id="${e(id)}">${e(title)}</h2></div><button type="button" data-portal-action="channel-dialog-close" aria-label="${tx(language,'关闭','Close')}">×</button></header><div class="publisher-channel-dialog__body">${body}</div>${footer ? `<footer>${footer}</footer>` : ''}</section></div>`;
 
-  const renderPlanDialog = language => dialogShell(language,'channel-plan-dialog-title','AUTHORIZATION PLAN',tx(language,'授权计划详情','Authorization plan details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'计划编号','Plan ID'),fixture.program.id)}${field(tx(language,'渠道','Channel'),`${fixture.channel.name} · ${fixture.channel.id}`)}${field('APPID',fixture.program.appId)}${field('Product／SKU',`${fixture.program.product} · ${fixture.program.sku}`)}${field(tx(language,'发行地区','Release regions'),fixture.program.regions)}${field(tx(language,'授权用途','Authorized purpose'),tx(language,'商业销售','Commercial sale'))}${field(tx(language,'总额度','Total quota'),'5,000')}${field(tx(language,'剩余额度','Remaining quota'),'3,360')}${field(tx(language,'日额度','Daily quota'),'2,000')}${field(tx(language,'单次上限','Per-request limit'),'1,000')}${field(tx(language,'交付方式','Delivery'),tx(language,'API 单码分配','Single-key API allocation'))}${field(tx(language,'有效期','Valid period'),`${fixture.program.validFrom} — ${fixture.program.validUntil}`)}</dl><p class="publisher-channel-dialog__note">${tx(language,'合作申请可先推进；正式生成可售 Key 前，平台将校验 SKU 的商店资料、发行地区、游戏资质和可售状态。','Partnership can proceed first. Before sellable Keys are generated, the platform checks store data, release regions, qualifications and SKU availability.')}</p>`);
+  const renderPlanDialog = language => dialogShell(language,'channel-plan-dialog-title','AUTHORIZATION PLAN',tx(language,'授权计划详情','Authorization plan details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'计划编号','Plan ID'),fixture.program.id)}${field(tx(language,'渠道','Channel'),`${fixture.channel.name} · ${fixture.channel.id}`)}${field('APPID',fixture.program.appId)}${field('Product／SKU',`${fixture.program.product} · ${fixture.program.sku}`)}${field(tx(language,'发行地区','Release regions'),fixture.program.regions)}${field(tx(language,'授权用途','Authorized purpose'),tx(language,'商业销售','Commercial sale'))}${field(tx(language,'总额度','Total quota'),'5,000')}${field(tx(language,'剩余额度','Remaining quota'),'3,360')}${field(tx(language,'日额度','Daily quota'),'2,000')}${field(tx(language,'单次上限','Per-request limit'),'1,000')}${field(tx(language,'交付方式','Delivery'),tx(language,'API 单码分配','Single-key API allocation'))}${field(tx(language,'有效期','Valid period'),`${fixture.program.validFrom} — ${fixture.program.validUntil}`)}</dl>`);
 
   const renderBatchCreateDialog = (language, state) => {
     const initialQuantity = Number(state.channelBatchDraft?.quantity || state.channelSubmission?.quantity || 500);
-    const body = `<form class="publisher-channel-form" data-channel-batch-form><label><span>${tx(language,'授权计划','Authorization plan')}</span><input value="${fixture.program.id} · ${fixture.channel.name}" readonly></label><label><span>${tx(language,'申请数量','Request quantity')}</span><input type="number" min="1" max="1000" step="1" value="${e(initialQuantity)}" aria-label="${tx(language,'申请数量','Request quantity')}" data-channel-batch-quantity><small>${tx(language,'剩余额度 3,360；单次上限 1,000。','3,360 remaining; 1,000 maximum per request.')}</small><em data-channel-batch-error></em></label><label><span>${tx(language,'用途','Purpose')}</span><select aria-label="${tx(language,'用途','Purpose')}" data-channel-batch-purpose><option value="commercial">${tx(language,'商业销售','Commercial sale')}</option><option value="testing">${tx(language,'测试','Testing')}</option><option value="promotion">${tx(language,'免费推广','Free promotion')}</option><option value="compensation">${tx(language,'用户补偿','Customer compensation')}</option></select></label><label><span>${tx(language,'交付方式','Delivery method')}</span><select aria-label="${tx(language,'交付方式','Delivery method')}" data-channel-batch-delivery><option value="api">${tx(language,'API 单码分配','Single-key API allocation')}</option><option value="file">${tx(language,'批量文件（需人工审核）','Batch file (manual review)')}</option></select></label><label><span>${tx(language,'有效期','Valid until')}</span><input type="date" value="2027-03-31" max="2027-03-31" aria-label="${tx(language,'有效期','Valid until')}"></label></form><p class="publisher-channel-dialog__note">${tx(language,'系统将先校验额度和风险。普通 API 申请自动生成；高风险申请转人工审核。','The system checks quota and risk first. Standard API requests are generated automatically; high-risk requests enter manual review.')}</p>`;
+    const body = `<form class="publisher-channel-form" data-channel-batch-form><label><span>${tx(language,'授权计划','Authorization plan')}</span><input value="${fixture.program.id} · ${fixture.channel.name}" readonly></label><label><span>${tx(language,'申请数量','Request quantity')}</span><input type="number" min="1" max="1000" step="1" value="${e(initialQuantity)}" aria-label="${tx(language,'申请数量','Request quantity')}" data-channel-batch-quantity><small>${tx(language,'剩余额度 3,360；单次上限 1,000。','3,360 remaining; 1,000 maximum per request.')}</small><em data-channel-batch-error></em></label><label><span>${tx(language,'用途','Purpose')}</span><select aria-label="${tx(language,'用途','Purpose')}" data-channel-batch-purpose><option value="commercial">${tx(language,'商业销售','Commercial sale')}</option><option value="testing">${tx(language,'测试','Testing')}</option><option value="promotion">${tx(language,'免费推广','Free promotion')}</option><option value="compensation">${tx(language,'用户补偿','Customer compensation')}</option></select></label><label><span>${tx(language,'交付方式','Delivery method')}</span><select aria-label="${tx(language,'交付方式','Delivery method')}" data-channel-batch-delivery><option value="api">${tx(language,'API 单码分配','Single-key API allocation')}</option><option value="file">${tx(language,'批量文件（需人工审核）','Batch file (manual review)')}</option></select></label><label><span>${tx(language,'有效期','Valid until')}</span><input type="date" value="2027-03-31" max="2027-03-31" aria-label="${tx(language,'有效期','Valid until')}"></label></form>`;
     const footer = `${button(tx(language,'取消','Cancel'),'channel-dialog-close',{secondary:true})}${button(tx(language,'提交批次申请','Submit batch request'),'channel-batch-submit')}`;
     return dialogShell(language,'channel-batch-create-title','KEY BATCH',tx(language,'创建 Key 批次','Create Key batch'),body,footer);
   };
 
-  const renderBatchDetailDialog = language => dialogShell(language,'channel-batch-detail-title','KEY BATCH',tx(language,'批次详情','Batch details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'批次编号','Batch ID'),fixture.batch.id)}${field(tx(language,'总量','Total'),'2,000')}${field(tx(language,'可用','Available'),'360')}${field(tx(language,'分配待确认','Allocated, pending confirmation'),'0')}${field(tx(language,'已暴露未兑换','Exposed, not redeemed'),'372')}${field(tx(language,'已兑换','Redeemed'),'1,268')}${field(tx(language,'已过期','Expired'),'0')}${field(tx(language,'已作废','Voided'),'0')}${field(tx(language,'有效期','Valid until'),fixture.batch.validUntil)}${field(tx(language,'交付方式','Delivery'),tx(language,'API 单码分配','Single-key API allocation'))}</dl><p class="publisher-channel-dialog__note is-warning">${tx(language,'已暴露 Key 只能兑换、过期或作废，不得回到可用状态。','An exposed Key can only be redeemed, expired or voided; it never returns to available.')}</p>`);
+  const renderBatchDetailDialog = language => dialogShell(language,'channel-batch-detail-title','KEY BATCH',tx(language,'批次详情','Batch details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'批次编号','Batch ID'),fixture.batch.id)}${field(tx(language,'总量','Total'),'2,000')}${field(tx(language,'可用','Available'),'360')}${field(tx(language,'待接收确认','Awaiting receipt confirmation'),'0')}${field(tx(language,'已暴露未兑换','Exposed, not redeemed'),'372')}${field(tx(language,'已兑换','Redeemed'),'1,268')}${field(tx(language,'已过期','Expired'),'0')}${field(tx(language,'已作废','Voided'),'0')}${field(tx(language,'有效期','Valid until'),fixture.batch.validUntil)}${field(tx(language,'交付方式','Delivery'),tx(language,'API 单码分配','Single-key API allocation'))}${field(tx(language,'交付机制','Delivery flow'),tx(language,'渠道订单请求后，接口一次返回 1 个 Key','After a channel order request, the API returns one Key'))}${field(tx(language,'幂等处理','Idempotency'),tx(language,'同一渠道订单只分配 1 个 Key，重试不重复扣库存','The same channel order receives one Key; retries do not consume inventory twice'))}${field(tx(language,'可见范围','Visibility'),tx(language,'前台、列表和日志只显示掩码或指纹','The portal, lists and logs show only masks or fingerprints'))}</dl><p class="publisher-channel-dialog__note is-warning">${tx(language,'明文 Key 仅通过已鉴权的 HTTPS 接口返回渠道。已暴露 Key 只能兑换、过期或作废，不得回到可用状态。批量文件仅作受控例外，由平台生成加密文件或限时下载地址。','Plain-text Keys are returned to the channel only through an authenticated HTTPS API. An exposed Key can only be redeemed, expired or voided; it never returns to available. Batch files are a controlled exception, provided by the platform as encrypted files or expiring download links.')}</p>`);
 
   const renderAnomalyDialog = language => dialogShell(language,'channel-anomaly-title','CHANNEL ANOMALY',tx(language,'异常详情','Anomaly details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'异常编号','Anomaly ID'),'AN-202609-0031')}${field(tx(language,'异常类型','Type'),tx(language,'已兑换但销售未回传','Redeemed without sales report'))}${field(tx(language,'渠道订单','Channel order'),'NP-260910-8826')}${field('Key',fixture.maskedKeys[2])}${field(tx(language,'发现时间','Detected at'),'2026-09-10 13:50')}${field(tx(language,'影响','Impact'),tx(language,'暂不计入渠道销售净额','Excluded from channel sales net for now'))}${field(tx(language,'处理进度','Progress'),tx(language,'平台正在向渠道补查销售事实','Platform is verifying the sale with the channel'))}${field(tx(language,'预计更新','Expected update'),'2026-09-15')}</dl><p class="publisher-channel-dialog__note">${tx(language,'开发者无需处理。结果确认后会自动更新销售、收益和月度调整。','No developer action is required. Sales, revenue and monthly adjustments update automatically after verification.')}</p>`);
 
-  const renderSettlementDialog = language => dialogShell(language,'channel-settlement-title','MONTHLY REVENUE',tx(language,'月度收益详情','Monthly revenue details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'统计月份','Period'),'2026-09')}${field(tx(language,'渠道','Channel'),fixture.channel.name)}${field(tx(language,'渠道售出','Channel sales'),'1,282')}${field(tx(language,'退款','Refunds'),'14')}${field(tx(language,'拒付','Chargebacks'),'0')}${field(tx(language,'历史调整','Prior adjustments'),'USD 0.00')}${field(tx(language,'净结算数量','Net quantity'),'1,268')}${field(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32')}</dl><p class="publisher-channel-dialog__note">${tx(language,'锁单后的迟到退款或拒付计入下期调整，不改本期历史快照。','Late refunds or chargebacks after locking are adjusted next month; this period snapshot remains unchanged.')}</p>`);
+  const renderSettlementDialog = language => dialogShell(language,'channel-settlement-title','MONTHLY REVENUE',tx(language,'月度收益详情','Monthly revenue details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'统计月份','Period'),'2026-09')}${field(tx(language,'渠道','Channel'),fixture.channel.name)}${field(tx(language,'渠道售出','Channel sales'),'1,282')}${field(tx(language,'退款','Refunds'),'14')}${field(tx(language,'拒付','Chargebacks'),'0')}${field(tx(language,'历史调整','Prior adjustments'),'USD 0.00')}${field(tx(language,'净结算数量','Net quantity'),'1,268')}${field(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32')}</dl><p class="publisher-channel-dialog__note">${tx(language,'最终开发者应收、开票与付款由财务模块统一处理。锁单后的迟到退款或拒付计入下期调整。','Final developer receivables, invoicing and payments are handled in Finance. Late refunds or chargebacks after locking are adjusted next month.')}</p>`);
 
   const renderDialog = ({ language, state }) => ({
     'plan-detail':() => renderPlanDialog(language),
@@ -11193,28 +11382,61 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderOverview = ({ language, state, channelState, batchOutcome }) => {
     const canCreate = channelState === 'active';
     const create = button(tx(language,'创建 Key 批次','Create Key batch'),'channel-batch-create',{disabled:!canCreate});
-    if (channelState === 'unopened') return `${head(language,'CHANNEL DISTRIBUTION',tx(language,'渠道分销总览','Channel distribution overview'),tx(language,'查看当前游戏的渠道合作与授权状态。','Review channel partnership and authorization status for this game.'),create)}${channelNotice(channelState,language)}<section class="publisher-channel-card publisher-channel-empty"><span class="publisher-channel-empty__mark">CH</span><h2>${tx(language,'等待平台邀请合作','Waiting for a platform invitation')}</h2><p>${tx(language,'平台会结合游戏类型、目标地区和渠道需求发起合作。无需在这里重复提交入驻资料。','The platform initiates partnerships based on game type, target regions and channel demand. No duplicate onboarding form is needed here.')}</p><a href="mailto:dev@xiaoji.com">dev@xiaoji.com</a></section>${renderDialog({language,state})}`;
-    return `${head(language,'CHANNEL DISTRIBUTION',tx(language,'渠道分销总览','Channel distribution overview'),tx(language,'查看当前游戏的授权计划、渠道表现和待办。','Review the authorization plan, channel performance and actions for this game.'),create)}${channelNotice(channelState,language)}<div class="publisher-channel-metrics">${metric(tx(language,'授权渠道','Authorized channels'),'1',tx(language,'邀请制合作中','Invitation-only partnership'))}${metric(tx(language,'本月渠道售出','Channel sales'),'1,282',tx(language,'较上月 +12.6%','+12.6% MoM'))}${metric(tx(language,'成功兑换','Redemptions'),'1,268',tx(language,'售兑率 98.9%','98.9% redemption rate'))}${metric(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32',tx(language,'已扣除 14 笔退款','After 14 refunds'))}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'星海远征 · 全球本体','Stellar Voyage · Global base game')}</h2><p>${fixture.program.id} · ${fixture.program.appId} · ${fixture.program.sku}</p></div>${status(tx(language,channelState === 'paused' ? '计划已暂停' : '计划生效中',channelState === 'paused' ? 'Program paused' : 'Program active'),channelState === 'paused' ? 'warning' : 'success')}</header><div class="publisher-channel-partner"><span>NP</span><div><strong>${fixture.channel.name}</strong><small>${fixture.channel.id} · ${tx(language,'美国、新加坡、中国澳门 · API 单码分配','United States, Singapore, Macao · Single-key API allocation')}</small></div></div><div class="publisher-channel-quota"><div><strong>5,000</strong><small>${tx(language,'计划额度','Program quota')}</small></div><div><strong>1,640</strong><small>${tx(language,'已使用','Used')}</small></div><div><strong>3,360</strong><small>${tx(language,'剩余额度','Remaining')}</small></div></div><div class="publisher-channel-progress"><i style="width:32.8%"></i></div><footer class="publisher-channel-card__actions">${button(tx(language,'查看计划详情','View plan details'),'channel-plan-detail',{secondary:true})}</footer></section>${batchResult({language,outcome:batchOutcome,submission:state.channelSubmission})}<section class="publisher-channel-card"><header><div><h2>${tx(language,'近 7 日渠道表现','Channel performance · last 7 days')}</h2><p>${tx(language,'销售、兑换和收益按不同业务事实统计。','Sales, redemption and revenue are counted as separate business facts.')}</p></div></header>${table([tx(language,'日期','Date'),tx(language,'分配','Allocated'),tx(language,'售出','Sold'),tx(language,'兑换','Redeemed'),tx(language,'退款','Refunds'),tx(language,'预估净额','Estimated net')],[['2026-09-10','86','72','69','1','USD 922.29'],['2026-09-09','91','78','76','0','USD 1,013.22'],['2026-09-08','74','65','64','1','USD 831.36'],['2026-09-07','69','58','57','0','USD 753.42']])}</section>${renderDialog({language,state})}`;
+    const pageHead = head(language,'CHANNEL DISTRIBUTION',tx(language,'渠道分销总览','Channel distribution overview'),' ',create);
+    if (channelState === 'unopened') return `${pageHead}${channelNotice(channelState,language)}${renderDialog({language,state})}`;
+    const notice = channelState === 'active' ? '' : channelNotice(channelState,language);
+    const result = state.channelSubmission ? batchResult({language,outcome:batchOutcome,submission:state.channelSubmission}) : '';
+    return `${pageHead}${notice}<div class="publisher-channel-metrics">${metric(tx(language,'授权渠道','Authorized channels'),'1')}${metric(tx(language,'本月渠道售出','Channel sales'),'1,282',tx(language,'较上月 +12.6%','+12.6% MoM'))}${metric(tx(language,'成功兑换','Redemptions'),'1,268',tx(language,'售兑率 98.9%','98.9% redemption rate'))}${metric(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32',tx(language,'已扣除 14 笔退款','After 14 refunds'))}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'星海远征 · 全球本体','Stellar Voyage · Global base game')}</h2><p>${fixture.program.id} · ${fixture.program.appId} · ${fixture.program.sku}</p></div></header><div class="publisher-channel-partner"><span>NP</span><div><strong>${fixture.channel.name}</strong><small>${fixture.channel.id} · ${tx(language,'美国、新加坡、中国澳门 · API 单码分配','United States, Singapore, Macao · Single-key API allocation')}</small></div></div><div class="publisher-channel-quota"><div><strong>5,000</strong><small>${tx(language,'计划额度','Program quota')}</small></div><div><strong>1,640</strong><small>${tx(language,'已使用','Used')}</small></div><div><strong>3,360</strong><small>${tx(language,'剩余额度','Remaining')}</small></div></div><div class="publisher-channel-progress"><i style="width:32.8%"></i></div><footer class="publisher-channel-card__actions">${button(tx(language,'查看计划详情','View plan details'),'channel-plan-detail',{secondary:true})}</footer></section>${result}<section class="publisher-channel-card"><header><div><h2>${tx(language,'近 7 日渠道表现','Channel performance · last 7 days')}</h2></div></header>${table([tx(language,'日期','Date'),tx(language,'分配','Allocated'),tx(language,'售出','Sold'),tx(language,'兑换','Redeemed'),tx(language,'退款','Refunds'),tx(language,'预估净额','Estimated net')],[['2026-09-10','86','72','69','1','USD 922.29'],['2026-09-09','91','78','76','0','USD 1,013.22'],['2026-09-08','74','65','64','1','USD 831.36'],['2026-09-07','69','58','57','0','USD 753.42']])}</section>${renderDialog({language,state})}`;
   };
 
   const renderBatches = ({ language, state, channelState, batchOutcome }) => {
     const canCreate = channelState === 'active';
-    return `${head(language,'KEY BATCHES',tx(language,'Key 批次','Key batches'),tx(language,'申请批次并查看审核、生成、交付和库存状态。','Request batches and review approval, generation, delivery and inventory states.'),button(tx(language,'创建 Key 批次','Create Key batch'),'channel-batch-create',{disabled:!canCreate}))}${channelNotice(channelState,language)}${batchResult({language,outcome:batchOutcome,submission:state.channelSubmission})}<section class="publisher-channel-notice is-warning"><div><strong>${tx(language,'不可逆规则','Irreversible rule')}</strong><span>${tx(language,'已暴露 Key 不可回库，只能兑换、过期或作废。','Exposed Keys never return to inventory; they can only be redeemed, expired or voided.')}</span></div></section><div class="publisher-channel-metrics">${metric(tx(language,'批次总量','Batch total'),'2,000',fixture.batch.id)}${metric(tx(language,'可用','Available'),'360',tx(language,'可继续分配','Ready to allocate'))}${metric(tx(language,'已暴露','Exposed'),'372',tx(language,'不可回库','Never restocked'))}${metric(tx(language,'已兑换','Redeemed'),'1,268',tx(language,'权益已创建','Entitlements created'))}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'批次列表','Batch list')}</h2><p>${tx(language,'仅展示批次和脱敏状态，不展示或导出 Key 明文。','Only batch and masked status data are shown. Plain-text Keys are never shown or exported.')}</p></div></header>${table([tx(language,'批次编号','Batch ID'),tx(language,'授权计划','Plan'),tx(language,'用途','Purpose'),tx(language,'交付方式','Delivery'),tx(language,'数量','Quantity'),tx(language,'状态','Status'),tx(language,'有效期','Valid until'),tx(language,'操作','Action')],[[`<strong>${fixture.batch.id}</strong>`,fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'2,000',status(tx(language,'可用','Available')),'2027-03-31',`<button type="button" class="publisher-channel-link" data-portal-action="channel-batch-detail">${tx(language,'查看详情','View details')}</button>`],['KB-202608-0003',fixture.program.id,tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'50',status(tx(language,'已耗尽','Depleted'),'neutral'),'2026-12-31',`<button type="button" class="publisher-channel-link" data-portal-action="channel-batch-detail">${tx(language,'查看详情','View details')}</button>`]])}</section>${renderDialog({language,state})}`;
+    const pageHead = head(language,'KEY BATCHES',tx(language,'Key 批次','Key batches'),' ',button(tx(language,'创建 Key 批次','Create Key batch'),'channel-batch-create',{disabled:!canCreate}));
+    if (channelState === 'unopened') return `${pageHead}${channelNotice(channelState,language)}${renderDialog({language,state})}`;
+    const notice = channelState === 'active' ? '' : channelNotice(channelState,language);
+    const result = state.channelSubmission ? batchResult({language,outcome:batchOutcome,submission:state.channelSubmission}) : '';
+    const noAction = '<span aria-label="无操作">—</span>';
+    const details = `<button type="button" class="publisher-channel-link" data-portal-action="channel-batch-detail">${tx(language,'查看详情','View details')}</button>`;
+    const rows = [
+      ['KB-202609-0015',fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'500',status(tx(language,'生成中','Generating'),'warning'),'2027-03-31',noAction],
+      ['KB-202609-0014',fixture.program.id,tx(language,'免费推广','Free promotion'),tx(language,'加密文件','Encrypted file'),'300',status(tx(language,'审核中','In review'),'warning'),'2026-12-31',noAction],
+      ['KB-202609-0013',fixture.program.id,tx(language,'用户补偿','Customer compensation'),tx(language,'加密文件','Encrypted file'),'100',status(tx(language,'已拒绝','Rejected'),'danger'),'2026-12-31',noAction],
+      ['KB-202609-0012',fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'600',status(tx(language,'生成失败','Generation failed'),'danger'),'2027-03-31',noAction],
+      [`<strong>${fixture.batch.id}</strong>`,fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'2,000',status(tx(language,'可用','Available')),'2027-03-31',details],
+      ['KB-202608-0007',fixture.program.id,tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'50',status(tx(language,'已耗尽','Depleted'),'neutral'),'2026-12-31',noAction],
+      ['KB-202607-0006',fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'200',status(tx(language,'已过期','Expired'),'neutral'),'2026-08-31',noAction],
+      ['KB-202607-0005',fixture.program.id,tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'20',status(tx(language,'已作废','Voided'),'danger'),'2026-12-31',noAction],
+    ];
+    return `${pageHead}${notice}${result}<div class="publisher-channel-metrics">${metric(tx(language,'批次总量','Batch total'),'2,000',fixture.batch.id)}${metric(tx(language,'可用','Available'),'360')}${metric(tx(language,'已暴露','Exposed'),'372')}${metric(tx(language,'已兑换','Redeemed'),'1,268')}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'批次列表','Batch list')}</h2></div></header>${table([tx(language,'批次编号','Batch ID'),tx(language,'授权计划','Plan'),tx(language,'用途','Purpose'),tx(language,'交付方式','Delivery'),tx(language,'数量','Quantity'),tx(language,'状态','Status'),tx(language,'有效期','Valid until'),tx(language,'操作','Action')],rows)}</section>${renderDialog({language,state})}`;
   };
 
   const renderDataTab = ({ language, tab }) => {
-    if (tab === 'sales') return table([tx(language,'渠道订单','Channel order'),tx(language,'地区','Region'),'Key',tx(language,'销售','Sale'),tx(language,'退款／拒付','Refund / chargeback'),tx(language,'兑换','Redemption'),tx(language,'时间','Time')],[['NP-260910-8841',tx(language,'美国','United States'),`<code>${fixture.maskedKeys[0]}</code>`,status(tx(language,'已售','Sold')),status(tx(language,'无','None'),'neutral'),status(tx(language,'已兑换','Redeemed')),'2026-09-10 14:22'],['NP-260910-8839',tx(language,'新加坡','Singapore'),`<code>${fixture.maskedKeys[1]}</code>`,status(tx(language,'已售','Sold')),status(tx(language,'已退款','Refunded'),'warning'),status(tx(language,'未兑换','Not redeemed'),'neutral'),'2026-09-10 14:16'],['NP-260910-8826',tx(language,'美国','United States'),`<code>${fixture.maskedKeys[2]}</code>`,status(tx(language,'待补报','Report pending'),'warning'),status(tx(language,'无','None'),'neutral'),status(tx(language,'已兑换','Redeemed')),'2026-09-10 13:48']]);
-    if (tab === 'anomalies') return table([tx(language,'异常编号','Anomaly ID'),tx(language,'类型','Type'),tx(language,'影响订单','Affected order'),tx(language,'发现时间','Detected at'),tx(language,'进度','Progress'),tx(language,'操作','Action')],[['AN-202609-0031',tx(language,'已兑换但销售未回传','Redeemed without sales report'),'NP-260910-8826','2026-09-10 13:50',status(tx(language,'补查中','Verifying'),'warning'),`<button type="button" class="publisher-channel-link" data-portal-action="channel-anomaly-detail">${tx(language,'查看异常','View anomaly')}</button>`],['AN-202609-0024',tx(language,'接收确认超时','Delivery confirmation timeout'),'DL-20260910-0182','2026-09-10 12:10',status(tx(language,'已恢复','Recovered'),'success'),`<button type="button" class="publisher-channel-link" data-portal-action="channel-anomaly-detail">${tx(language,'查看异常','View anomaly')}</button>`]]);
-    return table([tx(language,'交付编号','Delivery ID'),tx(language,'批次','Batch'),'Key',tx(language,'渠道','Channel'),tx(language,'分配数量','Allocated'),tx(language,'接收数量','Received'),tx(language,'状态','Status'),tx(language,'时间','Time')],[['DL-20260910-0188',fixture.batch.id,`<code>${fixture.maskedKeys[0]}</code>`,fixture.channel.name,'1','1',status(tx(language,'已确认接收','Receipt confirmed')),'2026-09-10 14:20'],['DL-20260910-0182',fixture.batch.id,`<code>${fixture.maskedKeys[1]}</code>`,fixture.channel.name,'1','1',status(tx(language,'延迟后确认','Confirmed after delay'),'warning'),'2026-09-10 13:42'],['DL-20260909-0169',fixture.batch.id,`<code>${fixture.maskedKeys[2]}</code>`,fixture.channel.name,'1','1',status(tx(language,'已确认接收','Receipt confirmed')),'2026-09-09 18:08']]);
+    if (tab === 'sales') return table([tx(language,'渠道订单','Channel order'),tx(language,'地区','Region'),tx(language,'Key 掩码','Key mask'),tx(language,'金额','Amount'),tx(language,'业务状态','Business status'),tx(language,'时间','Time')],[['NP-260910-8841',tx(language,'美国','United States'),`<code>${fixture.maskedKeys[0]}</code>`,'USD 12.99',status(tx(language,'已售已兑换','Sold and redeemed')),'2026-09-10 14:22'],['NP-260910-8839',tx(language,'新加坡','Singapore'),`<code>${fixture.maskedKeys[1]}</code>`,'USD 12.99',status(tx(language,'已售未兑换','Sold, not redeemed'),'warning'),'2026-09-10 14:16'],['NP-260910-8832',tx(language,'美国','United States'),`<code>${fixture.maskedKeys[2]}</code>`,'USD 12.99',status(tx(language,'已退款','Refunded'),'warning'),'2026-09-10 14:02'],['NP-260910-8829',tx(language,'中国澳门','Macao'),`<code>${fixture.maskedKeys[3]}</code>`,'USD 12.99',status(tx(language,'已拒付','Charged back'),'danger'),'2026-09-10 13:55'],['NP-260910-8826',tx(language,'美国','United States'),`<code>${fixture.maskedKeys[4]}</code>`,'—',status(tx(language,'已兑换但销售待补报','Redeemed, sale report pending'),'warning'),'2026-09-10 13:48']]);
+    if (tab === 'anomalies') return table([tx(language,'异常编号','Anomaly ID'),tx(language,'类型','Type'),tx(language,'影响订单','Affected order'),tx(language,'发现时间','Detected at'),tx(language,'状态','Status'),tx(language,'操作','Action')],[['AN-202609-0031',tx(language,'已兑换但销售未回传','Redeemed without sales report'),'NP-260910-8826','2026-09-10 13:50',status(tx(language,'处理中','Processing'),'warning'),`<button type="button" class="publisher-channel-link" data-portal-action="channel-anomaly-detail">${tx(language,'查看异常','View anomaly')}</button>`],['AN-202609-0029',tx(language,'订单重复回传','Duplicate order report'),'NP-260910-8818','2026-09-10 13:20',status(tx(language,'待处理','Pending'),'warning'),'—'],['AN-202609-0024',tx(language,'接收确认超时','Delivery confirmation timeout'),'DL-20260910-0182','2026-09-10 12:10',status(tx(language,'已恢复','Recovered'),'success'),'—'],['AN-202608-0018',tx(language,'分配失败','Allocation failed'),'DL-20260829-0138','2026-08-29 16:08',status(tx(language,'已关闭','Closed'),'neutral'),'—']]);
+    return table([tx(language,'交付编号','Delivery ID'),tx(language,'批次','Batch'),tx(language,'Key 掩码','Key mask'),tx(language,'渠道','Channel'),tx(language,'状态','Status'),tx(language,'时间','Time')],[['DL-20260910-0190',fixture.batch.id,`<code>${fixture.maskedKeys[0]}</code>`,fixture.channel.name,status(tx(language,'分配中','Allocating'),'warning'),'2026-09-10 14:24'],['DL-20260910-0189',fixture.batch.id,`<code>${fixture.maskedKeys[1]}</code>`,fixture.channel.name,status(tx(language,'待接收确认','Awaiting receipt confirmation'),'warning'),'2026-09-10 14:22'],['DL-20260910-0188',fixture.batch.id,`<code>${fixture.maskedKeys[2]}</code>`,fixture.channel.name,status(tx(language,'已确认接收','Receipt confirmed')),'2026-09-10 14:20'],['DL-20260910-0182',fixture.batch.id,`<code>${fixture.maskedKeys[3]}</code>`,fixture.channel.name,status(tx(language,'确认超时','Confirmation timed out'),'danger'),'2026-09-10 13:42'],['DL-20260909-0169',fixture.batch.id,`<code>${fixture.maskedKeys[4]}</code>`,fixture.channel.name,status(tx(language,'分配失败','Allocation failed'),'danger'),'2026-09-09 18:08']]);
   };
 
   const renderData = ({ language, state, channelState }) => {
     const activeTab = ['delivery','sales','anomalies'].includes(state.channelDataTab) ? state.channelDataTab : 'delivery';
     const tabs = [['delivery',tx(language,'交付记录','Delivery records')],['sales',tx(language,'销售与兑换','Sales & redemption')],['anomalies',tx(language,'异常记录','Anomalies')]];
-    return `${head(language,'CHANNEL DATA',tx(language,'渠道数据','Channel data'),tx(language,'按渠道、SKU、地区和月份查看脱敏交付、销售、兑换和异常。','Review masked delivery, sales, redemption and anomaly data by channel, SKU, region and month.'),button(tx(language,'导出数据','Export data'),'channel-export'))}${channelNotice(channelState,language)}<div class="publisher-channel-filters"><label><span>${tx(language,'渠道','Channel')}</span><select><option>${fixture.channel.name}</option></select></label><label><span>SKU</span><select><option>${fixture.program.sku}</option></select></label><label><span>${tx(language,'月份','Month')}</span><select><option>2026-09</option></select></label><label><span>${tx(language,'地区','Region')}</span><select><option>${tx(language,'全部地区','All regions')}</option></select></label></div><div class="publisher-channel-metrics">${metric(tx(language,'已分配','Allocated'),'1,640',`${fixture.program.appId} · ${fixture.program.sku}`)}${metric(tx(language,'已确认接收','Delivery confirmed'),'1,602',tx(language,'渠道已取得 Key','Channel received Keys'))}${metric(tx(language,'已售','Sold'),'1,282','sale_confirmed')}${metric(tx(language,'销售回传完整率','Sales reporting'),'99.8%',tx(language,'1 条待补报','1 report pending'))}</div><section class="publisher-channel-card"><div class="publisher-channel-tabs" role="tablist" aria-label="${tx(language,'渠道数据类型','Channel data type')}">${tabs.map(([id,label]) => `<button type="button" role="tab" aria-selected="${activeTab === id}" class="${activeTab === id ? 'is-active' : ''}" data-portal-action="channel-data-tab" data-channel-data-tab="${id}">${e(label)}</button>`).join('')}</div><div class="publisher-channel-tabpanel" role="tabpanel">${renderDataTab({language,tab:activeTab})}</div></section>${renderDialog({language,state})}`;
+    const pageHead = head(language,'CHANNEL DATA',tx(language,'渠道数据','Channel data'),' ',button(tx(language,'导出数据','Export data'),'channel-export'));
+    if (channelState === 'unopened') return `${pageHead}${channelNotice(channelState,language)}${renderDialog({language,state})}`;
+    const notice = channelState === 'active' ? '' : channelNotice(channelState,language);
+    return `${pageHead}${notice}<div class="publisher-channel-filters"><label><span>${tx(language,'渠道','Channel')}</span><select><option>${fixture.channel.name}</option></select></label><label><span>SKU</span><select><option>${fixture.program.sku}</option></select></label><label><span>${tx(language,'月份','Month')}</span><select><option>2026-09</option></select></label><label><span>${tx(language,'地区','Region')}</span><select><option>${tx(language,'全部地区','All regions')}</option></select></label></div><div class="publisher-channel-metrics">${metric(tx(language,'已分配','Allocated'),'1,640',`${fixture.program.appId} · ${fixture.program.sku}`)}${metric(tx(language,'已确认接收','Delivery confirmed'),'1,602')}${metric(tx(language,'已售','Sold'),'1,282')}${metric(tx(language,'销售回传完整率','Sales reporting'),'99.8%',tx(language,'1 条待补报','1 report pending'))}</div><section class="publisher-channel-card"><div class="publisher-channel-tabs" role="tablist" aria-label="${tx(language,'渠道数据类型','Channel data type')}">${tabs.map(([id,label]) => `<button type="button" role="tab" aria-selected="${activeTab === id}" class="${activeTab === id ? 'is-active' : ''}" data-portal-action="channel-data-tab" data-channel-data-tab="${id}">${e(label)}</button>`).join('')}</div><div class="publisher-channel-tabpanel" role="tabpanel">${renderDataTab({language,tab:activeTab})}</div></section>${renderDialog({language,state})}`;
   };
 
-  const renderSettlement = ({ language, state, channelState }) => `${head(language,'CHANNEL REVENUE',tx(language,'收益与结算','Revenue & settlement'),tx(language,'查看渠道销售净额；正式应收、开票和付款由财务模块处理。','Review channel sales net. Final receivables, invoicing and payments are handled in Finance.'),button(tx(language,'进入财务与结算','Open Finance'),'channel-finance-entry',{secondary:true}))}${channelNotice(channelState,language)}<section class="publisher-channel-notice is-neutral"><div><strong>${tx(language,'模块边界','Module boundary')}</strong><span>${tx(language,'本页只展示渠道销售净额。最终开发者应收、开票与付款由财务模块统一处理。','This page only shows channel sales net. Final developer receivables, invoicing and payments are handled in Finance.')}</span></div></section><div class="publisher-channel-metrics">${metric(tx(language,'渠道售出','Channel sales'),'1,282','sale_confirmed')}${metric(tx(language,'退款','Refunds'),'14','refund_confirmed')}${metric(tx(language,'拒付','Chargebacks'),'0','chargeback_lost')}${metric(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32',tx(language,'净数量 1,268','Net quantity 1,268'))}</div><section class="publisher-channel-card publisher-channel-settlement"><header><div><h2>${tx(language,'月度收益','Monthly revenue')}</h2><p>${fixture.channel.name} · ${fixture.program.appId} · ${fixture.program.sku}</p></div></header>${table([tx(language,'月份','Period'),tx(language,'售出','Sold'),tx(language,'退款','Refunds'),tx(language,'拒付','Chargebacks'),tx(language,'历史调整','Prior adjustments'),tx(language,'净数量','Net quantity'),tx(language,'预估渠道销售净额','Estimated channel sales net'),tx(language,'操作','Action')],[['2026-09','1,282','14','0','USD 0.00','1,268','<strong>USD 16,467.32</strong>',`<button type="button" class="publisher-channel-link" data-portal-action="channel-settlement-detail">${tx(language,'查看详情','View details')}</button>`],['2026-08','1,138','9','1','USD -62.40','1,128','<strong>USD 14,653.21</strong>',`<button type="button" class="publisher-channel-link" data-portal-action="channel-settlement-detail">${tx(language,'查看详情','View details')}</button>`]])}<p class="publisher-channel-card__note">${tx(language,'锁单后的迟到退款或拒付进入下期调整，不回写旧账单。','Late refunds or chargebacks after locking are adjusted next month and do not rewrite prior statements.')}</p></section>${renderDialog({language,state})}`;
+  const renderSettlement = ({ language, state, channelState }) => {
+    const pageHead = head(language,'CHANNEL REVENUE',tx(language,'收益与结算','Revenue & settlement'),' ',button(tx(language,'进入财务与结算','Open Finance'),'channel-finance-entry',{secondary:true}));
+    if (channelState === 'unopened') return `${pageHead}${channelNotice(channelState,language)}${renderDialog({language,state})}`;
+    const notice = channelState === 'active' ? '' : channelNotice(channelState,language);
+    const details = `<button type="button" class="publisher-channel-link" data-portal-action="channel-settlement-detail">${tx(language,'查看详情','View details')}</button>`;
+    const rows = [
+      ['2026-09','1,282','14','0','USD 0.00','1,268','<strong>USD 16,467.32</strong>',status(tx(language,'预估中','Estimating'),'warning'),details],
+      ['2026-08','1,138','9','1','USD 0.00','1,128','<strong>USD 14,715.61</strong>',status(tx(language,'已锁定','Locked')),'—'],
+      ['2026-07','1,094','8','0','USD -62.40','1,086','<strong>USD 14,047.92</strong>',status(tx(language,'已调整','Adjusted'),'neutral'),'—'],
+    ];
+    return `${pageHead}${notice}<div class="publisher-channel-metrics">${metric(tx(language,'渠道售出','Channel sales'),'1,282')}${metric(tx(language,'退款','Refunds'),'14')}${metric(tx(language,'拒付','Chargebacks'),'0')}${metric(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32',tx(language,'净数量 1,268','Net quantity 1,268'))}</div><section class="publisher-channel-card publisher-channel-settlement"><header><div><h2>${tx(language,'月度收益','Monthly revenue')}</h2><p>${fixture.channel.name} · ${fixture.program.appId} · ${fixture.program.sku}</p></div></header>${table([tx(language,'月份','Period'),tx(language,'售出','Sold'),tx(language,'退款','Refunds'),tx(language,'拒付','Chargebacks'),tx(language,'历史调整','Prior adjustments'),tx(language,'净数量','Net quantity'),tx(language,'预估渠道销售净额','Estimated channel sales net'),tx(language,'状态','Status'),tx(language,'操作','Action')],rows)}</section>${renderDialog({language,state})}`;
+  };
 
   const renderers = {'channel-overview':renderOverview,'channel-batches':renderBatches,'channel-data':renderData,'channel-settlement':renderSettlement};
   const render = ({ section, language = 'zh', state = {}, demoState = {} }) => {

@@ -8,7 +8,7 @@ import {execFileSync} from 'node:child_process';
 
 const {chromium}=createRequire(import.meta.url)('playwright-core');
 const demoFile=path.resolve('demos/开发者后台一期/13-开发者平台与渠道分销demo.html');
-const evidenceDir=path.resolve('tests/developer-backend/evidence/gamehub-key-channel-integrated');
+const evidenceDir=path.resolve('tests/developer-backend/evidence/gamehub-key-channel-integrated-v2');
 const chrome=[process.env.CHROME_PATH,'C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(file=>file&&fs.existsSync(file));
 let browser;
 const demoUrl=route=>{const url=pathToFileURL(demoFile);url.hash=route;return url.href;};
@@ -80,7 +80,7 @@ test('四个渠道页面口径一致且不含明文 Key 或 Secret',async()=>{
   await openGame(page);
   const sections=[
     ['渠道分销','渠道分销总览',['CH-001','KP-202609-001','1,282','1,268','USD 16,467.32']],
-    ['Key 批次','Key 批次',['KB-202609-0008','已暴露','不可回库']],
+    ['Key 批次','Key 批次',['KB-202609-0008','可用','已耗尽']],
     ['渠道数据','渠道数据',['APP-7F3A9C','BASE-GLOBAL','GH26-••••-••••-9K2Q']],
     ['收益与结算','收益与结算',['1,282','14','1,268','USD 16,467.32']],
   ];
@@ -94,13 +94,37 @@ test('四个渠道页面口径一致且不含明文 Key 或 Secret',async()=>{
   await page.close();
 });
 
+test('四个渠道页只常驻必要信息',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);
+  for(const button of ['渠道分销','Key 批次','渠道数据','收益与结算']){
+    await page.getByRole('button',{name:button,exact:true}).click();
+    const panel=page.locator('.publisher-channel');
+    assert.equal(await panel.locator('.publisher-channel-head > div:first-child > span').count(),0,`${button} 不应显示英文副标题`);
+    assert.equal(await panel.locator('.publisher-channel-head > div:first-child > p').count(),0,`${button} 不应显示重复说明`);
+    assert.equal(await panel.locator('.publisher-channel-notice').count(),0,`${button} 合作正常时不应常驻提示条`);
+  }
+  await page.getByRole('button',{name:'Key 批次',exact:true}).click();
+  assert.equal(await page.locator('.publisher-channel-result').count(),0,'未产生新申请时不应常驻批次结果');
+  assert.equal(await page.getByText('不可逆规则',{exact:true}).count(),0,'不可逆规则只在批次详情展示');
+  await page.getByRole('button',{name:'收益与结算',exact:true}).click();
+  assert.equal(await page.getByText('模块边界',{exact:true}).count(),0,'结算边界不应重复占用页面');
+  assert.doesNotMatch(await page.locator('.publisher-channel').innerText(),/sale_confirmed|refund_confirmed|chargeback_lost/);
+  await page.getByRole('button',{name:'渠道分销',exact:true}).click();
+  await page.getByRole('button',{name:'创建 Key 批次',exact:true}).click();
+  assert.equal(await page.getByRole('dialog',{name:'创建 Key 批次'}).getByText(/系统将先校验额度和风险/).count(),0);
+  await page.close();
+});
+
 test('渠道页面支持英文并在手机宽度无根节点溢出',async()=>{
   for(const width of [320,390]){
     const page=await browser.newPage({viewport:{width,height:844}});
     await openGame(page,{language:'en'});
+    for(const section of ['Channel distribution','Key batches','Channel data','Revenue & settlement']){
+      await page.getByRole('button',{name:section,exact:true}).click();
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth),false,`${width}px ${section} 根节点横向溢出`);
+    }
     await page.getByRole('button',{name:'Channel distribution',exact:true}).click();
-    await page.getByRole('heading',{name:'Channel distribution overview',exact:true}).waitFor();
-    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth),false,`${width}px 根节点横向溢出`);
     await page.getByRole('button',{name:'Create Key batch',exact:true}).click();
     await page.getByRole('dialog',{name:'Create Key batch'}).waitFor();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth),false,`${width}px 批次弹窗导致根节点横向溢出`);
@@ -116,7 +140,12 @@ test('批次详情与脱敏导出均有明确反馈',async()=>{
   await page.getByRole('button',{name:'查看详情',exact:true}).first().click();
   const dialog=page.getByRole('dialog',{name:'批次详情'});
   await dialog.waitFor();
-  assert.match(await dialog.innerText(),/已暴露 Key 只能兑换、过期或作废/);
+  const detail=await dialog.innerText();
+  assert.match(detail,/交付方式[\s\S]*API 单码分配/);
+  assert.match(detail,/渠道订单请求后，接口一次返回 1 个 Key/);
+  assert.match(detail,/同一渠道订单只分配 1 个 Key，重试不重复扣库存/);
+  assert.match(detail,/前台、列表和日志只显示掩码或指纹/);
+  assert.match(detail,/已暴露 Key 只能兑换、过期或作废/);
   await dialog.getByRole('button',{name:'关闭'}).click();
   await page.getByRole('button',{name:'渠道数据',exact:true}).click();
   await page.getByRole('button',{name:'导出数据',exact:true}).click();
@@ -183,8 +212,34 @@ test('渠道交付、销售兑换、异常和开发者结算口径完整',async(
   await page.getByRole('dialog',{name:'异常详情'}).getByRole('button',{name:'关闭'}).click();
   await page.getByRole('button',{name:'收益与结算',exact:true}).click();
   const settlement=await page.locator('.publisher-channel').innerText();
-  assert.match(settlement,/最终开发者应收、开票与付款由财务模块统一处理/);
+  assert.doesNotMatch(settlement,/最终开发者应收、开票与付款由财务模块统一处理/);
   assert.doesNotMatch(settlement,/待渠道确认|固定单价/);
+  await page.getByRole('button',{name:'查看详情',exact:true}).first().click();
+  assert.match(await page.getByRole('dialog',{name:'月度收益详情'}).innerText(),/最终开发者应收、开票与付款由财务模块统一处理/);
+  await page.close();
+});
+
+test('列表展示渠道分销的全部业务状态',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);
+
+  await page.getByRole('button',{name:'Key 批次',exact:true}).click();
+  const batches=await page.locator('.publisher-channel-table').innerText();
+  for(const value of ['生成中','审核中','已拒绝','生成失败','可用','已耗尽','已过期','已作废']) assert.match(batches,new RegExp(value));
+
+  await page.getByRole('button',{name:'渠道数据',exact:true}).click();
+  const panel=page.getByRole('tabpanel');
+  for(const value of ['分配中','待接收确认','已确认接收','确认超时','分配失败']) assert.match(await panel.innerText(),new RegExp(value));
+
+  await page.getByRole('tab',{name:'销售与兑换',exact:true}).click();
+  for(const value of ['已售未兑换','已售已兑换','已退款','已拒付','已兑换但销售待补报']) assert.match(await panel.innerText(),new RegExp(value));
+
+  await page.getByRole('tab',{name:'异常记录',exact:true}).click();
+  for(const value of ['待处理','处理中','已恢复','已关闭']) assert.match(await panel.innerText(),new RegExp(value));
+
+  await page.getByRole('button',{name:'收益与结算',exact:true}).click();
+  const revenue=await page.locator('.publisher-channel-table').innerText();
+  for(const value of ['预估中','已锁定','已调整']) assert.match(revenue,new RegExp(value));
   await page.close();
 });
 
