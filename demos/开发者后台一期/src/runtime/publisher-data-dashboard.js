@@ -122,24 +122,46 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const effectiveRange = filters => filters?.range === 'custom'
     ? { startDate:filters.startDate || presetRanges['30d'].startDate, endDate:filters.endDate || presetRanges['30d'].endDate }
     : { ...preset(filters?.range) };
+  const normalizeFilters = sourceInput => {
+    const source = sourceInput && typeof sourceInput === 'object' ? sourceInput : {};
+    const filters = { ...defaultFilters, ...source };
+    if (filters.range === '90d') {
+      const legacyRange = {
+        startDate:source.startDate || formatDate(new Date(dateFrom(dataCutoffDate).getTime() - 89 * 86400000)),
+        endDate:source.endDate || dataCutoffDate,
+      };
+      if (!validateDateRange(legacyRange)) return { ...filters, range:'custom', ...legacyRange };
+      return { ...filters, range:'30d', ...presetRanges['30d'] };
+    }
+    if (filters.range === 'custom') {
+      const customRange = { startDate:filters.startDate, endDate:filters.endDate };
+      return validateDateRange(customRange)
+        ? { ...filters, range:'30d', ...presetRanges['30d'] }
+        : { ...filters, ...customRange };
+    }
+    if (!Object.prototype.hasOwnProperty.call(presetRanges,filters.range)) return { ...filters, range:'30d', ...presetRanges['30d'] };
+    return { ...filters, ...presetRanges[filters.range] };
+  };
   const createState = seed => {
     const incoming = seed && typeof seed === 'object' ? clone(seed) : {};
-    const filters = { ...defaultFilters, ...(incoming.filters || {}) };
+    const filters = normalizeFilters(incoming.filters);
     const requestedTab = incoming.tab;
     const tab = requestedTab === 'users' || requestedTab === 'conversion' ? requestedTab : 'conversion';
+    const restored = { ...incoming };
+    ['activeTooltip','datePickerOpen','draftDateRange','calendarLeftMonth','calendarSelectingEnd','dateAnchor'].forEach(key => delete restored[key]);
     return {
       tab,
       trendMetric:'impression',
       userTrendMetric:'active',
+      scenario:'ready',
+      ...restored,
+      tab,
+      filters,
       activeTooltip:'',
       datePickerOpen:false,
       draftDateRange:effectiveRange(filters),
-      calendarLeftMonth:'2026-08',
+      calendarLeftMonth:calendarStartMonth(effectiveRange(filters)),
       calendarSelectingEnd:false,
-      scenario:'ready',
-      ...incoming,
-      tab,
-      filters,
     };
   };
 
@@ -344,7 +366,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       return `<button type="button" class="${classes}" data-dashboard-action="calendar-day" data-calendar-date="${value}"${disabled ? ' disabled' : ''}>${day}</button>`;
     }).join('');
     const weekday = language === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['一','二','三','四','五','六','日'];
-    return `<section class="publisher-calendar-month" data-calendar-month="${monthKey}"><header>${index === 0 ? `<button type="button" data-dashboard-action="calendar-prev" aria-label="${text('上一个月','Previous month',language)}">‹</button>` : '<span></span>'}<strong>${monthTitle(monthKey,language)}</strong>${index === 1 ? `<button type="button" data-dashboard-action="calendar-next" aria-label="${text('下一个月','Next month',language)}"${addMonth(monthKey,1) > dataCutoffDate.slice(0,7) ? ' disabled' : ''}>›</button>` : '<span></span>'}</header><div class="publisher-calendar-weekdays">${weekday.map(value => `<span>${value}</span>`).join('')}</div><div class="publisher-calendar-grid">${cells}</div></section>`;
+    const previous = index === 0
+      ? `<button type="button" data-dashboard-action="calendar-prev" aria-label="${text('上一个月','Previous month',language)}">‹</button>`
+      : '<span></span>';
+    const nextDisabled = addMonth(monthKey,1) > dataCutoffDate.slice(0,7);
+    const next = index === 1
+      ? `<button type="button" data-dashboard-action="calendar-next" aria-label="${text('下一个月','Next month',language)}"${nextDisabled ? ' disabled' : ''}>›</button>`
+      : `<button type="button" class="publisher-calendar-mobile-next" data-dashboard-action="calendar-next" aria-label="${text('下一个月','Next month',language)}"${nextDisabled ? ' disabled' : ''}>›</button>`;
+    return `<section class="publisher-calendar-month" data-calendar-month="${monthKey}"><header>${previous}<strong>${monthTitle(monthKey,language)}</strong>${next}</header><div class="publisher-calendar-weekdays">${weekday.map(value => `<span>${value}</span>`).join('')}</div><div class="publisher-calendar-grid">${cells}</div></section>`;
   };
   const renderDatePicker = (state,language) => {
     if (!state.datePickerOpen) return '';
@@ -355,7 +384,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const shortcuts = ['yesterday','today','7d','30d','lastMonth','month'];
     const leftMonth = state.calendarLeftMonth || calendarStartMonth(applied);
     const anchor = state.dateAnchor || { left:16,top:82 };
-    return `<div class="publisher-dashboard-date-backdrop" data-dashboard-action="date-cancel"><section class="publisher-dashboard-date-popover" style="left:${Number(anchor.left) || 16}px;top:${Number(anchor.top) || 82}px" role="dialog" aria-modal="true" aria-label="${text('选择时间','Select date range',language)}" tabindex="-1" data-dashboard-date-dialog data-dashboard-stop><aside class="publisher-dashboard-date-shortcuts">${shortcuts.map(key => `<button type="button" class="${state.filters.range === key ? 'is-active' : ''}" data-dashboard-action="date-shortcut" data-dashboard-range-preset="${key}">${labels[key]}</button>`).join('')}<button type="button" class="${state.filters.range === 'custom' ? 'is-active' : ''}" disabled>${labels.custom}</button></aside><div class="publisher-dashboard-date-main"><header class="publisher-dashboard-date-summary"><span>${draft.startDate || '—'}</span><i>→</i><span>${draft.endDate || '—'}</span></header><div class="publisher-dashboard-calendars">${renderMonth(leftMonth,state,language,0)}${renderMonth(addMonth(leftMonth,1),state,language,1)}</div><p class="publisher-dashboard-date-error" data-dashboard-date-error${error ? '' : ' hidden'}>${escape(error)}</p><footer><small>${text('起止日均计入，最长可选 180 天，数据截至 2026-09-10。','Both dates are included; maximum 180 days; data through Sep 10, 2026.',language)}</small><div><button type="button" data-dashboard-action="date-cancel">${text('取消','Cancel',language)}</button><button type="button" class="is-primary" data-dashboard-action="date-apply"${error ? ' disabled' : ''}>${text('应用','Apply',language)}</button></div></footer></div></section></div>`;
+    return `<div class="publisher-dashboard-date-backdrop" data-dashboard-action="date-cancel"><section class="publisher-dashboard-date-popover" id="publisher-dashboard-date-dialog" style="left:${Number(anchor.left) || 16}px;top:${Number(anchor.top) || 82}px" role="dialog" aria-modal="true" aria-label="${text('选择时间','Select date range',language)}" tabindex="-1" data-dashboard-date-dialog data-dashboard-stop><aside class="publisher-dashboard-date-shortcuts">${shortcuts.map(key => `<button type="button" class="${state.filters.range === key ? 'is-active' : ''}" data-dashboard-action="date-shortcut" data-dashboard-range-preset="${key}">${labels[key]}</button>`).join('')}<button type="button" class="${state.filters.range === 'custom' ? 'is-active' : ''}" disabled>${labels.custom}</button></aside><div class="publisher-dashboard-date-main"><header class="publisher-dashboard-date-summary"><span>${draft.startDate || '—'}</span><i>→</i><span>${draft.endDate || '—'}</span></header><div class="publisher-dashboard-calendars">${renderMonth(leftMonth,state,language,0)}${renderMonth(addMonth(leftMonth,1),state,language,1)}</div><p class="publisher-dashboard-date-error" data-dashboard-date-error${error ? '' : ' hidden'}>${escape(error)}</p><footer><small>${text('起止日均计入，最长可选 180 天，数据截至 2026-09-10。','Both dates are included; maximum 180 days; data through Sep 10, 2026.',language)}</small><div><button type="button" data-dashboard-action="date-cancel">${text('取消','Cancel',language)}</button><button type="button" class="is-primary" data-dashboard-action="date-apply"${error ? ' disabled' : ''}>${text('应用','Apply',language)}</button></div></footer></div></section></div>`;
   };
   const renderFilters = (state,language) => {
     const c = copy(language);
@@ -365,7 +394,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const conversionOnly = state.tab === 'conversion'
       ? `${filterSelect('product',c.product,[['all',c.all],['base',c.base],['dlc',c.dlc]],state,'publisher-dashboard-field--product')}${filterSelect('source',c.source,sources,state,'publisher-dashboard-field--source')}`
       : '';
-    return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-row"><div class="publisher-dashboard-filter-scroll"><label class="publisher-dashboard-field publisher-dashboard-field--time"><span>${c.range}</span><button type="button" class="publisher-dashboard-time-button" data-dashboard-action="date-open" aria-haspopup="dialog" aria-expanded="${state.datePickerOpen}"><strong>${rangeName}</strong><small>${range.startDate} → ${range.endDate}</small><i>▾</i></button></label>${conversionOnly}${renderRegionSelect(state,language)}</div><div class="publisher-dashboard-filter-fixed"><span class="publisher-dashboard-platform" data-dashboard-platform>${text('平台：Mac','Platform: Mac',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></div><div class="publisher-dashboard-filter-caption">${state.tab === 'conversion' ? text('漏斗按首次进入时间归因；全部指标按去重用户数统计。','Funnel attribution uses first entry time; all metrics use unique users.',language) : text('用户数据按账号去重；留存仅统计已观察满对应天数的新增玩家。','Users are deduplicated by account; retention includes mature cohorts only.',language)}</div>${renderDatePicker(state,language)}</section>`;
+    return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-row"><div class="publisher-dashboard-filter-scroll"><label class="publisher-dashboard-field publisher-dashboard-field--time"><span>${c.range}</span><button type="button" class="publisher-dashboard-time-button" data-dashboard-action="date-open" aria-haspopup="dialog" aria-controls="publisher-dashboard-date-dialog" aria-expanded="${state.datePickerOpen}"><strong>${rangeName}</strong><small>${range.startDate} → ${range.endDate}</small><i>▾</i></button></label>${conversionOnly}${renderRegionSelect(state,language)}</div><div class="publisher-dashboard-filter-fixed"><span class="publisher-dashboard-platform" data-dashboard-platform>${text('平台：Mac','Platform: Mac',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></div><div class="publisher-dashboard-filter-caption">${state.tab === 'conversion' ? text('漏斗按首次进入时间归因；全部指标按去重用户数统计。','Funnel attribution uses first entry time; all metrics use unique users.',language) : text('用户数据按账号去重；留存仅统计已观察满对应天数的新增玩家。','Users are deduplicated by account; retention includes mature cohorts only.',language)}</div>${renderDatePicker(state,language)}</section>`;
   };
 
   const stageByKey = conversion => Object.fromEntries(conversion.stages.map(item => [item.key,item]));
@@ -387,7 +416,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const labels = conversionLabels(language);
     const metricKeys = ['impression','detail_view','cta_click','acquisition_success'];
     const active = metricKeys.includes(state.trendMetric) ? state.trendMetric : 'impression';
-    return `<section class="publisher-dashboard-card publisher-conversion-trend" data-conversion-trend data-active-metric="${active}"><header><div><span>${text('趋势','TREND',language)}</span><h2>${text('站内转化趋势','In-app conversion trend',language)}</h2></div><div class="publisher-conversion-trend-tabs">${metricKeys.map(key => `<span><button type="button" class="${key === active ? 'is-active' : ''}" data-dashboard-action="conversion-trend" data-conversion-trend-metric="${key}">${labels[key]}</button>${metricHelp(state,`trend-${key}`,key,'',language)}</span>`).join('')}</div></header>${renderBars(trendDays(state.filters),conversion.trends[active] || [],language)}</section>`;
+    return `<section class="publisher-dashboard-card publisher-conversion-trend" data-conversion-trend data-active-metric="${active}"><header><div><span>${text('趋势','TREND',language)}</span><h2>${metricHelp(state,'conversion-trend-title',active,labels[active],language)}</h2></div><div class="publisher-conversion-trend-tabs">${metricKeys.map(key => `<span><button type="button" class="${key === active ? 'is-active' : ''}" data-dashboard-action="conversion-trend" data-conversion-trend-metric="${key}">${labels[key]}</button></span>`).join('')}</div></header>${renderBars(trendDays(state.filters),conversion.trends[active] || [],language)}</section>`;
   };
   const renderConversionSources = (state,conversion,language) => {
     const labels = sourceLabels(language);
@@ -463,20 +492,98 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="publisher-data-dashboard" data-publisher-page="data" data-testid="publisher-data-dashboard" data-dashboard-tab="${state.tab}" data-dashboard-range="${range.startDate}/${range.endDate}"${game ? ` data-dashboard-game="${escape(game.gameKey || game.name)}"` : ''}><header class="publisher-dashboard-head"><h1>${c.title}</h1><small>${c.updated}</small></header><nav class="publisher-dashboard-tabs" aria-label="${c.title}">${Object.entries(c.tabs).map(([value,label]) => `<button type="button" class="${state.tab === value ? 'is-active' : ''}" data-dashboard-action="tab" data-publisher-data-tab="${value}" aria-selected="${state.tab === value}">${label}</button>`).join('')}</nav>${renderFilters(state,language)}<div class="publisher-dashboard-content">${body}</div></section>`;
   };
 
+  let pendingFocusTarget = null;
   const bind = (root,{ state,game,onChange } = {}) => {
     const host = root.querySelector('[data-testid="publisher-data-dashboard"]');
     if (!host || !state) return;
+    let pointerMetricHelp = '';
+    let focusOpenedMetric = '';
     const update = (patch = {},options = {}) => {
       Object.assign(state,patch);
       if (typeof onChange === 'function') onChange(state,options);
+    };
+    const isVisible = element => Boolean(element && !element.disabled && element.getClientRects().length);
+    const visibleMatch = selector => [...host.querySelectorAll(selector)].find(isVisible) || null;
+    const metricTrigger = id => [...host.querySelectorAll('[data-metric-help]')].find(element => element.dataset.metricHelp === id) || null;
+    const positionMetricTooltip = trigger => {
+      if (!trigger) return;
+      const tooltip = document.getElementById(trigger.getAttribute('aria-describedby') || '');
+      if (!tooltip) return;
+      tooltip.classList.add('is-floating');
+      const width = Math.min(252,window.innerWidth - 24);
+      tooltip.style.width = `${width}px`;
+      const triggerRect = trigger.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const left = Math.max(12,Math.min(triggerRect.left,window.innerWidth - width - 12));
+      const top = triggerRect.top - tooltipRect.height - 8 >= 12
+        ? triggerRect.top - tooltipRect.height - 8
+        : Math.min(window.innerHeight - tooltipRect.height - 12,triggerRect.bottom + 8);
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${Math.max(12,top)}px`;
+      tooltip.style.bottom = 'auto';
+    };
+    const closeMetricTooltips = () => {
+      host.querySelectorAll('[data-metric-help]').forEach(trigger => trigger.setAttribute('aria-expanded','false'));
+      host.querySelectorAll('.publisher-metric-tooltip').forEach(tooltip => {
+        tooltip.classList.remove('is-open','is-floating');
+        tooltip.removeAttribute('style');
+      });
+      state.activeTooltip = '';
+      focusOpenedMetric = '';
+    };
+    const openMetricTooltip = trigger => {
+      if (!trigger) return;
+      closeMetricTooltips();
+      const tooltip = document.getElementById(trigger.getAttribute('aria-describedby') || '');
+      if (!tooltip) return;
+      state.activeTooltip = trigger.dataset.metricHelp || '';
+      trigger.setAttribute('aria-expanded','true');
+      tooltip.classList.add('is-open');
+      positionMetricTooltip(trigger);
+    };
+    const requestFocus = target => { pendingFocusTarget = target; };
+    const focusAfterRender = () => {
+      const target = pendingFocusTarget;
+      pendingFocusTarget = null;
+      let element = null;
+      if (target?.kind === 'date-trigger') element = visibleMatch('[data-dashboard-action="date-open"]');
+      else if (target?.kind === 'date-dialog') element = visibleMatch('[data-dashboard-date-dialog] button:not([disabled])') || host.querySelector('[data-dashboard-date-dialog]');
+      else if (target?.kind === 'date-action') element = visibleMatch(`[data-dashboard-action="${target.action}"]`);
+      else if (target?.kind === 'calendar-day') element = visibleMatch(`[data-calendar-date="${target.date}"]:not([disabled])`);
+      else if (target?.kind === 'metric-help') element = metricTrigger(target.id);
+      if (!element && state.datePickerOpen) element = visibleMatch('[data-dashboard-date-dialog] button:not([disabled])') || host.querySelector('[data-dashboard-date-dialog]');
+      if (!element && state.activeTooltip) element = metricTrigger(state.activeTooltip);
+      if (!element) return;
+      element.focus({ preventScroll:true });
+      if (element.matches('[data-metric-help]')) positionMetricTooltip(element);
     };
     host.querySelectorAll('[data-dashboard-filter]').forEach(control => control.addEventListener('change',() => {
       state.filters = { ...defaultFilters, ...(state.filters || {}), [control.dataset.dashboardFilter]:control.value };
       update({ activeTooltip:'' },{ preserveScroll:true });
     }));
+    host.addEventListener('pointerdown',event => {
+      pointerMetricHelp = event.target.closest('[data-metric-help]')?.dataset.metricHelp || '';
+    });
+    host.addEventListener('pointerup',() => { pointerMetricHelp = ''; });
+    host.addEventListener('pointerover',event => {
+      const trigger = event.target.closest('[data-metric-help]');
+      if (trigger) queueMicrotask(() => positionMetricTooltip(trigger));
+    });
     host.addEventListener('focusin',event => {
       const field = event.target.closest('.publisher-dashboard-filter-scroll .publisher-dashboard-field');
       if (field) field.scrollIntoView({ block:'nearest',inline:'nearest' });
+      const trigger = event.target.closest('[data-metric-help]');
+      if (trigger && pointerMetricHelp !== trigger.dataset.metricHelp && state.activeTooltip !== trigger.dataset.metricHelp) {
+        openMetricTooltip(trigger);
+        focusOpenedMetric = trigger.dataset.metricHelp || '';
+      }
+    });
+    host.addEventListener('focusout',event => {
+      const trigger = event.target.closest('[data-metric-help]');
+      if (!trigger) return;
+      queueMicrotask(() => {
+        if (document.activeElement !== trigger && state.activeTooltip === trigger.dataset.metricHelp) closeMetricTooltips();
+      });
     });
     host.addEventListener('click',event => {
       const control = event.target.closest('[data-dashboard-action]');
@@ -487,35 +594,82 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       else if (action === 'reset') update({ filters:{ ...defaultFilters,game:game?.name || 'all' },datePickerOpen:false,draftDateRange:{ ...presetRanges['30d'] },calendarLeftMonth:'2026-08',activeTooltip:'' },{ preserveScroll:true });
       else if (action === 'conversion-trend') update({ trendMetric:control.dataset.conversionTrendMetric || 'impression',activeTooltip:'' },{ preserveScroll:true });
       else if (action === 'user-trend') update({ userTrendMetric:control.dataset.userTrendMetric === 'new' ? 'new' : 'active',activeTooltip:'' },{ preserveScroll:true });
-      else if (action === 'metric-help') update({ activeTooltip:state.activeTooltip === control.dataset.metricHelp ? '' : control.dataset.metricHelp },{ preserveScroll:true });
+      else if (action === 'metric-help') {
+        const shouldOpen = event.detail === 0 || focusOpenedMetric === control.dataset.metricHelp || state.activeTooltip !== control.dataset.metricHelp;
+        if (shouldOpen) openMetricTooltip(control);
+        else closeMetricTooltips();
+        focusOpenedMetric = '';
+        control.focus({ preventScroll:true });
+      }
       else if (action === 'date-open') {
         const range = effectiveRange(state.filters);
         const rect = control.getBoundingClientRect();
         const panelWidth = Math.min(760,window.innerWidth - 48);
         const left = Math.max(12,Math.min(rect.left,window.innerWidth - panelWidth - 12));
+        requestFocus({ kind:'date-dialog' });
         update({ datePickerOpen:true,draftDateRange:{ ...range },calendarLeftMonth:calendarStartMonth(range),calendarSelectingEnd:false,dateAnchor:{ left,top:rect.bottom + 6 },activeTooltip:'' },{ preserveScroll:true });
-      } else if (action === 'date-cancel') update({ datePickerOpen:false,draftDateRange:{ ...effectiveRange(state.filters) },calendarSelectingEnd:false },{ preserveScroll:true });
+      } else if (action === 'date-cancel') {
+        requestFocus({ kind:'date-trigger' });
+        update({ datePickerOpen:false,draftDateRange:{ ...effectiveRange(state.filters) },calendarSelectingEnd:false },{ preserveScroll:true });
+      }
       else if (action === 'date-shortcut') {
         const key = control.dataset.dashboardRangePreset;
-        if (presetRanges[key]) update({ filters:{ ...state.filters,range:key,...presetRanges[key] },datePickerOpen:false,draftDateRange:{ ...presetRanges[key] },calendarLeftMonth:calendarStartMonth(presetRanges[key]),calendarSelectingEnd:false },{ preserveScroll:true });
-      } else if (action === 'calendar-prev') update({ calendarLeftMonth:addMonth(state.calendarLeftMonth || '2026-08',-1) },{ preserveScroll:true });
-      else if (action === 'calendar-next') update({ calendarLeftMonth:addMonth(state.calendarLeftMonth || '2026-08',1) },{ preserveScroll:true });
+        if (presetRanges[key]) {
+          requestFocus({ kind:'date-trigger' });
+          update({ filters:{ ...state.filters,range:key,...presetRanges[key] },datePickerOpen:false,draftDateRange:{ ...presetRanges[key] },calendarLeftMonth:calendarStartMonth(presetRanges[key]),calendarSelectingEnd:false },{ preserveScroll:true });
+        }
+      } else if (action === 'calendar-prev') {
+        requestFocus({ kind:'date-action',action:'calendar-prev' });
+        update({ calendarLeftMonth:addMonth(state.calendarLeftMonth || '2026-08',-1) },{ preserveScroll:true });
+      }
+      else if (action === 'calendar-next') {
+        requestFocus({ kind:'date-action',action:'calendar-next' });
+        update({ calendarLeftMonth:addMonth(state.calendarLeftMonth || '2026-08',1) },{ preserveScroll:true });
+      }
       else if (action === 'calendar-day') {
         const selected = control.dataset.calendarDate;
         const draft = state.draftDateRange || effectiveRange(state.filters);
+        requestFocus({ kind:'calendar-day',date:selected });
         if (!state.calendarSelectingEnd) update({ draftDateRange:{ startDate:selected,endDate:selected },calendarSelectingEnd:true },{ preserveScroll:true });
         else update({ draftDateRange:selected < draft.startDate ? { startDate:selected,endDate:draft.startDate } : { startDate:draft.startDate,endDate:selected },calendarSelectingEnd:false },{ preserveScroll:true });
       } else if (action === 'date-apply') {
         const draft = state.draftDateRange || {};
-        if (!validateDateRange(draft)) update({ filters:{ ...state.filters,range:'custom',startDate:draft.startDate,endDate:draft.endDate },datePickerOpen:false,calendarSelectingEnd:false },{ preserveScroll:true });
+        if (!validateDateRange(draft)) {
+          requestFocus({ kind:'date-trigger' });
+          update({ filters:{ ...state.filters,range:'custom',startDate:draft.startDate,endDate:draft.endDate },datePickerOpen:false,calendarSelectingEnd:false },{ preserveScroll:true });
+        }
       }
     });
     host.addEventListener('keydown',event => {
+      if (event.key === 'Tab' && state.datePickerOpen) {
+        const dialog = host.querySelector('[data-dashboard-date-dialog]');
+        const focusable = dialog ? [...dialog.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(isVisible) : [];
+        if (!focusable.length) return;
+        const index = focusable.indexOf(document.activeElement);
+        if (event.shiftKey && index <= 0) {
+          event.preventDefault();
+          focusable[focusable.length - 1].focus({ preventScroll:true });
+        } else if (!event.shiftKey && (index < 0 || index === focusable.length - 1)) {
+          event.preventDefault();
+          focusable[0].focus({ preventScroll:true });
+        }
+        return;
+      }
       if (event.key !== 'Escape') return;
-      if (state.datePickerOpen) update({ datePickerOpen:false,draftDateRange:{ ...effectiveRange(state.filters) },calendarSelectingEnd:false },{ preserveScroll:true });
-      else if (state.activeTooltip) update({ activeTooltip:'' },{ preserveScroll:true });
+      if (state.datePickerOpen) {
+        event.preventDefault();
+        event.stopPropagation();
+        requestFocus({ kind:'date-trigger' });
+        update({ datePickerOpen:false,draftDateRange:{ ...effectiveRange(state.filters) },calendarSelectingEnd:false },{ preserveScroll:true });
+      } else if (state.activeTooltip) {
+        event.preventDefault();
+        event.stopPropagation();
+        const trigger = metricTrigger(state.activeTooltip);
+        closeMetricTooltips();
+        trigger?.focus({ preventScroll:true });
+      }
     });
-    if (state.datePickerOpen) queueMicrotask(() => host.querySelector('[data-dashboard-date-dialog]')?.focus());
+    queueMicrotask(focusAfterRender);
   };
 
   window.PublisherDataDashboard = {

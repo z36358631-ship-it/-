@@ -22,8 +22,8 @@ const demoUrl = route => {
   return url.href;
 };
 
-async function seedAccount(page, accountKey, qualificationStatus = 'approved') {
-  await page.addInitScript(({ key, demoName, status }) => {
+async function seedAccount(page, accountKey, qualificationStatus = 'approved', publisherWorkspace = null) {
+  await page.addInitScript(({ key, demoName, status, workspace }) => {
     if (!decodeURIComponent(location.pathname).endsWith(`/${demoName}`)) return;
     localStorage.clear();
     sessionStorage.clear();
@@ -43,7 +43,13 @@ async function seedAccount(page, accountKey, qualificationStatus = 'approved') {
         qualification: { status, revision: status === 'unsubmitted' ? 0 : 1, step: status === 'unsubmitted' ? 0 : 5, view: status === 'unsubmitted' ? 'intro' : 'form', form: {}, history: [], submissions: [] },
       },
     }));
-  }, { key: accountKey, demoName: path.basename(demoFile), status: qualificationStatus });
+    if (workspace) {
+      localStorage.setItem('gamehub-developer-publisher-accounts-v2', JSON.stringify({
+        version:2,
+        accounts:{ [key]:{ publisherWorkspaces:{ 'publisher-console':workspace } } },
+      }));
+    }
+  }, { key: accountKey, demoName: path.basename(demoFile), status: qualificationStatus, workspace: publisherWorkspace });
   await page.goto(demoUrl('/P02-01'), { waitUntil: 'load' });
   await page.locator('[data-publisher-workspace]').waitFor();
 }
@@ -304,6 +310,30 @@ test('双月日历支持跨月选择、取消、Esc、未来日期与 180 天边
   }
 });
 
+test('390px 自定义日期可向后翻月并始终保留可见月份导航', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:mobile-calendar-v15');
+    const dateTrigger = dashboard.locator('[data-dashboard-action="date-open"]');
+    await dateTrigger.click();
+    const dialog = dashboard.getByRole('dialog', { name: '选择时间' });
+    const visibleMonth = dialog.locator('[data-calendar-month]:visible');
+    assert.equal(await visibleMonth.getAttribute('data-calendar-month'), '2026-08');
+    const next = visibleMonth.getByRole('button', { name: '下一个月' });
+    assert.equal(await next.isVisible(), true);
+    assert.equal(await next.isEnabled(), true);
+    await next.click();
+    assert.equal(await dialog.locator('[data-calendar-month]:visible').getAttribute('data-calendar-month'), '2026-09');
+    assert.equal(await dialog.getByRole('button', { name: '上一个月' }).isVisible(), true);
+    assert.equal(await dialog.locator('[data-calendar-month]:visible').getByRole('button', { name: '下一个月' }).isDisabled(), true);
+    await dialog.getByRole('button', { name: '上一个月' }).click();
+    assert.equal(await dialog.locator('[data-calendar-month]:visible').getAttribute('data-calendar-month'), '2026-08');
+  } finally {
+    await context.close();
+  }
+});
+
 test('两个页签只展示生效筛选且切换后保留共同与专属条件', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
@@ -365,7 +395,7 @@ test('用户数据展示活跃、新增、留存和平均时长并正确处理�
   }
 });
 
-test('每个可见指标均提供可访问的问号定义并支持键盘与 Esc', async () => {
+test('每个可见指标均提供可访问的问号定义，趋势切换按钮不重复展示问号', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
   try {
@@ -383,15 +413,136 @@ test('每个可见指标均提供可访问的问号定义并支持键盘与 Esc'
         role: document.getElementById(node.getAttribute('aria-describedby'))?.getAttribute('role'),
       })));
       assert.equal(links.every(item => item.describedBy && item.text && item.role === 'tooltip' && item.expanded === 'false'), true);
+      const trendActions = tab === 'conversion'
+        ? dashboard.locator('[data-conversion-trend-metric]')
+        : dashboard.locator('[data-user-trend-metric]');
+      assert.equal(await trendActions.evaluateAll(nodes => nodes.every(node => !node.parentElement?.querySelector('[data-metric-help]'))), true);
+      const trendTitle = tab === 'conversion'
+        ? dashboard.locator('[data-conversion-trend] > header h2 [data-metric-help]')
+        : dashboard.locator('[data-user-trend] > header h2 [data-metric-help]');
+      assert.equal(await trendTitle.count(), 1, tab + ' 当前趋势指标标题应提供一个问号定义');
     }
+  } finally {
+    await context.close();
+  }
+});
 
-    const first = dashboard.locator('[data-metric-help]').first();
-    await first.focus();
-    assert.notEqual(await dashboard.locator(`#${await first.getAttribute('aria-describedby')}`).evaluate(node => getComputedStyle(node).display), 'none');
-    await first.click();
-    assert.equal(await first.getAttribute('aria-expanded'), 'true');
-    await first.press('Escape');
+test('来源表头指标定义以视口浮层展示且不被横向滚动容器裁切', async () => {
+  const context = await browser.newContext({ viewport: { width: 900, height: 700 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:source-tooltip-v15');
+    const trigger = dashboard.locator('[data-metric-help="source-impression"]');
+    await trigger.scrollIntoViewIfNeeded();
+    await trigger.click();
+    const tooltip = dashboard.locator(`#${await trigger.getAttribute('aria-describedby')}`);
+    const geometry = await tooltip.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      const center = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return {
+        display:getComputedStyle(node).display,
+        position:getComputedStyle(node).position,
+        insideViewport:rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && rect.bottom <= innerHeight,
+        hit:node === center || node.contains(center),
+      };
+    });
+    assert.deepEqual(geometry, { display:'block', position:'fixed', insideViewport:true, hit:true });
+  } finally {
+    await context.close();
+  }
+});
+
+test('问号与日期弹层使用真实焦点，Esc 关闭并回到各自触发按钮', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:focus-loop-v15');
+    const help = dashboard.locator('[data-metric-help]').first();
+    await help.focus();
+    assert.equal(await help.getAttribute('aria-expanded'), 'true');
+    assert.equal(await page.evaluate(() => document.activeElement?.matches('[data-metric-help]')), true);
+    const tooltip = dashboard.locator(`#${await help.getAttribute('aria-describedby')}`);
+    assert.equal(await tooltip.evaluate(node => getComputedStyle(node).display), 'block');
+    await help.press('Escape');
+    assert.equal(await help.getAttribute('aria-expanded'), 'false');
+    assert.equal(await tooltip.evaluate(node => getComputedStyle(node).display), 'none');
+    assert.equal(await page.evaluate(() => document.activeElement?.matches('[data-metric-help]')), true);
+
+    const dateTrigger = dashboard.locator('[data-dashboard-action="date-open"]');
+    await dateTrigger.focus();
+    await dateTrigger.press('Enter');
+    const dialog = dashboard.getByRole('dialog', { name: '选择时间' });
+    await dialog.waitFor();
+    assert.equal(await page.evaluate(() => document.activeElement?.textContent?.trim()), '昨日');
+    const focusable = dialog.locator('button:not([disabled]):visible');
+    const first = focusable.first();
+    const last = focusable.last();
+    await last.focus();
+    await last.press('Tab');
+    assert.equal(await first.evaluate(node => document.activeElement === node), true);
+    await first.press('Shift+Tab');
+    assert.equal(await last.evaluate(node => document.activeElement === node), true);
+    await last.press('Escape');
+    assert.equal(await dialog.count(), 0);
+    assert.equal(await dateTrigger.evaluate(node => document.activeElement === node), true);
+  } finally {
+    await context.close();
+  }
+});
+
+test('旧 90d 状态恢复为自定义区间并清理未关闭的瞬时弹层状态', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  const accountKey = 'publisher-dashboard:legacy-state-v15';
+  try {
+    await seedAccount(page, accountKey, 'approved', {
+      workspaceView:'games',
+      selectedGame:'existing',
+      gameSection:'analytics',
+      dataDashboard:{
+        tab:'overview',
+        filters:{ range:'90d', startDate:'2026-06-13', endDate:'2026-09-10', region:'Japan' },
+        datePickerOpen:true,
+        activeTooltip:'source-impression',
+        draftDateRange:{ startDate:'2026-09-01', endDate:'2026-09-02' },
+        calendarLeftMonth:'2026-09',
+        calendarSelectingEnd:true,
+        dateAnchor:{ left:9999, top:9999 },
+      },
+    });
+    await page.locator('[data-portal-action="enter-publisher-game"][data-publisher-game="existing"]').first().click();
+    await page.locator('[data-portal-action="game-console-section"][data-game-section="analytics"]').click();
+    const dashboard = page.locator('[data-publisher-page="data"]');
+    await dashboard.waitFor();
+    assert.equal(await dashboard.getAttribute('data-dashboard-tab'), 'conversion');
+    assert.equal(await dashboard.getAttribute('data-dashboard-range'), '2026-06-13/2026-09-10');
+    assert.equal(await dashboard.locator('.publisher-dashboard-time-button strong').innerText(), '自定义');
+    assert.equal(await dashboard.locator('[data-dashboard-date-dialog]').count(), 0);
     assert.equal(await dashboard.locator('[data-metric-help][aria-expanded="true"]').count(), 0);
+    assert.deepEqual(await page.evaluate(() => {
+      const restored = window.PublisherDataDashboard.createState({
+        filters:{ range:'90d' },
+        datePickerOpen:true,
+        activeTooltip:'source-click',
+        calendarSelectingEnd:true,
+        dateAnchor:{ left:9999, top:9999 },
+      });
+      return {
+        range:restored.filters.range,
+        dates:[restored.filters.startDate,restored.filters.endDate],
+        datePickerOpen:restored.datePickerOpen,
+        activeTooltip:restored.activeTooltip,
+        calendarSelectingEnd:restored.calendarSelectingEnd,
+        hasDateAnchor:Object.prototype.hasOwnProperty.call(restored,'dateAnchor'),
+      };
+    }), {
+      range:'custom',
+      dates:['2026-06-13','2026-09-10'],
+      datePickerOpen:false,
+      activeTooltip:'',
+      calendarSelectingEnd:false,
+      hasDateAnchor:false,
+    });
   } finally {
     await context.close();
   }

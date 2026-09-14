@@ -980,6 +980,7 @@
 }
 .publisher-calendar-month > header button:hover { background: #f2f4f7; }
 .publisher-calendar-month > header button:disabled { color: #d0d5dd; cursor: not-allowed; }
+.publisher-calendar-month > header .publisher-calendar-mobile-next { display: none; }
 .publisher-calendar-weekdays,
 .publisher-calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
 .publisher-calendar-weekdays span { padding: 5px 0; color: #98a2b3; font-size: 10px; text-align: center; }
@@ -1101,11 +1102,14 @@
   text-align: left;
 }
 .publisher-metric-label:hover .publisher-metric-tooltip,
-.publisher-metric-label:focus-within .publisher-metric-tooltip,
 .publisher-metric-tooltip.is-open { display: block; }
+.publisher-metric-tooltip.is-floating {
+  position: fixed;
+  right: auto;
+  bottom: auto;
+}
 .publisher-dashboard-metric .publisher-metric-tooltip { display: none; }
 .publisher-dashboard-metric .publisher-metric-label:hover .publisher-metric-tooltip,
-.publisher-dashboard-metric .publisher-metric-label:focus-within .publisher-metric-tooltip,
 .publisher-dashboard-metric .publisher-metric-tooltip.is-open { display: block; }
 .publisher-conversion-total .publisher-metric-label { justify-content: flex-end; }
 .publisher-conversion-total > strong { color: #755500; font-size: 26px; }
@@ -1176,6 +1180,7 @@
   .publisher-dashboard-date-shortcuts button { padding: 0 6px; text-align: center; }
   .publisher-dashboard-calendars { grid-template-columns: 1fr; }
   .publisher-calendar-month:nth-child(2) { display: none; }
+  .publisher-calendar-month > header .publisher-calendar-mobile-next { display: block; }
   .publisher-dashboard-date-main > footer { align-items: flex-start; flex-direction: column; }
   .publisher-dashboard-date-main > footer > div { align-self: flex-end; }
   .publisher-dashboard-metric-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }
