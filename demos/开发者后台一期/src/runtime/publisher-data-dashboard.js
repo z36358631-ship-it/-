@@ -148,15 +148,34 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const requestedTab = incoming.tab;
     const tab = requestedTab === 'users' || requestedTab === 'conversion' ? requestedTab : 'conversion';
     const restored = { ...incoming };
-    ['activeTooltip','datePickerOpen','draftDateRange','calendarLeftMonth','calendarSelectingEnd','dateAnchor'].forEach(key => delete restored[key]);
+    ['activeTooltip','datePickerOpen','draftDateRange','calendarLeftMonth','calendarSelectingEnd','dateAnchor','detailFullscreen','detailRefreshing'].forEach(key => delete restored[key]);
+    const selectedMetricByTab = {
+      conversion:'impression',
+      users:'active_players',
+      ...(incoming.selectedMetricByTab || {}),
+    };
+    const conversionMetrics = ['impression','card_ctr','detail_view','detail_acquisition','acquisition_success','fulfillment_success','reservation_users'];
+    const userMetrics = ['active_players','new_players','retention_1d','retention_3d','retention_7d','avg_duration'];
+    if (!conversionMetrics.includes(selectedMetricByTab.conversion)) selectedMetricByTab.conversion = conversionMetrics.includes(incoming.trendMetric) ? incoming.trendMetric : 'impression';
+    if (!userMetrics.includes(selectedMetricByTab.users)) selectedMetricByTab.users = incoming.userTrendMetric === 'new' ? 'new_players' : 'active_players';
     return {
       tab,
       trendMetric:'impression',
       userTrendMetric:'active',
       scenario:'ready',
+      selectedMetricByTab,
+      detailView:incoming.detailView === 'table' ? 'table' : 'chart',
+      detailRefreshRevision:Number(incoming.detailRefreshRevision || 0),
+      detailRefreshedAt:String(incoming.detailRefreshedAt || ''),
       ...restored,
       tab,
       filters,
+      selectedMetricByTab,
+      detailView:incoming.detailView === 'table' ? 'table' : 'chart',
+      detailRefreshRevision:Number(incoming.detailRefreshRevision || 0),
+      detailRefreshedAt:String(incoming.detailRefreshedAt || ''),
+      detailFullscreen:false,
+      detailRefreshing:false,
       activeTooltip:'',
       datePickerOpen:false,
       draftDateRange:effectiveRange(filters),
@@ -212,52 +231,91 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const safeRate = (numerator,denominator) => Number.isFinite(numerator) && Number.isFinite(denominator) && denominator > 0 ? numerator / denominator : null;
-  const conversionScale = filters => {
-    const { startDate,endDate } = effectiveRange(filters);
-    const range = daysBetween(startDate,endDate) / daysBetween(presetRanges['30d'].startDate,presetRanges['30d'].endDate);
-    const product = { all:1, base:0.68, dlc:0.32 }[filters.product] || 1;
-    const region = filters.region === 'all' ? 1 : filters.region === 'global' ? 0.82 : filters.region === 'domestic' ? 0.18 : 0.08;
-    return range * product * region;
-  };
-  const scaleValue = (value,scale) => value === null ? null : Math.round(value * scale);
-  const sourceRows = filters => {
-    const scale = conversionScale(filters);
-    return conversionSourceSeed.filter(item => filters.source === 'all' || item.key === filters.source).map(item => ({ ...item, impression:scaleValue(item.impression,scale), click:scaleValue(item.click,scale), detail:scaleValue(item.detail,scale), acquired:scaleValue(item.acquired,scale) }));
+  const enumerateDates = (startDate,endDate) => {
+    if (validateDateRange({ startDate,endDate })) return [];
+    const start = dateFrom(startDate);
+    return Array.from({ length:daysBetween(startDate,endDate) },(_,index) => formatDate(new Date(start.getTime() + index * 86400000)));
   };
   const sumMetric = (rows,key) => {
     const values = rows.map(item => item[key]).filter(Number.isFinite);
     return values.length ? values.reduce((sum,value) => sum + value,0) : null;
   };
+  const regionalFactor = region => ({
+    all:1, global:0.82, domestic:0.18, Japan:0.14, 'United States':0.22, Germany:0.09,
+    'United Kingdom':0.08, 'Mainland China':0.18, Canada:0.06, France:0.07,
+    Singapore:0.04, 'South Korea':0.08, Australia:0.05,
+  }[region] ?? 0.075);
+  const sourceFactor = source => ({
+    all:1, home:0.364, discovery:0.184, ranking:0.142, search:0.136,
+    campaign:0.102, external:0.072, direct:0.048, other:0.018,
+  }[source] ?? 1);
+  const productFactor = product => ({ all:1, base:0.68, dlc:0.32 }[product] || 1);
+  const dailyWave = (date,index) => {
+    const day = Number(date.slice(-2));
+    return 0.88 + ((day * 17 + index * 11) % 23) / 50 + Math.sin((index + day) / 3) * 0.055;
+  };
+  const dailyConversionRows = stateInput => {
+    const filters = { ...defaultFilters, ...(stateInput?.filters || {}) };
+    const { startDate,endDate } = effectiveRange(filters);
+    const filterFactor = productFactor(filters.product) * regionalFactor(filters.region) * sourceFactor(filters.source);
+    return enumerateDates(startDate,endDate).map((date,index) => {
+      const factor = filterFactor * dailyWave(date,index);
+      const impression = Math.max(0,Math.round(1665 * factor));
+      const cardClick = Math.max(0,Math.round(impression * (0.286 + ((index % 5) - 2) * 0.006)));
+      const detailView = Math.max(0,Math.round(cardClick * (0.818 + ((index % 4) - 1.5) * 0.009)));
+      const acquisitionSuccess = Math.max(0,Math.round(detailView * (0.222 + ((index % 6) - 2.5) * 0.004)));
+      const fulfillmentSuccess = Math.max(0,Math.round(acquisitionSuccess * (0.968 + ((index % 3) - 1) * 0.003)));
+      const reservationUsers = Math.max(0,Math.round(detailView * (0.118 + ((index % 5) - 2) * 0.003)));
+      return {
+        date,
+        impression,
+        card_click:cardClick,
+        detail_view:detailView,
+        acquisition_success:acquisitionSuccess,
+        fulfillment_success:fulfillmentSuccess,
+        reservation_users:reservationUsers,
+        card_ctr:safeRate(cardClick,impression),
+        detail_acquisition:safeRate(acquisitionSuccess,detailView),
+      };
+    });
+  };
+  const periodUv = (dailyTotal,dayCount) => Math.round(dailyTotal * Math.max(0.68,0.94 - Math.max(0,dayCount - 1) * 0.007));
   const conversionSnapshot = state => {
-    const filters = { ...defaultFilters, ...(state?.filters || {}) };
-    const scale = conversionScale(filters);
-    const sources = sourceRows(filters);
-    let stages;
-    if (filters.source === 'all') stages = conversionStageSeed.map(item => ({ ...item, uv:scaleValue(item.uv,scale), previousUv:scaleValue(item.previousUv,scale) }));
-    else {
-      const impression = sumMetric(sources,'impression');
-      const click = sumMetric(sources,'click');
-      const detail = sumMetric(sources,'detail') || 0;
-      const acquired = sumMetric(sources,'acquired') || 0;
-      const cta = Math.max(acquired,Math.round(detail * 0.3));
-      const created = Math.max(acquired,Math.round(cta * 0.848));
-      const fulfilled = Math.round(acquired * 0.97);
-      const values = [impression,click,detail,cta,created,acquired,fulfilled];
-      stages = conversionStageSeed.map((item,index) => ({ ...item, uv:values[index], previousUv:values[index] === null ? null : Math.round(values[index] * 0.9) }));
-    }
-    const stageMap = Object.fromEntries(stages.map(item => [item.key,item.uv]));
-    const trendBaseTotals = { impression:50000, detail_view:12500, cta_click:3750, acquisition_success:2862 };
-    const trends = Object.fromEntries(Object.entries(conversionTrendSeed).map(([key,values]) => {
-      const factor = safeRate(stageMap[key],trendBaseTotals[key]) ?? 0;
-      return [key,values.map(value => Math.round(value * factor))];
+    const rows = dailyConversionRows(state);
+    const dayCount = rows.length || 1;
+    const totals = Object.fromEntries(['impression','card_click','detail_view','acquisition_success','fulfillment_success','reservation_users'].map(key => [key,sumMetric(rows,key) || 0]));
+    const summary = {
+      impression:periodUv(totals.impression,dayCount),
+      card_click:periodUv(totals.card_click,dayCount),
+      detail_view:periodUv(totals.detail_view,dayCount),
+      acquisition_success:periodUv(totals.acquisition_success,dayCount),
+      fulfillment_success:periodUv(totals.fulfillment_success,dayCount),
+      reservation_users:totals.reservation_users,
+    };
+    summary.card_ctr = safeRate(summary.card_click,summary.impression);
+    summary.detail_acquisition = safeRate(summary.acquisition_success,summary.detail_view);
+    const ctaClick = Math.max(summary.acquisition_success,Math.round(summary.detail_view * 0.3));
+    const orderCreate = Math.max(summary.acquisition_success,Math.round(ctaClick * 0.848));
+    const stageValues = [summary.impression,summary.card_click,summary.detail_view,ctaClick,orderCreate,summary.acquisition_success,summary.fulfillment_success];
+    const stages = conversionStageSeed.map((item,index) => ({
+      ...item,
+      uv:stageValues[index],
+      previousUv:Math.round(stageValues[index] * 0.91),
+      stepRate:index ? safeRate(stageValues[index],stageValues[index - 1]) : null,
+      changeRate:0.099,
     }));
-    return { stages:stages.map((item,index) => ({ ...item, stepRate:index ? safeRate(item.uv,stages[index - 1].uv) : null, changeRate:safeRate(item.uv - item.previousUv,item.previousUv) })), sources, trends, overallRate:safeRate(stageMap.acquisition_success,stageMap.impression) };
+    return {
+      rows,
+      summary,
+      stages,
+      sources:[],
+      trends:Object.fromEntries(Object.keys(summary).map(key => [key,rows.map(item => item[key])])),
+      overallRate:safeRate(summary.acquisition_success,summary.impression),
+    };
   };
   const trendDays = filters => {
     const { startDate,endDate } = effectiveRange(filters);
-    const total = Math.max(1,daysBetween(startDate,endDate) - 1);
-    const start = dateFrom(startDate);
-    return Array.from({ length:7 },(_,index) => formatDate(new Date(start.getTime() + Math.round(total * index / 6) * 86400000)).slice(5));
+    return enumerateDates(startDate,endDate).map(date => date.slice(5));
   };
 
   const option = (value,label,selected) => `<option value="${escape(value)}"${selected === value ? ' selected' : ''}>${escape(label)}</option>`;
@@ -299,6 +357,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     order_create:text('成功创建购买或免费领取订单的去重用户数。','Unique users for whom a paid or free order is created successfully.',language),
     acquisition_success:text('支付成功或免费领取成功并获得游戏权益的去重用户数。','Unique users who obtain the game entitlement through payment or a free claim.',language),
     fulfillment_success:text('账号权益或 CDKEY 完成履约的去重用户数。','Unique users whose account entitlement or CDKEY fulfillment completes successfully.',language),
+    reservation_users:text('统计期内首次成功预约当前游戏的去重账号数，按首次预约成功日归属；取消预约不回溯扣减。','Unique accounts making their first successful reservation during the period, attributed to the first reservation date; later cancellations do not rewrite history.',language),
     overall_conversion:text('成功获取 UV ÷ 有效曝光 UV；统计周期按用户首次进入漏斗的时间归因。','Successful acquisition UV divided by qualified impression UV, attributed by the user’s first funnel-entry time.',language),
     detail_acquisition:text('成功获取 UV ÷ 详情访问 UV，用于衡量详情页到获取结果的转化。','Successful acquisition UV divided by detail-view UV.',language),
     active_players:text('统计周期内至少成功启动过一次当前游戏的去重账号数，固定统计 Mac。','Unique accounts that successfully launch the current game at least once during the period; Mac only.',language),
@@ -310,11 +369,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     source:text('用户首次进入本次漏斗时对应的站内位置或访问来源。','The in-app placement or traffic source on the user’s first funnel entry.',language),
   });
 
-  const metricHelp = (state,id,key,label,language) => {
+  const metricHelpButton = (state,id,key,label,language) => {
     const tooltipId = `publisher-metric-tip-${id}`;
     const opened = state.activeTooltip === id;
-    return `<span class="publisher-metric-label"><span>${label}</span><button type="button" class="publisher-metric-help" data-dashboard-action="metric-help" data-metric-help="${id}" aria-label="${escape(text(`查看“${label}”指标定义`,`View definition for ${label}`,language))}" aria-describedby="${tooltipId}" aria-expanded="${opened}">?</button><span class="publisher-metric-tooltip${opened ? ' is-open' : ''}" id="${tooltipId}" role="tooltip">${escape(definitions(language)[key] || '')}</span></span>`;
+    return `<button type="button" class="publisher-metric-help" data-dashboard-action="metric-help" data-metric-help="${id}" aria-label="${escape(text(`查看“${label}”指标定义`,`View definition for ${label}`,language))}" aria-describedby="${tooltipId}" aria-expanded="${opened}">?</button><span class="publisher-metric-tooltip${opened ? ' is-open' : ''}" id="${tooltipId}" role="tooltip">${escape(definitions(language)[key] || '')}</span>`;
   };
+  const metricHelp = (state,id,key,label,language) => `<span class="publisher-metric-label"><span>${label}</span>${metricHelpButton(state,id,key,label,language)}</span>`;
   const filterSelect = (key,label,choices,state,className = '') => `<label class="publisher-dashboard-field ${className}"><span>${label}</span><select data-dashboard-filter="${key}">${choices.map(([value,name]) => option(value,name,state.filters[key])).join('')}</select></label>`;
   const renderRegionSelect = (state,language) => {
     const c = copy(language);
@@ -394,94 +454,234 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const conversionOnly = state.tab === 'conversion'
       ? `${filterSelect('product',c.product,[['all',c.all],['base',c.base],['dlc',c.dlc]],state,'publisher-dashboard-field--product')}${filterSelect('source',c.source,sources,state,'publisher-dashboard-field--source')}`
       : '';
-    return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-row"><div class="publisher-dashboard-filter-scroll"><label class="publisher-dashboard-field publisher-dashboard-field--time"><span>${c.range}</span><button type="button" class="publisher-dashboard-time-button" data-dashboard-action="date-open" aria-haspopup="dialog" aria-controls="publisher-dashboard-date-dialog" aria-expanded="${state.datePickerOpen}"><strong>${rangeName}</strong><small>${range.startDate} → ${range.endDate}</small><i>▾</i></button></label>${conversionOnly}${renderRegionSelect(state,language)}</div><div class="publisher-dashboard-filter-fixed"><span class="publisher-dashboard-platform" data-dashboard-platform>${text('平台：Mac','Platform: Mac',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></div><div class="publisher-dashboard-filter-caption">${state.tab === 'conversion' ? text('漏斗按首次进入时间归因；全部指标按去重用户数统计。','Funnel attribution uses first entry time; all metrics use unique users.',language) : text('用户数据按账号去重；留存仅统计已观察满对应天数的新增玩家。','Users are deduplicated by account; retention includes mature cohorts only.',language)}</div>${renderDatePicker(state,language)}</section>`;
+    return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-row"><div class="publisher-dashboard-filter-scroll"><label class="publisher-dashboard-field publisher-dashboard-field--time"><span>${c.range}</span><button type="button" class="publisher-dashboard-time-button" data-dashboard-action="date-open" aria-haspopup="dialog" aria-controls="publisher-dashboard-date-dialog" aria-expanded="${state.datePickerOpen}"><strong>${rangeName}</strong><small>${range.startDate} → ${range.endDate}</small><i>▾</i></button></label>${conversionOnly}${renderRegionSelect(state,language)}</div><div class="publisher-dashboard-filter-fixed"><span class="publisher-dashboard-platform" data-dashboard-platform>${text('平台：Mac','Platform: Mac',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></div><div class="publisher-dashboard-filter-caption">${state.tab === 'conversion' ? text('点击任一指标卡可按自然日查看详情；周期 UV 均按账号去重。','Select any metric to inspect daily detail; period UV metrics are deduplicated by account.',language) : text('用户数据按账号去重；留存仅统计已观察满对应天数的新增玩家。','Users are deduplicated by account; retention includes mature cohorts only.',language)}</div>${renderDatePicker(state,language)}</section>`;
   };
 
-  const stageByKey = conversion => Object.fromEntries(conversion.stages.map(item => [item.key,item]));
-  const renderMetricCard = (state,id,key,label,value,hint,language) => `<article class="publisher-dashboard-metric" data-dashboard-metric="${id}">${metricHelp(state,`card-${id}`,key,label,language)}<strong>${value}</strong><small>${hint}</small></article>`;
-  const renderConversionSummary = (state,conversion,language) => {
-    const labels = conversionLabels(language);
-    const stages = stageByKey(conversion);
-    return `<section class="publisher-dashboard-metric-strip" aria-label="${text('曝光转化核心指标','Exposure and conversion metrics',language)}">${renderMetricCard(state,'impression','impression',labels.impression,formatUv(stages.impression.uv,language),text('去重用户数 UV','Unique users',language),language)}${renderMetricCard(state,'card_ctr','card_click',text('游戏卡点击率','Game card CTR',language),formatRate(stages.card_click.stepRate),text('点击 UV ÷ 曝光 UV','Clicks ÷ impressions',language),language)}${renderMetricCard(state,'detail_view','detail_view',labels.detail_view,formatUv(stages.detail_view.uv,language),'UV',language)}${renderMetricCard(state,'detail_acquisition','detail_acquisition',text('详情获取转化率','Detail-to-acquisition',language),formatRate(safeRate(stages.acquisition_success.uv,stages.detail_view.uv)),text('成功获取 UV ÷ 详情访问 UV','Acquired ÷ detail views',language),language)}${renderMetricCard(state,'acquisition_success','acquisition_success',labels.acquisition_success,formatUv(stages.acquisition_success.uv,language),'UV',language)}${renderMetricCard(state,'fulfillment_success','fulfillment_success',labels.fulfillment_success,formatUv(stages.fulfillment_success.uv,language),'UV',language)}</section>`;
+  const userRegionScale = regionalFactor;
+  const dailyUserRows = stateInput => {
+    const filters = { ...defaultFilters, ...(stateInput?.filters || {}) };
+    const { startDate,endDate } = effectiveRange(filters);
+    const regionScale = userRegionScale(filters.region);
+    const regionDelta = filters.region === 'domestic' || filters.region === 'Mainland China' ? -0.018 : filters.region === 'global' ? 0.006 : 0;
+    return enumerateDates(startDate,endDate).map((date,index) => {
+      const wave = dailyWave(date,index);
+      const activePlayers = Math.max(0,Math.round(2150 * regionScale * wave));
+      const newPlayers = Math.max(0,Math.round(505 * regionScale * (0.94 + ((index % 7) - 3) * 0.025)));
+      const age = daysBetween(date,dataCutoffDate) - 1;
+      return {
+        date,
+        active_players:activePlayers,
+        new_players:newPlayers,
+        retention_1d:age >= 1 ? Math.max(0,0.426 + regionDelta + ((index % 5) - 2) * 0.006) : null,
+        retention_3d:age >= 3 ? Math.max(0,0.318 + regionDelta + ((index % 5) - 2) * 0.005) : null,
+        retention_7d:age >= 7 ? Math.max(0,0.241 + regionDelta + ((index % 5) - 2) * 0.004) : null,
+        avg_duration:Math.max(1,Math.round(86 + (regionScale - 0.5) * 8 + ((index % 7) - 3) * 2.2)),
+      };
+    });
   };
-  const renderConversionFunnel = (state,conversion,language) => {
-    const labels = conversionLabels(language);
-    return `<section class="publisher-dashboard-card publisher-conversion-card"><header><div><span>${text('站内转化','IN-APP CONVERSION',language)}</span><h2>${text('从曝光到履约','From discovery to fulfillment',language)}</h2><p>${text('全链路统一使用去重用户数（UV），成功获取不等于付费销量。','Every stage uses unique visitors; acquisition is not paid sales.',language)}</p></div><div class="publisher-conversion-total">${metricHelp(state,'overall-conversion','overall_conversion',text('曝光→成功获取','Impression → acquisition',language),language)}<strong>${formatRate(conversion.overallRate)}</strong></div></header><div class="publisher-conversion-funnel">${conversion.stages.map((item,index) => `<article class="publisher-conversion-stage" data-conversion-stage="${item.key}"><span>${String(index + 1).padStart(2,'0')}</span><h3>${metricHelp(state,`funnel-${item.key}`,item.key,labels[item.key],language)}</h3><strong>${formatUv(item.uv,language)}</strong><small>${index ? `${text('上一步','Previous step',language)} ${formatRate(item.stepRate)}` : 'UV'} · ${text('环比','Period',language)} ${item.changeRate !== null && item.changeRate >= 0 ? '+' : ''}${formatRate(item.changeRate)}</small></article>`).join('')}</div><p class="publisher-conversion-footnote">${text('漏斗按首次进入时间归因；直接访问没有曝光与点击，因此对应字段展示“—”。','The funnel uses first-entry attribution; Direct has no impression or click and displays “—”.',language)}</p></section>`;
+  const weightedAverage = (rows,valueKey,weightKey) => {
+    const mature = rows.filter(item => Number.isFinite(item[valueKey]) && Number.isFinite(item[weightKey]) && item[weightKey] > 0);
+    const weight = mature.reduce((sum,item) => sum + item[weightKey],0);
+    return weight ? mature.reduce((sum,item) => sum + item[valueKey] * item[weightKey],0) / weight : null;
   };
-  const renderBars = (days,values,language) => {
-    const max = Math.max(...values,1);
-    return `<div class="publisher-dashboard-chart">${days.map((day,index) => `<div><i style="height:${Math.max(8,Math.round((values[index] || 0) / max * 100))}%" data-value="${formatUv(values[index] || 0,language)}"></i><span>${day}</span></div>`).join('')}</div>`;
-  };
-  const renderConversionTrend = (state,conversion,language) => {
-    const labels = conversionLabels(language);
-    const metricKeys = ['impression','detail_view','cta_click','acquisition_success'];
-    const active = metricKeys.includes(state.trendMetric) ? state.trendMetric : 'impression';
-    return `<section class="publisher-dashboard-card publisher-conversion-trend" data-conversion-trend data-active-metric="${active}"><header><div><span>${text('趋势','TREND',language)}</span><h2>${metricHelp(state,'conversion-trend-title',active,labels[active],language)}</h2></div><div class="publisher-conversion-trend-tabs">${metricKeys.map(key => `<span><button type="button" class="${key === active ? 'is-active' : ''}" data-dashboard-action="conversion-trend" data-conversion-trend-metric="${key}">${labels[key]}</button></span>`).join('')}</div></header>${renderBars(trendDays(state.filters),conversion.trends[active] || [],language)}</section>`;
-  };
-  const renderConversionSources = (state,conversion,language) => {
-    const labels = sourceLabels(language);
-    const header = (id,key,label) => `<th>${metricHelp(state,`source-${id}`,key,label,language)}</th>`;
-    return `<section class="publisher-dashboard-card publisher-conversion-sources"><header><div><span>${text('来源分析','SOURCE PERFORMANCE',language)}</span><h2>${text('站内位置与访问来源','Placement and traffic source',language)}</h2></div></header><div class="publisher-conversion-source-table"><table><thead><tr>${header('placement','source',text('来源位置','Source',language))}${header('impression','impression',text('曝光 UV','Impressions',language))}${header('click','card_click',text('点击 UV','Clicks',language))}${header('detail','detail_view',text('详情访问 UV','Detail visits',language))}${header('acquired','acquisition_success',text('成功获取 UV','Acquired',language))}${header('ctr','card_click',text('点击率','CTR',language))}${header('detail-rate','detail_acquisition',text('详情→获取','Detail → acquired',language))}</tr></thead><tbody>${conversion.sources.map(item => `<tr data-conversion-source="${item.key}"><td><strong>${labels[item.key]}</strong></td><td>${formatUv(item.impression,language)}</td><td>${formatUv(item.click,language)}</td><td>${formatUv(item.detail,language)}</td><td>${formatUv(item.acquired,language)}</td><td>${formatRate(safeRate(item.click,item.impression))}</td><td>${formatRate(safeRate(item.acquired,item.detail))}</td></tr>`).join('')}</tbody></table></div></section>`;
-  };
-  const renderConversion = (state,language) => {
-    const conversion = conversionSnapshot(state);
-    return `${renderConversionSummary(state,conversion,language)}${renderConversionFunnel(state,conversion,language)}${renderConversionTrend(state,conversion,language)}${renderConversionSources(state,conversion,language)}`;
-  };
-
-  const userRegionScale = region => ({
-    all:1,
-    global:0.82,
-    domestic:0.18,
-    Japan:0.14,
-    'United States':0.22,
-    Germany:0.09,
-    'United Kingdom':0.08,
-    'Mainland China':0.18,
-    Canada:0.06,
-    France:0.07,
-    Singapore:0.04,
-    'South Korea':0.08,
-    Australia:0.05,
-  }[region] ?? 0.075);
   const userSnapshot = stateInput => {
     const filters = { ...defaultFilters, ...(stateInput?.filters || {}) };
-    const range = effectiveRange(filters);
-    const dayScale = daysBetween(range.startDate,range.endDate) / 30;
-    const regionScale = userRegionScale(filters.region);
-    const scale = dayScale * regionScale;
-    const maturity = offset => range.startDate <= formatDate(new Date(dateFrom(dataCutoffDate).getTime() - offset * 86400000));
-    const regionDelta = filters.region === 'domestic' || filters.region === 'Mainland China' ? -0.018 : filters.region === 'global' ? 0.006 : 0;
-    const activeTrendSeed = [1760,1840,1910,1870,2050,2140,2280];
-    const newTrendSeed = [420,438,466,451,492,526,554];
+    const rows = dailyUserRows({ ...stateInput,filters });
+    const activeTotal = sumMetric(rows,'active_players') || 0;
+    const newTotal = sumMetric(rows,'new_players') || 0;
     return {
-      activePlayers:Math.round(15420 * scale),
-      newPlayers:Math.round(3810 * scale),
-      retention1d:maturity(1) ? Math.max(0,0.426 + regionDelta) : null,
-      retention3d:maturity(3) ? Math.max(0,0.318 + regionDelta) : null,
-      retention7d:maturity(7) ? Math.max(0,0.241 + regionDelta) : null,
-      averageMinutes:Math.round(86 + (regionScale - 0.5) * 8),
-      trends:{
-        active:activeTrendSeed.map(value => Math.round(value * dayScale * regionScale)),
-        new:newTrendSeed.map(value => Math.round(value * dayScale * regionScale)),
-      },
+      rows,
+      activePlayers:periodUv(activeTotal,rows.length || 1),
+      newPlayers:newTotal,
+      retention1d:weightedAverage(rows,'retention_1d','new_players'),
+      retention3d:weightedAverage(rows,'retention_3d','new_players'),
+      retention7d:weightedAverage(rows,'retention_7d','new_players'),
+      averageMinutes:Math.round(weightedAverage(rows,'avg_duration','active_players') || 0),
+      trends:{ active:rows.map(item => item.active_players), new:rows.map(item => item.new_players) },
     };
   };
-  const renderUserMetrics = (state,data,language) => `<section class="publisher-user-metric-strip" aria-label="${text('用户核心指标','User metrics',language)}"><article class="publisher-user-metric" data-dashboard-metric="active_players">${metricHelp(state,'user-active','active_players',text('活跃玩家数','Active players',language),language)}<strong>${formatUv(data.activePlayers,language)}</strong><small>UV</small></article><article class="publisher-user-metric" data-dashboard-metric="new_players">${metricHelp(state,'user-new','new_players',text('新增玩家数','New players',language),language)}<strong>${formatUv(data.newPlayers,language)}</strong><small>UV</small></article><article class="publisher-user-metric publisher-user-retention" data-dashboard-metric="retention"><div>${metricHelp(state,'retention-1d','retention_1d',text('次日留存','Day-1 retention',language),language)}<strong>${formatRate(data.retention1d)}</strong></div><div>${metricHelp(state,'retention-3d','retention_3d',text('3 日留存','Day-3 retention',language),language)}<strong>${formatRate(data.retention3d)}</strong></div><div>${metricHelp(state,'retention-7d','retention_7d',text('7 日留存','Day-7 retention',language),language)}<strong>${formatRate(data.retention7d)}</strong></div></article><article class="publisher-user-metric" data-dashboard-metric="avg_duration">${metricHelp(state,'user-duration','avg_duration',text('平均游戏时长','Average playtime',language),language)}<strong>${data.averageMinutes} ${text('分钟','min',language)}</strong><small>${text('活跃玩家人均','Per active player',language)}</small></article></section>`;
-  const renderUserTrend = (state,data,language) => {
-    const active = state.userTrendMetric === 'new' ? 'new' : 'active';
-    const label = active === 'active' ? text('活跃玩家数','Active players',language) : text('新增玩家数','New players',language);
-    const definitionKey = active === 'active' ? 'active_players' : 'new_players';
-    return `<section class="publisher-dashboard-card publisher-user-trend" data-user-trend data-active-metric="${active}"><header><div><span>${text('趋势','TREND',language)}</span><h2>${metricHelp(state,'user-trend-title',definitionKey,label,language)}</h2></div><div class="publisher-conversion-trend-tabs"><span><button type="button" class="${active === 'active' ? 'is-active' : ''}" data-dashboard-action="user-trend" data-user-trend-metric="active">${text('活跃玩家','Active',language)}</button></span><span><button type="button" class="${active === 'new' ? 'is-active' : ''}" data-dashboard-action="user-trend" data-user-trend-metric="new">${text('新增玩家','New',language)}</button></span></div></header>${renderBars(trendDays(state.filters),data.trends[active],language)}<p class="publisher-user-trend-note">${text('按账号去重；选择“今日”时留存周期尚未成熟的指标展示“—”。','Deduplicated by account; immature retention metrics display “—” for Today.',language)}</p></section>`;
+
+  const metricCatalog = language => ({
+    conversion:[
+      { key:'impression', label:text('有效曝光','Qualified impressions',language), definition:'impression', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
+      { key:'card_ctr', label:text('游戏卡点击率','Game card CTR',language), definition:'card_click', type:'percent', hint:text('点击 UV ÷ 曝光 UV','Clicks ÷ impressions',language) },
+      { key:'detail_view', label:text('详情页访问','Detail visits',language), definition:'detail_view', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
+      { key:'detail_acquisition', label:text('详情获取转化率','Detail-to-acquisition',language), definition:'detail_acquisition', type:'percent', hint:text('成功获取 UV ÷ 详情访问 UV','Acquired ÷ detail visits',language) },
+      { key:'acquisition_success', label:text('成功获取','Successful acquisition',language), definition:'acquisition_success', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
+      { key:'fulfillment_success', label:text('履约成功','Fulfillment success',language), definition:'fulfillment_success', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
+      { key:'reservation_users', label:text('新增预约用户数','New reservation users',language), definition:'reservation_users', type:'integer', hint:text('按首次预约成功日','By first reservation date',language) },
+    ],
+    users:[
+      { key:'active_players', label:text('活跃玩家数','Active players',language), definition:'active_players', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
+      { key:'new_players', label:text('新增玩家数','New players',language), definition:'new_players', type:'integer', hint:text('首次启动 UV','First-launch users',language) },
+      { key:'retention_1d', label:text('次日留存','Day-1 retention',language), definition:'retention_1d', type:'percent', hint:text('新增 cohort','New-player cohort',language) },
+      { key:'retention_3d', label:text('3 日留存','Day-3 retention',language), definition:'retention_3d', type:'percent', hint:text('新增 cohort','New-player cohort',language) },
+      { key:'retention_7d', label:text('7 日留存','Day-7 retention',language), definition:'retention_7d', type:'percent', hint:text('新增 cohort','New-player cohort',language) },
+      { key:'avg_duration', label:text('平均游戏时长','Average playtime',language), definition:'avg_duration', type:'duration', hint:text('活跃玩家人均','Per active player',language) },
+    ],
+  });
+  const metricConfig = (tab,key,language) => metricCatalog(language)[tab].find(item => item.key === key) || metricCatalog(language)[tab][0];
+  const selectedMetric = (state,tab = state.tab) => {
+    const available = metricCatalog('zh')[tab].map(item => item.key);
+    const selected = state.selectedMetricByTab?.[tab];
+    return available.includes(selected) ? selected : available[0];
+  };
+  const metricValue = (tab,key,snapshot) => {
+    if (tab === 'conversion') return snapshot.summary[key];
+    return ({
+      active_players:snapshot.activePlayers,
+      new_players:snapshot.newPlayers,
+      retention_1d:snapshot.retention1d,
+      retention_3d:snapshot.retention3d,
+      retention_7d:snapshot.retention7d,
+      avg_duration:snapshot.averageMinutes,
+    })[key];
+  };
+  const formatMetricValue = (value,type,language) => {
+    if (!Number.isFinite(value)) return '—';
+    if (type === 'percent') return formatRate(value);
+    if (type === 'duration') return `${Math.round(value)} ${text('分钟','min',language)}`;
+    return formatUv(Math.round(value),language);
+  };
+  const formatMetricDelta = (value,previous,type,language) => {
+    if (!Number.isFinite(value) || !Number.isFinite(previous)) return '—';
+    const delta = value - previous;
+    const prefix = delta > 0 ? '+' : '';
+    if (type === 'percent') return `${prefix}${(delta * 100).toFixed(1)} pp`;
+    if (type === 'duration') return `${prefix}${Math.round(delta)} ${text('分钟','min',language)}`;
+    return `${prefix}${new Intl.NumberFormat(language === 'en' ? 'en-US' : 'zh-CN').format(Math.round(delta))}`;
+  };
+  const renderMetricCard = (state,tab,config,value,language,extraClass = '') => {
+    const active = selectedMetric(state,tab) === config.key;
+    return `<article class="publisher-dashboard-metric ${extraClass}${active ? ' is-selected' : ''}" data-dashboard-metric="${config.key}"><div class="publisher-metric-card-head"><button type="button" class="publisher-metric-select" data-dashboard-action="metric-select" data-detail-tab="${tab}" data-detail-metric="${config.key}" aria-pressed="${active}"><span>${config.label}</span></button>${metricHelpButton(state,`card-${config.key}`,config.definition,config.label,language)}</div><strong>${formatMetricValue(value,config.type,language)}</strong><small>${config.hint}</small></article>`;
+  };
+  const renderConversionSummary = (state,data,language) => {
+    const catalog = metricCatalog(language).conversion;
+    return `<section class="publisher-dashboard-metric-strip" aria-label="${text('曝光转化核心指标','Exposure and conversion metrics',language)}">${catalog.map(config => renderMetricCard(state,'conversion',config,metricValue('conversion',config.key,data),language)).join('')}</section>`;
+  };
+  const renderUserMetrics = (state,data,language) => {
+    const byKey = Object.fromEntries(metricCatalog(language).users.map(item => [item.key,item]));
+    const single = key => renderMetricCard(state,'users',byKey[key],metricValue('users',key,data),language,'publisher-user-metric');
+    const retention = ['retention_1d','retention_3d','retention_7d'].map(key => renderMetricCard(state,'users',byKey[key],metricValue('users',key,data),language,'publisher-user-metric publisher-user-retention-unit')).join('');
+    return `<section class="publisher-user-metric-strip" aria-label="${text('用户核心指标','User metrics',language)}">${single('active_players')}${single('new_players')}<section class="publisher-user-retention" aria-label="${text('玩家留存','Player retention',language)}">${retention}</section>${single('avg_duration')}</section>`;
+  };
+
+  const detailRows = (state,tab,key) => {
+    const rows = tab === 'conversion' ? dailyConversionRows(state) : dailyUserRows(state);
+    return rows.map((item,index) => ({
+      date:item.date,
+      value:item[key],
+      previous:index ? rows[index - 1][key] : null,
+    }));
+  };
+  const detailNote = (tab,key,language) => {
+    if (key.startsWith('retention_')) return text('按首次启动 cohort 日期展示；未观察满对应天数的日期显示“—”。','Shown by first-launch cohort date; immature dates display “—”.',language);
+    if (['card_ctr','detail_acquisition'].includes(key)) return text('周期转化率由周期分子 ÷ 周期分母计算，不平均每日百分比。','Period conversion uses period numerator ÷ denominator, rather than averaging daily rates.',language);
+    if (key === 'reservation_users') return text('按首次预约成功日归属；取消预约不回溯改写历史新增。','Attributed to first successful reservation date; later cancellations do not rewrite history.',language);
+    if (key === 'new_players') return text('按玩家首次成功启动日归属，每日新增可按日汇总。','Attributed to first successful launch date; daily new-player values can be summed.',language);
+    if (key === 'avg_duration') return text('当日平均游戏时长＝当日有效会话总时长 ÷ 当日活跃玩家数。','Daily average playtime equals valid session minutes divided by daily active players.',language);
+    return text('周期卡片为跨日去重 UV，每日 UV 不可直接相加推导周期卡片值。','The period card is deduplicated across days; daily UV values cannot be summed to reproduce it.',language);
+  };
+  const detailModel = (state,language = 'zh') => {
+    const tab = state.tab === 'users' ? 'users' : 'conversion';
+    const key = selectedMetric(state,tab);
+    const config = metricConfig(tab,key,language);
+    const rows = detailRows(state,tab,key).map(item => ({
+      ...item,
+      display:formatMetricValue(item.value,config.type,language),
+      deltaDisplay:formatMetricDelta(item.value,item.previous,config.type,language),
+    }));
+    return { tab,key,config,rows,note:detailNote(tab,key,language) };
+  };
+  const linePath = points => points.map(point => `${point.x},${point.y}`).join(' ');
+  const renderDetailChart = (model,language) => {
+    const validValues = model.rows.map(item => item.value).filter(Number.isFinite);
+    if (!validValues.length) return `<div class="publisher-detail-empty">${text('当前日期范围暂无已成熟数据','No mature data in this date range',language)}</div>`;
+    const rawMax = Math.max(...validValues);
+    const rawMin = Math.min(...validValues);
+    const spread = Math.max(rawMax - rawMin,Math.abs(rawMax) * 0.08,1);
+    const max = rawMax + spread * 0.14;
+    const min = Math.max(model.config.type === 'percent' ? 0 : 0,rawMin - spread * 0.14);
+    const x = index => model.rows.length === 1 ? 500 : 48 + index * 920 / (model.rows.length - 1);
+    const y = value => 20 + (max - value) * 210 / Math.max(max - min,0.0001);
+    const points = model.rows.map((item,index) => Number.isFinite(item.value) ? { ...item,index,x:x(index),y:y(item.value) } : null).filter(Boolean);
+    const labelStep = Math.max(1,Math.ceil((model.rows.length - 1) / 5));
+    const labels = model.rows.map((item,index) => (index === 0 || index === model.rows.length - 1 || index % labelStep === 0) ? `<text x="${x(index)}" y="263" text-anchor="middle">${item.date.slice(5)}</text>` : '').join('');
+    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${points.map(point => `<circle cx="${point.x}" cy="${point.y}" r="4" data-detail-point data-detail-date="${point.date}" data-detail-value="${Number(point.value)}"><title>${point.date} · ${escape(formatMetricValue(point.value,model.config.type,language))}</title></circle>`).join('')}${labels}</svg></div>`;
+  };
+  const renderDetailTable = (model,language) => `<div class="publisher-detail-table-wrap"><table><thead><tr><th>${text('日期','Date',language)}</th><th>${model.config.label}</th><th>${text('较前一日','vs. previous day',language)}</th></tr></thead><tbody>${model.rows.map(row => `<tr data-detail-row data-detail-date="${row.date}"><td>${row.date}</td><td><strong>${row.display}</strong></td><td>${row.deltaDisplay}</td></tr>`).join('')}</tbody></table></div>`;
+  const detailIcon = key => ({
+    refresh:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M18.5 9A7 7 0 0 0 6 6.5L4 9m2 6.5A7 7 0 0 0 18 18l2-2.5"/></svg>',
+    fullscreen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5"/></svg>',
+    close:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>',
+    export:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 19h14"/></svg>',
+  }[key] || '');
+  const renderDetail = (state,language) => {
+    const model = detailModel(state,language);
+    const view = state.detailView === 'table' ? 'table' : 'chart';
+    const full = Boolean(state.detailFullscreen);
+    const refreshed = state.detailRefreshedAt
+      ? text(`最近刷新 ${state.detailRefreshedAt}`,`Last refreshed ${state.detailRefreshedAt}`,language)
+      : text('与页面数据同步','Synced with page data',language);
+    return `<section class="publisher-dashboard-card publisher-dashboard-detail${full ? ' is-fullscreen' : ''}${state.detailRefreshing ? ' is-refreshing' : ''}" data-dashboard-detail data-active-metric="${model.key}" data-detail-tab="${model.tab}" data-detail-view="${view}" data-detail-fullscreen="${full}" data-detail-refresh-revision="${Number(state.detailRefreshRevision || 0)}"><header class="publisher-detail-head"><div><span>${text('按日详情','DAILY DETAIL',language)}</span><h2>${model.config.label}</h2><small aria-live="polite">${state.detailRefreshing ? text('正在刷新…','Refreshing…',language) : refreshed}</small></div><div class="publisher-detail-tools"><div class="publisher-detail-view-switch" aria-label="${text('展示方式','View mode',language)}"><button type="button" class="${view === 'chart' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="chart" aria-pressed="${view === 'chart'}">${text('图表','Chart',language)}</button><button type="button" class="${view === 'table' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="table" aria-pressed="${view === 'table'}">${text('表格','Table',language)}</button></div><button type="button" data-dashboard-action="detail-refresh"${state.detailRefreshing ? ' disabled' : ''}>${detailIcon('refresh')}<span>${state.detailRefreshing ? text('刷新中','Refreshing',language) : text('刷新','Refresh',language)}</span></button><button type="button" data-dashboard-action="detail-fullscreen">${detailIcon(full ? 'close' : 'fullscreen')}<span>${full ? text('退出全屏','Exit full screen',language) : text('全屏','Full screen',language)}</span></button><button type="button" data-dashboard-action="detail-export">${detailIcon('export')}<span>${text('导出','Export',language)}</span></button></div></header><div class="publisher-detail-body">${view === 'table' ? renderDetailTable(model,language) : renderDetailChart(model,language)}</div><p class="publisher-detail-note">${model.note}</p></section>`;
+  };
+  const renderConversion = (state,language) => {
+    const data = conversionSnapshot(state);
+    return `${renderConversionSummary(state,data,language)}${renderDetail(state,language)}`;
   };
   const renderUsers = (state,language) => {
     const data = userSnapshot(state);
-    return `${renderUserMetrics(state,data,language)}${renderUserTrend(state,data,language)}`;
+    return `${renderUserMetrics(state,data,language)}${renderDetail(state,language)}`;
+  };
+
+  const csvCell = value => {
+    const normalized = String(value ?? '');
+    return /[",\r\n]/.test(normalized) ? `"${normalized.replaceAll('"','""')}"` : normalized;
+  };
+  const exportDetailCsv = (state,game,language) => {
+    const model = detailModel(state,language);
+    const range = effectiveRange(state.filters);
+    const c = copy(language);
+    const gameName = game?.name || state.filters.game || text('当前游戏','Current game',language);
+    const tabLabel = c.tabs[model.tab];
+    const filterLines = [
+      [text('游戏','Game',language),gameName],
+      [text('页签','Tab',language),tabLabel],
+      [text('指标','Metric',language),model.config.label],
+      [text('时间范围','Date range',language),`${range.startDate} ~ ${range.endDate}`],
+      [text('商品类型','Product type',language),state.tab === 'conversion' ? state.filters.product : text('不适用','N/A',language)],
+      [text('来源位置','Source',language),state.tab === 'conversion' ? state.filters.source : text('不适用','N/A',language)],
+      [text('地区','Region',language),state.filters.region],
+      [text('平台','Platform',language),'Mac'],
+      [],
+      [text('日期','Date',language),model.config.label,text('较前一日','vs. previous day',language)],
+      ...model.rows.map(row => [row.date,row.display,row.deltaDisplay]),
+    ];
+    const body = `\uFEFF${filterLines.map(row => row.map(csvCell).join(',')).join('\r\n')}`;
+    const blob = new Blob([body],{ type:'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const clean = value => String(value).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,'').slice(0,48);
+    anchor.href = url;
+    anchor.download = `${clean(gameName)}-${clean(tabLabel)}-${clean(model.config.label)}-${range.startDate}_${range.endDate}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url),0);
   };
 
   const render = (stateInput,language = 'zh',options = {}) => {
     const state = stateInput || createState();
     state.filters = { ...defaultFilters, ...(state.filters || {}) };
     state.tab = state.tab === 'users' || state.tab === 'conversion' ? state.tab : 'conversion';
+    state.selectedMetricByTab = {
+      conversion:selectedMetric({ ...state,selectedMetricByTab:state.selectedMetricByTab || {} },'conversion'),
+      users:selectedMetric({ ...state,selectedMetricByTab:state.selectedMetricByTab || {} },'users'),
+    };
+    state.detailView = state.detailView === 'table' ? 'table' : 'chart';
+    state.detailRefreshRevision = Number(state.detailRefreshRevision || 0);
+    state.detailFullscreen = Boolean(state.detailFullscreen);
+    state.detailRefreshing = Boolean(state.detailRefreshing);
     const c = copy(language);
     const access = options.access || {};
     const game = options.game || null;
@@ -496,9 +696,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const bind = (root,{ state,game,onChange } = {}) => {
     const host = root.querySelector('[data-testid="publisher-data-dashboard"]');
     if (!host || !state) return;
+    const interfaceLanguage = host.querySelector('.publisher-dashboard-head h1')?.textContent?.trim() === 'Data dashboard' ? 'en' : 'zh';
     let pointerMetricHelp = '';
     let focusOpenedMetric = '';
     const update = (patch = {},options = {}) => {
+      if (document.querySelector('[data-publisher-metric-portal]')) closeMetricTooltips();
       Object.assign(state,patch);
       if (typeof onChange === 'function') onChange(state,options);
     };
@@ -523,6 +725,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       tooltip.style.bottom = 'auto';
     };
     const closeMetricTooltips = () => {
+      document.querySelectorAll('[data-publisher-metric-portal]').forEach(tooltip => {
+        const trigger = host.querySelector(`[aria-describedby="${tooltip.id}"]`);
+        if (trigger?.parentElement) trigger.parentElement.appendChild(tooltip);
+        else tooltip.remove();
+        tooltip.removeAttribute('data-publisher-metric-portal');
+      });
       host.querySelectorAll('[data-metric-help]').forEach(trigger => trigger.setAttribute('aria-expanded','false'));
       host.querySelectorAll('.publisher-metric-tooltip').forEach(tooltip => {
         tooltip.classList.remove('is-open','is-floating');
@@ -539,6 +747,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       state.activeTooltip = trigger.dataset.metricHelp || '';
       trigger.setAttribute('aria-expanded','true');
       tooltip.classList.add('is-open');
+      tooltip.setAttribute('data-publisher-metric-portal','true');
+      document.body.appendChild(tooltip);
       positionMetricTooltip(trigger);
     };
     const requestFocus = target => { pendingFocusTarget = target; };
@@ -551,6 +761,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       else if (target?.kind === 'date-action') element = visibleMatch(`[data-dashboard-action="${target.action}"]`);
       else if (target?.kind === 'calendar-day') element = visibleMatch(`[data-calendar-date="${target.date}"]:not([disabled])`);
       else if (target?.kind === 'metric-help') element = metricTrigger(target.id);
+      else if (target?.kind === 'detail-fullscreen') element = visibleMatch('[data-dashboard-action="detail-fullscreen"]');
       if (!element && state.datePickerOpen) element = visibleMatch('[data-dashboard-date-dialog] button:not([disabled])') || host.querySelector('[data-dashboard-date-dialog]');
       if (!element && state.activeTooltip) element = metricTrigger(state.activeTooltip);
       if (!element) return;
@@ -587,13 +798,34 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     });
     host.addEventListener('click',event => {
       const control = event.target.closest('[data-dashboard-action]');
-      if (!control) return;
+      if (!control) {
+        const card = event.target.closest('[data-dashboard-metric]');
+        if (!card) return;
+        const tab = state.tab === 'users' ? 'users' : 'conversion';
+        update({ selectedMetricByTab:{ ...(state.selectedMetricByTab || {}),[tab]:card.dataset.dashboardMetric },activeTooltip:'' },{ preserveScroll:true });
+        return;
+      }
       const action = control.dataset.dashboardAction;
       if (action === 'date-cancel' && control.matches('.publisher-dashboard-date-backdrop') && event.target.closest('[data-dashboard-stop]')) return;
-      if (action === 'tab') update({ tab:control.dataset.publisherDataTab === 'users' ? 'users' : 'conversion',datePickerOpen:false,activeTooltip:'' });
+      if (action === 'tab') update({ tab:control.dataset.publisherDataTab === 'users' ? 'users' : 'conversion',datePickerOpen:false,activeTooltip:'',detailFullscreen:false });
       else if (action === 'reset') update({ filters:{ ...defaultFilters,game:game?.name || 'all' },datePickerOpen:false,draftDateRange:{ ...presetRanges['30d'] },calendarLeftMonth:'2026-08',activeTooltip:'' },{ preserveScroll:true });
-      else if (action === 'conversion-trend') update({ trendMetric:control.dataset.conversionTrendMetric || 'impression',activeTooltip:'' },{ preserveScroll:true });
-      else if (action === 'user-trend') update({ userTrendMetric:control.dataset.userTrendMetric === 'new' ? 'new' : 'active',activeTooltip:'' },{ preserveScroll:true });
+      else if (action === 'metric-select') {
+        const tab = control.dataset.detailTab === 'users' ? 'users' : 'conversion';
+        const key = control.dataset.detailMetric || metricCatalog('zh')[tab][0].key;
+        update({ selectedMetricByTab:{ ...(state.selectedMetricByTab || {}),[tab]:key },activeTooltip:'' },{ preserveScroll:true });
+      }
+      else if (action === 'detail-view') update({ detailView:control.dataset.detailView === 'table' ? 'table' : 'chart',activeTooltip:'' },{ preserveScroll:true });
+      else if (action === 'detail-refresh') {
+        const now = new Date();
+        const formatted = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        update({ detailRefreshing:true,detailRefreshRevision:Number(state.detailRefreshRevision || 0) + 1,activeTooltip:'' },{ preserveScroll:true });
+        setTimeout(() => update({ detailRefreshing:false,detailRefreshedAt:formatted },{ preserveScroll:true }),420);
+      }
+      else if (action === 'detail-fullscreen') {
+        requestFocus({ kind:'detail-fullscreen' });
+        update({ detailFullscreen:!state.detailFullscreen,activeTooltip:'' },{ preserveScroll:true });
+      }
+      else if (action === 'detail-export') exportDetailCsv(state,game,interfaceLanguage);
       else if (action === 'metric-help') {
         const shouldOpen = event.detail === 0 || focusOpenedMetric === control.dataset.metricHelp || state.activeTooltip !== control.dataset.metricHelp;
         if (shouldOpen) openMetricTooltip(control);
@@ -641,6 +873,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
     });
     host.addEventListener('keydown',event => {
+      if (event.key === 'Escape' && state.detailFullscreen) {
+        event.preventDefault();
+        event.stopPropagation();
+        update({ detailFullscreen:false },{ preserveScroll:true });
+        return;
+      }
       if (event.key === 'Tab' && state.datePickerOpen) {
         const dialog = host.querySelector('[data-dashboard-date-dialog]');
         const focusable = dialog ? [...dialog.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(isVisible) : [];
@@ -674,6 +912,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   window.PublisherDataDashboard = {
     createState,render,bind,filteredOrders,metrics,conversionSnapshot,userSnapshot,validateDateRange,deriveTransactionResult,
+    enumerateDates,dailyConversionRows,dailyUserRows,detailModel,
     orders:() => clone(orders),statements:() => clone(statements),payments:() => clone(payments),
     snapshot:stateInput => {
       const state = createState(stateInput || {});
