@@ -9,6 +9,10 @@ window.PublisherFinanceOperationsModel = (() => {
   };
 
   const accountFor = (entityVersion, currency) => {
+    if (currency === 'CNY' && entityVersion === 'FIN-2026-006') return {
+      entityName:'远光网络科技有限公司', entityVersion, paymentMethod:'境内转账', bankName:'中国银行广州天河支行',
+      accountMasked:'**** 9066', accountFull:'60138200001909066', swift:'BKCHCNBJ400',
+    };
     if (currency === 'CNY') return {
       entityName:'星海互动科技有限公司', entityVersion, paymentMethod:'境内转账', bankName:'招商银行深圳科技园支行',
       accountMasked:'**** 3188', accountFull:'7559000012383188', swift:'CMBCCNBS',

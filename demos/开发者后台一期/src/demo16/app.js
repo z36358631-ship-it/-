@@ -283,6 +283,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (options.role !== 'operations' || !options.routes.some(route => route.id === 'P16-01')) return html;
     const active = options.route.id === 'P16-01';
     const financeLink = `<a class="nav-item${active ? ' is-active' : ''}" href="#/P16-01"${active ? ' aria-current="page"' : ''}><span class="fo-nav-icon" aria-hidden="true"></span><span>财务结算</span></a>`;
+    html = html.replace('企业认证、游戏审核与内容运营', '企业认证、游戏审核、内容运营与财务结算');
     return html.replace(/(<aside class="side-nav side-nav--operations"[\s\S]*?<nav class="nav-list" aria-label="发行平台后台">)([\s\S]*?)(<\/nav><\/aside>)/, (_match, start, items, end) => `${start}${items}${financeLink}${end}`);
   };
 })(window.GameHubDeveloperPortal, window.PublisherFinanceOperationsModel);

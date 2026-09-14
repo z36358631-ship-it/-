@@ -14144,6 +14144,10 @@ window.PublisherFinanceOperationsModel = (() => {
   };
 
   const accountFor = (entityVersion, currency) => {
+    if (currency === 'CNY' && entityVersion === 'FIN-2026-006') return {
+      entityName:'远光网络科技有限公司', entityVersion, paymentMethod:'境内转账', bankName:'中国银行广州天河支行',
+      accountMasked:'**** 9066', accountFull:'60138200001909066', swift:'BKCHCNBJ400',
+    };
     if (currency === 'CNY') return {
       entityName:'星海互动科技有限公司', entityVersion, paymentMethod:'境内转账', bankName:'招商银行深圳科技园支行',
       accountMasked:'**** 3188', accountFull:'7559000012383188', swift:'CMBCCNBS',
@@ -14645,6 +14649,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (options.role !== 'operations' || !options.routes.some(route => route.id === 'P16-01')) return html;
     const active = options.route.id === 'P16-01';
     const financeLink = `<a class="nav-item${active ? ' is-active' : ''}" href="#/P16-01"${active ? ' aria-current="page"' : ''}><span class="fo-nav-icon" aria-hidden="true"></span><span>财务结算</span></a>`;
+    html = html.replace('企业认证、游戏审核与内容运营', '企业认证、游戏审核、内容运营与财务结算');
     return html.replace(/(<aside class="side-nav side-nav--operations"[\s\S]*?<nav class="nav-list" aria-label="发行平台后台">)([\s\S]*?)(<\/nav><\/aside>)/, (_match, start, items, end) => `${start}${items}${financeLink}${end}`);
   };
 })(window.GameHubDeveloperPortal, window.PublisherFinanceOperationsModel);
