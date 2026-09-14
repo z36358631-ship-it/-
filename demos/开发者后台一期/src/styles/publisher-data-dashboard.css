@@ -1198,7 +1198,7 @@
 /* V1.6 指标下钻看板 */
 .publisher-dashboard-metric-strip {
   display: grid;
-  grid-template-columns: repeat(7,minmax(148px,1fr));
+  grid-template-columns: repeat(6,minmax(160px,1fr));
   gap: 10px;
   overflow-x: auto;
   border-radius: 12px;
@@ -1311,7 +1311,9 @@
   padding: 17px 18px 15px;
 }
 .publisher-detail-head > div:first-child { min-width: 0; }
-.publisher-detail-head > div:first-child > span { color: #8a6500; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.publisher-detail-eyebrow { display: flex; align-items: center; gap: 8px; }
+.publisher-detail-eyebrow > span { color: #8a6500; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.publisher-detail-eyebrow > b { border-radius: 999px; padding: 3px 7px; background: #f2f4f7; color: #667085; font-size: 10px; font-weight: 700; }
 .publisher-detail-head h2 { margin: 4px 0 3px; color: #182230; font-size: 18px; }
 .publisher-detail-head small { color: #667085; font-size: 11px; }
 .publisher-detail-tools { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
@@ -1345,13 +1347,36 @@
 .publisher-detail-body { min-height: 326px; overflow: auto; padding: 14px 18px 4px; }
 .publisher-dashboard-detail.is-fullscreen .publisher-detail-body { min-height: 0; flex: 1; padding: 22px 26px 6px; }
 .publisher-dashboard-detail.is-refreshing .publisher-detail-body { opacity: .45; }
-.publisher-detail-chart { min-width: 720px; height: 306px; }
+.publisher-detail-chart { position: relative; min-width: 720px; height: 306px; }
 .publisher-dashboard-detail.is-fullscreen .publisher-detail-chart { height: 100%; min-height: 360px; }
 .publisher-detail-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .publisher-detail-chart text { fill: #98a2b3; font-size: 10px; font-variant-numeric: tabular-nums; }
 .publisher-detail-axis { stroke: #e4e7ec; stroke-width: 1; }
 .publisher-detail-line { fill: none; stroke: #c99500; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; }
 .publisher-detail-chart circle { fill: #f0b90b; stroke: #fff; stroke-width: 2; }
+.publisher-detail-point-hit { fill: transparent !important; stroke: transparent !important; pointer-events: all; }
+.publisher-detail-point-dot { pointer-events: none; }
+.publisher-detail-chart [data-detail-point]:hover .publisher-detail-point-dot,
+.publisher-detail-chart [data-detail-point]:focus .publisher-detail-point-dot { fill: #9b6d00; r: 5.5px; }
+.publisher-detail-chart [data-detail-point]:focus { outline: none; }
+.publisher-detail-hover {
+  position: absolute;
+  z-index: 4;
+  width: 190px;
+  border: 1px solid #e4e7ec;
+  border-radius: 9px;
+  padding: 11px 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(16,24,40,.16);
+  color: #182230;
+  pointer-events: none;
+}
+.publisher-detail-hover[hidden] { display: none; }
+.publisher-detail-hover > strong { display: block; margin-bottom: 10px; font-size: 12px; }
+.publisher-detail-hover > span { display: grid; grid-template-columns: 8px minmax(0,1fr) auto; align-items: center; gap: 8px; font-size: 11px; }
+.publisher-detail-hover i { width: 7px; height: 7px; border-radius: 50%; background: #f0b90b; }
+.publisher-detail-hover em { overflow: hidden; color: #667085; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.publisher-detail-hover b { font-size: 12px; font-variant-numeric: tabular-nums; }
 .publisher-detail-empty { display: grid; place-items: center; min-height: 290px; color: #667085; }
 .publisher-detail-table-wrap { max-height: 420px; overflow: auto; border: 1px solid #e4e7ec; border-radius: 9px; }
 .publisher-dashboard-detail.is-fullscreen .publisher-detail-table-wrap { max-height: none; height: 100%; }
@@ -1367,11 +1392,11 @@
 .publisher-detail-note { margin: 0; border-top: 1px solid #eef0f3; padding: 11px 18px 13px; color: #667085; font-size: 11px; line-height: 1.55; }
 
 @media (max-width: 1180px) {
-  .publisher-dashboard-metric-strip { grid-template-columns: repeat(7,154px); }
+  .publisher-dashboard-metric-strip { grid-template-columns: repeat(6,166px); }
   .publisher-user-metric-strip { grid-template-columns: 176px 176px 492px 176px; }
 }
 @media (max-width: 760px) {
-  .publisher-dashboard-metric-strip { grid-template-columns: repeat(7,166px); padding: 7px; }
+  .publisher-dashboard-metric-strip { grid-template-columns: repeat(6,174px); padding: 7px; }
   .publisher-user-metric-strip { grid-template-columns: 172px 172px 486px 172px; padding: 7px; }
   .publisher-dashboard-metric,
   .publisher-user-metric.publisher-dashboard-metric { min-height: 120px; }

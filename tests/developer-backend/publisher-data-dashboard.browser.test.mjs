@@ -228,9 +228,11 @@ test('经营数据位于单游戏控制台并只保留曝光转化与用户数�
     assert.equal(await dashboard.getAttribute('data-dashboard-tab'), 'conversion');
     assert.deepEqual(
       await dashboard.locator('[data-dashboard-metric]').evaluateAll(nodes => nodes.map(node => node.dataset.dashboardMetric)),
-      ['impression', 'card_ctr', 'detail_view', 'detail_acquisition', 'acquisition_success', 'fulfillment_success', 'reservation_users'],
+      ['impression', 'card_ctr', 'reservation_users', 'detail_view', 'detail_acquisition', 'acquisition_success'],
     );
     assert.equal(await dashboard.getByText('新增预约用户数', { exact:true }).count(), 1);
+    assert.equal(await dashboard.locator('[data-dashboard-metric="fulfillment_success"]').count(), 0);
+    assert.equal(await dashboard.locator('[data-dashboard-filter="product"]').count(), 0);
     assert.equal(await dashboard.getByText('站内转化', { exact:true }).count(), 0);
     assert.equal(await dashboard.getByText('来源分析', { exact:true }).count(), 0);
     assert.equal(await dashboard.locator('[data-dashboard-detail][data-active-metric="impression"]').count(), 1);
@@ -344,7 +346,7 @@ test('两个页签只展示生效筛选且切换后保留共同与专属条件',
   try {
     const dashboard = await openDashboard(page, 'publisher-dashboard:filter-scope-v15');
     const before = await dashboard.locator('[data-dashboard-metric="impression"] > strong').innerText();
-    await dashboard.locator('[data-dashboard-filter="product"]').selectOption('dlc');
+    assert.equal(await dashboard.locator('[data-dashboard-filter="product"]').count(), 0);
     await dashboard.locator('[data-dashboard-filter="source"]').selectOption('search');
     await dashboard.locator('[data-dashboard-filter="region"]').selectOption('United States');
     const after = await dashboard.locator('[data-dashboard-metric="impression"] > strong').innerText();
@@ -359,7 +361,7 @@ test('两个页签只展示生效筛选且切换后保留共同与专属条件',
     await dashboard.locator('[data-dashboard-filter="region"]').selectOption('Japan');
     assert.notEqual(await dashboard.locator('[data-dashboard-metric="active_players"] > strong').innerText(), userValue);
     await selectDashboardTab(dashboard, 'conversion', '曝光转化');
-    assert.equal(await dashboard.locator('[data-dashboard-filter="product"]').inputValue(), 'dlc');
+    assert.equal(await dashboard.locator('[data-dashboard-filter="product"]').count(), 0);
     assert.equal(await dashboard.locator('[data-dashboard-filter="source"]').inputValue(), 'search');
     assert.equal(await dashboard.locator('[data-dashboard-filter="region"]').inputValue(), 'Japan');
 
@@ -409,7 +411,7 @@ test('每个可见指标均提供可访问的问号定义，趋势切换按钮�
       const invalid = await dashboard.locator('[data-dashboard-metric]').evaluateAll(nodes => nodes.filter(node => !node.querySelector('[data-metric-help]')).length);
       assert.equal(invalid, 0, `${tab} 存在缺少指标定义的核心指标`);
       const help = dashboard.locator('[data-metric-help]');
-      assert.equal(await help.count(), tab === 'conversion' ? 7 : 6);
+      assert.equal(await help.count(), 6);
       const links = await help.evaluateAll(nodes => nodes.map(node => ({
         describedBy: node.getAttribute('aria-describedby'),
         expanded: node.getAttribute('aria-expanded'),
@@ -424,14 +426,14 @@ test('每个可见指标均提供可访问的问号定义，趋势切换按钮�
   }
 });
 
-test('指标定义以视口浮层展示且不被指标滚动容器裁切', async () => {
+test('指标定义鼠标悬浮即显示且不被指标滚动容器裁切', async () => {
   const context = await browser.newContext({ viewport: { width: 900, height: 700 } });
   const page = await context.newPage();
   try {
     const dashboard = await openDashboard(page, 'publisher-dashboard:metric-tooltip-v16');
     const trigger = dashboard.locator('[data-metric-help="card-impression"]');
     await trigger.scrollIntoViewIfNeeded();
-    await trigger.click();
+    await trigger.hover();
     const tooltip = page.locator(`#${await trigger.getAttribute('aria-describedby')}`);
     const geometry = await tooltip.evaluate(node => {
       const rect = node.getBoundingClientRect();
@@ -444,6 +446,8 @@ test('指标定义以视口浮层展示且不被指标滚动容器裁切', async
       };
     });
     assert.deepEqual(geometry, { display:'block', position:'fixed', insideViewport:true, hit:true });
+    await page.mouse.move(4,4);
+    assert.equal(await tooltip.evaluate(node => getComputedStyle(node).display), 'none');
   } finally {
     await context.close();
   }
@@ -455,7 +459,7 @@ test('两个页签的每个指标都能切换共享逐日详情', async () => {
   try {
     const dashboard = await openDashboard(page, 'publisher-dashboard:drilldown-v16');
     const cases = {
-      conversion:['impression','card_ctr','detail_view','detail_acquisition','acquisition_success','fulfillment_success','reservation_users'],
+      conversion:['impression','card_ctr','reservation_users','detail_view','detail_acquisition','acquisition_success'],
       users:['active_players','new_players','retention_1d','retention_3d','retention_7d','avg_duration'],
     };
     for (const [tab,metrics] of Object.entries(cases)) {
@@ -509,6 +513,26 @@ test('详情支持完整日表、刷新、全屏、Esc 退出和当前指标 CSV
   }
 });
 
+test('逐日图表明确日粒度并在悬浮日期时显示当日数据', async () => {
+  const context = await browser.newContext({ viewport:{ width:1440,height:900 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:daily-hover-v17');
+    const detail = dashboard.locator('[data-dashboard-detail]');
+    assert.equal(await detail.getAttribute('data-detail-granularity'), 'day');
+    assert.equal(await detail.getByText('数据粒度：日', { exact:true }).count(), 1);
+    const point = detail.locator('[data-detail-point][data-detail-date="2026-09-05"]');
+    await point.hover();
+    const tooltip = detail.locator('[data-detail-hover-tooltip]');
+    await tooltip.waitFor({ state:'visible' });
+    assert.match(await tooltip.innerText(), /2026-09-05/);
+    assert.match(await tooltip.innerText(), /有效曝光/);
+    assert.match(await tooltip.innerText(), /\d/);
+  } finally {
+    await context.close();
+  }
+});
+
 test('周期卡片和逐日详情遵守 UV、转化率、预约与留存口径', async () => {
   const context = await browser.newContext({ viewport: { width:1440,height:900 } });
   const page = await context.newPage();
@@ -525,6 +549,7 @@ test('周期卡片和逐日详情遵守 UV、转化率、预约与留存口径',
         expectedCtr:conversion.summary.card_click / conversion.summary.impression,
         reservationPeriod:conversion.summary.reservation_users,
         reservationDailySum:conversion.rows.reduce((sum,row) => sum + row.reservation_users,0),
+        acquiredPeriod:conversion.summary.acquisition_success,
         activePeriod:users.activePlayers,
         activeDailySum:users.rows.reduce((sum,row) => sum + row.active_players,0),
         immature:{
@@ -538,6 +563,7 @@ test('周期卡片和逐日详情遵守 UV、转化率、预约与留存口径',
     assert.equal(result.userDays, 30);
     assert.ok(Math.abs(result.ctr - result.expectedCtr) < 1e-12);
     assert.equal(result.reservationPeriod, result.reservationDailySum);
+    assert.ok(result.acquiredPeriod >= result.reservationPeriod);
     assert.ok(result.activePeriod < result.activeDailySum);
     assert.deepEqual(result.immature, { d1:1,d3:3,d7:7 });
   } finally {

@@ -51,6 +51,20 @@
 - Test: `tests/developer-backend/publisher-data-dashboard.browser.test.mjs`
 
 - [x] 运行 `node "demos/开发者后台一期/build.mjs" --module=02` 重新生成单文件 Demo。
-- [x] 运行 `node --test tests/developer-backend/build.test.mjs tests/developer-backend/publisher-data-dashboard.browser.test.mjs`，预期全部通过。
+- [x] 运行 `node --test tests/developer-backend/publisher-data-dashboard.browser.test.mjs`，验证 02 数据看板专项用例全部通过。
 - [x] 在 1440×900 和 390×844 下截图，检查指标选中、详情对齐、小屏滚动和全屏布局。
 - [x] 仅暂存本轮 Demo、样式、测试和设计／实施记录，提交并推送当前分支。
+
+### Task 5: 校正筛选、获取口径与悬浮交互
+
+**Files:**
+- Modify: `demos/开发者后台一期/src/runtime/publisher-data-dashboard.js`
+- Modify: `demos/开发者后台一期/src/styles/publisher-data-dashboard.css`
+- Modify: `tests/developer-backend/publisher-data-dashboard.browser.test.mjs`
+
+- [x] 移除商品类型筛选，并保证历史隐藏值不再影响看板数据。
+- [x] 指标问号改为鼠标悬浮直接显示，保留键盘聚焦和 Esc 关闭能力。
+- [x] 图表增加每日数据点悬浮卡，显示日期、指标名称和数值，并明确标注数据粒度为日。
+- [x] 新增预约用户数移到详情页访问前，将预约、下载或成功启动的周期去重并集定义为成功获取。
+- [x] 移除独立履约成功指标，与成功获取用户数合并。
+- [x] 运行 02 专项浏览器测试，覆盖筛选移除、悬浮交互、日粒度和新口径。

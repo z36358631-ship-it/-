@@ -5391,7 +5391,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 /* V1.6 指标下钻看板 */
 .publisher-dashboard-metric-strip {
   display: grid;
-  grid-template-columns: repeat(7,minmax(148px,1fr));
+  grid-template-columns: repeat(6,minmax(160px,1fr));
   gap: 10px;
   overflow-x: auto;
   border-radius: 12px;
@@ -5504,7 +5504,9 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   padding: 17px 18px 15px;
 }
 .publisher-detail-head > div:first-child { min-width: 0; }
-.publisher-detail-head > div:first-child > span { color: #8a6500; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.publisher-detail-eyebrow { display: flex; align-items: center; gap: 8px; }
+.publisher-detail-eyebrow > span { color: #8a6500; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.publisher-detail-eyebrow > b { border-radius: 999px; padding: 3px 7px; background: #f2f4f7; color: #667085; font-size: 10px; font-weight: 700; }
 .publisher-detail-head h2 { margin: 4px 0 3px; color: #182230; font-size: 18px; }
 .publisher-detail-head small { color: #667085; font-size: 11px; }
 .publisher-detail-tools { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
@@ -5538,13 +5540,36 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .publisher-detail-body { min-height: 326px; overflow: auto; padding: 14px 18px 4px; }
 .publisher-dashboard-detail.is-fullscreen .publisher-detail-body { min-height: 0; flex: 1; padding: 22px 26px 6px; }
 .publisher-dashboard-detail.is-refreshing .publisher-detail-body { opacity: .45; }
-.publisher-detail-chart { min-width: 720px; height: 306px; }
+.publisher-detail-chart { position: relative; min-width: 720px; height: 306px; }
 .publisher-dashboard-detail.is-fullscreen .publisher-detail-chart { height: 100%; min-height: 360px; }
 .publisher-detail-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .publisher-detail-chart text { fill: #98a2b3; font-size: 10px; font-variant-numeric: tabular-nums; }
 .publisher-detail-axis { stroke: #e4e7ec; stroke-width: 1; }
 .publisher-detail-line { fill: none; stroke: #c99500; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; }
 .publisher-detail-chart circle { fill: #f0b90b; stroke: #fff; stroke-width: 2; }
+.publisher-detail-point-hit { fill: transparent !important; stroke: transparent !important; pointer-events: all; }
+.publisher-detail-point-dot { pointer-events: none; }
+.publisher-detail-chart [data-detail-point]:hover .publisher-detail-point-dot,
+.publisher-detail-chart [data-detail-point]:focus .publisher-detail-point-dot { fill: #9b6d00; r: 5.5px; }
+.publisher-detail-chart [data-detail-point]:focus { outline: none; }
+.publisher-detail-hover {
+  position: absolute;
+  z-index: 4;
+  width: 190px;
+  border: 1px solid #e4e7ec;
+  border-radius: 9px;
+  padding: 11px 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(16,24,40,.16);
+  color: #182230;
+  pointer-events: none;
+}
+.publisher-detail-hover[hidden] { display: none; }
+.publisher-detail-hover > strong { display: block; margin-bottom: 10px; font-size: 12px; }
+.publisher-detail-hover > span { display: grid; grid-template-columns: 8px minmax(0,1fr) auto; align-items: center; gap: 8px; font-size: 11px; }
+.publisher-detail-hover i { width: 7px; height: 7px; border-radius: 50%; background: #f0b90b; }
+.publisher-detail-hover em { overflow: hidden; color: #667085; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.publisher-detail-hover b { font-size: 12px; font-variant-numeric: tabular-nums; }
 .publisher-detail-empty { display: grid; place-items: center; min-height: 290px; color: #667085; }
 .publisher-detail-table-wrap { max-height: 420px; overflow: auto; border: 1px solid #e4e7ec; border-radius: 9px; }
 .publisher-dashboard-detail.is-fullscreen .publisher-detail-table-wrap { max-height: none; height: 100%; }
@@ -5560,11 +5585,11 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .publisher-detail-note { margin: 0; border-top: 1px solid #eef0f3; padding: 11px 18px 13px; color: #667085; font-size: 11px; line-height: 1.55; }
 
 @media (max-width: 1180px) {
-  .publisher-dashboard-metric-strip { grid-template-columns: repeat(7,154px); }
+  .publisher-dashboard-metric-strip { grid-template-columns: repeat(6,166px); }
   .publisher-user-metric-strip { grid-template-columns: 176px 176px 492px 176px; }
 }
 @media (max-width: 760px) {
-  .publisher-dashboard-metric-strip { grid-template-columns: repeat(7,166px); padding: 7px; }
+  .publisher-dashboard-metric-strip { grid-template-columns: repeat(6,174px); padding: 7px; }
   .publisher-user-metric-strip { grid-template-columns: 172px 172px 486px 172px; padding: 7px; }
   .publisher-dashboard-metric,
   .publisher-user-metric.publisher-dashboard-metric { min-height: 120px; }
@@ -10588,8 +10613,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       users:'active_players',
       ...(incoming.selectedMetricByTab || {}),
     };
-    const conversionMetrics = ['impression','card_ctr','detail_view','detail_acquisition','acquisition_success','fulfillment_success','reservation_users'];
+    const conversionMetrics = ['impression','card_ctr','reservation_users','detail_view','detail_acquisition','acquisition_success'];
     const userMetrics = ['active_players','new_players','retention_1d','retention_3d','retention_7d','avg_duration'];
+    if (selectedMetricByTab.conversion === 'fulfillment_success') selectedMetricByTab.conversion = 'acquisition_success';
     if (!conversionMetrics.includes(selectedMetricByTab.conversion)) selectedMetricByTab.conversion = conversionMetrics.includes(incoming.trendMetric) ? incoming.trendMetric : 'impression';
     if (!userMetrics.includes(selectedMetricByTab.users)) selectedMetricByTab.users = incoming.userTrendMetric === 'new' ? 'new_players' : 'active_players';
     return {
@@ -10683,7 +10709,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     all:1, home:0.364, discovery:0.184, ranking:0.142, search:0.136,
     campaign:0.102, external:0.072, direct:0.048, other:0.018,
   }[source] ?? 1);
-  const productFactor = product => ({ all:1, base:0.68, dlc:0.32 }[product] || 1);
   const dailyWave = (date,index) => {
     const day = Number(date.slice(-2));
     return 0.88 + ((day * 17 + index * 11) % 23) / 50 + Math.sin((index + day) / 3) * 0.055;
@@ -10691,46 +10716,48 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const dailyConversionRows = stateInput => {
     const filters = { ...defaultFilters, ...(stateInput?.filters || {}) };
     const { startDate,endDate } = effectiveRange(filters);
-    const filterFactor = productFactor(filters.product) * regionalFactor(filters.region) * sourceFactor(filters.source);
+    const filterFactor = regionalFactor(filters.region) * sourceFactor(filters.source);
     return enumerateDates(startDate,endDate).map((date,index) => {
       const factor = filterFactor * dailyWave(date,index);
       const impression = Math.max(0,Math.round(1665 * factor));
       const cardClick = Math.max(0,Math.round(impression * (0.286 + ((index % 5) - 2) * 0.006)));
       const detailView = Math.max(0,Math.round(cardClick * (0.818 + ((index % 4) - 1.5) * 0.009)));
-      const acquisitionSuccess = Math.max(0,Math.round(detailView * (0.222 + ((index % 6) - 2.5) * 0.004)));
-      const fulfillmentSuccess = Math.max(0,Math.round(acquisitionSuccess * (0.968 + ((index % 3) - 1) * 0.003)));
       const reservationUsers = Math.max(0,Math.round(detailView * (0.118 + ((index % 5) - 2) * 0.003)));
+      const downloadUsers = Math.max(0,Math.round(detailView * (0.142 + ((index % 6) - 2.5) * 0.003)));
+      const launchUsers = Math.max(0,Math.round(detailView * (0.091 + ((index % 4) - 1.5) * 0.003)));
+      const overlapUsers = Math.max(0,Math.round(detailView * (0.047 + ((index % 3) - 1) * 0.002)));
+      const acquisitionSuccess = Math.max(reservationUsers,downloadUsers,launchUsers,reservationUsers + downloadUsers + launchUsers - overlapUsers);
       return {
         date,
         impression,
         card_click:cardClick,
         detail_view:detailView,
         acquisition_success:acquisitionSuccess,
-        fulfillment_success:fulfillmentSuccess,
         reservation_users:reservationUsers,
+        download_users:downloadUsers,
+        launch_users:launchUsers,
         card_ctr:safeRate(cardClick,impression),
         detail_acquisition:safeRate(acquisitionSuccess,detailView),
       };
     });
   };
-  const periodUv = (dailyTotal,dayCount) => Math.round(dailyTotal * Math.max(0.68,0.94 - Math.max(0,dayCount - 1) * 0.007));
+  const periodUv = (dailyTotal,dayCount) => dayCount <= 1 ? Math.round(dailyTotal) : Math.round(dailyTotal * Math.max(0.68,0.94 - Math.max(0,dayCount - 1) * 0.007));
   const conversionSnapshot = state => {
     const rows = dailyConversionRows(state);
     const dayCount = rows.length || 1;
-    const totals = Object.fromEntries(['impression','card_click','detail_view','acquisition_success','fulfillment_success','reservation_users'].map(key => [key,sumMetric(rows,key) || 0]));
+    const totals = Object.fromEntries(['impression','card_click','detail_view','acquisition_success','reservation_users'].map(key => [key,sumMetric(rows,key) || 0]));
     const summary = {
       impression:periodUv(totals.impression,dayCount),
       card_click:periodUv(totals.card_click,dayCount),
       detail_view:periodUv(totals.detail_view,dayCount),
       acquisition_success:periodUv(totals.acquisition_success,dayCount),
-      fulfillment_success:periodUv(totals.fulfillment_success,dayCount),
       reservation_users:totals.reservation_users,
     };
     summary.card_ctr = safeRate(summary.card_click,summary.impression);
     summary.detail_acquisition = safeRate(summary.acquisition_success,summary.detail_view);
     const ctaClick = Math.max(summary.acquisition_success,Math.round(summary.detail_view * 0.3));
     const orderCreate = Math.max(summary.acquisition_success,Math.round(ctaClick * 0.848));
-    const stageValues = [summary.impression,summary.card_click,summary.detail_view,ctaClick,orderCreate,summary.acquisition_success,summary.fulfillment_success];
+    const stageValues = [summary.impression,summary.card_click,summary.detail_view,ctaClick,orderCreate,summary.acquisition_success,summary.acquisition_success];
     const stages = conversionStageSeed.map((item,index) => ({
       ...item,
       uv:stageValues[index],
@@ -10789,11 +10816,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     detail_view:text('成功打开游戏详情页的去重用户数。','Unique users who successfully open the game detail page.',language),
     cta_click:text('在详情页点击购买或免费领取按钮的去重用户数。','Unique users who click Buy or Claim on the game detail page.',language),
     order_create:text('成功创建购买或免费领取订单的去重用户数。','Unique users for whom a paid or free order is created successfully.',language),
-    acquisition_success:text('支付成功或免费领取成功并获得游戏权益的去重用户数。','Unique users who obtain the game entitlement through payment or a free claim.',language),
-    fulfillment_success:text('账号权益或 CDKEY 完成履约的去重用户数。','Unique users whose account entitlement or CDKEY fulfillment completes successfully.',language),
+    acquisition_success:text('统计期内完成预约、下载或成功启动任一行为的去重用户数；同一用户完成多种行为只计 1 人。','Unique users who complete at least one reservation, download, or successful launch during the period; each user is counted once across actions.',language),
+    fulfillment_success:text('已合并到“成功获取用户数”，不再作为独立指标。','Merged into Successful acquisition users and no longer shown as a separate metric.',language),
     reservation_users:text('统计期内首次成功预约当前游戏的去重账号数，按首次预约成功日归属；取消预约不回溯扣减。','Unique accounts making their first successful reservation during the period, attributed to the first reservation date; later cancellations do not rewrite history.',language),
     overall_conversion:text('成功获取 UV ÷ 有效曝光 UV；统计周期按用户首次进入漏斗的时间归因。','Successful acquisition UV divided by qualified impression UV, attributed by the user’s first funnel-entry time.',language),
-    detail_acquisition:text('成功获取 UV ÷ 详情访问 UV，用于衡量详情页到获取结果的转化。','Successful acquisition UV divided by detail-view UV.',language),
+    detail_acquisition:text('成功获取用户数 ÷ 详情页访问 UV；预约、下载或成功启动任一行为均算成功获取，用户按周期去重。','Successful acquisition users divided by detail visits; reservation, download, or successful launch all count, with users deduplicated for the period.',language),
     active_players:text('统计周期内至少成功启动过一次当前游戏的去重账号数，固定统计 Mac。','Unique accounts that successfully launch the current game at least once during the period; Mac only.',language),
     new_players:text('统计周期内首次成功启动当前游戏的去重账号数。','Unique accounts that launch the current game for the first time during the period.',language),
     retention_1d:text('新增玩家中，在首次启动后的第 1 个自然日再次成功启动游戏的账号占比；未观察满 1 日的 cohort 不计入。','Share of new players returning on calendar day 1; immature cohorts are excluded.',language),
@@ -10886,7 +10913,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const rangeName = rangeLabels(language)[state.filters.range] || rangeLabels(language).custom;
     const sources = [['all',c.all],...Object.entries(sourceLabels(language))];
     const conversionOnly = state.tab === 'conversion'
-      ? `${filterSelect('product',c.product,[['all',c.all],['base',c.base],['dlc',c.dlc]],state,'publisher-dashboard-field--product')}${filterSelect('source',c.source,sources,state,'publisher-dashboard-field--source')}`
+      ? filterSelect('source',c.source,sources,state,'publisher-dashboard-field--source')
       : '';
     return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-row"><div class="publisher-dashboard-filter-scroll"><label class="publisher-dashboard-field publisher-dashboard-field--time"><span>${c.range}</span><button type="button" class="publisher-dashboard-time-button" data-dashboard-action="date-open" aria-haspopup="dialog" aria-controls="publisher-dashboard-date-dialog" aria-expanded="${state.datePickerOpen}"><strong>${rangeName}</strong><small>${range.startDate} → ${range.endDate}</small><i>▾</i></button></label>${conversionOnly}${renderRegionSelect(state,language)}</div><div class="publisher-dashboard-filter-fixed"><span class="publisher-dashboard-platform" data-dashboard-platform>${text('平台：Mac','Platform: Mac',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></div><div class="publisher-dashboard-filter-caption">${state.tab === 'conversion' ? text('点击任一指标卡可按自然日查看详情；周期 UV 均按账号去重。','Select any metric to inspect daily detail; period UV metrics are deduplicated by account.',language) : text('用户数据按账号去重；留存仅统计已观察满对应天数的新增玩家。','Users are deduplicated by account; retention includes mature cohorts only.',language)}</div>${renderDatePicker(state,language)}</section>`;
   };
@@ -10939,11 +10966,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     conversion:[
       { key:'impression', label:text('有效曝光','Qualified impressions',language), definition:'impression', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
       { key:'card_ctr', label:text('游戏卡点击率','Game card CTR',language), definition:'card_click', type:'percent', hint:text('点击 UV ÷ 曝光 UV','Clicks ÷ impressions',language) },
-      { key:'detail_view', label:text('详情页访问','Detail visits',language), definition:'detail_view', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
-      { key:'detail_acquisition', label:text('详情获取转化率','Detail-to-acquisition',language), definition:'detail_acquisition', type:'percent', hint:text('成功获取 UV ÷ 详情访问 UV','Acquired ÷ detail visits',language) },
-      { key:'acquisition_success', label:text('成功获取','Successful acquisition',language), definition:'acquisition_success', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
-      { key:'fulfillment_success', label:text('履约成功','Fulfillment success',language), definition:'fulfillment_success', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
       { key:'reservation_users', label:text('新增预约用户数','New reservation users',language), definition:'reservation_users', type:'integer', hint:text('按首次预约成功日','By first reservation date',language) },
+      { key:'detail_view', label:text('详情页访问','Detail visits',language), definition:'detail_view', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
+      { key:'detail_acquisition', label:text('详情获取转化率','Detail-to-acquisition',language), definition:'detail_acquisition', type:'percent', hint:text('预约／下载／启动用户 ÷ 详情访问 UV','Reserved / downloaded / launched ÷ detail visits',language) },
+      { key:'acquisition_success', label:text('成功获取用户数','Successful acquisition users',language), definition:'acquisition_success', type:'integer', hint:text('预约、下载或启动，周期去重','Reserved, downloaded, or launched',language) },
     ],
     users:[
       { key:'active_players', label:text('活跃玩家数','Active players',language), definition:'active_players', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
@@ -11041,7 +11067,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const points = model.rows.map((item,index) => Number.isFinite(item.value) ? { ...item,index,x:x(index),y:y(item.value) } : null).filter(Boolean);
     const labelStep = Math.max(1,Math.ceil((model.rows.length - 1) / 5));
     const labels = model.rows.map((item,index) => (index === 0 || index === model.rows.length - 1 || index % labelStep === 0) ? `<text x="${x(index)}" y="263" text-anchor="middle">${item.date.slice(5)}</text>` : '').join('');
-    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${points.map(point => `<circle cx="${point.x}" cy="${point.y}" r="4" data-detail-point data-detail-date="${point.date}" data-detail-value="${Number(point.value)}"><title>${point.date} · ${escape(formatMetricValue(point.value,model.config.type,language))}</title></circle>`).join('')}${labels}</svg></div>`;
+    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${points.map(point => `<g tabindex="0" role="img" aria-label="${escape(`${point.date} ${model.config.label} ${formatMetricValue(point.value,model.config.type,language)}`)}" data-detail-point data-detail-date="${point.date}" data-detail-label="${escape(model.config.label)}" data-detail-display="${escape(formatMetricValue(point.value,model.config.type,language))}"><circle cx="${point.x}" cy="${point.y}" r="4" class="publisher-detail-point-dot"></circle><circle cx="${point.x}" cy="${point.y}" r="12" class="publisher-detail-point-hit"></circle></g>`).join('')}${labels}</svg><div class="publisher-detail-hover" data-detail-hover-tooltip hidden><strong data-detail-hover-date></strong><span><i></i><em data-detail-hover-label></em><b data-detail-hover-value></b></span></div></div>`;
   };
   const renderDetailTable = (model,language) => `<div class="publisher-detail-table-wrap"><table><thead><tr><th>${text('日期','Date',language)}</th><th>${model.config.label}</th><th>${text('较前一日','vs. previous day',language)}</th></tr></thead><tbody>${model.rows.map(row => `<tr data-detail-row data-detail-date="${row.date}"><td>${row.date}</td><td><strong>${row.display}</strong></td><td>${row.deltaDisplay}</td></tr>`).join('')}</tbody></table></div>`;
   const detailIcon = key => ({
@@ -11057,7 +11083,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const refreshed = state.detailRefreshedAt
       ? text(`最近刷新 ${state.detailRefreshedAt}`,`Last refreshed ${state.detailRefreshedAt}`,language)
       : text('与页面数据同步','Synced with page data',language);
-    return `<section class="publisher-dashboard-card publisher-dashboard-detail${full ? ' is-fullscreen' : ''}${state.detailRefreshing ? ' is-refreshing' : ''}" data-dashboard-detail data-active-metric="${model.key}" data-detail-tab="${model.tab}" data-detail-view="${view}" data-detail-fullscreen="${full}" data-detail-refresh-revision="${Number(state.detailRefreshRevision || 0)}"><header class="publisher-detail-head"><div><span>${text('按日详情','DAILY DETAIL',language)}</span><h2>${model.config.label}</h2><small aria-live="polite">${state.detailRefreshing ? text('正在刷新…','Refreshing…',language) : refreshed}</small></div><div class="publisher-detail-tools"><div class="publisher-detail-view-switch" aria-label="${text('展示方式','View mode',language)}"><button type="button" class="${view === 'chart' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="chart" aria-pressed="${view === 'chart'}">${text('图表','Chart',language)}</button><button type="button" class="${view === 'table' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="table" aria-pressed="${view === 'table'}">${text('表格','Table',language)}</button></div><button type="button" data-dashboard-action="detail-refresh"${state.detailRefreshing ? ' disabled' : ''}>${detailIcon('refresh')}<span>${state.detailRefreshing ? text('刷新中','Refreshing',language) : text('刷新','Refresh',language)}</span></button><button type="button" data-dashboard-action="detail-fullscreen">${detailIcon(full ? 'close' : 'fullscreen')}<span>${full ? text('退出全屏','Exit full screen',language) : text('全屏','Full screen',language)}</span></button><button type="button" data-dashboard-action="detail-export">${detailIcon('export')}<span>${text('导出','Export',language)}</span></button></div></header><div class="publisher-detail-body">${view === 'table' ? renderDetailTable(model,language) : renderDetailChart(model,language)}</div><p class="publisher-detail-note">${model.note}</p></section>`;
+    return `<section class="publisher-dashboard-card publisher-dashboard-detail${full ? ' is-fullscreen' : ''}${state.detailRefreshing ? ' is-refreshing' : ''}" data-dashboard-detail data-active-metric="${model.key}" data-detail-tab="${model.tab}" data-detail-view="${view}" data-detail-granularity="day" data-detail-fullscreen="${full}" data-detail-refresh-revision="${Number(state.detailRefreshRevision || 0)}"><header class="publisher-detail-head"><div><div class="publisher-detail-eyebrow"><span>${text('按日详情','DAILY DETAIL',language)}</span><b>${text('数据粒度：日','Granularity: day',language)}</b></div><h2>${model.config.label}</h2><small aria-live="polite">${state.detailRefreshing ? text('正在刷新…','Refreshing…',language) : refreshed}</small></div><div class="publisher-detail-tools"><div class="publisher-detail-view-switch" aria-label="${text('展示方式','View mode',language)}"><button type="button" class="${view === 'chart' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="chart" aria-pressed="${view === 'chart'}">${text('图表','Chart',language)}</button><button type="button" class="${view === 'table' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="table" aria-pressed="${view === 'table'}">${text('表格','Table',language)}</button></div><button type="button" data-dashboard-action="detail-refresh"${state.detailRefreshing ? ' disabled' : ''}>${detailIcon('refresh')}<span>${state.detailRefreshing ? text('刷新中','Refreshing',language) : text('刷新','Refresh',language)}</span></button><button type="button" data-dashboard-action="detail-fullscreen">${detailIcon(full ? 'close' : 'fullscreen')}<span>${full ? text('退出全屏','Exit full screen',language) : text('全屏','Full screen',language)}</span></button><button type="button" data-dashboard-action="detail-export">${detailIcon('export')}<span>${text('导出','Export',language)}</span></button></div></header><div class="publisher-detail-body">${view === 'table' ? renderDetailTable(model,language) : renderDetailChart(model,language)}</div><p class="publisher-detail-note">${model.note}</p></section>`;
   };
   const renderConversion = (state,language) => {
     const data = conversionSnapshot(state);
@@ -11083,7 +11109,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       [text('页签','Tab',language),tabLabel],
       [text('指标','Metric',language),model.config.label],
       [text('时间范围','Date range',language),`${range.startDate} ~ ${range.endDate}`],
-      [text('商品类型','Product type',language),state.tab === 'conversion' ? state.filters.product : text('不适用','N/A',language)],
       [text('来源位置','Source',language),state.tab === 'conversion' ? state.filters.source : text('不适用','N/A',language)],
       [text('地区','Region',language),state.filters.region],
       [text('平台','Platform',language),'Mac'],
@@ -11185,6 +11210,32 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       document.body.appendChild(tooltip);
       positionMetricTooltip(trigger);
     };
+    const hideDetailHover = chart => {
+      const tooltip = chart?.querySelector('[data-detail-hover-tooltip]');
+      if (!tooltip) return;
+      tooltip.hidden = true;
+      tooltip.removeAttribute('style');
+    };
+    const showDetailHover = point => {
+      const chart = point?.closest('.publisher-detail-chart');
+      const tooltip = chart?.querySelector('[data-detail-hover-tooltip]');
+      const hit = point?.querySelector('.publisher-detail-point-hit') || point;
+      if (!chart || !tooltip || !hit) return;
+      tooltip.querySelector('[data-detail-hover-date]').textContent = point.dataset.detailDate || '';
+      tooltip.querySelector('[data-detail-hover-label]').textContent = point.dataset.detailLabel || '';
+      tooltip.querySelector('[data-detail-hover-value]').textContent = point.dataset.detailDisplay || '—';
+      tooltip.hidden = false;
+      const chartRect = chart.getBoundingClientRect();
+      const pointRect = hit.getBoundingClientRect();
+      const width = tooltip.offsetWidth;
+      const height = tooltip.offsetHeight;
+      const center = pointRect.left - chartRect.left + pointRect.width / 2 + chart.scrollLeft;
+      const left = Math.max(8,Math.min(center - width / 2,chart.scrollWidth - width - 8));
+      const above = pointRect.top - chartRect.top - height - 12;
+      const top = above >= 8 ? above : pointRect.bottom - chartRect.top + 10;
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    };
     const requestFocus = target => { pendingFocusTarget = target; };
     const focusAfterRender = () => {
       const target = pendingFocusTarget;
@@ -11211,8 +11262,16 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     });
     host.addEventListener('pointerup',() => { pointerMetricHelp = ''; });
     host.addEventListener('pointerover',event => {
+      const point = event.target.closest('[data-detail-point]');
+      if (point) showDetailHover(point);
       const trigger = event.target.closest('[data-metric-help]');
-      if (trigger) queueMicrotask(() => positionMetricTooltip(trigger));
+      if (trigger) openMetricTooltip(trigger);
+    });
+    host.addEventListener('pointerout',event => {
+      const point = event.target.closest('[data-detail-point]');
+      if (point && !point.contains(event.relatedTarget)) hideDetailHover(point.closest('.publisher-detail-chart'));
+      const trigger = event.target.closest('[data-metric-help]');
+      if (trigger && !trigger.contains(event.relatedTarget) && document.activeElement !== trigger) closeMetricTooltips();
     });
     host.addEventListener('focusin',event => {
       const field = event.target.closest('.publisher-dashboard-filter-scroll .publisher-dashboard-field');
@@ -11222,8 +11281,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         openMetricTooltip(trigger);
         focusOpenedMetric = trigger.dataset.metricHelp || '';
       }
+      const point = event.target.closest('[data-detail-point]');
+      if (point) showDetailHover(point);
     });
     host.addEventListener('focusout',event => {
+      const point = event.target.closest('[data-detail-point]');
+      if (point && !point.contains(event.relatedTarget)) hideDetailHover(point.closest('.publisher-detail-chart'));
       const trigger = event.target.closest('[data-metric-help]');
       if (!trigger) return;
       queueMicrotask(() => {
@@ -11261,9 +11324,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       else if (action === 'detail-export') exportDetailCsv(state,game,interfaceLanguage);
       else if (action === 'metric-help') {
-        const shouldOpen = event.detail === 0 || focusOpenedMetric === control.dataset.metricHelp || state.activeTooltip !== control.dataset.metricHelp;
-        if (shouldOpen) openMetricTooltip(control);
-        else closeMetricTooltips();
+        openMetricTooltip(control);
         focusOpenedMetric = '';
         control.focus({ preventScroll:true });
       }
@@ -11531,7 +11592,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     program: {
       id:'KP-202609-001', appId:'APP-7F3A9C', sku:'BASE-GLOBAL',
       product:'星海远征 · 全球本体', regions:'美国、新加坡、中国澳门', purpose:'商业销售',
-      quota:5000, used:1640, dailyLimit:2000, perRequestLimit:1000,
+      perRequestLimit:1000,
       delivery:'API 单码分配', validFrom:'2026-09-01', validUntil:'2027-03-31',
     },
     batch: {
@@ -11552,34 +11613,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const table = (headers, rows) => `<div class="publisher-channel-table-wrap"><table class="publisher-channel-table"><thead><tr>${headers.map(item => `<th>${e(item)}</th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr>${row.map(value => `<td>${value}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   const field = (label, value) => `<div><dt>${e(label)}</dt><dd>${e(value)}</dd></div>`;
 
-  const channelMeta = (channelState, language) => ({
-    unopened: {
-      label:tx(language,'未开通','Not enabled'), tone:'neutral',
-      title:tx(language,'邀请制渠道合作','Invitation-only channel partnership'),
-      detail:tx(language,'当前游戏尚未获得渠道授权。平台可先推进合作，包体和资质将在正式生成可售 Key 前统一校验。','This game has no channel authorization yet. Partnership can proceed first; build and qualification checks run before sellable Keys are generated.'),
-    },
-    active: {
-      label:tx(language,'合作中','Active'), tone:'success',
-      title:tx(language,'授权计划生效中','Authorization plan active'),
-      detail:tx(language,'可在计划额度内申请 Key 批次；高风险申请将转人工审核。','You can request Key batches within the plan quota. High-risk requests are sent to manual review.'),
-    },
-    paused: {
-      label:tx(language,'已暂停','Paused'), tone:'warning',
-      title:tx(language,'授权计划已暂停','Authorization plan paused'),
-      detail:tx(language,'暂停期间不能新建批次，历史交付、销售、兑换和收益数据仍可查看。','New batches cannot be created while paused. Historical delivery, sales, redemption and revenue data remain available.'),
-    },
-  }[channelState] || null);
-
-  const channelNotice = (channelState, language) => {
-    const meta = channelMeta(channelState, language);
-    return `<section class="publisher-channel-notice is-${e(meta.tone)}"><div><strong>${e(meta.title)}</strong><span>${e(meta.detail)}</span></div>${status(meta.label, meta.tone)}</section>`;
-  };
-
   const batchOutcomeMeta = (outcome, language) => ({
-    generated:{ title:tx(language,'批次已生成','Batch generated'), detail:tx(language,'已通过额度与风险校验，可按授权计划供渠道分配。','Quota and risk checks passed. The batch is ready for channel allocation.'), tone:'success', label:tx(language,'可用','Available') },
+    generated:{ title:tx(language,'批次已生成','Batch generated'), detail:tx(language,'已通过授权与风险校验，可供指定渠道分配。','Authorization and risk checks passed. The batch is ready for allocation to the selected channel.'), tone:'success', label:tx(language,'可用','Available') },
     pending:{ title:tx(language,'批次审核中','Batch in review'), detail:tx(language,'本次申请触发人工审核，预计 1 个工作日内完成。','This request requires manual review and is expected to finish within one business day.'), tone:'warning', label:tx(language,'审核中','In review') },
-    rejected:{ title:tx(language,'批次申请已拒绝','Batch request rejected'), detail:tx(language,'申请用途与当前授权范围不符，请调整用途或数量后重新提交。','The purpose is outside the current authorization scope. Update the purpose or quantity and submit again.'), tone:'danger', label:tx(language,'已拒绝','Rejected') },
-    failed:{ title:tx(language,'批次生成失败','Batch generation failed'), detail:tx(language,'额度已锁定，但生成服务暂时异常；重试不会重复占用额度。','Quota is reserved, but generation is temporarily unavailable. Retrying will not consume quota twice.'), tone:'danger', label:tx(language,'生成失败','Generation failed') },
+    rejected:{ title:tx(language,'批次申请已拒绝','Batch request rejected'), detail:tx(language,'请根据审核意见调整渠道名称、用途或数量后重新提交。','Update the channel name, purpose or quantity according to the review note, then submit again.'), tone:'danger', label:tx(language,'已拒绝','Rejected') },
+    failed:{ title:tx(language,'批次生成失败','Batch generation failed'), detail:tx(language,'批次申请已记录，但生成服务暂时异常；重试不会重复创建批次。','The request is recorded, but generation is temporarily unavailable. Retrying will not create a duplicate batch.'), tone:'danger', label:tx(language,'生成失败','Generation failed') },
   }[outcome] || null);
 
   const batchResult = ({ language, outcome, submission }) => {
@@ -11590,63 +11628,54 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       : outcome === 'failed'
         ? button(tx(language,'重试生成','Retry generation'),'channel-batch-retry')
         : '';
-    return `<section class="publisher-channel-result is-${e(meta.tone)}" data-channel-batch-result="${e(outcome)}"><div><span>${status(meta.label, meta.tone)}</span><h2>${e(meta.title)}</h2><p>${e(meta.detail)}</p><small>${tx(language,'申请编号','Request ID')}：BR-20260914-001 · ${tx(language,'数量','Quantity')}：${e(quantity)} · ${fixture.program.id}</small></div>${recovery}</section>`;
+    return `<section class="publisher-channel-result is-${e(meta.tone)}" data-channel-batch-result="${e(outcome)}"><div><span>${status(meta.label, meta.tone)}</span><h2>${e(meta.title)}</h2><p>${e(meta.detail)}</p><small>${tx(language,'申请编号','Request ID')}：BR-20260914-001 · ${tx(language,'渠道','Channel')}：${e(submission?.channelName || fixture.channel.name)} · ${tx(language,'数量','Quantity')}：${e(quantity)}</small></div>${recovery}</section>`;
   };
 
   const dialogShell = (language, id, eyebrow, title, body, footer = '') => `<div class="publisher-channel-dialog-layer"><button type="button" class="publisher-channel-dialog-backdrop" data-portal-action="channel-dialog-close" aria-label="${tx(language,'关闭','Close')}"></button><section class="publisher-channel-dialog" role="dialog" aria-modal="true" aria-labelledby="${e(id)}"><header><div><h2 id="${e(id)}">${e(title)}</h2></div><button type="button" data-portal-action="channel-dialog-close" aria-label="${tx(language,'关闭','Close')}">×</button></header><div class="publisher-channel-dialog__body">${body}</div>${footer ? `<footer>${footer}</footer>` : ''}</section></div>`;
 
-  const renderPlanDialog = language => dialogShell(language,'channel-plan-dialog-title','AUTHORIZATION PLAN',tx(language,'授权计划详情','Authorization plan details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'计划编号','Plan ID'),fixture.program.id)}${field(tx(language,'渠道','Channel'),`${fixture.channel.name} · ${fixture.channel.id}`)}${field('APPID',fixture.program.appId)}${field('Product／SKU',`${fixture.program.product} · ${fixture.program.sku}`)}${field(tx(language,'发行地区','Release regions'),fixture.program.regions)}${field(tx(language,'授权用途','Authorized purpose'),tx(language,'商业销售','Commercial sale'))}${field(tx(language,'总额度','Total quota'),'5,000')}${field(tx(language,'剩余额度','Remaining quota'),'3,360')}${field(tx(language,'日额度','Daily quota'),'2,000')}${field(tx(language,'单次上限','Per-request limit'),'1,000')}${field(tx(language,'交付方式','Delivery'),tx(language,'API 单码分配','Single-key API allocation'))}${field(tx(language,'有效期','Valid period'),`${fixture.program.validFrom} — ${fixture.program.validUntil}`)}</dl>`);
-
   const renderBatchCreateDialog = (language, state) => {
     const initialQuantity = Number(state.channelBatchDraft?.quantity || state.channelSubmission?.quantity || 500);
-    const body = `<form class="publisher-channel-form" data-channel-batch-form><label><span>${tx(language,'授权计划','Authorization plan')}</span><input value="${fixture.program.id} · ${fixture.channel.name}" readonly></label><label><span>${tx(language,'申请数量','Request quantity')}</span><input type="number" min="1" max="1000" step="1" value="${e(initialQuantity)}" aria-label="${tx(language,'申请数量','Request quantity')}" data-channel-batch-quantity><small>${tx(language,'剩余额度 3,360；单次上限 1,000。','3,360 remaining; 1,000 maximum per request.')}</small><em data-channel-batch-error></em></label><label><span>${tx(language,'用途','Purpose')}</span><select aria-label="${tx(language,'用途','Purpose')}" data-channel-batch-purpose><option value="commercial">${tx(language,'商业销售','Commercial sale')}</option><option value="testing">${tx(language,'测试','Testing')}</option><option value="promotion">${tx(language,'免费推广','Free promotion')}</option><option value="compensation">${tx(language,'用户补偿','Customer compensation')}</option></select></label><label><span>${tx(language,'交付方式','Delivery method')}</span><select aria-label="${tx(language,'交付方式','Delivery method')}" data-channel-batch-delivery><option value="api">${tx(language,'API 单码分配','Single-key API allocation')}</option><option value="file">${tx(language,'批量文件（需人工审核）','Batch file (manual review)')}</option></select></label><label><span>${tx(language,'有效期','Valid until')}</span><input type="date" value="2027-03-31" max="2027-03-31" aria-label="${tx(language,'有效期','Valid until')}"></label></form>`;
+    const initialChannelName = state.channelBatchDraft?.channelName || '';
+    const body = `<form class="publisher-channel-form" data-channel-batch-form><label><span>${tx(language,'渠道名称','Channel name')}</span><input value="${e(initialChannelName)}" maxlength="50" placeholder="${tx(language,'输入便于识别的渠道名称','Enter a recognizable channel name')}" aria-label="${tx(language,'渠道名称','Channel name')}" data-channel-batch-name><small>${tx(language,'用于批次、交付和结算数据管理。','Used to manage batch, delivery and settlement data.')}</small><em data-channel-name-error></em></label><label><span>${tx(language,'申请数量','Request quantity')}</span><input type="number" min="1" max="1000" step="1" value="${e(initialQuantity)}" aria-label="${tx(language,'申请数量','Request quantity')}" data-channel-batch-quantity><small>${tx(language,'单次申请上限 1,000。','Maximum 1,000 per request.')}</small><em data-channel-batch-error></em></label><label><span>${tx(language,'用途','Purpose')}</span><select aria-label="${tx(language,'用途','Purpose')}" data-channel-batch-purpose><option value="commercial">${tx(language,'商业销售','Commercial sale')}</option><option value="testing">${tx(language,'测试','Testing')}</option><option value="promotion">${tx(language,'免费推广','Free promotion')}</option><option value="compensation">${tx(language,'用户补偿','Customer compensation')}</option></select></label><label><span>${tx(language,'交付方式','Delivery method')}</span><select aria-label="${tx(language,'交付方式','Delivery method')}" data-channel-batch-delivery><option value="api">${tx(language,'API 单码分配','Single-key API allocation')}</option><option value="file">${tx(language,'批量文件（需人工审核）','Batch file (manual review)')}</option></select></label><label><span>${tx(language,'有效期','Valid until')}</span><input type="date" value="2027-03-31" max="2027-03-31" aria-label="${tx(language,'有效期','Valid until')}"></label></form>`;
     const footer = `${button(tx(language,'取消','Cancel'),'channel-dialog-close',{secondary:true})}${button(tx(language,'提交批次申请','Submit batch request'),'channel-batch-submit')}`;
     return dialogShell(language,'channel-batch-create-title','KEY BATCH',tx(language,'创建 Key 批次','Create Key batch'),body,footer);
   };
 
-  const renderBatchDetailDialog = language => dialogShell(language,'channel-batch-detail-title','KEY BATCH',tx(language,'批次详情','Batch details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'批次编号','Batch ID'),fixture.batch.id)}${field(tx(language,'总量','Total'),'2,000')}${field(tx(language,'可用','Available'),'360')}${field(tx(language,'待接收确认','Awaiting receipt confirmation'),'0')}${field(tx(language,'已暴露未兑换','Exposed, not redeemed'),'372')}${field(tx(language,'已兑换','Redeemed'),'1,268')}${field(tx(language,'已过期','Expired'),'0')}${field(tx(language,'已作废','Voided'),'0')}${field(tx(language,'有效期','Valid until'),fixture.batch.validUntil)}${field(tx(language,'交付方式','Delivery'),tx(language,'API 单码分配','Single-key API allocation'))}${field(tx(language,'交付机制','Delivery flow'),tx(language,'渠道订单请求后，接口一次返回 1 个 Key','After a channel order request, the API returns one Key'))}${field(tx(language,'幂等处理','Idempotency'),tx(language,'同一渠道订单只分配 1 个 Key，重试不重复扣库存','The same channel order receives one Key; retries do not consume inventory twice'))}${field(tx(language,'可见范围','Visibility'),tx(language,'前台、列表和日志只显示掩码或指纹','The portal, lists and logs show only masks or fingerprints'))}</dl><p class="publisher-channel-dialog__note is-warning">${tx(language,'明文 Key 仅通过已鉴权的 HTTPS 接口返回渠道。已暴露 Key 只能兑换、过期或作废，不得回到可用状态。批量文件仅作受控例外，由平台生成加密文件或限时下载地址。','Plain-text Keys are returned to the channel only through an authenticated HTTPS API. An exposed Key can only be redeemed, expired or voided; it never returns to available. Batch files are a controlled exception, provided by the platform as encrypted files or expiring download links.')}</p>`);
+  const renderBatchDetailDialog = language => dialogShell(language,'channel-batch-detail-title','KEY BATCH',tx(language,'批次详情','Batch details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'批次编号','Batch ID'),fixture.batch.id)}${field(tx(language,'渠道名称','Channel name'),`${fixture.channel.name} · ${fixture.channel.id}`)}${field(tx(language,'总量','Total'),'2,000')}${field(tx(language,'可用','Available'),'360')}${field(tx(language,'待接收确认','Awaiting receipt confirmation'),'0')}${field(tx(language,'已暴露未兑换','Exposed, not redeemed'),'372')}${field(tx(language,'已兑换','Redeemed'),'1,268')}${field(tx(language,'已过期','Expired'),'0')}${field(tx(language,'已作废','Voided'),'0')}${field(tx(language,'有效期','Valid until'),fixture.batch.validUntil)}${field(tx(language,'交付方式','Delivery'),tx(language,'API 单码分配','Single-key API allocation'))}${field(tx(language,'交付机制','Delivery flow'),tx(language,'渠道订单请求后，接口一次返回 1 个 Key','After a channel order request, the API returns one Key'))}${field(tx(language,'幂等处理','Idempotency'),tx(language,'同一渠道订单只分配 1 个 Key，重试不重复扣库存','The same channel order receives one Key; retries do not consume inventory twice'))}${field(tx(language,'可见范围','Visibility'),tx(language,'前台、列表和日志只显示掩码或指纹','The portal, lists and logs show only masks or fingerprints'))}</dl><p class="publisher-channel-dialog__note is-warning">${tx(language,'明文 Key 仅通过已鉴权的 HTTPS 接口返回渠道。已暴露 Key 只能兑换、过期或作废，不得回到可用状态。批量文件仅作受控例外，由平台生成加密文件或限时下载地址。','Plain-text Keys are returned to the channel only through an authenticated HTTPS API. An exposed Key can only be redeemed, expired or voided; it never returns to available. Batch files are a controlled exception, provided by the platform as encrypted files or expiring download links.')}</p>`);
 
   const renderAnomalyDialog = language => dialogShell(language,'channel-anomaly-title','CHANNEL ANOMALY',tx(language,'异常详情','Anomaly details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'异常编号','Anomaly ID'),'AN-202609-0031')}${field(tx(language,'异常类型','Type'),tx(language,'已兑换但销售未回传','Redeemed without sales report'))}${field(tx(language,'渠道订单','Channel order'),'NP-260910-8826')}${field('Key',fixture.maskedKeys[2])}${field(tx(language,'发现时间','Detected at'),'2026-09-10 13:50')}${field(tx(language,'影响','Impact'),tx(language,'暂不计入渠道销售净额','Excluded from channel sales net for now'))}${field(tx(language,'处理进度','Progress'),tx(language,'平台正在向渠道补查销售事实','Platform is verifying the sale with the channel'))}${field(tx(language,'预计更新','Expected update'),'2026-09-15')}</dl><p class="publisher-channel-dialog__note">${tx(language,'开发者无需处理。结果确认后会自动更新销售、收益和月度调整。','No developer action is required. Sales, revenue and monthly adjustments update automatically after verification.')}</p>`);
 
   const renderSettlementDialog = language => dialogShell(language,'channel-settlement-title','MONTHLY REVENUE',tx(language,'月度收益详情','Monthly revenue details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'统计月份','Period'),'2026-09')}${field(tx(language,'渠道','Channel'),fixture.channel.name)}${field(tx(language,'渠道售出','Channel sales'),'1,282')}${field(tx(language,'退款','Refunds'),'14')}${field(tx(language,'拒付','Chargebacks'),'0')}${field(tx(language,'历史调整','Prior adjustments'),'USD 0.00')}${field(tx(language,'净结算数量','Net quantity'),'1,268')}${field(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32')}</dl><p class="publisher-channel-dialog__note">${tx(language,'最终开发者应收、开票与付款由财务模块统一处理。锁单后的迟到退款或拒付计入下期调整。','Final developer receivables, invoicing and payments are handled in Finance. Late refunds or chargebacks after locking are adjusted next month.')}</p>`);
 
   const renderDialog = ({ language, state }) => ({
-    'plan-detail':() => renderPlanDialog(language),
     'batch-create':() => renderBatchCreateDialog(language,state),
     'batch-detail':() => renderBatchDetailDialog(language),
     'anomaly-detail':() => renderAnomalyDialog(language),
     'settlement-detail':() => renderSettlementDialog(language),
   }[state.channelDialog]?.() || '');
 
-  const renderOverview = ({ language, state, channelState, batchOutcome }) => {
-    const canCreate = channelState === 'active';
-    const create = button(tx(language,'创建 Key 批次','Create Key batch'),'channel-batch-create',{disabled:!canCreate});
-    const pageHead = head(language,'CHANNEL DISTRIBUTION',tx(language,'渠道分销总览','Channel distribution overview'),' ',create);
-    if (channelState === 'unopened') return `${pageHead}${channelNotice(channelState,language)}${renderDialog({language,state})}`;
-    const notice = channelState === 'active' ? '' : channelNotice(channelState,language);
+  const renderOverview = ({ language, state, batchOutcome }) => {
+    const create = button(tx(language,'创建 Key 批次','Create Key batch'),'channel-batch-create');
     const result = state.channelSubmission ? batchResult({language,outcome:batchOutcome,submission:state.channelSubmission}) : '';
-    return `${pageHead}${notice}<div class="publisher-channel-metrics">${metric(tx(language,'授权渠道','Authorized channels'),'1')}${metric(tx(language,'本月渠道售出','Channel sales'),'1,282',tx(language,'较上月 +12.6%','+12.6% MoM'))}${metric(tx(language,'成功兑换','Redemptions'),'1,268',tx(language,'售兑率 98.9%','98.9% redemption rate'))}${metric(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32',tx(language,'已扣除 14 笔退款','After 14 refunds'))}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'星海远征 · 全球本体','Stellar Voyage · Global base game')}</h2><p>${fixture.program.id} · ${fixture.program.appId} · ${fixture.program.sku}</p></div></header><div class="publisher-channel-partner"><span>NP</span><div><strong>${fixture.channel.name}</strong><small>${fixture.channel.id} · ${tx(language,'美国、新加坡、中国澳门 · API 单码分配','United States, Singapore, Macao · Single-key API allocation')}</small></div></div><div class="publisher-channel-quota"><div><strong>5,000</strong><small>${tx(language,'计划额度','Program quota')}</small></div><div><strong>1,640</strong><small>${tx(language,'已使用','Used')}</small></div><div><strong>3,360</strong><small>${tx(language,'剩余额度','Remaining')}</small></div></div><div class="publisher-channel-progress"><i style="width:32.8%"></i></div><footer class="publisher-channel-card__actions">${button(tx(language,'查看计划详情','View plan details'),'channel-plan-detail',{secondary:true})}</footer></section>${result}<section class="publisher-channel-card"><header><div><h2>${tx(language,'近 7 日渠道表现','Channel performance · last 7 days')}</h2></div></header>${table([tx(language,'日期','Date'),tx(language,'分配','Allocated'),tx(language,'售出','Sold'),tx(language,'兑换','Redeemed'),tx(language,'退款','Refunds'),tx(language,'预估净额','Estimated net')],[['2026-09-10','86','72','69','1','USD 922.29'],['2026-09-09','91','78','76','0','USD 1,013.22'],['2026-09-08','74','65','64','1','USD 831.36'],['2026-09-07','69','58','57','0','USD 753.42']])}</section>${renderDialog({language,state})}`;
+    return `${head(language,'CHANNEL DISTRIBUTION',tx(language,'渠道分销总览','Channel distribution overview'),' ',create)}<div class="publisher-channel-metrics">${metric(tx(language,'渠道数','Channels'),'3')}${metric(tx(language,'本月渠道售出','Channel sales'),'1,282',tx(language,'较上月 +12.6%','+12.6% MoM'))}${metric(tx(language,'成功兑换','Redemptions'),'1,268',tx(language,'售兑率 98.9%','98.9% redemption rate'))}${metric(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32',tx(language,'已扣除 14 笔退款','After 14 refunds'))}</div>${result}<section class="publisher-channel-card"><header><div><h2>${tx(language,'近 7 日渠道表现','Channel performance · last 7 days')}</h2></div></header>${table([tx(language,'日期','Date'),tx(language,'分配','Allocated'),tx(language,'售出','Sold'),tx(language,'兑换','Redeemed'),tx(language,'退款','Refunds'),tx(language,'预估净额','Estimated net')],[['2026-09-10','86','72','69','1','USD 922.29'],['2026-09-09','91','78','76','0','USD 1,013.22'],['2026-09-08','74','65','64','1','USD 831.36'],['2026-09-07','69','58','57','0','USD 753.42']])}</section>${renderDialog({language,state})}`;
   };
 
-  const renderBatches = ({ language, state, channelState, batchOutcome }) => {
-    const canCreate = channelState === 'active';
-    const pageHead = head(language,'KEY BATCHES',tx(language,'Key 批次','Key batches'),' ',button(tx(language,'创建 Key 批次','Create Key batch'),'channel-batch-create',{disabled:!canCreate}));
-    if (channelState === 'unopened') return `${pageHead}${channelNotice(channelState,language)}${renderDialog({language,state})}`;
-    const notice = channelState === 'active' ? '' : channelNotice(channelState,language);
+  const renderBatches = ({ language, state, batchOutcome }) => {
+    const pageHead = head(language,'KEY BATCHES',tx(language,'Key 批次','Key batches'),' ',button(tx(language,'创建 Key 批次','Create Key batch'),'channel-batch-create'));
     const result = state.channelSubmission ? batchResult({language,outcome:batchOutcome,submission:state.channelSubmission}) : '';
     const noAction = '<span aria-label="无操作">—</span>';
     const details = `<button type="button" class="publisher-channel-link" data-portal-action="channel-batch-detail">${tx(language,'查看详情','View details')}</button>`;
     const rows = [
-      ['KB-202609-0015',fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'500',status(tx(language,'生成中','Generating'),'warning'),'2027-03-31',noAction],
-      ['KB-202609-0014',fixture.program.id,tx(language,'免费推广','Free promotion'),tx(language,'加密文件','Encrypted file'),'300',status(tx(language,'审核中','In review'),'warning'),'2026-12-31',noAction],
-      ['KB-202609-0013',fixture.program.id,tx(language,'用户补偿','Customer compensation'),tx(language,'加密文件','Encrypted file'),'100',status(tx(language,'已拒绝','Rejected'),'danger'),'2026-12-31',noAction],
-      ['KB-202609-0012',fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'600',status(tx(language,'生成失败','Generation failed'),'danger'),'2027-03-31',noAction],
-      [`<strong>${fixture.batch.id}</strong>`,fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'2,000',status(tx(language,'可用','Available')),'2027-03-31',details],
-      ['KB-202608-0007',fixture.program.id,tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'50',status(tx(language,'已耗尽','Depleted'),'neutral'),'2026-12-31',noAction],
-      ['KB-202607-0006',fixture.program.id,tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'200',status(tx(language,'已过期','Expired'),'neutral'),'2026-08-31',noAction],
-      ['KB-202607-0005',fixture.program.id,tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'20',status(tx(language,'已作废','Voided'),'danger'),'2026-12-31',noAction],
+      ['KB-202609-0015','北美线下渠道',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'500',status(tx(language,'生成中','Generating'),'warning'),'2027-03-31',noAction],
+      ['KB-202609-0014','NovaPlay Store',tx(language,'免费推广','Free promotion'),tx(language,'加密文件','Encrypted file'),'300',status(tx(language,'审核中','In review'),'warning'),'2026-12-31',noAction],
+      ['KB-202609-0013','ArcadeX',tx(language,'用户补偿','Customer compensation'),tx(language,'加密文件','Encrypted file'),'100',status(tx(language,'已拒绝','Rejected'),'danger'),'2026-12-31',noAction],
+      ['KB-202609-0012','NovaPlay Store',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'600',status(tx(language,'生成失败','Generation failed'),'danger'),'2027-03-31',noAction],
+      [`<strong>${fixture.batch.id}</strong>`,'NovaPlay Store',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'2,000',status(tx(language,'可用','Available')),'2027-03-31',details],
+      ['KB-202608-0007','ArcadeX',tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'50',status(tx(language,'已耗尽','Depleted'),'neutral'),'2026-12-31',noAction],
+      ['KB-202607-0006','东南亚代理',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'200',status(tx(language,'已过期','Expired'),'neutral'),'2026-08-31',noAction],
+      ['KB-202607-0005','NovaPlay Store',tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'20',status(tx(language,'已作废','Voided'),'danger'),'2026-12-31',noAction],
     ];
-    return `${pageHead}${notice}${result}<div class="publisher-channel-metrics">${metric(tx(language,'批次总量','Batch total'),'2,000',fixture.batch.id)}${metric(tx(language,'可用','Available'),'360')}${metric(tx(language,'已暴露','Exposed'),'372')}${metric(tx(language,'已兑换','Redeemed'),'1,268')}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'批次列表','Batch list')}</h2></div></header>${table([tx(language,'批次编号','Batch ID'),tx(language,'授权计划','Plan'),tx(language,'用途','Purpose'),tx(language,'交付方式','Delivery'),tx(language,'数量','Quantity'),tx(language,'状态','Status'),tx(language,'有效期','Valid until'),tx(language,'操作','Action')],rows)}</section>${renderDialog({language,state})}`;
+    return `${pageHead}${result}<div class="publisher-channel-metrics">${metric(tx(language,'批次总量','Batch total'),'2,000',fixture.batch.id)}${metric(tx(language,'可用','Available'),'360')}${metric(tx(language,'已暴露','Exposed'),'372')}${metric(tx(language,'已兑换','Redeemed'),'1,268')}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'批次列表','Batch list')}</h2></div></header>${table([tx(language,'批次编号','Batch ID'),tx(language,'渠道','Channel'),tx(language,'用途','Purpose'),tx(language,'交付方式','Delivery'),tx(language,'数量','Quantity'),tx(language,'状态','Status'),tx(language,'有效期','Valid until'),tx(language,'操作','Action')],rows)}</section>${renderDialog({language,state})}`;
   };
 
   const renderDataTab = ({ language, tab }) => {
@@ -11655,36 +11684,31 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return table([tx(language,'交付编号','Delivery ID'),tx(language,'批次','Batch'),tx(language,'Key 掩码','Key mask'),tx(language,'渠道','Channel'),tx(language,'状态','Status'),tx(language,'时间','Time')],[['DL-20260910-0190',fixture.batch.id,`<code>${fixture.maskedKeys[0]}</code>`,fixture.channel.name,status(tx(language,'分配中','Allocating'),'warning'),'2026-09-10 14:24'],['DL-20260910-0189',fixture.batch.id,`<code>${fixture.maskedKeys[1]}</code>`,fixture.channel.name,status(tx(language,'待接收确认','Awaiting receipt confirmation'),'warning'),'2026-09-10 14:22'],['DL-20260910-0188',fixture.batch.id,`<code>${fixture.maskedKeys[2]}</code>`,fixture.channel.name,status(tx(language,'已确认接收','Receipt confirmed')),'2026-09-10 14:20'],['DL-20260910-0182',fixture.batch.id,`<code>${fixture.maskedKeys[3]}</code>`,fixture.channel.name,status(tx(language,'确认超时','Confirmation timed out'),'danger'),'2026-09-10 13:42'],['DL-20260909-0169',fixture.batch.id,`<code>${fixture.maskedKeys[4]}</code>`,fixture.channel.name,status(tx(language,'分配失败','Allocation failed'),'danger'),'2026-09-09 18:08']]);
   };
 
-  const renderData = ({ language, state, channelState }) => {
+  const renderData = ({ language, state }) => {
     const activeTab = ['delivery','sales','anomalies'].includes(state.channelDataTab) ? state.channelDataTab : 'delivery';
     const tabs = [['delivery',tx(language,'交付记录','Delivery records')],['sales',tx(language,'销售与兑换','Sales & redemption')],['anomalies',tx(language,'异常记录','Anomalies')]];
     const pageHead = head(language,'CHANNEL DATA',tx(language,'渠道数据','Channel data'),' ',button(tx(language,'导出数据','Export data'),'channel-export'));
-    if (channelState === 'unopened') return `${pageHead}${channelNotice(channelState,language)}${renderDialog({language,state})}`;
-    const notice = channelState === 'active' ? '' : channelNotice(channelState,language);
-    return `${pageHead}${notice}<div class="publisher-channel-filters"><label><span>${tx(language,'渠道','Channel')}</span><select><option>${fixture.channel.name}</option></select></label><label><span>SKU</span><select><option>${fixture.program.sku}</option></select></label><label><span>${tx(language,'月份','Month')}</span><select><option>2026-09</option></select></label><label><span>${tx(language,'地区','Region')}</span><select><option>${tx(language,'全部地区','All regions')}</option></select></label></div><div class="publisher-channel-metrics">${metric(tx(language,'已分配','Allocated'),'1,640',`${fixture.program.appId} · ${fixture.program.sku}`)}${metric(tx(language,'已确认接收','Delivery confirmed'),'1,602')}${metric(tx(language,'已售','Sold'),'1,282')}${metric(tx(language,'销售回传完整率','Sales reporting'),'99.8%',tx(language,'1 条待补报','1 report pending'))}</div><section class="publisher-channel-card"><div class="publisher-channel-tabs" role="tablist" aria-label="${tx(language,'渠道数据类型','Channel data type')}">${tabs.map(([id,label]) => `<button type="button" role="tab" aria-selected="${activeTab === id}" class="${activeTab === id ? 'is-active' : ''}" data-portal-action="channel-data-tab" data-channel-data-tab="${id}">${e(label)}</button>`).join('')}</div><div class="publisher-channel-tabpanel" role="tabpanel">${renderDataTab({language,tab:activeTab})}</div></section>${renderDialog({language,state})}`;
+    return `${pageHead}<div class="publisher-channel-filters"><label><span>${tx(language,'渠道','Channel')}</span><select><option>${fixture.channel.name}</option><option>${tx(language,'北美线下渠道','North America offline')}</option><option>ArcadeX</option></select></label><label><span>SKU</span><select><option>${fixture.program.sku}</option></select></label><label><span>${tx(language,'月份','Month')}</span><select><option>2026-09</option></select></label><label><span>${tx(language,'地区','Region')}</span><select><option>${tx(language,'全部地区','All regions')}</option></select></label></div><div class="publisher-channel-metrics">${metric(tx(language,'已分配','Allocated'),'1,640',`${fixture.program.appId} · ${fixture.program.sku}`)}${metric(tx(language,'已确认接收','Delivery confirmed'),'1,602')}${metric(tx(language,'已售','Sold'),'1,282')}${metric(tx(language,'销售回传完整率','Sales reporting'),'99.8%',tx(language,'1 条待补报','1 report pending'))}</div><section class="publisher-channel-card"><div class="publisher-channel-tabs" role="tablist" aria-label="${tx(language,'渠道数据类型','Channel data type')}">${tabs.map(([id,label]) => `<button type="button" role="tab" aria-selected="${activeTab === id}" class="${activeTab === id ? 'is-active' : ''}" data-portal-action="channel-data-tab" data-channel-data-tab="${id}">${e(label)}</button>`).join('')}</div><div class="publisher-channel-tabpanel" role="tabpanel">${renderDataTab({language,tab:activeTab})}</div></section>${renderDialog({language,state})}`;
   };
 
-  const renderSettlement = ({ language, state, channelState }) => {
+  const renderSettlement = ({ language, state }) => {
     const pageHead = head(language,'CHANNEL REVENUE',tx(language,'收益与结算','Revenue & settlement'),' ',button(tx(language,'进入财务与结算','Open Finance'),'channel-finance-entry',{secondary:true}));
-    if (channelState === 'unopened') return `${pageHead}${channelNotice(channelState,language)}${renderDialog({language,state})}`;
-    const notice = channelState === 'active' ? '' : channelNotice(channelState,language);
     const details = `<button type="button" class="publisher-channel-link" data-portal-action="channel-settlement-detail">${tx(language,'查看详情','View details')}</button>`;
     const rows = [
       ['2026-09','1,282','14','0','USD 0.00','1,268','<strong>USD 16,467.32</strong>',status(tx(language,'预估中','Estimating'),'warning'),details],
       ['2026-08','1,138','9','1','USD 0.00','1,128','<strong>USD 14,715.61</strong>',status(tx(language,'已锁定','Locked')),'—'],
       ['2026-07','1,094','8','0','USD -62.40','1,086','<strong>USD 14,047.92</strong>',status(tx(language,'已调整','Adjusted'),'neutral'),'—'],
     ];
-    return `${pageHead}${notice}<div class="publisher-channel-metrics">${metric(tx(language,'渠道售出','Channel sales'),'1,282')}${metric(tx(language,'退款','Refunds'),'14')}${metric(tx(language,'拒付','Chargebacks'),'0')}${metric(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32',tx(language,'净数量 1,268','Net quantity 1,268'))}</div><section class="publisher-channel-card publisher-channel-settlement"><header><div><h2>${tx(language,'月度收益','Monthly revenue')}</h2><p>${fixture.channel.name} · ${fixture.program.appId} · ${fixture.program.sku}</p></div></header>${table([tx(language,'月份','Period'),tx(language,'售出','Sold'),tx(language,'退款','Refunds'),tx(language,'拒付','Chargebacks'),tx(language,'历史调整','Prior adjustments'),tx(language,'净数量','Net quantity'),tx(language,'预估渠道销售净额','Estimated channel sales net'),tx(language,'状态','Status'),tx(language,'操作','Action')],rows)}</section>${renderDialog({language,state})}`;
+    return `${pageHead}<div class="publisher-channel-metrics">${metric(tx(language,'渠道售出','Channel sales'),'1,282')}${metric(tx(language,'退款','Refunds'),'14')}${metric(tx(language,'拒付','Chargebacks'),'0')}${metric(tx(language,'预估渠道销售净额','Estimated channel sales net'),'USD 16,467.32',tx(language,'净数量 1,268','Net quantity 1,268'))}</div><section class="publisher-channel-card publisher-channel-settlement"><header><div><h2>${tx(language,'月度收益','Monthly revenue')}</h2><p>${fixture.channel.name} · ${fixture.program.appId} · ${fixture.program.sku}</p></div></header>${table([tx(language,'月份','Period'),tx(language,'售出','Sold'),tx(language,'退款','Refunds'),tx(language,'拒付','Chargebacks'),tx(language,'历史调整','Prior adjustments'),tx(language,'净数量','Net quantity'),tx(language,'预估渠道销售净额','Estimated channel sales net'),tx(language,'状态','Status'),tx(language,'操作','Action')],rows)}</section>${renderDialog({language,state})}`;
   };
 
   const renderers = {'channel-overview':renderOverview,'channel-batches':renderBatches,'channel-data':renderData,'channel-settlement':renderSettlement};
   const render = ({ section, language = 'zh', state = {}, demoState = {} }) => {
-    const channelState = ['unopened','active','paused'].includes(demoState.channelStatus) ? demoState.channelStatus : 'active';
     const storedOutcome = state.channelSubmission?.status;
     const batchOutcome = ['generated','pending','rejected','failed'].includes(storedOutcome)
       ? storedOutcome
       : ['generated','pending','rejected','failed'].includes(demoState.channelBatchOutcome) ? demoState.channelBatchOutcome : 'generated';
-    return `<section class="publisher-channel" data-publisher-channel="${e(section)}" data-channel-status="${e(channelState)}" data-batch-outcome="${e(batchOutcome)}">${(renderers[section] || renderOverview)({ language, state, demoState, channelState, batchOutcome })}</section>`;
+    return `<section class="publisher-channel" data-publisher-channel="${e(section)}" data-batch-outcome="${e(batchOutcome)}">${(renderers[section] || renderOverview)({ language, state, demoState, batchOutcome })}</section>`;
   };
 
   window.PublisherChannelDistribution = { fixture, render };

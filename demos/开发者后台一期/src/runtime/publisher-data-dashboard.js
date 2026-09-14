@@ -154,8 +154,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       users:'active_players',
       ...(incoming.selectedMetricByTab || {}),
     };
-    const conversionMetrics = ['impression','card_ctr','detail_view','detail_acquisition','acquisition_success','fulfillment_success','reservation_users'];
+    const conversionMetrics = ['impression','card_ctr','reservation_users','detail_view','detail_acquisition','acquisition_success'];
     const userMetrics = ['active_players','new_players','retention_1d','retention_3d','retention_7d','avg_duration'];
+    if (selectedMetricByTab.conversion === 'fulfillment_success') selectedMetricByTab.conversion = 'acquisition_success';
     if (!conversionMetrics.includes(selectedMetricByTab.conversion)) selectedMetricByTab.conversion = conversionMetrics.includes(incoming.trendMetric) ? incoming.trendMetric : 'impression';
     if (!userMetrics.includes(selectedMetricByTab.users)) selectedMetricByTab.users = incoming.userTrendMetric === 'new' ? 'new_players' : 'active_players';
     return {
@@ -249,7 +250,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     all:1, home:0.364, discovery:0.184, ranking:0.142, search:0.136,
     campaign:0.102, external:0.072, direct:0.048, other:0.018,
   }[source] ?? 1);
-  const productFactor = product => ({ all:1, base:0.68, dlc:0.32 }[product] || 1);
   const dailyWave = (date,index) => {
     const day = Number(date.slice(-2));
     return 0.88 + ((day * 17 + index * 11) % 23) / 50 + Math.sin((index + day) / 3) * 0.055;
@@ -257,46 +257,48 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const dailyConversionRows = stateInput => {
     const filters = { ...defaultFilters, ...(stateInput?.filters || {}) };
     const { startDate,endDate } = effectiveRange(filters);
-    const filterFactor = productFactor(filters.product) * regionalFactor(filters.region) * sourceFactor(filters.source);
+    const filterFactor = regionalFactor(filters.region) * sourceFactor(filters.source);
     return enumerateDates(startDate,endDate).map((date,index) => {
       const factor = filterFactor * dailyWave(date,index);
       const impression = Math.max(0,Math.round(1665 * factor));
       const cardClick = Math.max(0,Math.round(impression * (0.286 + ((index % 5) - 2) * 0.006)));
       const detailView = Math.max(0,Math.round(cardClick * (0.818 + ((index % 4) - 1.5) * 0.009)));
-      const acquisitionSuccess = Math.max(0,Math.round(detailView * (0.222 + ((index % 6) - 2.5) * 0.004)));
-      const fulfillmentSuccess = Math.max(0,Math.round(acquisitionSuccess * (0.968 + ((index % 3) - 1) * 0.003)));
       const reservationUsers = Math.max(0,Math.round(detailView * (0.118 + ((index % 5) - 2) * 0.003)));
+      const downloadUsers = Math.max(0,Math.round(detailView * (0.142 + ((index % 6) - 2.5) * 0.003)));
+      const launchUsers = Math.max(0,Math.round(detailView * (0.091 + ((index % 4) - 1.5) * 0.003)));
+      const overlapUsers = Math.max(0,Math.round(detailView * (0.047 + ((index % 3) - 1) * 0.002)));
+      const acquisitionSuccess = Math.max(reservationUsers,downloadUsers,launchUsers,reservationUsers + downloadUsers + launchUsers - overlapUsers);
       return {
         date,
         impression,
         card_click:cardClick,
         detail_view:detailView,
         acquisition_success:acquisitionSuccess,
-        fulfillment_success:fulfillmentSuccess,
         reservation_users:reservationUsers,
+        download_users:downloadUsers,
+        launch_users:launchUsers,
         card_ctr:safeRate(cardClick,impression),
         detail_acquisition:safeRate(acquisitionSuccess,detailView),
       };
     });
   };
-  const periodUv = (dailyTotal,dayCount) => Math.round(dailyTotal * Math.max(0.68,0.94 - Math.max(0,dayCount - 1) * 0.007));
+  const periodUv = (dailyTotal,dayCount) => dayCount <= 1 ? Math.round(dailyTotal) : Math.round(dailyTotal * Math.max(0.68,0.94 - Math.max(0,dayCount - 1) * 0.007));
   const conversionSnapshot = state => {
     const rows = dailyConversionRows(state);
     const dayCount = rows.length || 1;
-    const totals = Object.fromEntries(['impression','card_click','detail_view','acquisition_success','fulfillment_success','reservation_users'].map(key => [key,sumMetric(rows,key) || 0]));
+    const totals = Object.fromEntries(['impression','card_click','detail_view','acquisition_success','reservation_users'].map(key => [key,sumMetric(rows,key) || 0]));
     const summary = {
       impression:periodUv(totals.impression,dayCount),
       card_click:periodUv(totals.card_click,dayCount),
       detail_view:periodUv(totals.detail_view,dayCount),
       acquisition_success:periodUv(totals.acquisition_success,dayCount),
-      fulfillment_success:periodUv(totals.fulfillment_success,dayCount),
       reservation_users:totals.reservation_users,
     };
     summary.card_ctr = safeRate(summary.card_click,summary.impression);
     summary.detail_acquisition = safeRate(summary.acquisition_success,summary.detail_view);
     const ctaClick = Math.max(summary.acquisition_success,Math.round(summary.detail_view * 0.3));
     const orderCreate = Math.max(summary.acquisition_success,Math.round(ctaClick * 0.848));
-    const stageValues = [summary.impression,summary.card_click,summary.detail_view,ctaClick,orderCreate,summary.acquisition_success,summary.fulfillment_success];
+    const stageValues = [summary.impression,summary.card_click,summary.detail_view,ctaClick,orderCreate,summary.acquisition_success,summary.acquisition_success];
     const stages = conversionStageSeed.map((item,index) => ({
       ...item,
       uv:stageValues[index],
@@ -355,11 +357,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     detail_view:text('成功打开游戏详情页的去重用户数。','Unique users who successfully open the game detail page.',language),
     cta_click:text('在详情页点击购买或免费领取按钮的去重用户数。','Unique users who click Buy or Claim on the game detail page.',language),
     order_create:text('成功创建购买或免费领取订单的去重用户数。','Unique users for whom a paid or free order is created successfully.',language),
-    acquisition_success:text('支付成功或免费领取成功并获得游戏权益的去重用户数。','Unique users who obtain the game entitlement through payment or a free claim.',language),
-    fulfillment_success:text('账号权益或 CDKEY 完成履约的去重用户数。','Unique users whose account entitlement or CDKEY fulfillment completes successfully.',language),
+    acquisition_success:text('统计期内完成预约、下载或成功启动任一行为的去重用户数；同一用户完成多种行为只计 1 人。','Unique users who complete at least one reservation, download, or successful launch during the period; each user is counted once across actions.',language),
+    fulfillment_success:text('已合并到“成功获取用户数”，不再作为独立指标。','Merged into Successful acquisition users and no longer shown as a separate metric.',language),
     reservation_users:text('统计期内首次成功预约当前游戏的去重账号数，按首次预约成功日归属；取消预约不回溯扣减。','Unique accounts making their first successful reservation during the period, attributed to the first reservation date; later cancellations do not rewrite history.',language),
     overall_conversion:text('成功获取 UV ÷ 有效曝光 UV；统计周期按用户首次进入漏斗的时间归因。','Successful acquisition UV divided by qualified impression UV, attributed by the user’s first funnel-entry time.',language),
-    detail_acquisition:text('成功获取 UV ÷ 详情访问 UV，用于衡量详情页到获取结果的转化。','Successful acquisition UV divided by detail-view UV.',language),
+    detail_acquisition:text('成功获取用户数 ÷ 详情页访问 UV；预约、下载或成功启动任一行为均算成功获取，用户按周期去重。','Successful acquisition users divided by detail visits; reservation, download, or successful launch all count, with users deduplicated for the period.',language),
     active_players:text('统计周期内至少成功启动过一次当前游戏的去重账号数，固定统计 Mac。','Unique accounts that successfully launch the current game at least once during the period; Mac only.',language),
     new_players:text('统计周期内首次成功启动当前游戏的去重账号数。','Unique accounts that launch the current game for the first time during the period.',language),
     retention_1d:text('新增玩家中，在首次启动后的第 1 个自然日再次成功启动游戏的账号占比；未观察满 1 日的 cohort 不计入。','Share of new players returning on calendar day 1; immature cohorts are excluded.',language),
@@ -452,7 +454,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const rangeName = rangeLabels(language)[state.filters.range] || rangeLabels(language).custom;
     const sources = [['all',c.all],...Object.entries(sourceLabels(language))];
     const conversionOnly = state.tab === 'conversion'
-      ? `${filterSelect('product',c.product,[['all',c.all],['base',c.base],['dlc',c.dlc]],state,'publisher-dashboard-field--product')}${filterSelect('source',c.source,sources,state,'publisher-dashboard-field--source')}`
+      ? filterSelect('source',c.source,sources,state,'publisher-dashboard-field--source')
       : '';
     return `<section class="publisher-dashboard-filters" aria-label="${text('数据筛选','Data filters',language)}"><div class="publisher-dashboard-filter-row"><div class="publisher-dashboard-filter-scroll"><label class="publisher-dashboard-field publisher-dashboard-field--time"><span>${c.range}</span><button type="button" class="publisher-dashboard-time-button" data-dashboard-action="date-open" aria-haspopup="dialog" aria-controls="publisher-dashboard-date-dialog" aria-expanded="${state.datePickerOpen}"><strong>${rangeName}</strong><small>${range.startDate} → ${range.endDate}</small><i>▾</i></button></label>${conversionOnly}${renderRegionSelect(state,language)}</div><div class="publisher-dashboard-filter-fixed"><span class="publisher-dashboard-platform" data-dashboard-platform>${text('平台：Mac','Platform: Mac',language)}</span><button type="button" data-dashboard-action="reset">${c.reset}</button></div></div><div class="publisher-dashboard-filter-caption">${state.tab === 'conversion' ? text('点击任一指标卡可按自然日查看详情；周期 UV 均按账号去重。','Select any metric to inspect daily detail; period UV metrics are deduplicated by account.',language) : text('用户数据按账号去重；留存仅统计已观察满对应天数的新增玩家。','Users are deduplicated by account; retention includes mature cohorts only.',language)}</div>${renderDatePicker(state,language)}</section>`;
   };
@@ -505,11 +507,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     conversion:[
       { key:'impression', label:text('有效曝光','Qualified impressions',language), definition:'impression', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
       { key:'card_ctr', label:text('游戏卡点击率','Game card CTR',language), definition:'card_click', type:'percent', hint:text('点击 UV ÷ 曝光 UV','Clicks ÷ impressions',language) },
-      { key:'detail_view', label:text('详情页访问','Detail visits',language), definition:'detail_view', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
-      { key:'detail_acquisition', label:text('详情获取转化率','Detail-to-acquisition',language), definition:'detail_acquisition', type:'percent', hint:text('成功获取 UV ÷ 详情访问 UV','Acquired ÷ detail visits',language) },
-      { key:'acquisition_success', label:text('成功获取','Successful acquisition',language), definition:'acquisition_success', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
-      { key:'fulfillment_success', label:text('履约成功','Fulfillment success',language), definition:'fulfillment_success', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
       { key:'reservation_users', label:text('新增预约用户数','New reservation users',language), definition:'reservation_users', type:'integer', hint:text('按首次预约成功日','By first reservation date',language) },
+      { key:'detail_view', label:text('详情页访问','Detail visits',language), definition:'detail_view', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
+      { key:'detail_acquisition', label:text('详情获取转化率','Detail-to-acquisition',language), definition:'detail_acquisition', type:'percent', hint:text('预约／下载／启动用户 ÷ 详情访问 UV','Reserved / downloaded / launched ÷ detail visits',language) },
+      { key:'acquisition_success', label:text('成功获取用户数','Successful acquisition users',language), definition:'acquisition_success', type:'integer', hint:text('预约、下载或启动，周期去重','Reserved, downloaded, or launched',language) },
     ],
     users:[
       { key:'active_players', label:text('活跃玩家数','Active players',language), definition:'active_players', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
@@ -607,7 +608,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const points = model.rows.map((item,index) => Number.isFinite(item.value) ? { ...item,index,x:x(index),y:y(item.value) } : null).filter(Boolean);
     const labelStep = Math.max(1,Math.ceil((model.rows.length - 1) / 5));
     const labels = model.rows.map((item,index) => (index === 0 || index === model.rows.length - 1 || index % labelStep === 0) ? `<text x="${x(index)}" y="263" text-anchor="middle">${item.date.slice(5)}</text>` : '').join('');
-    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${points.map(point => `<circle cx="${point.x}" cy="${point.y}" r="4" data-detail-point data-detail-date="${point.date}" data-detail-value="${Number(point.value)}"><title>${point.date} · ${escape(formatMetricValue(point.value,model.config.type,language))}</title></circle>`).join('')}${labels}</svg></div>`;
+    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${points.map(point => `<g tabindex="0" role="img" aria-label="${escape(`${point.date} ${model.config.label} ${formatMetricValue(point.value,model.config.type,language)}`)}" data-detail-point data-detail-date="${point.date}" data-detail-label="${escape(model.config.label)}" data-detail-display="${escape(formatMetricValue(point.value,model.config.type,language))}"><circle cx="${point.x}" cy="${point.y}" r="4" class="publisher-detail-point-dot"></circle><circle cx="${point.x}" cy="${point.y}" r="12" class="publisher-detail-point-hit"></circle></g>`).join('')}${labels}</svg><div class="publisher-detail-hover" data-detail-hover-tooltip hidden><strong data-detail-hover-date></strong><span><i></i><em data-detail-hover-label></em><b data-detail-hover-value></b></span></div></div>`;
   };
   const renderDetailTable = (model,language) => `<div class="publisher-detail-table-wrap"><table><thead><tr><th>${text('日期','Date',language)}</th><th>${model.config.label}</th><th>${text('较前一日','vs. previous day',language)}</th></tr></thead><tbody>${model.rows.map(row => `<tr data-detail-row data-detail-date="${row.date}"><td>${row.date}</td><td><strong>${row.display}</strong></td><td>${row.deltaDisplay}</td></tr>`).join('')}</tbody></table></div>`;
   const detailIcon = key => ({
@@ -623,7 +624,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const refreshed = state.detailRefreshedAt
       ? text(`最近刷新 ${state.detailRefreshedAt}`,`Last refreshed ${state.detailRefreshedAt}`,language)
       : text('与页面数据同步','Synced with page data',language);
-    return `<section class="publisher-dashboard-card publisher-dashboard-detail${full ? ' is-fullscreen' : ''}${state.detailRefreshing ? ' is-refreshing' : ''}" data-dashboard-detail data-active-metric="${model.key}" data-detail-tab="${model.tab}" data-detail-view="${view}" data-detail-fullscreen="${full}" data-detail-refresh-revision="${Number(state.detailRefreshRevision || 0)}"><header class="publisher-detail-head"><div><span>${text('按日详情','DAILY DETAIL',language)}</span><h2>${model.config.label}</h2><small aria-live="polite">${state.detailRefreshing ? text('正在刷新…','Refreshing…',language) : refreshed}</small></div><div class="publisher-detail-tools"><div class="publisher-detail-view-switch" aria-label="${text('展示方式','View mode',language)}"><button type="button" class="${view === 'chart' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="chart" aria-pressed="${view === 'chart'}">${text('图表','Chart',language)}</button><button type="button" class="${view === 'table' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="table" aria-pressed="${view === 'table'}">${text('表格','Table',language)}</button></div><button type="button" data-dashboard-action="detail-refresh"${state.detailRefreshing ? ' disabled' : ''}>${detailIcon('refresh')}<span>${state.detailRefreshing ? text('刷新中','Refreshing',language) : text('刷新','Refresh',language)}</span></button><button type="button" data-dashboard-action="detail-fullscreen">${detailIcon(full ? 'close' : 'fullscreen')}<span>${full ? text('退出全屏','Exit full screen',language) : text('全屏','Full screen',language)}</span></button><button type="button" data-dashboard-action="detail-export">${detailIcon('export')}<span>${text('导出','Export',language)}</span></button></div></header><div class="publisher-detail-body">${view === 'table' ? renderDetailTable(model,language) : renderDetailChart(model,language)}</div><p class="publisher-detail-note">${model.note}</p></section>`;
+    return `<section class="publisher-dashboard-card publisher-dashboard-detail${full ? ' is-fullscreen' : ''}${state.detailRefreshing ? ' is-refreshing' : ''}" data-dashboard-detail data-active-metric="${model.key}" data-detail-tab="${model.tab}" data-detail-view="${view}" data-detail-granularity="day" data-detail-fullscreen="${full}" data-detail-refresh-revision="${Number(state.detailRefreshRevision || 0)}"><header class="publisher-detail-head"><div><div class="publisher-detail-eyebrow"><span>${text('按日详情','DAILY DETAIL',language)}</span><b>${text('数据粒度：日','Granularity: day',language)}</b></div><h2>${model.config.label}</h2><small aria-live="polite">${state.detailRefreshing ? text('正在刷新…','Refreshing…',language) : refreshed}</small></div><div class="publisher-detail-tools"><div class="publisher-detail-view-switch" aria-label="${text('展示方式','View mode',language)}"><button type="button" class="${view === 'chart' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="chart" aria-pressed="${view === 'chart'}">${text('图表','Chart',language)}</button><button type="button" class="${view === 'table' ? 'is-active' : ''}" data-dashboard-action="detail-view" data-detail-view="table" aria-pressed="${view === 'table'}">${text('表格','Table',language)}</button></div><button type="button" data-dashboard-action="detail-refresh"${state.detailRefreshing ? ' disabled' : ''}>${detailIcon('refresh')}<span>${state.detailRefreshing ? text('刷新中','Refreshing',language) : text('刷新','Refresh',language)}</span></button><button type="button" data-dashboard-action="detail-fullscreen">${detailIcon(full ? 'close' : 'fullscreen')}<span>${full ? text('退出全屏','Exit full screen',language) : text('全屏','Full screen',language)}</span></button><button type="button" data-dashboard-action="detail-export">${detailIcon('export')}<span>${text('导出','Export',language)}</span></button></div></header><div class="publisher-detail-body">${view === 'table' ? renderDetailTable(model,language) : renderDetailChart(model,language)}</div><p class="publisher-detail-note">${model.note}</p></section>`;
   };
   const renderConversion = (state,language) => {
     const data = conversionSnapshot(state);
@@ -649,7 +650,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       [text('页签','Tab',language),tabLabel],
       [text('指标','Metric',language),model.config.label],
       [text('时间范围','Date range',language),`${range.startDate} ~ ${range.endDate}`],
-      [text('商品类型','Product type',language),state.tab === 'conversion' ? state.filters.product : text('不适用','N/A',language)],
       [text('来源位置','Source',language),state.tab === 'conversion' ? state.filters.source : text('不适用','N/A',language)],
       [text('地区','Region',language),state.filters.region],
       [text('平台','Platform',language),'Mac'],
@@ -751,6 +751,32 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       document.body.appendChild(tooltip);
       positionMetricTooltip(trigger);
     };
+    const hideDetailHover = chart => {
+      const tooltip = chart?.querySelector('[data-detail-hover-tooltip]');
+      if (!tooltip) return;
+      tooltip.hidden = true;
+      tooltip.removeAttribute('style');
+    };
+    const showDetailHover = point => {
+      const chart = point?.closest('.publisher-detail-chart');
+      const tooltip = chart?.querySelector('[data-detail-hover-tooltip]');
+      const hit = point?.querySelector('.publisher-detail-point-hit') || point;
+      if (!chart || !tooltip || !hit) return;
+      tooltip.querySelector('[data-detail-hover-date]').textContent = point.dataset.detailDate || '';
+      tooltip.querySelector('[data-detail-hover-label]').textContent = point.dataset.detailLabel || '';
+      tooltip.querySelector('[data-detail-hover-value]').textContent = point.dataset.detailDisplay || '—';
+      tooltip.hidden = false;
+      const chartRect = chart.getBoundingClientRect();
+      const pointRect = hit.getBoundingClientRect();
+      const width = tooltip.offsetWidth;
+      const height = tooltip.offsetHeight;
+      const center = pointRect.left - chartRect.left + pointRect.width / 2 + chart.scrollLeft;
+      const left = Math.max(8,Math.min(center - width / 2,chart.scrollWidth - width - 8));
+      const above = pointRect.top - chartRect.top - height - 12;
+      const top = above >= 8 ? above : pointRect.bottom - chartRect.top + 10;
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    };
     const requestFocus = target => { pendingFocusTarget = target; };
     const focusAfterRender = () => {
       const target = pendingFocusTarget;
@@ -777,8 +803,16 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     });
     host.addEventListener('pointerup',() => { pointerMetricHelp = ''; });
     host.addEventListener('pointerover',event => {
+      const point = event.target.closest('[data-detail-point]');
+      if (point) showDetailHover(point);
       const trigger = event.target.closest('[data-metric-help]');
-      if (trigger) queueMicrotask(() => positionMetricTooltip(trigger));
+      if (trigger) openMetricTooltip(trigger);
+    });
+    host.addEventListener('pointerout',event => {
+      const point = event.target.closest('[data-detail-point]');
+      if (point && !point.contains(event.relatedTarget)) hideDetailHover(point.closest('.publisher-detail-chart'));
+      const trigger = event.target.closest('[data-metric-help]');
+      if (trigger && !trigger.contains(event.relatedTarget) && document.activeElement !== trigger) closeMetricTooltips();
     });
     host.addEventListener('focusin',event => {
       const field = event.target.closest('.publisher-dashboard-filter-scroll .publisher-dashboard-field');
@@ -788,8 +822,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         openMetricTooltip(trigger);
         focusOpenedMetric = trigger.dataset.metricHelp || '';
       }
+      const point = event.target.closest('[data-detail-point]');
+      if (point) showDetailHover(point);
     });
     host.addEventListener('focusout',event => {
+      const point = event.target.closest('[data-detail-point]');
+      if (point && !point.contains(event.relatedTarget)) hideDetailHover(point.closest('.publisher-detail-chart'));
       const trigger = event.target.closest('[data-metric-help]');
       if (!trigger) return;
       queueMicrotask(() => {
@@ -827,9 +865,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       else if (action === 'detail-export') exportDetailCsv(state,game,interfaceLanguage);
       else if (action === 'metric-help') {
-        const shouldOpen = event.detail === 0 || focusOpenedMetric === control.dataset.metricHelp || state.activeTooltip !== control.dataset.metricHelp;
-        if (shouldOpen) openMetricTooltip(control);
-        else closeMetricTooltips();
+        openMetricTooltip(control);
         focusOpenedMetric = '';
         control.focus({ preventScroll:true });
       }
