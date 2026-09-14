@@ -228,9 +228,11 @@ test('经营数据位于单游戏控制台并只保留曝光转化与用户数�
     assert.equal(await dashboard.getAttribute('data-dashboard-tab'), 'conversion');
     assert.deepEqual(
       await dashboard.locator('[data-dashboard-metric]').evaluateAll(nodes => nodes.map(node => node.dataset.dashboardMetric)),
-      ['impression', 'card_ctr', 'reservation_users', 'detail_view', 'detail_acquisition', 'acquisition_success'],
+      ['impression', 'card_ctr', 'detail_view', 'purchase_users', 'detail_acquisition', 'acquisition_success'],
     );
-    assert.equal(await dashboard.getByText('新增预约用户数', { exact:true }).count(), 1);
+    assert.equal(await dashboard.getByText('新增预约用户数', { exact:true }).count(), 0);
+    assert.equal(await dashboard.locator('[data-dashboard-metric="reservation_users"]').count(), 0);
+    assert.equal(await dashboard.getByText('购买用户数', { exact:true }).count(), 1);
     assert.equal(await dashboard.locator('[data-dashboard-metric="fulfillment_success"]').count(), 0);
     assert.equal(await dashboard.locator('[data-dashboard-filter="product"]').count(), 0);
     assert.equal(await dashboard.getByText('站内转化', { exact:true }).count(), 0);
@@ -459,7 +461,7 @@ test('两个页签的每个指标都能切换共享逐日详情', async () => {
   try {
     const dashboard = await openDashboard(page, 'publisher-dashboard:drilldown-v16');
     const cases = {
-      conversion:['impression','card_ctr','reservation_users','detail_view','detail_acquisition','acquisition_success'],
+      conversion:['impression','card_ctr','detail_view','purchase_users','detail_acquisition','acquisition_success'],
       users:['active_players','new_players','retention_1d','retention_3d','retention_7d','avg_duration'],
     };
     for (const [tab,metrics] of Object.entries(cases)) {
@@ -559,7 +561,7 @@ test('逐日图表按日期分栏命中并在区域任意高度显示当日数�
   }
 });
 
-test('周期卡片和逐日详情遵守 UV、转化率、预约与留存口径', async () => {
+test('周期卡片和逐日详情遵守 UV、转化率、获取与留存口径', async () => {
   const context = await browser.newContext({ viewport: { width:1440,height:900 } });
   const page = await context.newPage();
   try {
@@ -573,8 +575,19 @@ test('周期卡片和逐日详情遵守 UV、转化率、预约与留存口径',
         userDays:users.rows.length,
         ctr:conversion.summary.card_ctr,
         expectedCtr:conversion.summary.card_click / conversion.summary.impression,
-        reservationPeriod:conversion.summary.reservation_users,
-        reservationDailySum:conversion.rows.reduce((sum,row) => sum + row.reservation_users,0),
+        hasReservationSummary:Object.prototype.hasOwnProperty.call(conversion.summary,'reservation_users'),
+        hasReservationRows:conversion.rows.some(row => Object.prototype.hasOwnProperty.call(row,'reservation_users')),
+        purchasePeriod:conversion.summary.purchase_users,
+        purchaseRows:conversion.rows.every(row => Number.isFinite(row.purchase_users)),
+        acquisitionUsesDownloadOrLaunch:conversion.rows.every(row => (
+          row.acquisition_success >= Math.max(row.download_users,row.launch_users)
+          && row.acquisition_success <= row.download_users + row.launch_users
+        )),
+        acquisitionDoesNotExceedPurchase:conversion.rows.every(row => row.acquisition_success <= row.purchase_users),
+        freeHasPurchase:Object.prototype.hasOwnProperty.call(
+          window.PublisherDataDashboard.conversionSnapshot(window.PublisherDataDashboard.createState({ pricingModel:'free' })).summary,
+          'purchase_users',
+        ),
         acquiredPeriod:conversion.summary.acquisition_success,
         activePeriod:users.activePlayers,
         activeDailySum:users.rows.reduce((sum,row) => sum + row.active_players,0),
@@ -588,8 +601,14 @@ test('周期卡片和逐日详情遵守 UV、转化率、预约与留存口径',
     assert.equal(result.conversionDays, 30);
     assert.equal(result.userDays, 30);
     assert.ok(Math.abs(result.ctr - result.expectedCtr) < 1e-12);
-    assert.equal(result.reservationPeriod, result.reservationDailySum);
-    assert.ok(result.acquiredPeriod >= result.reservationPeriod);
+    assert.equal(result.hasReservationSummary, false);
+    assert.equal(result.hasReservationRows, false);
+    assert.ok(result.purchasePeriod > 0);
+    assert.equal(result.purchaseRows, true);
+    assert.equal(result.acquisitionUsesDownloadOrLaunch, true);
+    assert.equal(result.acquisitionDoesNotExceedPurchase, true);
+    assert.equal(result.freeHasPurchase, false);
+    assert.ok(result.acquiredPeriod > 0);
     assert.ok(result.activePeriod < result.activeDailySum);
     assert.deepEqual(result.immature, { d1:1,d3:3,d7:7 });
   } finally {

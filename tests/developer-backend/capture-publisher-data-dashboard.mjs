@@ -48,7 +48,7 @@ await page.goto(url.href, { waitUntil:'load' });
 await page.locator('[data-portal-action="enter-publisher-game"][data-publisher-game="existing"]').first().click();
 await page.locator('[data-portal-action="game-console-section"][data-game-section="analytics"]').click();
 await page.locator('[data-testid="publisher-data-dashboard"]').waitFor();
-await page.locator('[data-dashboard-metric="reservation_users"]').waitFor();
+await page.locator('[data-dashboard-metric="purchase_users"]').waitFor();
 await page.locator('[data-dashboard-detail][data-active-metric="impression"]').waitFor();
 await page.locator('[data-dashboard-platform]').filter({ hasText:'平台：Mac' }).waitFor();
 await page.setViewportSize({ width:1440, height:1100 });

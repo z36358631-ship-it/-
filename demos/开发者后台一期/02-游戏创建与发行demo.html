@@ -10610,7 +10610,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       users:'active_players',
       ...(incoming.selectedMetricByTab || {}),
     };
-    const conversionMetrics = ['impression','card_ctr','reservation_users','detail_view','detail_acquisition','acquisition_success'];
+    const pricingModel = incoming.pricingModel === 'free' ? 'free' : 'paid';
+    const conversionMetrics = ['impression','card_ctr','detail_view',...(pricingModel === 'paid' ? ['purchase_users'] : []),'detail_acquisition','acquisition_success'];
     const userMetrics = ['active_players','new_players','retention_1d','retention_3d','retention_7d','avg_duration'];
     if (selectedMetricByTab.conversion === 'fulfillment_success') selectedMetricByTab.conversion = 'acquisition_success';
     if (!conversionMetrics.includes(selectedMetricByTab.conversion)) selectedMetricByTab.conversion = conversionMetrics.includes(incoming.trendMetric) ? incoming.trendMetric : 'impression';
@@ -10627,6 +10628,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ...restored,
       tab,
       filters,
+      pricingModel,
       selectedMetricByTab,
       detailView:incoming.detailView === 'table' ? 'table' : 'chart',
       detailRefreshRevision:Number(incoming.detailRefreshRevision || 0),
@@ -10719,18 +10721,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const impression = Math.max(0,Math.round(1665 * factor));
       const cardClick = Math.max(0,Math.round(impression * (0.286 + ((index % 5) - 2) * 0.006)));
       const detailView = Math.max(0,Math.round(cardClick * (0.818 + ((index % 4) - 1.5) * 0.009)));
-      const reservationUsers = Math.max(0,Math.round(detailView * (0.118 + ((index % 5) - 2) * 0.003)));
-      const downloadUsers = Math.max(0,Math.round(detailView * (0.142 + ((index % 6) - 2.5) * 0.003)));
-      const launchUsers = Math.max(0,Math.round(detailView * (0.091 + ((index % 4) - 1.5) * 0.003)));
-      const overlapUsers = Math.max(0,Math.round(detailView * (0.047 + ((index % 3) - 1) * 0.002)));
-      const acquisitionSuccess = Math.max(reservationUsers,downloadUsers,launchUsers,reservationUsers + downloadUsers + launchUsers - overlapUsers);
+      const purchaseUsers = Math.max(0,Math.round(detailView * (0.198 + ((index % 5) - 2) * 0.003)));
+      const downloadUsers = Math.max(0,Math.round(detailView * (0.148 + ((index % 6) - 2.5) * 0.003)));
+      const launchUsers = Math.max(0,Math.round(detailView * (0.104 + ((index % 4) - 1.5) * 0.003)));
+      const overlapUsers = Math.max(0,Math.round(detailView * (0.071 + ((index % 3) - 1) * 0.002)));
+      const acquisitionSuccess = Math.max(downloadUsers,launchUsers,downloadUsers + launchUsers - overlapUsers);
       return {
         date,
         impression,
         card_click:cardClick,
         detail_view:detailView,
         acquisition_success:acquisitionSuccess,
-        reservation_users:reservationUsers,
+        ...(stateInput?.pricingModel === 'free' ? {} : { purchase_users:Math.max(purchaseUsers,acquisitionSuccess) }),
         download_users:downloadUsers,
         launch_users:launchUsers,
         card_ctr:safeRate(cardClick,impression),
@@ -10742,13 +10744,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const conversionSnapshot = state => {
     const rows = dailyConversionRows(state);
     const dayCount = rows.length || 1;
-    const totals = Object.fromEntries(['impression','card_click','detail_view','acquisition_success','reservation_users'].map(key => [key,sumMetric(rows,key) || 0]));
+    const paid = state.pricingModel !== 'free';
+    const totals = Object.fromEntries(['impression','card_click','detail_view','acquisition_success',...(paid ? ['purchase_users'] : [])].map(key => [key,sumMetric(rows,key) || 0]));
     const summary = {
       impression:periodUv(totals.impression,dayCount),
       card_click:periodUv(totals.card_click,dayCount),
       detail_view:periodUv(totals.detail_view,dayCount),
       acquisition_success:periodUv(totals.acquisition_success,dayCount),
-      reservation_users:totals.reservation_users,
+      ...(paid ? { purchase_users:periodUv(totals.purchase_users,dayCount) } : {}),
     };
     summary.card_ctr = safeRate(summary.card_click,summary.impression);
     summary.detail_acquisition = safeRate(summary.acquisition_success,summary.detail_view);
@@ -10813,11 +10816,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     detail_view:text('成功打开游戏详情页的去重用户数。','Unique users who successfully open the game detail page.',language),
     cta_click:text('在详情页点击购买或免费领取按钮的去重用户数。','Unique users who click Buy or Claim on the game detail page.',language),
     order_create:text('成功创建购买或免费领取订单的去重用户数。','Unique users for whom a paid or free order is created successfully.',language),
-    acquisition_success:text('统计期内完成预约、下载或成功启动任一行为的去重用户数；同一用户完成多种行为只计 1 人。','Unique users who complete at least one reservation, download, or successful launch during the period; each user is counted once across actions.',language),
+    acquisition_success:text('统计期内完成下载或成功启动任一行为的去重用户数；同一用户完成多种行为只计 1 人。','Unique users who complete at least one download or successful launch during the period; each user is counted once across actions.',language),
     fulfillment_success:text('已合并到“成功获取用户数”，不再作为独立指标。','Merged into Successful acquisition users and no longer shown as a separate metric.',language),
-    reservation_users:text('统计期内首次成功预约当前游戏的去重账号数，按首次预约成功日归属；取消预约不回溯扣减。','Unique accounts making their first successful reservation during the period, attributed to the first reservation date; later cancellations do not rewrite history.',language),
+    purchase_users:text('付费游戏中支付成功的去重账号数；同一账号多笔成功订单只计 1 人，后续退款或拒付不回溯改写购买事件。','Unique accounts with a successful payment for a paid game; multiple successful orders by one account count once, and later refunds or chargebacks do not rewrite the purchase event.',language),
     overall_conversion:text('成功获取 UV ÷ 有效曝光 UV；统计周期按用户首次进入漏斗的时间归因。','Successful acquisition UV divided by qualified impression UV, attributed by the user’s first funnel-entry time.',language),
-    detail_acquisition:text('成功获取用户数 ÷ 详情页访问 UV；预约、下载或成功启动任一行为均算成功获取，用户按周期去重。','Successful acquisition users divided by detail visits; reservation, download, or successful launch all count, with users deduplicated for the period.',language),
+    detail_acquisition:text('成功获取用户数 ÷ 详情页访问 UV；下载或成功启动任一行为均算成功获取，用户按周期去重。','Successful acquisition users divided by detail visits; download or successful launch both count, with users deduplicated for the period.',language),
     active_players:text('统计周期内至少成功启动过一次当前游戏的去重账号数，固定统计 Mac。','Unique accounts that successfully launch the current game at least once during the period; Mac only.',language),
     new_players:text('统计周期内首次成功启动当前游戏的去重账号数。','Unique accounts that launch the current game for the first time during the period.',language),
     retention_1d:text('新增玩家中，在首次启动后的第 1 个自然日再次成功启动游戏的账号占比；未观察满 1 日的 cohort 不计入。','Share of new players returning on calendar day 1; immature cohorts are excluded.',language),
@@ -10959,14 +10962,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     };
   };
 
-  const metricCatalog = language => ({
+  const metricCatalog = (language,state = {}) => ({
     conversion:[
       { key:'impression', label:text('有效曝光','Qualified impressions',language), definition:'impression', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
       { key:'card_ctr', label:text('游戏卡点击率','Game card CTR',language), definition:'card_click', type:'percent', hint:text('点击 UV ÷ 曝光 UV','Clicks ÷ impressions',language) },
-      { key:'reservation_users', label:text('新增预约用户数','New reservation users',language), definition:'reservation_users', type:'integer', hint:text('按首次预约成功日','By first reservation date',language) },
       { key:'detail_view', label:text('详情页访问','Detail visits',language), definition:'detail_view', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
-      { key:'detail_acquisition', label:text('详情获取转化率','Detail-to-acquisition',language), definition:'detail_acquisition', type:'percent', hint:text('预约／下载／启动用户 ÷ 详情访问 UV','Reserved / downloaded / launched ÷ detail visits',language) },
-      { key:'acquisition_success', label:text('成功获取用户数','Successful acquisition users',language), definition:'acquisition_success', type:'integer', hint:text('预约、下载或启动，周期去重','Reserved, downloaded, or launched',language) },
+      ...(state.pricingModel === 'free' ? [] : [{ key:'purchase_users', label:text('购买用户数','Purchasing users',language), definition:'purchase_users', type:'integer', hint:text('支付成功用户，周期去重','Successful paying users',language) }]),
+      { key:'detail_acquisition', label:text('详情获取转化率','Detail-to-acquisition',language), definition:'detail_acquisition', type:'percent', hint:text('下载／启动用户 ÷ 详情访问 UV','Downloaded / launched ÷ detail visits',language) },
+      { key:'acquisition_success', label:text('成功获取用户数','Successful acquisition users',language), definition:'acquisition_success', type:'integer', hint:text('下载或启动，周期去重','Downloaded or launched',language) },
     ],
     users:[
       { key:'active_players', label:text('活跃玩家数','Active players',language), definition:'active_players', type:'integer', hint:text('周期去重 UV','Period unique users',language) },
@@ -10977,9 +10980,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       { key:'avg_duration', label:text('平均游戏时长','Average playtime',language), definition:'avg_duration', type:'duration', hint:text('活跃玩家人均','Per active player',language) },
     ],
   });
-  const metricConfig = (tab,key,language) => metricCatalog(language)[tab].find(item => item.key === key) || metricCatalog(language)[tab][0];
+  const metricConfig = (tab,key,language,state) => metricCatalog(language,state)[tab].find(item => item.key === key) || metricCatalog(language,state)[tab][0];
   const selectedMetric = (state,tab = state.tab) => {
-    const available = metricCatalog('zh')[tab].map(item => item.key);
+    const available = metricCatalog('zh',state)[tab].map(item => item.key);
     const selected = state.selectedMetricByTab?.[tab];
     return available.includes(selected) ? selected : available[0];
   };
@@ -11013,11 +11016,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<article class="publisher-dashboard-metric ${extraClass}${active ? ' is-selected' : ''}" data-dashboard-metric="${config.key}"><div class="publisher-metric-card-head"><button type="button" class="publisher-metric-select" data-dashboard-action="metric-select" data-detail-tab="${tab}" data-detail-metric="${config.key}" aria-pressed="${active}"><span>${config.label}</span></button>${metricHelpButton(state,`card-${config.key}`,config.definition,config.label,language)}</div><strong>${formatMetricValue(value,config.type,language)}</strong><small>${config.hint}</small></article>`;
   };
   const renderConversionSummary = (state,data,language) => {
-    const catalog = metricCatalog(language).conversion;
+    const catalog = metricCatalog(language,state).conversion;
     return `<section class="publisher-dashboard-metric-strip" aria-label="${text('曝光转化核心指标','Exposure and conversion metrics',language)}">${catalog.map(config => renderMetricCard(state,'conversion',config,metricValue('conversion',config.key,data),language)).join('')}</section>`;
   };
   const renderUserMetrics = (state,data,language) => {
-    const byKey = Object.fromEntries(metricCatalog(language).users.map(item => [item.key,item]));
+    const byKey = Object.fromEntries(metricCatalog(language,state).users.map(item => [item.key,item]));
     const single = key => renderMetricCard(state,'users',byKey[key],metricValue('users',key,data),language,'publisher-user-metric');
     const retention = ['retention_1d','retention_3d','retention_7d'].map(key => renderMetricCard(state,'users',byKey[key],metricValue('users',key,data),language,'publisher-user-metric publisher-user-retention-unit')).join('');
     return `<section class="publisher-user-metric-strip" aria-label="${text('用户核心指标','User metrics',language)}">${single('active_players')}${single('new_players')}<section class="publisher-user-retention" aria-label="${text('玩家留存','Player retention',language)}">${retention}</section>${single('avg_duration')}</section>`;
@@ -11034,7 +11037,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const detailNote = (tab,key,language) => {
     if (key.startsWith('retention_')) return text('按首次启动 cohort 日期展示；未观察满对应天数的日期显示“—”。','Shown by first-launch cohort date; immature dates display “—”.',language);
     if (['card_ctr','detail_acquisition'].includes(key)) return text('周期转化率由周期分子 ÷ 周期分母计算，不平均每日百分比。','Period conversion uses period numerator ÷ denominator, rather than averaging daily rates.',language);
-    if (key === 'reservation_users') return text('按首次预约成功日归属；取消预约不回溯改写历史新增。','Attributed to first successful reservation date; later cancellations do not rewrite history.',language);
+    if (key === 'purchase_users') return text('按支付成功日归属；同一账号多笔成功订单只计 1 人，后续退款或拒付不回溯改写。','Attributed to successful payment date; multiple successful orders by one account count once, and later refunds or chargebacks do not rewrite it.',language);
     if (key === 'new_players') return text('按玩家首次成功启动日归属，每日新增可按日汇总。','Attributed to first successful launch date; daily new-player values can be summed.',language);
     if (key === 'avg_duration') return text('当日平均游戏时长＝当日有效会话总时长 ÷ 当日活跃玩家数。','Daily average playtime equals valid session minutes divided by daily active players.',language);
     return text('周期卡片为跨日去重 UV，每日 UV 不可直接相加推导周期卡片值。','The period card is deduplicated across days; daily UV values cannot be summed to reproduce it.',language);
@@ -11042,7 +11045,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const detailModel = (state,language = 'zh') => {
     const tab = state.tab === 'users' ? 'users' : 'conversion';
     const key = selectedMetric(state,tab);
-    const config = metricConfig(tab,key,language);
+    const config = metricConfig(tab,key,language,state);
     const rows = detailRows(state,tab,key).map(item => ({
       ...item,
       display:formatMetricValue(item.value,config.type,language),
@@ -11137,6 +11140,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   const render = (stateInput,language = 'zh',options = {}) => {
     const state = stateInput || createState();
+    const game = options.game || null;
+    if (game?.pricingModel) state.pricingModel = game.pricingModel === 'paid' ? 'paid' : 'free';
     state.filters = { ...defaultFilters, ...(state.filters || {}) };
     state.tab = state.tab === 'users' || state.tab === 'conversion' ? state.tab : 'conversion';
     state.selectedMetricByTab = {
@@ -11149,7 +11154,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     state.detailRefreshing = Boolean(state.detailRefreshing);
     const c = copy(language);
     const access = options.access || {};
-    const game = options.game || null;
     if (game?.name) state.filters.game = game.name;
     if (!access.canViewPublisherData && !access.isPublisherReadOnly) return `<section class="publisher-dashboard-access" data-publisher-page="data" data-testid="publisher-data-dashboard"><span>${namespace.icons?.render('lock') || ''}</span><strong>${text('暂未开通经营数据权限','Analytics access is not available',language)}</strong><p>${text('完成企业认证并获得厂商数据权限后，可查看单游戏曝光转化和用户数据。','Complete company verification and obtain analytics access to view per-game conversion and user data.',language)}</p></section>`;
     const range = effectiveRange(state.filters);
@@ -11328,7 +11332,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       else if (action === 'reset') update({ filters:{ ...defaultFilters,game:game?.name || 'all' },datePickerOpen:false,draftDateRange:{ ...presetRanges['30d'] },calendarLeftMonth:'2026-08',activeTooltip:'' },{ preserveScroll:true });
       else if (action === 'metric-select') {
         const tab = control.dataset.detailTab === 'users' ? 'users' : 'conversion';
-        const key = control.dataset.detailMetric || metricCatalog('zh')[tab][0].key;
+        const key = control.dataset.detailMetric || metricCatalog('zh',state)[tab][0].key;
         update({ selectedMetricByTab:{ ...(state.selectedMetricByTab || {}),[tab]:key },activeTooltip:'' },{ preserveScroll:true });
       }
       else if (action === 'detail-view') update({ detailView:control.dataset.detailView === 'table' ? 'table' : 'chart',activeTooltip:'' },{ preserveScroll:true });
@@ -12242,6 +12246,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       requirements: { ...Object.fromEntries(platforms.map(platform => [platform, publisherProfileDefaultRequirement(platform)])), ...(stored.requirements || {}) },
       assets: { ...defaultAssets, ...(stored.assets || {}), screenshots: Array.isArray(stored.assets?.screenshots) ? stored.assets.screenshots : defaultAssets.screenshots },
       qualifications: { ...defaultQualifications, ...(stored.qualifications || {}) },
+      ...((stored.catalog || createData.catalog || game.catalog) ? { catalog: structuredClone(stored.catalog || createData.catalog || game.catalog) } : {}),
       savedAt: stored.savedAt || '',
     };
   };
@@ -12257,7 +12262,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const publisherGameFixtures = [
     { gameKey: 'draft', name: '暮光边境', gameId: 'GAME-58302', appId: 'APP-6C21D8', systems: 'Windows', statusKey: 'draft', status: '草稿', statusTone: 'info', reviewStatus: '草稿', stage: '开放预约准备', version: '尚未发布', updatedAt: '09-04 11:20 更新', builds: 0, detailVariant: 'draft', isDraft: true, deletable: true },
     { gameKey: 'reviewing', name: '机械余烬', gameId: 'GAME-57116', appId: 'APP-91B4E7', systems: 'Windows／Linux', statusKey: 'reviewing', status: '审核中', statusTone: 'info', reviewStatus: '审核中', stage: '资料审核', version: '尚未发布', updatedAt: '09-04 10:56 更新', builds: 0, detailVariant: 'reviewing', deletable: false },
-    { gameKey: 'existing', name: '星海远征', gameId: 'GAME-48291', appId: 'APP-7F3A9C', systems: 'Windows／macOS／Linux', statusKey: 'changes', status: '需修改', statusTone: 'warning', reviewStatus: '需修改', stage: '预发布', version: '1.0.0', updatedAt: '09-04 10:30 更新', builds: 3, detailVariant: 'actionRequired', isDraft: false, deletable: false },
+    { gameKey: 'existing', name: '星海远征', gameId: 'GAME-48291', appId: 'APP-7F3A9C', systems: 'Windows／macOS／Linux', statusKey: 'changes', status: '需修改', statusTone: 'warning', reviewStatus: '需修改', stage: '预发布', version: '1.0.0', updatedAt: '09-04 10:30 更新', builds: 3, detailVariant: 'actionRequired', isDraft: false, deletable: false, catalog: { baseGame: { pricingModel: 'paid', pricingStrategy: 'uniform', listPrice: '29.99', discountPrice: '', regionalPrices: {}, discountStartAt: '', discountEndAt: '' }, dlcs: [] } },
     { gameKey: 'pioneer', name: '深空前哨', gameId: 'GAME-46972', appId: 'APP-8D4C21', systems: 'Windows', statusKey: 'pioneer', status: '先锋测试', statusTone: 'info', reviewStatus: '已通过', stage: '先锋测试', version: '0.8.0', updatedAt: '09-03 18:40 更新', builds: 1, detailVariant: 'ready', isDraft: false, deletable: false },
     { gameKey: 'prerelease', name: '雾境协议', gameId: 'GAME-45108', appId: 'APP-3A9E62', systems: 'Windows／macOS', statusKey: 'prerelease', status: '预发布', statusTone: 'info', reviewStatus: '已通过', stage: '预发布', version: '0.9.5', updatedAt: '09-03 16:18 更新', builds: 2, detailVariant: 'ready', isDraft: false, deletable: false },
     { gameKey: 'live', name: '黎明纪元', gameId: 'GAME-39654', appId: 'APP-52B7F0', systems: 'Windows／macOS／Linux', statusKey: 'live', status: '已上线', statusTone: 'success', reviewStatus: '已通过', stage: '正式上线', version: '2.3.1', updatedAt: '09-03 14:05 更新', builds: 6, detailVariant: 'online', isDraft: false, deletable: false },
@@ -12675,10 +12680,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const allowed = availableSections.map(([id]) => id);
     const gameSection = allowed.includes(state.gameSection) ? state.gameSection : 'release-workspace';
     const channelSections = new Set(publisherChannelConsoleSections.map(([id]) => id));
+    const dashboardHasPaidProduct = [publicationDraft?.catalog?.baseGame,...(publicationDraft?.catalog?.dlcs || [])].some(product => product?.pricingModel === 'paid');
+    const dashboardGame = { ...game, pricingModel:dashboardHasPaidProduct ? 'paid' : 'free' };
     const detail = channelSections.has(gameSection) && window.PublisherChannelDistribution
       ? window.PublisherChannelDistribution.render({ section:gameSection, language, state, game, access, demoState })
       : gameSection === 'analytics'
-        ? renderPublisherData(state, language, access, game)
+        ? renderPublisherData(state, language, access, dashboardGame)
         : profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '' }) : renderPublisherReleaseProfile(game);
     const currentSectionLabel = availableSections.find(([id]) => id === gameSection)?.[1] || '版本发布';
     const functionSearch = state.gameFunctionSearch || '';
