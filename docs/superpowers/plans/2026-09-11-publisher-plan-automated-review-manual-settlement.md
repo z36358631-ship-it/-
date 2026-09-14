@@ -1,10 +1,10 @@
-# 发行人计划机器审核与人工结算 Implementation Plan
+# 发行人计划机器审核、人工结算与灰度外放 Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将已确认的“实名发布、任务机器审核自动上架、投稿自动取数校验、系统只读计奖、任务级人工结算”完整同步到发行人计划 C/B Demo、PRD、流程图、验证证据和固定提交公网预览。
+**Goal:** 将已确认的“实名发布、任务机器审核自动上架、投稿自动取数校验、系统只读计奖、任务级人工结算、功能总开关和 20%／50%／100% 灰度外放”完整同步到发行人计划 C/B Demo、PRD、流程图、验证证据和固定提交公网预览。
 
-**Architecture:** 保留现有离线单文件 C/B Demo 和页面骨架，在维护源 JS 中增加确定性的身份、任务、投稿、预算预留与结算状态模型，再把维护源同步进 HTML 内嵌脚本。静态合同先锁定业务正反向口径，Playwright 离线验证覆盖关键交互并生成 24 张页面证据，PRD 使用截图固定提交 SHA，最后更新工作流状态并推送同一分支。
+**Architecture:** 保留现有离线单文件 C/B Demo 和页面骨架，在维护源 JS 中增加确定性的身份、任务、投稿、预算预留、结算与稳定灰度分桶模型，再把维护源同步进 HTML 内嵌脚本。B 端只在现有数据看板增加外放设置卡片和复用弹窗，不新增一级导航；C 端由服务端判定结果控制新曝光和新操作，存量任务继续履约。静态合同先锁定业务正反向口径，Playwright 离线验证覆盖关键交互并生成 25 张页面证据，PRD 使用截图固定提交 SHA，最后更新工作流状态并推送同一分支。
 
 **Tech Stack:** HTML5、CSS3、原生 JavaScript、Node.js 断言、Playwright、Python Pillow/scikit-image、PowerShell PRD 校验脚本、Git。
 
@@ -23,9 +23,10 @@
 | `tools/verify-publisher-plan-v2-ui.mjs` | 离线交互、异常边界、截图、流程图和证据 JSON | 修改 |
 | `tools/build-publisher-plan-v2-visual-evidence.py` | 未改组件的视觉回归与证据汇总 | 仅在确有基线变化时修改，否则只运行 |
 | `tools/verify-publisher-plan-public-preview.mjs` | 固定提交的 C/B 公网交互验证 | 修改 |
-| `prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md` | V2.3 C/B 端开发、测试、运营、数据、财务和合规规则 | 修改 |
+| `docs/superpowers/specs/2026-09-14-publisher-plan-feature-rollout-design.md` | 功能级灰度外放、稳定分桶和存量履约的已确认设计 | 已提交，实施时只读 |
+| `prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md` | V2.4 C/B 端开发、测试、运营、数据、财务和合规规则 | 修改 |
 | `public/prd/publisher-plan-v2/00-product-flow.png` | 8 步完整发行链路，实际竖版页面按每行 4 步排布 | 重生成 |
-| `public/prd/publisher-plan-v2/01-task-plaza.png` 至 `23-card-alert-settings.png` | PRD 页面证据 | 重生成；重点变化为 03/04/05/06/14/15/16/17/19 |
+| `public/prd/publisher-plan-v2/01-task-plaza.png` 至 `24-feature-rollout-settings.png` | PRD 页面证据 | 重生成；重点变化为 03/04/05/06/14/15/16/17/19/24 |
 | `docs/evidence/publisher-plan-v2/verification.json` | 离线交互、截图哈希、视觉校验与环境证据 | 重生成 |
 | `prd/workflow-state/GUANWANGGAID-41-publisher-plan-v2.md` | 当前结论、产物、验证、Git SHA 和公网地址 | 修改 |
 | `prd/workflow-state/GUANWANGGAID-41-publisher-plan-v2.run.json` | 工作流执行状态和证据哈希 | 修改；不得提交同目录 `.lock` |
@@ -53,6 +54,15 @@ const taskRule = {
 
 const calculateReward = (likes, coinPerLike, perSubmissionCap) =>
   Math.min(likes * coinPerLike, perSubmissionCap);
+
+const publisherRollout = {
+  enabled: true,
+  rolloutPercent: 20,
+  rolloutSeed: 'publisher-plan-round-1',
+  configVersion: 1,
+  updatedBy: '运营管理员',
+  updatedAt: '2026-09-14 11:30',
+};
 ```
 
 任务状态统一为：
@@ -137,7 +147,7 @@ mustNotContain(cHtml + cJs + bHtml + bJs + prd, [
 ], 'retired publisher rules');
 ```
 
-- [ ] **Step 4: 锁定 PRD V2.3 必备口径**
+- [ ] **Step 4: 锁定 PRD V2.3 机器审核与人工结算必备口径**
 
 ```js
 mustContain(prd, [
@@ -1051,7 +1061,7 @@ Run:
 node tools/verify-publisher-plan-v2.mjs
 ```
 
-Expected: 内嵌脚本一致性通过；FAIL 只来自 PRD V2.3 缺失。
+Expected: 内嵌脚本一致性通过；FAIL 只来自 PRD V2.3／V2.4 缺失。
 
 - [ ] **Step 4: 提交同步工具和单文件**
 
@@ -1062,7 +1072,314 @@ git commit -m "build: sync publisher demo inline scripts"
 
 ---
 
-### Task 9: 扩展离线 UI 验证并重做完整发行流程图
+### Task 9: 增加功能总开关和 20%／50%／100% 灰度外放
+
+**Files:**
+- Modify: `demos/Mod与发行人/发行人计划demo.js`
+- Modify: `demos/Mod与发行人/发行人计划demo.html`
+- Modify: `demos/Mod与发行人/发行人计划-后台demo.js`
+- Modify: `demos/Mod与发行人/发行人计划-后台demo.html`
+- Modify: `tools/verify-publisher-plan-v2.mjs`
+- Modify: `tools/verify-publisher-plan-v2-ui.mjs`
+- Test: `docs/superpowers/specs/2026-09-14-publisher-plan-feature-rollout-design.md`
+
+- [ ] **Step 1: 先扩展静态合同并确认红灯**
+
+在 `tools/verify-publisher-plan-v2.mjs` 增加：
+
+```js
+mustContain(cHtml + cJs, [
+  'publisherRollout',
+  'stableRolloutBucket',
+  'getPublisherRolloutDecision',
+  'canStartNewPublisherAction'
+], 'C feature rollout');
+
+mustContain(bHtml + bJs, [
+  '发行人计划外放设置',
+  '功能开关',
+  '20%',
+  '50%',
+  '100%',
+  '已关闭',
+  '已开启 ·',
+  'publisherRolloutChangeLog'
+], 'B feature rollout');
+
+mustContain(prd, [
+  'V2.4',
+  '功能总开关',
+  '20%、50%、100%',
+  '稳定分桶',
+  '存量履约',
+  'publisher_rollout_gate_result',
+  'publisher_rollout_config_update'
+], 'PRD feature rollout');
+
+mustNotContain(cHtml + cJs + bHtml + bJs + prd, [
+  '投稿作品外放灰度',
+  '自定义灰度比例',
+  '自动扩量',
+  '自动回滚'
+], 'feature rollout scope');
+```
+
+Run:
+
+```powershell
+node tools/verify-publisher-plan-v2.mjs
+```
+
+Expected: FAIL，首个缺失项为 `publisherRollout`；已有机器审核、取数、人工结算合同不得新增失败。
+
+- [ ] **Step 2: 在 C 端增加稳定分桶和服务端判定模拟**
+
+在 `发行人计划demo.js` 的身份状态后加入：
+
+```js
+const ALLOWED_ROLLOUT_PERCENTS=[20,50,100];
+const publisherRollout={
+  enabled:true,
+  rolloutPercent:20,
+  rolloutSeed:'publisher-plan-round-1',
+  configVersion:1,
+  updatedBy:'运营管理员',
+  updatedAt:'2026-09-14 11:30'
+};
+const publisherRolloutSubject={accountId:'u10086',installationId:'install-demo-001',loggedIn:true};
+
+function stableRolloutBucket(value){
+  let hash=2166136261;
+  for(let i=0;i<value.length;i+=1){
+    hash^=value.charCodeAt(i);
+    hash=Math.imul(hash,16777619);
+  }
+  return (hash>>>0)%100;
+}
+
+function hasExistingPublisherRelationship(){
+  return myPublished.length>0||myJoined.length>0;
+}
+
+function getPublisherRolloutDecision({
+  subjectId=publisherRolloutSubject.loggedIn?publisherRolloutSubject.accountId:publisherRolloutSubject.installationId,
+  hasExistingRelation=hasExistingPublisherRelationship(),
+  config=publisherRollout
+}={}){
+  const percent=ALLOWED_ROLLOUT_PERCENTS.includes(config.rolloutPercent)?config.rolloutPercent:0;
+  const bucket=stableRolloutBucket(`${subjectId}|publisher_plan|${config.rolloutSeed}`);
+  const canStartNew=Boolean(config.enabled)&&bucket<percent;
+  return {
+    bucket,
+    canStartNew,
+    canManageExisting:Boolean(hasExistingRelation),
+    configVersion:config.configVersion,
+    rolloutPercent:percent
+  };
+}
+
+function canStartNewPublisherAction(){
+  return getPublisherRolloutDecision().canStartNew;
+}
+```
+
+Demo 默认账号必须命中当前比例；如果样例桶值不小于 20，替换 `accountId` 为固定命中样例并在测试中锁定，不修改算法或比例。
+
+- [ ] **Step 3: 将灰度判定接入新发布和新投稿**
+
+新增统一入口函数：
+
+```js
+function openCreateTask(){
+  if(!canStartNewPublisherAction())return false;
+  editingTask=null;
+  document.getElementById('create-title').textContent='创建发行任务';
+  renderCreateForm();
+  showView('create');
+  return true;
+}
+```
+
+把原有“+ 发布”入口的 `showView('create')` 改为 `openCreateTask()`；在 `beginSubmission()` 最前面增加：
+
+```js
+if(!canStartNewPublisherAction())return false;
+```
+
+未命中时不新增页面、弹窗或 Toast。`showView('mytask')`、存量任务详情、审核和结算不接入 `canStartNewPublisherAction()`，保证关闭或缩量后仍可履约。
+
+- [ ] **Step 4: 为 C 端分桶写确定性测试**
+
+在 `tools/verify-publisher-plan-v2-ui.mjs` 增加：
+
+```js
+const rolloutResult=await page.evaluate(()=>{
+  const config20={...publisherRollout,enabled:true,rolloutPercent:20};
+  const config50={...publisherRollout,enabled:true,rolloutPercent:50};
+  const config100={...publisherRollout,enabled:true,rolloutPercent:100};
+  const off={...publisherRollout,enabled:false,rolloutPercent:50};
+  const subjectId='rollout-contract-user';
+  return {
+    first:stableRolloutBucket(`${subjectId}|publisher_plan|${publisherRollout.rolloutSeed}`),
+    second:stableRolloutBucket(`${subjectId}|publisher_plan|${publisherRollout.rolloutSeed}`),
+    at20:getPublisherRolloutDecision({subjectId,hasExistingRelation:false,config:config20}).canStartNew,
+    at50:getPublisherRolloutDecision({subjectId,hasExistingRelation:false,config:config50}).canStartNew,
+    at100:getPublisherRolloutDecision({subjectId,hasExistingRelation:false,config:config100}).canStartNew,
+    off:getPublisherRolloutDecision({subjectId,hasExistingRelation:false,config:off}).canStartNew,
+    existing:getPublisherRolloutDecision({subjectId,hasExistingRelation:true,config:off}).canManageExisting
+  };
+});
+assert.equal(rolloutResult.first,rolloutResult.second,'same subject must stay in one bucket');
+assert.equal(rolloutResult.at20&&!rolloutResult.at50,false,'20 percent users must remain in 50 percent');
+assert.equal(rolloutResult.at100,true);
+assert.equal(rolloutResult.off,false);
+assert.equal(rolloutResult.existing,true);
+```
+
+Run:
+
+```powershell
+node tools/verify-publisher-plan-v2-ui.mjs
+```
+
+Expected: 稳定桶、20%→50% 包含关系、100%、关闭和存量履约断言 PASS；PRD 尚未更新不影响 UI 测试。
+
+- [ ] **Step 5: 在 B 端现有数据看板增加外放设置卡片**
+
+在 `发行人计划-后台demo.js` 的卡密配置状态前增加：
+
+```js
+const ALLOWED_ROLLOUT_PERCENTS=[20,50,100];
+const publisherRolloutConfig={
+  enabled:true,
+  rolloutPercent:20,
+  rolloutSeed:'publisher-plan-round-1',
+  configVersion:1,
+  updatedBy:'李四',
+  updatedAt:'2026-09-14 11:30'
+};
+const publisherRolloutChangeLog=[];
+```
+
+在 `renderDashboard()` 返回值顶部、统计卡之前插入：
+
+```js
+<div class="card" id="publisher-rollout-card">
+  <div class="card-title-row">
+    <div><div class="card-title">发行人计划外放设置</div><div class="status-note">只控制新曝光和新参与，已发布任务、已投稿内容和待结算记录继续处理。</div></div>
+    <button id="open-publisher-rollout-settings" class="btn btn-primary" onclick="openPublisherRolloutSettings()">设置</button>
+  </div>
+  <div class="rollout-summary">
+    <span class="tag ${publisherRolloutConfig.enabled?'tag-green':'tag-red'}">${publisherRolloutConfig.enabled?`已开启 · ${publisherRolloutConfig.rolloutPercent}%`:'已关闭'}</span>
+    <span>配置版本：V${publisherRolloutConfig.configVersion}</span>
+    <span>最后修改：${publisherRolloutConfig.updatedBy} · ${publisherRolloutConfig.updatedAt}</span>
+  </div>
+</div>
+```
+
+样式只补充当前卡片需要的布局：
+
+```css
+.rollout-summary{display:flex;align-items:center;gap:18px;color:#666;font-size:13px;margin-top:12px}
+.rollout-options{display:flex;gap:10px}
+.rollout-option{min-width:88px;text-align:center}
+.rollout-help{color:#999;font-size:12px;line-height:1.7;margin-top:8px}
+```
+
+- [ ] **Step 6: 复用现有后台弹窗完成开关和三档比例保存**
+
+在 B 端维护源增加：
+
+```js
+function openPublisherRolloutSettings(){
+  const box=document.getElementById('modal-box');
+  box.innerHTML=`
+    <div class="modal-header"><span>发行人计划外放设置</span><span class="modal-close" onclick="closeModal()">×</span></div>
+    <div class="form-row"><label><input id="publisher-rollout-enabled" type="checkbox" ${publisherRolloutConfig.enabled?'checked':''} onchange="togglePublisherRolloutPercent()"> 功能开关</label></div>
+    <div class="form-row"><label>灰度比例</label><select id="publisher-rollout-percent" ${publisherRolloutConfig.enabled?'':'disabled'}>
+      ${ALLOWED_ROLLOUT_PERCENTS.map(value=>`<option value="${value}" ${value===publisherRolloutConfig.rolloutPercent?'selected':''}>${value}%</option>`).join('')}
+    </select><div class="rollout-help">支持 20%、50%、100%；关闭时停止新曝光，不影响存量任务履约。</div></div>
+    <div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button id="save-publisher-rollout-settings" class="btn btn-primary" onclick="savePublisherRolloutSettings()">保存设置</button></div>`;
+  document.getElementById('modal').classList.add('show');
+}
+
+function togglePublisherRolloutPercent(){
+  const enabled=document.getElementById('publisher-rollout-enabled').checked;
+  document.getElementById('publisher-rollout-percent').disabled=!enabled;
+}
+
+function savePublisherRolloutSettings(){
+  const enabled=document.getElementById('publisher-rollout-enabled').checked;
+  const percent=Number(document.getElementById('publisher-rollout-percent').value);
+  if(!ALLOWED_ROLLOUT_PERCENTS.includes(percent))return showToast('灰度比例无效，未保存');
+  const before={...publisherRolloutConfig};
+  publisherRolloutConfig.enabled=enabled;
+  publisherRolloutConfig.rolloutPercent=percent;
+  publisherRolloutConfig.configVersion+=1;
+  publisherRolloutConfig.updatedBy='李四';
+  publisherRolloutConfig.updatedAt='2026-09-14 11:45';
+  publisherRolloutChangeLog.unshift({before,after:{...publisherRolloutConfig}});
+  closeModal();
+  renderPage('dashboard');
+  showToast(`外放设置已保存：${enabled?`${percent}%`:'已关闭'}`);
+}
+```
+
+关闭时只禁用比例控件并保留最后一次比例；再次开启时继续使用该比例。不要生成 `rolloutSeed` 编辑控件。
+
+- [ ] **Step 7: 验证后台保存、关闭和日志**
+
+在 `tools/verify-publisher-plan-v2-ui.mjs` 增加：
+
+```js
+await adminPage.evaluate(()=>switchPage('dashboard'));
+await adminPage.getByRole('button',{name:'设置'}).click();
+await adminPage.locator('#publisher-rollout-percent').selectOption('50');
+await adminPage.getByRole('button',{name:'保存设置'}).click();
+assert.equal(await adminPage.getByText('已开启 · 50%',{exact:true}).count(),1);
+assert.deepEqual(await adminPage.evaluate(()=>({
+  percent:publisherRolloutConfig.rolloutPercent,
+  version:publisherRolloutConfig.configVersion,
+  logCount:publisherRolloutChangeLog.length
+})),{percent:50,version:2,logCount:1});
+
+await adminPage.getByRole('button',{name:'设置'}).click();
+await adminPage.locator('#publisher-rollout-enabled').uncheck();
+assert.equal(await adminPage.locator('#publisher-rollout-percent').isDisabled(),true);
+await adminPage.getByRole('button',{name:'保存设置'}).click();
+assert.equal(await adminPage.getByText('已关闭',{exact:true}).count(),1);
+assert.equal(await adminPage.evaluate(()=>publisherRolloutConfig.rolloutPercent),50,'disable must retain last percent');
+```
+
+截图新增：
+
+```js
+await adminPage.getByRole('button',{name:'设置'}).click();
+await adminPage.screenshot({path:'public/prd/publisher-plan-v2/24-feature-rollout-settings.png',fullPage:true});
+```
+
+- [ ] **Step 8: 同步两份单文件 HTML 并跑合同**
+
+Run:
+
+```powershell
+node tools/sync-publisher-plan-inline-scripts.mjs
+node tools/verify-publisher-plan-v2.mjs
+node tools/verify-publisher-plan-v2-ui.mjs
+```
+
+Expected: 维护源与内嵌脚本一致；C/B 灰度交互 PASS；静态合同仅因 PRD V2.4 尚未完成而 FAIL。
+
+- [ ] **Step 9: 提交灰度外放 Demo 和测试**
+
+```powershell
+git add "demos/Mod与发行人/发行人计划demo.js" "demos/Mod与发行人/发行人计划demo.html" "demos/Mod与发行人/发行人计划-后台demo.js" "demos/Mod与发行人/发行人计划-后台demo.html" tools/verify-publisher-plan-v2.mjs tools/verify-publisher-plan-v2-ui.mjs public/prd/publisher-plan-v2/24-feature-rollout-settings.png
+git commit -m "feat: add publisher plan feature rollout controls"
+```
+
+---
+
+### Task 10: 扩展离线 UI 验证并重做完整发行流程图
 
 **Files:**
 - Modify: `tools/verify-publisher-plan-v2-ui.mjs:1-448`
@@ -1077,6 +1394,7 @@ git commit -m "build: sync publisher demo inline scripts"
 - Modify: `public/prd/publisher-plan-v2/16-video-review.png`
 - Modify: `public/prd/publisher-plan-v2/17-settlement.png`
 - Modify: `public/prd/publisher-plan-v2/19-creator-review.png`
+- Modify: `public/prd/publisher-plan-v2/24-feature-rollout-settings.png`
 - Modify: `docs/evidence/publisher-plan-v2/verification.json`
 - Test: `tools/verify-publisher-plan-v2-ui.mjs`
 
@@ -1195,7 +1513,7 @@ node tools/verify-publisher-plan-v2-ui.mjs
 Expected:
 
 ```text
-PASS: publisher plan V2 UI, 24 screenshots captured
+PASS: publisher plan V2 UI, 25 screenshots captured
 ```
 
 并确认 `docs/evidence/publisher-plan-v2/verification.json` 中：
@@ -1210,7 +1528,10 @@ PASS: publisher plan V2 UI, 24 screenshots captured
     "rewardFormula": "min(likes * coinPerLike, perSubmissionCap)",
     "submissionReserve": "perSubmissionCap",
     "taskReview": "machine-auto-publish",
-    "settlement": "manual-confirm-system-calculated"
+    "settlement": "manual-confirm-system-calculated",
+    "rolloutPercents": [20, 50, 100],
+    "rolloutBucket": "stable-subject",
+    "existingFulfillmentProtected": true
   }
 }
 ```
@@ -1227,7 +1548,7 @@ Expected: `PASS: visual evidence generated; strict component passed`。如果钱
 
 - [ ] **Step 9: 原尺寸审图**
 
-逐张查看 `00-product-flow.png` 和重点页面 `03/04/05/06/14/15/16/17/19`，确认：文字不截断、按钮无重叠、状态可辨识、流程图每行正好 4 个竖版页面、图中无旧阶梯／自动结算／人工任务通过入口。
+逐张查看 `00-product-flow.png` 和重点页面 `03/04/05/06/14/15/16/17/19/24`，确认：文字不截断、按钮无重叠、状态可辨识、流程图每行正好 4 个竖版页面、灰度设置仅有总开关和 20%／50%／100% 三档、图中无旧阶梯／自动结算／人工任务通过入口。
 
 - [ ] **Step 10: 提交交互验证和页面证据**
 
@@ -1238,7 +1559,7 @@ git commit -m "test: verify publisher review and settlement journeys"
 
 ---
 
-### Task 10: 将 PRD 升级为 V2.3 并通过质量合同
+### Task 11: 将 PRD 升级为 V2.4 并通过质量合同
 
 **Files:**
 - Modify: `prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md:1-405`
@@ -1246,12 +1567,13 @@ git commit -m "test: verify publisher review and settlement journeys"
 - Test: `.agents/skills/to-prd/scripts/validate-prd-images.ps1`
 - Test: `tools/verify-publisher-plan-v2.mjs`
 
-- [ ] **Step 1: 增加 V2.3 修订记录和版本备注**
+- [ ] **Step 1: 增加 V2.3、V2.4 修订记录和版本备注**
 
 ```markdown
 | 2026/9/11 | 放开所有实名用户发布任务；任务改为机器审核自动发布；投稿改为自动取数校验；奖励由每赞单价与单稿上限计算；增加单稿预算预留、任务级人工结算、下架边界、实名与专属标签规则 | V2.3 | 郑群超 |
+| 2026/9/14 | 增加发行人计划功能总开关及 20%／50%／100% 灰度外放；使用稳定用户分桶并保护存量任务履约 | V2.4 | 郑群超 |
 
-**备注：** 搜2026.9.11修改；本次增量见 V2.3。
+**备注：** 搜2026.9.14修改；机器审核与人工结算见 V2.3，功能灰度外放见 V2.4。
 ```
 
 - [ ] **Step 2: 更新文档概述、术语和完整流程**
@@ -1322,6 +1644,44 @@ PRD 逐字包含：
 
 待确认项只保留真正影响正式开发或上线的配置：支持外站与取数接口、敏感词／图片服务和超时重试次数、粉丝门槛初值、高金额是否双人复核、正式充值 SKU、既有京东卡事项。不得把本轮已确认的“任何人可发布”“机器审核”“人工结算”“单价和上限由发布者设置”重新列为待确认。
 
+- [ ] **Step 7A: 增加功能外放页面六要素、配置字段和埋点**
+
+在 C 端找任务入口规则中写入：命中稳定灰度时才展示新入口并允许建立新任务关系；未命中时不展示入口；开关关闭或缩量后，已发布任务、已投稿内容和待结算记录继续履约。
+
+在 B 端新增 `3.2.10 功能外放设置`，保持页面六要素。先读取 Task 9 已提交截图所在的 40 位提交：
+
+```powershell
+$rolloutImageCommit = git rev-parse HEAD
+$rolloutImageUrl = "https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@$rolloutImageCommit/public/prd/publisher-plan-v2/24-feature-rollout-settings.png"
+Write-Output "![功能外放设置]($rolloutImageUrl)"
+```
+
+把命令输出的完整 40 位固定 SHA 图片标签写入该节，不写本地路径、分支 URL 或临时标记。
+
+该节逐字包含：
+
+```text
+功能总开关
+20%、50%、100%
+稳定分桶
+关闭或缩量不影响存量履约
+```
+
+配置字段表使用：
+
+```text
+enabled, rollout_percent, rollout_seed, config_version, updated_by, updated_at
+```
+
+埋点表增加：
+
+```markdown
+| `publisher_rollout_gate_result` | 客户端或服务端完成发行人计划准入判断 | subject_type, bucket, rollout_percent, eligible, config_version |
+| `publisher_rollout_config_update` | 运营保存功能开关或灰度比例 | operator_uid, before_enabled, after_enabled, before_percent, after_percent, config_version, result_status, fail_reason |
+```
+
+技术规则写清配置读取失败时对新曝光 fail-closed，服务端为最终判定方，`rollout_seed` 本期不在后台开放编辑。
+
 - [ ] **Step 8: 运行静态合同**
 
 Run:
@@ -1354,7 +1714,7 @@ Run:
 powershell -ExecutionPolicy Bypass -File .agents/skills/to-prd/scripts/validate-prd-images.ps1 -Path "prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md"
 ```
 
-Expected: 24 张图片引用全部通过，且不存在占位 SHA。
+Expected: 25 张图片引用全部通过，且不存在占位 SHA。
 
 - [ ] **Step 11: 提交 PRD 内容，但暂不改图片 SHA**
 
@@ -1365,7 +1725,7 @@ git commit -m "docs: update publisher plan v2.3 requirements"
 
 ---
 
-### Task 11: 固定图片提交、更新 PRD 图片地址并验证公网资源
+### Task 12: 固定图片提交、更新 PRD 图片地址并验证公网资源
 
 **Files:**
 - Modify: `prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md`
@@ -1381,7 +1741,7 @@ git rev-parse HEAD
 
 Expected: 返回 40 位小写十六进制 SHA，记为本轮图片提交 SHA；不得使用分支名、短 SHA 或未来提交。
 
-- [ ] **Step 2: 将 PRD 中 24 张图片 URL 统一替换为该固定 SHA**
+- [ ] **Step 2: 将 PRD 中 25 张图片 URL 统一替换为该固定 SHA**
 
 所有图片地址统一满足：
 
@@ -1406,7 +1766,7 @@ git push origin codex/guanwanggaid-41-publisher-plan-v2-20260910
 
 Expected: 推送成功，远端包含截图提交和 PRD 固定图片地址提交。
 
-- [ ] **Step 5: 验证 24 张远程图片**
+- [ ] **Step 5: 验证 25 张远程图片**
 
 Run:
 
@@ -1414,7 +1774,7 @@ Run:
 powershell -ExecutionPolicy Bypass -File .agents/skills/to-prd/scripts/validate-prd-images.ps1 -Path "prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md" -VerifyRemote
 ```
 
-Expected: 24/24 返回 HTTP 成功，MIME 为 `image/png`，没有 jsDelivr 404 或 HTML 响应。
+Expected: 25/25 返回 HTTP 成功，MIME 为 `image/png`，没有 jsDelivr 404 或 HTML 响应。
 
 - [ ] **Step 6: 复跑静态与 PRD 质量合同**
 
@@ -1429,7 +1789,7 @@ Expected: 静态合同 PASS；PRD 质量 `0 错误，0 警告`。
 
 ---
 
-### Task 12: 固定公网 Demo、更新状态卡并完成最终对账
+### Task 13: 固定公网 Demo、更新状态卡并完成最终对账
 
 **Files:**
 - Modify: `tools/verify-publisher-plan-public-preview.mjs:1-60`
@@ -1487,9 +1847,9 @@ Expected: C/B 固定提交页面核心点击全部通过，页面脚本错误和
 
 - [ ] **Step 5: 更新状态卡**
 
-新增 D-012 至 D-018，逐项记录：任何实名用户可发布、双认证投稿、机器审核自动发布、日 10 次及预算范围、按单稿上限预留、人工任务级结算、认证身份与专属标签分离。把当前阶段改为“发行人计划 V2.3 已实施并推送，待用户验收”。
+新增 D-012 至 D-019，逐项记录：任何实名用户可发布、双认证投稿、机器审核自动发布、日 10 次及预算范围、按单稿上限预留、人工任务级结算、认证身份与专属标签分离、功能总开关与 20%／50%／100% 稳定灰度。把当前阶段改为“发行人计划 V2.4 已实施并推送，待用户验收”。
 
-产物登记写入：设计提交、实施计划提交、C/B Demo 最终 SHA、V2.3 PRD、24 张图片固定 SHA、验证结果和新的 C/B 公网地址。修改与验证表新增 2026-09-11 本轮记录。不得把飞书文档上传标记为已完成；本轮只保证 PRD 使用公网固定图片 URL。
+产物登记写入：设计提交、实施计划提交、C/B Demo 最终 SHA、V2.4 PRD、25 张图片固定 SHA、验证结果和新的 C/B 公网地址。修改与验证表新增 2026-09-11 与 2026-09-14 两轮记录。不得把飞书文档上传标记为已完成；本轮只保证 PRD 使用公网固定图片 URL。
 
 - [ ] **Step 6: 更新运行状态 JSON**
 
@@ -1507,7 +1867,7 @@ powershell -ExecutionPolicy Bypass -File .agents/skills/to-prd/scripts/validate-
 powershell -ExecutionPolicy Bypass -File .agents/skills/to-prd/scripts/validate-prd-images.ps1 -Path "prd/ai生成/【Prd】《盖世游戏》发行人计划需求.md" -VerifyRemote
 ```
 
-Expected: 静态 PASS、UI 24 张截图 PASS、严格组件视觉 PASS、PRD `0 错误 0 警告`、远程图片 24/24 PASS。
+Expected: 静态 PASS、UI 25 张截图 PASS、严格组件视觉 PASS、PRD `0 错误 0 警告`、远程图片 25/25 PASS。
 
 - [ ] **Step 8: 检查工作区只包含预期变更**
 
@@ -1530,7 +1890,7 @@ git push origin codex/guanwanggaid-41-publisher-plan-v2-20260910
 
 - [ ] **Step 10: 最终交付信息**
 
-向用户提供：最终分支、最终 40 位 SHA、C 端固定预览、B 端固定预览、V2.3 PRD 文件、24 张图的固定图片 SHA、静态／UI／PRD／远程图片／公网点击验证结果，并明确飞书文档上传不在本轮已执行范围。
+向用户提供：最终分支、最终 40 位 SHA、C 端固定预览、B 端固定预览、V2.4 PRD 文件、25 张图的固定图片 SHA、静态／UI／PRD／远程图片／公网点击验证结果，并明确飞书文档上传不在本轮已执行范围。
 
 ---
 
@@ -1546,6 +1906,7 @@ git push origin codex/guanwanggaid-41-publisher-plan-v2-20260910
 - [ ] 取消：审核中可取消；进行中无投稿可提前结束；有投稿不得直接取消；普通与风险下架处理不同。
 - [ ] 认证：通过只授予认证身份和投稿权限；专属标签由运营根据产出定向邀请。
 - [ ] 充值：只支持固定 SKU；没有自定义金额。
-- [ ] 图文一致：C/B Demo、PRD、24 张图、8 步 4+4 流程图、验证器和状态卡使用同一口径。
+- [ ] 灰度：总开关和 20%／50%／100% 三档；稳定分桶；关闭或缩量不影响存量履约；不把灰度解释为投稿作品外放。
+- [ ] 图文一致：C/B Demo、PRD、25 张图、8 步 4+4 流程图、验证器和状态卡使用同一口径。
 - [ ] 飞书兼容：PRD 图片只引用已推送的 40 位固定 SHA 公网 PNG；不引用本地路径、相对路径或分支 URL。
 - [ ] Git：不提交 `.tmp/` 和 `.run.json.lock`；最终推送后再运行固定提交公网点击验证。
