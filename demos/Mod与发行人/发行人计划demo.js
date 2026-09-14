@@ -12,15 +12,15 @@ const platformMap={douyin:'抖音',bilibili:'B站',kuaishou:'快手',xiaohongshu
 const CI='<span class="coin-icon">G</span>';
 
 const tasks=[
-{id:1,title:'中奖概率倍儿高啊啊',gameId:1,badge:'官方',platforms:['douyin','bilibili'],reward:2,maxReward:10000,pool:87100,reserved:30000,submissions:51,deadline:'2026-06-15',snapshotDeadline:'2026-06-18 23:59',status:'进行中',ruleVersion:1,productIntro:'超刺激的转盘抽奖小游戏，每次转动都有惊喜！玩法简单上手快，适合各年龄段玩家。',
+{id:1,title:'中奖概率倍儿高啊啊',gameId:1,badge:'官方',platforms:['douyin','bilibili'],reward:2,maxReward:10000,pool:87100,reserved:30000,submissions:51,submittedAt:'2026-05-25 10:00',deadline:'2026-06-15',snapshotDeadline:'2026-06-18 23:59',status:'进行中',ruleVersion:1,productIntro:'超刺激的转盘抽奖小游戏，每次转动都有惊喜！玩法简单上手快，适合各年龄段玩家。',
 requirements:['视频时长≥15秒','需包含游戏实际游玩画面','投稿内容必须为视频内容']},
-{id:2,title:'凡人修仙模拟器宣传',gameId:2,badge:null,platforms:['bilibili'],reward:1,maxReward:8000,pool:50000,reserved:16000,submissions:11,deadline:'2026-06-10',snapshotDeadline:'2026-06-13 23:59',status:'进行中',ruleVersion:1,productIntro:'国风修仙放置类RPG，从凡人一步步修炼成仙。画面精美，剧情丰富，适合喜欢修仙题材的玩家。建议展示核心战斗和升级系统。',
+{id:2,title:'凡人修仙模拟器宣传',gameId:2,badge:null,platforms:['bilibili'],reward:1,maxReward:8000,pool:50000,reserved:16000,submissions:11,submittedAt:'2026-05-24 12:00',deadline:'2026-06-10',snapshotDeadline:'2026-06-13 23:59',status:'进行中',ruleVersion:1,productIntro:'国风修仙放置类RPG，从凡人一步步修炼成仙。画面精美，剧情丰富，适合喜欢修仙题材的玩家。建议展示核心战斗和升级系统。',
 requirements:['视频时长≥30秒','需展示游戏核心玩法','标题需包含游戏名称','投稿内容必须为视频']},
-{id:3,title:'233购物街可摆摊收打赏啦',gameId:3,badge:'官方',platforms:['douyin','kuaishou','xiaohongshu'],reward:3,maxReward:6000,pool:30000,reserved:12000,submissions:7,deadline:'2026-06-01',snapshotDeadline:'2026-06-04 23:59',status:'进行中',ruleVersion:1,productIntro:'模拟经营类游戏，玩家可以开店摆摊、装修店铺、与好友互动。新版本上线了打赏功能，社交玩法更丰富。',
+{id:3,title:'233购物街可摆摊收打赏啦',gameId:3,badge:'官方',platforms:['douyin','kuaishou','xiaohongshu'],reward:3,maxReward:6000,pool:30000,reserved:12000,submissions:7,submittedAt:'2026-05-20 09:30',deadline:'2026-06-01',snapshotDeadline:'2026-06-04 23:59',status:'进行中',ruleVersion:1,productIntro:'模拟经营类游戏，玩家可以开店摆摊、装修店铺、与好友互动。新版本上线了打赏功能，社交玩法更丰富。',
 requirements:['视频时长≥15秒','需展示摆摊和打赏功能','投稿内容必须为视频']},
-{id:4,title:'测测你是热梗王吗推广',gameId:4,badge:null,platforms:['douyin','bilibili','kuaishou','xiaohongshu'],reward:2,maxReward:5000,pool:25000,reserved:10000,submissions:7,deadline:'2026-06-08',snapshotDeadline:'2026-06-11 23:59',status:'进行中',ruleVersion:1,productIntro:'趣味答题游戏，涵盖最新网络热梗。答对越多排名越高，适合拍摄"挑战类"短视频，容易引发观众互动。',
+{id:4,title:'测测你是热梗王吗推广',gameId:4,badge:null,platforms:['douyin','bilibili','kuaishou','xiaohongshu'],reward:2,maxReward:5000,pool:25000,reserved:10000,submissions:7,submittedAt:'2026-05-21 14:00',deadline:'2026-06-08',snapshotDeadline:'2026-06-11 23:59',status:'进行中',ruleVersion:1,productIntro:'趣味答题游戏，涵盖最新网络热梗。答对越多排名越高，适合拍摄"挑战类"短视频，容易引发观众互动。',
 requirements:['视频时长≥15秒','需展示答题过程和结果','推荐使用相关话题标签','投稿内容必须为视频']},
-{id:5,title:'polo小球角色分享',gameId:5,badge:null,platforms:['xiaohongshu'],reward:5,maxReward:15000,pool:60000,reserved:15000,submissions:7,deadline:'2026-06-20',snapshotDeadline:'2026-06-23 23:59',status:'进行中',ruleVersion:1,productIntro:'休闲竞技小球对战游戏，角色造型可爱多样。适合在小红书分享角色外观和精彩对战瞬间。',
+{id:5,title:'polo小球角色分享',gameId:5,badge:null,platforms:['xiaohongshu'],reward:5,maxReward:15000,pool:60000,reserved:15000,submissions:7,submittedAt:'2026-05-26 11:00',deadline:'2026-06-20',snapshotDeadline:'2026-06-23 23:59',status:'进行中',ruleVersion:1,productIntro:'休闲竞技小球对战游戏，角色造型可爱多样。适合在小红书分享角色外观和精彩对战瞬间。',
 requirements:['视频时长≥10秒','需展示角色外观或对战画面','投稿内容必须为视频']}
 ];
 
@@ -35,8 +35,8 @@ const rankData=[
 ];
 
 const myPublished=[
-{id:101,title:'我的世界建筑大赛',status:'机器审核中',statusColor:'#1890ff',gameId:7,reward:10,maxReward:1000,pool:20000,reserved:0,submissions:0,platforms:['bilibili','douyin'],deadline:'2026-09-30 23:59',snapshotDeadline:'2026-10-03 23:59',ruleVersion:1,productIntro:'分享有创意的建筑作品。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:20000,reward:0}},
-{id:102,title:'蛋仔派对新皮肤推广',status:'进行中',statusColor:'#ff8c00',gameId:8,reward:5,maxReward:500,pool:10000,reserved:2000,submissions:4,platforms:['douyin','kuaishou'],deadline:'2026-09-25 23:59',snapshotDeadline:'2026-09-28 23:59',ruleVersion:1,productIntro:'展示新皮肤及局内效果。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:10000,reward:0}}
+{id:101,title:'我的世界建筑大赛',status:'机器审核中',statusColor:'#1890ff',gameId:7,reward:10,maxReward:1000,pool:20000,reserved:0,submissions:0,platforms:['bilibili','douyin'],submittedAt:'2026-09-11 10:00',deadline:'2026-09-30 23:59',snapshotDeadline:'2026-10-03 23:59',ruleVersion:1,productIntro:'分享有创意的建筑作品。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:20000,reward:0}},
+{id:102,title:'蛋仔派对新皮肤推广',status:'进行中',statusColor:'#ff8c00',gameId:8,reward:5,maxReward:500,pool:10000,reserved:2000,submissions:4,platforms:['douyin','kuaishou'],submittedAt:'2026-09-10 14:30',deadline:'2026-09-25 23:59',snapshotDeadline:'2026-09-28 23:59',ruleVersion:1,productIntro:'展示新皮肤及局内效果。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:10000,reward:0}}
 ];
 const myJoined=[
 {taskId:1,status:'进行中',statusColor:'#ff8c00',note:'剩余48小时'},
@@ -64,6 +64,7 @@ const rechargeSkus=[1000,5000,10000,50000,100000,500000];
 
 const publisherState={
   beijingDate:'2026-09-11',
+  beijingDateTime:'2026-09-11 10:00',
   submittedToday:9,
   submitPending:false,
   uploadedImages:[]
@@ -72,7 +73,7 @@ const publisherState={
 const submissions=[
   {
     id:'SUB001',taskId:1,platform:'douyin',contentId:'7382xxx',link:'https://www.douyin.com/video/7382xxx',
-    title:'转盘挑战实录',description:'挑战中奖概率',tags:['游戏','转盘'],duration:36,likes:3800,
+    title:'转盘挑战实录',description:'挑战中奖概率',tags:['中奖概率倍儿高啊啊','盖世游戏'],publishedAt:'2026-05-26 18:20',duration:36,likes:3800,
     fetchedAt:'2026-09-11 10:30',expectedReward:7600,reservedCoin:10000,
     status:'数据校验通过，待人工结算',risk:'正常'
   }
@@ -104,6 +105,46 @@ const submissionScenario=link=>
   link.includes('timeout')?'抓取重试':
   link.includes('private')?'风险挂起':
   link.includes('risk')?'人工处理':'normal';
+
+function requiredSubmissionTopics(task=currentTask){
+  const game=task?G(task.gameId):null;
+  return game?[game.name,'盖世游戏']:['盖世游戏'];
+}
+
+function submissionRequirements(task=currentTask){
+  if(!task)return [];
+  const [gameTopic,brandTopic]=requiredSubmissionTopics(task);
+  return [...new Set([
+    ...(task.requirements||[]),
+    `必须带话题 #${gameTopic}`,
+    `必须带话题 #${brandTopic}`,
+    `投稿发布时间不得早于任务提交时间（${task.submittedAt}）`
+  ])];
+}
+
+function renderSubmissionRequirements(){
+  const container=document.getElementById('submit-requirements');
+  if(!container||!currentTask)return;
+  container.innerHTML=`<div class="section-title">投稿要求</div><ul class="requirement-list">${submissionRequirements(currentTask).map(item=>`<li>${item}</li>`).join('')}</ul>`;
+}
+
+function mockSubmissionContent(link,task=currentTask){
+  const [gameTopic,brandTopic]=requiredSubmissionTopics(task);
+  const tags=link.includes('missing-game-topic')?[brandTopic]:link.includes('missing-brand-topic')?[gameTopic]:[gameTopic,brandTopic];
+  const publishedAt=link.includes('early')?'2026-05-24 09:00':'2026-09-11 10:30';
+  return {title:'抓取成功的作品标题',description:'抓取成功的作品描述',tags,publishedAt,duration:36,likes:3800};
+}
+
+function validateSubmissionContent(task,content){
+  const normalizedTags=(content.tags||[]).map(tag=>String(tag).trim().replace(/^#/u,''));
+  const missingTopics=requiredSubmissionTopics(task).filter(topic=>!normalizedTags.includes(topic));
+  if(missingTopics.length)return {ok:false,message:`投稿需带话题 ${missingTopics.map(topic=>`#${topic}`).join('、')}`};
+  const publishedAt=Date.parse(String(content.publishedAt||'').replace(' ','T'));
+  const taskSubmittedAt=Date.parse(String(task.submittedAt||'').replace(' ','T'));
+  if(!Number.isFinite(publishedAt)||!Number.isFinite(taskSubmittedAt))return {ok:false,message:'未获取到有效发布时间，暂不能投稿'};
+  if(publishedAt<taskSubmittedAt)return {ok:false,message:`投稿发布时间不得早于任务提交时间 ${task.submittedAt}`};
+  return {ok:true};
+}
 
 const jdCards=[
   {id:'JD10',name:'京东E卡 10元',faceValue:10,cost:1000,stock:8,limit:2},
@@ -240,7 +281,7 @@ function openDetail(id){
 <div class="section"><div class="detail-stats"><div class="detail-stat-item"><div class="num">${currentTask.submissions}</div><div class="label">已投稿</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.reward}</div><div class="label">每赞奖励</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.pool.toLocaleString()}</div><div class="label">任务奖池</div></div></div></div>
 <div class="section"><div class="section-title">产品介绍</div><div style="font-size:13px;color:#666;line-height:1.8">${currentTask.productIntro||'暂无产品介绍'}</div></div>
 <div class="section"><div class="section-title">投稿平台</div><div style="font-size:13px;color:#666">${pn}</div></div>
-<div class="section"><div class="section-title">投稿要求</div><ul class="requirement-list">${currentTask.requirements.map(r=>`<li>${r}</li>`).join('')}</ul></div>
+<div class="section"><div class="section-title">投稿要求</div><ul class="requirement-list">${submissionRequirements(currentTask).map(r=>`<li>${r}</li>`).join('')}</ul></div>
 <div class="section"><div class="section-title">奖励与结算</div><div class="rule-copy">每 1 个赞奖励 ${currentTask.reward} 盖世币，单篇最高 ${currentTask.maxReward.toLocaleString()} 盖世币。</div><div class="rule-copy">预计奖励 = min（当前点赞数 × 每赞单价，单稿奖励上限）。最终以点赞统计截止时间 ${currentTask.snapshotDeadline} 的数据快照及人工结算结果为准。</div><div class="rule-copy">投稿数据校验通过时按单稿奖励上限预留奖池；可用预算不足一个单稿上限时停止接收新投稿。</div></div>
 <div class="section"><div class="section-title">收入排行</div>${rankData.map((r,i)=>`<div class="rank-item"><div class="rank-num t${i+1}">${i+1}</div><div class="rank-avatar">${r.avatar}</div><div class="rank-info"><div class="rn">${r.name}</div><div class="rr">投稿奖励 ${CI}${r.reward}</div></div><div class="rank-view" onclick="event.stopPropagation();showToast('打开作品链接')">查看投稿 ›</div></div>`).join('')}</div>
 <div style="height:70px"></div>`;
@@ -513,7 +554,7 @@ function submitCreate(isEdit){
   const task={
     id:Date.now(),title:draft.title,gameId:selectedGameId,badge:null,platforms:draft.platforms,
     reward:draft.reward,maxReward:draft.maxReward,pool:draft.pool,reserved:0,submissions:0,
-    deadline:draft.submitDeadline.replace('T',' '),snapshotDeadline:draft.snapshotDeadline.replace('T',' '),
+    submittedAt:publisherState.beijingDateTime,deadline:draft.submitDeadline.replace('T',' '),snapshotDeadline:draft.snapshotDeadline.replace('T',' '),
     status:'机器审核中',statusColor:'#1890ff',ruleVersion:1,productIntro:draft.productIntro,
     requirements:draft.requirements,images:publisherState.uploadedImages.map(image=>({...image})),budgetSources
   };
@@ -554,14 +595,17 @@ function submitVideo(){
     showToast(scenario==='抓取重试'?'外站数据暂未取全，已进入抓取重试':`${scenario}，不会按 0 点赞结算`);
     return;
   }
+  const fetchedContent=mockSubmissionContent(link,currentTask);
+  const contentValidation=validateSubmissionContent(currentTask,fetchedContent);
+  if(!contentValidation.ok){showToast(contentValidation.message);return;}
   const available=currentTask.pool-currentTask.reserved;
   if(available<currentTask.maxReward){showToast('当前任务奖池名额已满');return;}
-  const likes=3800;
+  const likes=fetchedContent.likes;
   const expectedReward=calculateReward(likes,currentTask.reward,currentTask.maxReward);
   currentTask.reserved+=currentTask.maxReward;
   submissions.unshift({
     id:`SUB${Date.now()}`,taskId:currentTask.id,platform:selectedPlatform,contentId,link,
-    title:'抓取成功的作品标题',description:'抓取成功的作品描述',tags:['游戏'],duration:36,likes,
+    title:fetchedContent.title,description:fetchedContent.description,tags:fetchedContent.tags,publishedAt:fetchedContent.publishedAt,duration:fetchedContent.duration,likes,
     fetchedAt:'2026-09-11 10:30',expectedReward,reservedCoin:currentTask.maxReward,
     status:'数据校验通过，待人工结算',risk:'正常'
   });
@@ -720,6 +764,7 @@ function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const v=document.getElementById('view-'+name);if(v)v.classList.add('active');
   if(name==='mytask')renderMyTasks();
+  if(name==='submit')renderSubmissionRequirements();
   if(name==='earnings')renderEarnList();
   if(name==='card-store')renderCardStore();
   if(name==='recharge')renderRecharge();

@@ -145,7 +145,12 @@ mustContain(cHtml + cJs, [
   '当前任务奖池名额已满',
   '发布任务前需要先完成实名认证。',
   '兑换前需要先完成实名认证。',
-  'requireRedeemIdentity'
+  'requireRedeemIdentity',
+  'submissionRequirements',
+  'validateSubmissionContent',
+  '必须带话题 #',
+  '`必须带话题 #${brandTopic}`',
+  '投稿发布时间不得早于任务提交时间'
 ], 'C publishing flow');
 mustContain(cHtml + cJs, [
   'id="submit-task-btn" onclick="submitCreate(false)">提交</button>'
@@ -304,6 +309,17 @@ mustContain(prd, [
   'V2.6',
   '页面底部主按钮文案为“提交”'
 ], 'PRD create task submit copy');
+mustContain(prd, [
+  'V2.7',
+  '`#{实际推广游戏名称}`',
+  '`#盖世游戏`',
+  '投稿发布时间不得早于任务提交时间',
+  'task_submitted_at',
+  'content_published_at',
+  'required_topics',
+  'missing_required_topic',
+  'published_before_task'
+], 'PRD submission requirements');
 mustContain(prd, [
   '不按 0 点赞结算'
 ], 'PRD inaccessible-work settlement rule');

@@ -180,10 +180,16 @@ try {
   await page.evaluate(() => openDetail(1));
   assert.equal(await page.getByText('每 1 个赞奖励 2 盖世币', { exact: false }).count() > 0, true);
   assert.equal(await page.getByText('单篇最高 10,000 盖世币', { exact: false }).count() > 0, true);
+  assert.equal(await page.getByText('必须带话题 #中奖概率倍儿高啊啊', { exact: true }).count(), 1);
+  assert.equal(await page.getByText('必须带话题 #盖世游戏', { exact: true }).count(), 1);
+  assert.equal(await page.getByText('投稿发布时间不得早于任务提交时间（2026-05-25 10:00）', { exact: true }).count(), 1);
   await captureC(page, '03-task-detail', '任务详情');
   await page.evaluate(() => showView('mytask'));
   await captureC(page, '04-my-tasks', '做任务');
   await page.evaluate(() => showView('submit'));
+  assert.equal(await page.locator('#submit-requirements').getByText('必须带话题 #中奖概率倍儿高啊啊', { exact: true }).count(), 1);
+  assert.equal(await page.locator('#submit-requirements').getByText('必须带话题 #盖世游戏', { exact: true }).count(), 1);
+  assert.equal(await page.locator('#submit-requirements').getByText('投稿发布时间不得早于任务提交时间（2026-05-25 10:00）', { exact: true }).count(), 1);
   await captureC(page, '05-submit-work', '提交投稿');
   await page.evaluate(() => showView('create'));
   assert.equal(await page.locator('#submit-task-btn').innerText(), '提交');
@@ -373,16 +379,37 @@ try {
     showView('submit');
   });
   const beforeReserved = await submissionCheck.page.evaluate(() => currentTask.reserved);
+  const beforeInvalidSubmissions = await submissionCheck.page.evaluate(() => submissions.length);
+  await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/missing-game-topic-001');
+  await submissionCheck.page.getByRole('button', { name: '提交投稿' }).click();
+  assert.equal(await submissionCheck.page.getByText('投稿需带话题 #中奖概率倍儿高啊啊', { exact: true }).count(), 1);
+  assert.equal(await submissionCheck.page.evaluate(() => submissions.length), beforeInvalidSubmissions);
+  assert.equal(await submissionCheck.page.evaluate(() => currentTask.reserved), beforeReserved);
+
+  await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/missing-brand-topic-001');
+  await submissionCheck.page.getByRole('button', { name: '提交投稿' }).click();
+  assert.equal(await submissionCheck.page.getByText('投稿需带话题 #盖世游戏', { exact: true }).count(), 1);
+  assert.equal(await submissionCheck.page.evaluate(() => submissions.length), beforeInvalidSubmissions);
+  assert.equal(await submissionCheck.page.evaluate(() => currentTask.reserved), beforeReserved);
+
+  await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/early-001');
+  await submissionCheck.page.getByRole('button', { name: '提交投稿' }).click();
+  assert.equal(await submissionCheck.page.getByText('投稿发布时间不得早于任务提交时间 2026-05-25 10:00', { exact: true }).count(), 1);
+  assert.equal(await submissionCheck.page.evaluate(() => submissions.length), beforeInvalidSubmissions);
+  assert.equal(await submissionCheck.page.evaluate(() => currentTask.reserved), beforeReserved);
+
   await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/valid-001');
   await submissionCheck.page.getByRole('button', { name: '提交投稿' }).click();
   assert.equal(await submissionCheck.page.getByText('数据校验通过，待人工结算', { exact: false }).count() > 0, true);
   const submissionResult = await submissionCheck.page.evaluate(before => ({
     status: submissions[0].status,
+    tags: submissions[0].tags,
+    publishedAt: submissions[0].publishedAt,
     likes: submissions[0].likes,
     expectedReward: submissions[0].expectedReward,
     reservedDelta: currentTask.reserved - before
   }), beforeReserved);
-  assert.deepEqual(submissionResult, { status: '数据校验通过，待人工结算', likes: 3800, expectedReward: 7600, reservedDelta: 10000 });
+  assert.deepEqual(submissionResult, { status: '数据校验通过，待人工结算', tags: ['中奖概率倍儿高啊啊', '盖世游戏'], publishedAt: '2026-09-11 10:30', likes: 3800, expectedReward: 7600, reservedDelta: 10000 });
 
   await submissionCheck.page.evaluate(() => showView('submit'));
   await submissionCheck.page.locator('#video-link').fill('https://www.douyin.com/video/timeout-001');

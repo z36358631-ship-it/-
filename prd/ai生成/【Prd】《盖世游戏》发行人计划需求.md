@@ -12,8 +12,9 @@
 | 2026/9/14 | 增加发行人计划功能总开关及 20%／50%／100% 灰度外放，使用稳定用户分桶并保护存量履约 | V2.4 | 郑群超 |
 | 2026/9/14 | 发布任务和兑换增加实名认证前置校验，认证成功后恢复原动作，最终提交时由服务端再次校验 | V2.5 | 郑群超 |
 | 2026/9/14 | 创建发行任务页主按钮文案由“提交并进行机器审核”简化为“提交” | V2.6 | 郑群超 |
+| 2026/9/14 | 任务详情与提交投稿页增加完整投稿要求；强制游戏话题、盖世游戏话题及投稿时间下限，并纳入自动校验 | V2.7 | 郑群超 |
 
-**备注：** 搜2026.9.14修改；机器审核与人工结算见 V2.3，功能灰度外放见 V2.4，发布与兑换实名认证门槛见 V2.5，提交按钮文案见 V2.6。
+**备注：** 搜2026.9.14修改；机器审核与人工结算见 V2.3，功能灰度外放见 V2.4，发布与兑换实名认证门槛见 V2.5，提交按钮文案见 V2.6，投稿要求与校验见 V2.7。
 
 ## 一、文档概述
 
@@ -109,7 +110,7 @@
 | 功能简介 | 展示任务对象、投稿要求、盖世币奖励、结算规则和投稿入口。 |
 | 场景描述 | 创作者从任务广场或“做任务”列表查看某个发行人任务。 |
 | 输入／前置条件 | 任务存在；用户可查看。新投稿需命中灰度、完成实名认证与创作者认证，且可用预算不少于一个单稿奖励上限。 |
-| 需求描述 | **图示：**<br>![任务详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@232d9fbaadb5f2d45c2c431c2e232bb733db95b5/public/prd/publisher-plan-v2/03-task-detail.png)<br>**详细说明：** 详情页展示完整任务和奖励规则，并在进入投稿前执行准入、资格与预算校验。<br>**展示说明：**<br>1. 统计区展示已投稿数、每赞奖励和任务奖池；正文展示产品介绍、平台、投稿要求、奖励与结算、收入排行。<br>2. 奖励逐字说明“每 1 个赞奖励 X 盖世币，单篇最高 Y 盖世币”；预计奖励 = min（当前点赞数 × 每赞单价，单稿奖励上限）。<br>3. 最终以点赞统计截止时间的数据快照及人工结算结果为准；投稿数据校验通过时按单稿奖励上限预留预算。<br>4. 可用预算不足一个单稿上限时按钮禁用并显示“当前任务奖池名额已满”。<br>**交互说明：**<br>1. 点击“上传参与作品”时按灰度、实名、创作者认证、任务、预算和平台顺序校验；通过后进入提交页。<br>2. 未实名先完成实名认证；未通过创作者认证则进入认证申请。灰度未命中不建立新关系。<br>3. 返回列表恢复位置；任务状态冲突以服务端为准。 |
+| 需求描述 | **图示：**<br>![任务详情](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@232d9fbaadb5f2d45c2c431c2e232bb733db95b5/public/prd/publisher-plan-v2/03-task-detail.png)<br>**详细说明：** 详情页展示完整任务和奖励规则，并在进入投稿前执行准入、资格与预算校验。<br>**展示说明：**<br>1. 统计区展示已投稿数、每赞奖励和任务奖池；正文展示产品介绍、平台、投稿要求、奖励与结算、收入排行。<br>2. 投稿要求包含发布者配置的原任务要求、`#{实际推广游戏名称}`、`#盖世游戏`，以及“投稿发布时间不得早于任务提交时间（具体时间）”。<br>3. 奖励逐字说明“每 1 个赞奖励 X 盖世币，单篇最高 Y 盖世币”；预计奖励 = min（当前点赞数 × 每赞单价，单稿奖励上限）。<br>4. 最终以点赞统计截止时间的数据快照及人工结算结果为准；投稿数据校验通过时按单稿奖励上限预留预算。<br>5. 可用预算不足一个单稿上限时按钮禁用并显示“当前任务奖池名额已满”。<br>**交互说明：**<br>1. 点击“上传参与作品”时按灰度、实名、创作者认证、任务、预算和平台顺序校验；通过后进入提交页。<br>2. 未实名先完成实名认证；未通过创作者认证则进入认证申请。灰度未命中不建立新关系。<br>3. 返回列表恢复位置；任务状态冲突以服务端为准。 |
 | 输出／后置条件 | 符合条件的用户进入提交投稿页；不符合条件的用户看到明确禁用原因且不产生投稿记录。 |
 | 补充说明 | 奖池资格按单稿上限预留，不按预计奖励占用；已预留投稿在关闭或缩量后继续处理。 |
 
@@ -131,9 +132,9 @@
 | 功能简介 | 提交外站作品链接，由系统获取内容与数据，校验通过后进入待人工结算。 |
 | 场景描述 | 创作者完成外站作品后，从任务详情提交参与作品。 |
 | 输入／前置条件 | 任务可投稿；用户命中灰度、已实名且已通过创作者认证；作品已发布到任务允许的平台。 |
-| 需求描述 | **图示：**<br>![提交投稿](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@232d9fbaadb5f2d45c2c431c2e232bb733db95b5/public/prd/publisher-plan-v2/05-submit-work.png)<br>**详细说明：** 创作者只提交外站作品链接，系统自动获取内容和数据并分流正常或异常状态。<br>**展示说明：**<br>1. 页面展示允许平台、作品链接、任务要求和“数据获取与奖励”说明。<br>2. 系统获取标题、描述、标签、发布时间、时长和点赞数；预计奖励随点赞变化，最终以点赞统计截止时间快照及人工结算结果为准。<br>3. 抓取失败不会按 0 点赞结算。<br>**交互说明：**<br>1. 前端校验非空、URL 和平台域名；服务端以“平台＋标准化平台内容 ID”校验重复、任务状态和资格。<br>2. 内容与数据完整取得且规则校验通过后，自动进入“数据校验通过，待人工结算”，并按单稿奖励上限预留预算。<br>3. 抓取超时进入抓取重试；关键字段缺失或基础风险进入人工处理；删除、私密或风险数据进入风险挂起。异常状态不生成预计奖励和结算结果。<br>4. 网络失败不清空输入；重复提交不新增记录。 |
-| 输出／后置条件 | 生成唯一投稿记录；正常记录进入待人工结算，异常记录进入重试、人工处理、驳回或风险挂起。 |
-| 补充说明 | 同一作品仅最早有效记录可参与；最终入账通过任务 ID、结算批次和投稿 ID 幂等。 |
+| 需求描述 | **图示：**<br>![提交投稿](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@232d9fbaadb5f2d45c2c431c2e232bb733db95b5/public/prd/publisher-plan-v2/05-submit-work.png)<br>**详细说明：** 创作者只提交外站作品链接，系统自动获取内容和数据并分流正常或异常状态。<br>**展示说明：**<br>1. 页面按“投稿平台→投稿要求→视频链接→数据获取与奖励”展示；投稿要求与任务详情一致。<br>2. 投稿要求包含发布者配置的原任务要求、必须带 `#{实际推广游戏名称}` 话题、必须带 `#盖世游戏` 话题，以及投稿发布时间不得早于任务提交时间；占位符在页面中替换为实际游戏名，并显示具体任务提交时间。<br>3. 系统获取标题、描述、标签、发布时间、时长和点赞数；预计奖励随点赞变化，最终以点赞统计截止时间快照及人工结算结果为准。<br>4. 抓取失败不会按 0 点赞结算。<br>**交互说明：**<br>1. 前端校验非空、URL 和平台域名；服务端以“平台＋标准化平台内容 ID”校验重复、任务状态和资格。<br>2. 服务端以任务提交时间快照和标准化话题执行强校验；缺少任一必带话题或投稿时间过早时提示具体原因，不生成有效投稿记录，不进入待人工结算，不预留预算。<br>3. 内容与数据完整取得，且话题、发布时间、平台、任务、唯一性和风险规则全部通过后，自动进入“数据校验通过，待人工结算”，并按单稿奖励上限预留预算。<br>4. 抓取超时进入抓取重试；关键字段缺失或基础风险进入人工处理；删除、私密或风险数据进入风险挂起。异常状态不生成预计奖励和结算结果。<br>5. 网络失败不清空输入；重复提交不新增记录。 |
+| 输出／后置条件 | 符合要求时生成唯一投稿记录并进入待人工结算；话题或时间不符合时不生成有效投稿、不预留预算；其他异常进入重试、人工处理、驳回或风险挂起。 |
+| 补充说明 | 1. 同一作品仅最早有效记录可参与；最终入账通过任务 ID、结算批次和投稿 ID 幂等。<br>2. 任务提交时间取任务首次成功进入机器审核时的服务端北京时间，不随自动发布、追加预算、延期或客户端时间变化。<br>3. 话题校验去除首个 `#` 后精确匹配标准化话题名称；不使用标题或正文中的普通同名文本替代话题。 |
 
 #### 3.1.6 创建发行任务
 
@@ -406,7 +407,7 @@
 | `publisher_task_submit` | C 端／创建任务；新增 | 任务提交成功进入机器审核，且次数计数和预算冻结完成 | uid, task_id, daily_submit_count, coin_per_like, per_submission_cap, budget_coin, image_count, result_status, fail_reason |
 | `publisher_task_machine_review_result` | 服务端／机器审核；新增 | 机器审核得到明确通过、明确拒绝或转人工结果 | task_id, rule_version, text_check_result, image_check_result, ocr_check_result, result_status, fail_reason |
 | `publisher_submission_submit` | C 端／提交投稿；新增 | 唯一投稿记录创建成功 | uid, task_id, submission_id, platform, content_id |
-| `publisher_submission_check_result` | 服务端／投稿校验；新增 | 抓取与自动校验进入待人工结算、重试、人工处理或挂起 | task_id, submission_id, content_id, likes, fetched_at, expected_reward, reserved_coin, result_status, fail_reason |
+| `publisher_submission_check_result` | 服务端／投稿校验；新增 | 抓取与自动校验进入待人工结算、规则拒绝、重试、人工处理或挂起 | task_id, submission_id, content_id, task_submitted_at, content_published_at, required_topics, topic_check_result, publish_time_check_result, likes, fetched_at, expected_reward, reserved_coin, result_status, fail_reason |
 | `publisher_task_end_action` | C/B 端／任务管理；新增 | 发布者提前结束或运营普通／风险下架成功 | task_id, operator_role, action_type, task_status, affected_submission_count |
 | `publisher_settlement_batch_action` | B 端／结算管理；新增 | 运营确认、驳回、挂起或重抓结算批次 | batch_id, task_id, submission_count, settlement_coin, action_type, result_status, fail_reason |
 | `publisher_creator_certification_action` | B 端／创作者审核；新增 | 运营通过、驳回或撤销创作者认证 | uid, application_id, real_name_status, posts, fans, required_fans, action_type, result_status |
@@ -447,6 +448,11 @@
 | submission_id | string；是 | 投稿唯一标识 | SUB001 |
 | platform | enum；是 | 投稿平台 | douyin＝抖音；bilibili＝哔哩哔哩；kuaishou＝快手；xiaohongshu＝小红书 |
 | content_id | string；是 | 标准化平台内容 ID | 7382456719023487 |
+| task_submitted_at | datetime；是 | 任务首次成功进入机器审核的服务端北京时间 | 2026-05-25 10:00:00 |
+| content_published_at | datetime；否 | 外站作品实际发布时间；未取全不传 | 2026-05-26 18:20:00 |
+| required_topics | string[]；是 | 本任务要求精确匹配的标准化话题，不带首个 `#` | ["中奖概率倍儿高啊啊","盖世游戏"] |
+| topic_check_result | enum；是 | 两个必带话题校验结果 | pass＝均存在；reject＝至少缺少一个；unknown＝话题未取全 |
+| publish_time_check_result | enum；是 | 投稿发布时间与任务提交时间比较结果 | pass＝不早于；reject＝早于；unknown＝时间未取全 |
 | likes | int；否 | 本次获取的点赞数；未取全不传 | 3800 |
 | fetched_at | datetime；否 | 外站数据抓取时间；未成功不传 | 2026-09-11 10:30:00 |
 | expected_reward | int；否 | 按当前数据计算的预计奖励；校验未通过不传 | 7600 |
@@ -468,8 +474,8 @@
 | face_value | int；是 | 京东卡面额，单位为人民币元，仅描述卡商品，不作为盖世币固定汇率 | 20 |
 | coin_cost | int；是 | 当前商品兑换所需盖世币，取下单价格快照；不表示盖世积分 | 2000 |
 | order_id | string；否 | 兑换订单唯一标识；前置校验失败且未创建订单时不传 | JDO_202608310001 |
-| result_status | enum；是 | 各事件结果；按事件限制合法值 | 灰度配置：success＝保存成功；invalid＝配置非法；conflict＝配置版本冲突；failed＝保存失败<br>任务机审：auto_published＝自动发布；rejected＝审核拒绝；manual_exception＝转人工异常处理<br>投稿：pending_settlement＝待人工结算；retry＝等待重抓；manual＝转人工处理；risk_hold＝风险挂起；rejected＝投稿驳回<br>结算：settled＝已结算；held＝已挂起；rejected＝结算驳回；refetched＝已重抓；failed＝结算失败<br>认证：passed＝认证通过；rejected＝认证驳回；revoked＝认证撤销<br>兑卡：success＝发放成功；failed＝发放失败；refunded＝已退回；pending_review＝待核对 |
-| fail_reason | enum；否 | 失败、不确定或异常原因；成功时不传 | rollout_config_unavailable＝灰度配置不可用；machine_timeout＝机审超时；content_risk＝任务内容风险<br>fetch_timeout＝取数超时；missing_field＝必需字段缺失；duplicate_content＝作品重复；risk_hit＝命中投稿风险<br>amount_mismatch＝金额校验不一致；insufficient_redeemable_balance＝可兑换余额不足；out_of_stock＝卡密售罄；product_offline＝商品下架<br>delivery_failed＝卡密发放失败；result_unknown＝外部结果不确定 |
+| result_status | enum；是 | 各事件结果；按事件限制合法值 | 灰度配置：success＝保存成功；invalid＝配置非法；conflict＝配置版本冲突；failed＝保存失败<br>任务机审：auto_published＝自动发布；rejected＝审核拒绝；manual_exception＝转人工异常处理<br>投稿：pending_settlement＝待人工结算；rule_rejected＝规则拒绝；retry＝等待重抓；manual＝转人工处理；risk_hold＝风险挂起；rejected＝投稿驳回<br>结算：settled＝已结算；held＝已挂起；rejected＝结算驳回；refetched＝已重抓；failed＝结算失败<br>认证：passed＝认证通过；rejected＝认证驳回；revoked＝认证撤销<br>兑卡：success＝发放成功；failed＝发放失败；refunded＝已退回；pending_review＝待核对 |
+| fail_reason | enum；否 | 失败、不确定或异常原因；成功时不传 | rollout_config_unavailable＝灰度配置不可用；machine_timeout＝机审超时；content_risk＝任务内容风险<br>fetch_timeout＝取数超时；missing_field＝必需字段缺失；duplicate_content＝作品重复；missing_required_topic＝缺少必带话题；published_before_task＝作品发布时间早于任务提交时间；risk_hit＝命中投稿风险<br>amount_mismatch＝金额校验不一致；insufficient_redeemable_balance＝可兑换余额不足；out_of_stock＝卡密售罄；product_offline＝商品下架<br>delivery_failed＝卡密发放失败；result_unknown＝外部结果不确定 |
 | action_type | enum；是 | 当前业务动作 | end_early＝提前结束；normal_takedown＝普通下架；risk_takedown＝风险下架<br>settle＝确认结算；reject＝驳回；hold＝挂起；refetch＝重新抓取<br>certify＝认证通过；revoke＝撤销认证；reveal＝查看卡密；copy＝复制卡密 |
 
 #### 4.1.4 数据报表
@@ -487,7 +493,7 @@
 | 灰度准入 | 服务端为最终判定方；登录用户使用 `account_id`，未登录使用稳定 `installation_id`，按固定 `rollout_seed` 计算 0～99 桶值。同一轮次结果稳定，20% 扩至 50% 时原命中用户继续命中。配置读取失败或非法时拒绝新曝光；已有关系继续履约。 |
 | 实名与限次 | 发布任务与兑换均要求实名认证。入口未实名时拉起实名认证弹窗，成功后只恢复原动作；任务提交与兑换接口再次校验。发布任务按实名主体聚合，北京时间自然日最多成功提交 10 次；次数计数、任务创建和预算冻结需幂等。投稿另校验创作者认证，认证与专属标签分离。 |
 | 任务机审 | 保存文字、图片内容安全、OCR、账号、次数、预算和规则版本结果；全部明确通过才自动发布。超时、无响应或不确定进入人工异常处理；取消后的审核回调不得重新上架。 |
-| 外站取数 | 保存平台、标准化内容 ID、原链接、标题、描述、标签、发布时间、时长、点赞数、抓取时间、校验结果和证据版本。抓取失败、字段缺失、删除、私密、重复或风险不得生成正常结算结果。 |
+| 外站取数 | 保存平台、标准化内容 ID、原链接、标题、描述、标准化话题、发布时间、时长、点赞数、抓取时间、任务提交时间快照、校验结果和证据版本。必须同时包含实际推广游戏话题和“盖世游戏”话题，且作品发布时间不早于任务提交时间；缺话题、时间过早、抓取失败、字段缺失、删除、私密、重复或风险均不得生成正常结算结果。 |
 | 预算与结算 | 数据校验通过时按单稿上限预留；最终金额由结算快照、每赞单价和单稿上限计算，前端与后台只读。以任务 ID＋结算批次＋投稿 ID 保证人工确认和盖世币入账幂等，释放差额和原来源可追溯。 |
 | 操作审计 | 记录机审异常处理、重新抓取、挂起、恢复、驳回、普通／风险下架、认证、标签邀请、灰度保存和结算确认的操作人、时间、前后状态、规则或配置版本。 |
 | 安全 | 卡密加密存储和传输，页面、普通日志、报表、下载文件默认脱敏；脱敏时只显示末 4 位，其余以 `*` 替代，长度不超过 4 位时全部隐藏。完整卡密只在授权查看或用户主动查看时短时返回，查看、复制、作废、核对均写不可删除的审计记录。 |
@@ -505,7 +511,7 @@
 |---|---|
 | 灰度 | 总开关、20%／50%／100%、同主体稳定、20% 扩 50% 包含关系、100% 全量、配置失败关闭新曝光、缩量后存量继续 |
 | 发布 | 未实名入口弹窗、认证成功进入创建页但不自动提交、最终提交二次实名校验、日 10 次、预算 5,000～10,000,000、图片与 OCR、明确通过自动发布、明确拒绝退回、不确定转人工、审核中取消和重复提交幂等 |
-| 投稿 | 双认证、平台域名、内容 ID 去重、完整取数自动进入待人工结算、按单稿上限预留、超时重试、删除／私密／风险挂起、预算不足 |
+| 投稿 | 双认证、平台域名、内容 ID 去重、原任务要求展示、实际游戏话题、`#盖世游戏`、投稿时间不早于任务提交时间、缺话题与时间过早不预留、完整取数自动进入待人工结算、按单稿上限预留、超时重试、删除／私密／风险挂起、预算不足 |
 | 结算 | 任务级批次、系统金额只读、人工确认、风险拦截、重抓重算、驳回释放、差额释放、重复确认不重复入账 |
 | 回归 | 钱包来源、固定充值 SKU、兑换未实名弹窗、认证成功仅恢复确认、最终兑换二次实名校验、京东卡与卡密、普通／风险下架、认证与专属标签分离、旧版本存量访问 |
 
