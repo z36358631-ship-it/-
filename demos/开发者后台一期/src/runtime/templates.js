@@ -261,8 +261,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     ['qualifications', '资质认证', 'file', '权属证明 发行授权 国内发行资质'],
   ];
   const publisherChannelConsoleSections = [
-    ['channel-overview', '渠道分销', 'key', '渠道 授权 计划 销售 兑换 结算'],
-    ['channel-batches', 'Key 批次', 'key', 'Key 批次 额度 状态 有效期'],
+    ['channel-overview', '渠道分销', 'key', '渠道 分销 销售 兑换 结算'],
+    ['channel-batches', 'Key 批次', 'key', 'Key 批次 渠道 状态 有效期'],
     ['channel-data', '渠道数据', 'chart', '渠道 SKU 地区 销售 兑换 退款'],
     ['channel-settlement', '收益与结算', 'finance', '月结 收益 应收 退款 拒付 调整'],
   ];

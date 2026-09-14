@@ -18,11 +18,6 @@ async function openDemoState(page){
   await page.locator('[data-demo-state-panel]').waitFor();
 }
 
-async function switchChannelScenario(page,label){
-  await openDemoState(page);
-  await page.getByRole('radio',{name:label,exact:true}).click();
-}
-
 async function switchBatchScenario(page,label){
   await openDemoState(page);
   await page.getByRole('radio',{name:label,exact:true}).click();
@@ -79,7 +74,7 @@ test('四个渠道页面口径一致且不含明文 Key 或 Secret',async()=>{
   const page=await browser.newPage({viewport:{width:1280,height:900}});
   await openGame(page);
   const sections=[
-    ['渠道分销','渠道分销总览',['CH-001','KP-202609-001','1,282','1,268','USD 16,467.32']],
+    ['渠道分销','渠道分销总览',['渠道数','1,282','1,268','USD 16,467.32']],
     ['Key 批次','Key 批次',['KB-202609-0008','可用','已耗尽']],
     ['渠道数据','渠道数据',['APP-7F3A9C','BASE-GLOBAL','GH26-••••-••••-9K2Q']],
     ['收益与结算','收益与结算',['1,282','14','1,268','USD 16,467.32']],
@@ -153,21 +148,33 @@ test('批次详情与脱敏导出均有明确反馈',async()=>{
   await page.close();
 });
 
-test('开发者可查看授权计划并创建 Key 批次',async()=>{
+test('开发者可自定义渠道名称并创建 Key 批次',async()=>{
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   await openGame(page);
   await page.getByRole('button',{name:'渠道分销',exact:true}).click();
-  await page.getByRole('button',{name:'查看计划详情',exact:true}).click();
-  const plan=page.getByRole('dialog',{name:'授权计划详情'});
-  await plan.waitFor();
-  assert.match(await plan.innerText(),/KP-202609-001[\s\S]*单次上限[\s\S]*1,000/);
-  await plan.getByRole('button',{name:'关闭'}).click();
+  assert.doesNotMatch(await page.locator('.publisher-channel').innerText(),/授权计划|计划额度|已使用|剩余额度|日额度|5,000|3,360/);
   await page.getByRole('button',{name:'Key 批次',exact:true}).click();
+  const batchTable=page.locator('.publisher-channel-table');
+  await batchTable.getByRole('columnheader',{name:'渠道',exact:true}).waitFor();
+  assert.match(await batchTable.innerText(),/NovaPlay Store/);
+  assert.equal(await batchTable.getByRole('columnheader',{name:'授权计划',exact:true}).count(),0);
   await page.getByRole('button',{name:'创建 Key 批次',exact:true}).click();
   const create=page.getByRole('dialog',{name:'创建 Key 批次'});
+  assert.equal(await create.getByLabel('渠道名称').inputValue(),'');
+  assert.equal(await create.getByLabel('渠道名称').getAttribute('readonly'),null);
+  assert.doesNotMatch(await create.innerText(),/授权计划|剩余额度|3,360/);
+  await create.getByRole('button',{name:'提交批次申请'}).click();
+  await create.getByText('请输入 1—50 个字的渠道名称。',{exact:true}).waitFor();
+  await create.getByLabel('渠道名称').fill('北美线下渠道');
   await create.getByLabel('申请数量').fill('500');
   await create.getByRole('button',{name:'提交批次申请'}).click();
   await page.getByText('批次已生成',{exact:true}).waitFor();
+  assert.match(await page.locator('[data-channel-batch-result]').innerText(),/北美线下渠道/);
+  const submittedRow=page.locator('.publisher-channel-table tbody tr').filter({hasText:'KB-202609-0016'});
+  assert.match(await submittedRow.innerText(),/北美线下渠道/);
+  await submittedRow.getByRole('button',{name:'查看详情',exact:true}).click();
+  assert.match(await page.getByRole('dialog',{name:'批次详情'}).innerText(),/渠道名称[\s\S]*北美线下渠道/);
+  await page.getByRole('dialog',{name:'批次详情'}).getByRole('button',{name:'关闭'}).click();
   await page.getByRole('button',{name:'创建 Key 批次',exact:true}).click();
   const secondCreate=page.getByRole('dialog',{name:'创建 Key 批次'});
   await secondCreate.getByLabel('申请数量').fill('1001');
@@ -180,22 +187,22 @@ test('开发者可查看授权计划并创建 Key 批次',async()=>{
   await page.close();
 });
 
-test('渠道开通和批次处理状态都可演示',async()=>{
+test('企业认证通过后默认开放渠道分销并可演示批次结果',async()=>{
   const page=await browser.newPage({viewport:{width:1280,height:900}});
   await openGame(page);
   await page.getByRole('button',{name:'渠道分销',exact:true}).click();
-  await switchChannelScenario(page,'未开通');
-  await page.getByText('邀请制渠道合作',{exact:true}).waitFor();
-  assert.equal(await page.getByRole('button',{name:'创建 Key 批次',exact:true}).isDisabled(),true);
-  await switchChannelScenario(page,'合作中');
+  assert.equal(await page.getByRole('button',{name:'创建 Key 批次',exact:true}).isEnabled(),true);
+  await openDemoState(page);
+  const statePanel=page.locator('[data-demo-state-panel]');
+  const stateText=await statePanel.innerText();
+  assert.doesNotMatch(stateText,/渠道合作|未开通|合作中|暂停|授权/);
+  await statePanel.getByRole('button',{name:'关闭状态预览'}).click();
   for(const [label,result,action] of [['审核中','批次审核中',''],['已拒绝','批次申请已拒绝','修改后重提'],['生成失败','批次生成失败','重试生成'],['自动生成','批次已生成','']]){
     await switchBatchScenario(page,label);
     await page.getByRole('heading',{name:'Key 批次',exact:true}).waitFor();
     await page.getByText(result,{exact:true}).waitFor();
     if(action) await page.getByRole('button',{name:action,exact:true}).waitFor();
   }
-  await switchChannelScenario(page,'暂停');
-  await page.getByText('授权计划已暂停',{exact:true}).waitFor();
   await page.close();
 });
 
@@ -259,13 +266,6 @@ test('输出桌面与手机端视觉验收图',async()=>{
     await page.screenshot({path:path.join(evidenceDir,shot.file),fullPage:true});
     await page.close();
   }
-  const planPage=await browser.newPage({viewport:{width:1440,height:900}});
-  await openGame(planPage);
-  await planPage.getByRole('button',{name:'渠道分销',exact:true}).click();
-  await planPage.getByRole('button',{name:'查看计划详情',exact:true}).click();
-  await planPage.screenshot({path:path.join(evidenceDir,'channel-plan-detail-1440.png'),fullPage:true});
-  await planPage.close();
-
   const createPage=await browser.newPage({viewport:{width:390,height:844}});
   await openGame(createPage);
   await createPage.getByRole('button',{name:'Key 批次',exact:true}).click();
