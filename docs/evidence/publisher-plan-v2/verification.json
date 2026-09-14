@@ -1,6 +1,6 @@
 {
   "status": "pass",
-  "checkedAt": "2026-09-14T04:34:04.537Z",
+  "checkedAt": "2026-09-14T05:07:47.673Z",
   "contract": {
     "totalBefore": 3650,
     "redeemableBefore": 2650,
@@ -24,6 +24,9 @@
     ],
     "rolloutBucket": "stable-subject",
     "existingFulfillmentProtected": true,
+    "publishRealNameGate": "entry-and-submit",
+    "redeemRealNameGate": "entry-and-confirm",
+    "identitySuccessAutoAction": false,
     "globalAlertThreshold": 3,
     "alertScope": "per-sku",
     "repeatHours": 24,
@@ -301,6 +304,24 @@
       "width": 1440,
       "height": 900,
       "sha256": "425237c1b9a0844b9fd9b5eaec3cc312679b4f812b990b486a5c785ea8bdf9fc"
+    },
+    {
+      "name": "25-publish-real-name-gate",
+      "title": "发布任务实名认证",
+      "path": "public/prd/publisher-plan-v2/25-publish-real-name-gate.png",
+      "bytes": 55954,
+      "width": 376,
+      "height": 812,
+      "sha256": "d820df52286b50ab16d4765602fbc611fab8c0f21b03a7b5eab32a74ad4508d4"
+    },
+    {
+      "name": "26-redeem-real-name-gate",
+      "title": "兑换实名认证",
+      "path": "public/prd/publisher-plan-v2/26-redeem-real-name-gate.png",
+      "bytes": 39971,
+      "width": 376,
+      "height": 812,
+      "sha256": "3c5ed86d959854dac3c375804aba8cfbf45a8db43b33c74745382d39acbc61ee"
     }
   ],
   "componentEvidence": [
@@ -352,7 +373,7 @@
   ],
   "visualComparison": {
     "status": "pass",
-    "checkedAt": "2026-09-14T04:34:04.537Z",
+    "checkedAt": "2026-09-14T05:07:47.673Z",
     "method": "full-resolution RGB MAE similarity, Canny edge XOR, uniform-window SSIM, CIEDE2000 P95 and component geometry",
     "noResize": true,
     "geometryThresholdPx": 2,

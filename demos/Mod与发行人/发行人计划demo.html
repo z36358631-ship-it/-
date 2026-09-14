@@ -466,6 +466,7 @@ function canStartNewPublisherAction(){
 
 function openCreateTask(){
   if(!canStartNewPublisherAction())return false;
+  if(!requirePublisherIdentity(()=>openCreateTask()))return false;
   editingTask=null;
   document.getElementById('create-title').textContent='创建发行任务';
   renderCreateForm();
@@ -474,12 +475,23 @@ function openCreateTask(){
 }
 function G(id){return games.find(g=>g.id===id)}
 
-function requirePublisherIdentity(){
+function requirePublisherIdentity(onVerified){
   if(identityState.realNameVerified)return true;
   showModal('完成实名认证','发布任务前需要先完成实名认证。',()=>{
     identityState.realNameVerified=true;
     showToast('实名认证已完成');
-  });
+    if(typeof onVerified==='function')onVerified();
+  },'去认证');
+  return false;
+}
+
+function requireRedeemIdentity(onVerified){
+  if(identityState.realNameVerified)return true;
+  showModal('完成实名认证','兑换前需要先完成实名认证。',()=>{
+    identityState.realNameVerified=true;
+    showToast('实名认证已完成');
+    if(typeof onVerified==='function')onVerified();
+  },'去认证');
   return false;
 }
 
@@ -881,7 +893,8 @@ function renderCardStore(){
 
 function openCardRedeem(cardId){
   const card=jdCards.find(item=>item.id===cardId);
-  if(!card||getCardDisabledReason(card))return;
+  if(!card||getCardDisabledReason(card))return false;
+  if(!requireRedeemIdentity(()=>openCardRedeem(cardId)))return false;
   selectedCardId=cardId;
   lastDialogTrigger=document.activeElement;
   document.getElementById('card-redeem-content').innerHTML=`<div class="modal-title" id="card-redeem-title">确认兑换</div>
@@ -894,12 +907,19 @@ function openCardRedeem(cardId){
   modal.classList.add('show');
   modal.setAttribute('aria-hidden','false');
   setTimeout(()=>document.getElementById('confirm-card-redeem')?.focus(),0);
+  return true;
 }
 
 function confirmCardRedeem(){
   const card=jdCards.find(item=>item.id===selectedCardId);
   const button=document.getElementById('confirm-card-redeem');
   if(!card||!button||button.disabled)return;
+  if(!identityState.realNameVerified){
+    const cardId=selectedCardId;
+    closeCardRedeem();
+    requireRedeemIdentity(()=>openCardRedeem(cardId));
+    return;
+  }
   button.disabled=true;
   const disabledReason=getCardDisabledReason(card);
   if(disabledReason){
@@ -1003,7 +1023,7 @@ function showView(name){
 }
 function switchNav(el,view){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');showView(view)}
 function showToast(msg){const t=document.getElementById('toast');clearTimeout(toastTimer);t.textContent=msg;t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),2000)}
-function showModal(title,content,onConfirm){document.getElementById('modal-title').textContent=title;document.getElementById('modal-content').textContent=content;document.getElementById('modal-confirm').onclick=()=>{closeModal();onConfirm()};document.getElementById('modal').classList.add('show')}
+function showModal(title,content,onConfirm,confirmText='确认'){document.getElementById('modal-title').textContent=title;document.getElementById('modal-content').textContent=content;const confirm=document.getElementById('modal-confirm');confirm.textContent=confirmText;confirm.onclick=()=>{closeModal();onConfirm()};document.getElementById('modal').classList.add('show')}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 
 document.addEventListener('click',e=>{const gr=document.getElementById('game-results');if(gr&&!e.target.closest('.game-search'))gr.classList.remove('show')});

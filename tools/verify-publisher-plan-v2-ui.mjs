@@ -154,6 +154,23 @@ try {
   assert.equal(rolloutResult.existing, true);
 
   await captureC(page, '01-task-plaza', '找任务');
+  const publishedCountBeforeIdentity = await page.evaluate(() => myPublished.length);
+  await page.evaluate(() => { identityState.realNameVerified = false; });
+  await page.locator('.fab').click();
+  assert.equal(await page.locator('#modal').evaluate(element => element.classList.contains('show')), true);
+  assert.equal(await page.locator('#modal-title').innerText(), '完成实名认证');
+  assert.equal(await page.locator('#modal-content').innerText(), '发布任务前需要先完成实名认证。');
+  assert.equal(await page.locator('#modal-confirm').innerText(), '去认证');
+  assert.equal(await page.locator('#view-create').evaluate(element => element.classList.contains('active')), false);
+  await captureC(page, '25-publish-real-name-gate', '发布任务实名认证');
+  await page.locator('#modal-confirm').click();
+  assert.equal(await page.locator('#view-create').evaluate(element => element.classList.contains('active')), true);
+  assert.equal(await page.evaluate(() => myPublished.length), publishedCountBeforeIdentity, 'real-name success must not submit a task');
+  await page.evaluate(() => {
+    clearTimeout(toastTimer);
+    document.getElementById('toast').classList.remove('show');
+    showView('plaza');
+  });
   await page.evaluate(() => showRules('plaza'));
   await captureC(page, '02-play-rules', '玩法说明');
   assert.equal(await page.getByText('任务中心获得的是盖世积分，与盖世币分开计算', { exact: false }).count() > 0, true);
@@ -203,7 +220,37 @@ try {
   assert.equal(await page.locator('[data-card-id="JD100"]').isDisabled(), true, '余额不足卡必须禁用');
   await captureC(page, '09-card-store', '兑换商城');
 
+  const redeemBeforeIdentity = await page.evaluate(() => ({
+    totalBalance: wallet.totalBalance,
+    redeemableBalance: wallet.redeemableBalance,
+    orderCount: cardOrders.length
+  }));
+  await page.evaluate(() => {
+    clearTimeout(toastTimer);
+    document.getElementById('toast').classList.remove('show');
+    identityState.realNameVerified = false;
+  });
   await page.getByRole('button', { name: /京东E卡 20元/ }).click();
+  assert.equal(await page.locator('#modal-title').innerText(), '完成实名认证');
+  assert.equal(await page.locator('#modal-content').innerText(), '兑换前需要先完成实名认证。');
+  assert.equal(await page.locator('#card-redeem-modal').getAttribute('aria-hidden'), 'true');
+  assert.deepEqual(await page.evaluate(() => ({
+    totalBalance: wallet.totalBalance,
+    redeemableBalance: wallet.redeemableBalance,
+    orderCount: cardOrders.length
+  })), redeemBeforeIdentity, 'opening the real-name gate must not redeem');
+  await captureC(page, '26-redeem-real-name-gate', '兑换实名认证');
+  await page.locator('#modal-confirm').click();
+  assert.equal(await page.locator('#card-redeem-modal').getAttribute('aria-hidden'), 'false');
+  assert.deepEqual(await page.evaluate(() => ({
+    totalBalance: wallet.totalBalance,
+    redeemableBalance: wallet.redeemableBalance,
+    orderCount: cardOrders.length
+  })), redeemBeforeIdentity, 'real-name success must only restore the confirmation dialog');
+  await page.evaluate(() => {
+    clearTimeout(toastTimer);
+    document.getElementById('toast').classList.remove('show');
+  });
   assert.equal(await page.getByText('当前可兑换').count(), 1);
   assert.equal(await page.getByText('只有参与发行任务并结算获得的盖世币可兑换', { exact: false }).count() > 0, true);
   await captureC(page, '10-card-confirm', '确认兑换');
@@ -215,7 +262,26 @@ try {
     '兑换确认弹窗'
   );
 
-  await page.evaluate(() => { Date.now = () => 202608310001; });
+  await page.evaluate(() => { identityState.realNameVerified = false; });
+  await page.locator('#confirm-card-redeem').click();
+  assert.equal(await page.locator('#modal-title').innerText(), '完成实名认证');
+  assert.deepEqual(await page.evaluate(() => ({
+    totalBalance: wallet.totalBalance,
+    redeemableBalance: wallet.redeemableBalance,
+    orderCount: cardOrders.length
+  })), redeemBeforeIdentity, 'final redeem identity rejection must not change assets or orders');
+  await page.locator('#modal-confirm').click();
+  assert.equal(await page.locator('#card-redeem-modal').getAttribute('aria-hidden'), 'false');
+  assert.deepEqual(await page.evaluate(() => ({
+    totalBalance: wallet.totalBalance,
+    redeemableBalance: wallet.redeemableBalance,
+    orderCount: cardOrders.length
+  })), redeemBeforeIdentity, 'final identity success must still wait for confirm');
+  await page.evaluate(() => {
+    clearTimeout(toastTimer);
+    document.getElementById('toast').classList.remove('show');
+    Date.now = () => 202608310001;
+  });
   await page.locator('#confirm-card-redeem').click();
   assert.equal(await page.getByText('发放成功').count(), 1);
   assert.equal(await page.locator('#redeemable-balance').innerText(), '650');
@@ -549,7 +615,7 @@ try {
   );
 
   screenshots.sort((left, right) => left.name.localeCompare(right.name));
-  assert.equal(screenshots.length, 25, 'Expected exactly 25 PRD screenshots');
+  assert.equal(screenshots.length, 27, 'Expected exactly 27 PRD screenshots');
   for (const item of screenshots) {
     assert(item.width > 300 && item.height > 300, `${item.name} dimensions are too small`);
   }
@@ -581,6 +647,9 @@ try {
       rolloutPercents: [20, 50, 100],
       rolloutBucket: 'stable-subject',
       existingFulfillmentProtected: true,
+      publishRealNameGate: 'entry-and-submit',
+      redeemRealNameGate: 'entry-and-confirm',
+      identitySuccessAutoAction: false,
       globalAlertThreshold: 3,
       alertScope: 'per-sku',
       repeatHours: 24,
@@ -626,7 +695,7 @@ try {
     }
   };
   fs.writeFileSync(evidencePath, `${JSON.stringify(verification, null, 2)}\n`, 'utf8');
-  console.log('PASS: publisher plan V2 UI, 25 screenshots captured');
+  console.log('PASS: publisher plan V2 UI, 27 screenshots captured');
 } finally {
   for (const context of pagesToClose) await context.close().catch(() => {});
   await browser.close();

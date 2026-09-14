@@ -142,7 +142,10 @@ mustContain(cHtml + cJs, [
   '数据校验通过，待人工结算',
   '按单稿奖励上限预留',
   '最终以点赞统计截止时间的数据快照及人工结算结果为准',
-  '当前任务奖池名额已满'
+  '当前任务奖池名额已满',
+  '发布任务前需要先完成实名认证。',
+  '兑换前需要先完成实名认证。',
+  'requireRedeemIdentity'
 ], 'C publishing flow');
 mustContain(cHtml + cJs, [
   'publisherRollout',
@@ -287,6 +290,13 @@ mustContain(prd, [
   'publisher_rollout_config_update'
 ], 'PRD feature rollout');
 mustContain(prd, [
+  'V2.5',
+  '点击“发布任务”时，未实名用户立即拉起实名认证弹窗',
+  '实名成功后打开原商品兑换确认弹窗',
+  '不自动提交任务、不自动兑换或扣减盖世币',
+  '提交任务和确认兑换时，服务端再次校验实名状态'
+], 'PRD real-name gates');
+mustContain(prd, [
   '不按 0 点赞结算'
 ], 'PRD inaccessible-work settlement rule');
 assert(
@@ -315,7 +325,7 @@ assert(
 );
 
 const imagePaths = [...prd.matchAll(/publisher-plan-v2\/(\d{2}-[a-z0-9-]+\.png)/g)].map(match => match[1]);
-assert.equal(new Set(imagePaths).size, 25, 'PRD must reference exactly 25 unique publisher-plan-v2 images');
+assert.equal(new Set(imagePaths).size, 27, 'PRD must reference exactly 27 unique publisher-plan-v2 images');
 
 const eventNames = [...prd.matchAll(/\| `([a-z][a-z0-9_]+)` \|/g)].map(match => match[1]);
 assert.equal(new Set(eventNames).size, eventNames.length, 'PRD contains duplicate event names');

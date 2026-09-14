@@ -36,12 +36,30 @@ try {
   await c.locator('#view-earnings.active').waitFor({ state: 'visible' });
   await c.getByText('兑换商城', { exact: true }).first().click();
   await c.locator('#view-card-store.active').waitFor({ state: 'visible' });
+  const redeemBeforeIdentity = await c.evaluate(() => ({ total: wallet.totalBalance, redeemable: wallet.redeemableBalance, orders: cardOrders.length }));
+  await c.evaluate(() => { identityState.realNameVerified = false; });
+  await c.getByRole('button', { name: /京东E卡 20元/ }).click();
+  assert.equal(await c.locator('#modal-title').innerText(), '完成实名认证');
+  assert.equal(await c.locator('#modal-content').innerText(), '兑换前需要先完成实名认证。');
+  await c.locator('#modal-confirm').click();
+  assert.equal(await c.locator('#card-redeem-modal').getAttribute('aria-hidden'), 'false');
+  assert.deepEqual(await c.evaluate(() => ({ total: wallet.totalBalance, redeemable: wallet.redeemableBalance, orders: cardOrders.length })), redeemBeforeIdentity);
+  await c.evaluate(() => closeCardRedeem());
+
+  await c.evaluate(() => {
+    showView('plaza');
+    identityState.realNameVerified = false;
+  });
+  await c.locator('.fab').click();
+  assert.equal(await c.locator('#modal-title').innerText(), '完成实名认证');
+  assert.equal(await c.locator('#modal-content').innerText(), '发布任务前需要先完成实名认证。');
+  await c.locator('#modal-confirm').click();
+  await c.locator('#view-create.active').waitFor({ state: 'visible' });
 
   await c.evaluate(() => {
     wallet.totalBalance = 50000;
     wallet.rechargeBalance = 50000;
     wallet.redeemableBalance = 0;
-    openCreateTask();
     selectGame(1);
   });
   await c.locator('#cr-name').fill('公网机审自动发布测试');
