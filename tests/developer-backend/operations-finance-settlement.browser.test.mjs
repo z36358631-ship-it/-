@@ -104,7 +104,10 @@ test('主体导出含完整账户且页面不维护导出状态',async () => {
   assert.equal(download.suggestedFilename(),'主体结算表_2026-08.csv');
   const csv = fs.readFileSync(await download.path(),'utf8');
   assert.match(csv,/银行账号/);
+  assert.match(csv,/CNY金额/);
   assert.match(csv,/\t(?:0848019237826|001920003188|012875009066|60138200001909066)/);
+  const cnyMinor = Number(await target.getAttribute('data-cny-minor'));
+  assert.match(csv,new RegExp((cnyMinor / 100).toFixed(2).replace('.', '\\.')));
   assert.doesNotMatch(csv,/调整额|付款状态|发票/);
   assert.match(await page.locator('[data-fo-export-status]').innerText(),/已导出 1 条主体汇总/);
   assert.equal(await page.getByText('最近导出',{ exact:true }).count(),0);

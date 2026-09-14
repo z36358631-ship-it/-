@@ -14085,6 +14085,19 @@ window.PublisherFinanceOperationsModel = (() => {
   'use strict';
   const ledger = window.PublisherSettlementLedger;
   if (!ledger) return null;
+  const lockedUsdCnyRates = Object.freeze({ '2026-08':7.12,'2026-07':7.18,'2026-06':7.16 });
+  const cnyRate = row => row.settlementCurrency === 'CNY' ? 1 : (row.settlementCurrency === 'USD' ? lockedUsdCnyRates[row.month] ?? null : null);
+  const cnyMinor = row => {
+    const rate = cnyRate(row);
+    return rate === null ? null : Math.round(Number(row.payableMinor || 0) * rate);
+  };
+  const exportEntityCsv = rows => ledger.exportEntityCsv(rows).split('\r\n').map((line,index) => {
+    if (index === 0) return `${line},"CNY金额","锁定汇率"`;
+    const row = rows[index - 1];
+    const rate = cnyRate(row);
+    const converted = cnyMinor(row);
+    return `${line},${converted === null ? '' : ledger.decimal(converted)},${rate === null ? '' : rate.toFixed(4)}`;
+  }).join('\r\n');
 
   const createState = () => ({
     ledgerState:ledger.createState(),
@@ -14109,7 +14122,7 @@ window.PublisherFinanceOperationsModel = (() => {
   }) : [];
   const markExported = (state, rows) => ledger.markEntityExported(state.ledgerState, rows.map(row => row.key));
 
-  return Object.freeze({ createState, entityRows, gameRows, transactionRows, markExported, ledger, money:ledger.money });
+  return Object.freeze({ createState, entityRows, gameRows, transactionRows, markExported, exportEntityCsv, cnyRate, cnyMinor, ledger, money:ledger.money });
 })();
 
 
@@ -14123,8 +14136,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
   const money = (minor, currency) => model.money(minor,currency);
   const amount = minor => (Number(minor || 0) / 100).toLocaleString('zh-CN',{ minimumFractionDigits:2,maximumFractionDigits:2 });
-  const cnyRates = Object.freeze({ '2026-08':7.12,'2026-07':7.18,'2026-06':7.16 });
-  const cnyMinor = row => row.settlementCurrency === 'CNY' ? row.payableMinor : Math.round(row.payableMinor * (cnyRates[row.month] || 7.12));
   const percent = value => `${(Number(value || 0) * 100).toLocaleString('zh-CN',{ maximumFractionDigits:2 })}%`;
   const eventLabel = type => ({ payment:'支付', refund:'退款', chargeback:'拒付' }[type] || type);
   const activeFilters = () => state.filters[state.activeTab];
@@ -14166,8 +14177,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   function entityTable(rows,current) {
     return `<div class="fo-table-scroll"><table class="fo-table fo-entity-table" data-testid="entity-summary-table"><thead><tr><th class="fo-check"><input type="checkbox" aria-label="选择本页主体" data-fo-select-page></th><th>结算月</th><th>开发者／财务主体</th><th>币种／游戏数</th><th>用户实付</th><th>退款／拒付</th><th>销售税</th><th>支付费</th><th>平台分成</th><th>预扣税</th><th>应结算金额</th><th>CNY金额</th><th>收款账户</th></tr></thead><tbody>${current.map(row => {
       const values = rowAmounts(row);
-      const converted = cnyMinor(row);
-      return `<tr data-fo-entity-row data-row-key="${esc(row.key)}" data-currency="${esc(row.settlementCurrency)}" data-payable-minor="${row.payableMinor}" data-cny-minor="${converted}"><td class="fo-check"><input type="checkbox" aria-label="选择 ${esc(row.entityName)} ${esc(row.settlementCurrency)}" data-fo-select-row="${esc(row.key)}"${state.selected.entity.includes(row.key) ? ' checked' : ''}></td><td><strong>${esc(row.month)}</strong><small>${esc(row.entityVersion)}</small></td><td><strong>${esc(row.developer)}</strong><small>${esc(row.entityName)}</small></td><td><strong>${esc(row.settlementCurrency)}</strong><small>${row.gameCount} 款游戏</small></td>${values.map((value,index) => `<td data-fo-amount${index === values.length - 1 ? ' class="fo-payable"' : ''}>${esc(value)}</td>`).join('')}<td class="fo-payable" data-fo-amount>${esc(amount(converted))}</td><td><strong>${esc(row.bankName)}</strong><small>${esc(row.accountMasked)} · ${esc(row.accountVersion)}</small></td></tr>`;
+      const converted = model.cnyMinor(row);
+      return `<tr data-fo-entity-row data-row-key="${esc(row.key)}" data-currency="${esc(row.settlementCurrency)}" data-payable-minor="${row.payableMinor}" data-cny-minor="${converted ?? ''}"><td class="fo-check"><input type="checkbox" aria-label="选择 ${esc(row.entityName)} ${esc(row.settlementCurrency)}" data-fo-select-row="${esc(row.key)}"${state.selected.entity.includes(row.key) ? ' checked' : ''}></td><td><strong>${esc(row.month)}</strong><small>${esc(row.entityVersion)}</small></td><td><strong>${esc(row.developer)}</strong><small>${esc(row.entityName)}</small></td><td><strong>${esc(row.settlementCurrency)}</strong><small>${row.gameCount} 款游戏</small></td>${values.map((value,index) => `<td data-fo-amount${index === values.length - 1 ? ' class="fo-payable"' : ''}>${esc(value)}</td>`).join('')}<td class="fo-payable" data-fo-amount>${converted === null ? '—' : esc(amount(converted))}</td><td><strong>${esc(row.bankName)}</strong><small>${esc(row.accountMasked)} · ${esc(row.accountVersion)}</small></td></tr>`;
     }).join('')}</tbody></table></div>`;
   }
 
@@ -14266,7 +14277,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const targets = selected.length ? selected : rows;
       if (!targets.length) return;
       const isEntity = state.activeTab === 'entity';
-      const content = isEntity ? model.ledger.exportEntityCsv(targets) : model.ledger.exportGameCsv(targets);
+      const content = isEntity ? model.exportEntityCsv(targets) : model.ledger.exportGameCsv(targets);
       const month = activeFilters().month === 'all' ? '全部月份' : activeFilters().month;
       const ok = download(content,`${isEntity ? '主体结算表' : '游戏结算明细'}_${month}.csv`);
       state.exportMessage = ok ? `已导出 ${targets.length} 条${isEntity ? '主体汇总' : '游戏明细'}` : '导出失败，请重试';
