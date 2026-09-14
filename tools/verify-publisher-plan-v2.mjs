@@ -148,6 +148,9 @@ mustContain(cHtml + cJs, [
   'requireRedeemIdentity'
 ], 'C publishing flow');
 mustContain(cHtml + cJs, [
+  'id="submit-task-btn" onclick="submitCreate(false)">提交</button>'
+], 'C create task submit copy');
+mustContain(cHtml + cJs, [
   'publisherRollout',
   'stableRolloutBucket',
   'getPublisherRolloutDecision',
@@ -233,7 +236,8 @@ mustNotContain(demoSource, [
   'id="custom-amt"',
   'calcCustom(',
   '<div class="form-label">自定义金额</div>',
-  'placeholder="输入盖世币数量（最低100）"'
+  'placeholder="输入盖世币数量（最低100）"',
+  '提交并进行机器审核'
 ], 'retired publisher demo rules');
 mustNotContain(prd, [
   '提交成功后提示“提交成功，等待审核”',
@@ -297,6 +301,10 @@ mustContain(prd, [
   '提交任务和确认兑换时，服务端再次校验实名状态'
 ], 'PRD real-name gates');
 mustContain(prd, [
+  'V2.6',
+  '页面底部主按钮文案为“提交”'
+], 'PRD create task submit copy');
+mustContain(prd, [
   '不按 0 点赞结算'
 ], 'PRD inaccessible-work settlement rule');
 assert(
@@ -325,7 +333,7 @@ assert(
 );
 
 const imagePaths = [...prd.matchAll(/publisher-plan-v2\/(\d{2}-[a-z0-9-]+\.png)/g)].map(match => match[1]);
-assert.equal(new Set(imagePaths).size, 27, 'PRD must reference exactly 27 unique publisher-plan-v2 images');
+assert.equal(new Set(imagePaths).size, 28, 'PRD must reference exactly 28 unique publisher-plan-v2 images');
 
 const eventNames = [...prd.matchAll(/\| `([a-z][a-z0-9_]+)` \|/g)].map(match => match[1]);
 assert.equal(new Set(eventNames).size, eventNames.length, 'PRD contains duplicate event names');

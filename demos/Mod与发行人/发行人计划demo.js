@@ -394,7 +394,7 @@ function renderCreateForm(){
 <div class="form-group"><div class="form-label">投稿截止时间 *</div><input class="form-input" id="cr-submit-deadline" type="datetime-local" value="2026-09-30T23:59"></div>
 <div class="form-group"><div class="form-label">点赞统计截止时间 *</div><input class="form-input" id="cr-like-deadline" type="datetime-local" value="2026-10-03T23:59"><div class="form-tip">最终以点赞统计截止时间的数据快照及人工结算结果为准。</div></div>
 <div class="form-tip">今日已提交 ${publisherState.submittedToday} 个；同一实名主体每天最多提交 10 个任务，取消或审核不通过不返还次数。</div>
-<div style="padding:16px 0"><button class="btn-primary" id="submit-task-btn" onclick="submitCreate(false)">提交并进行机器审核</button><div class="form-tip" style="text-align:center">机器审核通过后自动发布；超时或结果不确定时转人工处理，不默认放行。</div></div></div>`;
+<div style="padding:16px 0"><button class="btn-primary" id="submit-task-btn" onclick="submitCreate(false)">提交</button><div class="form-tip" style="text-align:center">机器审核通过后自动发布；超时或结果不确定时转人工处理，不默认放行。</div></div></div>`;
   selectedGameId=null;
   renderTaskImages();
 }

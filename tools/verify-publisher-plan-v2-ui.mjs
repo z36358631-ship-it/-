@@ -186,7 +186,17 @@ try {
   await page.evaluate(() => showView('submit'));
   await captureC(page, '05-submit-work', '提交投稿');
   await page.evaluate(() => showView('create'));
+  assert.equal(await page.locator('#submit-task-btn').innerText(), '提交');
   await captureC(page, '06-create-task', '创建发行任务');
+  await page.locator('#create-content').evaluate(element => { element.scrollTop = element.scrollHeight; });
+  await page.locator('#submit-task-btn').waitFor({ state: 'visible' });
+  await capture(
+    page.locator('.phone'),
+    path.join(outputDir, '27-create-task-submit.png'),
+    screenshots,
+    '27-create-task-submit',
+    '创建任务提交按钮'
+  );
 
   await page.evaluate(() => showView('earnings'));
   assert.equal(await page.locator('#wallet-total').innerText(), '3,650');
@@ -615,7 +625,7 @@ try {
   );
 
   screenshots.sort((left, right) => left.name.localeCompare(right.name));
-  assert.equal(screenshots.length, 27, 'Expected exactly 27 PRD screenshots');
+  assert.equal(screenshots.length, 28, 'Expected exactly 28 PRD screenshots');
   for (const item of screenshots) {
     assert(item.width > 300 && item.height > 300, `${item.name} dimensions are too small`);
   }
@@ -695,7 +705,7 @@ try {
     }
   };
   fs.writeFileSync(evidencePath, `${JSON.stringify(verification, null, 2)}\n`, 'utf8');
-  console.log('PASS: publisher plan V2 UI, 27 screenshots captured');
+  console.log('PASS: publisher plan V2 UI, 28 screenshots captured');
 } finally {
   for (const context of pagesToClose) await context.close().catch(() => {});
   await browser.close();
