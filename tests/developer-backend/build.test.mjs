@@ -115,3 +115,19 @@ test('开发者平台与运营后台公开隔离路由，四个正式 HTML 合�
   assert.deepEqual(routeIds.map(ids => ids.length), [3, 3, 13, 8]);
   assert.equal(routeIds.reduce((total, ids) => total + ids.length, 0), 27);
 });
+
+test('三份财务 Demo 各注入一次同一共享结算账本', () => {
+  execFileSync(process.execPath, [path.join(demoDir, 'build-next.mjs')], { stdio:'pipe' });
+  execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), '--module=02', '--variant=finance-integrated'], { stdio:'pipe' });
+  execFileSync(process.execPath, [path.join(demoDir, 'build-finance-operations.mjs')], { stdio:'pipe' });
+  const financeOutputs = [
+    '15-开发者财务结算demo.html',
+    '开发者平台财务整合demo.html',
+    '发行平台运营后台财务整合demo.html',
+  ];
+  for (const output of financeOutputs) {
+    const html = fs.readFileSync(path.join(demoDir, output), 'utf8');
+    assert.equal((html.match(/window\.PublisherSettlementLedger\s*=/g) || []).length, 1, output);
+    assert.match(html, /SETTLEMENT-SNAPSHOT-2026-09-14-V1/, output);
+  }
+});

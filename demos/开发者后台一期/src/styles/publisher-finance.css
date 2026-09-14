@@ -163,6 +163,31 @@ body.finance-overlay-open .developer-demo-state-switcher { display: none; }
 .product-frame.is-finance-workspace .page-header .page-actions,
 .product-frame.is-finance-workspace .page-header .page-summary { display: none; }
 
+/* 财务工作区沿用厂商后台浅色导航，选中态保持浅灰底深色字。 */
+.product-frame[data-role="developer"] .side-nav--finance {
+  color: #5d6676;
+  background: #ffffff;
+  border-right-color: #e3e7ed;
+}
+.product-frame[data-role="developer"] .side-nav--finance .nav-label { color: #9aa3b1; }
+.product-frame[data-role="developer"] .side-nav--finance .nav-item { color: #596577; }
+.product-frame[data-role="developer"] .side-nav--finance .nav-item:hover {
+  color: #1f2937;
+  background: #f4f5f7;
+}
+.product-frame[data-role="developer"] .side-nav--finance .nav-item.is-active,
+.product-frame[data-role="developer"] .side-nav--finance button.nav-item.is-active {
+  color: #182235;
+  background: #eef0f2;
+  font-weight: 650;
+}
+.product-frame[data-role="developer"] .side-nav--finance .nav-item.is-active::before {
+  top: 7px;
+  bottom: 7px;
+  background: #44c7d8;
+}
+.product-frame[data-role="developer"] .side-nav--finance button.nav-item:hover { background: #f4f5f7; }
+
 @media (max-width: 960px) {
   .publisher-finance .gh-grid-3,
   .publisher-finance .gh-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

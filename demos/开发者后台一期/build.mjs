@@ -109,7 +109,10 @@ const publisherStyles = [
 ].join('\n\n');
 const publisherRuntime = [
   ...publisherRuntimeFiles.map(file => read('runtime', file).trim()),
-  ...(financeIntegrated ? [`window.__PUBLISHER_FINANCE_EMBEDDED__ = true;\n${read('demo15', 'app.js').trim()}`] : []),
+  ...(financeIntegrated ? [
+    read('finance-ledger', 'model.js').trim(),
+    `window.__PUBLISHER_FINANCE_EMBEDDED__ = true;\n${read('demo15', 'app.js').trim()}`,
+  ] : []),
 ].join('\n\n');
 const documentHtml = ({ title, module, pageRoutes }) => `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}${publisherModuleIds.has(module.id) ? `\n\n${publisherStyles}` : ''}</style></head><body>

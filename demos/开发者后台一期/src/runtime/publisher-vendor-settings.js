@@ -2,7 +2,7 @@
 (function registerPublisherVendorSettings(scope) {
   'use strict';
 
-  const groupKeys = ['subject', 'profile', 'finance'];
+  const groupKeys = ['subject', 'profile'];
   const clone = value => JSON.parse(JSON.stringify(value));
   const emptyReview = () => ({
     applicationId:'', status:'idle', pendingData:null, draftData:null, submittedData:null,
@@ -60,16 +60,6 @@
         { key:'contactName', label:text('业务联系人','Business contact',language), required:true },
         { key:'email', label:text('联系邮箱','Contact email',language), type:'email', required:true, hint:text('用于接收重要业务通知','Receives important business notices',language) },
         { key:'mobile', label:text('联系电话','Mobile',language), hint:text('选填','Optional',language) },
-      ],
-    },
-    finance: {
-      label:text(window.PublisherFinance ? '财务主体' : '财务信息',window.PublisherFinance ? 'Finance entity' : 'Financial information',language),
-      fields:[
-        { key:'bankAccountName', label:text('银行账户户名','Account holder name',language), required:true, hint:text('必须与企业法定名称一致','Must match the legal company name',language) },
-        { key:'bankName', label:text('开户银行','Bank name',language), required:true },
-        { key:'bankAccountNumber', label:text('银行账号','Bank account number',language), required:true },
-        { key:'bankBranch', label:text('开户支行／联行信息','Branch / routing information',language), required:true },
-        { key:'bankProofName', label:text('银行账户证明附件','Bank account proof',language), type:'file', required:true, wide:true },
       ],
     },
   });
@@ -130,9 +120,6 @@
       const reviewStatus = review.status || 'idle';
       const candidateData = review.draftData || review.pendingData || {};
       const displayedData = ['pending','rejected'].includes(reviewStatus) || review.draftData ? { ...effectiveData, ...candidateData } : effectiveData;
-      if (key === 'finance' && window.PublisherFinance) {
-        return `<section class="vendor-settings-panel vendor-finance-summary" data-vendor-settings-panel="finance"${activeTab === key ? '' : ' hidden'} role="tabpanel"><div class="vendor-settings-panel__notice is-approved">${icon('check')}<span>${text('结算资料已统一由财务主体管理。','Settlement information is managed in Finance entity.',language)}</span></div><dl class="vendor-finance-summary__list"><div><dt>${text('财务主体状态','Finance entity status',language)}</dt><dd>${text('已生效','Effective',language)}</dd></div><div><dt>${text('结算币种','Settlement currency',language)}</dt><dd>USD</dd></div><div><dt>${text('收款账户','Payout account',language)}</dt><dd>•••• 7826</dd></div></dl><footer class="vendor-settings-panel__footer"><span>${text('修改收款或税务资料时，请前往财务主体。','Open Finance entity to update payout or tax information.',language)}</span>${c.button({ label:text('前往财务主体','Open finance entity',language), variant:'primary', action:'open-finance-entity' })}</footer></section>`;
-      }
       const editable = !suspended && status === 'approved' && reviewStatus !== 'pending';
       const changedFields = group.fields.filter(field => String(displayedData[field.key] ?? '') !== String(effectiveData[field.key] ?? ''));
       const notice = suspended

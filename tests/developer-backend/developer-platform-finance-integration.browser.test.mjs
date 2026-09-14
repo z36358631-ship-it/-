@@ -9,169 +9,103 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
 const root = process.cwd();
-const demoDir = path.join(root, 'demos', '开发者后台一期');
-const demo = path.join(demoDir, '开发者平台财务整合demo.html');
-const chrome = [
-  process.env.CHROME_PATH,
-  'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
-].find(file => file && fs.existsSync(file));
-
+const demoDir = path.join(root,'demos','开发者后台一期');
+const demo = path.join(demoDir,'开发者平台财务整合demo.html');
+const chrome = [process.env.CHROME_PATH,'C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files/Microsoft/Edge/Application/msedge.exe']
+  .find(file => file && fs.existsSync(file));
 let browser;
 let page;
 
-const url = hash => {
-  const value = pathToFileURL(demo);
-  value.hash = hash;
-  return value.href;
-};
-
-async function openApprovedDeveloper(routePath = '/P15-01') {
-  await page.goto(url('/P01-01'), { waitUntil:'load' });
+const url = hash => { const value = pathToFileURL(demo); value.hash = hash; value.searchParams.set('testRun',`${Date.now()}-${Math.random()}`); return value.href; };
+async function seedAccount() {
+  await page.goto(url('/P01-01'),{ waitUntil:'load' });
   await page.evaluate(() => {
     localStorage.clear();
     sessionStorage.clear();
-    sessionStorage.setItem('gamehub-developer-session-v1', JSON.stringify({ authenticated:true, accountKey:'finance:approved' }));
-    localStorage.setItem('gamehub-developer-account-states-v1', JSON.stringify({
+    sessionStorage.setItem('gamehub-developer-session-v1',JSON.stringify({ authenticated:true,accountKey:'finance:approved' }));
+    localStorage.setItem('gamehub-developer-account-states-v1',JSON.stringify({
       'finance:approved':{
-        registration:{ accountTier:'enterprise', registeredAt:'2026-09-01 09:00', consoleTab:'games', vendorSettingsTab:'finance' },
-        qualification:{
-          applicationId:'ENT-FINANCE', status:'approved', step:5, view:'intro', editing:false, revision:1,
-          submittedAt:'2026-09-01 09:00', form:{ vendorName:'星海互动', agreementAccepted:true },
-          history:[], submissions:[],
-        },
+        registration:{ accountTier:'enterprise',registeredAt:'2026-09-01 09:00',consoleTab:'games',vendorSettingsTab:'finance' },
+        qualification:{ applicationId:'ENT-FINANCE',status:'approved',step:5,view:'intro',editing:false,revision:1,submittedAt:'2026-09-01 09:00',form:{ vendorName:'星海互动',agreementAccepted:true },history:[],submissions:[] },
       },
     }));
   });
-  const target = new URL(url(routePath));
-  target.searchParams.set('testRun', `${Date.now()}-${Math.random()}`);
-  await page.goto(target.href, { waitUntil:'load' });
-  if (routePath.startsWith('/P15-')) await page.locator('[data-testid="developer-finance-demo"]').waitFor();
-  else await page.locator('[data-publisher-workspace]').waitFor();
 }
-
-async function openRegisteredDeveloper(routePath = '/P02-01') {
-  await page.goto(url('/P01-01'), { waitUntil:'load' });
-  await page.evaluate(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-    sessionStorage.setItem('gamehub-developer-session-v1', JSON.stringify({ authenticated:true, accountKey:'finance:registered' }));
-    localStorage.setItem('gamehub-developer-account-states-v1', JSON.stringify({
-      'finance:registered':{
-        registration:{ accountTier:'registered', registeredAt:'2026-09-01 09:00', consoleTab:'games', vendorSettingsTab:'finance' },
-        qualification:{
-          applicationId:'', status:'unsubmitted', step:0, view:'intro', editing:false, revision:0,
-          submittedAt:'', form:{}, history:[], submissions:[],
-        },
-      },
-    }));
-  });
-  const target = new URL(url(routePath));
-  target.searchParams.set('testRun', `${Date.now()}-${Math.random()}`);
-  await page.goto(target.href, { waitUntil:'load' });
-  if (routePath.startsWith('/P15-')) await page.locator('[data-testid="developer-finance-demo"]').waitFor();
+async function open(route = '/P15-01') {
+  await seedAccount();
+  await page.goto(url(route),{ waitUntil:'load' });
+  if (route.startsWith('/P15-')) await page.locator('[data-testid="developer-finance-demo"]').waitFor();
   else await page.locator('[data-publisher-workspace]').waitFor();
 }
 
 before(() => {
-  assert.ok(chrome, 'Chrome or Edge not found');
-  execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), '--module=02', '--variant=finance-integrated']);
-  assert.ok(fs.existsSync(demo));
+  assert.ok(chrome,'Chrome or Edge not found');
+  execFileSync(process.execPath,[path.join(demoDir,'build.mjs'),'--module=02','--variant=finance-integrated'],{ stdio:'pipe' });
+});
+before(async () => { browser = await chromium.launch({ headless:true,executablePath:chrome,args:['--allow-file-access-from-files','--disable-background-networking'] }); });
+beforeEach(async () => { page = await browser.newPage({ viewport:{ width:1440,height:900 } }); });
+afterEach(async () => { await page?.close(); page = null; });
+after(async () => { await browser?.close(); });
+
+test('财务整合版复用平台壳且财务侧栏保持白底浅灰选中',async () => {
+  await open('/P15-01');
+  assert.equal(await page.locator('.top-bar').count(),1);
+  assert.equal(await page.locator('.side-nav').count(),1);
+  assert.deepEqual(await page.locator('.side-nav .nav-item').allTextContents(),['游戏管理','财务主体','对账结算','厂商设置']);
+  const active = page.locator('.side-nav .nav-item.is-active');
+  assert.equal(await active.innerText(),'财务主体');
+  assert.equal(await page.locator('.side-nav--finance').getAttribute('data-variant'),'light');
+  const colors = await active.evaluate(element => ({
+    color:getComputedStyle(element).color,
+    background:getComputedStyle(element).backgroundColor,
+    sidebar:getComputedStyle(element.closest('.side-nav')).backgroundColor,
+  }));
+  assert.equal(colors.sidebar,'rgb(255, 255, 255)');
+  assert.notEqual(colors.color,'rgb(255, 255, 255)');
+  assert.notEqual(colors.background,'rgb(31, 58, 104)');
 });
 
-before(async () => {
-  browser = await chromium.launch({ headless:true, executablePath:chrome, args:['--allow-file-access-from-files','--disable-background-networking'] });
-});
-
-beforeEach(async () => {
-  page = await browser.newPage({ viewport:{ width:1440, height:900 } });
-});
-
-afterEach(async () => {
-  await page?.close();
-  page = null;
-});
-
-after(async () => {
-  await browser?.close();
-});
-
-test('财务整合版复用唯一平台壳和厂商级导航', async () => {
-  await openApprovedDeveloper('/P02-01');
-  assert.deepEqual(await page.locator('.publisher-console-sidebar button').allTextContents(), ['游戏管理','财务主体','对账结算','厂商设置']);
-  await page.getByRole('button', { name:'对账结算', exact:true }).click();
-  await page.getByRole('heading', { level:1, name:'对账结算' }).waitFor();
-  assert.equal(await page.locator('.top-bar').count(), 1);
-  assert.equal(await page.locator('.side-nav').count(), 1);
-  assert.deepEqual(await page.locator('.side-nav .nav-item').allTextContents(), ['游戏管理','财务主体','对账结算','厂商设置']);
-  assert.equal(await page.getByRole('heading', { level:1, name:'对账结算' }).count(), 1);
-  assert.equal(await page.locator('.developer-demo-state-fab').count(), 1);
-});
-
-test('已完成平台注册但企业认证未提交时可直接进入财务页面', async () => {
-  await openRegisteredDeveloper('/P02-01');
-
-  await page.getByRole('button', { name:'财务主体', exact:true }).click();
-  await page.waitForFunction(() => location.hash === '#/P15-01');
-  assert.equal(await page.getByRole('heading', { level:1, name:'财务主体' }).count(), 1);
-
-  await page.locator('.side-nav').getByText('游戏管理', { exact:true }).click();
-  await page.locator('[data-publisher-workspace]').waitFor();
-  await page.getByRole('button', { name:'对账结算', exact:true }).click();
-  await page.waitForFunction(() => location.hash === '#/P15-02');
-  assert.equal(await page.getByRole('heading', { level:1, name:'对账结算' }).count(), 1);
-});
-
-test('对账流水保持对账结算高亮和四级定位', async () => {
-  await openApprovedDeveloper('/P15-03');
-  assert.equal(await page.locator('.side-nav .nav-item.is-active').innerText(), '对账结算');
-  assert.match(await page.locator('.context-bar').innerText(), /开发者平台\s*\/\s*财务\s*\/\s*对账结算\s*\/\s*对账流水/);
-  assert.equal(await page.getByRole('heading', { level:1, name:'对账流水' }).count(), 1);
-});
-
-test('结算记录每页20条且详情保持单层抽屉', async () => {
-  await openApprovedDeveloper('/P15-02');
-  assert.equal(await page.locator('[data-testid="settlement-table"] tbody tr').count(), 20);
-  assert.match(await page.locator('.gh-pagination').innerText(), /每页\s*20\s*条/);
-  await page.getByRole('button', { name:'查看', exact:true }).first().click();
-  assert.equal(await page.getByRole('dialog').count(), 1);
-  assert.equal(await page.locator('.developer-demo-state-switcher').isVisible(), false);
-  const detailText = await page.getByRole('dialog').innerText();
-  for (const label of ['账单汇总','来源构成','对账流水','差异记录','发票','付款']) assert.match(detailText, new RegExp(label));
-});
-
-test('统一场景球可切换穷举态和缺省态', async () => {
-  await openApprovedDeveloper('/P15-01');
-  await page.locator('.developer-demo-state-fab').click();
-  await page.locator('[data-finance-scenario="empty"]').click();
-  assert.equal(await page.getByText('尚未配置财务主体').isVisible(), true);
-  await page.locator('[data-finance-scenario="exhaustive"]').click();
-  assert.equal(await page.getByText('已生效').first().isVisible(), true);
-});
-
-test('厂商设置财务页签只读并站内进入财务主体', async () => {
-  await openApprovedDeveloper('/P02-01');
+test('厂商设置移除财务主体页签且旧保存值回退有效页签',async () => {
+  await open('/P02-01');
   await page.locator('[data-portal-action="publisher-sidebar-view"][data-publisher-view="vendor"]').click();
-  await page.locator('[data-portal-action="vendor-settings-tab"][data-vendor-settings-tab="finance"]').click();
-  const panel = page.locator('[data-vendor-settings-panel="finance"]');
-  assert.equal(await panel.locator('input, textarea, select').count(), 0);
-  await panel.getByRole('button', { name:'前往财务主体' }).click();
-  await page.waitForFunction(() => location.hash === '#/P15-01');
-  await page.getByRole('heading', { level:1, name:'财务主体' }).waitFor();
-  assert.equal(await page.getByRole('heading', { level:1, name:'财务主体' }).count(), 1);
+  const settings = page.locator('[data-publisher-page="vendor"]');
+  await settings.waitFor();
+  assert.deepEqual(await settings.locator('[data-vendor-settings-tab]').allTextContents(),['企业主体信息','厂商资料']);
+  assert.equal(await settings.locator('[data-vendor-settings-tab="finance"]').count(),0);
+  assert.equal(await settings.locator('[data-vendor-settings-panel="finance"]').count(),0);
+  assert.equal(await settings.locator('[data-vendor-settings-tab]').first().getAttribute('aria-selected'),'true');
 });
 
-test('财务页跟随平台语言切换', async () => {
-  await openApprovedDeveloper('/P15-02');
-  await page.getByRole('button', { name:'英语' }).click();
-  assert.equal(await page.getByRole('heading', { level:1, name:'Reconciliation & settlement' }).count(), 1);
-  assert.equal(await page.getByLabel('Statement').count(), 1);
-  assert.equal(await page.locator('.side-nav').getByText('Finance entity').count(), 1);
+test('财务主体与对账结算仍是两个独立入口',async () => {
+  await open('/P15-01');
+  assert.equal(await page.getByRole('heading',{ level:1,name:'财务主体' }).count(),1);
+  await page.locator('.side-nav').getByText('对账结算',{ exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P15-02');
+  assert.equal(await page.getByRole('heading',{ level:1,name:'对账结算' }).count(),1);
+  assert.equal(await page.locator('[data-testid="settlement-table"]').count(),1);
+  assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/调整额|付款状态|发票|付款尝试/);
 });
 
-test('390px 宽度无根页面横向溢出', async () => {
-  await page.setViewportSize({ width:390, height:844 });
-  await openApprovedDeveloper('/P15-02');
-  const dimensions = await page.evaluate(() => ({ scrollWidth:document.body.scrollWidth, clientWidth:document.body.clientWidth }));
-  assert.equal(dimensions.scrollWidth, dimensions.clientWidth);
+test('结算详情单层展示游戏和支付商税费事实',async () => {
+  await open('/P15-02');
+  await page.getByRole('button',{ name:'查看详情' }).first().click();
+  assert.equal(await page.getByRole('dialog').count(),1);
+  const text = await page.getByRole('dialog').innerText();
+  for (const label of ['游戏构成','交易流水','第三方支付商','买家国家或地区','实际税率','税额','支付费','汇率','销售税','预扣税']) assert.match(text,new RegExp(label));
+  assert.doesNotMatch(text,/买家姓名|邮箱|卡号|支付账号|支付商密钥/);
+  assert.equal(await page.locator('.developer-demo-state-switcher').isVisible(),false);
+});
+
+test('对账流水次级路由仍保持对账结算高亮',async () => {
+  await open('/P15-03');
+  assert.equal(await page.locator('.side-nav .nav-item.is-active').innerText(),'对账结算');
+  assert.match(await page.locator('.context-bar').innerText(),/开发者平台\s*\/\s*财务\s*\/\s*对账结算\s*\/\s*对账流水/);
+  assert.match(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/第三方支付商/);
+});
+
+test('390px 财务整合页无根页面横向溢出',async () => {
+  await page.setViewportSize({ width:390,height:844 });
+  await open('/P15-02');
+  const dimensions = await page.evaluate(() => ({ client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth }));
+  assert.equal(dimensions.scroll,dimensions.client);
 });
