@@ -212,13 +212,15 @@ test('经营数据位于单游戏控制台并锁定当前游戏', async () => {
   const page = await context.newPage();
   try {
     const dashboard = await openDashboard(page, 'publisher-dashboard:navigation');
-    assert.deepEqual(await page.locator('[data-portal-action="game-console-section"]').allTextContents(), ['版本发布', '发布记录', '资质认证', '经营数据']);
+    assert.deepEqual((await page.locator('[data-portal-action="game-console-section"]').allTextContents()).slice(0, 4), ['版本发布', '发布记录', '资质认证', '经营数据']);
     assert.equal(await dashboard.getAttribute('data-dashboard-game'), 'existing');
     assert.equal(await dashboard.locator('.publisher-dashboard-head h1').innerText(), '数据看板');
     assert.equal(await dashboard.locator('.publisher-dashboard-head > div:first-child > span').count(), 0);
     assert.equal(await dashboard.locator('.publisher-dashboard-game-context').count(), 0);
     assert.equal(await dashboard.locator('.publisher-dashboard-head p').count(), 0);
     assert.equal(await dashboard.locator('[data-dashboard-filter="game"]').count(), 0);
+    assert.equal(await dashboard.locator('[data-dashboard-filter="platform"]').count(), 0);
+    assert.equal(await dashboard.locator('[data-dashboard-platform]').innerText(), '平台：Mac');
     assert.deepEqual(
       await dashboard.locator('[data-publisher-data-tab]').allTextContents(),
       ['经营概览', '订单明细', '收入与结算'],
@@ -329,11 +331,11 @@ test('所有筛选共享同一快照并能得到明确的组合筛选空态', as
     const dashboard = await openDashboard(page, 'publisher-dashboard:filters');
     await selectDashboardTab(dashboard, 'orders', '订单明细');
     const filters = dashboard.locator('select[data-dashboard-filter]');
-    assert.ok(await filters.count() >= 6, '缺少时间、商品、履约、地区、平台、状态等组合筛选');
+    assert.ok(await filters.count() >= 5, '缺少时间、商品、来源、履约、地区、交易结果等组合筛选');
 
     const candidates = await filters.evaluateAll(nodes => nodes.map(node => ({
       key: node.dataset.dashboardFilter,
-      values: [...node.options].map(option => option.value).filter(value => value && value !== 'all'),
+      values: [...node.options].map(option => option.value).filter(value => value && value !== 'all' && value !== 'custom'),
     })));
     let emptyCombination = null;
     for (let left = 0; left < candidates.length && !emptyCombination; left += 1) {
@@ -360,6 +362,60 @@ test('所有筛选共享同一快照并能得到明确的组合筛选空态', as
   }
 });
 
+test('自定义时间校验 180 天边界并统一刷新漏斗、订单和预估收入', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:custom-range');
+    const beforeExposure = await dashboard.locator('[data-conversion-stage="impression"] strong').innerText();
+    const beforeMetric = await dashboard.locator('[data-dashboard-metric="estimated"] strong').innerText();
+    await dashboard.locator('[data-dashboard-filter="range"]').selectOption('custom');
+    const dialog = dashboard.getByRole('dialog', { name: '自定义时间' });
+    await dialog.waitFor();
+    await dialog.locator('[data-dashboard-date="start"]').fill('2026-09-09');
+    await dialog.locator('[data-dashboard-date="end"]').fill('2026-09-10');
+    await dialog.getByRole('button', { name: '应用', exact: true }).click();
+    assert.equal(await dashboard.getAttribute('data-dashboard-range'), '2026-09-09/2026-09-10');
+    assert.notEqual(await dashboard.locator('[data-conversion-stage="impression"] strong').innerText(), beforeExposure);
+    assert.notEqual(await dashboard.locator('[data-dashboard-metric="estimated"] strong').innerText(), beforeMetric);
+
+    await dashboard.locator('[data-dashboard-filter="range"]').selectOption('custom');
+    await dialog.locator('[data-dashboard-date="start"]').fill('2026-09-10');
+    await dialog.locator('[data-dashboard-date="end"]').fill('2026-09-05');
+    assert.match(await dialog.innerText(), /开始日期不能晚于结束日期/);
+    assert.equal(await dialog.getByRole('button', { name: '应用', exact: true }).isDisabled(), true);
+    await dialog.getByRole('button', { name: '取消', exact: true }).click();
+    assert.equal(await dashboard.getAttribute('data-dashboard-range'), '2026-09-09/2026-09-10');
+
+    assert.deepEqual(await page.evaluate(() => [
+      window.PublisherDataDashboard.validateDateRange({ startDate:'2026-03-01', endDate:'2026-09-10' }),
+      window.PublisherDataDashboard.validateDateRange({ startDate:'2026-09-01', endDate:'2026-09-11' }),
+    ]), ['自定义时间最长支持 180 天', '结束日期不能晚于数据更新时间']);
+  } finally {
+    await context.close();
+  }
+});
+
+test('地区支持发行范围和具体国家地区且全部经营数据固定为 Mac', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:regions');
+    const options = await dashboard.locator('[data-dashboard-filter="region"] option').evaluateAll(nodes => nodes.map(node => node.value));
+    for (const value of ['global', 'domestic', 'Japan', 'United States', 'Germany', 'United Kingdom', 'Mainland China']) {
+      assert.ok(options.includes(value), value);
+    }
+    await dashboard.locator('[data-dashboard-filter="region"]').selectOption('Japan');
+    await selectDashboardTab(dashboard, 'orders', '订单明细');
+    assert.equal(await dashboard.locator('[data-dashboard-order-id]').count(), 1);
+    assert.match(await dashboard.locator('[data-dashboard-order-id]').first().innerText(), /日本[\s\S]*Mac/);
+    assert.equal(await dashboard.getByText('Android', { exact: true }).count(), 0);
+    assert.equal(await dashboard.getByText('Google Play Billing', { exact: true }).count(), 0);
+  } finally {
+    await context.close();
+  }
+});
+
 test('订单明细覆盖交易、免费、退款、拒付和关闭样例，用户端删除不改变交易状态', async () => {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
@@ -380,7 +436,7 @@ test('订单明细覆盖交易、免费、退款、拒付和关闭样例，用�
     await orders.first().getByRole('button', { name: '查看详情', exact: true }).click();
     const drawer = page.getByRole('dialog', { name: '订单详情' });
     await drawer.waitFor();
-    assert.match(await drawer.innerText(), /订单快照[\s\S]*履约结果[\s\S]*资金影响/);
+    assert.match(await drawer.innerText(), /订单快照[\s\S]*交易类型[\s\S]*支付状态[\s\S]*履约状态[\s\S]*退款状态[\s\S]*拒付状态[\s\S]*资金影响/);
     assert.match(await drawer.innerText(), /不展示玩家身份[\s\S]*支付账号[\s\S]*Key 明文/);
     assert.equal(await drawer.locator('input, textarea').count(), 0);
     await drawer.getByRole('button', { name: '关闭', exact: true }).click();
@@ -416,6 +472,26 @@ test('收入与结算提供两个准确的财务模块跳转 URL 并携带当前
   try {
     const dashboard = await openDashboard(page, 'publisher-dashboard:finance-links');
     await selectDashboardTab(dashboard, 'revenue', '收入与结算');
+    assert.deepEqual(new Set(await dashboard.locator('[data-reconciliation-status]').evaluateAll(nodes => nodes.map(node => node.dataset.reconciliationStatus))), new Set(['draft', 'pending', 'confirmed', 'disputed', 'locked', 'voided']));
+    assert.deepEqual(new Set(await dashboard.locator('[data-invoice-status]:not([data-invoice-status="none"])').evaluateAll(nodes => nodes.map(node => node.dataset.invoiceStatus))), new Set(['pending', 'reviewing', 'approved', 'returned', 'not_required']));
+    assert.deepEqual(new Set(await dashboard.locator('[data-payment-status]').evaluateAll(nodes => nodes.map(node => node.dataset.paymentStatus))), new Set(['waiting_condition', 'waiting_invoice', 'pending', 'processing', 'remitted', 'completed', 'failed', 'returned', 'held', 'carried_forward', 'cancelled']));
+    assert.deepEqual(await page.evaluate(() => {
+      const statements = window.PublisherDataDashboard.statements();
+      const payments = window.PublisherDataDashboard.payments();
+      const locked = new Set(statements.filter(item => item.reconciliationStatus === 'locked').map(item => item.id));
+      const outstanding = payments
+        .filter(item => item.outstandingMinor > 0 && !['completed', 'carried_forward', 'cancelled'].includes(item.status))
+        .reduce((sum, item) => sum + item.outstandingMinor, 0);
+      return {
+        everyPaymentUsesLockedStatement: payments.every(item => locked.has(item.statementId)),
+        outstanding,
+        snapshotOutstanding: window.PublisherDataDashboard.snapshot(window.PublisherDataDashboard.createState()).metrics.pendingByCurrency.USD,
+      };
+    }), {
+      everyPaymentUsesLockedStatement: true,
+      outstanding: 1548260,
+      snapshotOutstanding: 1548260,
+    });
     await dashboard.getByRole('button', { name: '前往对账结算', exact: true }).click();
     await page.waitForFunction(() => new URL(location.href).hash.startsWith('#/settlement?'));
     const settlementUrl = page.url();
@@ -443,15 +519,50 @@ test('收入与结算提供两个准确的财务模块跳转 URL 并携带当前
   }
 });
 
+test('经营概览使用三列两行指标和两组等高双列卡片', async () => {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  try {
+    const dashboard = await openDashboard(page, 'publisher-dashboard:overview-grid');
+    const metricBoxes = await dashboard.locator('.publisher-dashboard-metric').evaluateAll(nodes => nodes.map(node => {
+      const box = node.getBoundingClientRect();
+      return { left: Math.round(box.left), top: Math.round(box.top), height: Math.round(box.height) };
+    }));
+    assert.equal(new Set(metricBoxes.map(box => box.left)).size, 3);
+    assert.equal(new Set(metricBoxes.map(box => box.top)).size, 2);
+    assert.equal(new Set(metricBoxes.map(box => box.height)).size, 1);
+
+    for (const selector of ['.publisher-conversion-analysis-grid', '.publisher-dashboard-overview-grid']) {
+      const boxes = await dashboard.locator(selector + ' > .publisher-dashboard-card').evaluateAll(nodes => nodes.map(node => {
+        const box = node.getBoundingClientRect();
+        return { top: Math.round(box.top), height: Math.round(box.height) };
+      }));
+      assert.equal(boxes.length, 2, selector);
+      assert.equal(new Set(boxes.map(box => box.top)).size, 1, selector + ' 顶部未对齐');
+      assert.ok(Math.abs(boxes[0].height - boxes[1].height) <= 1, selector + ' 高度未对齐');
+    }
+  } finally {
+    await context.close();
+  }
+});
+
 test('1440×900 与 390×844 均无页面根节点横向溢出', async () => {
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+  for (const viewport of [{ width: 1675, height: 900 }, { width: 1440, height: 900 }, { width: 390, height: 844 }]) {
     const context = await browser.newContext({ viewport });
     const page = await context.newPage();
     try {
       const dashboard = await openDashboard(page, `publisher-dashboard:layout:${viewport.width}`);
       assert.deepEqual(await horizontalOverflow(page), { document: 0, body: 0 });
+      const filterTops = await dashboard.locator('.publisher-dashboard-filter-scroll .publisher-dashboard-field').evaluateAll(nodes => nodes.map(node => Math.round(node.getBoundingClientRect().top)));
+      assert.equal(await dashboard.getByRole('button', { name: '重置', exact: true }).isVisible(), true);
+      if (viewport.width === 390) {
+        assert.equal(await dashboard.locator('.publisher-dashboard-filter-scroll').evaluate(node => node.scrollWidth > node.clientWidth), true);
+      }
+      assert.equal(new Set(filterTops).size, 1, `${viewport.width}px 筛选项发生换行`);
       await selectDashboardTab(dashboard, 'orders', '订单明细');
       assert.deepEqual(await horizontalOverflow(page), { document: 0, body: 0 });
+      const orderFilterTops = await dashboard.locator('.publisher-dashboard-filter-scroll .publisher-dashboard-field').evaluateAll(nodes => nodes.map(node => Math.round(node.getBoundingClientRect().top)));
+      assert.equal(new Set(orderFilterTops).size, 1, `${viewport.width}px 订单筛选项发生换行`);
       assert.equal(await dashboard.locator('.publisher-dashboard-table-wrap').evaluate(node => getComputedStyle(node).overflowX), 'auto');
       await selectDashboardTab(dashboard, 'revenue', '收入与结算');
       assert.deepEqual(await horizontalOverflow(page), { document: 0, body: 0 });

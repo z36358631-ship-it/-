@@ -23,14 +23,14 @@ steps = [
     ("02-dashboard-overview.png", "02 分析来源", "按站内位置定位转化差异", 0.76),
     ("03-order-list.png", "03 查看交易结果", "销量、退款、拒付与订单", 0.50),
     ("04-order-detail.png", "04 定位异常订单", "查看脱敏订单与资金影响", 0.50),
-    ("05-income-settlement.png", "05 进入正式对账", "核对预估收入与待结算", 0.50),
+    ("05-income-settlement.png", "05 核对收入与结算", "结算单、发票与付款状态", 0.58),
 ]
 
 canvas = Image.new("RGB", (2960, 760), "#f5f7fa")
 draw = ImageDraw.Draw(canvas)
 draw.rounded_rectangle((36, 36, 2924, 724), radius=24, fill="#ffffff", outline="#e4e7ec", width=2)
 draw.text((76, 66), "发行平台开发者数据看板主流程", fill="#182230", font=font(32, True))
-draw.text((76, 112), "站内转化 → 来源分析 → 交易结果 → 异常定位 → 财务结算", fill="#667085", font=font(20))
+draw.text((76, 112), "站内转化 → 来源分析 → 交易结果 → 异常定位 → 收入与结算", fill="#667085", font=font(20))
 
 card_width, card_height = 500, 500
 start_x, top = 60, 172

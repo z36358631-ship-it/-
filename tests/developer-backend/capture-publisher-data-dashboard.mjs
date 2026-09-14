@@ -17,7 +17,7 @@ if (!chrome) throw new Error('Chrome or Edge not found');
 fs.mkdirSync(outputDir, { recursive:true });
 
 const browser = await chromium.launch({ headless:true, executablePath:chrome, args:['--allow-file-access-from-files','--disable-background-networking'] });
-const context = await browser.newContext({ viewport:{ width:1440, height:1600 }, deviceScaleFactor:1 });
+const context = await browser.newContext({ viewport:{ width:1440, height:2200 }, deviceScaleFactor:1 });
 const page = await context.newPage();
 const url = pathToFileURL(demoFile);
 url.hash = '/P02-01';
@@ -50,20 +50,27 @@ await page.locator('[data-portal-action="game-console-section"][data-game-sectio
 await page.locator('[data-testid="publisher-data-dashboard"]').waitFor();
 await page.locator('[data-conversion-stage="fulfillment_success"]').waitFor();
 await page.locator('[data-conversion-source="direct"]').waitFor();
+await page.locator('[data-dashboard-platform]').filter({ hasText:'平台：Mac' }).waitFor();
+await page.locator('[data-dashboard-filter="range"] option[value="custom"]').waitFor({ state:'attached' });
 
-await page.screenshot({ path:path.join(outputDir, '02-dashboard-overview.png'), fullPage:true });
+await page.screenshot({ path:path.join(outputDir, '02-dashboard-overview.png'), fullPage:false });
 
-await page.setViewportSize({ width:1440, height:900 });
+await page.setViewportSize({ width:1440, height:1700 });
 await page.locator('[data-publisher-data-tab="orders"]').click();
 await page.locator('[data-dashboard-order-id]').first().waitFor();
-await page.screenshot({ path:path.join(outputDir, '03-order-list.png'), fullPage:true });
+await page.waitForFunction(() => document.querySelectorAll('[data-dashboard-order-id]').length >= 8);
+await page.screenshot({ path:path.join(outputDir, '03-order-list.png'), fullPage:false });
+await page.setViewportSize({ width:1440, height:1300 });
 await page.locator('[data-dashboard-order-id]').first().getByRole('button', { name:'查看详情', exact:true }).click();
 await page.getByRole('dialog', { name:'订单详情' }).waitFor();
 await page.screenshot({ path:path.join(outputDir, '04-order-detail.png'), fullPage:false });
 await page.getByRole('dialog', { name:'订单详情' }).getByRole('button', { name:'关闭', exact:true }).click();
 
+await page.setViewportSize({ width:1440, height:3000 });
 await page.locator('[data-publisher-data-tab="revenue"]').click();
-await page.screenshot({ path:path.join(outputDir, '05-income-settlement.png'), fullPage:true });
+await page.locator('[data-reconciliation-status="voided"]').waitFor();
+await page.locator('[data-payment-status="cancelled"]').waitFor();
+await page.screenshot({ path:path.join(outputDir, '05-income-settlement.png'), fullPage:false });
 
 await context.close();
 await browser.close();
