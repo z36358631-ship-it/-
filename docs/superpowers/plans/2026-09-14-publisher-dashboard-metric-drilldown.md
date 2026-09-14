@@ -68,3 +68,15 @@
 - [x] 新增预约用户数移到详情页访问前，将预约、下载或成功启动的周期去重并集定义为成功获取。
 - [x] 移除独立履约成功指标，与成功获取用户数合并。
 - [x] 运行 02 专项浏览器测试，覆盖筛选移除、悬浮交互、日粒度和新口径。
+
+### Task 6: 将日期悬浮扩展为连续分栏
+
+**Files:**
+- Modify: `demos/开发者后台一期/src/runtime/publisher-data-dashboard.js`
+- Modify: `demos/开发者后台一期/src/styles/publisher-data-dashboard.css`
+- Modify: `tests/developer-backend/publisher-data-dashboard.browser.test.mjs`
+
+- [x] 以相邻日期横轴中点为边界，为每个自然日生成覆盖完整绘图区的透明竖向命中区。
+- [x] 在命中区任意高度触发当日浮层，横向移动到相邻区域时即时更新日期和数值。
+- [x] 浮层继续锚定对应折线点附近；无成熟值的日期仍可聚焦并显示“—”。
+- [x] 运行 02 专项浏览器测试，并在远离折线点的位置验证区域命中。

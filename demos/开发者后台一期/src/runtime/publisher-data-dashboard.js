@@ -606,9 +606,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const x = index => model.rows.length === 1 ? 500 : 48 + index * 920 / (model.rows.length - 1);
     const y = value => 20 + (max - value) * 210 / Math.max(max - min,0.0001);
     const points = model.rows.map((item,index) => Number.isFinite(item.value) ? { ...item,index,x:x(index),y:y(item.value) } : null).filter(Boolean);
+    const dayRegions = model.rows.map((item,index) => {
+      const center = x(index);
+      const left = index === 0 ? 48 : (x(index - 1) + center) / 2;
+      const right = index === model.rows.length - 1 ? 968 : (center + x(index + 1)) / 2;
+      const dot = Number.isFinite(item.value)
+        ? `<circle cx="${center}" cy="${y(item.value)}" r="4" class="publisher-detail-point-dot"></circle>`
+        : '';
+      return `<g tabindex="0" role="img" aria-label="${escape(`${item.date} ${model.config.label} ${formatMetricValue(item.value,model.config.type,language)}`)}" data-detail-point data-detail-day-region data-detail-date="${item.date}" data-detail-label="${escape(model.config.label)}" data-detail-display="${escape(formatMetricValue(item.value,model.config.type,language))}"><rect x="${left}" y="20" width="${right - left}" height="210" class="publisher-detail-day-hit" data-detail-day-hit></rect>${dot}</g>`;
+    }).join('');
     const labelStep = Math.max(1,Math.ceil((model.rows.length - 1) / 5));
     const labels = model.rows.map((item,index) => (index === 0 || index === model.rows.length - 1 || index % labelStep === 0) ? `<text x="${x(index)}" y="263" text-anchor="middle">${item.date.slice(5)}</text>` : '').join('');
-    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${points.map(point => `<g tabindex="0" role="img" aria-label="${escape(`${point.date} ${model.config.label} ${formatMetricValue(point.value,model.config.type,language)}`)}" data-detail-point data-detail-date="${point.date}" data-detail-label="${escape(model.config.label)}" data-detail-display="${escape(formatMetricValue(point.value,model.config.type,language))}"><circle cx="${point.x}" cy="${point.y}" r="4" class="publisher-detail-point-dot"></circle><circle cx="${point.x}" cy="${point.y}" r="12" class="publisher-detail-point-hit"></circle></g>`).join('')}${labels}</svg><div class="publisher-detail-hover" data-detail-hover-tooltip hidden><strong data-detail-hover-date></strong><span><i></i><em data-detail-hover-label></em><b data-detail-hover-value></b></span></div></div>`;
+    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${dayRegions}${labels}</svg><div class="publisher-detail-hover" data-detail-hover-tooltip hidden><strong data-detail-hover-date></strong><span><i></i><em data-detail-hover-label></em><b data-detail-hover-value></b></span></div></div>`;
   };
   const renderDetailTable = (model,language) => `<div class="publisher-detail-table-wrap"><table><thead><tr><th>${text('日期','Date',language)}</th><th>${model.config.label}</th><th>${text('较前一日','vs. previous day',language)}</th></tr></thead><tbody>${model.rows.map(row => `<tr data-detail-row data-detail-date="${row.date}"><td>${row.date}</td><td><strong>${row.display}</strong></td><td>${row.deltaDisplay}</td></tr>`).join('')}</tbody></table></div>`;
   const detailIcon = key => ({
@@ -760,20 +769,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const showDetailHover = point => {
       const chart = point?.closest('.publisher-detail-chart');
       const tooltip = chart?.querySelector('[data-detail-hover-tooltip]');
-      const hit = point?.querySelector('.publisher-detail-point-hit') || point;
+      const hit = point?.querySelector('[data-detail-day-hit]') || point;
+      const dot = point?.querySelector('.publisher-detail-point-dot');
       if (!chart || !tooltip || !hit) return;
       tooltip.querySelector('[data-detail-hover-date]').textContent = point.dataset.detailDate || '';
       tooltip.querySelector('[data-detail-hover-label]').textContent = point.dataset.detailLabel || '';
       tooltip.querySelector('[data-detail-hover-value]').textContent = point.dataset.detailDisplay || '—';
       tooltip.hidden = false;
       const chartRect = chart.getBoundingClientRect();
-      const pointRect = hit.getBoundingClientRect();
+      const hitRect = hit.getBoundingClientRect();
+      const anchorRect = dot?.getBoundingClientRect() || hitRect;
       const width = tooltip.offsetWidth;
       const height = tooltip.offsetHeight;
-      const center = pointRect.left - chartRect.left + pointRect.width / 2 + chart.scrollLeft;
+      const center = hitRect.left - chartRect.left + hitRect.width / 2 + chart.scrollLeft;
       const left = Math.max(8,Math.min(center - width / 2,chart.scrollWidth - width - 8));
-      const above = pointRect.top - chartRect.top - height - 12;
-      const top = above >= 8 ? above : pointRect.bottom - chartRect.top + 10;
+      const above = anchorRect.top - chartRect.top - height - 12;
+      const top = dot ? (above >= 8 ? above : anchorRect.bottom - chartRect.top + 10) : 10;
       tooltip.style.left = `${left}px`;
       tooltip.style.top = `${top}px`;
     };

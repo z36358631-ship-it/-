@@ -513,7 +513,7 @@ test('详情支持完整日表、刷新、全屏、Esc 退出和当前指标 CSV
   }
 });
 
-test('逐日图表明确日粒度并在悬浮日期时显示当日数据', async () => {
+test('逐日图表按日期分栏命中并在区域任意高度显示当日数据', async () => {
   const context = await browser.newContext({ viewport:{ width:1440,height:900 } });
   const page = await context.newPage();
   try {
@@ -522,12 +522,25 @@ test('逐日图表明确日粒度并在悬浮日期时显示当日数据', async
     assert.equal(await detail.getAttribute('data-detail-granularity'), 'day');
     assert.equal(await detail.getByText('数据粒度：日', { exact:true }).count(), 1);
     const point = detail.locator('[data-detail-point][data-detail-date="2026-09-05"]');
-    await point.hover();
+    const hit = point.locator('[data-detail-day-hit]');
+    assert.equal(await hit.evaluate(node => node.tagName.toLowerCase()), 'rect');
+    const hitBox = await hit.boundingBox();
+    const dotBox = await point.locator('.publisher-detail-point-dot').boundingBox();
+    assert.ok(hitBox && dotBox);
+    assert.ok(hitBox.height > 180, '日期命中区域应覆盖图表纵向绘图区');
+    assert.ok(Math.abs(hitBox.y + 3 - (dotBox.y + dotBox.height / 2)) > 24, '测试悬浮位置必须远离数据点');
+    await page.mouse.move(hitBox.x + hitBox.width / 2, hitBox.y + 3);
     const tooltip = detail.locator('[data-detail-hover-tooltip]');
     await tooltip.waitFor({ state:'visible' });
     assert.match(await tooltip.innerText(), /2026-09-05/);
     assert.match(await tooltip.innerText(), /有效曝光/);
     assert.match(await tooltip.innerText(), /\d/);
+
+    const adjacentHit = detail.locator('[data-detail-point][data-detail-date="2026-09-06"] [data-detail-day-hit]');
+    const adjacentBox = await adjacentHit.boundingBox();
+    assert.ok(adjacentBox);
+    await page.mouse.move(adjacentBox.x + adjacentBox.width / 2, adjacentBox.y + 3);
+    await assert.doesNotReject(() => tooltip.getByText('2026-09-06', { exact:true }).waitFor());
   } finally {
     await context.close();
   }

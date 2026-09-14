@@ -5547,7 +5547,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .publisher-detail-axis { stroke: #e4e7ec; stroke-width: 1; }
 .publisher-detail-line { fill: none; stroke: #c99500; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2.5; }
 .publisher-detail-chart circle { fill: #f0b90b; stroke: #fff; stroke-width: 2; }
-.publisher-detail-point-hit { fill: transparent !important; stroke: transparent !important; pointer-events: all; }
+.publisher-detail-day-hit { fill: transparent; stroke: transparent; pointer-events: all; }
 .publisher-detail-point-dot { pointer-events: none; }
 .publisher-detail-chart [data-detail-point]:hover .publisher-detail-point-dot,
 .publisher-detail-chart [data-detail-point]:focus .publisher-detail-point-dot { fill: #9b6d00; r: 5.5px; }
@@ -5686,9 +5686,6 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .publisher-channel-card{padding:20px}.publisher-channel-card>header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:17px}.publisher-channel-card>header h2{margin:0 0 4px;font-size:17px}
 .publisher-channel-card__actions{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.publisher-channel-card__note{margin:14px 0 0;color:var(--text-secondary);font-size:12px}
 .publisher-channel-status{display:inline-flex;align-items:center;width:max-content;padding:4px 9px;border-radius:999px;background:#e9f8f1;color:var(--success);font-size:12px;white-space:nowrap}.publisher-channel-status.is-warning{background:#fff3d8;color:var(--warning)}.publisher-channel-status.is-neutral{background:var(--surface-muted);color:var(--text-secondary)}.publisher-channel-status.is-danger{background:#fff0ef;color:#ba4741}
-.publisher-channel-partner{display:flex;align-items:center;gap:13px}.publisher-channel-partner>span{display:grid;place-items:center;flex:0 0 auto;width:44px;height:44px;border-radius:var(--radius-sm);background:var(--brand-deep);color:#fff;font-weight:800}.publisher-channel-partner strong,.publisher-channel-partner small{display:block}.publisher-channel-partner small{margin-top:2px;color:var(--text-secondary);overflow-wrap:anywhere}
-.publisher-channel-quota{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.publisher-channel-quota div{padding-left:10px;border-left:3px solid var(--brand-blue)}.publisher-channel-quota strong,.publisher-channel-quota small{display:block}.publisher-channel-quota small{color:var(--text-secondary)}
-.publisher-channel-progress{height:7px;margin-top:16px;border-radius:10px;background:var(--surface-muted);overflow:hidden}.publisher-channel-progress i{display:block;height:100%;border-radius:10px;background:var(--brand-blue)}
 .publisher-channel-result{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:17px 18px;border:1px solid #cfe0ff;border-radius:var(--radius-md);background:#f7faff}.publisher-channel-result>div{display:grid;gap:5px}.publisher-channel-result h2,.publisher-channel-result p{margin:0}.publisher-channel-result h2{font-size:16px}.publisher-channel-result p,.publisher-channel-result small{color:var(--text-secondary)}.publisher-channel-result.is-warning{border-color:#f1d9a9;background:#fffbf2}.publisher-channel-result.is-danger{border-color:#f0c7c5;background:#fff8f7}
 .publisher-channel-table-wrap{max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch}.publisher-channel-table{width:100%;min-width:760px;border-collapse:collapse}.publisher-channel-table th,.publisher-channel-table td{padding:12px 13px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.publisher-channel-table th{background:var(--surface-soft);color:var(--text-secondary);font-size:12px}.publisher-channel-table tr:last-child td{border-bottom:0}.publisher-channel-table tbody tr:hover{background:#fafbfd}.publisher-channel-table code{font-family:var(--font-number);font-size:12px}.publisher-channel-link{padding:0;border:0;background:none;color:var(--info)}.publisher-channel-link:hover{text-decoration:underline}
 .publisher-channel-filters{display:flex;gap:12px;flex-wrap:wrap}.publisher-channel-filters label{display:grid;gap:5px}.publisher-channel-filters span{color:var(--text-secondary);font-size:12px}.publisher-channel-filters select{min-width:150px;padding:9px 34px 9px 11px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary)}
@@ -5700,7 +5697,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .publisher-channel-dialog__note{margin:16px 0 0;padding:12px;border-radius:var(--radius-sm);background:#f1f6ff;color:#315c9b;line-height:1.65}.publisher-channel-dialog__note.is-warning{background:#fff8e8;color:#885e12}
 .publisher-channel-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.publisher-channel-form label{display:grid;align-content:start;gap:7px}.publisher-channel-form label:first-child{grid-column:1/-1}.publisher-channel-form label>span{font-size:13px;font-weight:650}.publisher-channel-form input,.publisher-channel-form select{width:100%;min-height:40px;padding:0 11px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text-primary)}.publisher-channel-form input[readonly]{background:var(--surface-soft);color:var(--text-secondary)}.publisher-channel-form small{color:var(--text-secondary)}.publisher-channel-form em{min-height:16px;color:#ba4741;font-size:12px;font-style:normal}
 @media(max-width:980px){.publisher-channel-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.publisher-channel-head{align-items:flex-start;flex-direction:column}.publisher-channel-head__actions{justify-content:flex-start}.publisher-channel-head .publisher-channel-primary,.publisher-channel-head .publisher-channel-secondary{align-self:flex-start}}
-@media(max-width:620px){.publisher-channel{gap:15px}.publisher-channel-head{gap:14px}.publisher-channel-head h1{font-size:22px}.publisher-channel-head__actions,.publisher-channel-head__actions button{width:100%}.publisher-channel-metrics{grid-template-columns:1fr}.publisher-channel-card{padding:15px}.publisher-channel-card>header,.publisher-channel-notice,.publisher-channel-result{align-items:flex-start;flex-direction:column}.publisher-channel-result>button{width:100%}.publisher-channel-quota{grid-template-columns:1fr}.publisher-channel-filters{display:grid;grid-template-columns:1fr 1fr}.publisher-channel-filters label,.publisher-channel-filters select{width:100%;min-width:0}.publisher-channel-detail-grid,.publisher-channel-form{grid-template-columns:1fr}.publisher-channel-dialog-layer{padding:10px}.publisher-channel-dialog{max-height:calc(100vh - 20px)}.publisher-channel-dialog>header{padding:17px}.publisher-channel-dialog__body{padding:17px}.publisher-channel-dialog>footer{padding:12px 17px}.publisher-channel-dialog>footer button{flex:1}.publisher-channel-empty{padding:38px 18px}}
+@media(max-width:620px){.publisher-channel{gap:15px}.publisher-channel-head{gap:14px}.publisher-channel-head h1{font-size:22px}.publisher-channel-head__actions,.publisher-channel-head__actions button{width:100%}.publisher-channel-metrics{grid-template-columns:1fr}.publisher-channel-card{padding:15px}.publisher-channel-card>header,.publisher-channel-notice,.publisher-channel-result{align-items:flex-start;flex-direction:column}.publisher-channel-result>button{width:100%}.publisher-channel-filters{display:grid;grid-template-columns:1fr 1fr}.publisher-channel-filters label,.publisher-channel-filters select{width:100%;min-width:0}.publisher-channel-detail-grid,.publisher-channel-form{grid-template-columns:1fr}.publisher-channel-dialog-layer{padding:10px}.publisher-channel-dialog{max-height:calc(100vh - 20px)}.publisher-channel-dialog>header{padding:17px}.publisher-channel-dialog__body{padding:17px}.publisher-channel-dialog>footer{padding:12px 17px}.publisher-channel-dialog>footer button{flex:1}.publisher-channel-empty{padding:38px 18px}}
 @media(max-width:380px){.publisher-channel-filters{grid-template-columns:1fr}.publisher-channel-metric{padding:14px}.publisher-channel-tabs{gap:20px}}
 .publisher-game-nav__group{display:block;margin:16px 12px 6px;color:var(--text-tertiary);font-size:10px;font-weight:700;letter-spacing:.08em}</style></head><body>
 <div id="app"></div>
@@ -11065,9 +11062,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const x = index => model.rows.length === 1 ? 500 : 48 + index * 920 / (model.rows.length - 1);
     const y = value => 20 + (max - value) * 210 / Math.max(max - min,0.0001);
     const points = model.rows.map((item,index) => Number.isFinite(item.value) ? { ...item,index,x:x(index),y:y(item.value) } : null).filter(Boolean);
+    const dayRegions = model.rows.map((item,index) => {
+      const center = x(index);
+      const left = index === 0 ? 48 : (x(index - 1) + center) / 2;
+      const right = index === model.rows.length - 1 ? 968 : (center + x(index + 1)) / 2;
+      const dot = Number.isFinite(item.value)
+        ? `<circle cx="${center}" cy="${y(item.value)}" r="4" class="publisher-detail-point-dot"></circle>`
+        : '';
+      return `<g tabindex="0" role="img" aria-label="${escape(`${item.date} ${model.config.label} ${formatMetricValue(item.value,model.config.type,language)}`)}" data-detail-point data-detail-day-region data-detail-date="${item.date}" data-detail-label="${escape(model.config.label)}" data-detail-display="${escape(formatMetricValue(item.value,model.config.type,language))}"><rect x="${left}" y="20" width="${right - left}" height="210" class="publisher-detail-day-hit" data-detail-day-hit></rect>${dot}</g>`;
+    }).join('');
     const labelStep = Math.max(1,Math.ceil((model.rows.length - 1) / 5));
     const labels = model.rows.map((item,index) => (index === 0 || index === model.rows.length - 1 || index % labelStep === 0) ? `<text x="${x(index)}" y="263" text-anchor="middle">${item.date.slice(5)}</text>` : '').join('');
-    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${points.map(point => `<g tabindex="0" role="img" aria-label="${escape(`${point.date} ${model.config.label} ${formatMetricValue(point.value,model.config.type,language)}`)}" data-detail-point data-detail-date="${point.date}" data-detail-label="${escape(model.config.label)}" data-detail-display="${escape(formatMetricValue(point.value,model.config.type,language))}"><circle cx="${point.x}" cy="${point.y}" r="4" class="publisher-detail-point-dot"></circle><circle cx="${point.x}" cy="${point.y}" r="12" class="publisher-detail-point-hit"></circle></g>`).join('')}${labels}</svg><div class="publisher-detail-hover" data-detail-hover-tooltip hidden><strong data-detail-hover-date></strong><span><i></i><em data-detail-hover-label></em><b data-detail-hover-value></b></span></div></div>`;
+    return `<div class="publisher-detail-chart" aria-label="${escape(`${model.config.label}${text('逐日趋势',' daily trend',language)}`)}"><svg viewBox="0 0 1000 278" role="img"><line x1="48" y1="230" x2="968" y2="230" class="publisher-detail-axis"></line><line x1="48" y1="20" x2="48" y2="230" class="publisher-detail-axis"></line><text x="38" y="25" text-anchor="end">${escape(formatMetricValue(rawMax,model.config.type,language))}</text><text x="38" y="234" text-anchor="end">${escape(formatMetricValue(rawMin,model.config.type,language))}</text><polyline class="publisher-detail-line" points="${linePath(points)}"></polyline>${dayRegions}${labels}</svg><div class="publisher-detail-hover" data-detail-hover-tooltip hidden><strong data-detail-hover-date></strong><span><i></i><em data-detail-hover-label></em><b data-detail-hover-value></b></span></div></div>`;
   };
   const renderDetailTable = (model,language) => `<div class="publisher-detail-table-wrap"><table><thead><tr><th>${text('日期','Date',language)}</th><th>${model.config.label}</th><th>${text('较前一日','vs. previous day',language)}</th></tr></thead><tbody>${model.rows.map(row => `<tr data-detail-row data-detail-date="${row.date}"><td>${row.date}</td><td><strong>${row.display}</strong></td><td>${row.deltaDisplay}</td></tr>`).join('')}</tbody></table></div>`;
   const detailIcon = key => ({
@@ -11219,20 +11225,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const showDetailHover = point => {
       const chart = point?.closest('.publisher-detail-chart');
       const tooltip = chart?.querySelector('[data-detail-hover-tooltip]');
-      const hit = point?.querySelector('.publisher-detail-point-hit') || point;
+      const hit = point?.querySelector('[data-detail-day-hit]') || point;
+      const dot = point?.querySelector('.publisher-detail-point-dot');
       if (!chart || !tooltip || !hit) return;
       tooltip.querySelector('[data-detail-hover-date]').textContent = point.dataset.detailDate || '';
       tooltip.querySelector('[data-detail-hover-label]').textContent = point.dataset.detailLabel || '';
       tooltip.querySelector('[data-detail-hover-value]').textContent = point.dataset.detailDisplay || '—';
       tooltip.hidden = false;
       const chartRect = chart.getBoundingClientRect();
-      const pointRect = hit.getBoundingClientRect();
+      const hitRect = hit.getBoundingClientRect();
+      const anchorRect = dot?.getBoundingClientRect() || hitRect;
       const width = tooltip.offsetWidth;
       const height = tooltip.offsetHeight;
-      const center = pointRect.left - chartRect.left + pointRect.width / 2 + chart.scrollLeft;
+      const center = hitRect.left - chartRect.left + hitRect.width / 2 + chart.scrollLeft;
       const left = Math.max(8,Math.min(center - width / 2,chart.scrollWidth - width - 8));
-      const above = pointRect.top - chartRect.top - height - 12;
-      const top = above >= 8 ? above : pointRect.bottom - chartRect.top + 10;
+      const above = anchorRect.top - chartRect.top - height - 12;
+      const top = dot ? (above >= 8 ? above : anchorRect.bottom - chartRect.top + 10) : 10;
       tooltip.style.left = `${left}px`;
       tooltip.style.top = `${top}px`;
     };
@@ -11590,14 +11598,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const fixture = Object.freeze({
     channel: { id:'CH-001', name:'NovaPlay Store', currency:'USD' },
     program: {
-      id:'KP-202609-001', appId:'APP-7F3A9C', sku:'BASE-GLOBAL',
+      appId:'APP-7F3A9C', sku:'BASE-GLOBAL',
       product:'星海远征 · 全球本体', regions:'美国、新加坡、中国澳门', purpose:'商业销售',
       perRequestLimit:1000,
       delivery:'API 单码分配', validFrom:'2026-09-01', validUntil:'2027-03-31',
     },
     batch: {
-      id:'KB-202609-0008', quantity:2000, available:360, pendingDelivery:0,
-      exposed:372, redeemed:1268, expired:0, voided:0, validUntil:'2027-03-31',
+      id:'KB-202609-0008', quantity:1000, available:180, pendingDelivery:0,
+      exposed:186, redeemed:634, expired:0, voided:0, validUntil:'2027-03-31',
     },
     settlement: {
       id:'ST-202609-CH001', period:'2026-09', sold:1282, refunds:14,
@@ -11614,7 +11622,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const field = (label, value) => `<div><dt>${e(label)}</dt><dd>${e(value)}</dd></div>`;
 
   const batchOutcomeMeta = (outcome, language) => ({
-    generated:{ title:tx(language,'批次已生成','Batch generated'), detail:tx(language,'已通过授权与风险校验，可供指定渠道分配。','Authorization and risk checks passed. The batch is ready for allocation to the selected channel.'), tone:'success', label:tx(language,'可用','Available') },
+    generated:{ title:tx(language,'批次已生成','Batch generated'), detail:tx(language,'已通过风险校验，可供指定渠道分配。','Risk checks passed. The batch is ready for allocation to the selected channel.'), tone:'success', label:tx(language,'可用','Available') },
     pending:{ title:tx(language,'批次审核中','Batch in review'), detail:tx(language,'本次申请触发人工审核，预计 1 个工作日内完成。','This request requires manual review and is expected to finish within one business day.'), tone:'warning', label:tx(language,'审核中','In review') },
     rejected:{ title:tx(language,'批次申请已拒绝','Batch request rejected'), detail:tx(language,'请根据审核意见调整渠道名称、用途或数量后重新提交。','Update the channel name, purpose or quantity according to the review note, then submit again.'), tone:'danger', label:tx(language,'已拒绝','Rejected') },
     failed:{ title:tx(language,'批次生成失败','Batch generation failed'), detail:tx(language,'批次申请已记录，但生成服务暂时异常；重试不会重复创建批次。','The request is recorded, but generation is temporarily unavailable. Retrying will not create a duplicate batch.'), tone:'danger', label:tx(language,'生成失败','Generation failed') },
@@ -11636,12 +11644,25 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderBatchCreateDialog = (language, state) => {
     const initialQuantity = Number(state.channelBatchDraft?.quantity || state.channelSubmission?.quantity || 500);
     const initialChannelName = state.channelBatchDraft?.channelName || '';
-    const body = `<form class="publisher-channel-form" data-channel-batch-form><label><span>${tx(language,'渠道名称','Channel name')}</span><input value="${e(initialChannelName)}" maxlength="50" placeholder="${tx(language,'输入便于识别的渠道名称','Enter a recognizable channel name')}" aria-label="${tx(language,'渠道名称','Channel name')}" data-channel-batch-name><small>${tx(language,'用于批次、交付和结算数据管理。','Used to manage batch, delivery and settlement data.')}</small><em data-channel-name-error></em></label><label><span>${tx(language,'申请数量','Request quantity')}</span><input type="number" min="1" max="1000" step="1" value="${e(initialQuantity)}" aria-label="${tx(language,'申请数量','Request quantity')}" data-channel-batch-quantity><small>${tx(language,'单次申请上限 1,000。','Maximum 1,000 per request.')}</small><em data-channel-batch-error></em></label><label><span>${tx(language,'用途','Purpose')}</span><select aria-label="${tx(language,'用途','Purpose')}" data-channel-batch-purpose><option value="commercial">${tx(language,'商业销售','Commercial sale')}</option><option value="testing">${tx(language,'测试','Testing')}</option><option value="promotion">${tx(language,'免费推广','Free promotion')}</option><option value="compensation">${tx(language,'用户补偿','Customer compensation')}</option></select></label><label><span>${tx(language,'交付方式','Delivery method')}</span><select aria-label="${tx(language,'交付方式','Delivery method')}" data-channel-batch-delivery><option value="api">${tx(language,'API 单码分配','Single-key API allocation')}</option><option value="file">${tx(language,'批量文件（需人工审核）','Batch file (manual review)')}</option></select></label><label><span>${tx(language,'有效期','Valid until')}</span><input type="date" value="2027-03-31" max="2027-03-31" aria-label="${tx(language,'有效期','Valid until')}"></label></form>`;
+    const initialPurpose = state.channelBatchDraft?.purpose || state.channelSubmission?.purpose || 'commercial';
+    const initialDelivery = state.channelBatchDraft?.delivery || state.channelSubmission?.delivery || 'api';
+    const selected = (actual, expected) => actual === expected ? ' selected' : '';
+    const body = `<form class="publisher-channel-form" data-channel-batch-form><label><span>${tx(language,'渠道名称','Channel name')}</span><input value="${e(initialChannelName)}" maxlength="50" placeholder="${tx(language,'输入便于识别的渠道名称','Enter a recognizable channel name')}" aria-label="${tx(language,'渠道名称','Channel name')}" data-channel-batch-name><small>${tx(language,'用于批次、交付和结算数据管理。','Used to manage batch, delivery and settlement data.')}</small><em data-channel-name-error></em></label><label><span>${tx(language,'申请数量','Request quantity')}</span><input type="number" min="1" max="1000" step="1" value="${e(initialQuantity)}" aria-label="${tx(language,'申请数量','Request quantity')}" data-channel-batch-quantity><small>${tx(language,'单次申请上限 1,000。','Maximum 1,000 per request.')}</small><em data-channel-batch-error></em></label><label><span>${tx(language,'用途','Purpose')}</span><select aria-label="${tx(language,'用途','Purpose')}" data-channel-batch-purpose><option value="commercial"${selected(initialPurpose,'commercial')}>${tx(language,'商业销售','Commercial sale')}</option><option value="testing"${selected(initialPurpose,'testing')}>${tx(language,'测试','Testing')}</option><option value="promotion"${selected(initialPurpose,'promotion')}>${tx(language,'免费推广','Free promotion')}</option><option value="compensation"${selected(initialPurpose,'compensation')}>${tx(language,'用户补偿','Customer compensation')}</option></select></label><label><span>${tx(language,'交付方式','Delivery method')}</span><select aria-label="${tx(language,'交付方式','Delivery method')}" data-channel-batch-delivery><option value="api"${selected(initialDelivery,'api')}>${tx(language,'API 单码分配','Single-key API allocation')}</option><option value="file"${selected(initialDelivery,'file')}>${tx(language,'批量文件（需人工审核）','Batch file (manual review)')}</option></select></label><label><span>${tx(language,'有效期','Valid until')}</span><input type="date" value="2027-03-31" max="2027-03-31" aria-label="${tx(language,'有效期','Valid until')}"></label></form>`;
     const footer = `${button(tx(language,'取消','Cancel'),'channel-dialog-close',{secondary:true})}${button(tx(language,'提交批次申请','Submit batch request'),'channel-batch-submit')}`;
     return dialogShell(language,'channel-batch-create-title','KEY BATCH',tx(language,'创建 Key 批次','Create Key batch'),body,footer);
   };
 
-  const renderBatchDetailDialog = language => dialogShell(language,'channel-batch-detail-title','KEY BATCH',tx(language,'批次详情','Batch details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'批次编号','Batch ID'),fixture.batch.id)}${field(tx(language,'渠道名称','Channel name'),`${fixture.channel.name} · ${fixture.channel.id}`)}${field(tx(language,'总量','Total'),'2,000')}${field(tx(language,'可用','Available'),'360')}${field(tx(language,'待接收确认','Awaiting receipt confirmation'),'0')}${field(tx(language,'已暴露未兑换','Exposed, not redeemed'),'372')}${field(tx(language,'已兑换','Redeemed'),'1,268')}${field(tx(language,'已过期','Expired'),'0')}${field(tx(language,'已作废','Voided'),'0')}${field(tx(language,'有效期','Valid until'),fixture.batch.validUntil)}${field(tx(language,'交付方式','Delivery'),tx(language,'API 单码分配','Single-key API allocation'))}${field(tx(language,'交付机制','Delivery flow'),tx(language,'渠道订单请求后，接口一次返回 1 个 Key','After a channel order request, the API returns one Key'))}${field(tx(language,'幂等处理','Idempotency'),tx(language,'同一渠道订单只分配 1 个 Key，重试不重复扣库存','The same channel order receives one Key; retries do not consume inventory twice'))}${field(tx(language,'可见范围','Visibility'),tx(language,'前台、列表和日志只显示掩码或指纹','The portal, lists and logs show only masks or fingerprints'))}</dl><p class="publisher-channel-dialog__note is-warning">${tx(language,'明文 Key 仅通过已鉴权的 HTTPS 接口返回渠道。已暴露 Key 只能兑换、过期或作废，不得回到可用状态。批量文件仅作受控例外，由平台生成加密文件或限时下载地址。','Plain-text Keys are returned to the channel only through an authenticated HTTPS API. An exposed Key can only be redeemed, expired or voided; it never returns to available. Batch files are a controlled exception, provided by the platform as encrypted files or expiring download links.')}</p>`);
+  const renderBatchDetailDialog = (language, state) => {
+    const isSubmission = state.channelDetailSource === 'submission' && state.channelSubmission;
+    const quantity = Number(isSubmission ? state.channelSubmission.quantity : fixture.batch.quantity);
+    const channelName = isSubmission ? state.channelSubmission.channelName : fixture.channel.name;
+    const batchId = isSubmission ? 'KB-202609-0016' : fixture.batch.id;
+    const available = isSubmission ? quantity : fixture.batch.available;
+    const delivery = isSubmission && state.channelSubmission.delivery === 'file'
+      ? tx(language,'加密文件','Encrypted file')
+      : tx(language,'API 单码分配','Single-key API allocation');
+    return dialogShell(language,'channel-batch-detail-title','KEY BATCH',tx(language,'批次详情','Batch details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'批次编号','Batch ID'),batchId)}${field(tx(language,'渠道名称','Channel name'),channelName)}${field(tx(language,'总量','Total'),quantity.toLocaleString())}${field(tx(language,'可用','Available'),available.toLocaleString())}${field(tx(language,'待接收确认','Awaiting receipt confirmation'),'0')}${field(tx(language,'已暴露未兑换','Exposed, not redeemed'),isSubmission ? '0' : fixture.batch.exposed.toLocaleString())}${field(tx(language,'已兑换','Redeemed'),isSubmission ? '0' : fixture.batch.redeemed.toLocaleString())}${field(tx(language,'已过期','Expired'),'0')}${field(tx(language,'已作废','Voided'),'0')}${field(tx(language,'有效期','Valid until'),fixture.batch.validUntil)}${field(tx(language,'交付方式','Delivery'),delivery)}${field(tx(language,'交付机制','Delivery flow'),tx(language,'渠道订单请求后，接口一次返回 1 个 Key','After a channel order request, the API returns one Key'))}${field(tx(language,'幂等处理','Idempotency'),tx(language,'同一渠道订单只分配 1 个 Key，重试不重复扣库存','The same channel order receives one Key; retries do not consume inventory twice'))}${field(tx(language,'可见范围','Visibility'),tx(language,'前台、列表和日志只显示掩码或指纹','The portal, lists and logs show only masks or fingerprints'))}</dl><p class="publisher-channel-dialog__note is-warning">${tx(language,'明文 Key 仅通过已鉴权的 HTTPS 接口返回渠道。已暴露 Key 只能兑换、过期或作废，不得回到可用状态。批量文件仅作受控例外，由平台生成加密文件或限时下载地址。','Plain-text Keys are returned to the channel only through an authenticated HTTPS API. An exposed Key can only be redeemed, expired or voided; it never returns to available. Batch files are a controlled exception, provided by the platform as encrypted files or expiring download links.')}</p>`);
+  };
 
   const renderAnomalyDialog = language => dialogShell(language,'channel-anomaly-title','CHANNEL ANOMALY',tx(language,'异常详情','Anomaly details'),`<dl class="publisher-channel-detail-grid">${field(tx(language,'异常编号','Anomaly ID'),'AN-202609-0031')}${field(tx(language,'异常类型','Type'),tx(language,'已兑换但销售未回传','Redeemed without sales report'))}${field(tx(language,'渠道订单','Channel order'),'NP-260910-8826')}${field('Key',fixture.maskedKeys[2])}${field(tx(language,'发现时间','Detected at'),'2026-09-10 13:50')}${field(tx(language,'影响','Impact'),tx(language,'暂不计入渠道销售净额','Excluded from channel sales net for now'))}${field(tx(language,'处理进度','Progress'),tx(language,'平台正在向渠道补查销售事实','Platform is verifying the sale with the channel'))}${field(tx(language,'预计更新','Expected update'),'2026-09-15')}</dl><p class="publisher-channel-dialog__note">${tx(language,'开发者无需处理。结果确认后会自动更新销售、收益和月度调整。','No developer action is required. Sales, revenue and monthly adjustments update automatically after verification.')}</p>`);
 
@@ -11649,7 +11670,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   const renderDialog = ({ language, state }) => ({
     'batch-create':() => renderBatchCreateDialog(language,state),
-    'batch-detail':() => renderBatchDetailDialog(language),
+    'batch-detail':() => renderBatchDetailDialog(language,state),
     'anomaly-detail':() => renderAnomalyDialog(language),
     'settlement-detail':() => renderSettlementDialog(language),
   }[state.channelDialog]?.() || '');
@@ -11664,18 +11685,23 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const pageHead = head(language,'KEY BATCHES',tx(language,'Key 批次','Key batches'),' ',button(tx(language,'创建 Key 批次','Create Key batch'),'channel-batch-create'));
     const result = state.channelSubmission ? batchResult({language,outcome:batchOutcome,submission:state.channelSubmission}) : '';
     const noAction = '<span aria-label="无操作">—</span>';
-    const details = `<button type="button" class="publisher-channel-link" data-portal-action="channel-batch-detail">${tx(language,'查看详情','View details')}</button>`;
-    const rows = [
+    const details = source => `<button type="button" class="publisher-channel-link" data-portal-action="channel-batch-detail" data-channel-detail-source="${e(source)}">${tx(language,'查看详情','View details')}</button>`;
+    const submitted = state.channelSubmission;
+    const submittedMeta = submitted ? batchOutcomeMeta(batchOutcome,language) : null;
+    const submittedRow = submitted
+      ? [[batchOutcome === 'generated' ? '<strong>KB-202609-0016</strong>' : 'BR-20260914-001',e(submitted.channelName || fixture.channel.name),tx(language,{commercial:'商业销售',testing:'测试',promotion:'免费推广',compensation:'用户补偿'}[submitted.purpose] || '商业销售',{commercial:'Commercial sale',testing:'Testing',promotion:'Free promotion',compensation:'Customer compensation'}[submitted.purpose] || 'Commercial sale'),submitted.delivery === 'file' ? tx(language,'加密文件','Encrypted file') : tx(language,'API 单码分配','Single-key API'),Number(submitted.quantity || 500).toLocaleString(),status(submittedMeta.label,submittedMeta.tone),'2027-03-31',batchOutcome === 'generated' ? details('submission') : noAction]]
+      : [];
+    const rows = [...submittedRow,
       ['KB-202609-0015','北美线下渠道',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'500',status(tx(language,'生成中','Generating'),'warning'),'2027-03-31',noAction],
       ['KB-202609-0014','NovaPlay Store',tx(language,'免费推广','Free promotion'),tx(language,'加密文件','Encrypted file'),'300',status(tx(language,'审核中','In review'),'warning'),'2026-12-31',noAction],
       ['KB-202609-0013','ArcadeX',tx(language,'用户补偿','Customer compensation'),tx(language,'加密文件','Encrypted file'),'100',status(tx(language,'已拒绝','Rejected'),'danger'),'2026-12-31',noAction],
       ['KB-202609-0012','NovaPlay Store',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'600',status(tx(language,'生成失败','Generation failed'),'danger'),'2027-03-31',noAction],
-      [`<strong>${fixture.batch.id}</strong>`,'NovaPlay Store',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'2,000',status(tx(language,'可用','Available')),'2027-03-31',details],
+      [`<strong>${fixture.batch.id}</strong>`,'NovaPlay Store',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'1,000',status(tx(language,'可用','Available')),'2027-03-31',details('fixture')],
       ['KB-202608-0007','ArcadeX',tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'50',status(tx(language,'已耗尽','Depleted'),'neutral'),'2026-12-31',noAction],
       ['KB-202607-0006','东南亚代理',tx(language,'商业销售','Commercial sale'),tx(language,'API 单码分配','Single-key API'),'200',status(tx(language,'已过期','Expired'),'neutral'),'2026-08-31',noAction],
       ['KB-202607-0005','NovaPlay Store',tx(language,'测试','Testing'),tx(language,'API 单码分配','Single-key API'),'20',status(tx(language,'已作废','Voided'),'danger'),'2026-12-31',noAction],
     ];
-    return `${pageHead}${result}<div class="publisher-channel-metrics">${metric(tx(language,'批次总量','Batch total'),'2,000',fixture.batch.id)}${metric(tx(language,'可用','Available'),'360')}${metric(tx(language,'已暴露','Exposed'),'372')}${metric(tx(language,'已兑换','Redeemed'),'1,268')}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'批次列表','Batch list')}</h2></div></header>${table([tx(language,'批次编号','Batch ID'),tx(language,'渠道','Channel'),tx(language,'用途','Purpose'),tx(language,'交付方式','Delivery'),tx(language,'数量','Quantity'),tx(language,'状态','Status'),tx(language,'有效期','Valid until'),tx(language,'操作','Action')],rows)}</section>${renderDialog({language,state})}`;
+    return `${pageHead}${result}<div class="publisher-channel-metrics">${metric(tx(language,'批次总量','Batch total'),'1,000',fixture.batch.id)}${metric(tx(language,'可用','Available'),'180')}${metric(tx(language,'已暴露','Exposed'),'186')}${metric(tx(language,'已兑换','Redeemed'),'634')}</div><section class="publisher-channel-card"><header><div><h2>${tx(language,'批次列表','Batch list')}</h2></div></header>${table([tx(language,'批次编号','Batch ID'),tx(language,'渠道','Channel'),tx(language,'用途','Purpose'),tx(language,'交付方式','Delivery'),tx(language,'数量','Quantity'),tx(language,'状态','Status'),tx(language,'有效期','Valid until'),tx(language,'操作','Action')],rows)}</section>${renderDialog({language,state})}`;
   };
 
   const renderDataTab = ({ language, tab }) => {
@@ -12162,8 +12188,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     ['qualifications', '资质认证', 'file', '权属证明 发行授权 国内发行资质'],
   ];
   const publisherChannelConsoleSections = [
-    ['channel-overview', '渠道分销', 'key', '渠道 授权 计划 销售 兑换 结算'],
-    ['channel-batches', 'Key 批次', 'key', 'Key 批次 额度 状态 有效期'],
+    ['channel-overview', '渠道分销', 'key', '渠道 分销 销售 兑换 结算'],
+    ['channel-batches', 'Key 批次', 'key', 'Key 批次 渠道 状态 有效期'],
     ['channel-data', '渠道数据', 'chart', '渠道 SKU 地区 销售 兑换 退款'],
     ['channel-settlement', '收益与结算', 'finance', '月结 收益 应收 退款 拒付 调整'],
   ];
@@ -13456,10 +13482,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
       const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
       if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
-      const channelOptions = [['unopened','未开通','Not enabled'],['active','合作中','Active'],['paused','暂停','Paused']];
       const batchOptions = [['generated','自动生成','Auto-generated'],['pending','审核中','In review'],['rejected','已拒绝','Rejected'],['failed','生成失败','Generation failed']];
       const option = ([value, zh, en], kind, current) => `<button type="button" role="radio" aria-checked="${current === value}" class="${current === value ? 'is-active' : ''}" data-portal-action="demo-${kind}" data-demo-${kind}="${value}">${isEnglish ? en : zh}</button>`;
-      return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Channel scenarios' : '渠道场景'}</strong><small>${isEnglish ? 'Demo only. Switch partnership and batch outcomes.' : '仅用于演示渠道合作和批次处理结果'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Channel partnership' : '渠道合作'}</strong><small>${isEnglish ? 'Controls authorization and batch availability' : '联动授权状态与批次创建权限'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Channel partnership status' : '渠道合作状态'}">${channelOptions.map(item => option(item,'channel-status',demoState.channelStatus || 'active')).join('')}</div></section><section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Batch outcome' : '批次处理结果'}</strong><small>${isEnglish ? 'Opens the selected result in Key batches' : '选择后进入 Key 批次查看结果与恢复操作'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Batch outcome' : '批次处理结果'}">${batchOptions.map(item => option(item,'channel-batch-outcome',demoState.channelBatchOutcome || 'generated')).join('')}</div></section><footer><span>${demoState.active ? (isEnglish ? 'Preview is active' : '当前已启用预览状态') : (isEnglish ? 'Showing the default scenario' : '当前为默认场景')}</span><button type="button" data-portal-action="demo-state-reset"${demoState.active ? '' : ' disabled'}>${isEnglish ? 'Restore default' : '恢复默认'}</button></footer></aside></section>`;
+      return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Batch outcomes' : '批次处理结果'}</strong><small>${isEnglish ? 'Demo only. Switch the result of a batch request.' : '仅用于演示批次申请结果'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Batch outcome' : '批次处理结果'}">${batchOptions.map(item => option(item,'channel-batch-outcome',demoState.channelBatchOutcome || 'generated')).join('')}</div></section><footer><span>${demoState.active ? (isEnglish ? 'Preview is active' : '当前已启用预览状态') : (isEnglish ? 'Showing the default result' : '当前为默认结果')}</span><button type="button" data-portal-action="demo-state-reset"${demoState.active ? '' : ' disabled'}>${isEnglish ? 'Restore default' : '恢复默认'}</button></footer></aside></section>`;
     }
     if (demoState.financeMode) {
       const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
@@ -13887,7 +13912,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     registration: restoredRegistration,
     qualification: restoredQualification,
     qualificationPreview: null,
-    demoPreview: { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' },
+    demoPreview: { open: false, releaseStatus: '', channelBatchOutcome: 'generated' },
     finance: hasFinanceRoutes ? window.PublisherFinance.createState() : null,
     managedContent,
     operationsReview: { view: 'list', actionMode: '', attachmentMode: '', selectedApplicationId: '' },
@@ -14167,7 +14192,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
     memory.qualificationPreview = null;
-    memory.demoPreview = { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' };
+    memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'generated' };
     delete memory.result['P01-03'];
     memory.session.expiresAt = Date.now() + 8 * 60 * 60 * 1000;
     persistPublisherSession();
@@ -14243,7 +14268,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         vendorReviews: normalizeVendorReviews(storedAccountRegistration?.vendorReviews),
       };
       memory.qualificationPreview = null;
-      memory.demoPreview = { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' };
+      memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'generated' };
     }
     if (accountChanged || activeGameChanged) {
       loadPublisherWorkspaceForSession();
@@ -15340,25 +15365,34 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         resultMessage(route.id, '数据已导出', '已按当前渠道、SKU、地区和月份生成脱敏数据。', 'success');
         return;
       }
-      if (route.id === 'P02-01' && action === 'channel-plan-detail') {
-        updatePublisherWorkspace({ channelDialog: 'plan-detail' }, { preserveScroll: true });
-        return;
-      }
       if (route.id === 'P02-01' && action === 'channel-batch-create') {
-        if ((memory.demoPreview.channelStatus || 'active') !== 'active') return;
+        if (publisherAccessForView().qualificationStatus !== 'approved') return;
         updatePublisherWorkspace({ channelDialog: 'batch-create' }, { preserveScroll: true });
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-batch-submit') {
+        const channelNameInput = root.querySelector('[data-channel-batch-name]');
+        const channelNameError = root.querySelector('[data-channel-name-error]');
         const input = root.querySelector('[data-channel-batch-quantity]');
         const error = root.querySelector('[data-channel-batch-error]');
+        const channelName = String(channelNameInput?.value || '').trim();
         const quantity = Number(input?.value || 0);
-        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000 || quantity > 3360) {
+        if (channelName.length < 1 || channelName.length > 50) {
+          if (channelNameInput) channelNameInput.setAttribute('aria-invalid', 'true');
+          if (channelNameError) channelNameError.textContent = memory.shell.language === 'en' ? 'Enter a channel name between 1 and 50 characters.' : '请输入 1—50 个字的渠道名称。';
+          channelNameInput?.focus();
+          return;
+        }
+        channelNameInput?.removeAttribute('aria-invalid');
+        if (channelNameError) channelNameError.textContent = '';
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 1000) {
           if (input) input.setAttribute('aria-invalid', 'true');
           if (error) error.textContent = memory.shell.language === 'en' ? 'Enter an integer from 1 to 1,000.' : '请输入 1—1,000 的整数。';
           input?.focus();
           return;
         }
+        input?.removeAttribute('aria-invalid');
+        if (error) error.textContent = '';
         const selectedOutcome = ['generated','pending','rejected','failed'].includes(memory.demoPreview.channelBatchOutcome)
           ? memory.demoPreview.channelBatchOutcome
           : 'generated';
@@ -15368,14 +15402,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         updatePublisherWorkspace({
           gameSection:'channel-batches',
           channelDialog:'',
-          channelBatchDraft:{ quantity, purpose, delivery },
-          channelSubmission:{ status:outcome, quantity, purpose, delivery, submittedAt:'2026-09-14 16:30' },
+          channelBatchDraft:{ channelName, quantity, purpose, delivery },
+          channelSubmission:{ status:outcome, channelName, quantity, purpose, delivery, submittedAt:'2026-09-14 16:30' },
         });
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-batch-edit') {
         memory.demoPreview.channelBatchOutcome = 'pending';
-        updatePublisherWorkspace({ channelDialog:'batch-create', channelBatchDraft:{ quantity:Number(memory.page['P02-01']?.channelSubmission?.quantity || 500) } }, { preserveScroll: true });
+        const submission = memory.page['P02-01']?.channelSubmission || {};
+        updatePublisherWorkspace({ channelDialog:'batch-create', channelBatchDraft:{ channelName:submission.channelName || '', quantity:Number(submission.quantity || 500), purpose:submission.purpose || 'commercial', delivery:submission.delivery || 'api' } }, { preserveScroll: true });
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-batch-retry') {
@@ -15384,7 +15419,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-batch-detail') {
-        updatePublisherWorkspace({ channelDialog: 'batch-detail' }, { preserveScroll: true });
+        updatePublisherWorkspace({ channelDialog: 'batch-detail', channelDetailSource:event.currentTarget.dataset.channelDetailSource || 'fixture' }, { preserveScroll: true });
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-data-tab') {
@@ -15573,7 +15608,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         window.name = '';
         memory.shell.helpOpen = false;
         memory.qualificationPreview = null;
-        memory.demoPreview = { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' };
+        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'generated' };
         navigate({ routeId: 'P01-01', state: 'default' });
         return;
       }
@@ -15963,7 +15998,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           memory.registration = { ...memory.registration, vendorReviews:cloneJson(memory.demoPreview.vendorReviewsSnapshot) };
         }
         memory.qualificationPreview = null;
-        memory.demoPreview = { open: false, releaseStatus: '', channelStatus: 'active', channelBatchOutcome: 'generated' };
+        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'generated' };
         if (memory.page['P02-01']?.channelSubmission) {
           memory.page['P02-01'].channelSubmission = { ...memory.page['P02-01'].channelSubmission, status:'generated' };
           persistPublisherWorkspace();
@@ -15991,25 +16026,21 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
         return;
       }
-      if (action === 'demo-channel-status') {
-        const nextStatus = event.currentTarget.dataset.demoChannelStatus || '';
-        if (!['unopened','active','paused'].includes(nextStatus)) return;
-        if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
-        memory.demoPreview = { ...memory.demoPreview, open:false, channelStatus:nextStatus };
-        clearPreviewQuery();
-        render();
-        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
-        return;
-      }
       if (action === 'demo-channel-batch-outcome') {
         const nextOutcome = event.currentTarget.dataset.demoChannelBatchOutcome || '';
         if (!['generated','pending','rejected','failed'].includes(nextOutcome)) return;
         if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
-        memory.demoPreview = { ...memory.demoPreview, open:false, channelStatus:'active', channelBatchOutcome:nextOutcome };
+        memory.demoPreview = { ...memory.demoPreview, open:false, channelBatchOutcome:nextOutcome };
         memory.page['P02-01'] = {
           ...(memory.page['P02-01'] || {}),
           workspaceView:'game', selectedGame:'existing', gameSection:'channel-batches', channelDialog:'',
-          channelSubmission:{ status:nextOutcome, quantity:Number(memory.page['P02-01']?.channelSubmission?.quantity || 500), submittedAt:'2026-09-14 16:30' },
+          channelSubmission:{
+            ...(memory.page['P02-01']?.channelSubmission || {}),
+            status:nextOutcome,
+            channelName:memory.page['P02-01']?.channelSubmission?.channelName || 'NovaPlay Store',
+            quantity:Number(memory.page['P02-01']?.channelSubmission?.quantity || 500),
+            submittedAt:'2026-09-14 16:30',
+          },
         };
         persistPublisherWorkspace();
         clearPreviewQuery();
@@ -16817,17 +16848,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ? { ...memory.registration, accountTier: qualificationForView.status === 'approved' ? 'enterprise' : 'registered' }
       : memory.registration;
     const channelMode = route.id === 'P02-01' && String(memory.page['P02-01']?.gameSection || '').startsWith('channel-');
-    const channelStatus = memory.demoPreview.channelStatus || 'active';
     const channelBatchOutcome = memory.demoPreview.channelBatchOutcome || 'generated';
     const demoState = {
       open: memory.demoPreview.open,
       qualificationStatus: qualificationForView.status || 'unsubmitted',
       releaseStatus: memory.demoPreview.releaseStatus,
       channelMode,
-      channelStatus,
       channelBatchOutcome,
       active: channelMode
-        ? Boolean(channelStatus !== 'active' || channelBatchOutcome !== 'generated')
+        ? Boolean(channelBatchOutcome !== 'generated')
         : Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
       financeMode: financeRouteIds.has(route.id),
       financeScenario: memory.finance?.demoScenario || 'exhaustive',
