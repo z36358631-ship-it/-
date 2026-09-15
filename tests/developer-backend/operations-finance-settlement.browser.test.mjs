@@ -1,4 +1,4 @@
-import test, { after, afterEach, before, beforeEach } from 'node:test';
+import test, { after,afterEach,before,beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -36,28 +36,40 @@ beforeEach(async () => { page = await browser.newPage({ viewport:{ width:1440,he
 afterEach(async () => { await page?.close(); page = null; });
 after(async () => { await browser?.close(); });
 
-test('运营财务独立生成且默认进入主体汇总',async () => {
+test('运营财务独立生成，保留面包屑和主体汇总、游戏明细两个场景',async () => {
   assert.deepEqual(fs.readFileSync(baseDemo),baseBefore);
   const html = fs.readFileSync(outputDemo,'utf8');
   assert.match(html,/P16-01/);
   assert.doesNotMatch(html,/<iframe|<script[^>]+src=|<link[^>]+stylesheet/i);
   await open();
+  assert.match((await page.locator('[data-fo-breadcrumb]').innerText()).replace(/\s+/g,' '),/发行平台后台 \/ 财务结算/);
   assert.deepEqual(await page.getByRole('tab').allTextContents(),['主体汇总','游戏明细']);
   assert.equal(await page.getByRole('tab',{ name:'主体汇总' }).getAttribute('aria-selected'),'true');
-  assert.equal(await page.locator('[data-fo-filter="month"]').inputValue(),'2026-08');
+  assert.equal(await page.locator('[data-fo-filter="billingMonth"]').inputValue(),'2026-08');
+  assert.deepEqual(await page.locator('[data-testid="entity-summary-table"] thead th').allTextContents(),[
+    '','账单月份','开发者','财务主体','主体版本','账户版本','游戏及 DLC 销售金额','CDKEY 销售金额','用户实付','平台实收','支付费',
+    '综合税率／税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）','应结算金额（USD）','银行账户名','银行账号','开户行',
+  ]);
   const text = await page.locator('[data-finance-operations]').innerText();
-  for (const label of ['用户实付','退款／拒付','销售税','支付费','平台分成','预扣税','应结算金额','CNY金额','收款账户']) assert.match(text,new RegExp(label));
-  assert.doesNotMatch(text,/最近导出|查看明细/);
-  assert.doesNotMatch(text,/调整额|付款条件|发票|付款成功|付款失败|付款凭证|付款尝试/);
+  assert.doesNotMatch(text,/调整额|付款条件|发票|付款成功|付款失败|付款凭证|付款尝试|预扣税|销售税/);
 });
 
-test('游戏明细与开发者结算单字段一致',async () => {
+test('主体汇总来自共享结算快照且待确认不得进入打款导出',async () => {
+  await open();
+  assert.ok(await page.locator('[data-fo-entity-row]').count() > 0);
+  assert.equal(await page.locator('[data-fo-entity-row][data-status="pending"] [data-fo-select-row]:not([disabled])').count(),0);
+  assert.equal(await page.getByRole('button',{ name:/导出已确认/ }).isDisabled(),true);
+  const summary = await page.evaluate(() => window.__financeOperationsDemo.snapshot().entityRows[0]);
+  const fields = ['gameSalesMinor','cdkeySalesMinor','userPaidMinor','platformReceivedMinor','paymentFeeMinor','taxMinor','refundChargebackMinor','platformShareMinor','payableMinor','payableUsdMinor'];
+  fields.forEach(field => assert.equal(typeof summary[field],'number',`${field} 应来自共享快照`));
+  assert.ok(summary.entityVersion && summary.accountVersion && summary.tierRuleVersions.length);
+});
+
+test('游戏明细字段与开发者端一致，本体与 DLC 合并为三类结算项',async () => {
   await open();
   await page.getByRole('tab',{ name:'游戏明细' }).click();
-  assert.equal(await page.getByRole('tab',{ name:'游戏明细' }).getAttribute('aria-selected'),'true');
   assert.deepEqual(await page.locator('[data-testid="game-detail-table"] thead th').allTextContents(),[
-    '','开发者／财务主体','游戏 ID','游戏名称','账单月份','结算月份','结算项',
-    '用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）','状态','操作',
+    '','开发者／财务主体','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）','状态','操作',
   ]);
   assert.deepEqual(await page.locator('[data-fo-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.foFilter)),[
     'keyword','gameId','billingMonth','settlementMonth','itemType','status',
@@ -65,43 +77,21 @@ test('游戏明细与开发者结算单字段一致',async () => {
   const rows = await page.locator('[data-fo-game-row]').evaluateAll(nodes => nodes.map(node => ({ ...node.dataset })));
   assert.equal(rows.length,20);
   assert.ok(rows.every(row => row.settlementMonth === nextMonth(row.billingMonth)));
-  assert.ok(rows.every(row => Number(row.settlementMinor) === Math.round(Number(row.receivedMinor) * Number(row.ratioPercent) / 100)));
-  assert.ok(rows.some(row => row.status === 'pending'));
-  assert.ok(rows.some(row => row.status === 'confirmed'));
-  const text = await page.locator('[data-finance-operations]').innerText();
-  for (const label of ['游戏销售分成','DLC 销售分成','CDKEY 销售分成','退款与拒付']) assert.match(text,new RegExp(label));
-  assert.doesNotMatch(text,/付款状态|付款成功|付款失败|线上打款/);
+  assert.ok(rows.every(row => Number(row.payableMinor) === Number(row.platformReceivedMinor) - Number(row.platformShareMinor)));
+  assert.deepEqual([...new Set(rows.map(row => row.itemType))].sort(),['cdkey_sales_share','game_sales_share','refund_chargeback_adjustment']);
+  assert.doesNotMatch(await page.locator('[data-finance-operations]').innerText(),/DLC 销售分成/);
 });
 
-test('主表金额不重复展示币种且主体汇总提供人民币金额',async () => {
-  await open();
-  const headers = await page.locator('[data-testid="entity-summary-table"] thead th').allTextContents();
-  assert.deepEqual(headers.slice(-3),['应结算金额','CNY金额','收款账户']);
-  const entityAmounts = await page.locator('[data-testid="entity-summary-table"] [data-fo-amount]').allTextContents();
-  assert.ok(entityAmounts.length > 0);
-  entityAmounts.forEach(value => assert.doesNotMatch(value,/^(?:USD|CNY)\s/));
-
-  const usdRow = page.locator('[data-fo-entity-row][data-currency="USD"]').first();
-  assert.equal(Number(await usdRow.getAttribute('data-cny-minor')),Math.round(Number(await usdRow.getAttribute('data-payable-minor')) * 7.12));
-  const cnyRow = page.locator('[data-fo-entity-row][data-currency="CNY"]').first();
-  assert.equal(await cnyRow.getAttribute('data-cny-minor'),await cnyRow.getAttribute('data-payable-minor'));
-
-  await page.getByRole('tab',{ name:'游戏明细' }).click();
-  const gameAmounts = await page.locator('[data-testid="game-detail-table"] [data-fo-amount]').allTextContents();
-  assert.ok(gameAmounts.length > 0);
-  gameAmounts.forEach(value => assert.doesNotMatch(value,/^(?:USD|CNY)\s/));
-});
-
-test('游戏明细每页20条并支持独立筛选与重置',async () => {
+test('前后台列表均按每页 20 条，游戏筛选和重置互不串页',async () => {
   await open();
   await page.getByRole('tab',{ name:'游戏明细' }).click();
-  const total = (await page.evaluate(() => window.__financeOperationsDemo.snapshot().gameRows.length));
+  const total = await page.evaluate(() => window.__financeOperationsDemo.snapshot().gameRows.length);
   assert.ok(total > 20);
   assert.equal(await page.locator('[data-fo-game-row]').count(),20);
   assert.match(await page.locator('[data-fo-pagination]').innerText(),new RegExp(`共 ${total} 条，每页 20 条`));
   await page.getByRole('button',{ name:'下一页' }).click();
   assert.equal(await page.locator('[data-fo-game-row]').count(),Math.min(20,total - 20));
-  const sample = await page.evaluate(() => window.__financeOperationsDemo.snapshot().gameRows.find(row => row.status === 'pending'));
+  const sample = await page.evaluate(() => window.__financeOperationsDemo.snapshot().gameRows.find(row => row.status === 'confirmed'));
   await page.locator('[data-fo-filter="billingMonth"]').selectOption(sample.billingMonth);
   await page.locator('[data-fo-filter="settlementMonth"]').selectOption(sample.settlementMonth);
   await page.locator('[data-fo-filter="gameId"]').selectOption(sample.gameId);
@@ -114,100 +104,86 @@ test('游戏明细每页20条并支持独立筛选与重置',async () => {
   await page.getByRole('button',{ name:'重置' }).click();
   assert.equal(await page.locator('[data-fo-game-row]').count(),20);
   assert.equal(await page.locator('[data-fo-filter="billingMonth"]').inputValue(),'all');
-  await page.getByRole('tab',{ name:'主体汇总' }).click();
-  assert.equal(await page.locator('[data-fo-filter="month"]').inputValue(),'2026-08');
 });
 
-test('主体导出含完整账户且页面不维护导出状态',async () => {
+test('主体汇总只导出已确认记录和完整快照字段',async () => {
   await open();
-  const target = page.locator('[data-fo-entity-row]').first();
+  await page.locator('[data-fo-filter="billingMonth"]').selectOption('2026-07');
+  await page.getByRole('button',{ name:'查询' }).click();
+  const target = page.locator('[data-fo-entity-row][data-status="confirmed"]').first();
   await target.locator('[data-fo-select-row]').check();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button',{ name:'导出选中（1）' }).click();
   const download = await downloadPromise;
-  assert.equal(download.suggestedFilename(),'主体结算表_2026-08.csv');
+  assert.equal(download.suggestedFilename(),'主体结算表_2026-07.csv');
   const csv = fs.readFileSync(await download.path(),'utf8');
-  assert.match(csv,/银行账号/);
-  assert.match(csv,/CNY金额/);
-  assert.match(csv,/\t(?:0848019237826|001920003188|012875009066|60138200001909066)/);
-  const cnyMinor = Number(await target.getAttribute('data-cny-minor'));
-  assert.match(csv,new RegExp((cnyMinor / 100).toFixed(2).replace('.', '\\.')));
-  assert.doesNotMatch(csv,/调整额|付款状态|发票/);
-  assert.match(await page.locator('[data-fo-export-status]').innerText(),/已导出 1 条主体汇总/);
-  assert.equal(await page.getByText('最近导出',{ exact:true }).count(),0);
+  for (const label of ['结算单 ID','开发者','财务主体','主体版本','账户版本','规则版本','游戏及 DLC 销售金额','CDKEY 销售金额','平台实收','综合税率','应结算金额（CNY）','应结算金额（USD）','银行账号']) assert.match(csv,new RegExp(label));
+  assert.doesNotMatch(csv,/待确认|调整额|付款状态|付款凭证|发票/);
+  assert.equal(csv.trim().split(/\r?\n/).length,2);
 });
 
-test('游戏明细可独立导出',async () => {
+test('游戏明细只导出已确认记录',async () => {
   await open();
   await page.getByRole('tab',{ name:'游戏明细' }).click();
-  await page.locator('[data-fo-game-row]').first().locator('[data-fo-select-row]').check();
+  await page.locator('[data-fo-filter="billingMonth"]').selectOption('2026-07');
+  await page.getByRole('button',{ name:'查询' }).click();
+  await page.locator('[data-fo-game-row][data-status="confirmed"]').first().locator('[data-fo-select-row]').check();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button',{ name:'导出选中（1）' }).click();
   const download = await downloadPromise;
-  assert.equal(download.suggestedFilename(),'游戏结算明细_全部账单月.csv');
+  assert.equal(download.suggestedFilename(),'游戏结算明细_2026-07.csv');
   const csv = fs.readFileSync(await download.path(),'utf8');
-  for (const label of ['开发者','财务主体','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）','状态']) assert.match(csv,new RegExp(label));
-  assert.doesNotMatch(csv,/支付商|币种|销售税|支付费|平台分成|预扣税|付款状态/);
+  for (const label of ['结算单 ID','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）','状态']) assert.match(csv,new RegExp(label));
+  assert.doesNotMatch(csv,/待确认/);
   assert.equal(csv.trim().split(/\r?\n/).length,2);
-  assert.match(await page.locator('[data-fo-export-status]').innerText(),/已导出 1 条游戏明细/);
 });
 
-test('游戏明细导出遵循当前筛选范围',async () => {
+test('游戏销售与 CDKEY 详情同源，退款与拒付不增加详情',async () => {
   await open();
   await page.getByRole('tab',{ name:'游戏明细' }).click();
-  const sample = await page.evaluate(() => window.__financeOperationsDemo.snapshot().gameRows.find(row => row.status === 'pending'));
-  await page.locator('[data-fo-filter="billingMonth"]').selectOption(sample.billingMonth);
-  await page.locator('[data-fo-filter="gameId"]').selectOption(sample.gameId);
-  await page.locator('[data-fo-filter="itemType"]').selectOption(sample.itemType);
-  await page.locator('[data-fo-filter="status"]').selectOption(sample.status);
-  await page.getByRole('button',{ name:'查询' }).click();
-  const expected = await page.evaluate(() => window.__financeOperationsDemo.snapshot().gameRows);
-  assert.ok(expected.length > 0);
-  const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button',{ name:new RegExp(`导出当前结果（${expected.length}）`) }).click();
-  const download = await downloadPromise;
-  const csv = fs.readFileSync(await download.path(),'utf8');
-  assert.equal(csv.trim().split(/\r?\n/).length,expected.length + 1);
-  for (const row of expected) {
-    assert.match(csv,new RegExp(row.gameId));
-    assert.match(csv,new RegExp(row.itemLabel));
-  }
+  const game = page.locator('[data-fo-game-row][data-item-type="game_sales_share"]').first();
+  await game.getByRole('button',{ name:'查看详情' }).click();
+  const gameDrawer = page.getByRole('dialog',{ name:'游戏销售分成明细' });
+  assert.deepEqual(await gameDrawer.locator('[data-testid="fo-game-sales-detail-table"] thead th').allTextContents(),[
+    '商品类型','商品名称','用户实付','支付费','税费','退款与拒付','平台实收','适用档位','平台分成比例','平台分成','结算金额',
+  ]);
+  for (const label of ['游戏本体','DLC','规则版本','生效账单月','各档计费']) assert.match(await gameDrawer.innerText(),new RegExp(label));
+  await gameDrawer.getByRole('button',{ name:'关闭' }).last().click();
+  const cdkey = page.locator('[data-fo-game-row][data-item-type="cdkey_sales_share"]').first();
+  await cdkey.getByRole('button',{ name:'查看详情' }).click();
+  const cdkeyDrawer = page.getByRole('dialog',{ name:'CDKEY 销售明细' });
+  assert.deepEqual(await cdkeyDrawer.locator('[data-testid="fo-cdkey-detail-table"] thead th').allTextContents(),[
+    '渠道','商品类型','商品／DLC','用户实付','支付费','税费','退款与拒付','平台实收','平台分成','结算金额',
+  ]);
+  assert.match(await cdkeyDrawer.innerText(),/平台分成\s*0\.00/);
+  await cdkeyDrawer.getByRole('button',{ name:'关闭' }).last().click();
+  assert.equal(await page.locator('[data-fo-game-row][data-item-type="refund_chargeback_adjustment"]').first().getByRole('button',{ name:'查看详情' }).count(),0);
+});
+
+test('游戏明细内可按开发者和游戏配置分段累进阶梯',async () => {
+  await open();
+  await page.getByRole('tab',{ name:'游戏明细' }).click();
+  await page.getByRole('button',{ name:'配置阶梯分成' }).click();
+  const drawer = page.getByRole('dialog',{ name:'配置阶梯分成' });
+  assert.equal(await drawer.locator('[data-tier-row]').count(),3);
+  await drawer.getByRole('button',{ name:'保存规则' }).click();
+  assert.match(await drawer.getByRole('alert').innerText(),/变更原因/);
+  await drawer.locator('[name="reason"]').fill('合同续签');
+  const rates = drawer.locator('[name="rate"]');
+  for (let index = 0; index < await rates.count(); index += 1) await rates.nth(index).fill('20');
+  await drawer.getByRole('button',{ name:'保存规则' }).click();
+  assert.match(await page.locator('[data-fo-tier-status]').innerText(),/已保存规则/);
+  assert.equal((await page.evaluate(() => window.__financeOperationsDemo.snapshot().tierRules.length)),1);
 });
 
 test('导出失败给出重试提示',async () => {
   await open();
-  const target = page.locator('[data-fo-entity-row]').first();
-  await target.locator('[data-fo-select-row]').check();
+  await page.locator('[data-fo-filter="billingMonth"]').selectOption('2026-07');
+  await page.getByRole('button',{ name:'查询' }).click();
+  await page.locator('[data-fo-entity-row][data-status="confirmed"]').first().locator('[data-fo-select-row]').check();
   await page.evaluate(() => { URL.createObjectURL = () => { throw new Error('mock failure'); }; });
   await page.getByRole('button',{ name:'导出选中（1）' }).click();
   assert.equal(await page.locator('[data-fo-export-status]').innerText(),'导出失败，请重试');
-});
-
-test('交易流水只展示支付商税费汇率事实',async () => {
-  await open();
-  await page.getByRole('tab',{ name:'游戏明细' }).click();
-  await page.getByRole('button',{ name:'交易流水' }).first().click();
-  const drawer = page.getByRole('dialog',{ name:'交易流水详情' });
-  assert.equal(await page.getByRole('dialog').count(),1);
-  const text = await drawer.innerText();
-  for (const label of ['第三方支付商','买家国家或地区','实际税率','税额','支付费','汇率','销售税','预扣税']) assert.match(text,new RegExp(label));
-  assert.doesNotMatch(text,/买家姓名|邮箱|卡号|支付账号|支付商密钥|调整额|付款状态|发票/);
-});
-
-test('CDKEY 结算项单独查看渠道与商品明细',async () => {
-  await open();
-  await page.getByRole('tab',{ name:'游戏明细' }).click();
-  const cdkey = page.locator('[data-fo-game-row][data-item-type="cdkey_sales_share"]').first();
-  assert.equal(await cdkey.getByRole('button',{ name:'查看详情' }).count(),1);
-  assert.equal(await cdkey.getByRole('button',{ name:'交易流水' }).count(),0);
-  const ordinary = page.locator('[data-fo-game-row]:not([data-item-type="cdkey_sales_share"])').first();
-  assert.equal(await ordinary.getByRole('button',{ name:'交易流水' }).count(),1);
-  await cdkey.getByRole('button',{ name:'查看详情' }).click();
-  const drawer = page.getByRole('dialog',{ name:'CDKEY 销售明细' });
-  const text = await drawer.innerText();
-  for (const label of ['渠道','商品类型','商品／DLC','用户支付金额（CNY）','实际到账金额（CNY）','结算金额（CNY）','游戏本体','DLC']) assert.match(text,new RegExp(label));
-  assert.ok(await drawer.locator('[data-fo-cdkey-row]').count() > 1);
-  assert.doesNotMatch(text,/第三方支付商|买家国家或地区|汇率/);
 });
 
 test('缺省态与筛选无结果文案不同',async () => {
@@ -221,10 +197,17 @@ test('缺省态与筛选无结果文案不同',async () => {
 });
 
 for (const viewport of [{ width:1280,height:800 },{ width:390,height:844 }]) {
-  test(`${viewport.width}px 页面级无横向溢出`,async () => {
+  test(`${viewport.width}px 页面无横向溢出且宽表在卡片内滚动`,async () => {
     await page.setViewportSize(viewport);
     await open();
     const dimensions = await page.evaluate(() => ({ client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth }));
     assert.equal(dimensions.scroll,dimensions.client);
+    const table = await page.locator('[data-testid="entity-summary-table"]').evaluate(node => {
+      const wrap = node.closest('.fo-table-scroll'); wrap.scrollLeft = 180;
+      return { client:wrap.clientWidth,scroll:wrap.scrollWidth,overflow:getComputedStyle(wrap).overflowX,left:wrap.scrollLeft };
+    });
+    assert.ok(table.scroll > table.client);
+    assert.ok(['auto','scroll'].includes(table.overflow));
+    assert.ok(table.left > 0);
   });
 }
