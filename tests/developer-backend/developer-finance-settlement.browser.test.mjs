@@ -40,11 +40,107 @@ test('财务模块只保留两个入口且使用浅色选中态',async () => {
   assert.notEqual(colors.color,'rgb(255, 255, 255)');
   assert.notEqual(colors.background,'rgb(31, 58, 104)');
   const mainText = await page.locator('main').innerText();
-  for (const label of ['财务主体、收款资料与审核状态','财务主体资料','查看变更历史','修改','开户银行','税务居民地']) assert.match(mainText,new RegExp(label));
+  for (const label of ['财务主体','当前生效版本','修改','企业法定名称','联系人姓名','手机号','邮箱','银行账户户名','开户银行','银行账号','开户支行／联行信息','银行账户证明附件']) assert.match(mainText,new RegExp(label));
   assert.equal(await page.locator('[data-d15-entity-summary]').count(),1);
   assert.equal(await page.locator('[data-d15-entity-details]').count(),1);
   assert.doesNotMatch(mainText,/主体列表|选择财务主体/);
-  assert.doesNotMatch(mainText,/付款状态|发票|付款尝试/);
+  assert.doesNotMatch(mainText,/税务居民地|结算币种|SWIFT|付款状态|发票|付款尝试/);
+});
+
+test('财务主体支持编辑、取消和首错定位',async () => {
+  await open('/entity');
+  await page.getByRole('button',{ name:'修改' }).click();
+  assert.equal(await page.getByRole('button',{ name:'提交审核' }).isVisible(),true);
+  assert.equal(await page.getByRole('button',{ name:'取消' }).isVisible(),true);
+  await page.getByLabel('联系人姓名').fill('临时联系人');
+  await page.getByRole('button',{ name:'取消' }).click();
+  await page.getByRole('button',{ name:'修改' }).click();
+  assert.equal(await page.getByLabel('联系人姓名').inputValue(),'王明');
+
+  await page.getByLabel('联系人姓名').fill('');
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.equal(await page.getByLabel('联系人姓名').getAttribute('aria-invalid'),'true');
+  assert.equal(await page.getByLabel('联系人姓名').evaluate(element => element === document.activeElement),true);
+  assert.match(await page.getByRole('alert').innerText(),/联系人姓名/);
+});
+
+test('财务主体保留未提交字段和已选附件，并支持 Enter 提交',async () => {
+  await open('/entity');
+  await page.getByRole('button',{ name:'修改' }).click();
+  await page.getByLabel('联系人姓名').fill('未提交联系人');
+  await page.getByTestId('scenario-orb').click();
+  assert.equal(await page.getByLabel('联系人姓名').inputValue(),'未提交联系人');
+
+  await page.getByLabel('银行账户证明附件').setInputFiles({ name:'新银行证明.png',mimeType:'image/png',buffer:Buffer.from('valid-image') });
+  await page.getByLabel('联系人姓名').fill('');
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.equal(await page.getByLabel('银行账户证明附件').evaluate(element => element.files.length),0);
+  assert.match(await page.locator('[data-d15-upload-name]').innerText(),/新银行证明.png/);
+
+  await page.getByLabel('联系人姓名').fill('王明');
+  await page.getByLabel('联系人姓名').press('Enter');
+  assert.match(await page.locator('[data-d15-entity-status]').innerText(),/审核中/);
+});
+
+test('财务主体校验联系方式、银行户名和附件',async () => {
+  await open('/entity');
+  await page.getByRole('button',{ name:'修改' }).click();
+
+  await page.getByLabel('手机号').fill('12345');
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.equal(await page.getByLabel('手机号').evaluate(element => element === document.activeElement),true);
+  assert.match(await page.getByRole('alert').innerText(),/手机号/);
+  await page.getByLabel('手机号').fill('18520064686');
+
+  await page.getByLabel('邮箱').fill('finance@invalid');
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.equal(await page.getByLabel('邮箱').evaluate(element => element === document.activeElement),true);
+  assert.match(await page.getByRole('alert').innerText(),/邮箱/);
+  await page.getByLabel('邮箱').fill('finance@ocean-expedition.com');
+
+  await page.getByLabel('银行账户户名').fill('其他公司');
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.equal(await page.getByLabel('银行账户户名').evaluate(element => element === document.activeElement),true);
+  assert.match(await page.getByRole('alert').innerText(),/企业法定名称一致/);
+  await page.getByLabel('银行账户户名').fill('深圳星海互动科技有限公司');
+
+  const attachment = page.getByLabel('银行账户证明附件');
+  await attachment.setInputFiles({ name:'银行证明.pdf',mimeType:'application/pdf',buffer:Buffer.from('invalid') });
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.match(await page.getByRole('alert').innerText(),/JPG、PNG、WEBP/);
+  await attachment.setInputFiles({ name:'银行证明.png',mimeType:'image/png',buffer:Buffer.alloc(10 * 1024 * 1024 + 1) });
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.match(await page.getByRole('alert').innerText(),/10 MB/);
+});
+
+test('主体变更提交后保留当前生效版本，审核驳回后可再次修改',async () => {
+  await open('/entity');
+  await page.getByRole('button',{ name:'修改' }).click();
+  await page.getByLabel('企业法定名称').fill('深圳星海互动网络有限公司');
+  await page.getByLabel('银行账户户名').fill('深圳星海互动网络有限公司');
+  await page.getByLabel('银行账户证明附件').setInputFiles({ name:'新银行证明.webp',mimeType:'image/webp',buffer:Buffer.from('valid-image') });
+  await page.getByRole('button',{ name:'提交审核' }).click();
+
+  assert.match(await page.locator('[data-d15-entity-status]').innerText(),/审核中/);
+  assert.match(await page.locator('[data-d15-entity-details]').innerText(),/深圳星海互动科技有限公司/);
+  assert.doesNotMatch(await page.locator('[data-d15-entity-details]').innerText(),/深圳星海互动网络有限公司/);
+  assert.equal(await page.getByRole('button',{ name:'修改' }).isEnabled(),false);
+
+  await page.evaluate(() => window.__developerFinanceDemo.reviewEntity('rejected','银行账户证明不清晰'));
+  assert.match(await page.locator('[data-d15-entity-status]').innerText(),/已驳回/);
+  assert.match(await page.locator('[data-d15-entity-status]').innerText(),/银行账户证明不清晰/);
+  assert.equal(await page.getByRole('button',{ name:'修改' }).isEnabled(),true);
+  await page.getByRole('button',{ name:'修改' }).click();
+  assert.equal(await page.getByLabel('企业法定名称').inputValue(),'深圳星海互动网络有限公司');
+});
+
+test('390px 财务主体查看与编辑无页面级横向溢出',async () => {
+  await page.setViewportSize({ width:390,height:844 });
+  await open('/entity');
+  const dimensions = async () => page.evaluate(() => ({ client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth }));
+  assert.deepEqual(await dimensions(),{ client:390,scroll:390 });
+  await page.getByRole('button',{ name:'修改' }).click();
+  assert.deepEqual(await dimensions(),{ client:390,scroll:390 });
 });
 
 test('开发者结算按月汇总并支持全部游戏或单款游戏筛选',async () => {

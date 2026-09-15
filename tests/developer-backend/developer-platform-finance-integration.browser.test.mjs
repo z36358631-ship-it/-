@@ -82,7 +82,7 @@ test('财务主体与对账结算仍是两个独立入口',async () => {
   assert.equal(await page.locator('[data-d15-entity-summary]').count(),1);
   assert.equal(await page.locator('[data-d15-entity-details]').count(),1);
   const entityText = await page.locator('[data-testid="developer-finance-demo"]').innerText();
-  assert.match(entityText,/财务主体、收款资料与审核状态/);
+  for (const label of ['企业法定名称','联系人姓名','手机号','邮箱','银行账户户名','开户银行','银行账号','开户支行／联行信息','银行账户证明附件']) assert.match(entityText,new RegExp(label));
   assert.doesNotMatch(entityText,/主体列表|选择财务主体/);
   await page.locator('.side-nav').getByText('对账结算',{ exact:true }).click();
   await page.waitForFunction(() => location.hash === '#/P15-02');
@@ -93,6 +93,26 @@ test('财务主体与对账结算仍是两个独立入口',async () => {
   assert.equal(await page.locator('[data-testid="settlement-table"] tbody td').filter({ hasText:/USD/ }).count(),0);
   assert.match(await page.locator('[data-d15-cny-reference]').first().innerText(),/^约 ¥/);
   assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/调整额|付款状态|发票|付款尝试/);
+});
+
+test('财务整合版可提交主体变更且不覆盖当前生效资料',async () => {
+  await open('/P15-01');
+  await page.getByRole('button',{ name:'修改' }).click();
+  const uploadLayout = await page.locator('.d15-entity-upload').evaluate(element => ({
+    display:getComputedStyle(element).display,
+    nameTop:Math.round(element.querySelector('strong').getBoundingClientRect().top),
+    hintTop:Math.round(element.querySelector('span').getBoundingClientRect().top),
+  }));
+  assert.equal(uploadLayout.display,'grid');
+  assert.notEqual(uploadLayout.nameTop,uploadLayout.hintTop);
+  await page.getByLabel('联系人姓名').fill('');
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.equal(await page.getByLabel('联系人姓名').evaluate(element => element === document.activeElement),true);
+  await page.getByLabel('联系人姓名').fill('王明');
+  await page.getByLabel('邮箱').fill('finance@ocean-expedition.com');
+  await page.getByRole('button',{ name:'提交审核' }).click();
+  assert.match(await page.locator('[data-d15-entity-status]').innerText(),/审核中/);
+  assert.match(await page.locator('[data-d15-entity-details]').innerText(),/深圳星海互动科技有限公司/);
 });
 
 test('结算详情单层展示游戏和支付商税费事实',async () => {
