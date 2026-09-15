@@ -31,22 +31,27 @@ test('共享结算模型暴露固定接口', () => {
   ].sort());
 });
 
-test('结算单固定 N+1，默认 70% 并按分四舍五入', () => {
+test('结算单固定 N+1，按结算项应用 70% 或 100% 并按分四舍五入', () => {
   const model = loadModel();
   const state = model.createState();
   const rows = model.statementsFor(state, { developerId:'DEV-1001' });
   assert.ok(rows.length >= 9);
   assert.deepEqual([...new Set(rows.map(row => row.billingMonth))].sort(), ['2026-06','2026-07','2026-08']);
-  assert.deepEqual([...new Set(rows.map(row => row.itemType))].sort(), ['chargeback_adjustment','refund_adjustment','sales_share']);
+  assert.deepEqual([...new Set(rows.map(row => row.itemType))].sort(), ['cdkey_sales_share','dlc_sales_share','game_sales_share','refund_chargeback_adjustment']);
   assert.deepEqual([...new Set(rows.map(row => row.status))].sort(), ['confirmed','pending']);
   for (const row of rows) {
     assert.equal(row.settlementMonth, model.nextMonth(row.billingMonth));
-    assert.equal(row.ratioPercent, 70);
+    assert.equal(row.ratioPercent, ['cdkey_sales_share','refund_chargeback_adjustment'].includes(row.itemType) ? 100 : 70);
     assert.equal(row.settlementMinor, Math.round(row.receivedMinor * row.ratioPercent / 100));
     assert.equal(row.currency, 'CNY');
   }
-  const adjustments = rows.filter(row => row.itemType !== 'sales_share');
+  const adjustments = rows.filter(row => row.itemType === 'refund_chargeback_adjustment');
   assert.ok(adjustments.every(row => row.userPaidMinor === 0 && row.receivedMinor < 0 && row.settlementMinor < 0));
+  const cdkey = rows.find(row => row.itemType === 'cdkey_sales_share');
+  assert.equal(cdkey.cdkeyDetails.length,3);
+  assert.equal(cdkey.cdkeyDetails.reduce((sum,item) => sum + item.userPaidMinor,0),cdkey.userPaidMinor);
+  assert.equal(cdkey.cdkeyDetails.reduce((sum,item) => sum + item.receivedMinor,0),cdkey.receivedMinor);
+  assert.deepEqual([...new Set(cdkey.cdkeyDetails.map(item => item.productType))].sort(),['DLC','游戏本体']);
   assert.equal(model.nextMonth('2026-12'), '2027-01');
   assert.throws(() => model.nextMonth('2026-13'), /月份/);
 });
@@ -105,7 +110,7 @@ test('新比例只重算未锁定账单，已锁定或已确认记录保留快�
   const state = model.createState();
   const beforeLocked = structuredClone(model.statementsFor(state, { developerId:'DEV-1001' }));
   const unlocked = {
-    ...beforeLocked.find(row => row.itemType === 'sales_share'),
+    ...beforeLocked.find(row => row.itemType === 'game_sales_share'),
     id:'ST-202609-GAME-48291-SALES',
     billingMonth:'2026-09',
     settlementMonth:'2026-10',
@@ -223,7 +228,7 @@ test('CSV 根据两端选项输出对应字段并防公式注入', () => {
   assert.match(operationsCsv, /"'\+hack"/);
   assert.match(operationsCsv, /"70%"/);
   assert.match(operationsCsv, new RegExp(`"${(row.settlementMinor / 100).toFixed(2)}"`));
-  const adjustment = model.statementsFor(state, { itemType:'refund_adjustment' })[0];
+  const adjustment = model.statementsFor(state, { itemType:'refund_chargeback_adjustment' })[0];
   const adjustmentCsv = model.exportStatementsCsv([adjustment]);
   assert.match(adjustmentCsv, new RegExp(`"${(adjustment.settlementMinor / 100).toFixed(2)}"`));
   assert.doesNotMatch(adjustmentCsv, /"'-\d/);

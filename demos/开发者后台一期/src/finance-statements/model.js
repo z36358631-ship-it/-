@@ -5,11 +5,17 @@ window.PublisherSettlementStatements = (() => {
   const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
   const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
   const DEFAULT_RATIO = 70;
-  const ITEM_ORDER = Object.freeze({ sales_share:0, refund_adjustment:1, chargeback_adjustment:2 });
+  const ITEM_ORDER = Object.freeze({
+    game_sales_share:0,
+    dlc_sales_share:1,
+    cdkey_sales_share:2,
+    refund_chargeback_adjustment:3,
+  });
   const ITEM_LABELS = Object.freeze({
-    sales_share:'游戏销售分成',
-    refund_adjustment:'退款补扣',
-    chargeback_adjustment:'拒付补扣',
+    game_sales_share:'游戏销售分成',
+    dlc_sales_share:'DLC 销售分成',
+    cdkey_sales_share:'CDKEY 销售分成',
+    refund_chargeback_adjustment:'退款与拒付',
   });
 
   const roundMinor = value => {
@@ -126,29 +132,76 @@ window.PublisherSettlementStatements = (() => {
     ]),
   });
 
+  const splitMinor = (total, weights) => {
+    let allocated = 0;
+    return weights.map((weight, index) => {
+      if (index === weights.length - 1) return total - allocated;
+      const value = Math.round(total * weight);
+      allocated += value;
+      return value;
+    });
+  };
+
+  const cdkeyDetailsFor = ({ game, userPaidMinor, receivedMinor }) => {
+    const paidParts = splitMinor(userPaidMinor, [0.52, 0.31, 0.17]);
+    const receivedParts = splitMinor(receivedMinor, [0.52, 0.31, 0.17]);
+    return [
+      { channel:'星云商城', productType:'游戏本体', productName:`${game.name} 标准版` },
+      { channel:'远航游戏', productType:'游戏本体', productName:`${game.name} 豪华版` },
+      { channel:'星云商城', productType:'DLC', productName:`${game.name} · 远征者扩展包` },
+    ].map((item, index) => ({
+      ...item,
+      userPaidMinor:paidParts[index],
+      receivedMinor:receivedParts[index],
+      settlementMinor:receivedParts[index],
+    }));
+  };
+
   const createStatement = ({ state, developerId, developerName, entity, game, billingMonth, gameIndex, monthIndex, itemType }) => {
-    const ratio = ratioFor(state, developerId, billingMonth);
-    const paid = 7800000 + gameIndex * 925000 + monthIndex * 680000;
+    const contractRatio = ratioFor(state, developerId, billingMonth);
+    const basePaid = 7800000 + gameIndex * 925000 + monthIndex * 680000;
+    const paid = itemType === 'dlc_sales_share'
+      ? Math.round(basePaid * 0.28)
+      : itemType === 'cdkey_sales_share'
+        ? Math.round(basePaid * 0.18)
+        : basePaid;
     const tax = Math.round(paid * 0.06);
-    const fee = Math.round(paid * 0.029);
+    const fee = Math.round(paid * (itemType === 'cdkey_sales_share' ? 0.045 : 0.029));
     const adjustments = {
-      sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
-      refund_adjustment:{ userPaidMinor:0, refundMinor:Math.round(paid * 0.032), chargebackMinor:0, salesTaxMinor:0, paymentFeeMinor:0 },
-      chargeback_adjustment:{ userPaidMinor:0, refundMinor:0, chargebackMinor:Math.round(paid * 0.014), salesTaxMinor:0, paymentFeeMinor:0 },
+      game_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      dlc_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      cdkey_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      refund_chargeback_adjustment:{
+        userPaidMinor:0,
+        refundMinor:Math.round(basePaid * 0.032),
+        chargebackMinor:Math.round(basePaid * 0.014),
+        salesTaxMinor:0,
+        paymentFeeMinor:0,
+      },
     }[itemType];
     const receivedMinor = adjustments.userPaidMinor - adjustments.refundMinor - adjustments.chargebackMinor - adjustments.salesTaxMinor - adjustments.paymentFeeMinor;
-    const suffix = { sales_share:'SALES', refund_adjustment:'REFUND', chargeback_adjustment:'CHARGEBACK' }[itemType];
+    const fixedRatio = itemType === 'cdkey_sales_share' || itemType === 'refund_chargeback_adjustment';
+    const ratioPercent = fixedRatio ? 100 : contractRatio.ratioPercent;
+    const ratioVersion = fixedRatio ? `POLICY-${itemType === 'cdkey_sales_share' ? 'CDKEY' : 'REFUND'}-100` : contractRatio.id;
+    const suffix = {
+      game_sales_share:'GAME',
+      dlc_sales_share:'DLC',
+      cdkey_sales_share:'CDKEY',
+      refund_chargeback_adjustment:'REFUND-CHARGEBACK',
+    }[itemType];
     const confirmed = (monthIndex + gameIndex + ITEM_ORDER[itemType]) % 4 === 0;
-    return {
+    const statement = {
       id:`ST-${billingMonth.replace('-', '')}-${game.id}-${suffix}`,
       developerId, developerName, entityName:entity.legalName, entityVersion:entity.entityVersion,
       gameId:game.id, gameName:game.name, billingMonth, settlementMonth:nextMonth(billingMonth),
       itemType, itemLabel:ITEM_LABELS[itemType], currency:'CNY', ...adjustments, receivedMinor,
-      ratioPercent:ratio.ratioPercent, ratioVersion:ratio.id,
-      settlementMinor:roundMinor(receivedMinor * ratio.ratioPercent / 100),
+      ratioPercent, ratioVersion,
+      settlementMinor:roundMinor(receivedMinor * ratioPercent / 100),
       status:confirmed ? 'confirmed' : 'pending', lockedAt:`${nextMonth(billingMonth)}-05 11:20`,
       confirmedAt:confirmed ? `${nextMonth(billingMonth)}-08 10:30` : '', confirmedBy:confirmed ? '开发者 王明' : '',
     };
+    if (itemType === 'cdkey_sales_share') statement.cdkeyDetails = cdkeyDetailsFor({ game, userPaidMinor:statement.userPaidMinor, receivedMinor:statement.receivedMinor });
+    return statement;
   };
 
   const seedStatements = state => {
@@ -240,6 +293,7 @@ window.PublisherSettlementStatements = (() => {
 
     (state.statements || []).forEach(row => {
       if (row.developerId !== developerId || row.status === 'confirmed' || row.lockedAt) return;
+      if (row.itemType === 'cdkey_sales_share' || row.itemType === 'refund_chargeback_adjustment') return;
       const applied = ratioFor(state, developerId, row.billingMonth);
       row.ratioPercent = applied.ratioPercent;
       row.ratioVersion = applied.id;

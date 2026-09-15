@@ -10,22 +10,28 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const amount = minor => (Number(minor || 0) / 100).toLocaleString('zh-CN',{ minimumFractionDigits:2,maximumFractionDigits:2 });
   const percent = value => `${(Number(value || 0) * 100).toLocaleString('zh-CN',{ maximumFractionDigits:2 })}%`;
   const eventLabel = type => ({ payment:'支付', refund:'退款', chargeback:'拒付' }[type] || type);
+  const statusLabel = value => ({ pending:'待确认', confirmed:'已确认' }[value] || value);
   const activeFilters = () => state.filters[state.activeTab];
   const activeRows = () => state.activeTab === 'entity' ? model.entityRows(state) : model.gameRows(state);
+  const rowKey = row => row.key || row.id;
 
   const tabs = () => `<div class="fo-tabs" role="tablist" aria-label="财务结算视图"><button type="button" role="tab" aria-selected="${state.activeTab === 'entity'}" class="${state.activeTab === 'entity' ? 'is-active' : ''}" data-fo-action="tab" data-fo-tab="entity">主体汇总</button><button type="button" role="tab" aria-selected="${state.activeTab === 'game'}" class="${state.activeTab === 'game' ? 'is-active' : ''}" data-fo-action="tab" data-fo-tab="game">游戏明细</button></div>`;
   const option = (value, label, selected) => `<option value="${esc(value)}"${selected === value ? ' selected' : ''}>${esc(label)}</option>`;
+  const selectOptions = (values, selected, allLabel, label = value => value) => `${option('all',allLabel,selected)}${values.map(value => option(value,label(value),selected)).join('')}`;
+  const unique = (rows,key) => [...new Set(rows.map(row => row[key]).filter(Boolean))].sort((a,b) => String(b).localeCompare(String(a)));
 
   function filters() {
     const item = activeFilters();
-    const keyword = state.activeTab === 'entity' ? '开发者／财务主体' : '游戏／Game ID／开发者／财务主体';
-    const provider = state.activeTab === 'game' ? `<label><span>支付商</span><select data-fo-filter="provider">${option('all','全部支付商',item.provider)}${option('第三方支付商','第三方支付商',item.provider)}</select></label>` : '';
-    return `<section class="fo-filters" aria-label="${state.activeTab === 'entity' ? '主体汇总' : '游戏明细'}筛选"><label class="fo-keyword"><span>${keyword}</span><input type="search" data-fo-filter="keyword" value="${esc(item.keyword)}" placeholder="${state.activeTab === 'entity' ? '输入开发者、主体名称或版本' : '输入游戏、Game ID、开发者或主体'}"></label><label><span>结算月</span><select data-fo-filter="month">${option('all','全部月份',item.month)}${option('2026-08','2026-08',item.month)}${option('2026-07','2026-07',item.month)}${option('2026-06','2026-06',item.month)}</select></label><label><span>币种</span><select data-fo-filter="currency">${option('all','全部币种',item.currency)}${option('USD','USD',item.currency)}${option('CNY','CNY',item.currency)}</select></label>${provider}<div class="fo-filter-actions"><button type="button" data-fo-action="reset">重置</button><button type="button" class="is-primary" data-fo-action="query">查询</button></div></section>`;
+    if (state.activeTab === 'entity') return `<section class="fo-filters" aria-label="主体汇总筛选"><label class="fo-keyword"><span>开发者／财务主体</span><input type="search" data-fo-filter="keyword" value="${esc(item.keyword)}" placeholder="输入开发者、主体名称或版本"></label><label><span>结算月</span><select data-fo-filter="month">${option('all','全部月份',item.month)}${option('2026-08','2026-08',item.month)}${option('2026-07','2026-07',item.month)}${option('2026-06','2026-06',item.month)}</select></label><label><span>币种</span><select data-fo-filter="currency">${option('all','全部币种',item.currency)}${option('USD','USD',item.currency)}${option('CNY','CNY',item.currency)}</select></label><div class="fo-filter-actions"><button type="button" data-fo-action="reset">重置</button><button type="button" class="is-primary" data-fo-action="query">查询</button></div></section>`;
+    const rows = model.allGameRows(state);
+    const games = new Map(rows.map(row => [row.gameId,row.gameName]));
+    const itemLabels = new Map(rows.map(row => [row.itemType,row.itemLabel]));
+    return `<section class="fo-filters fo-game-filters" aria-label="游戏明细筛选"><label class="fo-keyword"><span>开发者／财务主体</span><input type="search" data-fo-filter="keyword" value="${esc(item.keyword)}" placeholder="输入开发者或财务主体"></label><label><span>游戏</span><select data-fo-filter="gameId">${selectOptions([...games.keys()].sort(),item.gameId,'全部游戏',value => `${games.get(value)}（${value}）`)}</select></label><label><span>账单月份</span><select data-fo-filter="billingMonth">${selectOptions(unique(rows,'billingMonth'),item.billingMonth,'全部月份')}</select></label><label><span>结算月份</span><select data-fo-filter="settlementMonth">${selectOptions(unique(rows,'settlementMonth'),item.settlementMonth,'全部月份')}</select></label><label><span>结算项</span><select data-fo-filter="itemType">${selectOptions([...itemLabels.keys()],item.itemType,'全部结算项',value => itemLabels.get(value))}</select></label><label><span>状态</span><select data-fo-filter="status">${option('all','全部状态',item.status)}${option('pending','待确认',item.status)}${option('confirmed','已确认',item.status)}</select></label><div class="fo-filter-actions"><button type="button" data-fo-action="reset">重置</button><button type="button" class="is-primary" data-fo-action="query">查询</button></div></section>`;
   }
 
   const pageRows = rows => {
     const pages = Math.max(1,Math.ceil(rows.length / PAGE_SIZE));
-    state.pages[state.activeTab] = Math.min(state.pages[state.activeTab],pages);
+    state.pages[state.activeTab] = Math.max(1,Math.min(state.pages[state.activeTab],pages));
     const page = state.pages[state.activeTab];
     return rows.slice((page - 1) * PAGE_SIZE,page * PAGE_SIZE);
   };
@@ -37,7 +43,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const empty = () => state.scenario === 'empty'
     ? `<div class="fo-empty"><div>—</div><strong>${state.activeTab === 'entity' ? '暂无主体结算记录' : '暂无游戏结算明细'}</strong><p>结算月锁定后，记录会展示在这里。</p></div>`
     : `<div class="fo-empty"><div>—</div><strong>未找到符合条件的记录</strong><p>请调整当前页签的筛选条件或重置后再试。</p></div>`;
-  const selectedRows = rows => rows.filter(row => state.selected[state.activeTab].includes(row.key));
+  const selectedRows = rows => rows.filter(row => state.selected[state.activeTab].includes(rowKey(row)));
   const rowAmounts = row => [
     amount(row.paidMinor),
     `${amount(row.refundMinor)}／${amount(row.chargebackMinor)}`,
@@ -55,9 +61,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   }
 
   function gameTable(rows,current) {
-    return `<div class="fo-table-scroll"><table class="fo-table fo-game-table" data-testid="game-detail-table"><thead><tr><th class="fo-check"><input type="checkbox" aria-label="选择本页游戏" data-fo-select-page></th><th>结算月／游戏</th><th>开发者／财务主体</th><th>支付商／币种</th><th>用户实付</th><th>退款／拒付</th><th>销售税</th><th>支付费</th><th>平台分成</th><th>预扣税</th><th>应结算金额</th><th>操作</th></tr></thead><tbody>${current.map(row => {
-      const values = rowAmounts(row);
-      return `<tr data-fo-game-row data-row-key="${esc(row.key)}" data-payable-minor="${row.payableMinor}"><td class="fo-check"><input type="checkbox" aria-label="选择 ${esc(row.gameName)}" data-fo-select-row="${esc(row.key)}"${state.selected.game.includes(row.key) ? ' checked' : ''}></td><td><strong>${esc(row.month)} · ${esc(row.gameName)}</strong><small>${esc(row.gameId)}</small></td><td><strong>${esc(row.developer)}</strong><small>${esc(row.entityName)} · ${esc(row.entityVersion)} · ${esc(row.accountVersion)}</small></td><td><strong>${esc(row.provider)}</strong><small>${esc(row.settlementCurrency)}</small></td>${values.map((value,index) => `<td data-fo-amount${index === values.length - 1 ? ' class="fo-payable"' : ''}>${esc(value)}</td>`).join('')}<td><button type="button" class="fo-link" data-fo-action="view-transactions" data-row-key="${esc(row.key)}">交易流水</button></td></tr>`;
+    return `<div class="fo-table-scroll"><table class="fo-table fo-game-table" data-testid="game-detail-table"><thead><tr><th class="fo-check"><input type="checkbox" aria-label="选择本页游戏明细" data-fo-select-page></th><th>开发者／财务主体</th><th>游戏 ID</th><th>游戏名称</th><th>账单月份</th><th>结算月份</th><th>结算项</th><th>用户支付金额（CNY）</th><th>结算比例</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th><th>状态</th><th>操作</th></tr></thead><tbody>${current.map(row => {
+      const key = rowKey(row);
+      const isCdkey = row.itemType === 'cdkey_sales_share';
+      return `<tr data-fo-game-row data-row-key="${esc(key)}" data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-received-minor="${row.receivedMinor}" data-ratio-percent="${row.ratioPercent}" data-settlement-minor="${row.settlementMinor}" data-status="${esc(row.status)}"><td class="fo-check"><input type="checkbox" aria-label="选择 ${esc(row.gameName)} ${esc(row.itemLabel)}" data-fo-select-row="${esc(key)}"${state.selected.game.includes(key) ? ' checked' : ''}></td><td><strong>${esc(row.developerName)}</strong><small>${esc(row.entityName)}</small></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td data-fo-amount>${esc(amount(row.userPaidMinor))}</td><td data-fo-amount>${esc(row.ratioPercent)}%</td><td data-fo-amount>${esc(amount(row.receivedMinor))}</td><td class="fo-payable" data-fo-amount>${esc(amount(row.settlementMinor))}</td><td><span class="fo-status ${row.status === 'confirmed' ? 'is-confirmed' : 'is-pending'}">${esc(statusLabel(row.status))}</span></td><td><button type="button" class="fo-link" data-fo-action="${isCdkey ? 'view-cdkey' : 'view-transactions'}" data-row-key="${esc(key)}">${isCdkey ? '查看详情' : '交易流水'}</button></td></tr>`;
     }).join('')}</tbody></table></div>`;
   }
 
@@ -70,12 +77,20 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="fo-card fo-table-card"><header class="fo-table-toolbar"><div><strong>${state.activeTab === 'entity' ? '主体结算汇总' : '游戏结算明细'}</strong><span>${state.activeTab === 'entity' ? '生成线下打款名单' : '核对各游戏金额来源'}</span></div><button type="button" class="is-primary" data-fo-action="export"${exportCount ? '' : ' disabled'}>${label}</button></header>${state.exportMessage ? `<div class="fo-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-fo-export-status>${esc(state.exportMessage)}</div>` : ''}${current.length ? (state.activeTab === 'entity' ? entityTable(rows,current) : gameTable(rows,current)) : empty()}</section>${rows.length ? pagination(rows.length) : ''}`;
   }
 
+  const cdkeyDrawer = statement => {
+    const details = statement.cdkeyDetails || [];
+    return `<div class="fo-drawer-layer" data-fo-action="close-drawer"><aside class="fo-drawer" role="dialog" aria-modal="true" aria-label="CDKEY 销售明细" data-fo-stop><header><div><h2>CDKEY 销售明细</h2><p>${esc(statement.gameName)} · ${esc(statement.billingMonth)} 账单 / ${esc(statement.settlementMonth)} 结算</p></div><button type="button" data-fo-action="close-drawer" aria-label="关闭">×</button></header><div class="fo-drawer-body"><section class="fo-drawer-summary fo-cdkey-summary"><div><span>用户支付金额（CNY）</span><strong>${esc(amount(statement.userPaidMinor))}</strong></div><div><span>实际到账金额（CNY）</span><strong>${esc(amount(statement.receivedMinor))}</strong></div><div><span>结算金额（CNY）</span><strong>${esc(amount(statement.settlementMinor))}</strong></div></section><div class="fo-table-scroll"><table class="fo-table fo-cdkey-table"><thead><tr><th>渠道</th><th>商品类型</th><th>商品／DLC</th><th>用户支付金额（CNY）</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th></tr></thead><tbody>${details.map(item => `<tr data-fo-cdkey-row><td>${esc(item.channel)}</td><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td data-fo-amount>${esc(amount(item.userPaidMinor))}</td><td data-fo-amount>${esc(amount(item.receivedMinor))}</td><td class="fo-payable" data-fo-amount>${esc(amount(item.settlementMinor))}</td></tr>`).join('')}</tbody></table></div></div><footer><button type="button" data-fo-action="close-drawer">关闭</button></footer></aside></div>`;
+  };
+
   function transactionDrawer() {
-    if (!state.detailGameKey) return '';
-    const game = model.gameRows(state).find(row => row.key === state.detailGameKey) || model.ledger.gameRowsFor(state.ledgerState).find(row => row.key === state.detailGameKey);
-    if (!game) return '';
-    const rows = model.transactionRows(state,game);
-    return `<div class="fo-drawer-layer" data-fo-action="close-drawer"><aside class="fo-drawer" role="dialog" aria-modal="true" aria-label="交易流水详情" data-fo-stop><header><div><h2>${esc(game.gameName)} · 交易流水</h2><p>${esc(game.month)} · ${esc(game.entityName)} · ${esc(game.entityVersion)} · ${esc(game.accountVersion)}</p></div><button type="button" data-fo-action="close-drawer" aria-label="关闭">×</button></header><div class="fo-drawer-body"><section class="fo-drawer-summary"><div><span>用户实付</span><strong>${esc(money(game.paidMinor,game.settlementCurrency))}</strong></div><div><span>销售税</span><strong>${esc(money(game.salesTaxMinor,game.settlementCurrency))}</strong></div><div><span>支付费</span><strong>${esc(money(game.providerFeeMinor,game.settlementCurrency))}</strong></div><div><span>预扣税</span><strong>${esc(money(game.withholdingTaxMinor,game.settlementCurrency))}</strong></div><div><span>应结算金额</span><strong>${esc(money(game.payableMinor,game.settlementCurrency))}</strong></div></section><div class="fo-table-scroll"><table class="fo-table fo-transaction-table"><thead><tr><th>事件／流水号</th><th>第三方支付商</th><th>买家国家或地区</th><th>原币</th><th>税种／实际税率</th><th>税额</th><th>支付费</th><th>汇率</th><th>结算金额</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${eventLabel(row.eventType)}</strong><small>${esc(row.eventId)}</small></td><td>${esc(row.provider)}</td><td>${esc(row.buyerRegion)}</td><td>${esc(row.originalCurrency)} ${esc(model.ledger.decimal(row.originalAmountMinor))}</td><td><strong>${esc(row.salesTaxType)}</strong><small>实际税率 ${percent(row.salesTaxRate)}</small></td><td>${esc(money(row.salesTaxMinor,row.settlementCurrency))}</td><td>${esc(money(row.providerFeeMinor,row.settlementCurrency))}</td><td><strong>${Number(row.fxRate).toFixed(4)}</strong><small>${esc(row.fxVersion)}</small></td><td class="fo-payable">${esc(money(row.payableMinor,row.settlementCurrency))}</td></tr>`).join('')}</tbody></table></div></div><footer><button type="button" data-fo-action="close-drawer">关闭</button></footer></aside></div>`;
+    if (!state.detailStatementId) return '';
+    const statement = model.allGameRows(state).find(row => row.id === state.detailStatementId);
+    if (!statement) return '';
+    if (statement.itemType === 'cdkey_sales_share') return cdkeyDrawer(statement);
+    const rows = model.transactionRows(state,statement);
+    const settlementCurrency = rows[0]?.settlementCurrency || 'CNY';
+    const transactionTotal = key => rows.reduce((sum,row) => sum + Number(row[key] || 0),0);
+    return `<div class="fo-drawer-layer" data-fo-action="close-drawer"><aside class="fo-drawer" role="dialog" aria-modal="true" aria-label="交易流水详情" data-fo-stop><header><div><h2>${esc(statement.gameName)} · ${esc(statement.itemLabel)}</h2><p>${esc(statement.billingMonth)} 账单 · ${esc(statement.entityName)}</p></div><button type="button" data-fo-action="close-drawer" aria-label="关闭">×</button></header><div class="fo-drawer-body"><section class="fo-drawer-summary"><div><span>用户支付金额（CNY）</span><strong>${esc(amount(statement.userPaidMinor))}</strong></div><div><span>实际到账金额（CNY）</span><strong>${esc(amount(statement.receivedMinor))}</strong></div><div><span>结算比例</span><strong>${esc(statement.ratioPercent)}%</strong></div><div><span>结算金额（CNY）</span><strong>${esc(amount(statement.settlementMinor))}</strong></div><div><span>状态</span><strong>${esc(statusLabel(statement.status))}</strong></div><div><span>销售税</span><strong>${esc(money(transactionTotal('salesTaxMinor'),settlementCurrency))}</strong></div><div><span>预扣税</span><strong>${esc(money(transactionTotal('withholdingTaxMinor'),settlementCurrency))}</strong></div></section><div class="fo-table-scroll"><table class="fo-table fo-transaction-table"><thead><tr><th>事件／流水号</th><th>第三方支付商</th><th>买家国家或地区</th><th>原币</th><th>税种／实际税率</th><th>税额</th><th>支付费</th><th>汇率</th><th>结算金额</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${eventLabel(row.eventType)}</strong><small>${esc(row.eventId)}</small></td><td>${esc(row.provider)}</td><td>${esc(row.buyerRegion)}</td><td>${esc(row.originalCurrency)} ${esc(model.ledger.decimal(row.originalAmountMinor))}</td><td><strong>${esc(row.salesTaxType)}</strong><small>实际税率 ${percent(row.salesTaxRate)}</small></td><td>${esc(money(row.salesTaxMinor,row.settlementCurrency))}</td><td>${esc(money(row.providerFeeMinor,row.settlementCurrency))}</td><td><strong>${Number(row.fxRate).toFixed(4)}</strong><small>${esc(row.fxVersion)}</small></td><td class="fo-payable">${esc(money(row.payableMinor,row.settlementCurrency))}</td></tr>`).join('')}</tbody></table></div></div><footer><button type="button" data-fo-action="close-drawer">关闭</button></footer></aside></div>`;
   }
 
   const demoSwitcher = () => `<section class="fo-demo"><button type="button" data-fo-demo-toggle data-fo-action="demo-toggle" aria-expanded="${state.demoOpen}"><b>Demo</b><span>状态</span></button>${state.demoOpen ? `<aside><header><strong>结算场景</strong><button type="button" data-fo-action="demo-toggle" aria-label="关闭">×</button></header><button type="button" data-fo-action="scenario" data-fo-scenario="exhaustive" class="${state.scenario === 'exhaustive' ? 'is-active' : ''}">穷举态</button><button type="button" data-fo-action="scenario" data-fo-scenario="empty" class="${state.scenario === 'empty' ? 'is-active' : ''}">缺省态</button></aside>` : ''}</section>`;
@@ -97,17 +112,23 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const rerender = () => {
     const current = document.querySelector('[data-finance-operations]');
     if (current) current.outerHTML = renderPage();
-    document.body.classList.toggle('fo-overlay-open',Boolean(state.detailGameKey));
+    document.body.classList.toggle('fo-overlay-open',Boolean(state.detailStatementId));
   };
   const readFilters = () => {
-    const previous = activeFilters();
-    state.filters[state.activeTab] = {
-      ...previous,
-      keyword:document.querySelector('[data-fo-filter="keyword"]')?.value.trim() || '',
-      month:document.querySelector('[data-fo-filter="month"]')?.value || 'all',
-      currency:document.querySelector('[data-fo-filter="currency"]')?.value || 'all',
-      ...(state.activeTab === 'game' ? { provider:document.querySelector('[data-fo-filter="provider"]')?.value || 'all' } : {}),
-    };
+    state.filters[state.activeTab] = state.activeTab === 'entity'
+      ? {
+        keyword:document.querySelector('[data-fo-filter="keyword"]')?.value.trim() || '',
+        month:document.querySelector('[data-fo-filter="month"]')?.value || 'all',
+        currency:document.querySelector('[data-fo-filter="currency"]')?.value || 'all',
+      }
+      : {
+        keyword:document.querySelector('[data-fo-filter="keyword"]')?.value.trim() || '',
+        gameId:document.querySelector('[data-fo-filter="gameId"]')?.value || 'all',
+        billingMonth:document.querySelector('[data-fo-filter="billingMonth"]')?.value || 'all',
+        settlementMonth:document.querySelector('[data-fo-filter="settlementMonth"]')?.value || 'all',
+        itemType:document.querySelector('[data-fo-filter="itemType"]')?.value || 'all',
+        status:document.querySelector('[data-fo-filter="status"]')?.value || 'all',
+      };
     state.pages[state.activeTab] = 1;
     state.selected[state.activeTab] = [];
     state.exportMessage = '';
@@ -121,7 +142,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       rerender();
     }
     if (target.matches('[data-fo-select-page]')) {
-      const keys = pageRows(activeRows()).map(row => row.key);
+      const keys = pageRows(activeRows()).map(rowKey);
       state.selected[state.activeTab] = target.checked ? [...new Set([...state.selected[state.activeTab],...keys])] : state.selected[state.activeTab].filter(key => !keys.includes(key));
       rerender();
     }
@@ -137,29 +158,30 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (action === 'reset') {
       state.filters[state.activeTab] = state.activeTab === 'entity'
         ? { keyword:'',month:'2026-08',currency:'all' }
-        : { keyword:'',month:'2026-08',currency:'all',provider:'all',entityVersion:'all',accountVersion:'all',linked:false };
+        : { keyword:'',billingMonth:'all',settlementMonth:'all',gameId:'all',itemType:'all',status:'all' };
       state.pages[state.activeTab] = 1; state.selected[state.activeTab] = []; state.exportMessage = ''; rerender();
     }
     if (action === 'page') { state.pages[state.activeTab] = Math.max(1,Number(control.dataset.foPage) || 1); rerender(); }
-    if (action === 'view-transactions') { state.detailGameKey = control.dataset.rowKey; rerender(); }
-    if (action === 'close-drawer') { state.detailGameKey = ''; rerender(); }
+    if (action === 'view-transactions' || action === 'view-cdkey') { state.detailStatementId = control.dataset.rowKey; rerender(); }
+    if (action === 'close-drawer') { state.detailStatementId = ''; rerender(); }
     if (action === 'export') {
       const rows = activeRows();
       const selected = selectedRows(rows);
       const targets = selected.length ? selected : rows;
       if (!targets.length) return;
       const isEntity = state.activeTab === 'entity';
-      const content = isEntity ? model.exportEntityCsv(targets) : model.ledger.exportGameCsv(targets);
-      const month = activeFilters().month === 'all' ? '全部月份' : activeFilters().month;
+      const content = isEntity ? model.exportEntityCsv(targets) : model.exportGameCsv(targets);
+      const activeMonth = isEntity ? activeFilters().month : activeFilters().billingMonth;
+      const month = activeMonth === 'all' ? (isEntity ? '全部月份' : '全部账单月') : activeMonth;
       const ok = download(content,`${isEntity ? '主体结算表' : '游戏结算明细'}_${month}.csv`);
       state.exportMessage = ok ? `已导出 ${targets.length} 条${isEntity ? '主体汇总' : '游戏明细'}` : '导出失败，请重试';
       if (ok) state.selected[state.activeTab] = [];
       rerender();
     }
     if (action === 'demo-toggle') { state.demoOpen = !state.demoOpen; rerender(); }
-    if (action === 'scenario') { state.scenario = control.dataset.foScenario; state.demoOpen = false; state.pages = { entity:1,game:1 }; state.selected = { entity:[],game:[] }; state.detailGameKey = ''; rerender(); }
+    if (action === 'scenario') { state.scenario = control.dataset.foScenario; state.demoOpen = false; state.pages = { entity:1,game:1 }; state.selected = { entity:[],game:[] }; state.detailStatementId = ''; rerender(); }
   });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape' && state.detailGameKey) { state.detailGameKey = ''; rerender(); } });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && state.detailStatementId) { state.detailStatementId = ''; rerender(); } });
 
   const originalRender = namespace.templates.render.bind(namespace.templates);
   namespace.templates.render = options => options.route?.id === 'P16-01' ? renderPage() : originalRender(options);

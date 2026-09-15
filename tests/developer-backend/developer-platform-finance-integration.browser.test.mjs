@@ -92,7 +92,9 @@ test('财务主体与对账结算仍是两个独立入口',async () => {
   assert.equal(await page.locator('[data-d15-settlement-row]').count(),20);
   const headers = await page.locator('[data-testid="settlement-table"] th').allTextContents();
   assert.deepEqual(headers,['','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）','状态','操作']);
-  assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/美元|USD|查看详情|第三方支付商|交易流水|调整额|付款状态|发票|付款尝试/);
+  const text = await page.locator('[data-testid="developer-finance-demo"]').innerText();
+  for (const label of ['游戏销售分成','DLC 销售分成','CDKEY 销售分成','退款与拒付','查看详情']) assert.match(text,new RegExp(label));
+  assert.doesNotMatch(text,/账单按 N\+1 结算；确认后不可撤销。|美元|USD|第三方支付商|交易流水|调整额|付款状态|发票|付款尝试/);
 });
 
 test('财务整合版可提交主体变更且不覆盖当前生效资料',async () => {

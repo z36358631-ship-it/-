@@ -64,6 +64,21 @@ test('财务主体支持编辑、取消和首错定位',async () => {
   assert.match(await page.getByRole('alert').innerText(),/联系人姓名/);
 });
 
+test('财务主体使用宽屏三列、保留变更历史并可预览银行证明',async () => {
+  await open('/entity');
+  const columns = await page.locator('.d15-entity-detail-grid').evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').length);
+  assert.equal(columns,3);
+  assert.ok(await page.locator('[data-testid="entity-history-table"] tbody tr').count() >= 2);
+  await page.getByRole('button',{ name:'查看',exact:true }).first().click();
+  assert.equal(await page.getByRole('dialog',{ name:'财务主体版本详情' }).isVisible(),true);
+  await page.getByRole('dialog',{ name:'财务主体版本详情' }).getByRole('button',{ name:'点击查看' }).click();
+  const preview = page.getByRole('dialog',{ name:'银行账户证明预览' });
+  assert.equal(await preview.isVisible(),true);
+  assert.match(await preview.locator('img').getAttribute('src'),/^data:image\/svg\+xml/);
+  await page.keyboard.press('Escape');
+  assert.equal(await preview.count(),0);
+});
+
 test('财务主体保留未提交字段和已选附件，并支持 Enter 提交',async () => {
   await open('/entity');
   await page.getByRole('button',{ name:'修改' }).click();
@@ -164,18 +179,18 @@ test('开发者对账结算使用固定字段、N+1和人民币公式',async () 
   assert.equal(await page.locator('[data-d15-pagination]').getAttribute('data-page-size'),'20');
   const allRows = await page.evaluate(() => window.__developerFinanceDemo.snapshot().settlements);
   assert.deepEqual([...new Set(allRows.map(row => row.billingMonth))],['2026-08','2026-07','2026-06']);
-  assert.deepEqual([...new Set(allRows.map(row => row.itemType))],['sales_share','refund_adjustment','chargeback_adjustment']);
+  assert.deepEqual([...new Set(allRows.map(row => row.itemType))],['game_sales_share','dlc_sales_share','cdkey_sales_share','refund_chargeback_adjustment']);
   assert.deepEqual([...new Set(allRows.map(row => row.status))].sort(),['confirmed','pending']);
-  assert.equal(allRows.length,36);
+  assert.equal(allRows.length,48);
   const rows = await page.locator('[data-d15-settlement-row]').evaluateAll(nodes => nodes.map(node => ({ ...node.dataset })));
   for (const row of rows) {
     assert.equal(row.settlementMonth,nextMonth(row.billingMonth));
     assert.equal(Number(row.settlementMinor),Math.round(Number(row.receivedMinor) * Number(row.ratioPercent) / 100));
   }
   const text = await table.innerText();
-  for (const label of ['游戏销售分成','退款补扣','拒付补扣','待确认','已确认']) assert.match(text,new RegExp(label));
-  assert.doesNotMatch(text,/美元|USD|人民币参考额|锁定汇率|查看详情|第三方支付商|交易流水|调整额|付款状态|发票/);
-  const negative = page.locator('[data-d15-settlement-row][data-item-type="refund_adjustment"]').first();
+  for (const label of ['游戏销售分成','DLC 销售分成','CDKEY 销售分成','退款与拒付','待确认','已确认','查看详情']) assert.match(text,new RegExp(label));
+  assert.doesNotMatch(text,/美元|USD|人民币参考额|锁定汇率|第三方支付商|交易流水|调整额|付款状态|发票/);
+  const negative = page.locator('[data-d15-settlement-row][data-item-type="refund_chargeback_adjustment"]').first();
   assert.ok(Number(await negative.getAttribute('data-received-minor')) < 0);
   assert.ok(Number(await negative.getAttribute('data-settlement-minor')) < 0);
   assert.match(await negative.locator('td').nth(8).innerText(),/^-/);
@@ -192,6 +207,18 @@ test('四项筛选支持账单月、结算月、游戏和状态',async () => {
   const rows = await page.locator('[data-d15-settlement-row]').evaluateAll(nodes => nodes.map(node => ({ ...node.dataset })));
   assert.ok(rows.length > 0);
   assert.ok(rows.every(row => row.billingMonth === '2026-07' && row.settlementMonth === '2026-08' && row.gameId === 'GAME-48291' && row.status === 'pending'));
+});
+
+test('CDKEY 结算项可查看渠道与本体、DLC金额明细',async () => {
+  await open('/settlement');
+  const row = page.locator('[data-d15-settlement-row][data-item-type="cdkey_sales_share"]').first();
+  await row.getByRole('button',{ name:'查看详情' }).click();
+  const drawer = page.getByRole('dialog',{ name:'CDKEY 销售明细' });
+  const text = await drawer.innerText();
+  for (const label of ['渠道','商品类型','商品／DLC','用户支付金额（CNY）','实际到账金额（CNY）','结算金额（CNY）','游戏本体','DLC']) assert.match(text,new RegExp(label));
+  assert.ok(await drawer.locator('tbody tr').count() >= 3);
+  await page.keyboard.press('Escape');
+  assert.equal(await drawer.count(),0);
 });
 
 test('单条确认显示数量和金额，确认后不可再次操作',async () => {
@@ -258,9 +285,9 @@ test('待确认筛选下确认单条后焦点回落到稳定操作',async () => 
   assert.equal(await fallback.evaluate(node => node === document.activeElement),true);
 });
 
-test('负数结算项单条确认时合计金额保留负号',async () => {
+test('退款与拒付单条确认时合计金额保留负号',async () => {
   await open('/settlement');
-  const negativeRow = page.locator('[data-d15-settlement-row][data-status="pending"][data-item-type="refund_adjustment"]').first();
+  const negativeRow = page.locator('[data-d15-settlement-row][data-status="pending"][data-item-type="refund_chargeback_adjustment"]').first();
   const minor = Number(await negativeRow.getAttribute('data-settlement-minor'));
   assert.ok(minor < 0);
   await negativeRow.getByRole('button',{ name:'确认',exact:true }).click();
@@ -338,7 +365,7 @@ test('开发者可导出当前结算结果',async () => {
   const csv = fs.readFileSync(await download.path(),'utf8');
   for (const label of ['游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）','状态']) assert.match(csv,new RegExp(label));
   assert.doesNotMatch(csv,/操作|开发者|财务主体|结算比例版本|美元|USD|人民币参考额|锁定汇率|调整额|付款状态|发票/);
-  assert.equal(csv.trim().split(/\r?\n/).length,4);
+  assert.equal(csv.trim().split(/\r?\n/).length,5);
   assert.match(csv,/GAME-48291/);
   assert.doesNotMatch(csv,/GAME-48292|GAME-48293|GAME-48294/);
   const exportedRows = csv.trim().split(/\r?\n/).slice(1);

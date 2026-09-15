@@ -5861,7 +5861,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 body.finance-overlay-open { overflow: hidden; }
 body.finance-overlay-open .developer-demo-state-switcher { display: none; }
 .product-frame.is-finance-workspace .workspace { min-width: 0; }
-.product-frame.is-finance-workspace .page-wrap { width: min(1280px, 100%); }
+.product-frame.is-finance-workspace .page-wrap { width: 100%; }
 .product-frame.is-finance-workspace .page-header { min-height: 0; margin-bottom: 16px; }
 .product-frame.is-finance-workspace .page-header .page-actions,
 .product-frame.is-finance-workspace .page-header .page-summary { display: none; }
@@ -5913,6 +5913,7 @@ body.finance-overlay-open .developer-demo-state-switcher { display: none; }
 .d15-app .d15-nav button:hover { color:#1f2937; background:#f4f5f7; }
 .d15-app .d15-nav button.is-active { color:#182235; background:#eef0f2; font-weight:700; }
 .d15-app .d15-nav button.is-active .gh-nav-icon { color:#324153; border-color:#d7dce3; background:#fff; }
+.d15-app .gh-content { max-width:none; }
 
 .d15-entity-summary .gh-card-body { padding:22px; }
 .d15-entity-summary h2,.d15-section-title h2 { margin:0; color:#172033; font-size:16px; }
@@ -5923,10 +5924,19 @@ body.finance-overlay-open .developer-demo-state-switcher { display: none; }
 .d15-entity-review.danger > strong { color:#b42318; }
 .d15-section-title { margin:28px 0 12px; display:flex; align-items:flex-end; justify-content:space-between; gap:18px; }
 .d15-section-title > div:last-child { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
-.d15-entity-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px 70px; padding:24px 26px 28px !important; }
+.d15-entity-detail-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:26px 46px; padding:24px 26px 28px !important; }
 .d15-entity-detail-grid .gh-readonly { min-width:0; padding:0; border:0; background:transparent; }
 .d15-entity-detail-grid .gh-readonly span { color:#667085; }
 .d15-entity-detail-grid .gh-readonly strong { margin-top:7px; color:#172033; font-size:14px; line-height:1.5; }
+.d15-proof-field { grid-column:span 2; }
+.d15-proof-card { width:min(420px,100%); min-height:58px; margin-top:8px; padding:10px 12px; display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:10px; color:#344054; text-align:left; border:1px solid #d8dee7; border-radius:8px; background:#f9fafb; cursor:pointer; }
+.d15-proof-card:hover { border-color:#7dd9e5; background:#f2fcfd; }
+.d15-proof-card > span { width:34px; height:34px; display:grid; place-items:center; color:#176b78; border-radius:7px; background:#daf5f8; font-size:12px; font-weight:750; }
+.d15-proof-card > strong { min-width:0; margin:0 !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.d15-proof-card > small { margin:0 !important; color:#175cd3 !important; white-space:nowrap; }
+.d15-history-table { min-width:920px !important; }
+.d15-history-table th,.d15-history-table td { white-space:nowrap; }
+.d15-history-table th:last-child,.d15-history-table td:last-child { width:72px; }
 .d15-entity-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px 32px; padding:24px 26px 28px !important; }
 .d15-entity-field { min-width:0; }
 .d15-entity-field label:not(.gh-upload),.d15-entity-field .gh-label { margin-bottom:8px; color:#344054; font-size:13px; font-weight:650; }
@@ -5970,6 +5980,7 @@ body.finance-overlay-open .developer-demo-state-switcher { display: none; }
 .d15-settlement-table th:nth-child(7),.d15-settlement-table th:nth-child(8),
 .d15-settlement-table th:nth-child(9),.d15-settlement-table th:nth-child(10) { text-align:right; }
 .d15-settlement-table th:last-child,.d15-settlement-table td:last-child { min-width:76px; }
+.d15-row-actions { display:flex; align-items:center; gap:4px; }
 .d15-check input { width:15px; height:15px; accent-color:#4055c8; cursor:pointer; }
 .d15-check input:disabled { cursor:not-allowed; }
 .d15-number { text-align:right !important; font-variant-numeric:tabular-nums; }
@@ -5988,6 +5999,25 @@ body.finance-overlay-open .developer-demo-state-switcher { display: none; }
 .d15-confirm-body b { margin-top:12px; color:#175cd3; font-size:28px; font-variant-numeric:tabular-nums; }
 .d15-confirm-body small { margin-top:14px; color:#b54708; font-size:12px; }
 .d15-confirm-dialog > footer { padding:14px 20px; display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #e4e7ec; }
+.d15-proof-dialog,.d15-history-dialog { width:min(920px,100%); max-height:calc(100vh - 48px); overflow:hidden; display:flex; flex-direction:column; color:#172033; border-radius:12px; background:#fff; box-shadow:0 24px 64px rgba(16,24,40,.22); }
+.d15-proof-dialog > header,.d15-history-dialog > header,.d15-cdkey-drawer > header { padding:18px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; border-bottom:1px solid #e4e7ec; }
+.d15-proof-dialog h2,.d15-history-dialog h2,.d15-cdkey-drawer h2 { margin:0; font-size:18px; }
+.d15-proof-dialog header p,.d15-history-dialog header p,.d15-cdkey-drawer header p { margin:6px 0 0; color:#667085; font-size:12px; }
+.d15-proof-preview { min-height:0; padding:18px; overflow:auto; background:#eef1f5; }
+.d15-proof-preview img { width:100%; height:auto; display:block; border-radius:8px; background:#fff; box-shadow:0 8px 24px rgba(16,24,40,.12); }
+.d15-history-detail { padding:20px; overflow:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px 28px; }
+.d15-history-detail .gh-readonly { padding:0; border:0; background:transparent; }
+.d15-history-dialog > footer { padding:14px 20px; display:flex; justify-content:flex-end; border-top:1px solid #e4e7ec; }
+.d15-drawer-layer { position:fixed; inset:0; z-index:130; display:flex; justify-content:flex-end; background:rgba(16,24,40,.42); }
+.d15-cdkey-drawer { width:min(760px,92vw); height:100%; min-width:0; display:flex; flex-direction:column; color:#172033; background:#fff; box-shadow:-18px 0 48px rgba(16,24,40,.18); }
+.d15-cdkey-summary { padding:16px 20px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; border-bottom:1px solid #e4e7ec; background:#f9fafb; }
+.d15-cdkey-summary div { min-width:0; padding:12px; border:1px solid #e4e7ec; border-radius:8px; background:#fff; }
+.d15-cdkey-summary span,.d15-cdkey-summary strong { display:block; }
+.d15-cdkey-summary span { color:#667085; font-size:12px; }
+.d15-cdkey-summary strong { margin-top:8px; color:#172033; font-size:17px; font-variant-numeric:tabular-nums; }
+.d15-cdkey-body { min-height:0; padding:18px 20px; overflow:auto; }
+.d15-cdkey-table { min-width:920px !important; font-size:12px; }
+.d15-cdkey-table th,.d15-cdkey-table td { white-space:nowrap; }
 
 .d15-demo { position:fixed; right:22px; bottom:22px; z-index:90; }
 .d15-demo > button { min-height:44px; padding:0 14px 0 8px; display:inline-flex; align-items:center; gap:8px; color:#30415b; border:1px solid #cfd7e3; border-radius:999px; background:rgba(255,255,255,.97); box-shadow:0 10px 28px rgba(22,34,55,.16); cursor:pointer; }
@@ -6001,7 +6031,8 @@ body.finance-overlay-open { overflow:hidden; }
 body.finance-overlay-open .developer-demo-state-switcher { display:none; }
 
 @media (max-width:960px) {
-  .d15-entity-detail-grid { gap:20px 32px; }
+  .d15-entity-detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px 32px; }
+  .d15-history-detail { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .d15-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .d15-filter-actions { justify-content:flex-end; }
 }
@@ -6012,6 +6043,11 @@ body.finance-overlay-open .developer-demo-state-switcher { display:none; }
   .d15-entity-review { align-items:flex-start; justify-content:flex-start; flex-wrap:wrap; }
   .d15-section-title { align-items:flex-start; flex-direction:column; }
   .d15-entity-detail-grid { grid-template-columns:1fr; gap:20px; }
+  .d15-proof-field { grid-column:auto; }
+  .d15-proof-card { width:100%; }
+  .d15-history-detail { grid-template-columns:1fr; }
+  .d15-cdkey-drawer { width:100%; max-width:none; }
+  .d15-cdkey-summary { grid-template-columns:1fr; }
   .d15-entity-form { grid-template-columns:1fr; gap:18px; padding:20px 16px 22px !important; }
   .d15-filters { padding:12px; grid-template-columns:1fr; }
   .d15-filter-actions { justify-content:stretch; }
@@ -12288,11 +12324,17 @@ window.PublisherSettlementStatements = (() => {
   const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
   const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
   const DEFAULT_RATIO = 70;
-  const ITEM_ORDER = Object.freeze({ sales_share:0, refund_adjustment:1, chargeback_adjustment:2 });
+  const ITEM_ORDER = Object.freeze({
+    game_sales_share:0,
+    dlc_sales_share:1,
+    cdkey_sales_share:2,
+    refund_chargeback_adjustment:3,
+  });
   const ITEM_LABELS = Object.freeze({
-    sales_share:'游戏销售分成',
-    refund_adjustment:'退款补扣',
-    chargeback_adjustment:'拒付补扣',
+    game_sales_share:'游戏销售分成',
+    dlc_sales_share:'DLC 销售分成',
+    cdkey_sales_share:'CDKEY 销售分成',
+    refund_chargeback_adjustment:'退款与拒付',
   });
 
   const roundMinor = value => {
@@ -12409,29 +12451,76 @@ window.PublisherSettlementStatements = (() => {
     ]),
   });
 
+  const splitMinor = (total, weights) => {
+    let allocated = 0;
+    return weights.map((weight, index) => {
+      if (index === weights.length - 1) return total - allocated;
+      const value = Math.round(total * weight);
+      allocated += value;
+      return value;
+    });
+  };
+
+  const cdkeyDetailsFor = ({ game, userPaidMinor, receivedMinor }) => {
+    const paidParts = splitMinor(userPaidMinor, [0.52, 0.31, 0.17]);
+    const receivedParts = splitMinor(receivedMinor, [0.52, 0.31, 0.17]);
+    return [
+      { channel:'星云商城', productType:'游戏本体', productName:`${game.name} 标准版` },
+      { channel:'远航游戏', productType:'游戏本体', productName:`${game.name} 豪华版` },
+      { channel:'星云商城', productType:'DLC', productName:`${game.name} · 远征者扩展包` },
+    ].map((item, index) => ({
+      ...item,
+      userPaidMinor:paidParts[index],
+      receivedMinor:receivedParts[index],
+      settlementMinor:receivedParts[index],
+    }));
+  };
+
   const createStatement = ({ state, developerId, developerName, entity, game, billingMonth, gameIndex, monthIndex, itemType }) => {
-    const ratio = ratioFor(state, developerId, billingMonth);
-    const paid = 7800000 + gameIndex * 925000 + monthIndex * 680000;
+    const contractRatio = ratioFor(state, developerId, billingMonth);
+    const basePaid = 7800000 + gameIndex * 925000 + monthIndex * 680000;
+    const paid = itemType === 'dlc_sales_share'
+      ? Math.round(basePaid * 0.28)
+      : itemType === 'cdkey_sales_share'
+        ? Math.round(basePaid * 0.18)
+        : basePaid;
     const tax = Math.round(paid * 0.06);
-    const fee = Math.round(paid * 0.029);
+    const fee = Math.round(paid * (itemType === 'cdkey_sales_share' ? 0.045 : 0.029));
     const adjustments = {
-      sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
-      refund_adjustment:{ userPaidMinor:0, refundMinor:Math.round(paid * 0.032), chargebackMinor:0, salesTaxMinor:0, paymentFeeMinor:0 },
-      chargeback_adjustment:{ userPaidMinor:0, refundMinor:0, chargebackMinor:Math.round(paid * 0.014), salesTaxMinor:0, paymentFeeMinor:0 },
+      game_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      dlc_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      cdkey_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      refund_chargeback_adjustment:{
+        userPaidMinor:0,
+        refundMinor:Math.round(basePaid * 0.032),
+        chargebackMinor:Math.round(basePaid * 0.014),
+        salesTaxMinor:0,
+        paymentFeeMinor:0,
+      },
     }[itemType];
     const receivedMinor = adjustments.userPaidMinor - adjustments.refundMinor - adjustments.chargebackMinor - adjustments.salesTaxMinor - adjustments.paymentFeeMinor;
-    const suffix = { sales_share:'SALES', refund_adjustment:'REFUND', chargeback_adjustment:'CHARGEBACK' }[itemType];
+    const fixedRatio = itemType === 'cdkey_sales_share' || itemType === 'refund_chargeback_adjustment';
+    const ratioPercent = fixedRatio ? 100 : contractRatio.ratioPercent;
+    const ratioVersion = fixedRatio ? `POLICY-${itemType === 'cdkey_sales_share' ? 'CDKEY' : 'REFUND'}-100` : contractRatio.id;
+    const suffix = {
+      game_sales_share:'GAME',
+      dlc_sales_share:'DLC',
+      cdkey_sales_share:'CDKEY',
+      refund_chargeback_adjustment:'REFUND-CHARGEBACK',
+    }[itemType];
     const confirmed = (monthIndex + gameIndex + ITEM_ORDER[itemType]) % 4 === 0;
-    return {
+    const statement = {
       id:`ST-${billingMonth.replace('-', '')}-${game.id}-${suffix}`,
       developerId, developerName, entityName:entity.legalName, entityVersion:entity.entityVersion,
       gameId:game.id, gameName:game.name, billingMonth, settlementMonth:nextMonth(billingMonth),
       itemType, itemLabel:ITEM_LABELS[itemType], currency:'CNY', ...adjustments, receivedMinor,
-      ratioPercent:ratio.ratioPercent, ratioVersion:ratio.id,
-      settlementMinor:roundMinor(receivedMinor * ratio.ratioPercent / 100),
+      ratioPercent, ratioVersion,
+      settlementMinor:roundMinor(receivedMinor * ratioPercent / 100),
       status:confirmed ? 'confirmed' : 'pending', lockedAt:`${nextMonth(billingMonth)}-05 11:20`,
       confirmedAt:confirmed ? `${nextMonth(billingMonth)}-08 10:30` : '', confirmedBy:confirmed ? '开发者 王明' : '',
     };
+    if (itemType === 'cdkey_sales_share') statement.cdkeyDetails = cdkeyDetailsFor({ game, userPaidMinor:statement.userPaidMinor, receivedMinor:statement.receivedMinor });
+    return statement;
   };
 
   const seedStatements = state => {
@@ -12523,6 +12612,7 @@ window.PublisherSettlementStatements = (() => {
 
     (state.statements || []).forEach(row => {
       if (row.developerId !== developerId || row.status === 'confirmed' || row.lockedAt) return;
+      if (row.itemType === 'cdkey_sales_share' || row.itemType === 'refund_chargeback_adjustment') return;
       const applied = ratioFor(state, developerId, row.billingMonth);
       row.ratioPercent = applied.ratioPercent;
       row.ratioVersion = applied.id;
@@ -12695,6 +12785,9 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     entityFile:null,
     entityErrors:{},
     entityError:'',
+    proofPreview:null,
+    historyVersion:null,
+    cdkeyDetailId:'',
     exportMessage:'',
     callbacks:{ onChange:null, onNavigate:null },
   };
@@ -12730,6 +12823,47 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     return latest?.status === 'rejected' ? latest.snapshot : activeFinancialEntity();
   };
   const cloneEntity = value => value == null ? value : JSON.parse(JSON.stringify(value));
+  const statusText = status => ({ approved:'已通过', pending:'审核中', rejected:'已驳回', superseded:'已失效' }[status] || status || '—');
+  const statusTone = status => ({ approved:'success', pending:'warning', rejected:'danger', superseded:'' }[status] || '');
+  const applicationTypeText = type => type === 'initial' ? '初次认证' : '资料变更';
+  const proofPreviewUrl = proof => {
+    if (proof?.previewUrl) return proof.previewUrl;
+    const title = esc(proof?.name || '银行账户证明');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760"><rect width="1200" height="760" fill="#f5f7fa"/><rect x="72" y="62" width="1056" height="636" rx="18" fill="#fff" stroke="#d6dce5" stroke-width="2"/><text x="110" y="132" font-family="Arial,'Microsoft YaHei'" font-size="30" font-weight="700" fill="#172033">银行账户证明</text><line x1="110" y1="165" x2="1090" y2="165" stroke="#e5e9ef" stroke-width="2"/><text x="110" y="235" font-family="Arial,'Microsoft YaHei'" font-size="22" fill="#5f6b7c">文件：${title}</text><text x="110" y="310" font-family="Arial,'Microsoft YaHei'" font-size="21" fill="#344054">账户户名：深圳星海互动科技有限公司</text><text x="110" y="365" font-family="Arial,'Microsoft YaHei'" font-size="21" fill="#344054">开户银行：中国建设银行深圳科技园支行</text><text x="110" y="420" font-family="Arial,'Microsoft YaHei'" font-size="21" fill="#344054">银行账号：6222 **** **** 8899</text><rect x="110" y="512" width="240" height="86" rx="8" fill="#f1f4f8"/><text x="155" y="566" font-family="Arial,'Microsoft YaHei'" font-size="22" fill="#7a8494">银行盖章示例</text><text x="110" y="652" font-family="Arial,'Microsoft YaHei'" font-size="16" fill="#98a2b3">Demo 示例文件，仅用于演示点击预览。</text></svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  };
+  const entityHistoryRows = () => {
+    const profile = activeFinancialEntity();
+    const applications = entityApplications();
+    const rows = applications.map(application => ({
+      version:application.entityVersion,
+      type:applicationTypeText(application.applicationType),
+      submittedAt:application.submittedAt,
+      status:application.status,
+      reviewedAt:application.reviewedAt || '—',
+      operator:application.reviewedBy || application.submittedBy || '—',
+      snapshot:application.snapshot,
+    }));
+    if (profile && !rows.some(row => row.version === profile.entityVersion)) rows.push({
+      version:profile.entityVersion,
+      type:'资料变更',
+      submittedAt:'2026-05-16 10:05',
+      status:'approved',
+      reviewedAt:profile.approvedAt || '—',
+      operator:profile.approvedBy || '—',
+      snapshot:profile,
+    });
+    rows.push({
+      version:'FIN-2025-001',
+      type:'初次认证',
+      submittedAt:'2025-12-18 09:30',
+      status:'approved',
+      reviewedAt:'2025-12-19 14:10',
+      operator:'平台运营 李然',
+      snapshot:{ ...(profile || {}), entityVersion:'FIN-2025-001', bankName:'中国建设银行深圳南山支行', bankBranch:'中国建设银行深圳南山支行', bankProof:{ name:'初次银行开户证明.jpg', type:'image/jpeg', size:486000 } },
+    });
+    return rows.sort((a,b) => b.submittedAt.localeCompare(a.submittedAt));
+  };
   const entityStatus = () => {
     const latest = latestEntityApplication();
     if (latest?.status === 'pending') return { label:'审核中', tone:'warning', detail:`变更申请已于 ${latest.submittedAt} 提交，审核通过后生效。` };
@@ -12760,11 +12894,13 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     const statusDetail = status.tone === 'danger' ? `<strong>${esc(status.detail)}</strong>` : `<span>${esc(status.detail)}</span>`;
     const content = state.entityMode === 'edit'
       ? `<form id="d15-entity-form" class="gh-card-body d15-entity-form" data-d15-entity-form novalidate>${entityFields.map(entityInput).join('')}${entityUpload()}</form>`
-      : `<div class="gh-card-body d15-entity-detail-grid">${entityFields.map(field => readonly(field.label,profile[field.key])).join('')}${readonly('银行账户证明附件',profile.bankProof?.name || '—','JPG、PNG、WEBP，单文件不超过 10 MB')}</div>`;
+      : `<div class="gh-card-body d15-entity-detail-grid">${entityFields.map(field => readonly(field.label,profile[field.key])).join('')}<div class="gh-readonly d15-proof-field"><span>银行账户证明附件</span><button type="button" class="d15-proof-card" data-finance-action="preview-proof" data-proof-version="${esc(profile.entityVersion)}"><span aria-hidden="true">图</span><strong>${esc(profile.bankProof?.name || '—')}</strong><small>点击查看</small></button></div></div>`;
+    const historyRows = entityHistoryRows();
+    const history = `<section class="d15-section-title"><div><h2>变更历史</h2></div></section><section class="gh-card d15-history-card"><div class="gh-table-wrap"><table class="gh-table d15-history-table" data-testid="entity-history-table"><thead><tr><th>版本号</th><th>变更类型</th><th>提交时间</th><th>审核状态</th><th>审核时间</th><th>操作人</th><th>操作</th></tr></thead><tbody>${historyRows.map(row => `<tr><td><strong>${esc(row.version)}</strong></td><td>${esc(row.type)}</td><td>${esc(row.submittedAt)}</td><td><span class="gh-tag ${esc(statusTone(row.status))}">${esc(statusText(row.status))}</span></td><td>${esc(row.reviewedAt)}</td><td>${esc(row.operator)}</td><td>${button('查看','view-history','link',`data-history-version="${esc(row.version)}"`)}</td></tr>`).join('')}</tbody></table></div></section>`;
     return `<section class="gh-card d15-entity-summary" data-d15-entity-summary><div class="gh-card-body"><div class="d15-entity-summary-row"><div><h2>当前生效版本</h2><p>${esc(profile.entityVersion)} · 审核通过前，变更不会覆盖当前结算资料。</p></div><div class="d15-entity-review ${esc(status.tone)}" data-d15-entity-status><span class="gh-tag ${esc(status.tone)}">${esc(status.label)}</span>${statusDetail}</div></div></div></section>
       <section class="d15-section-title"><div><h2>财务主体资料</h2><p>银行账户户名须与企业法定名称一致。</p></div><div>${entityActions(status)}</div></section>
       ${state.entityError && !Object.keys(state.entityErrors).length ? `<div class="d15-entity-alert" role="alert">${esc(state.entityError)}</div>` : ''}
-      <section class="gh-card d15-entity-details" data-d15-entity-details>${content}</section>`;
+      <section class="gh-card d15-entity-details" data-d15-entity-details>${content}</section>${history}`;
   }
 
   const allSettlements = () => statements.statementsFor(state.statementState, { developerId:DEVELOPER_ID });
@@ -12801,7 +12937,11 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
   const settlementRow = row => {
     const checked = state.selectedStatementIds.includes(row.id);
     const selectable = row.status === 'pending';
-    return `<tr data-d15-settlement-row data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-received-minor="${esc(row.receivedMinor)}" data-ratio-percent="${esc(row.ratioPercent)}" data-settlement-minor="${esc(row.settlementMinor)}" data-status="${esc(row.status)}"><td class="d15-check"><input type="checkbox" data-d15-select-statement value="${esc(row.id)}" aria-label="选择 ${esc(row.id)}"${checked ? ' checked' : ''}${selectable ? '' : ' disabled'}></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td class="d15-number">${esc(cny(row.userPaidMinor))}</td><td class="d15-number">${esc(row.ratioPercent)}%</td><td class="d15-number">${esc(cny(row.receivedMinor))}</td><td class="d15-number d15-payable">${esc(cny(row.settlementMinor))}</td><td><span class="gh-tag ${row.status === 'confirmed' ? 'success' : 'warning'}">${row.status === 'confirmed' ? '已确认' : '待确认'}</span></td><td>${selectable ? button('确认','open-confirm','link',`data-confirm-statement-id="${esc(row.id)}"`) : '—'}</td></tr>`;
+    const actions = [
+      ...(row.itemType === 'cdkey_sales_share' ? [button('查看详情','view-cdkey','link',`data-cdkey-statement-id="${esc(row.id)}"`)] : []),
+      ...(selectable ? [button('确认','open-confirm','link',`data-confirm-statement-id="${esc(row.id)}"`)] : []),
+    ];
+    return `<tr data-d15-settlement-row data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-received-minor="${esc(row.receivedMinor)}" data-ratio-percent="${esc(row.ratioPercent)}" data-settlement-minor="${esc(row.settlementMinor)}" data-status="${esc(row.status)}"><td class="d15-check"><input type="checkbox" data-d15-select-statement value="${esc(row.id)}" aria-label="选择 ${esc(row.id)}"${checked ? ' checked' : ''}${selectable ? '' : ' disabled'}></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td class="d15-number">${esc(cny(row.userPaidMinor))}</td><td class="d15-number">${esc(row.ratioPercent)}%</td><td class="d15-number">${esc(cny(row.receivedMinor))}</td><td class="d15-number d15-payable">${esc(cny(row.settlementMinor))}</td><td><span class="gh-tag ${row.status === 'confirmed' ? 'success' : 'warning'}">${row.status === 'confirmed' ? '已确认' : '待确认'}</span></td><td><div class="d15-row-actions">${actions.length ? actions.join('') : '—'}</div></td></tr>`;
   };
 
   function settlementPage() {
@@ -12811,7 +12951,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     const selected = selectedPendingRows();
     const allCurrentSelected = currentPending.length > 0 && currentPending.every(row => state.selectedStatementIds.includes(row.id));
     const table = current.length ? `<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th class="d15-check"><input type="checkbox" data-d15-select-page aria-label="选择本页待确认"${allCurrentSelected ? ' checked' : ''}${currentPending.length ? '' : ' disabled'}></th><th>游戏 ID</th><th>游戏名称</th><th>账单月份</th><th>结算月份</th><th>结算项</th><th>用户支付金额（CNY）</th><th>结算比例</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th><th>状态</th><th>操作</th></tr></thead><tbody>${current.map(settlementRow).join('')}</tbody></table></div>${pagination(rows.length)}` : emptyState(state.demoScenario === 'empty' ? '暂无结算记录' : '未找到符合条件的记录', state.demoScenario === 'empty' ? '账单生成后，结算记录会展示在这里。' : '请调整筛选条件或重置后再试。');
-    return `${settlementFilters()}<section class="gh-card d15-settlement-card"><header class="gh-card-head"><div><h2>对账结算</h2><p>账单按 N+1 结算；确认后不可撤销。</p></div><div class="d15-settlement-actions">${button('批量确认','open-batch-confirm','',selected.length ? '' : 'aria-disabled="true"')}${button('导出当前结果','export-settlements','',rows.length ? '' : 'disabled')}</div></header>${state.exportMessage ? `<div class="d15-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-d15-export-status>${esc(state.exportMessage)}</div>` : ''}${table}</section>`;
+    return `${settlementFilters()}<section class="gh-card d15-settlement-card"><header class="gh-card-head"><div><h2>对账结算</h2></div><div class="d15-settlement-actions">${button('批量确认','open-batch-confirm','',selected.length ? '' : 'aria-disabled="true"')}${button('导出当前结果','export-settlements','',rows.length ? '' : 'disabled')}</div></header>${state.exportMessage ? `<div class="d15-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-d15-export-status>${esc(state.exportMessage)}</div>` : ''}${table}</section>`;
   }
 
   function confirmationDialog() {
@@ -12821,14 +12961,37 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     return `<div class="d15-dialog-layer" data-finance-action="cancel-confirm"><section class="d15-confirm-dialog" role="dialog" aria-modal="true" aria-label="确认结算单" data-finance-stop><header><h2>确认结算单</h2><button type="button" class="gh-dialog-close" data-finance-action="cancel-confirm" aria-label="关闭">×</button></header><div class="d15-confirm-body"><p>共 <strong>${rows.length} 条</strong>结算单，结算金额合计</p><b>${esc(cnyWithSymbol(total))}</b><small>确认后不可撤销，请核对后操作。</small></div><footer>${button('取消','cancel-confirm')}${button('确认','confirm-statements','primary')}</footer></section></div>`;
   }
 
+  function proofDialog() {
+    if (!state.proofPreview) return '';
+    return `<div class="d15-dialog-layer" data-finance-action="close-proof"><section class="d15-proof-dialog" role="dialog" aria-modal="true" aria-label="银行账户证明预览" data-finance-stop><header><div><h2>银行账户证明</h2><p>${esc(state.proofPreview.name)}</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-proof" aria-label="关闭">×</button></header><div class="d15-proof-preview"><img src="${esc(state.proofPreview.url)}" alt="${esc(state.proofPreview.name)}"></div></section></div>`;
+  }
+
+  function historyDialog() {
+    if (!state.historyVersion) return '';
+    const row = entityHistoryRows().find(item => item.version === state.historyVersion);
+    if (!row) return '';
+    const profile = row.snapshot || {};
+    return `<div class="d15-dialog-layer" data-finance-action="close-history"><section class="d15-history-dialog" role="dialog" aria-modal="true" aria-label="财务主体版本详情" data-finance-stop><header><div><h2>${esc(row.version)}</h2><p>${esc(row.type)} · ${esc(statusText(row.status))}</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-history" aria-label="关闭">×</button></header><div class="d15-history-detail">${entityFields.map(field => readonly(field.label,profile[field.key] || '—')).join('')}<div class="gh-readonly d15-proof-field"><span>银行账户证明附件</span><button type="button" class="d15-proof-card" data-finance-action="preview-proof" data-proof-version="${esc(row.version)}"><span aria-hidden="true">图</span><strong>${esc(profile.bankProof?.name || '—')}</strong><small>点击查看</small></button></div></div><footer>${button('关闭','close-history')}</footer></section></div>`;
+  }
+
+  function cdkeyDrawer() {
+    if (!state.cdkeyDetailId) return '';
+    const row = allSettlements().find(item => item.id === state.cdkeyDetailId && item.itemType === 'cdkey_sales_share');
+    if (!row) return '';
+    const details = row.cdkeyDetails || [];
+    return `<div class="d15-drawer-layer" data-finance-action="close-cdkey"><aside class="d15-cdkey-drawer" role="dialog" aria-modal="true" aria-label="CDKEY 销售明细" data-finance-stop><header><div><h2>CDKEY 销售明细</h2><p>${esc(row.gameName)} · ${esc(row.billingMonth)} 账单 / ${esc(row.settlementMonth)} 结算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-cdkey" aria-label="关闭">×</button></header><section class="d15-cdkey-summary"><div><span>用户支付金额</span><strong>¥${esc(cny(row.userPaidMinor))}</strong></div><div><span>实际到账金额</span><strong>¥${esc(cny(row.receivedMinor))}</strong></div><div><span>结算金额</span><strong>¥${esc(cny(row.settlementMinor))}</strong></div></section><div class="d15-cdkey-body"><div class="gh-table-wrap"><table class="gh-table d15-cdkey-table"><thead><tr><th>渠道</th><th>商品类型</th><th>商品／DLC</th><th>用户支付金额（CNY）</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th></tr></thead><tbody>${details.map(item => `<tr><td>${esc(item.channel)}</td><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td class="d15-number">${esc(cny(item.userPaidMinor))}</td><td class="d15-number">${esc(cny(item.receivedMinor))}</td><td class="d15-number d15-payable">${esc(cny(item.settlementMinor))}</td></tr>`).join('')}</tbody></table></div></div></aside></div>`;
+  }
+
+  const auxiliaryOverlays = () => `${confirmationDialog()}${historyDialog()}${proofDialog()}${cdkeyDrawer()}`;
+
   const pageContent = () => state.route === 'entity' ? entityPage() : settlementPage();
   const scenario = () => `<section class="d15-demo"><button type="button" data-finance-action="demo-toggle" aria-expanded="${state.demoOpen}" data-testid="scenario-orb"><b>Demo</b><span>状态</span></button>${state.demoOpen ? `<aside><strong>页面状态</strong><button type="button" data-finance-action="scenario" data-scenario="exhaustive" class="${state.demoScenario === 'exhaustive' ? 'is-active' : ''}">穷举态</button><button type="button" data-finance-action="scenario" data-scenario="empty" class="${state.demoScenario === 'empty' ? 'is-active' : ''}">缺省态</button></aside>` : ''}</section>`;
   const logo = () => `<svg viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" rx="10" fill="#f3b71b"/><path d="M10 18.3c0-5.3 3.7-9.1 8.9-9.1 2.6 0 4.8.9 6.4 2.4l-3.1 3.1a4.7 4.7 0 0 0-3.3-1.3c-2.8 0-4.7 2-4.7 4.9 0 2.8 1.9 4.9 4.8 4.9 2 0 3.3-.8 4-2.1h-4.6v-3.8h8.7c.1.6.1 1.2.1 1.8 0 5.1-3.4 8.8-8.3 8.8-5.2 0-8.9-4-8.9-9.6Z" fill="#422d00"/></svg>`;
   function standaloneRender() {
     const title = state.route === 'entity' ? '财务主体' : '对账结算';
     const description = state.route === 'entity' ? '维护结算主体与银行账户资料。' : '核对并确认按月生成的游戏结算单。';
-    app.innerHTML = `<div class="gh-app d15-app" data-testid="developer-finance-demo"><header class="gh-topbar"><div class="gh-brand">${logo()}<span>PC 发行平台<small>开发者中心</small></span></div><div class="gh-user"><div class="gh-avatar">星</div><div class="gh-user-copy"><strong>星海互动</strong><small>企业开发者</small></div></div></header><div class="gh-layout"><aside class="gh-sidebar"><div class="gh-sidebar-label">财务</div><nav class="gh-nav d15-nav" aria-label="财务导航"><button type="button" data-route="entity" class="${state.route === 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">主</span>财务主体</button><button type="button" data-route="settlement" class="${state.route !== 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">结</span>对账结算</button></nav></aside><main class="gh-main"><div class="gh-content">${pageHead(title,description)}${pageContent()}</div></main></div>${scenario()}${confirmationDialog()}</div>`;
-    document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length));
+    app.innerHTML = `<div class="gh-app d15-app" data-testid="developer-finance-demo"><header class="gh-topbar"><div class="gh-brand">${logo()}<span>PC 发行平台<small>开发者中心</small></span></div><div class="gh-user"><div class="gh-avatar">星</div><div class="gh-user-copy"><strong>星海互动</strong><small>企业开发者</small></div></div></header><div class="gh-layout"><aside class="gh-sidebar"><div class="gh-sidebar-label">财务</div><nav class="gh-nav d15-nav" aria-label="财务导航"><button type="button" data-route="entity" class="${state.route === 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">主</span>财务主体</button><button type="button" data-route="settlement" class="${state.route !== 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">结</span>对账结算</button></nav></aside><main class="gh-main"><div class="gh-content">${pageHead(title,description)}${pageContent()}</div></main></div>${scenario()}${auxiliaryOverlays()}</div>`;
+    document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length || state.proofPreview || state.historyVersion || state.cdkeyDetailId));
   }
 
   const focusFirstConfirmationControl = () => requestAnimationFrame(() => {
@@ -12836,18 +12999,22 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     if (!dialog || dialog.contains(document.activeElement)) return;
     dialog.querySelector('button:not([disabled])')?.focus();
   });
-  const restoreConfirmationFocus = target => requestAnimationFrame(() => {
+  const restoreConfirmationFocus = target => {
     if (!target) return;
-    let control = null;
-    if (target.type === 'batch') control = document.querySelector('[data-finance-action="open-batch-confirm"]');
-    if (target.type === 'statement') {
-      control = [...document.querySelectorAll('[data-confirm-statement-id]')].find(node => node.dataset.confirmStatementId === target.id)
-        || [...document.querySelectorAll('[data-statement-id]')].find(node => node.dataset.statementId === target.id);
-      if (control?.matches('tr')) control.tabIndex = -1;
-      if (!control) control = document.querySelector('[data-finance-action="open-batch-confirm"]');
-    }
-    control?.focus();
-  });
+    const focusTarget = () => {
+      let control = null;
+      if (target.type === 'batch') control = document.querySelector('[data-finance-action="open-batch-confirm"]');
+      if (target.type === 'statement') {
+        control = [...document.querySelectorAll('[data-confirm-statement-id]')].find(node => node.dataset.confirmStatementId === target.id)
+          || [...document.querySelectorAll('[data-statement-id]')].find(node => node.dataset.statementId === target.id);
+        if (control?.matches('tr')) control.tabIndex = -1;
+        if (!control) control = document.querySelector('[data-finance-action="open-batch-confirm"]');
+      }
+      control?.focus();
+    };
+    focusTarget();
+    requestAnimationFrame(focusTarget);
+  };
   const rerender = () => {
     if (embedded && typeof state.callbacks.onChange === 'function') state.callbacks.onChange({ preserveScroll:true });
     else standaloneRender();
@@ -12988,7 +13155,9 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     const control = event.target.closest('[data-finance-action]');
     if (!control || control.disabled || control.getAttribute('aria-disabled') === 'true') return;
     const action = control.dataset.financeAction;
-    if (action === 'cancel-confirm' && control.classList.contains('d15-dialog-layer') && event.target.closest('[data-finance-stop]')) return;
+    if (['cancel-confirm','close-proof','close-history','close-cdkey'].includes(action)
+      && (control.classList.contains('d15-dialog-layer') || control.classList.contains('d15-drawer-layer'))
+      && event.target.closest('[data-finance-stop]')) return;
     if (action === 'query') { readFilters(); rerender(); }
     if (action === 'reset-filters') { state.filters = { billingMonth:'all',settlementMonth:'all',gameId:'all',status:'all' }; state.page = 1; state.selectedStatementIds = []; state.confirmationIds = []; state.confirmationReturn = null; state.exportMessage = ''; rerender(); }
     if (action === 'page') { state.page = Math.max(1,Number(control.dataset.page) || 1); rerender(); }
@@ -13004,6 +13173,18 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     }
     if (action === 'edit-entity') startEntityEdit();
     if (action === 'cancel-entity') cancelEntityEdit();
+    if (action === 'view-history') { state.historyVersion = control.dataset.historyVersion || ''; rerender(); }
+    if (action === 'close-history') { state.historyVersion = null; rerender(); }
+    if (action === 'preview-proof') {
+      const version = control.dataset.proofVersion;
+      const row = entityHistoryRows().find(item => item.version === version);
+      const proof = row?.snapshot?.bankProof || activeFinancialEntity()?.bankProof;
+      state.proofPreview = { name:proof?.name || '银行账户证明', url:proofPreviewUrl(proof) };
+      rerender();
+    }
+    if (action === 'close-proof') { state.proofPreview = null; rerender(); }
+    if (action === 'view-cdkey') { state.cdkeyDetailId = control.dataset.cdkeyStatementId || ''; rerender(); }
+    if (action === 'close-cdkey') { state.cdkeyDetailId = ''; rerender(); }
     if (action === 'export-settlements') {
       const rows = visibleSettlements();
       const csv = statements.exportStatementsCsv(rows,{ includeDeveloper:false,includeRatioVersion:false });
@@ -13059,7 +13240,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
   });
 
   window.addEventListener('keydown', event => {
-    const dialog = document.querySelector('.d15-confirm-dialog');
+    const dialog = document.querySelector('.d15-proof-dialog,.d15-history-dialog,.d15-cdkey-drawer,.d15-confirm-dialog');
     if (event.key === 'Tab' && dialog) {
       const focusable = [...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
         .filter(node => node.getClientRects().length > 0 && node.getAttribute('aria-disabled') !== 'true');
@@ -13072,10 +13253,13 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
       event.stopImmediatePropagation();
       return;
     }
-    if (event.key === 'Escape' && state.confirmationIds.length) {
+    if (event.key === 'Escape' && (state.confirmationIds.length || state.proofPreview || state.historyVersion || state.cdkeyDetailId)) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      closeConfirmation();
+      if (state.proofPreview) { state.proofPreview = null; rerender(); }
+      else if (state.historyVersion) { state.historyVersion = null; rerender(); }
+      else if (state.cdkeyDetailId) { state.cdkeyDetailId = ''; rerender(); }
+      else closeConfirmation();
     }
   });
   window.addEventListener('hashchange', () => {
@@ -13086,6 +13270,9 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     state.selectedStatementIds = [];
     state.confirmationIds = [];
     state.confirmationReturn = null;
+    state.proofPreview = null;
+    state.historyVersion = null;
+    state.cdkeyDetailId = '';
     standaloneRender();
   });
 
@@ -13110,17 +13297,20 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
       render:(_financeState, options = {}) => {
         state.route = options.routeId === 'P15-01' ? 'entity' : 'settlement';
         const canonicalRoute = state.route === 'entity' ? 'P15-01' : 'P15-02';
-        return `<section class="publisher-finance" data-testid="developer-finance-demo" data-finance-route="${canonicalRoute}">${pageContent()}${confirmationDialog()}</section>`;
+        return `<section class="publisher-finance" data-testid="developer-finance-demo" data-finance-route="${canonicalRoute}">${pageContent()}${auxiliaryOverlays()}</section>`;
       },
       bind:(_root, options = {}) => {
         state.callbacks.onChange = typeof options.onChange === 'function' ? options.onChange : null;
         state.callbacks.onNavigate = typeof options.onNavigate === 'function' ? options.onNavigate : null;
-        document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length));
+        document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length || state.proofPreview || state.historyVersion || state.cdkeyDetailId));
       },
       closeOverlays:() => {
         state.selectedStatementIds = [];
         state.confirmationIds = [];
         state.confirmationReturn = null;
+        state.proofPreview = null;
+        state.historyVersion = null;
+        state.cdkeyDetailId = '';
         document.body.classList.remove('finance-overlay-open');
       },
       applyEntryContext:(_financeState, context = {}) => {
@@ -13135,12 +13325,18 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
         state.selectedStatementIds = [];
         state.confirmationIds = [];
         state.confirmationReturn = null;
+        state.proofPreview = null;
+        state.historyVersion = null;
+        state.cdkeyDetailId = '';
       },
       setScenario:(_financeState, scenarioName) => {
         state.demoScenario = ['exhaustive','empty'].includes(scenarioName) ? scenarioName : 'exhaustive';
         state.selectedStatementIds = [];
         state.confirmationIds = [];
         state.confirmationReturn = null;
+        state.proofPreview = null;
+        state.historyVersion = null;
+        state.cdkeyDetailId = '';
         state.page = 1;
         rerender();
       },

@@ -5751,6 +5751,8 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
   background:#fff;
 }
 .fo-page[data-active-tab="entity"] .fo-filters { grid-template-columns:minmax(280px,1.6fr) minmax(160px,.65fr) minmax(140px,.55fr) auto; }
+.fo-game-filters { grid-template-columns:minmax(250px,1.35fr) minmax(220px,1.15fr) repeat(2,minmax(140px,.7fr)); }
+.fo-game-filters .fo-filter-actions { justify-self:end; }
 .fo-filters label { min-width:0; display:grid; gap:7px; }
 .fo-filters label > span { color:#5f6a7c; font-size:12px; line-height:18px; font-weight:600; }
 .fo-filters input,.fo-filters select { width:100%; min-width:0; min-height:36px; padding:7px 10px; color:var(--fo-text); border:1px solid #d6dce5; border-radius:4px; background:#fff; outline:0; }
@@ -5783,14 +5785,18 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .fo-table-scroll { width:100%; min-width:0; overflow-x:auto; overscroll-behavior-inline:contain; }
 .fo-table { width:100%; border-collapse:collapse; table-layout:auto; color:#485568; font-size:12px; }
 .fo-entity-table { min-width:1850px; }
-.fo-game-table { min-width:1810px; }
+.fo-game-table { min-width:1980px; }
 .fo-transaction-table { min-width:1370px; }
+.fo-cdkey-table { min-width:1040px; }
 .fo-table th,.fo-table td { min-width:118px; padding:13px 14px; vertical-align:middle; text-align:left; line-height:20px; border-bottom:1px solid #edf0f4; white-space:nowrap; }
 .fo-table th { padding-top:11px; padding-bottom:11px; color:#697588; background:#f8f9fb; font-weight:600; }
 .fo-table tbody tr:hover { background:#fafbfe; }
 .fo-table tr:last-child td { border-bottom:0; }
 .fo-table th.fo-check,.fo-table td.fo-check { width:44px; min-width:44px; padding-right:8px; padding-left:16px; }
-.fo-entity-table th:nth-child(3),.fo-entity-table td:nth-child(3),.fo-game-table th:nth-child(3),.fo-game-table td:nth-child(3) { min-width:245px; }
+.fo-entity-table th:nth-child(3),.fo-entity-table td:nth-child(3) { min-width:245px; }
+.fo-game-table th:nth-child(2),.fo-game-table td:nth-child(2) { min-width:255px; }
+.fo-game-table th:nth-child(4),.fo-game-table td:nth-child(4) { min-width:170px; }
+.fo-game-table th:nth-child(n+8):nth-child(-n+11),.fo-game-table td:nth-child(n+8):nth-child(-n+11) { min-width:170px; }
 .fo-entity-table th:nth-child(13),.fo-entity-table td:nth-child(13) { min-width:235px; }
 .fo-table strong,.fo-table small { display:block; }
 .fo-table strong { color:#2e394a; font-weight:600; }
@@ -5799,6 +5805,9 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .fo-muted { color:var(--fo-muted); }
 .fo-link { padding:5px 0; color:#4055c8; border:0; background:transparent; font-weight:650; }
 .fo-link:hover { color:#263ba8; text-decoration:underline; }
+.fo-status { display:inline-flex; min-height:24px; padding:3px 9px; align-items:center; border-radius:999px; font-size:11px; font-weight:650; }
+.fo-status.is-pending { color:#9a6700; background:#fff7d6; }
+.fo-status.is-confirmed { color:#067647; background:#ecfdf3; }
 .fo-pagination { min-height:52px; padding:10px 0 0; display:flex; align-items:center; justify-content:space-between; gap:16px; color:var(--fo-muted); font-size:12px; }
 .fo-pagination > div { display:flex; align-items:center; gap:10px; }
 .fo-pagination b { min-width:46px; color:#566276; text-align:center; font-weight:600; }
@@ -5816,6 +5825,7 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .fo-drawer header button { width:32px; height:32px; color:#667085; border:0; border-radius:6px; background:#f1f3f6; font-size:20px; }
 .fo-drawer-body { min-height:0; padding:18px 20px; flex:1 1 auto; overflow:auto; }
 .fo-drawer-summary { margin-bottom:16px; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:9px; }
+.fo-cdkey-summary { grid-template-columns:repeat(3,minmax(0,1fr)); }
 .fo-drawer-summary > div { min-width:0; padding:13px; border:1px solid var(--fo-line); border-radius:7px; background:#f8f9fb; }
 .fo-drawer-summary span,.fo-drawer-summary strong { display:block; }
 .fo-drawer-summary span { color:var(--fo-secondary); font-size:11px; }
@@ -13594,7 +13604,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     'P04-08': '数据导出与说明',
     'P15-01': '财务主体',
     'P15-02': '对账结算',
-    'P15-03': '对账流水',
   };
   const pageMeta = {
     'P01-04': { summary: '查看当前游戏的发行准备、阶段结果与核心数据。', status: '预发布需修改', primaryAction: '编辑游戏资料', action: 'edit-game-profile' },
@@ -13700,9 +13709,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
     const allowed = routes.filter(item => item.role === role && item.id !== 'P01-01');
     const consoleRouteIds = ['P01-04', 'P01-05', 'P01-06', 'P01-07'];
-    if (role === 'developer' && ['P15-01','P15-02','P15-03'].includes(route.id)) {
+    if (role === 'developer' && ['P15-01','P15-02'].includes(route.id)) {
       const isEnglish = language === 'en';
-      const settlementActive = route.id === 'P15-02' || route.id === 'P15-03';
+      const settlementActive = route.id === 'P15-02';
       return `<aside class="side-nav side-nav--finance" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">${isEnglish ? 'Games' : '游戏'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Developer navigation' : '开发者导航'}"><a class="nav-item" href="#/P02-01">${icon('game')}<span>${isEnglish ? 'Game management' : '游戏管理'}</span></a></nav><div class="nav-label">${isEnglish ? 'Finance' : '财务'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Finance navigation' : '财务导航'}"><a class="nav-item${route.id === 'P15-01' ? ' is-active' : ''}" href="#/P15-01"${route.id === 'P15-01' ? ' aria-current="page"' : ''}>${icon('vendor')}<span>${isEnglish ? 'Finance entity' : '财务主体'}</span></a><a class="nav-item${settlementActive ? ' is-active' : ''}" href="#/P15-02"${settlementActive ? ' aria-current="page"' : ''}>${icon('chart')}<span>${isEnglish ? 'Reconciliation & settlement' : '对账结算'}</span></a></nav><div class="nav-label">${isEnglish ? 'Company' : '厂商管理'}</div><nav class="nav-list"><button type="button" class="nav-item" data-portal-action="open-vendor-settings">${icon('vendor')}<span>${isEnglish ? 'Company settings' : '厂商设置'}</span></button></nav></aside>`;
     }
     if (role === 'operations' && route.moduleId === '01') {
@@ -13754,9 +13763,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderContext = ({ portalData, redacted, route, editorMode = 'edit', language = 'zh' }) => {
     if (redacted) return '';
     const context = portalData.context || {};
-    if (['P15-01','P15-02','P15-03'].includes(route.id)) {
+    if (['P15-01','P15-02'].includes(route.id)) {
       const isEnglish = language === 'en';
-      const end = route.id === 'P15-01' ? (isEnglish ? 'Finance entity' : '财务主体') : route.id === 'P15-02' ? (isEnglish ? 'Reconciliation & settlement' : '对账结算') : (isEnglish ? 'Reconciliation & settlement / Reconciliation flows' : '对账结算 / 对账流水');
+      const end = route.id === 'P15-01' ? (isEnglish ? 'Finance entity' : '财务主体') : (isEnglish ? 'Reconciliation & settlement' : '对账结算');
       return `<div class="context-bar"><span>${isEnglish ? 'Developer platform' : '开发者平台'}</span><span class="context-divider">/</span><span>${isEnglish ? 'Finance' : '财务'}</span><span class="context-divider">/</span><span class="context-value">${end}</span></div>`;
     }
     if (route.id === 'P01-02') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span><span>厂商工作台</span></div>`;
@@ -13767,8 +13776,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const renderPageHeader = ({ route, page, state, redacted, editorMode = 'edit', language = 'zh' }) => {
-    if (['P15-01','P15-02','P15-03'].includes(route.id)) {
-      const EnglishTitles = { 'P15-01':'Finance entity', 'P15-02':'Reconciliation & settlement', 'P15-03':'Reconciliation flows' };
+    if (['P15-01','P15-02'].includes(route.id)) {
+      const EnglishTitles = { 'P15-01':'Finance entity', 'P15-02':'Reconciliation & settlement' };
       return `<header class="page-header"><div><h1 class="page-title" data-page-title>${e(language === 'en' ? EnglishTitles[route.id] : publicTitle(route))}</h1></div></header>`;
     }
     if (['P01-01', 'P01-02', 'P01-03', 'P01-08', 'P01-09', 'P01-10', 'P02-01'].includes(route.id)) return '';
@@ -13852,7 +13861,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const isEntryChoice = isOnboarding && accountTier === 'unselected' && qualification?.status === 'unsubmitted';
     const isConfiguration = ['P01-09', 'P01-10'].includes(route.id);
     const isPublisherWorkspace = route.id === 'P02-01';
-    const isFinanceWorkspace = ['P15-01','P15-02','P15-03'].includes(route.id);
+    const isFinanceWorkspace = ['P15-01','P15-02'].includes(route.id);
     const helpLanguage = role === 'developer' ? language : 'zh';
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
     const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}${isFinanceWorkspace ? ' is-finance-workspace' : ''}`;
@@ -14081,10 +14090,451 @@ window.PublisherSettlementLedger = (() => {
 })();
 
 
+/* 开发者与运营共用的结算单、财务主体和结算比例版本模型。 */
+window.PublisherSettlementStatements = (() => {
+  'use strict';
+
+  const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
+  const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
+  const DEFAULT_RATIO = 70;
+  const ITEM_ORDER = Object.freeze({
+    game_sales_share:0,
+    dlc_sales_share:1,
+    cdkey_sales_share:2,
+    refund_chargeback_adjustment:3,
+  });
+  const ITEM_LABELS = Object.freeze({
+    game_sales_share:'游戏销售分成',
+    dlc_sales_share:'DLC 销售分成',
+    cdkey_sales_share:'CDKEY 销售分成',
+    refund_chargeback_adjustment:'退款与拒付',
+  });
+
+  const roundMinor = value => {
+    const number = Number(value);
+    const rounded = Math.round(Math.abs(number));
+    return number < 0 && rounded ? -rounded : rounded;
+  };
+
+  const assertMonth = value => {
+    if (!MONTH_PATTERN.test(String(value || ''))) throw new Error('月份格式应为 YYYY-MM');
+    return String(value);
+  };
+
+  const nextMonth = value => {
+    const month = assertMonth(value);
+    const year = Number(month.slice(0, 4));
+    const number = Number(month.slice(5, 7));
+    return number === 12 ? `${year + 1}-01` : `${year}-${String(number + 1).padStart(2, '0')}`;
+  };
+
+  const nowText = () => {
+    const date = new Date();
+    const pad = value => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  const activeEntitySeeds = Object.freeze([
+    Object.freeze({
+      developerId:'DEV-1001', developerName:'星海互动', entityVersion:'FIN-2026-003', status:'approved',
+      legalName:'深圳星海互动科技有限公司', contactName:'王明', phone:'18520064686', email:'finance@ocean-expedition.com',
+      bankAccountName:'深圳星海互动科技有限公司', bankName:'中国建设银行深圳科技园支行', bankAccount:'6222000000008899',
+      bankBranch:'中国建设银行深圳科技园支行', bankProof:{ name:'银行开户证明.jpg', type:'image/jpeg', size:524288 },
+      approvedAt:'2026-05-18 16:20', approvedBy:'平台运营 李然',
+    }),
+    Object.freeze({
+      developerId:'DEV-2001', developerName:'远光工作室', entityVersion:'FIN-2026-006', status:'approved',
+      legalName:'广州远光网络科技有限公司', contactName:'陈宇', phone:'18620061234', email:'finance@far-light.cn',
+      bankAccountName:'广州远光网络科技有限公司', bankName:'中国银行广州天河支行', bankAccount:'60138200001909066',
+      bankBranch:'中国银行广州天河支行', bankProof:{ name:'远光开户证明.png', type:'image/png', size:384000 },
+      approvedAt:'2026-06-09 11:05', approvedBy:'平台运营 李然',
+    }),
+    Object.freeze({
+      developerId:'DEV-3001', developerName:'极昼工作室', entityVersion:'FIN-2026-007', status:'approved',
+      legalName:'杭州极昼数字娱乐有限公司', contactName:'刘欣', phone:'13700001111', email:'finance@daylight.cn',
+      bankAccountName:'杭州极昼数字娱乐有限公司', bankName:'招商银行杭州分行', bankAccount:'755900000000009',
+      bankBranch:'招商银行杭州分行', bankProof:{ name:'极昼原银行证明.webp', type:'image/webp', size:264000 },
+      approvedAt:'2026-07-03 15:40', approvedBy:'平台运营 李然',
+    }),
+  ]);
+
+  const ratioSeeds = Object.freeze([
+    Object.freeze({
+      id:'RATIO-2025-001', developerId:'DEV-1001', ratioPercent:65, effectiveBillingMonth:'2025-01', reason:'初始合同',
+      operator:'平台运营 李然', operatedAt:'2025-01-02 10:00', previousRatioPercent:DEFAULT_RATIO, status:'active',
+    }),
+    Object.freeze({
+      id:'RATIO-2026-001', developerId:'DEV-1001', ratioPercent:70, effectiveBillingMonth:'2026-01', reason:'合同续签',
+      operator:'平台运营 李然', operatedAt:'2025-12-20 15:30', previousRatioPercent:65, status:'active',
+    }),
+    Object.freeze({
+      id:'RATIO-2026-002', developerId:'DEV-2001', ratioPercent:70, effectiveBillingMonth:'2026-01', reason:'初始合同',
+      operator:'平台运营 李然', operatedAt:'2025-12-22 09:40', previousRatioPercent:DEFAULT_RATIO, status:'active',
+    }),
+  ]);
+
+  const applicationSeeds = Object.freeze([
+    Object.freeze({
+      id:'FIN-APP-2026-001', applicationType:'change', status:'pending', developerId:'DEV-3001', developerName:'极昼工作室',
+      entityVersion:'FIN-2026-008', submittedAt:'2026-09-14 10:18', submittedBy:'刘欣', reviewReason:'', reviewedAt:'', reviewedBy:'',
+      snapshot:{
+        developerId:'DEV-3001', developerName:'极昼工作室', entityVersion:'FIN-2026-008', status:'pending',
+        legalName:'杭州极昼网络科技有限公司', contactName:'刘欣', phone:'13700001111', email:'finance@daylight.cn',
+        bankAccountName:'杭州极昼网络科技有限公司', bankName:'招商银行杭州分行', bankAccount:'755900000000113',
+        bankBranch:'招商银行杭州分行', bankProof:{ name:'极昼银行证明.webp', type:'image/webp', size:286000 },
+      },
+    }),
+    Object.freeze({
+      id:'FIN-APP-2026-002', applicationType:'initial', status:'rejected', developerId:'DEV-4001', developerName:'像素工坊',
+      entityVersion:'FIN-2026-009', submittedAt:'2026-09-10 09:30', submittedBy:'周乐', reviewReason:'银行证明附件不清晰',
+      reviewedAt:'2026-09-11 14:25', reviewedBy:'平台运营 李然',
+      snapshot:{
+        developerId:'DEV-4001', developerName:'像素工坊', entityVersion:'FIN-2026-009', status:'rejected',
+        legalName:'成都像素工坊科技有限公司', contactName:'周乐', phone:'13900002222', email:'finance@pixel-workshop.cn',
+        bankAccountName:'成都像素工坊科技有限公司', bankName:'中国工商银行成都分行', bankAccount:'6212000000002202',
+        bankBranch:'中国工商银行成都分行', bankProof:{ name:'像素银行证明.jpg', type:'image/jpeg', size:245000 },
+      },
+    }),
+  ]);
+
+  const defaultRatioRecord = (developerId, billingMonth) => ({
+    id:'RATIO-DEFAULT-70', developerId, ratioPercent:DEFAULT_RATIO, effectiveBillingMonth:'0000-01',
+    reason:'平台默认比例', operator:'系统', operatedAt:'', previousRatioPercent:DEFAULT_RATIO, status:'active', billingMonth,
+  });
+
+  const ratioFor = (state, developerId, billingMonth) => {
+    const month = assertMonth(billingMonth);
+    const candidates = (state.ratioVersions || [])
+      .filter(item => item.developerId === developerId && item.status !== 'superseded' && item.effectiveBillingMonth <= month)
+      .slice()
+      .sort((a, b) => b.effectiveBillingMonth.localeCompare(a.effectiveBillingMonth) || b.operatedAt.localeCompare(a.operatedAt));
+    return clone(candidates[0] || defaultRatioRecord(developerId, month));
+  };
+
+  const gamesByDeveloper = Object.freeze({
+    'DEV-1001':Object.freeze([
+      Object.freeze({ id:'GAME-48291', name:'星海远征' }),
+      Object.freeze({ id:'GAME-48292', name:'暗影重构' }),
+      Object.freeze({ id:'GAME-48293', name:'风暴边境' }),
+      Object.freeze({ id:'GAME-48294', name:'机械黎明' }),
+    ]),
+    'DEV-2001':Object.freeze([
+      Object.freeze({ id:'GAME-48311', name:'荒野余烬' }),
+      Object.freeze({ id:'GAME-48312', name:'霓虹突围' }),
+    ]),
+  });
+
+  const splitMinor = (total, weights) => {
+    let allocated = 0;
+    return weights.map((weight, index) => {
+      if (index === weights.length - 1) return total - allocated;
+      const value = Math.round(total * weight);
+      allocated += value;
+      return value;
+    });
+  };
+
+  const cdkeyDetailsFor = ({ game, userPaidMinor, receivedMinor }) => {
+    const paidParts = splitMinor(userPaidMinor, [0.52, 0.31, 0.17]);
+    const receivedParts = splitMinor(receivedMinor, [0.52, 0.31, 0.17]);
+    return [
+      { channel:'星云商城', productType:'游戏本体', productName:`${game.name} 标准版` },
+      { channel:'远航游戏', productType:'游戏本体', productName:`${game.name} 豪华版` },
+      { channel:'星云商城', productType:'DLC', productName:`${game.name} · 远征者扩展包` },
+    ].map((item, index) => ({
+      ...item,
+      userPaidMinor:paidParts[index],
+      receivedMinor:receivedParts[index],
+      settlementMinor:receivedParts[index],
+    }));
+  };
+
+  const createStatement = ({ state, developerId, developerName, entity, game, billingMonth, gameIndex, monthIndex, itemType }) => {
+    const contractRatio = ratioFor(state, developerId, billingMonth);
+    const basePaid = 7800000 + gameIndex * 925000 + monthIndex * 680000;
+    const paid = itemType === 'dlc_sales_share'
+      ? Math.round(basePaid * 0.28)
+      : itemType === 'cdkey_sales_share'
+        ? Math.round(basePaid * 0.18)
+        : basePaid;
+    const tax = Math.round(paid * 0.06);
+    const fee = Math.round(paid * (itemType === 'cdkey_sales_share' ? 0.045 : 0.029));
+    const adjustments = {
+      game_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      dlc_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      cdkey_sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      refund_chargeback_adjustment:{
+        userPaidMinor:0,
+        refundMinor:Math.round(basePaid * 0.032),
+        chargebackMinor:Math.round(basePaid * 0.014),
+        salesTaxMinor:0,
+        paymentFeeMinor:0,
+      },
+    }[itemType];
+    const receivedMinor = adjustments.userPaidMinor - adjustments.refundMinor - adjustments.chargebackMinor - adjustments.salesTaxMinor - adjustments.paymentFeeMinor;
+    const fixedRatio = itemType === 'cdkey_sales_share' || itemType === 'refund_chargeback_adjustment';
+    const ratioPercent = fixedRatio ? 100 : contractRatio.ratioPercent;
+    const ratioVersion = fixedRatio ? `POLICY-${itemType === 'cdkey_sales_share' ? 'CDKEY' : 'REFUND'}-100` : contractRatio.id;
+    const suffix = {
+      game_sales_share:'GAME',
+      dlc_sales_share:'DLC',
+      cdkey_sales_share:'CDKEY',
+      refund_chargeback_adjustment:'REFUND-CHARGEBACK',
+    }[itemType];
+    const confirmed = (monthIndex + gameIndex + ITEM_ORDER[itemType]) % 4 === 0;
+    const statement = {
+      id:`ST-${billingMonth.replace('-', '')}-${game.id}-${suffix}`,
+      developerId, developerName, entityName:entity.legalName, entityVersion:entity.entityVersion,
+      gameId:game.id, gameName:game.name, billingMonth, settlementMonth:nextMonth(billingMonth),
+      itemType, itemLabel:ITEM_LABELS[itemType], currency:'CNY', ...adjustments, receivedMinor,
+      ratioPercent, ratioVersion,
+      settlementMinor:roundMinor(receivedMinor * ratioPercent / 100),
+      status:confirmed ? 'confirmed' : 'pending', lockedAt:`${nextMonth(billingMonth)}-05 11:20`,
+      confirmedAt:confirmed ? `${nextMonth(billingMonth)}-08 10:30` : '', confirmedBy:confirmed ? '开发者 王明' : '',
+    };
+    if (itemType === 'cdkey_sales_share') statement.cdkeyDetails = cdkeyDetailsFor({ game, userPaidMinor:statement.userPaidMinor, receivedMinor:statement.receivedMinor });
+    return statement;
+  };
+
+  const seedStatements = state => {
+    const months = ['2026-08','2026-07','2026-06'];
+    return activeEntitySeeds.flatMap((entity, developerIndex) => months.flatMap((billingMonth, monthIndex) => {
+      const games = gamesByDeveloper[entity.developerId] || [];
+      return games.flatMap((game, gameIndex) => Object.keys(ITEM_ORDER).map(itemType => createStatement({
+        state, developerId:entity.developerId, developerName:entity.developerName, entity, game,
+        billingMonth, gameIndex:gameIndex + developerIndex, monthIndex, itemType,
+      })));
+    }));
+  };
+
+  const createState = () => {
+    const state = {
+      ratioVersions:clone(ratioSeeds),
+      financialEntityVersions:clone(activeEntitySeeds),
+      activeFinancialEntityVersions:Object.fromEntries(activeEntitySeeds.map(item => [item.developerId, item.entityVersion])),
+      financialEntityApplications:clone(applicationSeeds),
+      statements:[],
+    };
+    state.financialEntityVersions.push(...state.financialEntityApplications.map(application => clone(application.snapshot)));
+    state.statements = seedStatements(state);
+    return state;
+  };
+
+  const isAll = value => value == null || value === '' || value === 'all';
+  const statementMatches = (row, filters) => {
+    if (!isAll(filters.developerId) && row.developerId !== filters.developerId) return false;
+    if (!isAll(filters.developer) && row.developerName !== filters.developer) return false;
+    if (!isAll(filters.entityName) && row.entityName !== filters.entityName) return false;
+    if (!isAll(filters.gameId) && row.gameId !== filters.gameId) return false;
+    if (!isAll(filters.game) && row.gameId !== filters.game && row.gameName !== filters.game) return false;
+    if (!isAll(filters.billingMonth) && row.billingMonth !== filters.billingMonth) return false;
+    if (!isAll(filters.settlementMonth) && row.settlementMonth !== filters.settlementMonth) return false;
+    if (!isAll(filters.itemType) && row.itemType !== filters.itemType) return false;
+    if (!isAll(filters.status) && row.status !== filters.status) return false;
+    const keyword = String(filters.keyword || '').trim().toLowerCase();
+    return !keyword || `${row.developerId} ${row.developerName} ${row.entityName} ${row.gameId} ${row.gameName}`.toLowerCase().includes(keyword);
+  };
+
+  const statementsFor = (state, filters = {}) => (state.statements || [])
+    .filter(row => statementMatches(row, filters))
+    .slice()
+    .sort((a, b) => b.billingMonth.localeCompare(a.billingMonth) || a.gameId.localeCompare(b.gameId) || ITEM_ORDER[a.itemType] - ITEM_ORDER[b.itemType])
+    .map(clone);
+
+  const confirmStatements = (state, ids, details = {}) => {
+    const requested = new Set(Array.isArray(ids) ? ids : [ids]);
+    const confirmedAt = details.confirmedAt || nowText();
+    const confirmedBy = details.confirmedBy || '开发者';
+    const changed = [];
+    (state.statements || []).forEach(row => {
+      if (!requested.has(row.id) || row.status !== 'pending') return;
+      row.status = 'confirmed';
+      row.confirmedAt = confirmedAt;
+      row.confirmedBy = confirmedBy;
+      row.lockedAt ||= confirmedAt;
+      changed.push(clone(row));
+    });
+    return changed;
+  };
+
+  const saveRatioVersion = (state, input = {}) => {
+    const developerId = String(input.developerId || '').trim();
+    if (!developerId) throw new Error('缺少开发者');
+    const rawRatioPercent = input.ratioPercent;
+    if (rawRatioPercent == null || String(rawRatioPercent).trim() === '') throw new Error('请填写结算比例');
+    const ratioPercent = Number(rawRatioPercent);
+    if (!Number.isFinite(ratioPercent) || ratioPercent < 0 || ratioPercent > 100) throw new Error('结算比例范围为 0%-100%');
+    if (!Number.isInteger(ratioPercent)) throw new Error('结算比例必须为整数');
+    const effectiveBillingMonth = assertMonth(input.effectiveBillingMonth);
+    const reason = String(input.reason || '').trim();
+    if (!reason) throw new Error('请填写变更原因');
+    if (input.canManageFinance === false) throw new Error('无财务配置权限');
+
+    const previous = ratioFor(state, developerId, effectiveBillingMonth);
+    (state.ratioVersions || []).forEach(version => {
+      if (version.developerId === developerId && version.effectiveBillingMonth === effectiveBillingMonth && version.status !== 'superseded') version.status = 'superseded';
+    });
+    const sequence = String((state.ratioVersions || []).length + 1).padStart(3, '0');
+    const version = {
+      id:input.id || `RATIO-${effectiveBillingMonth.replace('-', '')}-${sequence}`,
+      developerId, ratioPercent, effectiveBillingMonth, reason,
+      operator:String(input.operator || '平台运营').trim(), operatedAt:input.operatedAt || nowText(),
+      previousRatioPercent:previous.ratioPercent, status:'active',
+    };
+    state.ratioVersions.push(version);
+
+    (state.statements || []).forEach(row => {
+      if (row.developerId !== developerId || row.status === 'confirmed' || row.lockedAt) return;
+      if (row.itemType === 'cdkey_sales_share' || row.itemType === 'refund_chargeback_adjustment') return;
+      const applied = ratioFor(state, developerId, row.billingMonth);
+      row.ratioPercent = applied.ratioPercent;
+      row.ratioVersion = applied.id;
+      row.settlementMinor = roundMinor(row.receivedMinor * applied.ratioPercent / 100);
+    });
+    return clone(version);
+  };
+
+  const financialEntity = (state, developerId) => {
+    const versionId = state.activeFinancialEntityVersions?.[developerId];
+    if (!versionId) return null;
+    const entity = (state.financialEntityVersions || []).find(item => item.developerId === developerId && item.entityVersion === versionId && item.status === 'approved');
+    return clone(entity || null);
+  };
+
+  const financialEntityApplications = (state, filters = {}) => (state.financialEntityApplications || [])
+    .filter(application => {
+      if (!isAll(filters.developerId) && application.developerId !== filters.developerId) return false;
+      if (!isAll(filters.status) && application.status !== filters.status) return false;
+      if (!isAll(filters.applicationType) && application.applicationType !== filters.applicationType) return false;
+      const keyword = String(filters.keyword || '').trim().toLowerCase();
+      return !keyword || `${application.developerId} ${application.developerName} ${application.snapshot?.legalName || ''}`.toLowerCase().includes(keyword);
+    })
+    .slice()
+    .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt) || b.id.localeCompare(a.id))
+    .map(clone);
+
+  const requiredText = (value, label) => {
+    const text = String(value || '').trim();
+    if (!text) throw new Error(`${label}为必填项`);
+    return text;
+  };
+
+  const validateEntityInput = input => {
+    const snapshot = {
+      developerId:requiredText(input.developerId, '开发者 ID'),
+      developerName:requiredText(input.developerName, '开发者'),
+      legalName:requiredText(input.legalName, '企业法定名称'),
+      contactName:requiredText(input.contactName, '联系人姓名'),
+      phone:requiredText(input.phone, '手机号'),
+      email:requiredText(input.email, '邮箱'),
+      bankAccountName:requiredText(input.bankAccountName, '银行账户户名'),
+      bankName:requiredText(input.bankName, '开户银行'),
+      bankAccount:requiredText(input.bankAccount, '银行账号'),
+      bankBranch:requiredText(input.bankBranch, '开户支行／联行信息'),
+      bankProof:clone(input.bankProof),
+    };
+    if (!/^1\d{10}$/.test(snapshot.phone)) throw new Error('请填写正确的手机号');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(snapshot.email)) throw new Error('请填写正确的邮箱');
+    if (snapshot.bankAccountName !== snapshot.legalName) throw new Error('银行账户户名必须与企业法定名称一致');
+    if (!snapshot.bankProof || !snapshot.bankProof.name) throw new Error('请上传银行账户证明附件');
+    if (!['image/jpeg','image/png','image/webp'].includes(snapshot.bankProof.type)) throw new Error('银行证明附件仅支持 JPG、PNG、WEBP');
+    if (Number(snapshot.bankProof.size || 0) > 10 * 1024 * 1024) throw new Error('银行证明附件不能超过 10 MB');
+    return snapshot;
+  };
+
+  const submitFinancialEntity = (state, input = {}) => {
+    const snapshot = validateEntityInput(input);
+    const pending = (state.financialEntityApplications || []).find(item => item.developerId === snapshot.developerId && item.status === 'pending');
+    if (pending) throw new Error('该开发者已有待审核的财务主体申请');
+    const current = financialEntity(state, snapshot.developerId);
+    const year = String(input.submittedAt || nowText()).slice(0, 4);
+    const nextSuffix = (items, readId) => Math.max(0, ...items.map(item => Number((readId(item).match(/(\d+)$/) || [])[1] || 0))) + 1;
+    const applicationIndex = nextSuffix(state.financialEntityApplications, item => item.id);
+    const entityIndex = nextSuffix(state.financialEntityVersions, item => item.entityVersion);
+    const entityVersion = `FIN-${year}-${String(entityIndex).padStart(3, '0')}`;
+    const application = {
+      id:input.id || `FIN-APP-${year}-${String(applicationIndex).padStart(3, '0')}`,
+      applicationType:current ? 'change' : 'initial', status:'pending',
+      developerId:snapshot.developerId, developerName:snapshot.developerName, entityVersion,
+      submittedAt:input.submittedAt || nowText(), submittedBy:String(input.submittedBy || snapshot.contactName).trim(),
+      reviewedAt:'', reviewedBy:'', reviewReason:'', snapshot:{ ...snapshot, entityVersion, status:'pending' },
+    };
+    state.financialEntityApplications.push(application);
+    state.financialEntityVersions.push(clone(application.snapshot));
+    return clone(application);
+  };
+
+  const reviewFinancialEntity = (state, applicationId, input = {}) => {
+    const application = (state.financialEntityApplications || []).find(item => item.id === applicationId);
+    if (!application) throw new Error('未找到财务主体申请');
+    if (application.status !== 'pending') throw new Error('该申请已完成审核');
+    const result = input.result;
+    if (!['approved','rejected'].includes(result)) throw new Error('审核结果仅支持 approved 或 rejected');
+    const reason = String(input.reason || '').trim();
+    if (result === 'rejected' && !reason) throw new Error('驳回必须填写原因');
+    const reviewedAt = input.reviewedAt || nowText();
+    const operator = String(input.operator || '平台运营').trim();
+    Object.assign(application, { status:result, reviewedAt, reviewedBy:operator, reviewReason:reason });
+    const version = state.financialEntityVersions.find(item => item.developerId === application.developerId && item.entityVersion === application.entityVersion);
+    if (version) Object.assign(version, { status:result, reviewedAt, reviewedBy:operator, reviewReason:reason });
+    if (result === 'approved') {
+      const previousVersionId = state.activeFinancialEntityVersions[application.developerId];
+      const previous = state.financialEntityVersions.find(item => item.developerId === application.developerId && item.entityVersion === previousVersionId && item.status === 'approved');
+      if (previous) previous.status = 'superseded';
+      state.activeFinancialEntityVersions[application.developerId] = application.entityVersion;
+    }
+    return clone(application);
+  };
+
+  const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
+  const safeCell = value => {
+    const text = String(value ?? '');
+    const formulaLike = /^[\s]*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text);
+    return quote(formulaLike ? `'${text}` : text);
+  };
+  const decimal = minor => (Number(minor || 0) / 100).toFixed(2);
+  const statusLabel = status => status === 'confirmed' ? '已确认' : '待确认';
+
+  const exportStatementsCsv = (rows, options = {}) => {
+    const includeDeveloper = Boolean(options.includeDeveloper);
+    const includeRatioVersion = Boolean(options.includeRatioVersion);
+    const headers = [
+      ...(includeDeveloper ? ['开发者','财务主体'] : []),
+      '游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例',
+      ...(includeRatioVersion ? ['结算比例版本'] : []),
+      '实际到账金额（CNY）','结算金额（CNY）','状态',
+    ];
+    const lines = (rows || []).map(row => [
+      ...(includeDeveloper ? [safeCell(row.developerName), safeCell(row.entityName)] : []),
+      safeCell(row.gameId), safeCell(row.gameName), safeCell(row.billingMonth), safeCell(row.settlementMonth), safeCell(row.itemLabel),
+      quote(decimal(row.userPaidMinor)), quote(`${row.ratioPercent}%`),
+      ...(includeRatioVersion ? [safeCell(row.ratioVersion)] : []),
+      quote(decimal(row.receivedMinor)), quote(decimal(row.settlementMinor)), safeCell(statusLabel(row.status)),
+    ].join(','));
+    return `\uFEFF${[headers.map(safeCell).join(','), ...lines].join('\r\n')}`;
+  };
+
+  return Object.freeze({
+    createState,
+    nextMonth,
+    statementsFor,
+    confirmStatements,
+    ratioFor,
+    saveRatioVersion,
+    financialEntity,
+    financialEntityApplications,
+    submitFinancialEntity,
+    reviewFinancialEntity,
+    exportStatementsCsv,
+  });
+})();
+
+
 window.PublisherFinanceOperationsModel = (() => {
   'use strict';
   const ledger = window.PublisherSettlementLedger;
-  if (!ledger) return null;
+  const statements = window.PublisherSettlementStatements;
+  if (!ledger || !statements) return null;
   const lockedUsdCnyRates = Object.freeze({ '2026-08':7.12,'2026-07':7.18,'2026-06':7.16 });
   const cnyRate = row => row.settlementCurrency === 'CNY' ? 1 : (row.settlementCurrency === 'USD' ? lockedUsdCnyRates[row.month] ?? null : null);
   const cnyMinor = row => {
@@ -14101,28 +14551,38 @@ window.PublisherFinanceOperationsModel = (() => {
 
   const createState = () => ({
     ledgerState:ledger.createState(),
+    statementState:statements.createState(),
     scenario:'exhaustive',
     demoOpen:false,
     activeTab:'entity',
     filters:{
       entity:{ keyword:'', month:'2026-08', currency:'all' },
-      game:{ keyword:'', month:'2026-08', currency:'all', provider:'all', entityVersion:'all', accountVersion:'all', linked:false },
+      game:{ keyword:'', billingMonth:'all', settlementMonth:'all', gameId:'all', itemType:'all', status:'all' },
     },
     pages:{ entity:1, game:1 },
     selected:{ entity:[], game:[] },
-    detailGameKey:'',
+    detailStatementId:'',
     exportMessage:'',
   });
 
   const entityRows = state => state.scenario === 'empty' ? [] : ledger.entityRowsFor(state.ledgerState,state.filters.entity);
-  const gameRows = state => state.scenario === 'empty' ? [] : ledger.gameRowsFor(state.ledgerState,state.filters.game);
-  const transactionRows = (state, game) => game ? ledger.transactionsFor(state.ledgerState, {
-    month:game.month, entityVersion:game.entityVersion, accountVersion:game.accountVersion,
-    currency:game.settlementCurrency, gameId:game.gameId,
-  }) : [];
+  const gameRows = state => state.scenario === 'empty' ? [] : statements.statementsFor(state.statementState,state.filters.game);
+  const allGameRows = state => statements.statementsFor(state.statementState);
+  const transactionRows = (state, statement) => {
+    if (!statement) return [];
+    const itemType = String(statement.itemType || '');
+    const eventTypes = itemType.includes('refund') && itemType.includes('chargeback')
+      ? new Set(['refund','chargeback'])
+      : new Set([itemType.includes('refund') ? 'refund' : (itemType.includes('chargeback') ? 'chargeback' : 'payment')]);
+    return ledger.transactionsFor(state.ledgerState, {
+      month:statement.billingMonth,
+      gameId:statement.gameId,
+    }).filter(row => eventTypes.has(row.eventType));
+  };
   const markExported = (state, rows) => ledger.markEntityExported(state.ledgerState, rows.map(row => row.key));
+  const exportGameCsv = rows => statements.exportStatementsCsv(rows,{ includeDeveloper:true,includeRatioVersion:false });
 
-  return Object.freeze({ createState, entityRows, gameRows, transactionRows, markExported, exportEntityCsv, cnyRate, cnyMinor, ledger, money:ledger.money });
+  return Object.freeze({ createState, entityRows, gameRows, allGameRows, transactionRows, markExported, exportEntityCsv, exportGameCsv, cnyRate, cnyMinor, ledger, statements, money:ledger.money });
 })();
 
 
@@ -14138,22 +14598,28 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const amount = minor => (Number(minor || 0) / 100).toLocaleString('zh-CN',{ minimumFractionDigits:2,maximumFractionDigits:2 });
   const percent = value => `${(Number(value || 0) * 100).toLocaleString('zh-CN',{ maximumFractionDigits:2 })}%`;
   const eventLabel = type => ({ payment:'支付', refund:'退款', chargeback:'拒付' }[type] || type);
+  const statusLabel = value => ({ pending:'待确认', confirmed:'已确认' }[value] || value);
   const activeFilters = () => state.filters[state.activeTab];
   const activeRows = () => state.activeTab === 'entity' ? model.entityRows(state) : model.gameRows(state);
+  const rowKey = row => row.key || row.id;
 
   const tabs = () => `<div class="fo-tabs" role="tablist" aria-label="财务结算视图"><button type="button" role="tab" aria-selected="${state.activeTab === 'entity'}" class="${state.activeTab === 'entity' ? 'is-active' : ''}" data-fo-action="tab" data-fo-tab="entity">主体汇总</button><button type="button" role="tab" aria-selected="${state.activeTab === 'game'}" class="${state.activeTab === 'game' ? 'is-active' : ''}" data-fo-action="tab" data-fo-tab="game">游戏明细</button></div>`;
   const option = (value, label, selected) => `<option value="${esc(value)}"${selected === value ? ' selected' : ''}>${esc(label)}</option>`;
+  const selectOptions = (values, selected, allLabel, label = value => value) => `${option('all',allLabel,selected)}${values.map(value => option(value,label(value),selected)).join('')}`;
+  const unique = (rows,key) => [...new Set(rows.map(row => row[key]).filter(Boolean))].sort((a,b) => String(b).localeCompare(String(a)));
 
   function filters() {
     const item = activeFilters();
-    const keyword = state.activeTab === 'entity' ? '开发者／财务主体' : '游戏／Game ID／开发者／财务主体';
-    const provider = state.activeTab === 'game' ? `<label><span>支付商</span><select data-fo-filter="provider">${option('all','全部支付商',item.provider)}${option('第三方支付商','第三方支付商',item.provider)}</select></label>` : '';
-    return `<section class="fo-filters" aria-label="${state.activeTab === 'entity' ? '主体汇总' : '游戏明细'}筛选"><label class="fo-keyword"><span>${keyword}</span><input type="search" data-fo-filter="keyword" value="${esc(item.keyword)}" placeholder="${state.activeTab === 'entity' ? '输入开发者、主体名称或版本' : '输入游戏、Game ID、开发者或主体'}"></label><label><span>结算月</span><select data-fo-filter="month">${option('all','全部月份',item.month)}${option('2026-08','2026-08',item.month)}${option('2026-07','2026-07',item.month)}${option('2026-06','2026-06',item.month)}</select></label><label><span>币种</span><select data-fo-filter="currency">${option('all','全部币种',item.currency)}${option('USD','USD',item.currency)}${option('CNY','CNY',item.currency)}</select></label>${provider}<div class="fo-filter-actions"><button type="button" data-fo-action="reset">重置</button><button type="button" class="is-primary" data-fo-action="query">查询</button></div></section>`;
+    if (state.activeTab === 'entity') return `<section class="fo-filters" aria-label="主体汇总筛选"><label class="fo-keyword"><span>开发者／财务主体</span><input type="search" data-fo-filter="keyword" value="${esc(item.keyword)}" placeholder="输入开发者、主体名称或版本"></label><label><span>结算月</span><select data-fo-filter="month">${option('all','全部月份',item.month)}${option('2026-08','2026-08',item.month)}${option('2026-07','2026-07',item.month)}${option('2026-06','2026-06',item.month)}</select></label><label><span>币种</span><select data-fo-filter="currency">${option('all','全部币种',item.currency)}${option('USD','USD',item.currency)}${option('CNY','CNY',item.currency)}</select></label><div class="fo-filter-actions"><button type="button" data-fo-action="reset">重置</button><button type="button" class="is-primary" data-fo-action="query">查询</button></div></section>`;
+    const rows = model.allGameRows(state);
+    const games = new Map(rows.map(row => [row.gameId,row.gameName]));
+    const itemLabels = new Map(rows.map(row => [row.itemType,row.itemLabel]));
+    return `<section class="fo-filters fo-game-filters" aria-label="游戏明细筛选"><label class="fo-keyword"><span>开发者／财务主体</span><input type="search" data-fo-filter="keyword" value="${esc(item.keyword)}" placeholder="输入开发者或财务主体"></label><label><span>游戏</span><select data-fo-filter="gameId">${selectOptions([...games.keys()].sort(),item.gameId,'全部游戏',value => `${games.get(value)}（${value}）`)}</select></label><label><span>账单月份</span><select data-fo-filter="billingMonth">${selectOptions(unique(rows,'billingMonth'),item.billingMonth,'全部月份')}</select></label><label><span>结算月份</span><select data-fo-filter="settlementMonth">${selectOptions(unique(rows,'settlementMonth'),item.settlementMonth,'全部月份')}</select></label><label><span>结算项</span><select data-fo-filter="itemType">${selectOptions([...itemLabels.keys()],item.itemType,'全部结算项',value => itemLabels.get(value))}</select></label><label><span>状态</span><select data-fo-filter="status">${option('all','全部状态',item.status)}${option('pending','待确认',item.status)}${option('confirmed','已确认',item.status)}</select></label><div class="fo-filter-actions"><button type="button" data-fo-action="reset">重置</button><button type="button" class="is-primary" data-fo-action="query">查询</button></div></section>`;
   }
 
   const pageRows = rows => {
     const pages = Math.max(1,Math.ceil(rows.length / PAGE_SIZE));
-    state.pages[state.activeTab] = Math.min(state.pages[state.activeTab],pages);
+    state.pages[state.activeTab] = Math.max(1,Math.min(state.pages[state.activeTab],pages));
     const page = state.pages[state.activeTab];
     return rows.slice((page - 1) * PAGE_SIZE,page * PAGE_SIZE);
   };
@@ -14165,7 +14631,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const empty = () => state.scenario === 'empty'
     ? `<div class="fo-empty"><div>—</div><strong>${state.activeTab === 'entity' ? '暂无主体结算记录' : '暂无游戏结算明细'}</strong><p>结算月锁定后，记录会展示在这里。</p></div>`
     : `<div class="fo-empty"><div>—</div><strong>未找到符合条件的记录</strong><p>请调整当前页签的筛选条件或重置后再试。</p></div>`;
-  const selectedRows = rows => rows.filter(row => state.selected[state.activeTab].includes(row.key));
+  const selectedRows = rows => rows.filter(row => state.selected[state.activeTab].includes(rowKey(row)));
   const rowAmounts = row => [
     amount(row.paidMinor),
     `${amount(row.refundMinor)}／${amount(row.chargebackMinor)}`,
@@ -14183,9 +14649,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   }
 
   function gameTable(rows,current) {
-    return `<div class="fo-table-scroll"><table class="fo-table fo-game-table" data-testid="game-detail-table"><thead><tr><th class="fo-check"><input type="checkbox" aria-label="选择本页游戏" data-fo-select-page></th><th>结算月／游戏</th><th>开发者／财务主体</th><th>支付商／币种</th><th>用户实付</th><th>退款／拒付</th><th>销售税</th><th>支付费</th><th>平台分成</th><th>预扣税</th><th>应结算金额</th><th>操作</th></tr></thead><tbody>${current.map(row => {
-      const values = rowAmounts(row);
-      return `<tr data-fo-game-row data-row-key="${esc(row.key)}" data-payable-minor="${row.payableMinor}"><td class="fo-check"><input type="checkbox" aria-label="选择 ${esc(row.gameName)}" data-fo-select-row="${esc(row.key)}"${state.selected.game.includes(row.key) ? ' checked' : ''}></td><td><strong>${esc(row.month)} · ${esc(row.gameName)}</strong><small>${esc(row.gameId)}</small></td><td><strong>${esc(row.developer)}</strong><small>${esc(row.entityName)} · ${esc(row.entityVersion)} · ${esc(row.accountVersion)}</small></td><td><strong>${esc(row.provider)}</strong><small>${esc(row.settlementCurrency)}</small></td>${values.map((value,index) => `<td data-fo-amount${index === values.length - 1 ? ' class="fo-payable"' : ''}>${esc(value)}</td>`).join('')}<td><button type="button" class="fo-link" data-fo-action="view-transactions" data-row-key="${esc(row.key)}">交易流水</button></td></tr>`;
+    return `<div class="fo-table-scroll"><table class="fo-table fo-game-table" data-testid="game-detail-table"><thead><tr><th class="fo-check"><input type="checkbox" aria-label="选择本页游戏明细" data-fo-select-page></th><th>开发者／财务主体</th><th>游戏 ID</th><th>游戏名称</th><th>账单月份</th><th>结算月份</th><th>结算项</th><th>用户支付金额（CNY）</th><th>结算比例</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th><th>状态</th><th>操作</th></tr></thead><tbody>${current.map(row => {
+      const key = rowKey(row);
+      const isCdkey = row.itemType === 'cdkey_sales_share';
+      return `<tr data-fo-game-row data-row-key="${esc(key)}" data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-received-minor="${row.receivedMinor}" data-ratio-percent="${row.ratioPercent}" data-settlement-minor="${row.settlementMinor}" data-status="${esc(row.status)}"><td class="fo-check"><input type="checkbox" aria-label="选择 ${esc(row.gameName)} ${esc(row.itemLabel)}" data-fo-select-row="${esc(key)}"${state.selected.game.includes(key) ? ' checked' : ''}></td><td><strong>${esc(row.developerName)}</strong><small>${esc(row.entityName)}</small></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td data-fo-amount>${esc(amount(row.userPaidMinor))}</td><td data-fo-amount>${esc(row.ratioPercent)}%</td><td data-fo-amount>${esc(amount(row.receivedMinor))}</td><td class="fo-payable" data-fo-amount>${esc(amount(row.settlementMinor))}</td><td><span class="fo-status ${row.status === 'confirmed' ? 'is-confirmed' : 'is-pending'}">${esc(statusLabel(row.status))}</span></td><td><button type="button" class="fo-link" data-fo-action="${isCdkey ? 'view-cdkey' : 'view-transactions'}" data-row-key="${esc(key)}">${isCdkey ? '查看详情' : '交易流水'}</button></td></tr>`;
     }).join('')}</tbody></table></div>`;
   }
 
@@ -14198,12 +14665,20 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="fo-card fo-table-card"><header class="fo-table-toolbar"><div><strong>${state.activeTab === 'entity' ? '主体结算汇总' : '游戏结算明细'}</strong><span>${state.activeTab === 'entity' ? '生成线下打款名单' : '核对各游戏金额来源'}</span></div><button type="button" class="is-primary" data-fo-action="export"${exportCount ? '' : ' disabled'}>${label}</button></header>${state.exportMessage ? `<div class="fo-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-fo-export-status>${esc(state.exportMessage)}</div>` : ''}${current.length ? (state.activeTab === 'entity' ? entityTable(rows,current) : gameTable(rows,current)) : empty()}</section>${rows.length ? pagination(rows.length) : ''}`;
   }
 
+  const cdkeyDrawer = statement => {
+    const details = statement.cdkeyDetails || [];
+    return `<div class="fo-drawer-layer" data-fo-action="close-drawer"><aside class="fo-drawer" role="dialog" aria-modal="true" aria-label="CDKEY 销售明细" data-fo-stop><header><div><h2>CDKEY 销售明细</h2><p>${esc(statement.gameName)} · ${esc(statement.billingMonth)} 账单 / ${esc(statement.settlementMonth)} 结算</p></div><button type="button" data-fo-action="close-drawer" aria-label="关闭">×</button></header><div class="fo-drawer-body"><section class="fo-drawer-summary fo-cdkey-summary"><div><span>用户支付金额（CNY）</span><strong>${esc(amount(statement.userPaidMinor))}</strong></div><div><span>实际到账金额（CNY）</span><strong>${esc(amount(statement.receivedMinor))}</strong></div><div><span>结算金额（CNY）</span><strong>${esc(amount(statement.settlementMinor))}</strong></div></section><div class="fo-table-scroll"><table class="fo-table fo-cdkey-table"><thead><tr><th>渠道</th><th>商品类型</th><th>商品／DLC</th><th>用户支付金额（CNY）</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th></tr></thead><tbody>${details.map(item => `<tr data-fo-cdkey-row><td>${esc(item.channel)}</td><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td data-fo-amount>${esc(amount(item.userPaidMinor))}</td><td data-fo-amount>${esc(amount(item.receivedMinor))}</td><td class="fo-payable" data-fo-amount>${esc(amount(item.settlementMinor))}</td></tr>`).join('')}</tbody></table></div></div><footer><button type="button" data-fo-action="close-drawer">关闭</button></footer></aside></div>`;
+  };
+
   function transactionDrawer() {
-    if (!state.detailGameKey) return '';
-    const game = model.gameRows(state).find(row => row.key === state.detailGameKey) || model.ledger.gameRowsFor(state.ledgerState).find(row => row.key === state.detailGameKey);
-    if (!game) return '';
-    const rows = model.transactionRows(state,game);
-    return `<div class="fo-drawer-layer" data-fo-action="close-drawer"><aside class="fo-drawer" role="dialog" aria-modal="true" aria-label="交易流水详情" data-fo-stop><header><div><h2>${esc(game.gameName)} · 交易流水</h2><p>${esc(game.month)} · ${esc(game.entityName)} · ${esc(game.entityVersion)} · ${esc(game.accountVersion)}</p></div><button type="button" data-fo-action="close-drawer" aria-label="关闭">×</button></header><div class="fo-drawer-body"><section class="fo-drawer-summary"><div><span>用户实付</span><strong>${esc(money(game.paidMinor,game.settlementCurrency))}</strong></div><div><span>销售税</span><strong>${esc(money(game.salesTaxMinor,game.settlementCurrency))}</strong></div><div><span>支付费</span><strong>${esc(money(game.providerFeeMinor,game.settlementCurrency))}</strong></div><div><span>预扣税</span><strong>${esc(money(game.withholdingTaxMinor,game.settlementCurrency))}</strong></div><div><span>应结算金额</span><strong>${esc(money(game.payableMinor,game.settlementCurrency))}</strong></div></section><div class="fo-table-scroll"><table class="fo-table fo-transaction-table"><thead><tr><th>事件／流水号</th><th>第三方支付商</th><th>买家国家或地区</th><th>原币</th><th>税种／实际税率</th><th>税额</th><th>支付费</th><th>汇率</th><th>结算金额</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${eventLabel(row.eventType)}</strong><small>${esc(row.eventId)}</small></td><td>${esc(row.provider)}</td><td>${esc(row.buyerRegion)}</td><td>${esc(row.originalCurrency)} ${esc(model.ledger.decimal(row.originalAmountMinor))}</td><td><strong>${esc(row.salesTaxType)}</strong><small>实际税率 ${percent(row.salesTaxRate)}</small></td><td>${esc(money(row.salesTaxMinor,row.settlementCurrency))}</td><td>${esc(money(row.providerFeeMinor,row.settlementCurrency))}</td><td><strong>${Number(row.fxRate).toFixed(4)}</strong><small>${esc(row.fxVersion)}</small></td><td class="fo-payable">${esc(money(row.payableMinor,row.settlementCurrency))}</td></tr>`).join('')}</tbody></table></div></div><footer><button type="button" data-fo-action="close-drawer">关闭</button></footer></aside></div>`;
+    if (!state.detailStatementId) return '';
+    const statement = model.allGameRows(state).find(row => row.id === state.detailStatementId);
+    if (!statement) return '';
+    if (statement.itemType === 'cdkey_sales_share') return cdkeyDrawer(statement);
+    const rows = model.transactionRows(state,statement);
+    const settlementCurrency = rows[0]?.settlementCurrency || 'CNY';
+    const transactionTotal = key => rows.reduce((sum,row) => sum + Number(row[key] || 0),0);
+    return `<div class="fo-drawer-layer" data-fo-action="close-drawer"><aside class="fo-drawer" role="dialog" aria-modal="true" aria-label="交易流水详情" data-fo-stop><header><div><h2>${esc(statement.gameName)} · ${esc(statement.itemLabel)}</h2><p>${esc(statement.billingMonth)} 账单 · ${esc(statement.entityName)}</p></div><button type="button" data-fo-action="close-drawer" aria-label="关闭">×</button></header><div class="fo-drawer-body"><section class="fo-drawer-summary"><div><span>用户支付金额（CNY）</span><strong>${esc(amount(statement.userPaidMinor))}</strong></div><div><span>实际到账金额（CNY）</span><strong>${esc(amount(statement.receivedMinor))}</strong></div><div><span>结算比例</span><strong>${esc(statement.ratioPercent)}%</strong></div><div><span>结算金额（CNY）</span><strong>${esc(amount(statement.settlementMinor))}</strong></div><div><span>状态</span><strong>${esc(statusLabel(statement.status))}</strong></div><div><span>销售税</span><strong>${esc(money(transactionTotal('salesTaxMinor'),settlementCurrency))}</strong></div><div><span>预扣税</span><strong>${esc(money(transactionTotal('withholdingTaxMinor'),settlementCurrency))}</strong></div></section><div class="fo-table-scroll"><table class="fo-table fo-transaction-table"><thead><tr><th>事件／流水号</th><th>第三方支付商</th><th>买家国家或地区</th><th>原币</th><th>税种／实际税率</th><th>税额</th><th>支付费</th><th>汇率</th><th>结算金额</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${eventLabel(row.eventType)}</strong><small>${esc(row.eventId)}</small></td><td>${esc(row.provider)}</td><td>${esc(row.buyerRegion)}</td><td>${esc(row.originalCurrency)} ${esc(model.ledger.decimal(row.originalAmountMinor))}</td><td><strong>${esc(row.salesTaxType)}</strong><small>实际税率 ${percent(row.salesTaxRate)}</small></td><td>${esc(money(row.salesTaxMinor,row.settlementCurrency))}</td><td>${esc(money(row.providerFeeMinor,row.settlementCurrency))}</td><td><strong>${Number(row.fxRate).toFixed(4)}</strong><small>${esc(row.fxVersion)}</small></td><td class="fo-payable">${esc(money(row.payableMinor,row.settlementCurrency))}</td></tr>`).join('')}</tbody></table></div></div><footer><button type="button" data-fo-action="close-drawer">关闭</button></footer></aside></div>`;
   }
 
   const demoSwitcher = () => `<section class="fo-demo"><button type="button" data-fo-demo-toggle data-fo-action="demo-toggle" aria-expanded="${state.demoOpen}"><b>Demo</b><span>状态</span></button>${state.demoOpen ? `<aside><header><strong>结算场景</strong><button type="button" data-fo-action="demo-toggle" aria-label="关闭">×</button></header><button type="button" data-fo-action="scenario" data-fo-scenario="exhaustive" class="${state.scenario === 'exhaustive' ? 'is-active' : ''}">穷举态</button><button type="button" data-fo-action="scenario" data-fo-scenario="empty" class="${state.scenario === 'empty' ? 'is-active' : ''}">缺省态</button></aside>` : ''}</section>`;
@@ -14225,17 +14700,23 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const rerender = () => {
     const current = document.querySelector('[data-finance-operations]');
     if (current) current.outerHTML = renderPage();
-    document.body.classList.toggle('fo-overlay-open',Boolean(state.detailGameKey));
+    document.body.classList.toggle('fo-overlay-open',Boolean(state.detailStatementId));
   };
   const readFilters = () => {
-    const previous = activeFilters();
-    state.filters[state.activeTab] = {
-      ...previous,
-      keyword:document.querySelector('[data-fo-filter="keyword"]')?.value.trim() || '',
-      month:document.querySelector('[data-fo-filter="month"]')?.value || 'all',
-      currency:document.querySelector('[data-fo-filter="currency"]')?.value || 'all',
-      ...(state.activeTab === 'game' ? { provider:document.querySelector('[data-fo-filter="provider"]')?.value || 'all' } : {}),
-    };
+    state.filters[state.activeTab] = state.activeTab === 'entity'
+      ? {
+        keyword:document.querySelector('[data-fo-filter="keyword"]')?.value.trim() || '',
+        month:document.querySelector('[data-fo-filter="month"]')?.value || 'all',
+        currency:document.querySelector('[data-fo-filter="currency"]')?.value || 'all',
+      }
+      : {
+        keyword:document.querySelector('[data-fo-filter="keyword"]')?.value.trim() || '',
+        gameId:document.querySelector('[data-fo-filter="gameId"]')?.value || 'all',
+        billingMonth:document.querySelector('[data-fo-filter="billingMonth"]')?.value || 'all',
+        settlementMonth:document.querySelector('[data-fo-filter="settlementMonth"]')?.value || 'all',
+        itemType:document.querySelector('[data-fo-filter="itemType"]')?.value || 'all',
+        status:document.querySelector('[data-fo-filter="status"]')?.value || 'all',
+      };
     state.pages[state.activeTab] = 1;
     state.selected[state.activeTab] = [];
     state.exportMessage = '';
@@ -14249,7 +14730,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       rerender();
     }
     if (target.matches('[data-fo-select-page]')) {
-      const keys = pageRows(activeRows()).map(row => row.key);
+      const keys = pageRows(activeRows()).map(rowKey);
       state.selected[state.activeTab] = target.checked ? [...new Set([...state.selected[state.activeTab],...keys])] : state.selected[state.activeTab].filter(key => !keys.includes(key));
       rerender();
     }
@@ -14265,29 +14746,30 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (action === 'reset') {
       state.filters[state.activeTab] = state.activeTab === 'entity'
         ? { keyword:'',month:'2026-08',currency:'all' }
-        : { keyword:'',month:'2026-08',currency:'all',provider:'all',entityVersion:'all',accountVersion:'all',linked:false };
+        : { keyword:'',billingMonth:'all',settlementMonth:'all',gameId:'all',itemType:'all',status:'all' };
       state.pages[state.activeTab] = 1; state.selected[state.activeTab] = []; state.exportMessage = ''; rerender();
     }
     if (action === 'page') { state.pages[state.activeTab] = Math.max(1,Number(control.dataset.foPage) || 1); rerender(); }
-    if (action === 'view-transactions') { state.detailGameKey = control.dataset.rowKey; rerender(); }
-    if (action === 'close-drawer') { state.detailGameKey = ''; rerender(); }
+    if (action === 'view-transactions' || action === 'view-cdkey') { state.detailStatementId = control.dataset.rowKey; rerender(); }
+    if (action === 'close-drawer') { state.detailStatementId = ''; rerender(); }
     if (action === 'export') {
       const rows = activeRows();
       const selected = selectedRows(rows);
       const targets = selected.length ? selected : rows;
       if (!targets.length) return;
       const isEntity = state.activeTab === 'entity';
-      const content = isEntity ? model.exportEntityCsv(targets) : model.ledger.exportGameCsv(targets);
-      const month = activeFilters().month === 'all' ? '全部月份' : activeFilters().month;
+      const content = isEntity ? model.exportEntityCsv(targets) : model.exportGameCsv(targets);
+      const activeMonth = isEntity ? activeFilters().month : activeFilters().billingMonth;
+      const month = activeMonth === 'all' ? (isEntity ? '全部月份' : '全部账单月') : activeMonth;
       const ok = download(content,`${isEntity ? '主体结算表' : '游戏结算明细'}_${month}.csv`);
       state.exportMessage = ok ? `已导出 ${targets.length} 条${isEntity ? '主体汇总' : '游戏明细'}` : '导出失败，请重试';
       if (ok) state.selected[state.activeTab] = [];
       rerender();
     }
     if (action === 'demo-toggle') { state.demoOpen = !state.demoOpen; rerender(); }
-    if (action === 'scenario') { state.scenario = control.dataset.foScenario; state.demoOpen = false; state.pages = { entity:1,game:1 }; state.selected = { entity:[],game:[] }; state.detailGameKey = ''; rerender(); }
+    if (action === 'scenario') { state.scenario = control.dataset.foScenario; state.demoOpen = false; state.pages = { entity:1,game:1 }; state.selected = { entity:[],game:[] }; state.detailStatementId = ''; rerender(); }
   });
-  document.addEventListener('keydown', event => { if (event.key === 'Escape' && state.detailGameKey) { state.detailGameKey = ''; rerender(); } });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && state.detailStatementId) { state.detailStatementId = ''; rerender(); } });
 
   const originalRender = namespace.templates.render.bind(namespace.templates);
   namespace.templates.render = options => options.route?.id === 'P16-01' ? renderPage() : originalRender(options);
@@ -14678,7 +15160,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   });
   const parseLocation = () => {
     const raw = location.hash.replace(/^#\/?/, '');
-    const [routePart, queryPart = ''] = raw.split('?');
+    const [requestedRoutePart, queryPart = ''] = raw.split('?');
+    const routePart = requestedRoutePart === 'P15-03' ? 'P15-02' : requestedRoutePart;
+    if (routePart !== requestedRoutePart) history.replaceState(null, '', `${location.href.split('#')[0]}#/${routePart}${queryPart ? `?${queryPart}` : ''}`);
     const query = new URLSearchParams(queryPart);
     const requested = routes.find(item => item.id === routePart);
     let route = requested || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
@@ -17569,23 +18053,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         onFinance: (target, filters) => {
           persistPublisherWorkspace();
           const lockedStatement = window.PublisherDataDashboard.statements().find(item => item.status === 'locked');
-          const flowFilters = { ...filters, game:dashboardGame?.gameId || '' };
+          const flowFilters = { ...filters, gameId:dashboardGame?.gameId || '' };
           if (hasFinanceRoutes && window.PublisherFinance) {
-            const routeId = target === 'settlement/flows' ? 'P15-03' : 'P15-02';
             window.PublisherFinance.applyEntryContext(memory.finance, {
               source:'publisher-data-dashboard',
               target,
-              game:dashboardGame?.gameId || '',
+              gameId:dashboardGame?.gameId || '',
               filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' },
             });
-            navigate({ routeId, state:'default' });
+            navigate({ routeId:'P15-02', state:'default' });
             return;
           }
           const query = target === 'settlement/flows'
-            ? new URLSearchParams({ game:flowFilters.game, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
+            ? new URLSearchParams({ game:flowFilters.gameId, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
             : new URLSearchParams({ statement:lockedStatement?.id || '', ledger_source:'direct_sale' });
           window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
-          location.href = `15-开发者财务结算demo.html#/${target}?${query.toString()}`;
+          location.href = `15-开发者财务结算demo.html#/settlement?${query.toString()}`;
         },
       });
     }
