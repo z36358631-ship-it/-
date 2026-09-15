@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="500" viewBox="0 0 1600 500">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#1f3a5f" flood-opacity="0.08"/>
+    </filter>
+    <style>
+      .title{font:700 30px "Microsoft YaHei","Noto Sans SC",Arial,sans-serif;fill:#172033}
+      .stage{font:700 20px "Microsoft YaHei","Noto Sans SC",Arial,sans-serif;fill:#172033}
+      .step{font:700 17px "Microsoft YaHei","Noto Sans SC",Arial,sans-serif;fill:#172033}
+      .desc{font:400 14px "Microsoft YaHei","Noto Sans SC",Arial,sans-serif;fill:#667085}
+      .num{font:700 14px Arial,sans-serif;fill:#ffffff}
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8291a7"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="500" rx="20" fill="#ffffff"/>
+  <rect x="1" y="1" width="1598" height="498" rx="19" fill="none" stroke="#dfe5ec"/>
+  <text x="32" y="54" class="title">财务主体与对账结算流程</text>
+
+  <line x1="389" y1="270" x2="421" y2="270" stroke="#8291a7" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="779" y1="270" x2="811" y2="270" stroke="#8291a7" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1169" y1="270" x2="1201" y2="270" stroke="#8291a7" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g transform="translate(30 92)" filter="url(#shadow)">
+    <rect width="360" height="338" rx="16" fill="#f8fbff" stroke="#cfe0f4"/>
+    <rect width="360" height="58" rx="16" fill="#e9f3ff"/>
+    <rect y="42" width="360" height="16" fill="#e9f3ff"/>
+    <text x="20" y="37" class="stage">1  财务主体</text>
+    <circle cx="32" cy="94" r="14" fill="#1677ff"/><text x="28" y="99" class="num">1</text>
+    <text x="58" y="91" class="step">企业认证</text><text x="58" y="114" class="desc">企业认证通过后开放财务功能</text>
+    <line x1="32" y1="112" x2="32" y2="157" stroke="#b5cbe4" stroke-width="2"/>
+    <circle cx="32" cy="178" r="14" fill="#1677ff"/><text x="28" y="183" class="num">2</text>
+    <text x="58" y="175" class="step">维护资料</text><text x="58" y="198" class="desc">填写联系人、银行账户并上传证明</text>
+    <line x1="32" y1="196" x2="32" y2="241" stroke="#b5cbe4" stroke-width="2"/>
+    <circle cx="32" cy="262" r="14" fill="#1677ff"/><text x="28" y="267" class="num">3</text>
+    <text x="58" y="259" class="step">提交审核</text><text x="58" y="282" class="desc">新版本生效前继续使用旧版本</text>
+  </g>
+
+  <g transform="translate(420 92)" filter="url(#shadow)">
+    <rect width="360" height="338" rx="16" fill="#f7fcfd" stroke="#cbe8ec"/>
+    <rect width="360" height="58" rx="16" fill="#e4f8fa"/>
+    <rect y="42" width="360" height="16" fill="#e4f8fa"/>
+    <text x="20" y="37" class="stage">2  平台出账</text>
+    <circle cx="32" cy="94" r="14" fill="#12a9bd"/><text x="28" y="99" class="num">4</text>
+    <text x="58" y="91" class="step">主体生效</text><text x="58" y="114" class="desc">结算关联当前主体与账户版本</text>
+    <line x1="32" y1="112" x2="32" y2="157" stroke="#b7d9de" stroke-width="2"/>
+    <circle cx="32" cy="178" r="14" fill="#12a9bd"/><text x="28" y="183" class="num">5</text>
+    <text x="58" y="175" class="step">N+1 出账</text><text x="58" y="198" class="desc">按游戏、账单月与结算项生成记录</text>
+    <line x1="32" y1="196" x2="32" y2="241" stroke="#b7d9de" stroke-width="2"/>
+    <circle cx="32" cy="262" r="14" fill="#12a9bd"/><text x="28" y="267" class="num">6</text>
+    <text x="58" y="259" class="step">生成快照</text><text x="58" y="282" class="desc">锁定主体、金额、分成与汇率版本</text>
+  </g>
+
+  <g transform="translate(810 92)" filter="url(#shadow)">
+    <rect width="360" height="338" rx="16" fill="#fbf9ff" stroke="#ddd2f3"/>
+    <rect width="360" height="58" rx="16" fill="#f0eaff"/>
+    <rect y="42" width="360" height="16" fill="#f0eaff"/>
+    <text x="20" y="37" class="stage">3  开发者核对</text>
+    <circle cx="32" cy="94" r="14" fill="#7b61d1"/><text x="28" y="99" class="num">7</text>
+    <text x="58" y="91" class="step">查看明细</text><text x="58" y="114" class="desc">核对本体、DLC、CDKEY 与冲减</text>
+    <line x1="32" y1="112" x2="32" y2="157" stroke="#d1c7eb" stroke-width="2"/>
+    <circle cx="32" cy="178" r="14" fill="#7b61d1"/><text x="28" y="183" class="num">8</text>
+    <text x="58" y="175" class="step">确认或导出</text><text x="58" y="198" class="desc">待确认账单可确认，全部状态可导出</text>
+    <line x1="32" y1="196" x2="32" y2="241" stroke="#d1c7eb" stroke-width="2"/>
+    <circle cx="32" cy="262" r="14" fill="#7b61d1"/><text x="28" y="267" class="num">9</text>
+    <text x="58" y="259" class="step">确认留痕</text><text x="58" y="282" class="desc">记录确认账号和时间，确认后不可撤销</text>
+  </g>
+
+  <g transform="translate(1200 92)" filter="url(#shadow)">
+    <rect width="370" height="338" rx="16" fill="#fffaf2" stroke="#efd9ae"/>
+    <rect width="370" height="58" rx="16" fill="#fff1d8"/>
+    <rect y="42" width="370" height="16" fill="#fff1d8"/>
+    <text x="20" y="37" class="stage">4  运营结算</text>
+    <circle cx="32" cy="94" r="14" fill="#d58a12"/><text x="24" y="99" class="num">10</text>
+    <text x="58" y="91" class="step">主体汇总</text><text x="58" y="114" class="desc">按开发者和账单月核对结算总额</text>
+    <line x1="32" y1="112" x2="32" y2="157" stroke="#ead4aa" stroke-width="2"/>
+    <circle cx="32" cy="178" r="14" fill="#d58a12"/><text x="24" y="183" class="num">11</text>
+    <text x="58" y="175" class="step">核对游戏与分成</text><text x="58" y="198" class="desc">查看游戏明细，维护未来分成规则</text>
+    <line x1="32" y1="196" x2="32" y2="241" stroke="#ead4aa" stroke-width="2"/>
+    <circle cx="32" cy="262" r="14" fill="#d58a12"/><text x="24" y="267" class="num">12</text>
+    <text x="58" y="259" class="step">导出线下处理</text><text x="58" y="282" class="desc">导出结算清单，交财务对账与打款</text>
+  </g>
+</svg>
