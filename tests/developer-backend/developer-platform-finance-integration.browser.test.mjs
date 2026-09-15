@@ -91,10 +91,57 @@ test('财务主体与对账结算仍是两个独立入口',async () => {
   assert.deepEqual(await page.locator('[data-d15-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.d15Filter)),['billingMonth','settlementMonth','gameId','status']);
   assert.equal(await page.locator('[data-d15-settlement-row]').count(),20);
   const headers = await page.locator('[data-testid="settlement-table"] th').allTextContents();
-  assert.deepEqual(headers,['','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）','状态','操作']);
+  assert.deepEqual(headers,['','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）','状态','操作']);
   const text = await page.locator('[data-testid="developer-finance-demo"]').innerText();
-  for (const label of ['游戏销售分成','DLC 销售分成','CDKEY 销售分成','退款与拒付','查看详情']) assert.match(text,new RegExp(label));
+  for (const label of ['游戏销售分成','CDKEY 销售分成','退款与拒付','查看详情']) assert.match(text,new RegExp(label));
+  assert.doesNotMatch(text,/DLC 销售分成/);
   assert.doesNotMatch(text,/账单按 N\+1 结算；确认后不可撤销。|美元|USD|第三方支付商|交易流水|调整额|付款状态|发票|付款尝试/);
+});
+
+test('企业认证未通过时财务主体仅展示阻断缺省态',async () => {
+  await open('/P15-01');
+  await page.evaluate(() => window.PublisherFinance.setEnterpriseCertificationStatus(window.PublisherFinance.createState(),'pending'));
+  const empty = page.locator('[data-testid="enterprise-certification-empty"]');
+  await empty.waitFor();
+  assert.match(await empty.innerText(),/暂不可管理财务主体/);
+  assert.match(await empty.innerText(),/开发者企业认证通过后，方可管理财务主体。/);
+  assert.equal(await page.getByRole('button',{ name:'修改' }).count(),0);
+  assert.equal(await page.locator('[data-d15-entity-details]').count(),0);
+});
+
+test('财务主体缺省态可由悬浮球切换并展示企业认证前置条件',async () => {
+  await open('/P15-01');
+  await page.locator('.developer-demo-state-fab').click();
+  await page.locator('[data-finance-scenario="empty"]').click();
+  const empty = page.locator('[data-testid="enterprise-certification-empty"]');
+  assert.equal(await empty.isVisible(),true);
+  assert.match(await empty.innerText(),/开发者企业认证通过后，方可管理财务主体。/);
+});
+
+test('游戏销售分成与 CDKEY 使用同源半屏明细，退款与拒付无详情入口',async () => {
+  await open('/P15-02');
+  const gameRow = page.locator('[data-d15-settlement-row][data-item-type="game_sales_share"]').first();
+  await gameRow.getByRole('button',{ name:'查看详情' }).click();
+  const gameDrawer = page.getByRole('dialog',{ name:'游戏销售分成明细' });
+  await gameDrawer.waitFor();
+  assert.deepEqual(await gameDrawer.locator('[data-testid="game-sales-detail-table"] thead th').allTextContents(),[
+    '商品类型','商品名称','用户实付','支付费','税费','退款与拒付','平台实收','适用档位','平台分成比例','平台分成','结算金额',
+  ]);
+  const gameText = await gameDrawer.innerText();
+  for (const label of ['游戏本体','DLC','规则版本','生效账单月','各档计费']) assert.match(gameText,new RegExp(label));
+  await gameDrawer.getByRole('button',{ name:'关闭' }).click();
+
+  const cdkeyRow = page.locator('[data-d15-settlement-row][data-item-type="cdkey_sales_share"]').first();
+  await cdkeyRow.getByRole('button',{ name:'查看详情' }).click();
+  const cdkeyDrawer = page.getByRole('dialog',{ name:'CDKEY 销售明细' });
+  assert.deepEqual(await cdkeyDrawer.locator('[data-testid="cdkey-detail-table"] thead th').allTextContents(),[
+    '渠道','商品类型','商品／DLC','用户实付','支付费','税费','退款与拒付','平台实收','平台分成','结算金额',
+  ]);
+  assert.match(await cdkeyDrawer.innerText(),/平台分成\s*¥0\.00/);
+  await cdkeyDrawer.getByRole('button',{ name:'关闭' }).click();
+
+  const adjustment = page.locator('[data-d15-settlement-row][data-item-type="refund_chargeback_adjustment"]').first();
+  assert.equal(await adjustment.getByRole('button',{ name:'查看详情' }).count(),0);
 });
 
 test('财务整合版可提交主体变更且不覆盖当前生效资料',async () => {

@@ -59,17 +59,21 @@
 .d15-settlement-card .gh-card-head > div:last-child { flex:0 0 auto; }
 .d15-settlement-actions { display:flex; align-items:center; gap:8px; }
 .d15-settlement-actions .gh-button[aria-disabled="true"] { color:#98a2b3; border-color:#e4e7ec; background:#f2f4f7; cursor:not-allowed; }
-.d15-settlement-table { min-width:1640px !important; font-size:12px; }
+.d15-certification-empty .gh-empty { min-height:360px; }
+.d15-settlement-table { min-width:1740px !important; font-size:12px; }
 .d15-settlement-table th,.d15-settlement-table td { min-width:112px; white-space:nowrap; }
 .d15-settlement-table .d15-check { width:48px; min-width:48px; text-align:center; }
 .d15-settlement-table th:nth-child(2),.d15-settlement-table td:nth-child(2) { min-width:132px; }
 .d15-settlement-table th:nth-child(3),.d15-settlement-table td:nth-child(3) { min-width:150px; }
 .d15-settlement-table th:nth-child(6),.d15-settlement-table td:nth-child(6) { min-width:130px; }
 .d15-settlement-table th:nth-child(7),.d15-settlement-table td:nth-child(7),
+.d15-settlement-table th:nth-child(8),.d15-settlement-table td:nth-child(8),
 .d15-settlement-table th:nth-child(9),.d15-settlement-table td:nth-child(9),
-.d15-settlement-table th:nth-child(10),.d15-settlement-table td:nth-child(10) { min-width:168px; }
+.d15-settlement-table th:nth-child(10),.d15-settlement-table td:nth-child(10),
+.d15-settlement-table th:nth-child(11),.d15-settlement-table td:nth-child(11) { min-width:142px; }
 .d15-settlement-table th:nth-child(7),.d15-settlement-table th:nth-child(8),
-.d15-settlement-table th:nth-child(9),.d15-settlement-table th:nth-child(10) { text-align:right; }
+.d15-settlement-table th:nth-child(9),.d15-settlement-table th:nth-child(10),
+.d15-settlement-table th:nth-child(11) { text-align:right; }
 .d15-settlement-table th:last-child,.d15-settlement-table td:last-child { min-width:76px; }
 .d15-row-actions { display:flex; align-items:center; gap:4px; }
 .d15-check input { width:15px; height:15px; accent-color:#4055c8; cursor:pointer; }
@@ -100,14 +104,20 @@
 .d15-history-detail .gh-readonly { padding:0; border:0; background:transparent; }
 .d15-history-dialog > footer { padding:14px 20px; display:flex; justify-content:flex-end; border-top:1px solid #e4e7ec; }
 .d15-drawer-layer { position:fixed; inset:0; z-index:130; display:flex; justify-content:flex-end; background:rgba(16,24,40,.42); }
-.d15-cdkey-drawer { width:min(760px,92vw); height:100%; min-width:0; display:flex; flex-direction:column; color:#172033; background:#fff; box-shadow:-18px 0 48px rgba(16,24,40,.18); }
-.d15-cdkey-summary { padding:16px 20px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; border-bottom:1px solid #e4e7ec; background:#f9fafb; }
+.d15-cdkey-drawer { width:min(980px,72vw); height:100%; min-width:0; display:flex; flex-direction:column; color:#172033; background:#fff; box-shadow:-18px 0 48px rgba(16,24,40,.18); }
+.d15-cdkey-summary { padding:16px 20px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; border-bottom:1px solid #e4e7ec; background:#f9fafb; }
 .d15-cdkey-summary div { min-width:0; padding:12px; border:1px solid #e4e7ec; border-radius:8px; background:#fff; }
 .d15-cdkey-summary span,.d15-cdkey-summary strong { display:block; }
 .d15-cdkey-summary span { color:#667085; font-size:12px; }
 .d15-cdkey-summary strong { margin-top:8px; color:#172033; font-size:17px; font-variant-numeric:tabular-nums; }
+.d15-tier-snapshot { padding:14px 20px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 20px; border-bottom:1px solid #e4e7ec; background:#fff; }
+.d15-tier-snapshot > div { min-width:0; display:grid; gap:5px; }
+.d15-tier-snapshot > div.wide { grid-column:1 / -1; }
+.d15-tier-snapshot span { color:#667085; font-size:12px; }
+.d15-tier-snapshot strong { color:#344054; font-size:12px; line-height:1.6; }
 .d15-cdkey-body { min-height:0; padding:18px 20px; overflow:auto; }
-.d15-cdkey-table { min-width:920px !important; font-size:12px; }
+.d15-cdkey-table { min-width:1440px !important; font-size:12px; }
+.d15-game-sales-table { min-width:1680px !important; }
 .d15-cdkey-table th,.d15-cdkey-table td { white-space:nowrap; }
 
 .d15-demo { position:fixed; right:22px; bottom:22px; z-index:90; }

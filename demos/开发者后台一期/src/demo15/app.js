@@ -10,6 +10,7 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
   const cny = minor => (Number(minor || 0) / 100).toLocaleString('zh-CN', { minimumFractionDigits:2, maximumFractionDigits:2 });
   const cnyWithSymbol = minor => Number(minor || 0) < 0 ? `-¥${cny(Math.abs(Number(minor)))}` : `¥${cny(minor)}`;
+  const percent = value => value == null ? '—' : `${Number(value).toFixed(2).replace(/\.00$/,'')}%`;
 
   const state = {
     statementState:statements.createState(),
@@ -21,6 +22,7 @@
     selectedStatementIds:[],
     confirmationIds:[],
     confirmationReturn:null,
+    enterpriseCertificationStatus:'approved',
     entityMode:'view',
     entityDraft:null,
     entityFile:null,
@@ -28,6 +30,7 @@
     entityError:'',
     proofPreview:null,
     historyVersion:null,
+    gameSalesDetailId:'',
     cdkeyDetailId:'',
     exportMessage:'',
     callbacks:{ onChange:null, onNavigate:null },
@@ -128,7 +131,7 @@
     : button('修改','edit-entity','',status.label === '审核中' ? 'disabled' : '');
 
   function entityPage() {
-    if (state.demoScenario === 'empty') return `<section class="gh-card">${emptyState('尚未配置财务主体', '请提交企业与银行资料，审核通过后用于结算。')}</section>`;
+    if (state.enterpriseCertificationStatus !== 'approved' || state.demoScenario === 'empty') return `<section class="gh-card d15-certification-empty" data-testid="enterprise-certification-empty">${emptyState('暂不可管理财务主体', '开发者企业认证通过后，方可管理财务主体。')}</section>`;
     const profile = activeFinancialEntity();
     if (!profile) return `<section class="gh-card">${emptyState('尚未配置财务主体', '请联系平台运营完成初次配置。')}</section>`;
     const status = entityStatus();
@@ -179,10 +182,11 @@
     const checked = state.selectedStatementIds.includes(row.id);
     const selectable = row.status === 'pending';
     const actions = [
+      ...(row.itemType === 'game_sales_share' ? [button('查看详情','view-game-sales','link',`data-game-sales-statement-id="${esc(row.id)}"`)] : []),
       ...(row.itemType === 'cdkey_sales_share' ? [button('查看详情','view-cdkey','link',`data-cdkey-statement-id="${esc(row.id)}"`)] : []),
       ...(selectable ? [button('确认','open-confirm','link',`data-confirm-statement-id="${esc(row.id)}"`)] : []),
     ];
-    return `<tr data-d15-settlement-row data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-received-minor="${esc(row.receivedMinor)}" data-ratio-percent="${esc(row.ratioPercent)}" data-settlement-minor="${esc(row.settlementMinor)}" data-status="${esc(row.status)}"><td class="d15-check"><input type="checkbox" data-d15-select-statement value="${esc(row.id)}" aria-label="选择 ${esc(row.id)}"${checked ? ' checked' : ''}${selectable ? '' : ' disabled'}></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td class="d15-number">${esc(cny(row.userPaidMinor))}</td><td class="d15-number">${esc(row.ratioPercent)}%</td><td class="d15-number">${esc(cny(row.receivedMinor))}</td><td class="d15-number d15-payable">${esc(cny(row.settlementMinor))}</td><td><span class="gh-tag ${row.status === 'confirmed' ? 'success' : 'warning'}">${row.status === 'confirmed' ? '已确认' : '待确认'}</span></td><td><div class="d15-row-actions">${actions.length ? actions.join('') : '—'}</div></td></tr>`;
+    return `<tr data-d15-settlement-row data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-platform-received-minor="${esc(row.platformReceivedMinor)}" data-platform-share-minor="${esc(row.platformShareMinor)}" data-payable-minor="${esc(row.payableMinor)}" data-status="${esc(row.status)}"><td class="d15-check"><input type="checkbox" data-d15-select-statement value="${esc(row.id)}" aria-label="选择 ${esc(row.id)}"${checked ? ' checked' : ''}${selectable ? '' : ' disabled'}></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td class="d15-number">${esc(cny(row.userPaidMinor))}</td><td class="d15-number">${esc(cny(row.platformReceivedMinor))}</td><td class="d15-number">${esc(percent(row.platformShareRate))}</td><td class="d15-number">${esc(cny(row.platformShareMinor))}</td><td class="d15-number d15-payable">${esc(cny(row.payableMinor))}</td><td><span class="gh-tag ${row.status === 'confirmed' ? 'success' : 'warning'}">${row.status === 'confirmed' ? '已确认' : '待确认'}</span></td><td><div class="d15-row-actions">${actions.length ? actions.join('') : '—'}</div></td></tr>`;
   };
 
   function settlementPage() {
@@ -191,14 +195,14 @@
     const currentPending = current.filter(row => row.status === 'pending');
     const selected = selectedPendingRows();
     const allCurrentSelected = currentPending.length > 0 && currentPending.every(row => state.selectedStatementIds.includes(row.id));
-    const table = current.length ? `<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th class="d15-check"><input type="checkbox" data-d15-select-page aria-label="选择本页待确认"${allCurrentSelected ? ' checked' : ''}${currentPending.length ? '' : ' disabled'}></th><th>游戏 ID</th><th>游戏名称</th><th>账单月份</th><th>结算月份</th><th>结算项</th><th>用户支付金额（CNY）</th><th>结算比例</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th><th>状态</th><th>操作</th></tr></thead><tbody>${current.map(settlementRow).join('')}</tbody></table></div>${pagination(rows.length)}` : emptyState(state.demoScenario === 'empty' ? '暂无结算记录' : '未找到符合条件的记录', state.demoScenario === 'empty' ? '账单生成后，结算记录会展示在这里。' : '请调整筛选条件或重置后再试。');
+    const table = current.length ? `<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th class="d15-check"><input type="checkbox" data-d15-select-page aria-label="选择本页待确认"${allCurrentSelected ? ' checked' : ''}${currentPending.length ? '' : ' disabled'}></th><th>游戏 ID</th><th>游戏名称</th><th>账单月份</th><th>结算月份</th><th>结算项</th><th>用户实付</th><th>平台实收</th><th>平台分成比例</th><th>平台分成</th><th>应结算金额（CNY）</th><th>状态</th><th>操作</th></tr></thead><tbody>${current.map(settlementRow).join('')}</tbody></table></div>${pagination(rows.length)}` : emptyState(state.demoScenario === 'empty' ? '暂无结算记录' : '未找到符合条件的记录', state.demoScenario === 'empty' ? '账单生成后，结算记录会展示在这里。' : '请调整筛选条件或重置后再试。');
     return `${settlementFilters()}<section class="gh-card d15-settlement-card"><header class="gh-card-head"><div><h2>对账结算</h2></div><div class="d15-settlement-actions">${button('批量确认','open-batch-confirm','',selected.length ? '' : 'aria-disabled="true"')}${button('导出当前结果','export-settlements','',rows.length ? '' : 'disabled')}</div></header>${state.exportMessage ? `<div class="d15-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-d15-export-status>${esc(state.exportMessage)}</div>` : ''}${table}</section>`;
   }
 
   function confirmationDialog() {
     const rows = confirmationRows();
     if (!rows.length) return '';
-    const total = rows.reduce((sum,row) => sum + Number(row.settlementMinor || 0),0);
+    const total = rows.reduce((sum,row) => sum + Number(row.payableMinor || 0),0);
     return `<div class="d15-dialog-layer" data-finance-action="cancel-confirm"><section class="d15-confirm-dialog" role="dialog" aria-modal="true" aria-label="确认结算单" data-finance-stop><header><h2>确认结算单</h2><button type="button" class="gh-dialog-close" data-finance-action="cancel-confirm" aria-label="关闭">×</button></header><div class="d15-confirm-body"><p>共 <strong>${rows.length} 条</strong>结算单，结算金额合计</p><b>${esc(cnyWithSymbol(total))}</b><small>确认后不可撤销，请核对后操作。</small></div><footer>${button('取消','cancel-confirm')}${button('确认','confirm-statements','primary')}</footer></section></div>`;
   }
 
@@ -215,15 +219,29 @@
     return `<div class="d15-dialog-layer" data-finance-action="close-history"><section class="d15-history-dialog" role="dialog" aria-modal="true" aria-label="财务主体版本详情" data-finance-stop><header><div><h2>${esc(row.version)}</h2><p>${esc(row.type)} · ${esc(statusText(row.status))}</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-history" aria-label="关闭">×</button></header><div class="d15-history-detail">${entityFields.map(field => readonly(field.label,profile[field.key] || '—')).join('')}<div class="gh-readonly d15-proof-field"><span>银行账户证明附件</span><button type="button" class="d15-proof-card" data-finance-action="preview-proof" data-proof-version="${esc(row.version)}"><span aria-hidden="true">图</span><strong>${esc(profile.bankProof?.name || '—')}</strong><small>点击查看</small></button></div></div><footer>${button('关闭','close-history')}</footer></section></div>`;
   }
 
+  const tierRange = tier => tier.toMinor == null
+    ? `¥${cny(tier.fromMinor)} 以上`
+    : `¥${cny(tier.fromMinor)}—¥${cny(tier.toMinor)}`;
+  const detailSummary = row => `<section class="d15-cdkey-summary d15-detail-summary"><div><span>用户实付</span><strong>${esc(cnyWithSymbol(row.userPaidMinor))}</strong></div><div><span>平台实收</span><strong>${esc(cnyWithSymbol(row.platformReceivedMinor))}</strong></div><div><span>平台分成</span><strong>${esc(cnyWithSymbol(row.platformShareMinor))}</strong></div><div><span>应结算金额</span><strong>${esc(cnyWithSymbol(row.payableMinor))}</strong></div></section>`;
+
+  function gameSalesDrawer() {
+    if (!state.gameSalesDetailId) return '';
+    const row = allSettlements().find(item => item.id === state.gameSalesDetailId && item.itemType === 'game_sales_share');
+    if (!row) return '';
+    const details = row.gameSalesDetails || [];
+    const tiers = (row.tierSnapshots || []).filter(tier => tier.chargeableMinor > 0);
+    return `<div class="d15-drawer-layer" data-finance-action="close-game-sales"><aside class="d15-cdkey-drawer d15-settlement-drawer" role="dialog" aria-modal="true" aria-label="游戏销售分成明细" data-finance-stop><header><div><h2>游戏销售分成明细</h2><p>${esc(row.gameName)} · ${esc(row.billingMonth)} 账单 / ${esc(row.settlementMonth)} 结算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-game-sales" aria-label="关闭">×</button></header>${detailSummary(row)}<section class="d15-tier-snapshot"><div><span>规则版本</span><strong>${esc(row.tierRuleVersion)}</strong></div><div><span>生效账单月</span><strong>${esc(row.tierRuleEffectiveBillingMonth === '0000-01' ? '平台默认' : row.tierRuleEffectiveBillingMonth)}</strong></div><div class="wide"><span>各档计费</span><strong>${tiers.map(tier => `${tierRange(tier)}：${cny(tier.chargeableMinor)} × ${percent(tier.platformRate)} = ${cny(tier.shareMinor)}`).join('；') || '—'}</strong></div></section><div class="d15-cdkey-body"><div class="gh-table-wrap"><table class="gh-table d15-cdkey-table d15-game-sales-table" data-testid="game-sales-detail-table"><thead><tr><th>商品类型</th><th>商品名称</th><th>用户实付</th><th>支付费</th><th>税费</th><th>退款与拒付</th><th>平台实收</th><th>适用档位</th><th>平台分成比例</th><th>平台分成</th><th>结算金额</th></tr></thead><tbody>${details.map(item => `<tr><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td class="d15-number">${esc(cny(item.userPaidMinor))}</td><td class="d15-number">${esc(cny(item.paymentFeeMinor))}</td><td class="d15-number">${esc(cny(item.taxMinor))}</td><td class="d15-number">${esc(cny(item.refundChargebackMinor))}</td><td class="d15-number">${esc(cny(item.platformReceivedMinor))}</td><td>${esc(item.applicableTier || '—')}</td><td class="d15-number">${esc(percent(item.platformShareRate))}</td><td class="d15-number">${esc(cny(item.platformShareMinor))}</td><td class="d15-number d15-payable">${esc(cny(item.payableMinor))}</td></tr>`).join('')}</tbody></table></div></div></aside></div>`;
+  }
+
   function cdkeyDrawer() {
     if (!state.cdkeyDetailId) return '';
     const row = allSettlements().find(item => item.id === state.cdkeyDetailId && item.itemType === 'cdkey_sales_share');
     if (!row) return '';
     const details = row.cdkeyDetails || [];
-    return `<div class="d15-drawer-layer" data-finance-action="close-cdkey"><aside class="d15-cdkey-drawer" role="dialog" aria-modal="true" aria-label="CDKEY 销售明细" data-finance-stop><header><div><h2>CDKEY 销售明细</h2><p>${esc(row.gameName)} · ${esc(row.billingMonth)} 账单 / ${esc(row.settlementMonth)} 结算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-cdkey" aria-label="关闭">×</button></header><section class="d15-cdkey-summary"><div><span>用户支付金额</span><strong>¥${esc(cny(row.userPaidMinor))}</strong></div><div><span>实际到账金额</span><strong>¥${esc(cny(row.receivedMinor))}</strong></div><div><span>结算金额</span><strong>¥${esc(cny(row.settlementMinor))}</strong></div></section><div class="d15-cdkey-body"><div class="gh-table-wrap"><table class="gh-table d15-cdkey-table"><thead><tr><th>渠道</th><th>商品类型</th><th>商品／DLC</th><th>用户支付金额（CNY）</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th></tr></thead><tbody>${details.map(item => `<tr><td>${esc(item.channel)}</td><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td class="d15-number">${esc(cny(item.userPaidMinor))}</td><td class="d15-number">${esc(cny(item.receivedMinor))}</td><td class="d15-number d15-payable">${esc(cny(item.settlementMinor))}</td></tr>`).join('')}</tbody></table></div></div></aside></div>`;
+    return `<div class="d15-drawer-layer" data-finance-action="close-cdkey"><aside class="d15-cdkey-drawer d15-settlement-drawer" role="dialog" aria-modal="true" aria-label="CDKEY 销售明细" data-finance-stop><header><div><h2>CDKEY 销售明细</h2><p>${esc(row.gameName)} · ${esc(row.billingMonth)} 账单 / ${esc(row.settlementMonth)} 结算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-cdkey" aria-label="关闭">×</button></header>${detailSummary(row)}<div class="d15-cdkey-body"><div class="gh-table-wrap"><table class="gh-table d15-cdkey-table" data-testid="cdkey-detail-table"><thead><tr><th>渠道</th><th>商品类型</th><th>商品／DLC</th><th>用户实付</th><th>支付费</th><th>税费</th><th>退款与拒付</th><th>平台实收</th><th>平台分成</th><th>结算金额</th></tr></thead><tbody>${details.map(item => `<tr><td>${esc(item.channel)}</td><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td class="d15-number">${esc(cny(item.userPaidMinor))}</td><td class="d15-number">${esc(cny(item.paymentFeeMinor))}</td><td class="d15-number">${esc(cny(item.taxMinor))}</td><td class="d15-number">${esc(cny(item.refundChargebackMinor))}</td><td class="d15-number">${esc(cny(item.platformReceivedMinor))}</td><td class="d15-number">${esc(cny(item.platformShareMinor))}</td><td class="d15-number d15-payable">${esc(cny(item.payableMinor))}</td></tr>`).join('')}</tbody></table></div></div></aside></div>`;
   }
 
-  const auxiliaryOverlays = () => `${confirmationDialog()}${historyDialog()}${proofDialog()}${cdkeyDrawer()}`;
+  const auxiliaryOverlays = () => `${confirmationDialog()}${historyDialog()}${proofDialog()}${gameSalesDrawer()}${cdkeyDrawer()}`;
 
   const pageContent = () => state.route === 'entity' ? entityPage() : settlementPage();
   const scenario = () => `<section class="d15-demo"><button type="button" data-finance-action="demo-toggle" aria-expanded="${state.demoOpen}" data-testid="scenario-orb"><b>Demo</b><span>状态</span></button>${state.demoOpen ? `<aside><strong>页面状态</strong><button type="button" data-finance-action="scenario" data-scenario="exhaustive" class="${state.demoScenario === 'exhaustive' ? 'is-active' : ''}">穷举态</button><button type="button" data-finance-action="scenario" data-scenario="empty" class="${state.demoScenario === 'empty' ? 'is-active' : ''}">缺省态</button></aside>` : ''}</section>`;
@@ -232,7 +250,7 @@
     const title = state.route === 'entity' ? '财务主体' : '对账结算';
     const description = state.route === 'entity' ? '维护结算主体与银行账户资料。' : '核对并确认按月生成的游戏结算单。';
     app.innerHTML = `<div class="gh-app d15-app" data-testid="developer-finance-demo"><header class="gh-topbar"><div class="gh-brand">${logo()}<span>PC 发行平台<small>开发者中心</small></span></div><div class="gh-user"><div class="gh-avatar">星</div><div class="gh-user-copy"><strong>星海互动</strong><small>企业开发者</small></div></div></header><div class="gh-layout"><aside class="gh-sidebar"><div class="gh-sidebar-label">财务</div><nav class="gh-nav d15-nav" aria-label="财务导航"><button type="button" data-route="entity" class="${state.route === 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">主</span>财务主体</button><button type="button" data-route="settlement" class="${state.route !== 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">结</span>对账结算</button></nav></aside><main class="gh-main"><div class="gh-content">${pageHead(title,description)}${pageContent()}</div></main></div>${scenario()}${auxiliaryOverlays()}</div>`;
-    document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length || state.proofPreview || state.historyVersion || state.cdkeyDetailId));
+    document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length || state.proofPreview || state.historyVersion || state.gameSalesDetailId || state.cdkeyDetailId));
   }
 
   const focusFirstConfirmationControl = () => requestAnimationFrame(() => {
@@ -396,7 +414,7 @@
     const control = event.target.closest('[data-finance-action]');
     if (!control || control.disabled || control.getAttribute('aria-disabled') === 'true') return;
     const action = control.dataset.financeAction;
-    if (['cancel-confirm','close-proof','close-history','close-cdkey'].includes(action)
+    if (['cancel-confirm','close-proof','close-history','close-game-sales','close-cdkey'].includes(action)
       && (control.classList.contains('d15-dialog-layer') || control.classList.contains('d15-drawer-layer'))
       && event.target.closest('[data-finance-stop]')) return;
     if (action === 'query') { readFilters(); rerender(); }
@@ -424,11 +442,13 @@
       rerender();
     }
     if (action === 'close-proof') { state.proofPreview = null; rerender(); }
+    if (action === 'view-game-sales') { state.gameSalesDetailId = control.dataset.gameSalesStatementId || ''; rerender(); }
+    if (action === 'close-game-sales') { state.gameSalesDetailId = ''; rerender(); }
     if (action === 'view-cdkey') { state.cdkeyDetailId = control.dataset.cdkeyStatementId || ''; rerender(); }
     if (action === 'close-cdkey') { state.cdkeyDetailId = ''; rerender(); }
     if (action === 'export-settlements') {
       const rows = visibleSettlements();
-      const csv = statements.exportStatementsCsv(rows,{ includeDeveloper:false,includeRatioVersion:false });
+      const csv = statements.exportStatementsCsv(rows,{ includeDeveloper:false });
       const ok = save(csv,`对账结算_${state.filters.billingMonth === 'all' ? '全部账单月' : state.filters.billingMonth}.csv`);
       state.exportMessage = ok ? `已导出 ${rows.length} 条结算记录` : '导出失败，请重试';
       rerender();
@@ -481,7 +501,7 @@
   });
 
   window.addEventListener('keydown', event => {
-    const dialog = document.querySelector('.d15-proof-dialog,.d15-history-dialog,.d15-cdkey-drawer,.d15-confirm-dialog');
+    const dialog = document.querySelector('.d15-proof-dialog,.d15-history-dialog,.d15-settlement-drawer,.d15-confirm-dialog');
     if (event.key === 'Tab' && dialog) {
       const focusable = [...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
         .filter(node => node.getClientRects().length > 0 && node.getAttribute('aria-disabled') !== 'true');
@@ -494,11 +514,12 @@
       event.stopImmediatePropagation();
       return;
     }
-    if (event.key === 'Escape' && (state.confirmationIds.length || state.proofPreview || state.historyVersion || state.cdkeyDetailId)) {
+    if (event.key === 'Escape' && (state.confirmationIds.length || state.proofPreview || state.historyVersion || state.gameSalesDetailId || state.cdkeyDetailId)) {
       event.preventDefault();
       event.stopImmediatePropagation();
       if (state.proofPreview) { state.proofPreview = null; rerender(); }
       else if (state.historyVersion) { state.historyVersion = null; rerender(); }
+      else if (state.gameSalesDetailId) { state.gameSalesDetailId = ''; rerender(); }
       else if (state.cdkeyDetailId) { state.cdkeyDetailId = ''; rerender(); }
       else closeConfirmation();
     }
@@ -513,6 +534,7 @@
     state.confirmationReturn = null;
     state.proofPreview = null;
     state.historyVersion = null;
+    state.gameSalesDetailId = '';
     state.cdkeyDetailId = '';
     standaloneRender();
   });
@@ -527,6 +549,7 @@
       financialEntityApplications:entityApplications(),
     }),
     reviewEntity,
+    setEnterpriseCertificationStatus:status => { state.enterpriseCertificationStatus = status; state.entityMode = 'view'; rerender(); },
     setDemoScenario:scenarioName => { state.demoScenario = scenarioName; rerender(); },
     reset:() => location.reload(),
   };
@@ -543,7 +566,7 @@
       bind:(_root, options = {}) => {
         state.callbacks.onChange = typeof options.onChange === 'function' ? options.onChange : null;
         state.callbacks.onNavigate = typeof options.onNavigate === 'function' ? options.onNavigate : null;
-        document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length || state.proofPreview || state.historyVersion || state.cdkeyDetailId));
+        document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length || state.proofPreview || state.historyVersion || state.gameSalesDetailId || state.cdkeyDetailId));
       },
       closeOverlays:() => {
         state.selectedStatementIds = [];
@@ -551,6 +574,7 @@
         state.confirmationReturn = null;
         state.proofPreview = null;
         state.historyVersion = null;
+        state.gameSalesDetailId = '';
         state.cdkeyDetailId = '';
         document.body.classList.remove('finance-overlay-open');
       },
@@ -568,6 +592,7 @@
         state.confirmationReturn = null;
         state.proofPreview = null;
         state.historyVersion = null;
+        state.gameSalesDetailId = '';
         state.cdkeyDetailId = '';
       },
       setScenario:(_financeState, scenarioName) => {
@@ -577,8 +602,14 @@
         state.confirmationReturn = null;
         state.proofPreview = null;
         state.historyVersion = null;
+        state.gameSalesDetailId = '';
         state.cdkeyDetailId = '';
         state.page = 1;
+        rerender();
+      },
+      setEnterpriseCertificationStatus:(_financeState, status) => {
+        state.enterpriseCertificationStatus = status;
+        state.entityMode = 'view';
         rerender();
       },
     };
