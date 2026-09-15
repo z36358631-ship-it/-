@@ -367,7 +367,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   });
   const parseLocation = () => {
     const raw = location.hash.replace(/^#\/?/, '');
-    const [routePart, queryPart = ''] = raw.split('?');
+    const [requestedRoutePart, queryPart = ''] = raw.split('?');
+    const routePart = requestedRoutePart === 'P15-03' ? 'P15-02' : requestedRoutePart;
+    if (routePart !== requestedRoutePart) history.replaceState(null, '', `${location.href.split('#')[0]}#/${routePart}${queryPart ? `?${queryPart}` : ''}`);
     const query = new URLSearchParams(queryPart);
     const requested = routes.find(item => item.id === routePart);
     let route = requested || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
@@ -3258,23 +3260,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         onFinance: (target, filters) => {
           persistPublisherWorkspace();
           const lockedStatement = window.PublisherDataDashboard.statements().find(item => item.status === 'locked');
-          const flowFilters = { ...filters, game:dashboardGame?.gameId || '' };
+          const flowFilters = { ...filters, gameId:dashboardGame?.gameId || '' };
           if (hasFinanceRoutes && window.PublisherFinance) {
-            const routeId = target === 'settlement/flows' ? 'P15-03' : 'P15-02';
             window.PublisherFinance.applyEntryContext(memory.finance, {
               source:'publisher-data-dashboard',
               target,
-              game:dashboardGame?.gameId || '',
+              gameId:dashboardGame?.gameId || '',
               filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' },
             });
-            navigate({ routeId, state:'default' });
+            navigate({ routeId:'P15-02', state:'default' });
             return;
           }
           const query = target === 'settlement/flows'
-            ? new URLSearchParams({ game:flowFilters.game, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
+            ? new URLSearchParams({ game:flowFilters.gameId, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
             : new URLSearchParams({ statement:lockedStatement?.id || '', ledger_source:'direct_sale' });
           window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
-          location.href = `15-开发者财务结算demo.html#/${target}?${query.toString()}`;
+          location.href = `15-开发者财务结算demo.html#/settlement?${query.toString()}`;
         },
       });
     }

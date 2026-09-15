@@ -5917,26 +5917,34 @@ body.finance-overlay-open .developer-demo-state-switcher { display: none; }
 .d15-entity-summary .gh-card-body { padding:22px; }
 .d15-entity-summary h2,.d15-section-title h2 { margin:0; color:#172033; font-size:16px; }
 .d15-entity-summary p,.d15-section-title p { margin:7px 0 0; color:#8a94a5; font-size:12px; line-height:1.6; }
-.d15-entity-summary > .gh-card-body > small { display:block; margin-top:14px; color:#8a94a5; font-size:12px; }
-.d15-entity-statuses { margin-top:18px; padding:16px 18px; display:flex; align-items:center; gap:38px; border-radius:9px; background:#f5f5f6; }
-.d15-entity-statuses > div { min-width:0; display:flex; align-items:center; gap:12px; }
-.d15-entity-statuses span { color:#7a8494; font-size:12px; }
-.d15-entity-statuses strong { color:#172033; font-size:13px; }
-.d15-entity-statuses strong i { width:6px; height:6px; margin-right:7px; display:inline-block; border-radius:50%; background:#20b26b; }
+.d15-entity-summary-row { min-width:0; display:flex; align-items:center; justify-content:space-between; gap:24px; }
+.d15-entity-review { min-width:0; display:flex; align-items:center; justify-content:flex-end; gap:10px; color:#667085; font-size:12px; }
+.d15-entity-review > span:last-child,.d15-entity-review > strong { min-width:0; font-weight:500; }
+.d15-entity-review.danger > strong { color:#b42318; }
 .d15-section-title { margin:28px 0 12px; display:flex; align-items:flex-end; justify-content:space-between; gap:18px; }
 .d15-section-title > div:last-child { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
 .d15-entity-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px 70px; padding:24px 26px 28px !important; }
 .d15-entity-detail-grid .gh-readonly { min-width:0; padding:0; border:0; background:transparent; }
 .d15-entity-detail-grid .gh-readonly span { color:#667085; }
 .d15-entity-detail-grid .gh-readonly strong { margin-top:7px; color:#172033; font-size:14px; line-height:1.5; }
-.d15-history { margin-top:18px; }
+.d15-entity-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px 32px; padding:24px 26px 28px !important; }
+.d15-entity-field { min-width:0; }
+.d15-entity-field label:not(.gh-upload),.d15-entity-field .gh-label { margin-bottom:8px; color:#344054; font-size:13px; font-weight:650; }
+.d15-entity-field .gh-input[aria-invalid="true"],.d15-entity-upload.is-error { border-color:#f04438; }
+.d15-entity-field .gh-input[aria-invalid="true"]:focus { box-shadow:0 0 0 3px rgba(240,68,56,.12); }
+.d15-field-error { display:block; margin-top:6px; color:#b42318; font-size:12px; line-height:1.4; }
+.gh-field .d15-entity-upload { min-height:116px; display:grid; align-content:center; gap:6px; }
+.publisher-finance .gh-field label.d15-entity-upload { display:grid; }
+.d15-entity-upload strong { max-width:100%; overflow:hidden; color:#344054; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
+.d15-entity-upload span { color:#7a8494; font-size:12px; }
+.d15-entity-alert { margin:0 0 12px; padding:10px 12px; color:#b42318; border:1px solid #fecdca; border-radius:8px; background:#fef3f2; font-size:12px; }
 
 .d15-filters {
   min-width:0;
   margin-bottom:16px;
   padding:16px;
   display:grid;
-  grid-template-columns:minmax(170px,.7fr) minmax(260px,1.3fr) auto;
+  grid-template-columns:repeat(4,minmax(140px,1fr)) auto;
   align-items:end;
   gap:12px;
   border:1px solid #e1e6ed;
@@ -5948,40 +5956,38 @@ body.finance-overlay-open .developer-demo-state-switcher { display: none; }
 .d15-filter-actions { display:flex; align-items:center; gap:8px; }
 .d15-settlement-card { min-width:0; }
 .d15-settlement-card .gh-card-head > div:last-child { flex:0 0 auto; }
-.d15-settlement-table { min-width:1320px !important; font-size:12px; }
-.d15-settlement-table th,.d15-settlement-table td { min-width:116px; white-space:nowrap; }
-.d15-settlement-table th:first-child,.d15-settlement-table td:first-child { min-width:130px; }
-.d15-settlement-table th:nth-child(2),.d15-settlement-table td:nth-child(2) { min-width:190px; }
-.d15-settlement-table th:last-child,.d15-settlement-table td:last-child { min-width:90px; }
+.d15-settlement-actions { display:flex; align-items:center; gap:8px; }
+.d15-settlement-actions .gh-button[aria-disabled="true"] { color:#98a2b3; border-color:#e4e7ec; background:#f2f4f7; cursor:not-allowed; }
+.d15-settlement-table { min-width:1640px !important; font-size:12px; }
+.d15-settlement-table th,.d15-settlement-table td { min-width:112px; white-space:nowrap; }
+.d15-settlement-table .d15-check { width:48px; min-width:48px; text-align:center; }
+.d15-settlement-table th:nth-child(2),.d15-settlement-table td:nth-child(2) { min-width:132px; }
+.d15-settlement-table th:nth-child(3),.d15-settlement-table td:nth-child(3) { min-width:150px; }
+.d15-settlement-table th:nth-child(6),.d15-settlement-table td:nth-child(6) { min-width:130px; }
+.d15-settlement-table th:nth-child(7),.d15-settlement-table td:nth-child(7),
+.d15-settlement-table th:nth-child(9),.d15-settlement-table td:nth-child(9),
+.d15-settlement-table th:nth-child(10),.d15-settlement-table td:nth-child(10) { min-width:168px; }
+.d15-settlement-table th:nth-child(7),.d15-settlement-table th:nth-child(8),
+.d15-settlement-table th:nth-child(9),.d15-settlement-table th:nth-child(10) { text-align:right; }
+.d15-settlement-table th:last-child,.d15-settlement-table td:last-child { min-width:76px; }
+.d15-check input { width:15px; height:15px; accent-color:#4055c8; cursor:pointer; }
+.d15-check input:disabled { cursor:not-allowed; }
+.d15-number { text-align:right !important; font-variant-numeric:tabular-nums; }
 .d15-payable { color:#175cd3 !important; font-weight:750; font-variant-numeric:tabular-nums; }
-.d15-payable strong { display:block; color:#175cd3; }
-.d15-payable small { display:block; margin-top:5px; color:#667085; font-size:11px; font-weight:500; }
 .d15-export-message { padding:9px 20px; color:#117a48; background:#ecfdf3; border-bottom:1px solid #d1fadf; font-size:12px; }
 .d15-export-message.is-error { color:#b42318; background:#fef3f2; border-bottom-color:#fecdca; }
 .d15-settlement-card .gh-empty p,.gh-empty p { margin:7px 0 0; color:#98a2b3; font-size:12px; }
 
-.d15-drawer-layer { position:fixed; inset:0; z-index:130; display:flex; justify-content:flex-end; background:rgba(16,24,40,.48); backdrop-filter:blur(2px); }
-.d15-drawer { width:min(1040px,calc(100vw - 72px)); height:100%; display:flex; flex-direction:column; overflow:hidden; color:#172033; background:#fff; box-shadow:-18px 0 48px rgba(16,24,40,.18); }
-.d15-drawer-head { min-height:76px; padding:18px 22px; display:flex; align-items:flex-start; justify-content:space-between; gap:18px; border-bottom:1px solid #e4e7ec; }
-.d15-drawer-head h2 { margin:0; color:#172033; font-size:20px; }
-.d15-drawer-head p { margin:6px 0 0; color:#667085; font-size:12px; line-height:1.5; }
-.d15-drawer-body { min-height:0; padding:20px 22px; flex:1 1 auto; overflow:auto; }
-.d15-drawer-foot { padding:14px 22px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e4e7ec; }
-.d15-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
-.d15-metrics > div { min-width:0; padding:14px; border:1px solid #e3e7ed; border-radius:9px; background:#f8fafc; }
-.d15-metrics span,.d15-metrics strong { display:block; }
-.d15-metrics span { color:#667085; font-size:11px; }
-.d15-metrics strong { margin-top:8px; overflow:hidden; color:#263142; font-size:14px; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
-.d15-metrics small { display:block; margin-top:5px; color:#667085; font-size:11px; }
-.d15-detail-section { margin-top:22px; }
-.d15-detail-section > header { margin-bottom:10px; }
-.d15-detail-section h3 { margin:0; color:#253047; font-size:16px; }
-.d15-detail-section p { margin:5px 0 0; color:#7d8796; font-size:12px; }
-.d15-detail-section .gh-table-wrap { border:1px solid #e4e7ec; border-radius:9px; }
-.d15-detail-section .gh-table { min-width:1160px; font-size:12px; }
-.d15-detail-section .gh-table th,.d15-detail-section .gh-table td { white-space:nowrap; }
-.d15-transaction-table { min-width:1370px !important; font-size:12px; }
-.d15-transaction-table th:first-child,.d15-transaction-table td:first-child { min-width:230px; }
+.d15-dialog-layer { position:fixed; inset:0; z-index:130; padding:24px; display:flex; align-items:center; justify-content:center; background:rgba(16,24,40,.48); backdrop-filter:blur(2px); }
+.d15-confirm-dialog { width:min(440px,100%); overflow:hidden; color:#172033; border-radius:12px; background:#fff; box-shadow:0 24px 64px rgba(16,24,40,.22); }
+.d15-confirm-dialog > header { padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; border-bottom:1px solid #e4e7ec; }
+.d15-confirm-dialog h2 { margin:0; color:#172033; font-size:18px; }
+.d15-confirm-body { padding:28px 20px; display:grid; justify-items:center; text-align:center; }
+.d15-confirm-body p { margin:0; color:#667085; font-size:13px; }
+.d15-confirm-body p strong { color:#344054; }
+.d15-confirm-body b { margin-top:12px; color:#175cd3; font-size:28px; font-variant-numeric:tabular-nums; }
+.d15-confirm-body small { margin-top:14px; color:#b54708; font-size:12px; }
+.d15-confirm-dialog > footer { padding:14px 20px; display:flex; justify-content:flex-end; gap:8px; border-top:1px solid #e4e7ec; }
 
 .d15-demo { position:fixed; right:22px; bottom:22px; z-index:90; }
 .d15-demo > button { min-height:44px; padding:0 14px 0 8px; display:inline-flex; align-items:center; gap:8px; color:#30415b; border:1px solid #cfd7e3; border-radius:999px; background:rgba(255,255,255,.97); box-shadow:0 10px 28px rgba(22,34,55,.16); cursor:pointer; }
@@ -5998,37 +6004,32 @@ body.finance-overlay-open .developer-demo-state-switcher { display:none; }
   .d15-entity-detail-grid { gap:20px 32px; }
   .d15-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .d15-filter-actions { justify-content:flex-end; }
-  .d15-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:720px) {
   .d15-app .gh-sidebar { background:#fff; }
   .d15-app .d15-nav button.is-active { background:transparent; box-shadow:inset 0 -3px #697386; }
-  .d15-entity-statuses { align-items:flex-start; flex-direction:column; gap:12px; }
+  .d15-entity-summary-row { align-items:flex-start; flex-direction:column; gap:14px; }
+  .d15-entity-review { align-items:flex-start; justify-content:flex-start; flex-wrap:wrap; }
   .d15-section-title { align-items:flex-start; flex-direction:column; }
   .d15-entity-detail-grid { grid-template-columns:1fr; gap:20px; }
+  .d15-entity-form { grid-template-columns:1fr; gap:18px; padding:20px 16px 22px !important; }
   .d15-filters { padding:12px; grid-template-columns:1fr; }
   .d15-filter-actions { justify-content:stretch; }
   .d15-filter-actions .gh-button { flex:1 1 0; min-height:44px; }
   .d15-settlement-card .gh-card-head { align-items:stretch; flex-direction:column; }
-  .d15-settlement-card .gh-card-head .gh-button { width:100%; min-height:44px; }
-  .d15-drawer { width:100vw; }
-  .d15-drawer-head { padding:15px 14px; }
-  .d15-drawer-body { padding:16px 12px; }
-  .d15-drawer-foot { padding:12px; }
-  .d15-drawer-foot .gh-button { min-height:44px; flex:1 1 0; }
-  .d15-metrics { grid-template-columns:1fr 1fr; gap:8px; }
+  .d15-settlement-actions { width:100%; }
+  .d15-settlement-actions .gh-button { min-height:44px; flex:1 1 0; }
+  .d15-dialog-layer { padding:14px; }
+  .d15-confirm-dialog > footer .gh-button { min-height:44px; flex:1 1 0; }
   .d15-demo { right:12px; bottom:12px; }
   .d15-demo > button { width:48px; height:48px; padding:0; justify-content:center; }
   .d15-demo > button span { display:none; }
-}
-@media (max-width:390px) {
-  .d15-metrics { grid-template-columns:1fr; }
 }</style></head><body>
 <div id="app"></div>
 <textarea id="portal-module" hidden aria-hidden="true">{"id":"02","name":"开发者平台","description":"完成开发者登录与认证，并管理游戏创建、发行资料、资质和经营数据。","output":"开发者平台demo.html","aliases":["01-开发者平台与资料demo.html","02-游戏创建与发行demo.html","02-CDKEY商品与供给demo.html"],"defaultRoute":"P02-01","routeIds":["P01-01","P01-03","P02-01"],"surface":"developer","standalone":true}</textarea>
 <textarea id="portal-modules" hidden aria-hidden="true">[{"id":"01","name":"发行平台运营后台","description":"统一处理企业认证、游戏发布、游戏资质审核，以及企业认证和帮助中心内容配置。","output":"发行平台运营后台demo.html","defaultRoute":"P01-08","routeIds":["P01-08","P01-09","P01-10"],"surface":"operations","standalone":true},{"id":"02","name":"开发者平台","description":"完成开发者登录与认证，并管理游戏创建、发行资料、资质和经营数据。","output":"开发者平台demo.html","aliases":["01-开发者平台与资料demo.html","02-游戏创建与发行demo.html","02-CDKEY商品与供给demo.html"],"defaultRoute":"P02-01","routeIds":["P01-01","P01-03","P02-01"],"surface":"developer","standalone":true},{"id":"03","name":"包体测试与版本发布","description":"Windows、macOS、Linux 的 Build／Manifest、测试、Release Pointer 发布与历史 Build 回滚。","output":"03-包体测试与发布demo.html","defaultRoute":"P03-01"},{"id":"04","name":"精准化投放与发行数据","description":"经营看板、Campaign／UTM、人工资源执行、渠道归因及聚合导出。","output":"04-精准投放与数据demo.html","defaultRoute":"P04-01"}]</textarea>
-<textarea id="portal-routes" hidden aria-hidden="true">[{"id":"P01-01","moduleId":"01","templateId":"T01","role":"developer","title":"独立账号与盖世第三方登录页"},{"id":"P01-03","moduleId":"01","templateId":"T04","role":"developer","title":"开发者注册与厂商资料页"},{"id":"P02-01","moduleId":"02","templateId":"T03","role":"developer","title":"游戏创建、版本发布与资质管理页"},{"id":"P15-01","moduleId":"02","templateId":"FINANCE","role":"developer","title":"财务主体"},{"id":"P15-02","moduleId":"02","templateId":"FINANCE","role":"developer","title":"对账结算"},{"id":"P15-03","moduleId":"02","templateId":"FINANCE","role":"developer","title":"对账流水"}]</textarea>
-<textarea id="portal-data" hidden aria-hidden="true">{"accounts":{"developer":{"name":"王明","roleName":"已确认开发者"},"operations":{"name":"李然","roleName":"平台发行运营"},"tester":{"name":"陈宇","roleName":"平台测试人员"}},"context":{"vendorId":"VEN-202609-001","vendorName":"星海互动","gameId":"GAME-48291","gameName":"星海远征","versionId":"VER-100","versionName":"1.0.0","appId":"APP-7F3A9C","campaignId":"CMP-202609-001","querySnapshotId":"QRY-20260903-001"},"helpCenter":{"title":"帮助中心","faq":[{"id":"developer-verification","category":"账号与认证","question":"如何完成开发者认证？","answer":"填写主体、品牌和联系人资料并提交，平台录入线下确认结果后即可取得开发者资格。","steps":["进入“开发者认证”，选择主体类型和注册国家／地区。","填写主体法定名称、登记编号、品牌与联系人信息。","确认资料无误后提交，等待平台录入线下确认结果。"],"details":["认证资料支持在提交前保存草稿。","资料需要修改时，按页面反馈修订后重新提交。"],"note":"开发者资格以平台已录入的确认结果为准。"},{"id":"create-game-appid","category":"游戏与 APPID","question":"如何创建游戏并获取 APPID？","answer":"完成开发者认证后创建游戏并提交资料；项目确认后系统会生成唯一 APPID。","steps":["进入“游戏管理”，点击“创建游戏”。","填写游戏基础信息、发行信息和支持平台后提交资料。","游戏项目确认后，在“APPID 与 SDK 接入”中查看唯一 APPID。"],"details":["每个已确认的游戏项目对应唯一 APPID。","APPID 用于 SDK 接入和后续版本、发行数据关联。"]},{"id":"download-sdk-docs","category":"游戏与 APPID","question":"在哪里下载 SDK 和查看接入文档？","answer":"进入 APPID 与 SDK 接入页，可按系统下载 SDK、核对校验值并打开接入文档。","steps":["在左侧导航进入“APPID 与 SDK 接入”。","选择 Windows、macOS 或 Linux 对应 SDK。","下载后核对版本号与 SHA-256 校验值，再按接入文档完成配置。"],"details":["三个系统使用同一 APPID，分别下载对应平台的 SDK。","接入文档仅对已授权的开发者账号开放。"]},{"id":"create-key-batch","category":"CDKEY","question":"如何创建 Key 批次？","answer":"确认游戏、SKU、渠道、额度和有效期均在授权范围内后，在 Key 批次中提交创建。","steps":["进入“CDKEY 商品与供给”，切换到“Key 批次”。","选择游戏、SKU、渠道并填写生成数量和有效期。","提交创建后，在一次性有效窗口内下载 Key 文件。"],"details":["Key 明文仅在创建成功后提供一次性下载。","后续只保留批次、数量、状态和审计记录。"],"note":"请在下载后妥善保存 Key 文件，关闭一次性窗口后不能再次查看明文。"},{"id":"lost-client-secret","category":"CDKEY","question":"Secret 丢失怎么办？","answer":"Secret 不支持再次查看，请轮换凭据并更新第三方渠道配置。","steps":["进入“渠道 API”，找到对应渠道凭据。","执行“轮换凭据”，并立即保存新 Secret。","在第三方渠道更新配置并完成接口验证。"],"details":["新 Secret 仅显示一次，关闭后只展示末四位。","凭据轮换后，旧 Secret 立即失效。"],"note":"为避免渠道调用中断，请先准备好第三方渠道的配置更新窗口。"},{"id":"resume-build-upload","category":"包体与发布","question":"包体上传中断后需要重新上传吗？","answer":"已完成的分片会保留；重新进入 Build 详情后可从中断位置继续上传。","steps":["返回对应版本的“包体上传与 Build 详情”。","确认中断原因和已完成的上传进度。","点击“继续上传”，完成剩余分片与完整性校验。"],"details":["已完成分片不会因网络中断而重复上传。","完整性校验通过后才能继续提交测试。"]},{"id":"publish-after-test","category":"包体与发布","question":"测试通过后如何发布版本？","answer":"平台完成上架结论并确认发布条件后，由发行运营配置立即发布或定时发布。","steps":["在版本详情确认测试结果与上架结论。","确认目标系统、CPU 架构和对应 Release Pointer。","由发行运营配置立即发布或定时发布，并保留发布记录。"],"details":["测试通过不等于版本已经发布。","历史 Build、Manifest 与 Chunk 会继续保留，可用于回滚。"]},{"id":"data-refresh-frequency","category":"经营数据","question":"经营数据多久更新一次？","answer":"交易与 Key 数据按小时更新，客户端下载、更新与首次启动数据次日更新。","sectionTitle":"更新频率","steps":["交易、退款与 Key 供给／兑换：按小时更新。","客户端下载、更新与首次启动：次日更新。"],"details":["看板与导出使用同一查询条件时，应保持相同的数据口径。","数据尚未完成更新时，请以页面标注的最近更新时间为准。"]},{"id":"key-source-difference","category":"CDKEY","question":"盖世平台 Key 和外部平台 Key 有什么区别？","answer":"盖世平台 Key 由盖世兑换服务校验；Steam、Epic、GOG 等 Key 必须由对应平台或供应商提供。","sectionTitle":"两类 Key 的来源","steps":["盖世平台 Key：由开发者后台按授权额度生成，供指定渠道分配和兑换。","外部平台 Key：由 Steam、Epic、GOG 等对应平台或供应商提供，再按供给配置导入。"],"details":["开发者后台不能代替外部平台生成其 Key。","两类 Key 分别保留供给、分配、兑换和对账记录。"]}],"contact":{"supportName":"盖世游戏开发者支持","serviceHours":"服务时间以合作对接安排为准","channel":"合作群／项目对接人","email":"dev@xiaoji.com","fallback":"紧急问题请联系当前项目对接人"}},"managedContent":{"revision":1,"publishedAt":"2026-09-03 10:00","publishedBy":"平台运营 李然","zh":{"introTitle":"加入盖世游戏开发者平台，开展正版发行合作","introDescription":"本流程将引导企业完成身份核验与合作授权。请先了解申请流程、资料要求和内容规范，再一次性提交企业主体、银行结算、厂商联系人及协议签署信息。","introSteps":["了解平台合作范围与内容规范","准备企业工商及银行结算资料","阅读并确认平台合作协议","一次性提交企业认证申请","审核通过后开通发行合作能力"],"introRequirements":["企业法定名称、注册地区、注册地址及工商执照号码","清晰有效的工商执照证明图片","与企业法定名称一致的银行账户及证明图片","厂商品牌、联系人和账单接收邮箱","有权代表企业签署协议的授权人员信息"],"introRules":["提交的游戏及素材必须合法合规，并已取得完整权利或充分授权。","不得提交含恶意代码、病毒、欺诈或未经授权收集敏感信息的内容。","不得提交侵犯第三方知识产权、隐私权或其他合法权益的内容。","具体游戏的接入、测试、审核与发行安排，以后续产品配置及双方确认结果为准。"],"introReviewNote":"平台运营通常在资料提交后的 5 个工作日内完成审核。提交成功不代表认证通过；审核结果与处理记录可在开发者控制台持续查看。","ndaTitle":"《盖世游戏开发者平台保密协议》","ndaBody":"盖世游戏开发者平台保密协议\n\n一、协议主体与生效\n本协议由盖世游戏开发者平台运营方（以下简称“平台方”）与申请企业（以本页填写的企业法定名称为准，以下简称“合作方”）共同订立。合作方的授权代表在本页确认接受并提交申请后，本协议对合作方生效；平台方确认合作申请或开始向合作方披露保密信息后，本协议对双方生效。\n\n二、保密信息\n“保密信息”是指一方及其关联方以书面、口头、电子或其他方式向另一方披露的，已经标明保密或者依其性质、披露场景应被合理理解为保密的信息，包括但不限于未发布的游戏、产品规划、源代码与技术资料、测试版本、接口文档、账号与权限、运营方案、投放计划、商务条件、定价与结算数据、用户与交易数据、协议条款以及包含前述信息的复制件、摘要和衍生资料。\n\n三、不属于保密信息的情形\n接收方能够以书面证据证明下列任一情形的，不属于保密信息：接收时已合法公开的信息；接收方在披露前已合法知悉且不负保密义务的信息；接收方未使用披露方保密信息而独立开发的信息；从有权披露且不受保密限制的第三方合法取得的信息；经披露方书面同意公开的信息。\n\n四、使用与披露限制\n接收方仅可为评估、建立和履行盖世游戏开发者平台合作关系使用保密信息，不得用于竞争、侵权或其他与合作无关的目的。除确有知悉必要且已承担不低于本协议保护义务的员工、关联方、专业顾问或服务商外，接收方不得向任何第三方披露保密信息。未经披露方书面许可，接收方不得对获得的软件、接口、样品或技术资料实施反向工程、反编译、拆解或规避安全措施，但法律明确允许且不得排除的情形除外。\n\n五、安全保护义务\n接收方应采取不低于保护自身同类重要信息的合理安全措施，包括访问权限控制、账号与凭据保护、传输和存储保护、人员保密管理及必要的日志留存。发生或可能发生未经授权的访问、使用、披露、丢失或泄露时，接收方应及时通知披露方，说明已知影响，并采取合理措施控制和补救。\n\n六、依法披露\n接收方因法律法规、司法机关、行政机关或证券监管要求必须披露保密信息时，应在法律允许范围内及时通知披露方，并仅披露依法必须披露的最小范围；接收方应合理协助披露方申请保密审理、保护令或其他救济。\n\n七、返还与销毁\n合作终止、披露方提出书面要求或保密信息已无继续使用必要时，接收方应停止使用，并按披露方要求返还或销毁其控制范围内的保密信息及复制件；法律法规、合规审计或自动备份机制要求保留的部分除外，但保留信息仍受本协议约束。\n\n八、知识产权与无授权\n保密信息及其相关知识产权始终归披露方或其合法权利人所有。除为履行合作所必需的有限使用权外，披露行为不构成任何专利、著作权、商标、商业秘密或其他权利的转让、许可或承诺，也不构成对合作、采购、发行或投资结果的保证。\n\n九、违约与救济\n任何一方违反本协议，给另一方造成损失的，应依法承担违约责任并赔偿可证明的直接损失及合理维权费用。双方确认，擅自披露或使用保密信息可能造成难以用金钱完全弥补的损害，守约方有权依法申请停止侵害、行为保全或其他救济。\n\n十、期限与存续\n本协议自生效之日起持续有效，直至双方书面终止合作。保密义务在相关信息依法公开前持续有效；涉及商业秘密、个人信息、账号凭据和依法应持续保护的信息，其保护义务不因合作终止而消灭。\n\n十一、适用法律与争议解决\n本协议的订立、效力、解释和履行适用中华人民共和国法律。争议应先友好协商；协商不成的，按双方后续书面确认的争议解决条款处理；未另行约定时，任何一方可向平台运营主体住所地有管辖权的人民法院提起诉讼。\n\n十二、其他\n未经另一方书面同意，任何一方不得转让本协议项下主要权利义务，但因合并、分立、资产或业务整体转让而由合法承继主体承接的除外。部分条款无效不影响其他条款效力。本协议与双方后续签署的专项保密条款冲突时，以双方明确约定优先适用的文本为准。平台可基于法律、业务或安全需要更新协议，并在开发者平台展示当前生效版本；新版本仅对合作方再次确认后发生效力。","distributionTitle":"《盖世游戏开发者平台发行合作协议》","distributionBody":"盖世游戏开发者平台发行合作协议\n\n一、协议主体与合作目的\n本协议由盖世游戏开发者平台运营方（以下简称“平台方”）与申请企业（以本页填写的企业法定名称为准，以下简称“合作方”）订立。双方拟通过盖世游戏开发者平台完成游戏资料接入、测试审核、商品配置、包体与版本管理、发行推广、授权校验、渠道供给及经营数据查看等合作。合作方的授权代表确认本协议并提交企业认证申请，不当然代表具体游戏已获准发行；每款游戏的合作范围以平台配置、审核结果及双方后续确认文件为准。\n\n二、定义\n“合作产品”指合作方提交并经平台方确认接入的游戏、DLC、附加内容、更新及本地化版本；“平台”指盖世游戏开发者平台及其面向用户提供发行服务的相关产品；“用户”指通过平台获取、购买、预约、下载、激活或使用合作产品的自然人；“盖世 Key”指由平台依授权规则生成并用于验证合作产品权益的授权码；“外部 Key”指由第三方平台或合作方提供、并由平台受控管理的授权码；“净收入”指用户实付收入扣除依法代收税费、退款、拒付、渠道费用及双方书面确认的其他调整项后的金额。\n\n三、合作资格与授权\n合作方声明其具有签署和履行本协议的完整权利与授权，对合作产品、商标、宣传素材、音乐、美术、字体、人物形象、数据及其他交付内容拥有完整权利或已取得充分许可。合作方授予平台方在双方确认的产品、地区、渠道、语言和期限内，为接入、测试、展示、宣传、销售、交付、下载、更新、客服和运营分析之目的，对合作产品及素材进行必要复制、存储、传输、展示、执行、格式转换和非实质性适配的非独占许可。具体授权范围可由单款游戏配置或补充协议限定。\n\n四、产品与资料交付\n合作方应按平台要求提交真实、准确、完整且持续有效的企业、银行、联系人、游戏、商品、权利证明、分级、隐私和合规资料，并在资料发生变化时及时更新。合作产品的包体、更新、补丁、本地化版本、运行环境和技术文档应达到双方确认的格式与质量要求。合作方不得提交包含恶意代码、病毒、后门、欺诈功能、未经授权的数据采集或可能损害用户设备与平台安全的内容。\n\n五、技术接入、测试与发布\n合作方应配合完成账号登录、启动校验、权益查询、离线授权、错误码、日志及双方确认的其他技术接入。合作产品发布前，平台方可进行资料、功能、兼容性、安全性和合规审核；审核不减轻合作方对产品质量、权利与合法性的责任。版本发布、灰度、回滚、下架和紧急修复按平台规则及双方确认流程执行。未经平台方确认，合作方不得自行将未审核版本标记为正式发行版本。\n\n六、商品、定价与用户交易\n合作产品的商品形态、销售地区、币种、价格、折扣、退款规则、预购或预约安排，以双方确认的商品配置和平台规则为准。平台方可在法律法规和已公示规则允许范围内处理订单、支付、退款、拒付、发票或账单支持。合作方不得通过虚假交易、误导宣传、价格欺诈或其他方式损害用户和平台权益。\n\n七、CDKEY 与第三方渠道供给\n经平台方开通后，合作方可在获授权的游戏、渠道、额度和有效期范围内申请或生成盖世 Key 批次，并可通过平台提供的渠道接口向经批准的第三方渠道交付。合作方应妥善保管接口凭据、Key 文件和交付记录，不得超范围生成、出售、转让或泄露。外部 Key 由实际权利方生成，合作方应保证来源合法、数量和状态真实可核验。Key 的冻结、撤销、补发、兑换、异常处置与对账以平台规则和批次记录为准。\n\n八、发行推广与精准化投放\n合作方授权平台方在合作范围内使用合作产品名称、商标、图标、截图、视频、文案和其他营销素材进行站内外展示、推荐、活动和渠道推广。需要建立 Campaign、定向人群、追踪参数或付费投放时，具体预算、素材、地区、渠道、投放周期、归因口径和数据权限由双方另行确认。平台方不保证任何固定曝光、下载、转化或收入结果。\n\n九、经营数据与隐私\n平台方可向合作方提供与其合作产品相关的浏览、预约、下载、激活、订单、退款、收入及渠道效果等汇总数据。双方应依适用法律及各自隐私政策处理个人信息，仅在实现合作目的的必要范围内收集、使用、存储和共享。未经另行书面约定，双方分别作为独立的个人信息处理者承担各自义务，不得利用平台数据识别、骚扰用户或从事与合作无关的分析。\n\n十、结算、账单与税费\n收入分成比例、结算币种、结算周期、最低付款门槛、税费承担、开票和付款方式，以双方后续确认的结算规则、单款游戏配置或补充协议为准。平台方按确认口径生成账单并发送至合作方在企业认证中填写的联系邮箱；合作方应在约定期限内核对并反馈异议。合作方应保证收款账户为其合法控制且账户户名与认证主体一致，并自行承担依法应由其承担的税费。\n\n十一、双方支持义务\n平台方在合理范围内提供开发者平台、发行工具、用户账单与平台账号相关支持。合作方负责合作产品本身的用户支持、缺陷修复、内容更新、服务器稳定性和依法应提供的售后服务，并应及时响应平台方发现的严重缺陷、安全事件、侵权投诉或监管要求。\n\n十二、知识产权与品牌\n除本协议明确授权外，双方各自保留其原有技术、产品、数据、商标和其他知识产权。任何一方使用另一方品牌均应遵守对方书面品牌规范，不得暗示超出实际合作范围的背书、独家关系或权利归属。用户依交易规则取得的合作产品使用权，不因本协议终止而被无故剥夺。\n\n十三、内容合规与下架\n合作方保证合作产品及宣传资料符合发行地区适用法律、分级、出版、网络安全、数据与消费者保护要求。平台方发现涉嫌违法、侵权、恶意代码、重大安全风险、严重质量问题或监管要求时，可采取暂停下载、停止销售、限制 Key、下架或其他必要措施，并及时通知合作方；紧急情况下可先行处置。\n\n十四、陈述、保证与赔偿\n双方分别保证具备签署和履行本协议的能力。合作方对其提交内容的真实性、权利完整性和合法合规性负责；因合作方内容、授权瑕疵、违法行为或违反本协议导致第三方索赔、行政处罚或平台方损失的，合作方应依法承担责任并合理配合处理。平台方应对其自行提供的平台服务和运营行为承担相应责任。\n\n十五、责任限制\n除故意或重大过失、侵犯知识产权、违反保密或数据保护义务以及法律不得限制的责任外，任何一方不对间接损失、可得利益损失或惩罚性损失承担责任。具体责任上限如需约定，以双方书面确认的补充协议为准。本条不影响用户依法享有的权利。\n\n十六、期限、暂停与终止\n本协议自生效之日起持续有效，直至双方依法或依约终止。任何一方严重违约并在收到书面通知后的合理期限内未纠正，守约方可终止合作；存在违法、侵权、安全风险、欺诈、资不抵债或监管要求时，可立即暂停或终止相关服务。终止后，双方应停止新增发行与授权，完成必要的退款、对账、用户支持、数据返还或删除；为已购用户继续下载、更新或验证所必需的权利和义务，可在合理范围内继续有效。\n\n十七、通知、变更与转让\n合作通知可发送至开发者平台账号、认证联系邮箱或双方书面确认的其他渠道。合作方应保证邮箱持续有效并及时更新。平台可因法律、监管、安全或业务需要更新平台规则与协议，并在平台展示当前版本；涉及合作方实质权利义务的变更，应由合作方再次确认后生效。未经另一方书面同意，任何一方不得转让本协议项下主要权利义务，但合法承继主体承接的除外。\n\n十八、适用法律、争议解决与其他\n本协议适用中华人民共和国法律。争议应先友好协商；协商不成的，按双方后续书面确认的争议解决条款处理；未另行约定时，任何一方可向平台运营主体住所地有管辖权的人民法院提起诉讼。本协议与单款游戏配置、结算规则及双方签署的补充协议共同构成完整合作约定；发生冲突时，后签署或针对具体事项的文件优先。部分条款无效不影响其他条款效力。双方之间不因本协议形成合伙、劳动或代理关系。","help":{"title":"帮助中心","faq":[{"id":"account-login","category":"账号与登录","question":"如何登录开发者平台？","answer":"可使用中国大陆手机号接收验证码登录，也可使用盖世游戏 App 扫码登录。未注册账号将在首次登录时自动注册。","steps":["输入 11 位中国大陆手机号并获取 6 位验证码。","也可打开盖世游戏 App 扫描二维码并确认登录。","完成登录验证后选择入驻方式。"],"details":["自动注册只创建平台账号，不代表企业认证已通过。","验证码仅用于本次登录验证。"]},{"id":"company-verification","category":"企业认证","question":"企业认证需要准备哪些资料？","answer":"需准备企业工商信息与执照图片、授权签署人信息、企业银行账户与证明图片，以及厂商品牌和联系人资料。","steps":["先阅读企业认证介绍，确认申请流程和资料要求。","按工商执照填写企业法定名称、注册地址和执照号码。","填写企业银行账户并上传两类证明图片。","补充厂商与联系人信息，阅读两份平台协议后统一确认并提交。"],"details":["银行账户户名必须与企业法定名称一致。","联系邮箱为必填项，用于接收账单、结算及重要业务通知。","流程没有草稿态，提交前可清空重填。"]},{"id":"review-status","category":"审核结果","question":"提交后如何查看审核状态？","answer":"正式提交后页面进入待审核状态；再次登录仍会显示当前申请编号、修订版本、审核状态与处理记录。","steps":["待审核：平台运营正在处理，企业资料不可再次提交。","已通过：企业主体认证完成。","已拒绝：页面展示审核意见，并提供修改入口。"],"details":["提交成功不等于审核通过。","每次处理结果都会保留审核人和处理时间。"]},{"id":"resubmit-rejected","category":"审核结果","question":"认证被拒绝后如何重新提交？","answer":"根据页面展示的拒绝原因修改原资料，并在确认页重新提交；系统将生成新的申请修订。","steps":["点击“修改并重新提交”。","按审核意见在单页资料中完成修改。","核对后再次点击“提交审核”。"],"details":["重新提交不会覆盖上一修订和原审核记录。","修改过程中可重新开始，但不会删除已提交历史。"]},{"id":"pc-game-listing-guide","category":"游戏上架","section":"上架指南","question":"PC 游戏上架指南","answer":"用于说明 PC 游戏从创建项目、准备资料到提交上架审核的完整路径。当前为目录与文章占位，正文由平台运营在内容后台配置。","steps":["查看游戏上架所需资料和前置条件。","按后续上架 PRD 补充正式操作流程。"],"details":["本期不开放实际上架配置，最终字段与审核规则以后续 PRD 为准。"]},{"id":"pc-test-plan-introduction","category":"游戏上架","section":"上架指南","question":"盖世游戏 PC 测试计划能力介绍","answer":"用于介绍 PC 游戏测试计划的适用场景、参与方式和结果查看方式。当前为可配置占位文章。","steps":["由运营后台维护能力介绍、开放范围和参与条件。"],"details":["具体测试流程以后续测试与发布 PRD 为准。"]},{"id":"pc-buyout-game-docs","category":"游戏上架","section":"上架指南","question":"PC 买断制游戏文档指引","answer":"用于汇总买断制 PC 游戏在商品、定价、权益和发行审核方面的文档入口。当前为可配置占位文章。","steps":["由运营后台维护正式文档入口和适用范围。"],"details":["本期不新增商品或定价操作。"]},{"id":"pc-store-materials","category":"游戏上架","section":"上架指南","question":"盖世游戏 PC 版物料规范","answer":"用于说明 PC 游戏图标、封面、截图、视频和商店文案的规格要求。当前为可配置占位文章。","steps":["由运营后台补充各类物料尺寸、格式和内容规范。"],"details":["正式规范以后续游戏资料 PRD 与运营配置为准。"]},{"id":"pc-game-qualification-guide","category":"游戏上架","section":"上架指南","question":"PC 游戏资质指引","answer":"用于说明不同地区、游戏类型和发行方式需要准备的权利与合规资料。当前为可配置占位文章。","steps":["由运营后台维护资质清单和附件要求。"],"details":["实际资质要求以发行地区法律法规和平台最新规则为准。"]},{"id":"pc-build-upload-guide","category":"游戏上架","section":"上架指南","question":"PC 游戏如何在后台传包","answer":"用于说明 PC 游戏包体上传、校验、版本关联和提交测试的操作。当前为可配置占位文章。","steps":["由运营后台补充支持系统、文件要求和上传步骤。"],"details":["本期不开放真实包体上传，具体流程以后续 PRD 为准。"]},{"id":"sdk-service-overview","category":"SDK 服务","section":"服务概览","question":"SDK 服务概览","answer":"用于介绍盖世游戏 SDK 的能力范围、支持平台、版本关系和接入边界。当前为可配置占位文章。","steps":["由运营后台维护 SDK 能力说明与适用范围。"],"details":["当前不提供生产 SDK 下载或真实接入配置。"]},{"id":"sdk-changelog","category":"SDK 服务","section":"服务概览","question":"SDK 更新日志","answer":"用于按版本记录 SDK 新增能力、行为变化、修复内容和升级影响。当前为可配置占位文章。","steps":["由运营后台按版本维护发布日期和变更摘要。"],"details":["开发者接入前应核对目标平台与版本兼容性。"]},{"id":"sdk-compliance-guide","category":"SDK 服务","section":"服务概览","question":"SDK 合规使用说明","answer":"用于说明 SDK 接入、数据处理、用户告知和权限申请中的合规要求。当前为可配置占位文章。","steps":["由运营后台维护正式合规说明。"],"details":["最终要求以平台最新政策与适用法律法规为准。"]},{"id":"sdk-privacy-policy","category":"SDK 服务","section":"服务概览","question":"SDK 隐私政策","answer":"用于展示盖世游戏 SDK 涉及的数据类型、处理目的、保存方式和开发者责任。当前为可配置占位文章。","steps":["由运营后台维护当前生效政策正文。"],"details":["政策更新后应同步版本与生效时间。"]},{"id":"developer-center-configuration","category":"SDK 服务","section":"开发准备","question":"开发者中心配置","answer":"用于说明接入 SDK 前需要在开发者中心准备的 APPID、平台参数和环境信息。当前为可配置占位文章。","steps":["由运营后台补充配置项和获取路径。"],"details":["实际配置能力以后续 SDK PRD 为准。"]},{"id":"android-signature-md5","category":"SDK 服务","section":"开发准备","question":"获取 Android 签名文件 MD5","answer":"用于说明如何获取并核对 Android 应用签名文件的 MD5 信息。当前为可配置占位文章。","steps":["由运营后台补充工具、命令与校验示例。"],"details":["不得在帮助文档中上传或展示真实签名私钥。"]},{"id":"sdk-v3-to-v4","category":"SDK 服务","section":"开发准备","question":"SDK v3 升级 v4","answer":"用于说明 SDK v3 升级到 v4 的兼容变化、迁移步骤和回归检查。当前为可配置占位文章。","steps":["由运营后台维护正式迁移指南。"],"details":["最终升级范围以发布版本和更新日志为准。"]},{"id":"sdk-unity-integration","category":"SDK 服务","section":"集成指南","question":"Unity 集成（多平台）","answer":"用于说明 Unity 项目在多平台环境下接入盖世游戏 SDK 的基本流程。当前为可配置占位文章。","steps":["由运营后台补充依赖、初始化和平台差异说明。"],"details":["正式示例代码以后续 SDK 文档为准。"]},{"id":"sdk-android-native-integration","category":"SDK 服务","section":"集成指南","question":"Android 原生集成","answer":"用于说明 Android 原生项目接入 SDK 的依赖、初始化和回调处理。当前为可配置占位文章。","steps":["由运营后台补充正式接入步骤。"],"details":["最终参数和接口以后续 SDK 文档为准。"]},{"id":"sdk-ios-native-integration","category":"SDK 服务","section":"集成指南","question":"iOS 原生集成","answer":"用于说明 iOS 原生项目接入 SDK 的依赖、初始化和回调处理。当前为可配置占位文章。","steps":["由运营后台补充正式接入步骤。"],"details":["最终参数和接口以后续 SDK 文档为准。"]},{"id":"sdk-pc-integration","category":"SDK 服务","section":"集成指南","question":"PC 端接入指南","answer":"用于说明 Windows、macOS 和 Linux 游戏接入盖世游戏 SDK 的流程。当前为可配置占位文章。","steps":["由运营后台补充支持系统、初始化与验收说明。"],"details":["实际支持范围以后续 SDK PRD 为准。"]},{"id":"gamehub-login-introduction","category":"SDK 服务","section":"盖世游戏登录","question":"盖世游戏登录功能介绍","answer":"用于介绍盖世游戏登录的用户场景、账号关系和能力边界。当前为可配置占位文章。","steps":["由运营后台维护能力说明。"],"details":["正式账号与数据规则以后续登录服务 PRD 为准。"]},{"id":"gamehub-login-development-guide","category":"SDK 服务","section":"盖世游戏登录","question":"盖世游戏登录开发指南","answer":"用于说明盖世游戏登录的接入准备、授权流程和结果处理。当前为可配置占位文章。","steps":["由运营后台补充接口与回调说明。"],"details":["实际实现以后续 SDK 文档为准。"]},{"id":"gamehub-qr-login","category":"SDK 服务","section":"盖世游戏登录","question":"扫码登录","answer":"用于说明 PC 或网页端拉起二维码并由盖世游戏 App 确认登录的流程。当前为可配置占位文章。","steps":["由运营后台补充二维码状态与异常处理。"],"details":["登录安全规则以后续 SDK 文档为准。"]},{"id":"gamehub-get-user-info","category":"SDK 服务","section":"盖世游戏登录","question":"获取用户信息","answer":"用于说明登录成功后可获取的用户字段、授权范围和隐私限制。当前为可配置占位文章。","steps":["由运营后台维护字段说明和权限要求。"],"details":["不得超出用户授权和合作目的使用用户信息。"]},{"id":"gamehub-login-faq","category":"SDK 服务","section":"盖世游戏登录","question":"盖世游戏登录常见问题","answer":"用于汇总扫码超时、授权失败、账号不一致和环境配置等常见问题。当前为可配置占位文章。","steps":["由运营后台持续维护问题与处理建议。"],"details":["无法自助解决时可联系 dev@xiaoji.com。"]},{"id":"developer-services-placeholder","category":"开发者服务","question":"开发者服务包含哪些能力？","answer":"开发者服务模块等待后续 PRD 输出，本期仅预留帮助分类和入口。","steps":["请关注后续平台更新。"],"details":["企业认证和帮助中心为本期完整交付范围。"]}],"contact":{"supportName":"盖世游戏开发者支持","serviceHours":"服务时间以合作对接安排为准","channel":"合作群／项目对接人","email":"dev@xiaoji.com","fallback":"紧急问题请联系当前项目对接人"}}},"en":{"introTitle":"Join the GameHub Developer Platform","introDescription":"This process guides companies through identity verification and partnership authorization. Review the process, required documents and content standards before submitting the company, settlement, publisher, contact and agreement information in one application.","introSteps":["Review the partnership scope and content standards","Prepare company and bank settlement documents","Read and accept the platform agreements","Submit the company verification application","Unlock publishing capabilities after approval"],"introRequirements":["Legal company name, registration region, registered address and license number","A clear and valid business license image","A company bank account and proof image matching the legal name","Publisher brand, business contact and billing email","An authorized representative who may accept the agreements"],"introRules":["Products and assets must be lawful and fully owned or properly licensed.","Products may not contain malware, fraud or unauthorized collection of sensitive information.","Products may not infringe intellectual property, privacy or other lawful rights.","Game onboarding, testing, review and distribution follow later product configuration and mutual confirmation."],"introReviewNote":"Platform operations normally completes the review within 5 business days after submission. Submission does not mean approval; the result and processing history remain available in the Developer Console.","ndaTitle":"GameHub Developer Platform Confidentiality Agreement","ndaBody":"GAMEHUB DEVELOPER PLATFORM CONFIDENTIALITY AGREEMENT\n\n1. Parties and Effect. This Agreement is entered into by the operator of the GameHub Developer Platform (Platform Party) and the applicant company identified by the legal company name submitted on this page (Partner). It becomes binding on Partner when its authorized representative accepts and submits it, and on both parties when the Platform Party confirms the partnership application or discloses Confidential Information.\n\n2. Confidential Information. Confidential Information means non-public information disclosed in writing, orally, electronically or otherwise that is marked confidential or should reasonably be understood as confidential, including unreleased products, roadmaps, source code, technical materials, test builds, API documents, credentials, operational and marketing plans, commercial terms, pricing and settlement data, user and transaction data, agreement terms, and all copies, summaries and derivatives.\n\n3. Exclusions. Confidential Information excludes information the receiving party can prove was lawfully public without breach, lawfully known before disclosure without restriction, independently developed without use of the disclosing party's information, lawfully received from a third party entitled to disclose it, or approved for release in writing.\n\n4. Limited Use and Disclosure. The receiving party may use Confidential Information only to evaluate, establish and perform the GameHub partnership. It may disclose information only to personnel, affiliates, advisers or service providers with a need to know and confidentiality duties no less protective than this Agreement. Except where law cannot prohibit it, the receiving party may not reverse engineer, decompile, disassemble or bypass security protections in disclosed software, interfaces or samples without written permission.\n\n5. Security. Each party must apply reasonable safeguards at least equal to those used for its own similar information, including access control, credential protection, secure transmission and storage, personnel controls and appropriate logs. Any suspected unauthorized access, use, loss or disclosure must be reported promptly with known impact and reasonable mitigation steps.\n\n6. Required Disclosure. If disclosure is legally required, the receiving party must, where permitted, notify the disclosing party promptly and disclose only the minimum required scope while reasonably assisting with protective relief.\n\n7. Return and Destruction. When the partnership ends, the information is no longer needed, or the disclosing party requests it, the receiving party must stop use and return or destroy controlled copies, except records required by law, audit rules or automated backups, which remain protected.\n\n8. Ownership. Confidential Information and related intellectual property remain owned by the disclosing party or its licensors. Disclosure grants no ownership, patent, copyright, trademark, trade secret or other license except the limited right necessary to evaluate or perform the partnership.\n\n9. Breach and Remedies. A breaching party is responsible under applicable law for proven direct losses and reasonable enforcement costs. Because unauthorized use or disclosure may cause irreparable harm, the non-breaching party may seek injunctive or other equitable relief in addition to available remedies.\n\n10. Term and Survival. This Agreement continues until the parties terminate the relationship in writing. Duties continue until the information lawfully becomes public. Trade secrets, personal data, credentials and information that must remain protected by law continue for as long as protection is required.\n\n11. Law and Disputes. This Agreement is governed by the laws of the People's Republic of China. The parties will first negotiate in good faith. Any later written dispute clause controls; if none exists, disputes may be submitted to the competent court at the domicile of the Platform Party.\n\n12. General. Neither party may transfer its principal duties without written consent, except to a lawful successor in a merger, division or transfer of the relevant business. Invalid provisions do not affect the remainder. A later specific confidentiality agreement controls where the parties expressly give it priority. Updated platform terms become effective for Partner only after Partner confirms the new version.","distributionTitle":"GameHub Developer Platform Distribution Partnership Agreement","distributionBody":"GAMEHUB DEVELOPER PLATFORM DISTRIBUTION PARTNERSHIP AGREEMENT\n\n1. Parties and Purpose. This Agreement is entered into by the operator of the GameHub Developer Platform (Platform Party) and the applicant company identified on this page (Partner). The parties intend to use the platform for game onboarding, testing, product configuration, build and release management, promotion, entitlement validation, channel supply and business reporting. Acceptance and company-verification submission do not by themselves approve any game for distribution; each game's scope follows its approved configuration and later written confirmation.\n\n2. Definitions. Product means a game, DLC, add-on, update or localized build submitted and approved for onboarding. Platform means the GameHub Developer Platform and related user-facing distribution products. User means a person who views, reserves, purchases, downloads, activates or uses a Product. GameHub Key means an entitlement code generated under authorized platform rules. External Key means a code supplied by Partner or another platform. Net Revenue means user payments less legally collected taxes, refunds, chargebacks, channel fees and other mutually confirmed adjustments.\n\n3. Eligibility and License. Partner represents that it has full authority to sign and perform this Agreement and owns or has sufficient licenses for Products, trademarks, assets, music, art, fonts, characters, data and other deliveries. Within the approved product, territory, channel, language and term, Partner grants the Platform Party a non-exclusive license to copy, store, transmit, display, perform, format and make non-material technical adaptations needed for onboarding, testing, marketing, sale, delivery, download, update, support and analysis.\n\n4. Delivery. Partner must provide true, accurate, complete and current company, bank, contact, game, product, rights, rating, privacy and compliance information. Builds, updates, patches, localized versions, runtime requirements and technical documentation must meet confirmed format and quality requirements. Products may not contain malware, backdoors, fraud, unauthorized data collection or functions that threaten users or the Platform.\n\n5. Integration, Testing and Release. Partner will cooperate on sign-in, launch verification, entitlement queries, offline authorization, error codes, logs and other confirmed integrations. The Platform Party may review information, functionality, compatibility, security and compliance before release. Review does not reduce Partner's responsibility for quality, rights or legality. Releases, staged rollout, rollback, removal and emergency fixes follow platform rules and confirmed procedures.\n\n6. Products, Pricing and Transactions. Product type, territory, currency, price, discounts, refunds, pre-order or reservation rules follow confirmed product settings and platform rules. The Platform Party may process orders, payment, refunds, chargebacks, invoices and billing support as permitted by law and published rules. Partner may not manipulate transactions, mislead users or commit price fraud.\n\n7. Keys and Channels. After authorization, Partner may create GameHub Key batches within approved games, channels, quotas and validity periods, and may deliver through approved channel APIs. Partner must protect credentials, key files and delivery records and may not create, sell, transfer or expose Keys outside authorization. External Keys remain generated by the relevant rightsholder. Freezing, revocation, replacement, redemption, exception handling and reconciliation follow platform rules and batch records.\n\n8. Marketing and Targeting. Partner authorizes use of approved names, trademarks, icons, screenshots, videos and copy for in-platform and external display, recommendations, campaigns and channel promotion. Budgets, assets, regions, channels, schedules, attribution and data access for paid or targeted campaigns require separate confirmation. No fixed exposure, download, conversion or revenue result is guaranteed.\n\n9. Data and Privacy. The Platform Party may provide aggregated views, reservations, downloads, activations, orders, refunds, revenue and channel performance for Partner's Products. Each party must process personal information lawfully and only as necessary for the partnership. Unless otherwise agreed in writing, each party acts as an independent controller and may not identify or contact users or analyze data for unrelated purposes.\n\n10. Settlement and Tax. Revenue share, currency, settlement cycle, payment threshold, tax, invoicing and payment method follow later settlement rules, product settings or supplemental agreements. Statements are sent to the contact email submitted in company verification. Partner must keep that email current and ensure its receiving account is lawfully controlled and matches the verified legal company name.\n\n11. Support. The Platform Party provides reasonable support for the platform, distribution tools, user billing and platform accounts. Partner supports the Product, fixes defects, maintains content and servers, provides legally required after-sales service, and responds promptly to serious defects, security incidents, infringement claims and regulatory requirements.\n\n12. Intellectual Property and Brand. Except for express licenses, each party retains its pre-existing technology, products, data, trademarks and other intellectual property. Brand use must follow written guidelines and may not imply endorsement, exclusivity or ownership beyond the actual partnership. Lawfully acquired user rights may not be removed without proper cause solely because this Agreement ends.\n\n13. Compliance and Removal. Partner warrants that Products and marketing materials comply with applicable law, ratings, publication, cybersecurity, data and consumer-protection requirements. The Platform Party may suspend downloads or sales, restrict Keys, remove a Product or take necessary measures for suspected illegality, infringement, malware, material security risk, serious quality issues or regulatory orders, with notice where practicable.\n\n14. Warranties and Indemnity. Each party warrants authority to enter and perform. Partner is responsible for the truth, rights and legality of submitted content and will bear liability and reasonably assist with claims, penalties or losses caused by its infringement, illegality or breach. The Platform Party remains responsible for its own platform services and operations.\n\n15. Liability. Except for fraud, wilful misconduct, gross negligence, intellectual-property infringement, confidentiality or data-protection breach, and liability that cannot be limited by law, neither party is liable for indirect, consequential, lost-profit or punitive damages. Any agreed cap must be set in a written supplemental agreement. User rights under mandatory law are unaffected.\n\n16. Term, Suspension and Termination. This Agreement continues until lawfully terminated. A material breach not cured within a reasonable written cure period permits termination. Illegality, infringement, security risk, fraud, insolvency or regulatory action may justify immediate suspension or termination. After termination, the parties stop new distribution and authorization and complete required refunds, reconciliation, user support and data return or deletion. Rights necessary to support existing users may continue for a reasonable period.\n\n17. Notices, Changes and Assignment. Notices may be sent through the developer account, verified contact email or other confirmed channel. Partner must keep its email valid. Platform terms may be updated for law, security or business needs; material changes bind Partner only after renewed confirmation. Principal rights and duties may not be transferred without written consent except to a lawful successor.\n\n18. Law, Disputes and Entire Agreement. This Agreement is governed by the laws of the People's Republic of China. The parties first negotiate in good faith. A later written dispute clause controls; if none exists, disputes may be submitted to the competent court at the domicile of the Platform Party. This Agreement, product settings, settlement rules and supplemental agreements form the complete partnership terms; later or more specific terms control conflicts. Invalid provisions do not affect the remainder. No partnership, employment or agency relationship is created.","help":{"title":"Help Center","faq":[{"id":"account-login","category":"Account and sign-in","question":"How do I sign in to the developer platform?","answer":"Use an email address to receive a verification code, or scan the QR code with the GameHub app. An unregistered account is created automatically on first sign-in.","steps":["Enter your email address and request a 6-digit verification code.","You can also open the GameHub app, scan the QR code and confirm sign-in.","Complete sign-in verification and choose an onboarding option."],"details":["Automatic registration creates only a platform account; it does not approve company verification.","The verification code is used only for this sign-in."]},{"id":"company-verification","category":"Company verification","question":"What do I need for company verification?","answer":"Prepare the legal registration details and license image, authorized signatory details, company bank account and proof image, plus the publisher brand and business contact.","steps":["Read the company-verification introduction and requirements first.","Enter the legal company name, registered address and license number exactly as shown on the license.","Enter the company bank account and upload both proof images.","Complete publisher and contact details, then accept both platform agreements in one confirmation and submit."],"details":["The bank account holder must match the legal company name.","The contact email is required for statements, settlement and important business notices.","There is no draft status. You may clear and restart before submission."]},{"id":"review-status","category":"Review result","question":"How can I check the review status?","answer":"After formal submission, the page shows Pending review. Future sign-ins continue to show the application ID, revision, status and processing history.","steps":["Pending: platform operations is reviewing the submission.","Approved: company verification is complete.","Rejected: the page shows the review note and an edit entry."],"details":["Submission does not mean approval.","Each result keeps the reviewer and processing time."]},{"id":"resubmit-rejected","category":"Review result","question":"How do I resubmit after rejection?","answer":"Update the information based on the review note and submit it again from the confirmation step. The platform creates a new application revision.","steps":["Select Edit and resubmit.","Update the requested information on the single application page.","Review everything and select Submit for review."],"details":["Resubmission never overwrites the previous revision or review record.","Restarting clears only the current unsubmitted changes."]},{"id":"pc-game-listing-guide","category":"Game listing","section":"Listing guides","question":"PC game listing guide","answer":"An overview of the path from creating a PC game project and preparing information to submitting it for listing review. This configurable article is a placeholder.","steps":["Review the required information and prerequisites.","Platform operations will add the final workflow after the related PRD is approved."],"details":["Production listing configuration is not available in this phase."]},{"id":"pc-test-plan-introduction","category":"Game listing","section":"Listing guides","question":"GameHub PC test plan introduction","answer":"An introduction to PC test-plan scenarios, eligibility and result viewing. This configurable article is a placeholder.","steps":["Platform operations maintains the introduction, availability and eligibility."],"details":["The final flow follows the later testing and release PRD."]},{"id":"pc-buyout-game-docs","category":"Game listing","section":"Listing guides","question":"PC buy-to-own game documentation","answer":"A directory for product, pricing, entitlement and review documentation for buy-to-own PC games. This configurable article is a placeholder.","steps":["Platform operations maintains the official document links and scope."],"details":["No product or pricing controls are added in this phase."]},{"id":"pc-store-materials","category":"Game listing","section":"Listing guides","question":"GameHub PC store asset requirements","answer":"Requirements for PC game icons, covers, screenshots, videos and store copy. This configurable article is a placeholder.","steps":["Platform operations will add dimensions, formats and content requirements."],"details":["Final requirements follow the game-information PRD and published operations content."]},{"id":"pc-game-qualification-guide","category":"Game listing","section":"Listing guides","question":"PC game qualification guide","answer":"An overview of rights and compliance materials required by territory, game type and distribution method. This configurable article is a placeholder.","steps":["Platform operations maintains the qualification and attachment checklist."],"details":["Actual requirements follow applicable law and current platform rules."]},{"id":"pc-build-upload-guide","category":"Game listing","section":"Listing guides","question":"How to upload a PC game build","answer":"Instructions for build upload, validation, version linking and test submission. This configurable article is a placeholder.","steps":["Platform operations will add supported systems, file requirements and upload steps."],"details":["Production build upload is not available in this phase."]},{"id":"sdk-service-overview","category":"SDK services","section":"Service overview","question":"SDK service overview","answer":"An introduction to GameHub SDK capabilities, supported platforms, version relationships and integration boundaries. This configurable article is a placeholder.","steps":["Platform operations maintains the capability description and availability."],"details":["Production SDK downloads and integration controls are not available in this phase."]},{"id":"sdk-changelog","category":"SDK services","section":"Service overview","question":"SDK changelog","answer":"Versioned records of new SDK capabilities, behavior changes, fixes and upgrade impact. This configurable article is a placeholder.","steps":["Platform operations maintains release dates and change summaries by version."],"details":["Developers should verify platform and version compatibility before integration."]},{"id":"sdk-compliance-guide","category":"SDK services","section":"Service overview","question":"SDK compliance guide","answer":"Compliance requirements for SDK integration, data processing, user notices and permission requests. This configurable article is a placeholder.","steps":["Platform operations maintains the official compliance guidance."],"details":["Final requirements follow current policy and applicable law."]},{"id":"sdk-privacy-policy","category":"SDK services","section":"Service overview","question":"SDK privacy policy","answer":"The data types, purposes, retention practices and developer responsibilities associated with the GameHub SDK. This configurable article is a placeholder.","steps":["Platform operations maintains the current effective policy."],"details":["Policy updates should include a version and effective date."]},{"id":"developer-center-configuration","category":"SDK services","section":"Development setup","question":"Developer Center configuration","answer":"APPID, platform parameters and environment information to prepare before SDK integration. This configurable article is a placeholder.","steps":["Platform operations will add configuration fields and access paths."],"details":["Production configuration follows the later SDK PRD."]},{"id":"android-signature-md5","category":"SDK services","section":"Development setup","question":"Get the Android signing-file MD5","answer":"Instructions for obtaining and verifying the MD5 of an Android application signing file. This configurable article is a placeholder.","steps":["Platform operations will add tools, commands and verification examples."],"details":["Never upload or expose a real signing private key in Help Center content."]},{"id":"sdk-v3-to-v4","category":"SDK services","section":"Development setup","question":"Upgrade SDK v3 to v4","answer":"Compatibility changes, migration steps and regression checks for upgrading SDK v3 to v4. This configurable article is a placeholder.","steps":["Platform operations maintains the official migration guide."],"details":["The final upgrade scope follows the release and changelog."]},{"id":"sdk-unity-integration","category":"SDK services","section":"Integration guides","question":"Unity integration (multi-platform)","answer":"The basic GameHub SDK integration flow for multi-platform Unity projects. This configurable article is a placeholder.","steps":["Platform operations will add dependencies, initialization and platform differences."],"details":["Final code examples follow the later SDK documentation."]},{"id":"sdk-android-native-integration","category":"SDK services","section":"Integration guides","question":"Android native integration","answer":"Dependencies, initialization and callback handling for native Android projects. This configurable article is a placeholder.","steps":["Platform operations will add the official integration steps."],"details":["Final parameters and APIs follow the later SDK documentation."]},{"id":"sdk-ios-native-integration","category":"SDK services","section":"Integration guides","question":"iOS native integration","answer":"Dependencies, initialization and callback handling for native iOS projects. This configurable article is a placeholder.","steps":["Platform operations will add the official integration steps."],"details":["Final parameters and APIs follow the later SDK documentation."]},{"id":"sdk-pc-integration","category":"SDK services","section":"Integration guides","question":"PC integration guide","answer":"The SDK integration flow for Windows, macOS and Linux games. This configurable article is a placeholder.","steps":["Platform operations will add supported systems, initialization and acceptance guidance."],"details":["Actual platform support follows the later SDK PRD."]},{"id":"gamehub-login-introduction","category":"SDK services","section":"GameHub sign-in","question":"GameHub sign-in introduction","answer":"User scenarios, account relationships and capability boundaries for GameHub sign-in. This configurable article is a placeholder.","steps":["Platform operations maintains the capability description."],"details":["Final account and data rules follow the later sign-in service PRD."]},{"id":"gamehub-login-development-guide","category":"SDK services","section":"GameHub sign-in","question":"GameHub sign-in development guide","answer":"Integration preparation, authorization flow and result handling for GameHub sign-in. This configurable article is a placeholder.","steps":["Platform operations will add APIs and callback guidance."],"details":["Production behavior follows the later SDK documentation."]},{"id":"gamehub-qr-login","category":"SDK services","section":"GameHub sign-in","question":"QR code sign-in","answer":"The flow for showing a QR code on PC or web and confirming sign-in in the GameHub app. This configurable article is a placeholder.","steps":["Platform operations will add QR states and error handling."],"details":["Security rules follow the later SDK documentation."]},{"id":"gamehub-get-user-info","category":"SDK services","section":"GameHub sign-in","question":"Get user information","answer":"User fields, authorization scopes and privacy limits available after sign-in. This configurable article is a placeholder.","steps":["Platform operations maintains field descriptions and permission requirements."],"details":["User information must not be used beyond user authorization and the partnership purpose."]},{"id":"gamehub-login-faq","category":"SDK services","section":"GameHub sign-in","question":"GameHub sign-in FAQ","answer":"Common issues including QR timeout, authorization failure, account mismatch and environment configuration. This configurable article is a placeholder.","steps":["Platform operations continuously maintains issues and resolution guidance."],"details":["Contact dev@xiaoji.com if the issue cannot be resolved."]},{"id":"developer-services-placeholder","category":"Developer services","question":"What capabilities are included in Developer Services?","answer":"Developer Services awaits a later PRD. This phase reserves only the Help Center category and entry.","steps":["Watch for later platform updates."],"details":["Company verification and the Help Center are the complete scope of this phase."]}],"contact":{"supportName":"GameHub Developer Support","serviceHours":"Service hours follow the current partnership arrangement","channel":"Partnership group or project contact","email":"dev@xiaoji.com","fallback":"For urgent issues, contact your current project representative"}}}},"pages":{"P01-01":{"summary":"平台介绍、语言切换、登录／注册。","status":"未登录","primaryAction":"登录／注册","primaryActionDisabled":false,"actions":[{"id":"gamehub-login","label":"使用盖世游戏账号登录"},{"id":"forgot-password","label":"忘记密码"}]},"P01-03":{"summary":"介绍认证要求，并在单页填资料、签协议和提交。","status":"未认证","primaryAction":"申请企业认证","primaryActionDisabled":false,"actions":[{"id":"save-draft","label":"保存草稿"}]},"P02-01":{"summary":"建立一个可继续配置的 PC 游戏后台项目。","status":"创建／发行准备中","primaryAction":"创建游戏","primaryActionDisabled":false,"actions":[],"cdkeySelfService":{"tabs":["商品与供给","Key 批次","渠道 API","接口说明"],"authorization":{"status":"授权正常","remainingQuota":8000,"channels":["星云商城","远航游戏"],"pausedReason":"—","scope":"星海互动 × 已授权渠道","totalQuota":10000,"usedQuota":2000,"regions":["中国大陆","中国香港","中国澳门","中国台湾"],"validUntil":"2026-12-31 23:59"},"keySources":[{"id":"gamehub_generated","label":"盖世平台 Key","rule":"由盖世兑换服务校验并授予已配置权益"},{"id":"external_imported","label":"外部平台 Key","rule":"仅受控导入或供应商 API 同步，盖世不生成"}],"keyBatches":[{"batchId":"KEY-20260902-001","name":"星云商城首发批次","source":"盖世平台 Key","quantity":2000,"allocated":640,"remaining":1360,"channel":"星云商城","region":"中国大陆","purpose":"首发销售","expiresAt":"2026-12-31 23:59","status":"可用","download":"明文已下载"},{"batchId":"KEY-20260818-004","name":"媒体评测批次","source":"盖世平台 Key","quantity":80,"allocated":80,"remaining":0,"channel":"远航游戏","region":"全球（不含受限地区）","purpose":"媒体评测","expiresAt":"2026-09-30 23:59","status":"已用完","download":"明文已下载"}],"credentials":[{"name":"星云商城正式凭据","clientId":"cli_xh_20260901","secretMask":"••••••••9K7Q","secretHint":"末四位 9K7Q","ownerType":"厂商＋渠道","vendor":"星海互动","channel":"星云商城","scopes":[{"game":"星海远征","gameId":"GAME-48291","sku":"标准版","skuId":"SKU-CN-001","region":"中国大陆","quota":5000},{"game":"星海远征","gameId":"GAME-48291","sku":"豪华版","skuId":"SKU-CN-002","region":"中国港澳台","quota":1200}],"expiresAt":"2026-12-31 23:59","status":"正常","lastCalledAt":"2026-09-02 10:18","callsToday":186,"remainingToday":814}],"supplyLedgers":{"external":[{"source":"Steam Key","batch":"EXT-STEAM-202608-07","sku":"SKU-CN-001","received":5000,"available":214,"state":"库存不足","updatedAt":"2026-09-03 09:18"}],"gamehub":[{"source":"盖世平台 Key","batch":"KEY-20260902-001","sku":"SKU-CN-001","generated":2000,"allocated":640,"available":1360,"state":"可供给","updatedAt":"2026-09-03 10:18"}]},"apiDocs":{"auth":"client_id + HMAC-SHA256；时间戳、随机数和签名放入请求头，Secret 不进入 URL。","idempotency":"同一 request_id 返回同一分配结果，不重复扣减库存。","endpoints":[{"method":"POST","path":"/openapi/v1/cdkeys/allocate","purpose":"按渠道订单分配一个 Key"},{"method":"GET","path":"/openapi/v1/cdkeys/allocations/{request_id}","purpose":"查询分配状态与掩码信息"},{"method":"POST","path":"/openapi/v1/cdkeys/allocations/{request_id}/confirm","purpose":"确认已向用户交付"}],"errors":["无权限","签名失败","时间戳过期","渠道暂停","游戏未授权","配额不足","无可用 Key","重复订单冲突","服务异常"]}}},"P15-01":{"summary":"","status":"已生效","primaryAction":"","primaryActionDisabled":false,"actions":[]},"P15-02":{"summary":"","status":"","primaryAction":"","primaryActionDisabled":false,"actions":[]},"P15-03":{"summary":"","status":"","primaryAction":"","primaryActionDisabled":false,"actions":[]}}}</textarea>
+<textarea id="portal-routes" hidden aria-hidden="true">[{"id":"P01-01","moduleId":"01","templateId":"T01","role":"developer","title":"独立账号与盖世第三方登录页"},{"id":"P01-03","moduleId":"01","templateId":"T04","role":"developer","title":"开发者注册与厂商资料页"},{"id":"P02-01","moduleId":"02","templateId":"T03","role":"developer","title":"游戏创建、版本发布与资质管理页"},{"id":"P15-01","moduleId":"02","templateId":"FINANCE","role":"developer","title":"财务主体"},{"id":"P15-02","moduleId":"02","templateId":"FINANCE","role":"developer","title":"对账结算"}]</textarea>
+<textarea id="portal-data" hidden aria-hidden="true">{"accounts":{"developer":{"name":"王明","roleName":"已确认开发者"},"operations":{"name":"李然","roleName":"平台发行运营"},"tester":{"name":"陈宇","roleName":"平台测试人员"}},"context":{"vendorId":"VEN-202609-001","vendorName":"星海互动","gameId":"GAME-48291","gameName":"星海远征","versionId":"VER-100","versionName":"1.0.0","appId":"APP-7F3A9C","campaignId":"CMP-202609-001","querySnapshotId":"QRY-20260903-001"},"helpCenter":{"title":"帮助中心","faq":[{"id":"developer-verification","category":"账号与认证","question":"如何完成开发者认证？","answer":"填写主体、品牌和联系人资料并提交，平台录入线下确认结果后即可取得开发者资格。","steps":["进入“开发者认证”，选择主体类型和注册国家／地区。","填写主体法定名称、登记编号、品牌与联系人信息。","确认资料无误后提交，等待平台录入线下确认结果。"],"details":["认证资料支持在提交前保存草稿。","资料需要修改时，按页面反馈修订后重新提交。"],"note":"开发者资格以平台已录入的确认结果为准。"},{"id":"create-game-appid","category":"游戏与 APPID","question":"如何创建游戏并获取 APPID？","answer":"完成开发者认证后创建游戏并提交资料；项目确认后系统会生成唯一 APPID。","steps":["进入“游戏管理”，点击“创建游戏”。","填写游戏基础信息、发行信息和支持平台后提交资料。","游戏项目确认后，在“APPID 与 SDK 接入”中查看唯一 APPID。"],"details":["每个已确认的游戏项目对应唯一 APPID。","APPID 用于 SDK 接入和后续版本、发行数据关联。"]},{"id":"download-sdk-docs","category":"游戏与 APPID","question":"在哪里下载 SDK 和查看接入文档？","answer":"进入 APPID 与 SDK 接入页，可按系统下载 SDK、核对校验值并打开接入文档。","steps":["在左侧导航进入“APPID 与 SDK 接入”。","选择 Windows、macOS 或 Linux 对应 SDK。","下载后核对版本号与 SHA-256 校验值，再按接入文档完成配置。"],"details":["三个系统使用同一 APPID，分别下载对应平台的 SDK。","接入文档仅对已授权的开发者账号开放。"]},{"id":"create-key-batch","category":"CDKEY","question":"如何创建 Key 批次？","answer":"确认游戏、SKU、渠道、额度和有效期均在授权范围内后，在 Key 批次中提交创建。","steps":["进入“CDKEY 商品与供给”，切换到“Key 批次”。","选择游戏、SKU、渠道并填写生成数量和有效期。","提交创建后，在一次性有效窗口内下载 Key 文件。"],"details":["Key 明文仅在创建成功后提供一次性下载。","后续只保留批次、数量、状态和审计记录。"],"note":"请在下载后妥善保存 Key 文件，关闭一次性窗口后不能再次查看明文。"},{"id":"lost-client-secret","category":"CDKEY","question":"Secret 丢失怎么办？","answer":"Secret 不支持再次查看，请轮换凭据并更新第三方渠道配置。","steps":["进入“渠道 API”，找到对应渠道凭据。","执行“轮换凭据”，并立即保存新 Secret。","在第三方渠道更新配置并完成接口验证。"],"details":["新 Secret 仅显示一次，关闭后只展示末四位。","凭据轮换后，旧 Secret 立即失效。"],"note":"为避免渠道调用中断，请先准备好第三方渠道的配置更新窗口。"},{"id":"resume-build-upload","category":"包体与发布","question":"包体上传中断后需要重新上传吗？","answer":"已完成的分片会保留；重新进入 Build 详情后可从中断位置继续上传。","steps":["返回对应版本的“包体上传与 Build 详情”。","确认中断原因和已完成的上传进度。","点击“继续上传”，完成剩余分片与完整性校验。"],"details":["已完成分片不会因网络中断而重复上传。","完整性校验通过后才能继续提交测试。"]},{"id":"publish-after-test","category":"包体与发布","question":"测试通过后如何发布版本？","answer":"平台完成上架结论并确认发布条件后，由发行运营配置立即发布或定时发布。","steps":["在版本详情确认测试结果与上架结论。","确认目标系统、CPU 架构和对应 Release Pointer。","由发行运营配置立即发布或定时发布，并保留发布记录。"],"details":["测试通过不等于版本已经发布。","历史 Build、Manifest 与 Chunk 会继续保留，可用于回滚。"]},{"id":"data-refresh-frequency","category":"经营数据","question":"经营数据多久更新一次？","answer":"交易与 Key 数据按小时更新，客户端下载、更新与首次启动数据次日更新。","sectionTitle":"更新频率","steps":["交易、退款与 Key 供给／兑换：按小时更新。","客户端下载、更新与首次启动：次日更新。"],"details":["看板与导出使用同一查询条件时，应保持相同的数据口径。","数据尚未完成更新时，请以页面标注的最近更新时间为准。"]},{"id":"key-source-difference","category":"CDKEY","question":"盖世平台 Key 和外部平台 Key 有什么区别？","answer":"盖世平台 Key 由盖世兑换服务校验；Steam、Epic、GOG 等 Key 必须由对应平台或供应商提供。","sectionTitle":"两类 Key 的来源","steps":["盖世平台 Key：由开发者后台按授权额度生成，供指定渠道分配和兑换。","外部平台 Key：由 Steam、Epic、GOG 等对应平台或供应商提供，再按供给配置导入。"],"details":["开发者后台不能代替外部平台生成其 Key。","两类 Key 分别保留供给、分配、兑换和对账记录。"]}],"contact":{"supportName":"盖世游戏开发者支持","serviceHours":"服务时间以合作对接安排为准","channel":"合作群／项目对接人","email":"dev@xiaoji.com","fallback":"紧急问题请联系当前项目对接人"}},"managedContent":{"revision":1,"publishedAt":"2026-09-03 10:00","publishedBy":"平台运营 李然","zh":{"introTitle":"加入盖世游戏开发者平台，开展正版发行合作","introDescription":"本流程将引导企业完成身份核验与合作授权。请先了解申请流程、资料要求和内容规范，再一次性提交企业主体、银行结算、厂商联系人及协议签署信息。","introSteps":["了解平台合作范围与内容规范","准备企业工商及银行结算资料","阅读并确认平台合作协议","一次性提交企业认证申请","审核通过后开通发行合作能力"],"introRequirements":["企业法定名称、注册地区、注册地址及工商执照号码","清晰有效的工商执照证明图片","与企业法定名称一致的银行账户及证明图片","厂商品牌、联系人和账单接收邮箱","有权代表企业签署协议的授权人员信息"],"introRules":["提交的游戏及素材必须合法合规，并已取得完整权利或充分授权。","不得提交含恶意代码、病毒、欺诈或未经授权收集敏感信息的内容。","不得提交侵犯第三方知识产权、隐私权或其他合法权益的内容。","具体游戏的接入、测试、审核与发行安排，以后续产品配置及双方确认结果为准。"],"introReviewNote":"平台运营通常在资料提交后的 5 个工作日内完成审核。提交成功不代表认证通过；审核结果与处理记录可在开发者控制台持续查看。","ndaTitle":"《盖世游戏开发者平台保密协议》","ndaBody":"盖世游戏开发者平台保密协议\n\n一、协议主体与生效\n本协议由盖世游戏开发者平台运营方（以下简称“平台方”）与申请企业（以本页填写的企业法定名称为准，以下简称“合作方”）共同订立。合作方的授权代表在本页确认接受并提交申请后，本协议对合作方生效；平台方确认合作申请或开始向合作方披露保密信息后，本协议对双方生效。\n\n二、保密信息\n“保密信息”是指一方及其关联方以书面、口头、电子或其他方式向另一方披露的，已经标明保密或者依其性质、披露场景应被合理理解为保密的信息，包括但不限于未发布的游戏、产品规划、源代码与技术资料、测试版本、接口文档、账号与权限、运营方案、投放计划、商务条件、定价与结算数据、用户与交易数据、协议条款以及包含前述信息的复制件、摘要和衍生资料。\n\n三、不属于保密信息的情形\n接收方能够以书面证据证明下列任一情形的，不属于保密信息：接收时已合法公开的信息；接收方在披露前已合法知悉且不负保密义务的信息；接收方未使用披露方保密信息而独立开发的信息；从有权披露且不受保密限制的第三方合法取得的信息；经披露方书面同意公开的信息。\n\n四、使用与披露限制\n接收方仅可为评估、建立和履行盖世游戏开发者平台合作关系使用保密信息，不得用于竞争、侵权或其他与合作无关的目的。除确有知悉必要且已承担不低于本协议保护义务的员工、关联方、专业顾问或服务商外，接收方不得向任何第三方披露保密信息。未经披露方书面许可，接收方不得对获得的软件、接口、样品或技术资料实施反向工程、反编译、拆解或规避安全措施，但法律明确允许且不得排除的情形除外。\n\n五、安全保护义务\n接收方应采取不低于保护自身同类重要信息的合理安全措施，包括访问权限控制、账号与凭据保护、传输和存储保护、人员保密管理及必要的日志留存。发生或可能发生未经授权的访问、使用、披露、丢失或泄露时，接收方应及时通知披露方，说明已知影响，并采取合理措施控制和补救。\n\n六、依法披露\n接收方因法律法规、司法机关、行政机关或证券监管要求必须披露保密信息时，应在法律允许范围内及时通知披露方，并仅披露依法必须披露的最小范围；接收方应合理协助披露方申请保密审理、保护令或其他救济。\n\n七、返还与销毁\n合作终止、披露方提出书面要求或保密信息已无继续使用必要时，接收方应停止使用，并按披露方要求返还或销毁其控制范围内的保密信息及复制件；法律法规、合规审计或自动备份机制要求保留的部分除外，但保留信息仍受本协议约束。\n\n八、知识产权与无授权\n保密信息及其相关知识产权始终归披露方或其合法权利人所有。除为履行合作所必需的有限使用权外，披露行为不构成任何专利、著作权、商标、商业秘密或其他权利的转让、许可或承诺，也不构成对合作、采购、发行或投资结果的保证。\n\n九、违约与救济\n任何一方违反本协议，给另一方造成损失的，应依法承担违约责任并赔偿可证明的直接损失及合理维权费用。双方确认，擅自披露或使用保密信息可能造成难以用金钱完全弥补的损害，守约方有权依法申请停止侵害、行为保全或其他救济。\n\n十、期限与存续\n本协议自生效之日起持续有效，直至双方书面终止合作。保密义务在相关信息依法公开前持续有效；涉及商业秘密、个人信息、账号凭据和依法应持续保护的信息，其保护义务不因合作终止而消灭。\n\n十一、适用法律与争议解决\n本协议的订立、效力、解释和履行适用中华人民共和国法律。争议应先友好协商；协商不成的，按双方后续书面确认的争议解决条款处理；未另行约定时，任何一方可向平台运营主体住所地有管辖权的人民法院提起诉讼。\n\n十二、其他\n未经另一方书面同意，任何一方不得转让本协议项下主要权利义务，但因合并、分立、资产或业务整体转让而由合法承继主体承接的除外。部分条款无效不影响其他条款效力。本协议与双方后续签署的专项保密条款冲突时，以双方明确约定优先适用的文本为准。平台可基于法律、业务或安全需要更新协议，并在开发者平台展示当前生效版本；新版本仅对合作方再次确认后发生效力。","distributionTitle":"《盖世游戏开发者平台发行合作协议》","distributionBody":"盖世游戏开发者平台发行合作协议\n\n一、协议主体与合作目的\n本协议由盖世游戏开发者平台运营方（以下简称“平台方”）与申请企业（以本页填写的企业法定名称为准，以下简称“合作方”）订立。双方拟通过盖世游戏开发者平台完成游戏资料接入、测试审核、商品配置、包体与版本管理、发行推广、授权校验、渠道供给及经营数据查看等合作。合作方的授权代表确认本协议并提交企业认证申请，不当然代表具体游戏已获准发行；每款游戏的合作范围以平台配置、审核结果及双方后续确认文件为准。\n\n二、定义\n“合作产品”指合作方提交并经平台方确认接入的游戏、DLC、附加内容、更新及本地化版本；“平台”指盖世游戏开发者平台及其面向用户提供发行服务的相关产品；“用户”指通过平台获取、购买、预约、下载、激活或使用合作产品的自然人；“盖世 Key”指由平台依授权规则生成并用于验证合作产品权益的授权码；“外部 Key”指由第三方平台或合作方提供、并由平台受控管理的授权码；“净收入”指用户实付收入扣除依法代收税费、退款、拒付、渠道费用及双方书面确认的其他调整项后的金额。\n\n三、合作资格与授权\n合作方声明其具有签署和履行本协议的完整权利与授权，对合作产品、商标、宣传素材、音乐、美术、字体、人物形象、数据及其他交付内容拥有完整权利或已取得充分许可。合作方授予平台方在双方确认的产品、地区、渠道、语言和期限内，为接入、测试、展示、宣传、销售、交付、下载、更新、客服和运营分析之目的，对合作产品及素材进行必要复制、存储、传输、展示、执行、格式转换和非实质性适配的非独占许可。具体授权范围可由单款游戏配置或补充协议限定。\n\n四、产品与资料交付\n合作方应按平台要求提交真实、准确、完整且持续有效的企业、银行、联系人、游戏、商品、权利证明、分级、隐私和合规资料，并在资料发生变化时及时更新。合作产品的包体、更新、补丁、本地化版本、运行环境和技术文档应达到双方确认的格式与质量要求。合作方不得提交包含恶意代码、病毒、后门、欺诈功能、未经授权的数据采集或可能损害用户设备与平台安全的内容。\n\n五、技术接入、测试与发布\n合作方应配合完成账号登录、启动校验、权益查询、离线授权、错误码、日志及双方确认的其他技术接入。合作产品发布前，平台方可进行资料、功能、兼容性、安全性和合规审核；审核不减轻合作方对产品质量、权利与合法性的责任。版本发布、灰度、回滚、下架和紧急修复按平台规则及双方确认流程执行。未经平台方确认，合作方不得自行将未审核版本标记为正式发行版本。\n\n六、商品、定价与用户交易\n合作产品的商品形态、销售地区、币种、价格、折扣、退款规则、预购或预约安排，以双方确认的商品配置和平台规则为准。平台方可在法律法规和已公示规则允许范围内处理订单、支付、退款、拒付、发票或账单支持。合作方不得通过虚假交易、误导宣传、价格欺诈或其他方式损害用户和平台权益。\n\n七、CDKEY 与第三方渠道供给\n经平台方开通后，合作方可在获授权的游戏、渠道、额度和有效期范围内申请或生成盖世 Key 批次，并可通过平台提供的渠道接口向经批准的第三方渠道交付。合作方应妥善保管接口凭据、Key 文件和交付记录，不得超范围生成、出售、转让或泄露。外部 Key 由实际权利方生成，合作方应保证来源合法、数量和状态真实可核验。Key 的冻结、撤销、补发、兑换、异常处置与对账以平台规则和批次记录为准。\n\n八、发行推广与精准化投放\n合作方授权平台方在合作范围内使用合作产品名称、商标、图标、截图、视频、文案和其他营销素材进行站内外展示、推荐、活动和渠道推广。需要建立 Campaign、定向人群、追踪参数或付费投放时，具体预算、素材、地区、渠道、投放周期、归因口径和数据权限由双方另行确认。平台方不保证任何固定曝光、下载、转化或收入结果。\n\n九、经营数据与隐私\n平台方可向合作方提供与其合作产品相关的浏览、预约、下载、激活、订单、退款、收入及渠道效果等汇总数据。双方应依适用法律及各自隐私政策处理个人信息，仅在实现合作目的的必要范围内收集、使用、存储和共享。未经另行书面约定，双方分别作为独立的个人信息处理者承担各自义务，不得利用平台数据识别、骚扰用户或从事与合作无关的分析。\n\n十、结算、账单与税费\n收入分成比例、结算币种、结算周期、最低付款门槛、税费承担、开票和付款方式，以双方后续确认的结算规则、单款游戏配置或补充协议为准。平台方按确认口径生成账单并发送至合作方在企业认证中填写的联系邮箱；合作方应在约定期限内核对并反馈异议。合作方应保证收款账户为其合法控制且账户户名与认证主体一致，并自行承担依法应由其承担的税费。\n\n十一、双方支持义务\n平台方在合理范围内提供开发者平台、发行工具、用户账单与平台账号相关支持。合作方负责合作产品本身的用户支持、缺陷修复、内容更新、服务器稳定性和依法应提供的售后服务，并应及时响应平台方发现的严重缺陷、安全事件、侵权投诉或监管要求。\n\n十二、知识产权与品牌\n除本协议明确授权外，双方各自保留其原有技术、产品、数据、商标和其他知识产权。任何一方使用另一方品牌均应遵守对方书面品牌规范，不得暗示超出实际合作范围的背书、独家关系或权利归属。用户依交易规则取得的合作产品使用权，不因本协议终止而被无故剥夺。\n\n十三、内容合规与下架\n合作方保证合作产品及宣传资料符合发行地区适用法律、分级、出版、网络安全、数据与消费者保护要求。平台方发现涉嫌违法、侵权、恶意代码、重大安全风险、严重质量问题或监管要求时，可采取暂停下载、停止销售、限制 Key、下架或其他必要措施，并及时通知合作方；紧急情况下可先行处置。\n\n十四、陈述、保证与赔偿\n双方分别保证具备签署和履行本协议的能力。合作方对其提交内容的真实性、权利完整性和合法合规性负责；因合作方内容、授权瑕疵、违法行为或违反本协议导致第三方索赔、行政处罚或平台方损失的，合作方应依法承担责任并合理配合处理。平台方应对其自行提供的平台服务和运营行为承担相应责任。\n\n十五、责任限制\n除故意或重大过失、侵犯知识产权、违反保密或数据保护义务以及法律不得限制的责任外，任何一方不对间接损失、可得利益损失或惩罚性损失承担责任。具体责任上限如需约定，以双方书面确认的补充协议为准。本条不影响用户依法享有的权利。\n\n十六、期限、暂停与终止\n本协议自生效之日起持续有效，直至双方依法或依约终止。任何一方严重违约并在收到书面通知后的合理期限内未纠正，守约方可终止合作；存在违法、侵权、安全风险、欺诈、资不抵债或监管要求时，可立即暂停或终止相关服务。终止后，双方应停止新增发行与授权，完成必要的退款、对账、用户支持、数据返还或删除；为已购用户继续下载、更新或验证所必需的权利和义务，可在合理范围内继续有效。\n\n十七、通知、变更与转让\n合作通知可发送至开发者平台账号、认证联系邮箱或双方书面确认的其他渠道。合作方应保证邮箱持续有效并及时更新。平台可因法律、监管、安全或业务需要更新平台规则与协议，并在平台展示当前版本；涉及合作方实质权利义务的变更，应由合作方再次确认后生效。未经另一方书面同意，任何一方不得转让本协议项下主要权利义务，但合法承继主体承接的除外。\n\n十八、适用法律、争议解决与其他\n本协议适用中华人民共和国法律。争议应先友好协商；协商不成的，按双方后续书面确认的争议解决条款处理；未另行约定时，任何一方可向平台运营主体住所地有管辖权的人民法院提起诉讼。本协议与单款游戏配置、结算规则及双方签署的补充协议共同构成完整合作约定；发生冲突时，后签署或针对具体事项的文件优先。部分条款无效不影响其他条款效力。双方之间不因本协议形成合伙、劳动或代理关系。","help":{"title":"帮助中心","faq":[{"id":"account-login","category":"账号与登录","question":"如何登录开发者平台？","answer":"可使用中国大陆手机号接收验证码登录，也可使用盖世游戏 App 扫码登录。未注册账号将在首次登录时自动注册。","steps":["输入 11 位中国大陆手机号并获取 6 位验证码。","也可打开盖世游戏 App 扫描二维码并确认登录。","完成登录验证后选择入驻方式。"],"details":["自动注册只创建平台账号，不代表企业认证已通过。","验证码仅用于本次登录验证。"]},{"id":"company-verification","category":"企业认证","question":"企业认证需要准备哪些资料？","answer":"需准备企业工商信息与执照图片、授权签署人信息、企业银行账户与证明图片，以及厂商品牌和联系人资料。","steps":["先阅读企业认证介绍，确认申请流程和资料要求。","按工商执照填写企业法定名称、注册地址和执照号码。","填写企业银行账户并上传两类证明图片。","补充厂商与联系人信息，阅读两份平台协议后统一确认并提交。"],"details":["银行账户户名必须与企业法定名称一致。","联系邮箱为必填项，用于接收账单、结算及重要业务通知。","流程没有草稿态，提交前可清空重填。"]},{"id":"review-status","category":"审核结果","question":"提交后如何查看审核状态？","answer":"正式提交后页面进入待审核状态；再次登录仍会显示当前申请编号、修订版本、审核状态与处理记录。","steps":["待审核：平台运营正在处理，企业资料不可再次提交。","已通过：企业主体认证完成。","已拒绝：页面展示审核意见，并提供修改入口。"],"details":["提交成功不等于审核通过。","每次处理结果都会保留审核人和处理时间。"]},{"id":"resubmit-rejected","category":"审核结果","question":"认证被拒绝后如何重新提交？","answer":"根据页面展示的拒绝原因修改原资料，并在确认页重新提交；系统将生成新的申请修订。","steps":["点击“修改并重新提交”。","按审核意见在单页资料中完成修改。","核对后再次点击“提交审核”。"],"details":["重新提交不会覆盖上一修订和原审核记录。","修改过程中可重新开始，但不会删除已提交历史。"]},{"id":"pc-game-listing-guide","category":"游戏上架","section":"上架指南","question":"PC 游戏上架指南","answer":"用于说明 PC 游戏从创建项目、准备资料到提交上架审核的完整路径。当前为目录与文章占位，正文由平台运营在内容后台配置。","steps":["查看游戏上架所需资料和前置条件。","按后续上架 PRD 补充正式操作流程。"],"details":["本期不开放实际上架配置，最终字段与审核规则以后续 PRD 为准。"]},{"id":"pc-test-plan-introduction","category":"游戏上架","section":"上架指南","question":"盖世游戏 PC 测试计划能力介绍","answer":"用于介绍 PC 游戏测试计划的适用场景、参与方式和结果查看方式。当前为可配置占位文章。","steps":["由运营后台维护能力介绍、开放范围和参与条件。"],"details":["具体测试流程以后续测试与发布 PRD 为准。"]},{"id":"pc-buyout-game-docs","category":"游戏上架","section":"上架指南","question":"PC 买断制游戏文档指引","answer":"用于汇总买断制 PC 游戏在商品、定价、权益和发行审核方面的文档入口。当前为可配置占位文章。","steps":["由运营后台维护正式文档入口和适用范围。"],"details":["本期不新增商品或定价操作。"]},{"id":"pc-store-materials","category":"游戏上架","section":"上架指南","question":"盖世游戏 PC 版物料规范","answer":"用于说明 PC 游戏图标、封面、截图、视频和商店文案的规格要求。当前为可配置占位文章。","steps":["由运营后台补充各类物料尺寸、格式和内容规范。"],"details":["正式规范以后续游戏资料 PRD 与运营配置为准。"]},{"id":"pc-game-qualification-guide","category":"游戏上架","section":"上架指南","question":"PC 游戏资质指引","answer":"用于说明不同地区、游戏类型和发行方式需要准备的权利与合规资料。当前为可配置占位文章。","steps":["由运营后台维护资质清单和附件要求。"],"details":["实际资质要求以发行地区法律法规和平台最新规则为准。"]},{"id":"pc-build-upload-guide","category":"游戏上架","section":"上架指南","question":"PC 游戏如何在后台传包","answer":"用于说明 PC 游戏包体上传、校验、版本关联和提交测试的操作。当前为可配置占位文章。","steps":["由运营后台补充支持系统、文件要求和上传步骤。"],"details":["本期不开放真实包体上传，具体流程以后续 PRD 为准。"]},{"id":"sdk-service-overview","category":"SDK 服务","section":"服务概览","question":"SDK 服务概览","answer":"用于介绍盖世游戏 SDK 的能力范围、支持平台、版本关系和接入边界。当前为可配置占位文章。","steps":["由运营后台维护 SDK 能力说明与适用范围。"],"details":["当前不提供生产 SDK 下载或真实接入配置。"]},{"id":"sdk-changelog","category":"SDK 服务","section":"服务概览","question":"SDK 更新日志","answer":"用于按版本记录 SDK 新增能力、行为变化、修复内容和升级影响。当前为可配置占位文章。","steps":["由运营后台按版本维护发布日期和变更摘要。"],"details":["开发者接入前应核对目标平台与版本兼容性。"]},{"id":"sdk-compliance-guide","category":"SDK 服务","section":"服务概览","question":"SDK 合规使用说明","answer":"用于说明 SDK 接入、数据处理、用户告知和权限申请中的合规要求。当前为可配置占位文章。","steps":["由运营后台维护正式合规说明。"],"details":["最终要求以平台最新政策与适用法律法规为准。"]},{"id":"sdk-privacy-policy","category":"SDK 服务","section":"服务概览","question":"SDK 隐私政策","answer":"用于展示盖世游戏 SDK 涉及的数据类型、处理目的、保存方式和开发者责任。当前为可配置占位文章。","steps":["由运营后台维护当前生效政策正文。"],"details":["政策更新后应同步版本与生效时间。"]},{"id":"developer-center-configuration","category":"SDK 服务","section":"开发准备","question":"开发者中心配置","answer":"用于说明接入 SDK 前需要在开发者中心准备的 APPID、平台参数和环境信息。当前为可配置占位文章。","steps":["由运营后台补充配置项和获取路径。"],"details":["实际配置能力以后续 SDK PRD 为准。"]},{"id":"android-signature-md5","category":"SDK 服务","section":"开发准备","question":"获取 Android 签名文件 MD5","answer":"用于说明如何获取并核对 Android 应用签名文件的 MD5 信息。当前为可配置占位文章。","steps":["由运营后台补充工具、命令与校验示例。"],"details":["不得在帮助文档中上传或展示真实签名私钥。"]},{"id":"sdk-v3-to-v4","category":"SDK 服务","section":"开发准备","question":"SDK v3 升级 v4","answer":"用于说明 SDK v3 升级到 v4 的兼容变化、迁移步骤和回归检查。当前为可配置占位文章。","steps":["由运营后台维护正式迁移指南。"],"details":["最终升级范围以发布版本和更新日志为准。"]},{"id":"sdk-unity-integration","category":"SDK 服务","section":"集成指南","question":"Unity 集成（多平台）","answer":"用于说明 Unity 项目在多平台环境下接入盖世游戏 SDK 的基本流程。当前为可配置占位文章。","steps":["由运营后台补充依赖、初始化和平台差异说明。"],"details":["正式示例代码以后续 SDK 文档为准。"]},{"id":"sdk-android-native-integration","category":"SDK 服务","section":"集成指南","question":"Android 原生集成","answer":"用于说明 Android 原生项目接入 SDK 的依赖、初始化和回调处理。当前为可配置占位文章。","steps":["由运营后台补充正式接入步骤。"],"details":["最终参数和接口以后续 SDK 文档为准。"]},{"id":"sdk-ios-native-integration","category":"SDK 服务","section":"集成指南","question":"iOS 原生集成","answer":"用于说明 iOS 原生项目接入 SDK 的依赖、初始化和回调处理。当前为可配置占位文章。","steps":["由运营后台补充正式接入步骤。"],"details":["最终参数和接口以后续 SDK 文档为准。"]},{"id":"sdk-pc-integration","category":"SDK 服务","section":"集成指南","question":"PC 端接入指南","answer":"用于说明 Windows、macOS 和 Linux 游戏接入盖世游戏 SDK 的流程。当前为可配置占位文章。","steps":["由运营后台补充支持系统、初始化与验收说明。"],"details":["实际支持范围以后续 SDK PRD 为准。"]},{"id":"gamehub-login-introduction","category":"SDK 服务","section":"盖世游戏登录","question":"盖世游戏登录功能介绍","answer":"用于介绍盖世游戏登录的用户场景、账号关系和能力边界。当前为可配置占位文章。","steps":["由运营后台维护能力说明。"],"details":["正式账号与数据规则以后续登录服务 PRD 为准。"]},{"id":"gamehub-login-development-guide","category":"SDK 服务","section":"盖世游戏登录","question":"盖世游戏登录开发指南","answer":"用于说明盖世游戏登录的接入准备、授权流程和结果处理。当前为可配置占位文章。","steps":["由运营后台补充接口与回调说明。"],"details":["实际实现以后续 SDK 文档为准。"]},{"id":"gamehub-qr-login","category":"SDK 服务","section":"盖世游戏登录","question":"扫码登录","answer":"用于说明 PC 或网页端拉起二维码并由盖世游戏 App 确认登录的流程。当前为可配置占位文章。","steps":["由运营后台补充二维码状态与异常处理。"],"details":["登录安全规则以后续 SDK 文档为准。"]},{"id":"gamehub-get-user-info","category":"SDK 服务","section":"盖世游戏登录","question":"获取用户信息","answer":"用于说明登录成功后可获取的用户字段、授权范围和隐私限制。当前为可配置占位文章。","steps":["由运营后台维护字段说明和权限要求。"],"details":["不得超出用户授权和合作目的使用用户信息。"]},{"id":"gamehub-login-faq","category":"SDK 服务","section":"盖世游戏登录","question":"盖世游戏登录常见问题","answer":"用于汇总扫码超时、授权失败、账号不一致和环境配置等常见问题。当前为可配置占位文章。","steps":["由运营后台持续维护问题与处理建议。"],"details":["无法自助解决时可联系 dev@xiaoji.com。"]},{"id":"developer-services-placeholder","category":"开发者服务","question":"开发者服务包含哪些能力？","answer":"开发者服务模块等待后续 PRD 输出，本期仅预留帮助分类和入口。","steps":["请关注后续平台更新。"],"details":["企业认证和帮助中心为本期完整交付范围。"]}],"contact":{"supportName":"盖世游戏开发者支持","serviceHours":"服务时间以合作对接安排为准","channel":"合作群／项目对接人","email":"dev@xiaoji.com","fallback":"紧急问题请联系当前项目对接人"}}},"en":{"introTitle":"Join the GameHub Developer Platform","introDescription":"This process guides companies through identity verification and partnership authorization. Review the process, required documents and content standards before submitting the company, settlement, publisher, contact and agreement information in one application.","introSteps":["Review the partnership scope and content standards","Prepare company and bank settlement documents","Read and accept the platform agreements","Submit the company verification application","Unlock publishing capabilities after approval"],"introRequirements":["Legal company name, registration region, registered address and license number","A clear and valid business license image","A company bank account and proof image matching the legal name","Publisher brand, business contact and billing email","An authorized representative who may accept the agreements"],"introRules":["Products and assets must be lawful and fully owned or properly licensed.","Products may not contain malware, fraud or unauthorized collection of sensitive information.","Products may not infringe intellectual property, privacy or other lawful rights.","Game onboarding, testing, review and distribution follow later product configuration and mutual confirmation."],"introReviewNote":"Platform operations normally completes the review within 5 business days after submission. Submission does not mean approval; the result and processing history remain available in the Developer Console.","ndaTitle":"GameHub Developer Platform Confidentiality Agreement","ndaBody":"GAMEHUB DEVELOPER PLATFORM CONFIDENTIALITY AGREEMENT\n\n1. Parties and Effect. This Agreement is entered into by the operator of the GameHub Developer Platform (Platform Party) and the applicant company identified by the legal company name submitted on this page (Partner). It becomes binding on Partner when its authorized representative accepts and submits it, and on both parties when the Platform Party confirms the partnership application or discloses Confidential Information.\n\n2. Confidential Information. Confidential Information means non-public information disclosed in writing, orally, electronically or otherwise that is marked confidential or should reasonably be understood as confidential, including unreleased products, roadmaps, source code, technical materials, test builds, API documents, credentials, operational and marketing plans, commercial terms, pricing and settlement data, user and transaction data, agreement terms, and all copies, summaries and derivatives.\n\n3. Exclusions. Confidential Information excludes information the receiving party can prove was lawfully public without breach, lawfully known before disclosure without restriction, independently developed without use of the disclosing party's information, lawfully received from a third party entitled to disclose it, or approved for release in writing.\n\n4. Limited Use and Disclosure. The receiving party may use Confidential Information only to evaluate, establish and perform the GameHub partnership. It may disclose information only to personnel, affiliates, advisers or service providers with a need to know and confidentiality duties no less protective than this Agreement. Except where law cannot prohibit it, the receiving party may not reverse engineer, decompile, disassemble or bypass security protections in disclosed software, interfaces or samples without written permission.\n\n5. Security. Each party must apply reasonable safeguards at least equal to those used for its own similar information, including access control, credential protection, secure transmission and storage, personnel controls and appropriate logs. Any suspected unauthorized access, use, loss or disclosure must be reported promptly with known impact and reasonable mitigation steps.\n\n6. Required Disclosure. If disclosure is legally required, the receiving party must, where permitted, notify the disclosing party promptly and disclose only the minimum required scope while reasonably assisting with protective relief.\n\n7. Return and Destruction. When the partnership ends, the information is no longer needed, or the disclosing party requests it, the receiving party must stop use and return or destroy controlled copies, except records required by law, audit rules or automated backups, which remain protected.\n\n8. Ownership. Confidential Information and related intellectual property remain owned by the disclosing party or its licensors. Disclosure grants no ownership, patent, copyright, trademark, trade secret or other license except the limited right necessary to evaluate or perform the partnership.\n\n9. Breach and Remedies. A breaching party is responsible under applicable law for proven direct losses and reasonable enforcement costs. Because unauthorized use or disclosure may cause irreparable harm, the non-breaching party may seek injunctive or other equitable relief in addition to available remedies.\n\n10. Term and Survival. This Agreement continues until the parties terminate the relationship in writing. Duties continue until the information lawfully becomes public. Trade secrets, personal data, credentials and information that must remain protected by law continue for as long as protection is required.\n\n11. Law and Disputes. This Agreement is governed by the laws of the People's Republic of China. The parties will first negotiate in good faith. Any later written dispute clause controls; if none exists, disputes may be submitted to the competent court at the domicile of the Platform Party.\n\n12. General. Neither party may transfer its principal duties without written consent, except to a lawful successor in a merger, division or transfer of the relevant business. Invalid provisions do not affect the remainder. A later specific confidentiality agreement controls where the parties expressly give it priority. Updated platform terms become effective for Partner only after Partner confirms the new version.","distributionTitle":"GameHub Developer Platform Distribution Partnership Agreement","distributionBody":"GAMEHUB DEVELOPER PLATFORM DISTRIBUTION PARTNERSHIP AGREEMENT\n\n1. Parties and Purpose. This Agreement is entered into by the operator of the GameHub Developer Platform (Platform Party) and the applicant company identified on this page (Partner). The parties intend to use the platform for game onboarding, testing, product configuration, build and release management, promotion, entitlement validation, channel supply and business reporting. Acceptance and company-verification submission do not by themselves approve any game for distribution; each game's scope follows its approved configuration and later written confirmation.\n\n2. Definitions. Product means a game, DLC, add-on, update or localized build submitted and approved for onboarding. Platform means the GameHub Developer Platform and related user-facing distribution products. User means a person who views, reserves, purchases, downloads, activates or uses a Product. GameHub Key means an entitlement code generated under authorized platform rules. External Key means a code supplied by Partner or another platform. Net Revenue means user payments less legally collected taxes, refunds, chargebacks, channel fees and other mutually confirmed adjustments.\n\n3. Eligibility and License. Partner represents that it has full authority to sign and perform this Agreement and owns or has sufficient licenses for Products, trademarks, assets, music, art, fonts, characters, data and other deliveries. Within the approved product, territory, channel, language and term, Partner grants the Platform Party a non-exclusive license to copy, store, transmit, display, perform, format and make non-material technical adaptations needed for onboarding, testing, marketing, sale, delivery, download, update, support and analysis.\n\n4. Delivery. Partner must provide true, accurate, complete and current company, bank, contact, game, product, rights, rating, privacy and compliance information. Builds, updates, patches, localized versions, runtime requirements and technical documentation must meet confirmed format and quality requirements. Products may not contain malware, backdoors, fraud, unauthorized data collection or functions that threaten users or the Platform.\n\n5. Integration, Testing and Release. Partner will cooperate on sign-in, launch verification, entitlement queries, offline authorization, error codes, logs and other confirmed integrations. The Platform Party may review information, functionality, compatibility, security and compliance before release. Review does not reduce Partner's responsibility for quality, rights or legality. Releases, staged rollout, rollback, removal and emergency fixes follow platform rules and confirmed procedures.\n\n6. Products, Pricing and Transactions. Product type, territory, currency, price, discounts, refunds, pre-order or reservation rules follow confirmed product settings and platform rules. The Platform Party may process orders, payment, refunds, chargebacks, invoices and billing support as permitted by law and published rules. Partner may not manipulate transactions, mislead users or commit price fraud.\n\n7. Keys and Channels. After authorization, Partner may create GameHub Key batches within approved games, channels, quotas and validity periods, and may deliver through approved channel APIs. Partner must protect credentials, key files and delivery records and may not create, sell, transfer or expose Keys outside authorization. External Keys remain generated by the relevant rightsholder. Freezing, revocation, replacement, redemption, exception handling and reconciliation follow platform rules and batch records.\n\n8. Marketing and Targeting. Partner authorizes use of approved names, trademarks, icons, screenshots, videos and copy for in-platform and external display, recommendations, campaigns and channel promotion. Budgets, assets, regions, channels, schedules, attribution and data access for paid or targeted campaigns require separate confirmation. No fixed exposure, download, conversion or revenue result is guaranteed.\n\n9. Data and Privacy. The Platform Party may provide aggregated views, reservations, downloads, activations, orders, refunds, revenue and channel performance for Partner's Products. Each party must process personal information lawfully and only as necessary for the partnership. Unless otherwise agreed in writing, each party acts as an independent controller and may not identify or contact users or analyze data for unrelated purposes.\n\n10. Settlement and Tax. Revenue share, currency, settlement cycle, payment threshold, tax, invoicing and payment method follow later settlement rules, product settings or supplemental agreements. Statements are sent to the contact email submitted in company verification. Partner must keep that email current and ensure its receiving account is lawfully controlled and matches the verified legal company name.\n\n11. Support. The Platform Party provides reasonable support for the platform, distribution tools, user billing and platform accounts. Partner supports the Product, fixes defects, maintains content and servers, provides legally required after-sales service, and responds promptly to serious defects, security incidents, infringement claims and regulatory requirements.\n\n12. Intellectual Property and Brand. Except for express licenses, each party retains its pre-existing technology, products, data, trademarks and other intellectual property. Brand use must follow written guidelines and may not imply endorsement, exclusivity or ownership beyond the actual partnership. Lawfully acquired user rights may not be removed without proper cause solely because this Agreement ends.\n\n13. Compliance and Removal. Partner warrants that Products and marketing materials comply with applicable law, ratings, publication, cybersecurity, data and consumer-protection requirements. The Platform Party may suspend downloads or sales, restrict Keys, remove a Product or take necessary measures for suspected illegality, infringement, malware, material security risk, serious quality issues or regulatory orders, with notice where practicable.\n\n14. Warranties and Indemnity. Each party warrants authority to enter and perform. Partner is responsible for the truth, rights and legality of submitted content and will bear liability and reasonably assist with claims, penalties or losses caused by its infringement, illegality or breach. The Platform Party remains responsible for its own platform services and operations.\n\n15. Liability. Except for fraud, wilful misconduct, gross negligence, intellectual-property infringement, confidentiality or data-protection breach, and liability that cannot be limited by law, neither party is liable for indirect, consequential, lost-profit or punitive damages. Any agreed cap must be set in a written supplemental agreement. User rights under mandatory law are unaffected.\n\n16. Term, Suspension and Termination. This Agreement continues until lawfully terminated. A material breach not cured within a reasonable written cure period permits termination. Illegality, infringement, security risk, fraud, insolvency or regulatory action may justify immediate suspension or termination. After termination, the parties stop new distribution and authorization and complete required refunds, reconciliation, user support and data return or deletion. Rights necessary to support existing users may continue for a reasonable period.\n\n17. Notices, Changes and Assignment. Notices may be sent through the developer account, verified contact email or other confirmed channel. Partner must keep its email valid. Platform terms may be updated for law, security or business needs; material changes bind Partner only after renewed confirmation. Principal rights and duties may not be transferred without written consent except to a lawful successor.\n\n18. Law, Disputes and Entire Agreement. This Agreement is governed by the laws of the People's Republic of China. The parties first negotiate in good faith. A later written dispute clause controls; if none exists, disputes may be submitted to the competent court at the domicile of the Platform Party. This Agreement, product settings, settlement rules and supplemental agreements form the complete partnership terms; later or more specific terms control conflicts. Invalid provisions do not affect the remainder. No partnership, employment or agency relationship is created.","help":{"title":"Help Center","faq":[{"id":"account-login","category":"Account and sign-in","question":"How do I sign in to the developer platform?","answer":"Use an email address to receive a verification code, or scan the QR code with the GameHub app. An unregistered account is created automatically on first sign-in.","steps":["Enter your email address and request a 6-digit verification code.","You can also open the GameHub app, scan the QR code and confirm sign-in.","Complete sign-in verification and choose an onboarding option."],"details":["Automatic registration creates only a platform account; it does not approve company verification.","The verification code is used only for this sign-in."]},{"id":"company-verification","category":"Company verification","question":"What do I need for company verification?","answer":"Prepare the legal registration details and license image, authorized signatory details, company bank account and proof image, plus the publisher brand and business contact.","steps":["Read the company-verification introduction and requirements first.","Enter the legal company name, registered address and license number exactly as shown on the license.","Enter the company bank account and upload both proof images.","Complete publisher and contact details, then accept both platform agreements in one confirmation and submit."],"details":["The bank account holder must match the legal company name.","The contact email is required for statements, settlement and important business notices.","There is no draft status. You may clear and restart before submission."]},{"id":"review-status","category":"Review result","question":"How can I check the review status?","answer":"After formal submission, the page shows Pending review. Future sign-ins continue to show the application ID, revision, status and processing history.","steps":["Pending: platform operations is reviewing the submission.","Approved: company verification is complete.","Rejected: the page shows the review note and an edit entry."],"details":["Submission does not mean approval.","Each result keeps the reviewer and processing time."]},{"id":"resubmit-rejected","category":"Review result","question":"How do I resubmit after rejection?","answer":"Update the information based on the review note and submit it again from the confirmation step. The platform creates a new application revision.","steps":["Select Edit and resubmit.","Update the requested information on the single application page.","Review everything and select Submit for review."],"details":["Resubmission never overwrites the previous revision or review record.","Restarting clears only the current unsubmitted changes."]},{"id":"pc-game-listing-guide","category":"Game listing","section":"Listing guides","question":"PC game listing guide","answer":"An overview of the path from creating a PC game project and preparing information to submitting it for listing review. This configurable article is a placeholder.","steps":["Review the required information and prerequisites.","Platform operations will add the final workflow after the related PRD is approved."],"details":["Production listing configuration is not available in this phase."]},{"id":"pc-test-plan-introduction","category":"Game listing","section":"Listing guides","question":"GameHub PC test plan introduction","answer":"An introduction to PC test-plan scenarios, eligibility and result viewing. This configurable article is a placeholder.","steps":["Platform operations maintains the introduction, availability and eligibility."],"details":["The final flow follows the later testing and release PRD."]},{"id":"pc-buyout-game-docs","category":"Game listing","section":"Listing guides","question":"PC buy-to-own game documentation","answer":"A directory for product, pricing, entitlement and review documentation for buy-to-own PC games. This configurable article is a placeholder.","steps":["Platform operations maintains the official document links and scope."],"details":["No product or pricing controls are added in this phase."]},{"id":"pc-store-materials","category":"Game listing","section":"Listing guides","question":"GameHub PC store asset requirements","answer":"Requirements for PC game icons, covers, screenshots, videos and store copy. This configurable article is a placeholder.","steps":["Platform operations will add dimensions, formats and content requirements."],"details":["Final requirements follow the game-information PRD and published operations content."]},{"id":"pc-game-qualification-guide","category":"Game listing","section":"Listing guides","question":"PC game qualification guide","answer":"An overview of rights and compliance materials required by territory, game type and distribution method. This configurable article is a placeholder.","steps":["Platform operations maintains the qualification and attachment checklist."],"details":["Actual requirements follow applicable law and current platform rules."]},{"id":"pc-build-upload-guide","category":"Game listing","section":"Listing guides","question":"How to upload a PC game build","answer":"Instructions for build upload, validation, version linking and test submission. This configurable article is a placeholder.","steps":["Platform operations will add supported systems, file requirements and upload steps."],"details":["Production build upload is not available in this phase."]},{"id":"sdk-service-overview","category":"SDK services","section":"Service overview","question":"SDK service overview","answer":"An introduction to GameHub SDK capabilities, supported platforms, version relationships and integration boundaries. This configurable article is a placeholder.","steps":["Platform operations maintains the capability description and availability."],"details":["Production SDK downloads and integration controls are not available in this phase."]},{"id":"sdk-changelog","category":"SDK services","section":"Service overview","question":"SDK changelog","answer":"Versioned records of new SDK capabilities, behavior changes, fixes and upgrade impact. This configurable article is a placeholder.","steps":["Platform operations maintains release dates and change summaries by version."],"details":["Developers should verify platform and version compatibility before integration."]},{"id":"sdk-compliance-guide","category":"SDK services","section":"Service overview","question":"SDK compliance guide","answer":"Compliance requirements for SDK integration, data processing, user notices and permission requests. This configurable article is a placeholder.","steps":["Platform operations maintains the official compliance guidance."],"details":["Final requirements follow current policy and applicable law."]},{"id":"sdk-privacy-policy","category":"SDK services","section":"Service overview","question":"SDK privacy policy","answer":"The data types, purposes, retention practices and developer responsibilities associated with the GameHub SDK. This configurable article is a placeholder.","steps":["Platform operations maintains the current effective policy."],"details":["Policy updates should include a version and effective date."]},{"id":"developer-center-configuration","category":"SDK services","section":"Development setup","question":"Developer Center configuration","answer":"APPID, platform parameters and environment information to prepare before SDK integration. This configurable article is a placeholder.","steps":["Platform operations will add configuration fields and access paths."],"details":["Production configuration follows the later SDK PRD."]},{"id":"android-signature-md5","category":"SDK services","section":"Development setup","question":"Get the Android signing-file MD5","answer":"Instructions for obtaining and verifying the MD5 of an Android application signing file. This configurable article is a placeholder.","steps":["Platform operations will add tools, commands and verification examples."],"details":["Never upload or expose a real signing private key in Help Center content."]},{"id":"sdk-v3-to-v4","category":"SDK services","section":"Development setup","question":"Upgrade SDK v3 to v4","answer":"Compatibility changes, migration steps and regression checks for upgrading SDK v3 to v4. This configurable article is a placeholder.","steps":["Platform operations maintains the official migration guide."],"details":["The final upgrade scope follows the release and changelog."]},{"id":"sdk-unity-integration","category":"SDK services","section":"Integration guides","question":"Unity integration (multi-platform)","answer":"The basic GameHub SDK integration flow for multi-platform Unity projects. This configurable article is a placeholder.","steps":["Platform operations will add dependencies, initialization and platform differences."],"details":["Final code examples follow the later SDK documentation."]},{"id":"sdk-android-native-integration","category":"SDK services","section":"Integration guides","question":"Android native integration","answer":"Dependencies, initialization and callback handling for native Android projects. This configurable article is a placeholder.","steps":["Platform operations will add the official integration steps."],"details":["Final parameters and APIs follow the later SDK documentation."]},{"id":"sdk-ios-native-integration","category":"SDK services","section":"Integration guides","question":"iOS native integration","answer":"Dependencies, initialization and callback handling for native iOS projects. This configurable article is a placeholder.","steps":["Platform operations will add the official integration steps."],"details":["Final parameters and APIs follow the later SDK documentation."]},{"id":"sdk-pc-integration","category":"SDK services","section":"Integration guides","question":"PC integration guide","answer":"The SDK integration flow for Windows, macOS and Linux games. This configurable article is a placeholder.","steps":["Platform operations will add supported systems, initialization and acceptance guidance."],"details":["Actual platform support follows the later SDK PRD."]},{"id":"gamehub-login-introduction","category":"SDK services","section":"GameHub sign-in","question":"GameHub sign-in introduction","answer":"User scenarios, account relationships and capability boundaries for GameHub sign-in. This configurable article is a placeholder.","steps":["Platform operations maintains the capability description."],"details":["Final account and data rules follow the later sign-in service PRD."]},{"id":"gamehub-login-development-guide","category":"SDK services","section":"GameHub sign-in","question":"GameHub sign-in development guide","answer":"Integration preparation, authorization flow and result handling for GameHub sign-in. This configurable article is a placeholder.","steps":["Platform operations will add APIs and callback guidance."],"details":["Production behavior follows the later SDK documentation."]},{"id":"gamehub-qr-login","category":"SDK services","section":"GameHub sign-in","question":"QR code sign-in","answer":"The flow for showing a QR code on PC or web and confirming sign-in in the GameHub app. This configurable article is a placeholder.","steps":["Platform operations will add QR states and error handling."],"details":["Security rules follow the later SDK documentation."]},{"id":"gamehub-get-user-info","category":"SDK services","section":"GameHub sign-in","question":"Get user information","answer":"User fields, authorization scopes and privacy limits available after sign-in. This configurable article is a placeholder.","steps":["Platform operations maintains field descriptions and permission requirements."],"details":["User information must not be used beyond user authorization and the partnership purpose."]},{"id":"gamehub-login-faq","category":"SDK services","section":"GameHub sign-in","question":"GameHub sign-in FAQ","answer":"Common issues including QR timeout, authorization failure, account mismatch and environment configuration. This configurable article is a placeholder.","steps":["Platform operations continuously maintains issues and resolution guidance."],"details":["Contact dev@xiaoji.com if the issue cannot be resolved."]},{"id":"developer-services-placeholder","category":"Developer services","question":"What capabilities are included in Developer Services?","answer":"Developer Services awaits a later PRD. This phase reserves only the Help Center category and entry.","steps":["Watch for later platform updates."],"details":["Company verification and the Help Center are the complete scope of this phase."]}],"contact":{"supportName":"GameHub Developer Support","serviceHours":"Service hours follow the current partnership arrangement","channel":"Partnership group or project contact","email":"dev@xiaoji.com","fallback":"For urgent issues, contact your current project representative"}}}},"pages":{"P01-01":{"summary":"平台介绍、语言切换、登录／注册。","status":"未登录","primaryAction":"登录／注册","primaryActionDisabled":false,"actions":[{"id":"gamehub-login","label":"使用盖世游戏账号登录"},{"id":"forgot-password","label":"忘记密码"}]},"P01-03":{"summary":"介绍认证要求，并在单页填资料、签协议和提交。","status":"未认证","primaryAction":"申请企业认证","primaryActionDisabled":false,"actions":[{"id":"save-draft","label":"保存草稿"}]},"P02-01":{"summary":"建立一个可继续配置的 PC 游戏后台项目。","status":"创建／发行准备中","primaryAction":"创建游戏","primaryActionDisabled":false,"actions":[],"cdkeySelfService":{"tabs":["商品与供给","Key 批次","渠道 API","接口说明"],"authorization":{"status":"授权正常","remainingQuota":8000,"channels":["星云商城","远航游戏"],"pausedReason":"—","scope":"星海互动 × 已授权渠道","totalQuota":10000,"usedQuota":2000,"regions":["中国大陆","中国香港","中国澳门","中国台湾"],"validUntil":"2026-12-31 23:59"},"keySources":[{"id":"gamehub_generated","label":"盖世平台 Key","rule":"由盖世兑换服务校验并授予已配置权益"},{"id":"external_imported","label":"外部平台 Key","rule":"仅受控导入或供应商 API 同步，盖世不生成"}],"keyBatches":[{"batchId":"KEY-20260902-001","name":"星云商城首发批次","source":"盖世平台 Key","quantity":2000,"allocated":640,"remaining":1360,"channel":"星云商城","region":"中国大陆","purpose":"首发销售","expiresAt":"2026-12-31 23:59","status":"可用","download":"明文已下载"},{"batchId":"KEY-20260818-004","name":"媒体评测批次","source":"盖世平台 Key","quantity":80,"allocated":80,"remaining":0,"channel":"远航游戏","region":"全球（不含受限地区）","purpose":"媒体评测","expiresAt":"2026-09-30 23:59","status":"已用完","download":"明文已下载"}],"credentials":[{"name":"星云商城正式凭据","clientId":"cli_xh_20260901","secretMask":"••••••••9K7Q","secretHint":"末四位 9K7Q","ownerType":"厂商＋渠道","vendor":"星海互动","channel":"星云商城","scopes":[{"game":"星海远征","gameId":"GAME-48291","sku":"标准版","skuId":"SKU-CN-001","region":"中国大陆","quota":5000},{"game":"星海远征","gameId":"GAME-48291","sku":"豪华版","skuId":"SKU-CN-002","region":"中国港澳台","quota":1200}],"expiresAt":"2026-12-31 23:59","status":"正常","lastCalledAt":"2026-09-02 10:18","callsToday":186,"remainingToday":814}],"supplyLedgers":{"external":[{"source":"Steam Key","batch":"EXT-STEAM-202608-07","sku":"SKU-CN-001","received":5000,"available":214,"state":"库存不足","updatedAt":"2026-09-03 09:18"}],"gamehub":[{"source":"盖世平台 Key","batch":"KEY-20260902-001","sku":"SKU-CN-001","generated":2000,"allocated":640,"available":1360,"state":"可供给","updatedAt":"2026-09-03 10:18"}]},"apiDocs":{"auth":"client_id + HMAC-SHA256；时间戳、随机数和签名放入请求头，Secret 不进入 URL。","idempotency":"同一 request_id 返回同一分配结果，不重复扣减库存。","endpoints":[{"method":"POST","path":"/openapi/v1/cdkeys/allocate","purpose":"按渠道订单分配一个 Key"},{"method":"GET","path":"/openapi/v1/cdkeys/allocations/{request_id}","purpose":"查询分配状态与掩码信息"},{"method":"POST","path":"/openapi/v1/cdkeys/allocations/{request_id}/confirm","purpose":"确认已向用户交付"}],"errors":["无权限","签名失败","时间戳过期","渠道暂停","游戏未授权","配额不足","无可用 Key","重复订单冲突","服务异常"]}}},"P15-01":{"summary":"","status":"已生效","primaryAction":"","primaryActionDisabled":false,"actions":[]},"P15-02":{"summary":"","status":"","primaryAction":"","primaryActionDisabled":false,"actions":[]}}}</textarea>
 <script>/* 01/02 共用的发行资料存储结构：升级时保留 Blob 与历史提交原文。 */
 (function (global) {
   'use strict';
@@ -12280,61 +12281,423 @@ window.PublisherSettlementLedger = (() => {
   return Object.freeze({ createState, transactionsFor, gameRowsFor, entityRowsFor, exportEntityCsv, exportGameCsv, markEntityExported, money, decimal, entityKey });
 })();
 
+/* 开发者与运营共用的结算单、财务主体和结算比例版本模型。 */
+window.PublisherSettlementStatements = (() => {
+  'use strict';
+
+  const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
+  const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
+  const DEFAULT_RATIO = 70;
+  const ITEM_ORDER = Object.freeze({ sales_share:0, refund_adjustment:1, chargeback_adjustment:2 });
+  const ITEM_LABELS = Object.freeze({
+    sales_share:'游戏销售分成',
+    refund_adjustment:'退款补扣',
+    chargeback_adjustment:'拒付补扣',
+  });
+
+  const roundMinor = value => {
+    const number = Number(value);
+    const rounded = Math.round(Math.abs(number));
+    return number < 0 && rounded ? -rounded : rounded;
+  };
+
+  const assertMonth = value => {
+    if (!MONTH_PATTERN.test(String(value || ''))) throw new Error('月份格式应为 YYYY-MM');
+    return String(value);
+  };
+
+  const nextMonth = value => {
+    const month = assertMonth(value);
+    const year = Number(month.slice(0, 4));
+    const number = Number(month.slice(5, 7));
+    return number === 12 ? `${year + 1}-01` : `${year}-${String(number + 1).padStart(2, '0')}`;
+  };
+
+  const nowText = () => {
+    const date = new Date();
+    const pad = value => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  const activeEntitySeeds = Object.freeze([
+    Object.freeze({
+      developerId:'DEV-1001', developerName:'星海互动', entityVersion:'FIN-2026-003', status:'approved',
+      legalName:'深圳星海互动科技有限公司', contactName:'王明', phone:'18520064686', email:'finance@ocean-expedition.com',
+      bankAccountName:'深圳星海互动科技有限公司', bankName:'中国建设银行深圳科技园支行', bankAccount:'6222000000008899',
+      bankBranch:'中国建设银行深圳科技园支行', bankProof:{ name:'银行开户证明.jpg', type:'image/jpeg', size:524288 },
+      approvedAt:'2026-05-18 16:20', approvedBy:'平台运营 李然',
+    }),
+    Object.freeze({
+      developerId:'DEV-2001', developerName:'远光工作室', entityVersion:'FIN-2026-006', status:'approved',
+      legalName:'广州远光网络科技有限公司', contactName:'陈宇', phone:'18620061234', email:'finance@far-light.cn',
+      bankAccountName:'广州远光网络科技有限公司', bankName:'中国银行广州天河支行', bankAccount:'60138200001909066',
+      bankBranch:'中国银行广州天河支行', bankProof:{ name:'远光开户证明.png', type:'image/png', size:384000 },
+      approvedAt:'2026-06-09 11:05', approvedBy:'平台运营 李然',
+    }),
+    Object.freeze({
+      developerId:'DEV-3001', developerName:'极昼工作室', entityVersion:'FIN-2026-007', status:'approved',
+      legalName:'杭州极昼数字娱乐有限公司', contactName:'刘欣', phone:'13700001111', email:'finance@daylight.cn',
+      bankAccountName:'杭州极昼数字娱乐有限公司', bankName:'招商银行杭州分行', bankAccount:'755900000000009',
+      bankBranch:'招商银行杭州分行', bankProof:{ name:'极昼原银行证明.webp', type:'image/webp', size:264000 },
+      approvedAt:'2026-07-03 15:40', approvedBy:'平台运营 李然',
+    }),
+  ]);
+
+  const ratioSeeds = Object.freeze([
+    Object.freeze({
+      id:'RATIO-2025-001', developerId:'DEV-1001', ratioPercent:65, effectiveBillingMonth:'2025-01', reason:'初始合同',
+      operator:'平台运营 李然', operatedAt:'2025-01-02 10:00', previousRatioPercent:DEFAULT_RATIO, status:'active',
+    }),
+    Object.freeze({
+      id:'RATIO-2026-001', developerId:'DEV-1001', ratioPercent:70, effectiveBillingMonth:'2026-01', reason:'合同续签',
+      operator:'平台运营 李然', operatedAt:'2025-12-20 15:30', previousRatioPercent:65, status:'active',
+    }),
+    Object.freeze({
+      id:'RATIO-2026-002', developerId:'DEV-2001', ratioPercent:70, effectiveBillingMonth:'2026-01', reason:'初始合同',
+      operator:'平台运营 李然', operatedAt:'2025-12-22 09:40', previousRatioPercent:DEFAULT_RATIO, status:'active',
+    }),
+  ]);
+
+  const applicationSeeds = Object.freeze([
+    Object.freeze({
+      id:'FIN-APP-2026-001', applicationType:'change', status:'pending', developerId:'DEV-3001', developerName:'极昼工作室',
+      entityVersion:'FIN-2026-008', submittedAt:'2026-09-14 10:18', submittedBy:'刘欣', reviewReason:'', reviewedAt:'', reviewedBy:'',
+      snapshot:{
+        developerId:'DEV-3001', developerName:'极昼工作室', entityVersion:'FIN-2026-008', status:'pending',
+        legalName:'杭州极昼网络科技有限公司', contactName:'刘欣', phone:'13700001111', email:'finance@daylight.cn',
+        bankAccountName:'杭州极昼网络科技有限公司', bankName:'招商银行杭州分行', bankAccount:'755900000000113',
+        bankBranch:'招商银行杭州分行', bankProof:{ name:'极昼银行证明.webp', type:'image/webp', size:286000 },
+      },
+    }),
+    Object.freeze({
+      id:'FIN-APP-2026-002', applicationType:'initial', status:'rejected', developerId:'DEV-4001', developerName:'像素工坊',
+      entityVersion:'FIN-2026-009', submittedAt:'2026-09-10 09:30', submittedBy:'周乐', reviewReason:'银行证明附件不清晰',
+      reviewedAt:'2026-09-11 14:25', reviewedBy:'平台运营 李然',
+      snapshot:{
+        developerId:'DEV-4001', developerName:'像素工坊', entityVersion:'FIN-2026-009', status:'rejected',
+        legalName:'成都像素工坊科技有限公司', contactName:'周乐', phone:'13900002222', email:'finance@pixel-workshop.cn',
+        bankAccountName:'成都像素工坊科技有限公司', bankName:'中国工商银行成都分行', bankAccount:'6212000000002202',
+        bankBranch:'中国工商银行成都分行', bankProof:{ name:'像素银行证明.jpg', type:'image/jpeg', size:245000 },
+      },
+    }),
+  ]);
+
+  const defaultRatioRecord = (developerId, billingMonth) => ({
+    id:'RATIO-DEFAULT-70', developerId, ratioPercent:DEFAULT_RATIO, effectiveBillingMonth:'0000-01',
+    reason:'平台默认比例', operator:'系统', operatedAt:'', previousRatioPercent:DEFAULT_RATIO, status:'active', billingMonth,
+  });
+
+  const ratioFor = (state, developerId, billingMonth) => {
+    const month = assertMonth(billingMonth);
+    const candidates = (state.ratioVersions || [])
+      .filter(item => item.developerId === developerId && item.status !== 'superseded' && item.effectiveBillingMonth <= month)
+      .slice()
+      .sort((a, b) => b.effectiveBillingMonth.localeCompare(a.effectiveBillingMonth) || b.operatedAt.localeCompare(a.operatedAt));
+    return clone(candidates[0] || defaultRatioRecord(developerId, month));
+  };
+
+  const gamesByDeveloper = Object.freeze({
+    'DEV-1001':Object.freeze([
+      Object.freeze({ id:'GAME-48291', name:'星海远征' }),
+      Object.freeze({ id:'GAME-48292', name:'暗影重构' }),
+      Object.freeze({ id:'GAME-48293', name:'风暴边境' }),
+      Object.freeze({ id:'GAME-48294', name:'机械黎明' }),
+    ]),
+    'DEV-2001':Object.freeze([
+      Object.freeze({ id:'GAME-48311', name:'荒野余烬' }),
+      Object.freeze({ id:'GAME-48312', name:'霓虹突围' }),
+    ]),
+  });
+
+  const createStatement = ({ state, developerId, developerName, entity, game, billingMonth, gameIndex, monthIndex, itemType }) => {
+    const ratio = ratioFor(state, developerId, billingMonth);
+    const paid = 7800000 + gameIndex * 925000 + monthIndex * 680000;
+    const tax = Math.round(paid * 0.06);
+    const fee = Math.round(paid * 0.029);
+    const adjustments = {
+      sales_share:{ userPaidMinor:paid, refundMinor:0, chargebackMinor:0, salesTaxMinor:tax, paymentFeeMinor:fee },
+      refund_adjustment:{ userPaidMinor:0, refundMinor:Math.round(paid * 0.032), chargebackMinor:0, salesTaxMinor:0, paymentFeeMinor:0 },
+      chargeback_adjustment:{ userPaidMinor:0, refundMinor:0, chargebackMinor:Math.round(paid * 0.014), salesTaxMinor:0, paymentFeeMinor:0 },
+    }[itemType];
+    const receivedMinor = adjustments.userPaidMinor - adjustments.refundMinor - adjustments.chargebackMinor - adjustments.salesTaxMinor - adjustments.paymentFeeMinor;
+    const suffix = { sales_share:'SALES', refund_adjustment:'REFUND', chargeback_adjustment:'CHARGEBACK' }[itemType];
+    const confirmed = (monthIndex + gameIndex + ITEM_ORDER[itemType]) % 4 === 0;
+    return {
+      id:`ST-${billingMonth.replace('-', '')}-${game.id}-${suffix}`,
+      developerId, developerName, entityName:entity.legalName, entityVersion:entity.entityVersion,
+      gameId:game.id, gameName:game.name, billingMonth, settlementMonth:nextMonth(billingMonth),
+      itemType, itemLabel:ITEM_LABELS[itemType], currency:'CNY', ...adjustments, receivedMinor,
+      ratioPercent:ratio.ratioPercent, ratioVersion:ratio.id,
+      settlementMinor:roundMinor(receivedMinor * ratio.ratioPercent / 100),
+      status:confirmed ? 'confirmed' : 'pending', lockedAt:`${nextMonth(billingMonth)}-05 11:20`,
+      confirmedAt:confirmed ? `${nextMonth(billingMonth)}-08 10:30` : '', confirmedBy:confirmed ? '开发者 王明' : '',
+    };
+  };
+
+  const seedStatements = state => {
+    const months = ['2026-08','2026-07','2026-06'];
+    return activeEntitySeeds.flatMap((entity, developerIndex) => months.flatMap((billingMonth, monthIndex) => {
+      const games = gamesByDeveloper[entity.developerId] || [];
+      return games.flatMap((game, gameIndex) => Object.keys(ITEM_ORDER).map(itemType => createStatement({
+        state, developerId:entity.developerId, developerName:entity.developerName, entity, game,
+        billingMonth, gameIndex:gameIndex + developerIndex, monthIndex, itemType,
+      })));
+    }));
+  };
+
+  const createState = () => {
+    const state = {
+      ratioVersions:clone(ratioSeeds),
+      financialEntityVersions:clone(activeEntitySeeds),
+      activeFinancialEntityVersions:Object.fromEntries(activeEntitySeeds.map(item => [item.developerId, item.entityVersion])),
+      financialEntityApplications:clone(applicationSeeds),
+      statements:[],
+    };
+    state.financialEntityVersions.push(...state.financialEntityApplications.map(application => clone(application.snapshot)));
+    state.statements = seedStatements(state);
+    return state;
+  };
+
+  const isAll = value => value == null || value === '' || value === 'all';
+  const statementMatches = (row, filters) => {
+    if (!isAll(filters.developerId) && row.developerId !== filters.developerId) return false;
+    if (!isAll(filters.developer) && row.developerName !== filters.developer) return false;
+    if (!isAll(filters.entityName) && row.entityName !== filters.entityName) return false;
+    if (!isAll(filters.gameId) && row.gameId !== filters.gameId) return false;
+    if (!isAll(filters.game) && row.gameId !== filters.game && row.gameName !== filters.game) return false;
+    if (!isAll(filters.billingMonth) && row.billingMonth !== filters.billingMonth) return false;
+    if (!isAll(filters.settlementMonth) && row.settlementMonth !== filters.settlementMonth) return false;
+    if (!isAll(filters.itemType) && row.itemType !== filters.itemType) return false;
+    if (!isAll(filters.status) && row.status !== filters.status) return false;
+    const keyword = String(filters.keyword || '').trim().toLowerCase();
+    return !keyword || `${row.developerId} ${row.developerName} ${row.entityName} ${row.gameId} ${row.gameName}`.toLowerCase().includes(keyword);
+  };
+
+  const statementsFor = (state, filters = {}) => (state.statements || [])
+    .filter(row => statementMatches(row, filters))
+    .slice()
+    .sort((a, b) => b.billingMonth.localeCompare(a.billingMonth) || a.gameId.localeCompare(b.gameId) || ITEM_ORDER[a.itemType] - ITEM_ORDER[b.itemType])
+    .map(clone);
+
+  const confirmStatements = (state, ids, details = {}) => {
+    const requested = new Set(Array.isArray(ids) ? ids : [ids]);
+    const confirmedAt = details.confirmedAt || nowText();
+    const confirmedBy = details.confirmedBy || '开发者';
+    const changed = [];
+    (state.statements || []).forEach(row => {
+      if (!requested.has(row.id) || row.status !== 'pending') return;
+      row.status = 'confirmed';
+      row.confirmedAt = confirmedAt;
+      row.confirmedBy = confirmedBy;
+      row.lockedAt ||= confirmedAt;
+      changed.push(clone(row));
+    });
+    return changed;
+  };
+
+  const saveRatioVersion = (state, input = {}) => {
+    const developerId = String(input.developerId || '').trim();
+    if (!developerId) throw new Error('缺少开发者');
+    const rawRatioPercent = input.ratioPercent;
+    if (rawRatioPercent == null || String(rawRatioPercent).trim() === '') throw new Error('请填写结算比例');
+    const ratioPercent = Number(rawRatioPercent);
+    if (!Number.isFinite(ratioPercent) || ratioPercent < 0 || ratioPercent > 100) throw new Error('结算比例范围为 0%-100%');
+    if (!Number.isInteger(ratioPercent)) throw new Error('结算比例必须为整数');
+    const effectiveBillingMonth = assertMonth(input.effectiveBillingMonth);
+    const reason = String(input.reason || '').trim();
+    if (!reason) throw new Error('请填写变更原因');
+    if (input.canManageFinance === false) throw new Error('无财务配置权限');
+
+    const previous = ratioFor(state, developerId, effectiveBillingMonth);
+    (state.ratioVersions || []).forEach(version => {
+      if (version.developerId === developerId && version.effectiveBillingMonth === effectiveBillingMonth && version.status !== 'superseded') version.status = 'superseded';
+    });
+    const sequence = String((state.ratioVersions || []).length + 1).padStart(3, '0');
+    const version = {
+      id:input.id || `RATIO-${effectiveBillingMonth.replace('-', '')}-${sequence}`,
+      developerId, ratioPercent, effectiveBillingMonth, reason,
+      operator:String(input.operator || '平台运营').trim(), operatedAt:input.operatedAt || nowText(),
+      previousRatioPercent:previous.ratioPercent, status:'active',
+    };
+    state.ratioVersions.push(version);
+
+    (state.statements || []).forEach(row => {
+      if (row.developerId !== developerId || row.status === 'confirmed' || row.lockedAt) return;
+      const applied = ratioFor(state, developerId, row.billingMonth);
+      row.ratioPercent = applied.ratioPercent;
+      row.ratioVersion = applied.id;
+      row.settlementMinor = roundMinor(row.receivedMinor * applied.ratioPercent / 100);
+    });
+    return clone(version);
+  };
+
+  const financialEntity = (state, developerId) => {
+    const versionId = state.activeFinancialEntityVersions?.[developerId];
+    if (!versionId) return null;
+    const entity = (state.financialEntityVersions || []).find(item => item.developerId === developerId && item.entityVersion === versionId && item.status === 'approved');
+    return clone(entity || null);
+  };
+
+  const financialEntityApplications = (state, filters = {}) => (state.financialEntityApplications || [])
+    .filter(application => {
+      if (!isAll(filters.developerId) && application.developerId !== filters.developerId) return false;
+      if (!isAll(filters.status) && application.status !== filters.status) return false;
+      if (!isAll(filters.applicationType) && application.applicationType !== filters.applicationType) return false;
+      const keyword = String(filters.keyword || '').trim().toLowerCase();
+      return !keyword || `${application.developerId} ${application.developerName} ${application.snapshot?.legalName || ''}`.toLowerCase().includes(keyword);
+    })
+    .slice()
+    .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt) || b.id.localeCompare(a.id))
+    .map(clone);
+
+  const requiredText = (value, label) => {
+    const text = String(value || '').trim();
+    if (!text) throw new Error(`${label}为必填项`);
+    return text;
+  };
+
+  const validateEntityInput = input => {
+    const snapshot = {
+      developerId:requiredText(input.developerId, '开发者 ID'),
+      developerName:requiredText(input.developerName, '开发者'),
+      legalName:requiredText(input.legalName, '企业法定名称'),
+      contactName:requiredText(input.contactName, '联系人姓名'),
+      phone:requiredText(input.phone, '手机号'),
+      email:requiredText(input.email, '邮箱'),
+      bankAccountName:requiredText(input.bankAccountName, '银行账户户名'),
+      bankName:requiredText(input.bankName, '开户银行'),
+      bankAccount:requiredText(input.bankAccount, '银行账号'),
+      bankBranch:requiredText(input.bankBranch, '开户支行／联行信息'),
+      bankProof:clone(input.bankProof),
+    };
+    if (!/^1\d{10}$/.test(snapshot.phone)) throw new Error('请填写正确的手机号');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(snapshot.email)) throw new Error('请填写正确的邮箱');
+    if (snapshot.bankAccountName !== snapshot.legalName) throw new Error('银行账户户名必须与企业法定名称一致');
+    if (!snapshot.bankProof || !snapshot.bankProof.name) throw new Error('请上传银行账户证明附件');
+    if (!['image/jpeg','image/png','image/webp'].includes(snapshot.bankProof.type)) throw new Error('银行证明附件仅支持 JPG、PNG、WEBP');
+    if (Number(snapshot.bankProof.size || 0) > 10 * 1024 * 1024) throw new Error('银行证明附件不能超过 10 MB');
+    return snapshot;
+  };
+
+  const submitFinancialEntity = (state, input = {}) => {
+    const snapshot = validateEntityInput(input);
+    const pending = (state.financialEntityApplications || []).find(item => item.developerId === snapshot.developerId && item.status === 'pending');
+    if (pending) throw new Error('该开发者已有待审核的财务主体申请');
+    const current = financialEntity(state, snapshot.developerId);
+    const year = String(input.submittedAt || nowText()).slice(0, 4);
+    const nextSuffix = (items, readId) => Math.max(0, ...items.map(item => Number((readId(item).match(/(\d+)$/) || [])[1] || 0))) + 1;
+    const applicationIndex = nextSuffix(state.financialEntityApplications, item => item.id);
+    const entityIndex = nextSuffix(state.financialEntityVersions, item => item.entityVersion);
+    const entityVersion = `FIN-${year}-${String(entityIndex).padStart(3, '0')}`;
+    const application = {
+      id:input.id || `FIN-APP-${year}-${String(applicationIndex).padStart(3, '0')}`,
+      applicationType:current ? 'change' : 'initial', status:'pending',
+      developerId:snapshot.developerId, developerName:snapshot.developerName, entityVersion,
+      submittedAt:input.submittedAt || nowText(), submittedBy:String(input.submittedBy || snapshot.contactName).trim(),
+      reviewedAt:'', reviewedBy:'', reviewReason:'', snapshot:{ ...snapshot, entityVersion, status:'pending' },
+    };
+    state.financialEntityApplications.push(application);
+    state.financialEntityVersions.push(clone(application.snapshot));
+    return clone(application);
+  };
+
+  const reviewFinancialEntity = (state, applicationId, input = {}) => {
+    const application = (state.financialEntityApplications || []).find(item => item.id === applicationId);
+    if (!application) throw new Error('未找到财务主体申请');
+    if (application.status !== 'pending') throw new Error('该申请已完成审核');
+    const result = input.result;
+    if (!['approved','rejected'].includes(result)) throw new Error('审核结果仅支持 approved 或 rejected');
+    const reason = String(input.reason || '').trim();
+    if (result === 'rejected' && !reason) throw new Error('驳回必须填写原因');
+    const reviewedAt = input.reviewedAt || nowText();
+    const operator = String(input.operator || '平台运营').trim();
+    Object.assign(application, { status:result, reviewedAt, reviewedBy:operator, reviewReason:reason });
+    const version = state.financialEntityVersions.find(item => item.developerId === application.developerId && item.entityVersion === application.entityVersion);
+    if (version) Object.assign(version, { status:result, reviewedAt, reviewedBy:operator, reviewReason:reason });
+    if (result === 'approved') {
+      const previousVersionId = state.activeFinancialEntityVersions[application.developerId];
+      const previous = state.financialEntityVersions.find(item => item.developerId === application.developerId && item.entityVersion === previousVersionId && item.status === 'approved');
+      if (previous) previous.status = 'superseded';
+      state.activeFinancialEntityVersions[application.developerId] = application.entityVersion;
+    }
+    return clone(application);
+  };
+
+  const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
+  const safeCell = value => {
+    const text = String(value ?? '');
+    const formulaLike = /^[\s]*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text);
+    return quote(formulaLike ? `'${text}` : text);
+  };
+  const decimal = minor => (Number(minor || 0) / 100).toFixed(2);
+  const statusLabel = status => status === 'confirmed' ? '已确认' : '待确认';
+
+  const exportStatementsCsv = (rows, options = {}) => {
+    const includeDeveloper = Boolean(options.includeDeveloper);
+    const includeRatioVersion = Boolean(options.includeRatioVersion);
+    const headers = [
+      ...(includeDeveloper ? ['开发者','财务主体'] : []),
+      '游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例',
+      ...(includeRatioVersion ? ['结算比例版本'] : []),
+      '实际到账金额（CNY）','结算金额（CNY）','状态',
+    ];
+    const lines = (rows || []).map(row => [
+      ...(includeDeveloper ? [safeCell(row.developerName), safeCell(row.entityName)] : []),
+      safeCell(row.gameId), safeCell(row.gameName), safeCell(row.billingMonth), safeCell(row.settlementMonth), safeCell(row.itemLabel),
+      quote(decimal(row.userPaidMinor)), quote(`${row.ratioPercent}%`),
+      ...(includeRatioVersion ? [safeCell(row.ratioVersion)] : []),
+      quote(decimal(row.receivedMinor)), quote(decimal(row.settlementMinor)), safeCell(statusLabel(row.status)),
+    ].join(','));
+    return `\uFEFF${[headers.map(safeCell).join(','), ...lines].join('\r\n')}`;
+  };
+
+  return Object.freeze({
+    createState,
+    nextMonth,
+    statementsFor,
+    confirmStatements,
+    ratioFor,
+    saveRatioVersion,
+    financialEntity,
+    financialEntityApplications,
+    submitFinancialEntity,
+    reviewFinancialEntity,
+    exportStatementsCsv,
+  });
+})();
+
 window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
 (function developerFinanceSettlementDemo() {
   'use strict';
 
   const app = document.querySelector('#app');
-  const ledger = window.PublisherSettlementLedger;
-  if (!app || !ledger) return;
+  const statements = window.PublisherSettlementStatements;
+  if (!app || !statements) return;
 
   const embedded = Boolean(window.__PUBLISHER_FINANCE_EMBEDDED__);
   const PAGE_SIZE = 20;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
-  const percent = value => `${(Number(value || 0) * 100).toLocaleString('zh-CN', { maximumFractionDigits:2 })}%`;
-  const eventLabel = type => ({ payment:'支付', refund:'退款', chargeback:'拒付' }[type] || type);
-  const amount = (minor, currency) => ledger.money(minor, currency);
-  const decimalAmount = minor => (Number(minor || 0) / 100).toLocaleString('zh-CN', { minimumFractionDigits:2, maximumFractionDigits:2 });
-  const usdAmount = minor => `$${decimalAmount(minor)}`;
-  const lockedUsdCnyRate = month => ({ '2026-08':7.12, '2026-07':7.18, '2026-06':7.16 }[month] || 7.12);
-  const cnyReference = row => `约 ¥${(Number(row.payableMinor || 0) / 100 * lockedUsdCnyRate(row.month)).toLocaleString('zh-CN', { minimumFractionDigits:2, maximumFractionDigits:2 })}`;
-  const rowAmounts = row => [
-    usdAmount(row.paidMinor),
-    `${usdAmount(row.refundMinor)}／${usdAmount(row.chargebackMinor)}`,
-    usdAmount(row.salesTaxMinor),
-    usdAmount(row.providerFeeMinor),
-    usdAmount(row.platformShareMinor),
-    usdAmount(row.withholdingTaxMinor),
-    usdAmount(row.payableMinor),
-  ];
+  const cny = minor => (Number(minor || 0) / 100).toLocaleString('zh-CN', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const cnyWithSymbol = minor => Number(minor || 0) < 0 ? `-¥${cny(Math.abs(Number(minor)))}` : `¥${cny(minor)}`;
 
   const state = {
-    ledgerState:ledger.createState(),
+    statementState:statements.createState(),
     demoScenario:'exhaustive',
     demoOpen:false,
     route:'entity',
-    filters:{ month:'all', game:'all' },
+    filters:{ billingMonth:'all', settlementMonth:'all', gameId:'all', status:'all' },
     page:1,
-    activeEntityKey:'',
-    historyOpen:false,
+    selectedStatementIds:[],
+    confirmationIds:[],
+    confirmationReturn:null,
+    entityMode:'view',
+    entityDraft:null,
+    entityFile:null,
+    entityErrors:{},
+    entityError:'',
     exportMessage:'',
     callbacks:{ onChange:null, onNavigate:null },
   };
-
-  const entityProfile = Object.freeze({
-    status:'已生效', version:'FIN-2026-003', currency:'USD', lockedAt:'2026-09-05 11:20',
-    legalName:'星海互动科技有限公司', region:'中国大陆', registrationNo:'9144**********3X',
-    registeredAddress:'广东省广州市天河区保利天汇5期1701', contactName:'王明', contactEmail:'finance@ocean-expedition.com', contactMobile:'18520064686', settlementModel:'收入分成', period:'自然月',
-    confirmation:'出单后 10 个自然日', ruleVersion:'RULE-2026-02', shareVersion:'SHARE-2026-02',
-    bankRegion:'中国香港', bankName:'汇丰银行（香港）有限公司', accountName:'XINGHAI INTERACTIVE TECHNOLOGY CO., LTD.',
-    accountNumber:'**** 7826', swift:'HSBCHKHHHKH', accountVersion:'ACC-HK-2026-003',
-    taxResidence:'中国大陆', taxNo:'9144**********3X', salesTax:'由第三方支付商按交易地区计算', withholding:'按主体税务居民地与合同规则计算',
-  });
-  const entityHistory = Object.freeze([
-    { version:'FIN-2026-003', type:'收款账户变更', submitted:'2026-08-09 14:22', effective:'2026-08-12 15:30', account:'**** 7826', status:'已生效' },
-    { version:'FIN-2026-002', type:'税务资料变更', submitted:'2026-06-18 10:14', effective:'2026-06-20 17:08', account:'**** 5369', status:'已停用' },
-    { version:'FIN-2026-001', type:'首次配置', submitted:'2026-03-02 09:30', effective:'2026-03-05 16:20', account:'**** 5369', status:'已停用' },
-  ]);
 
   const readonly = (label, value, hint = '') => `<div class="gh-readonly"><span>${esc(label)}</span><strong>${esc(value)}</strong>${hint ? `<small>${esc(hint)}</small>` : ''}</div>`;
   const button = (label, action, variant = '', extra = '') => `<button type="button" class="gh-button ${variant}" data-finance-action="${esc(action)}" ${extra}>${esc(label)}</button>`;
@@ -12343,112 +12706,171 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
   const emptyState = (title, description) => `<div class="gh-empty"><div class="gh-empty-mark" aria-hidden="true">—</div><strong>${esc(title)}</strong><p>${esc(description)}</p></div>`;
   const pagination = total => {
     const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    state.page = Math.min(state.page, pages);
+    state.page = Math.max(1, Math.min(state.page, pages));
     return `<footer class="gh-pagination" data-d15-pagination data-page-size="20"><span>共 ${total} 条，每页 20 条</span><button class="gh-button" type="button" data-finance-action="page" data-page="${state.page - 1}"${state.page <= 1 ? ' disabled' : ''}>上一页</button><strong>${state.page} / ${pages}</strong><button class="gh-button" type="button" data-finance-action="page" data-page="${state.page + 1}"${state.page >= pages ? ' disabled' : ''}>下一页</button></footer>`;
   };
 
+  const DEVELOPER_ID = 'DEV-1001';
+  const DEVELOPER_NAME = '星海互动';
+  const entityFields = Object.freeze([
+    Object.freeze({ key:'legalName', label:'企业法定名称' }),
+    Object.freeze({ key:'contactName', label:'联系人姓名' }),
+    Object.freeze({ key:'phone', label:'手机号' }),
+    Object.freeze({ key:'email', label:'邮箱', type:'email' }),
+    Object.freeze({ key:'bankAccountName', label:'银行账户户名' }),
+    Object.freeze({ key:'bankName', label:'开户银行' }),
+    Object.freeze({ key:'bankAccount', label:'银行账号' }),
+    Object.freeze({ key:'bankBranch', label:'开户支行／联行信息' }),
+  ]);
+  const activeFinancialEntity = () => statements.financialEntity(state.statementState, DEVELOPER_ID);
+  const entityApplications = () => statements.financialEntityApplications(state.statementState, { developerId:DEVELOPER_ID });
+  const latestEntityApplication = () => entityApplications()[0] || null;
+  const draftSource = () => {
+    const latest = latestEntityApplication();
+    return latest?.status === 'rejected' ? latest.snapshot : activeFinancialEntity();
+  };
+  const cloneEntity = value => value == null ? value : JSON.parse(JSON.stringify(value));
+  const entityStatus = () => {
+    const latest = latestEntityApplication();
+    if (latest?.status === 'pending') return { label:'审核中', tone:'warning', detail:`变更申请已于 ${latest.submittedAt} 提交，审核通过后生效。` };
+    if (latest?.status === 'rejected') return { label:'已驳回', tone:'danger', detail:latest.reviewReason || '请修改资料后重新提交。' };
+    return { label:'已生效', tone:'success', detail:'当前资料已通过审核。' };
+  };
+  const entityInput = field => {
+    const draft = state.entityDraft || {};
+    const error = state.entityErrors[field.key] || '';
+    const isFirstError = Object.keys(state.entityErrors)[0] === field.key;
+    return `<div class="gh-field d15-entity-field"><label for="d15-entity-${esc(field.key)}">${esc(field.label)}</label><input id="d15-entity-${esc(field.key)}" class="gh-input" type="${esc(field.type || 'text')}" name="${esc(field.key)}" value="${esc(draft[field.key] || '')}" aria-label="${esc(field.label)}" aria-invalid="${error ? 'true' : 'false'}"${error ? ` aria-describedby="d15-error-${esc(field.key)}"` : ''}>${error ? `<small class="d15-field-error" id="d15-error-${esc(field.key)}"${isFirstError ? ' role="alert"' : ''}>${esc(error)}</small>` : ''}</div>`;
+  };
+  const entityUpload = () => {
+    const proof = state.entityDraft?.bankProof;
+    const error = state.entityErrors.bankProof || '';
+    const isFirstError = Object.keys(state.entityErrors)[0] === 'bankProof';
+    return `<div class="gh-field wide d15-entity-field"><span class="gh-label">银行账户证明附件</span><label class="gh-upload d15-entity-upload ${error ? 'is-error' : ''}" for="d15-entity-bank-proof"><input id="d15-entity-bank-proof" type="file" name="bankProof" aria-label="银行账户证明附件" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" aria-invalid="${error ? 'true' : 'false'}"${error ? ' aria-describedby="d15-error-bankProof"' : ''}><strong data-d15-upload-name>${esc(proof?.name || '点击上传附件')}</strong><span>支持 JPG、PNG、WEBP，单文件不超过 10 MB</span></label>${error ? `<small class="d15-field-error" id="d15-error-bankProof"${isFirstError ? ' role="alert"' : ''}>${esc(error)}</small>` : ''}</div>`;
+  };
+  const entityActions = status => state.entityMode === 'edit'
+    ? `${button('取消','cancel-entity')}<button type="submit" form="d15-entity-form" class="gh-button primary">提交审核</button>`
+    : button('修改','edit-entity','',status.label === '审核中' ? 'disabled' : '');
+
   function entityPage() {
-    if (state.demoScenario === 'empty') return `<section class="gh-card">${emptyState('尚未配置财务主体', '完成企业认证后，可在这里维护税务居民地、收款账户和结算币种。')}</section>`;
-    const profile = entityProfile;
-    return `<section class="gh-card d15-entity-summary" data-d15-entity-summary><div class="gh-card-body"><h2>财务主体、收款资料与审核状态</h2><p>当前页面用于维护厂商结算所需的财务主体信息。资料修改后需重新审核，审核通过前继续使用当前生效版本。</p><div class="d15-entity-statuses"><div><span>审核状态</span><strong><i></i>${profile.status}</strong></div><div><span>配置状态</span><strong><i></i>已配置</strong></div><div><span>主体类型</span><strong>企业</strong></div></div><small>当前生效版本 ${profile.version}，账本快照已于 ${profile.lockedAt} 锁定。</small></div></section>
-      <section class="d15-section-title"><div><h2>财务主体资料</h2><p>查看当前收款与结算信息，资料变更通过审核后生效。</p></div><div><button type="button" class="gh-button link" data-finance-action="toggle-history">${state.historyOpen ? '收起变更历史' : '查看变更历史'}</button>${button('修改','edit-entity')}</div></section>
-      <section class="gh-card d15-entity-details" data-d15-entity-details><div class="gh-card-body d15-entity-detail-grid">${readonly('企业名称',profile.legalName)}${readonly('注册国家或地区',profile.region)}${readonly('注册地址',profile.registeredAddress)}${readonly('统一社会信用代码',profile.registrationNo)}${readonly('财务联系人',profile.contactName)}${readonly('联系邮箱',profile.contactEmail)}${readonly('联系电话',profile.contactMobile)}${readonly('开户地区',profile.bankRegion)}${readonly('开户银行',profile.bankName)}${readonly('账户名称',profile.accountName)}${readonly('银行账号',profile.accountNumber)}${readonly('SWIFT / BIC',profile.swift)}${readonly('税务居民地',profile.taxResidence)}${readonly('税号',profile.taxNo)}${readonly('结算币种','美元')}${readonly('结算周期',`${profile.period} · ${profile.confirmation}`)}</div></section>
-      ${state.historyOpen ? `<section class="gh-card d15-history" data-d15-entity-history><header class="gh-card-head"><div><h2>变更历史</h2><p>主体、税务和收款账户的生效记录</p></div></header><div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>版本</th><th>类型</th><th>提交时间</th><th>生效时间</th><th>收款账户</th><th>状态</th></tr></thead><tbody>${entityHistory.map(item => `<tr><td><strong>${item.version}</strong></td><td>${item.type}</td><td>${item.submitted}</td><td>${item.effective}</td><td>${item.account}</td><td><span class="gh-tag ${item.status === '已生效' ? 'success' : ''}">${item.status}</span></td></tr>`).join('')}</tbody></table></div></section>` : ''}`;
+    if (state.demoScenario === 'empty') return `<section class="gh-card">${emptyState('尚未配置财务主体', '请提交企业与银行资料，审核通过后用于结算。')}</section>`;
+    const profile = activeFinancialEntity();
+    if (!profile) return `<section class="gh-card">${emptyState('尚未配置财务主体', '请联系平台运营完成初次配置。')}</section>`;
+    const status = entityStatus();
+    const statusDetail = status.tone === 'danger' ? `<strong>${esc(status.detail)}</strong>` : `<span>${esc(status.detail)}</span>`;
+    const content = state.entityMode === 'edit'
+      ? `<form id="d15-entity-form" class="gh-card-body d15-entity-form" data-d15-entity-form novalidate>${entityFields.map(entityInput).join('')}${entityUpload()}</form>`
+      : `<div class="gh-card-body d15-entity-detail-grid">${entityFields.map(field => readonly(field.label,profile[field.key])).join('')}${readonly('银行账户证明附件',profile.bankProof?.name || '—','JPG、PNG、WEBP，单文件不超过 10 MB')}</div>`;
+    return `<section class="gh-card d15-entity-summary" data-d15-entity-summary><div class="gh-card-body"><div class="d15-entity-summary-row"><div><h2>当前生效版本</h2><p>${esc(profile.entityVersion)} · 审核通过前，变更不会覆盖当前结算资料。</p></div><div class="d15-entity-review ${esc(status.tone)}" data-d15-entity-status><span class="gh-tag ${esc(status.tone)}">${esc(status.label)}</span>${statusDetail}</div></div></div></section>
+      <section class="d15-section-title"><div><h2>财务主体资料</h2><p>银行账户户名须与企业法定名称一致。</p></div><div>${entityActions(status)}</div></section>
+      ${state.entityError && !Object.keys(state.entityErrors).length ? `<div class="d15-entity-alert" role="alert">${esc(state.entityError)}</div>` : ''}
+      <section class="gh-card d15-entity-details" data-d15-entity-details>${content}</section>`;
   }
 
-  const sumKeys = ['paidMinor','refundMinor','chargebackMinor','salesTaxMinor','providerFeeMinor','platformShareMinor','withholdingTaxMinor','payableMinor'];
-  const addAmounts = (target, row) => sumKeys.forEach(key => { target[key] = Number(target[key] || 0) + Number(row[key] || 0); });
-  const developerTransactions = filters => ledger.transactionsFor(state.ledgerState, {
-    developer:'星海互动',
-    month:filters?.month || 'all',
-    gameId:filters?.game || 'all',
-  });
-  const developerGameRows = filters => {
-    const rows = new Map();
-    developerTransactions(filters).forEach(item => {
-      const key = `${item.month}::${item.gameId}`;
-      if (!rows.has(key)) rows.set(key,{ key,month:item.month,gameId:item.gameId,gameName:item.gameName,payableMinor:0 });
-      addAmounts(rows.get(key),item);
-    });
-    return [...rows.values()].sort((a,b) => b.month.localeCompare(a.month) || a.gameName.localeCompare(b.gameName));
-  };
-  const developerMonthRows = filters => {
-    const rows = new Map();
-    developerTransactions(filters).forEach(item => {
-      const gameFilter = filters?.game || 'all';
-      const key = `星海互动::${item.month}::${gameFilter}`;
-      if (!rows.has(key)) rows.set(key,{
-        key,month:item.month,developer:item.developer,entityName:entityProfile.legalName,entityVersion:entityProfile.version,
-        accountVersion:entityProfile.accountVersion,settlementCurrency:'USD',gameFilter,gameIds:new Set(),eventCount:0,
-      });
-      const target = rows.get(key);
-      target.gameIds.add(item.gameId);
-      target.eventCount += 1;
-      addAmounts(target,item);
-    });
-    return [...rows.values()].map(row => ({ ...row,gameIds:[...row.gameIds],gameCount:row.gameIds.size }))
-      .sort((a,b) => b.month.localeCompare(a.month));
-  };
+  const allSettlements = () => statements.statementsFor(state.statementState, { developerId:DEVELOPER_ID });
+  const optionsFor = key => [...new Set(allSettlements().map(row => row[key]))].sort((a,b) => String(b).localeCompare(String(a)));
   const allDeveloperGames = () => {
     const games = new Map();
-    ledger.transactionsFor(state.ledgerState,{ developer:'星海互动' }).forEach(item => {
-      if (!games.has(item.gameId)) games.set(item.gameId,{ gameId:item.gameId,gameName:item.gameName });
-    });
+    allSettlements().forEach(row => { if (!games.has(row.gameId)) games.set(row.gameId,{ gameId:row.gameId,gameName:row.gameName }); });
     return [...games.values()].sort((a,b) => a.gameName.localeCompare(b.gameName,'zh-CN'));
   };
-  const visibleSettlements = () => state.demoScenario === 'empty' ? [] : developerMonthRows(state.filters);
-  const gameLabel = row => row.gameFilter === 'all' ? `全部游戏（${row.gameCount} 款）` : (allDeveloperGames().find(game => game.gameId === row.gameFilter)?.gameName || row.gameFilter);
+  const visibleSettlements = () => state.demoScenario === 'empty' ? [] : statements.statementsFor(state.statementState, {
+    developerId:DEVELOPER_ID,
+    billingMonth:state.filters.billingMonth,
+    settlementMonth:state.filters.settlementMonth,
+    gameId:state.filters.gameId,
+    status:state.filters.status,
+  });
+  const currentSettlements = () => {
+    const rows = visibleSettlements();
+    const pages = Math.max(1,Math.ceil(rows.length / PAGE_SIZE));
+    state.page = Math.max(1,Math.min(state.page,pages));
+    return rows.slice((state.page - 1) * PAGE_SIZE,state.page * PAGE_SIZE);
+  };
+  const selectedPendingRows = () => {
+    const selected = new Set(state.selectedStatementIds);
+    return allSettlements().filter(row => selected.has(row.id) && row.status === 'pending');
+  };
+  const confirmationRows = () => {
+    const requested = new Set(state.confirmationIds);
+    return allSettlements().filter(row => requested.has(row.id) && row.status === 'pending');
+  };
+  const selectOptions = (values, selected, allLabel, format = value => value) => `<option value="all"${selected === 'all' ? ' selected' : ''}>${esc(allLabel)}</option>${values.map(value => `<option value="${esc(value)}"${selected === value ? ' selected' : ''}>${esc(format(value))}</option>`).join('')}`;
+  const settlementFilters = () => `<section class="d15-filters" aria-label="结算记录筛选"><label><span>账单月份</span><select class="gh-select" data-d15-filter="billingMonth">${selectOptions(optionsFor('billingMonth'),state.filters.billingMonth,'全部月份')}</select></label><label><span>结算月份</span><select class="gh-select" data-d15-filter="settlementMonth">${selectOptions(optionsFor('settlementMonth'),state.filters.settlementMonth,'全部月份')}</select></label><label><span>游戏</span><select class="gh-select" data-d15-filter="gameId">${selectOptions(allDeveloperGames().map(game => game.gameId),state.filters.gameId,'全部游戏',value => allDeveloperGames().find(game => game.gameId === value)?.gameName || value)}</select></label><label><span>状态</span><select class="gh-select" data-d15-filter="status"><option value="all"${state.filters.status === 'all' ? ' selected' : ''}>全部状态</option><option value="pending"${state.filters.status === 'pending' ? ' selected' : ''}>待确认</option><option value="confirmed"${state.filters.status === 'confirmed' ? ' selected' : ''}>已确认</option></select></label><div class="d15-filter-actions">${button('重置','reset-filters')}${button('查询','query','primary')}</div></section>`;
 
-  const settlementFilters = () => `<section class="d15-filters" aria-label="结算记录筛选"><label><span>结算月</span><select class="gh-select" data-d15-filter="month"><option value="all"${state.filters.month === 'all' ? ' selected' : ''}>全部月份</option><option value="2026-08"${state.filters.month === '2026-08' ? ' selected' : ''}>2026-08</option><option value="2026-07"${state.filters.month === '2026-07' ? ' selected' : ''}>2026-07</option><option value="2026-06"${state.filters.month === '2026-06' ? ' selected' : ''}>2026-06</option></select></label><label><span>游戏</span><select class="gh-select" data-d15-filter="game"><option value="all"${state.filters.game === 'all' ? ' selected' : ''}>全部游戏</option>${allDeveloperGames().map(game => `<option value="${esc(game.gameId)}"${state.filters.game === game.gameId ? ' selected' : ''}>${esc(game.gameName)}</option>`).join('')}</select></label><div class="d15-filter-actions">${button('重置','reset-filters')}${button('查询','query','primary')}</div></section>`;
+  const settlementRow = row => {
+    const checked = state.selectedStatementIds.includes(row.id);
+    const selectable = row.status === 'pending';
+    return `<tr data-d15-settlement-row data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-received-minor="${esc(row.receivedMinor)}" data-ratio-percent="${esc(row.ratioPercent)}" data-settlement-minor="${esc(row.settlementMinor)}" data-status="${esc(row.status)}"><td class="d15-check"><input type="checkbox" data-d15-select-statement value="${esc(row.id)}" aria-label="选择 ${esc(row.id)}"${checked ? ' checked' : ''}${selectable ? '' : ' disabled'}></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td class="d15-number">${esc(cny(row.userPaidMinor))}</td><td class="d15-number">${esc(row.ratioPercent)}%</td><td class="d15-number">${esc(cny(row.receivedMinor))}</td><td class="d15-number d15-payable">${esc(cny(row.settlementMinor))}</td><td><span class="gh-tag ${row.status === 'confirmed' ? 'success' : 'warning'}">${row.status === 'confirmed' ? '已确认' : '待确认'}</span></td><td>${selectable ? button('确认','open-confirm','link',`data-confirm-statement-id="${esc(row.id)}"`) : '—'}</td></tr>`;
+  };
 
   function settlementPage() {
     const rows = visibleSettlements();
-    const current = rows.slice((state.page - 1) * PAGE_SIZE, state.page * PAGE_SIZE);
-    return `${settlementFilters()}<section class="gh-card d15-settlement-card"><header class="gh-card-head"><div><h2>月度对账结算</h2><p>默认汇总全部游戏，也可筛选单款游戏；金额以美元展示，人民币为账期锁定汇率折算的参考值。</p></div><div>${button('导出当前结果','export-settlements','',rows.length ? '' : 'disabled')}</div></header>${state.exportMessage ? `<div class="d15-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-d15-export-status>${esc(state.exportMessage)}</div>` : ''}${current.length ? `<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th>结算月</th><th>游戏范围</th><th>用户实付</th><th>退款／拒付</th><th>销售税</th><th>支付费</th><th>平台分成</th><th>预扣税</th><th>应结算金额</th><th>操作</th></tr></thead><tbody>${current.map(row => {
-      const values = rowAmounts(row);
-      return `<tr data-d15-settlement-row data-entity-key="${esc(row.key)}"><td><strong>${esc(row.month)}</strong><small>汇率 ${lockedUsdCnyRate(row.month).toFixed(2)}</small></td><td><strong>${esc(gameLabel(row))}</strong><small>${row.eventCount} 条账本事件</small></td>${values.slice(0,-1).map(value => `<td>${esc(value)}</td>`).join('')}<td class="d15-payable"><strong>${esc(values.at(-1))}</strong><small data-d15-cny-reference>${esc(cnyReference(row))}</small></td><td>${button('查看详情','open-settlement','link',`data-entity-key="${esc(row.key)}"`)}</td></tr>`;
-    }).join('')}</tbody></table></div>${pagination(rows.length)}` : emptyState(state.demoScenario === 'empty' ? '暂无结算记录' : '未找到符合条件的记录', state.demoScenario === 'empty' ? '账期锁定后，结算记录会展示在这里。' : '请调整筛选条件或重置后再试。')}</section>`;
+    const current = currentSettlements();
+    const currentPending = current.filter(row => row.status === 'pending');
+    const selected = selectedPendingRows();
+    const allCurrentSelected = currentPending.length > 0 && currentPending.every(row => state.selectedStatementIds.includes(row.id));
+    const table = current.length ? `<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th class="d15-check"><input type="checkbox" data-d15-select-page aria-label="选择本页待确认"${allCurrentSelected ? ' checked' : ''}${currentPending.length ? '' : ' disabled'}></th><th>游戏 ID</th><th>游戏名称</th><th>账单月份</th><th>结算月份</th><th>结算项</th><th>用户支付金额（CNY）</th><th>结算比例</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th><th>状态</th><th>操作</th></tr></thead><tbody>${current.map(settlementRow).join('')}</tbody></table></div>${pagination(rows.length)}` : emptyState(state.demoScenario === 'empty' ? '暂无结算记录' : '未找到符合条件的记录', state.demoScenario === 'empty' ? '账单生成后，结算记录会展示在这里。' : '请调整筛选条件或重置后再试。');
+    return `${settlementFilters()}<section class="gh-card d15-settlement-card"><header class="gh-card-head"><div><h2>对账结算</h2><p>账单按 N+1 结算；确认后不可撤销。</p></div><div class="d15-settlement-actions">${button('批量确认','open-batch-confirm','',selected.length ? '' : 'aria-disabled="true"')}${button('导出当前结果','export-settlements','',rows.length ? '' : 'disabled')}</div></header>${state.exportMessage ? `<div class="d15-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-d15-export-status>${esc(state.exportMessage)}</div>` : ''}${table}</section>`;
   }
 
-  const activeEntityRow = () => developerMonthRows({ month:'all',game:state.activeEntityKey.split('::').at(-1) || 'all' }).find(row => row.key === state.activeEntityKey);
-  function settlementDrawer() {
-    const row = activeEntityRow();
-    if (!row) return '';
-    const exact = { month:row.month,game:row.gameFilter };
-    const games = developerGameRows(exact);
-    const transactions = developerTransactions(exact);
-    const values = rowAmounts(row);
-    return `<div class="d15-drawer-layer" data-finance-action="close-detail"><aside class="d15-drawer" role="dialog" aria-modal="true" aria-label="结算详情" data-finance-stop><header class="d15-drawer-head"><div><h2>${esc(row.month)} 结算详情</h2><p>${esc(row.entityName)} · ${esc(gameLabel(row))} · 美元结算 · 人民币按 ${lockedUsdCnyRate(row.month).toFixed(2)} 参考折算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-detail" aria-label="关闭">×</button></header><div class="d15-drawer-body"><section class="d15-metrics" aria-label="金额汇总">${['用户实付','退款／拒付','销售税','支付费','平台分成','预扣税','应结算'].map((label,index) => `<div><span>${label}</span><strong>${esc(values[index])}</strong>${index === values.length - 1 ? `<small data-d15-cny-reference>${esc(cnyReference(row))}</small>` : ''}</div>`).join('')}</section>
-      <section class="d15-detail-section"><header><h3>游戏构成</h3><p>主体汇总金额等于下列游戏明细合计。</p></header><div class="gh-table-wrap"><table class="gh-table"><thead><tr><th>游戏</th><th>用户实付</th><th>退款／拒付</th><th>销售税</th><th>支付费</th><th>平台分成</th><th>预扣税</th><th>应结算</th></tr></thead><tbody>${games.map(game => { const gameValues = rowAmounts(game); return `<tr data-d15-game-row><td><strong>${esc(game.gameName)}</strong><small>${esc(game.gameId)}</small></td>${gameValues.map(value => `<td>${esc(value)}</td>`).join('')}</tr>`; }).join('')}</tbody></table></div></section>
-      <section class="d15-detail-section"><header><h3>交易流水</h3><p>税率、税额、支付费和汇率均来自锁定的第三方支付商账本事实。</p></header><div class="gh-table-wrap"><table class="gh-table d15-transaction-table"><thead><tr><th>事件／游戏</th><th>第三方支付商</th><th>买家国家或地区</th><th>原币</th><th>税种／实际税率</th><th>税额</th><th>支付费</th><th>汇率</th><th>结算金额</th></tr></thead><tbody>${transactions.map(item => `<tr data-d15-transaction-row><td><strong>${eventLabel(item.eventType)} · ${esc(item.gameName)}</strong><small>${esc(item.eventId)}</small></td><td>${esc(item.provider)}</td><td>${esc(item.buyerRegion)}</td><td><strong>${esc(item.originalCurrency)} ${esc(ledger.decimal(item.originalAmountMinor))}</strong><small>结算币种 美元</small></td><td><strong>${esc(item.salesTaxType)}</strong><small>实际税率 ${percent(item.salesTaxRate)}</small></td><td>${esc(usdAmount(item.salesTaxMinor))}</td><td>${esc(usdAmount(item.providerFeeMinor))}</td><td><strong>${Number(item.fxRate).toFixed(4)}</strong><small>${esc(item.fxVersion)}</small></td><td class="d15-payable">${esc(usdAmount(item.payableMinor))}</td></tr>`).join('')}</tbody></table></div></section></div><footer class="d15-drawer-foot">${button('关闭','close-detail')}${button('导出本期明细','export-detail','primary')}</footer></aside></div>`;
+  function confirmationDialog() {
+    const rows = confirmationRows();
+    if (!rows.length) return '';
+    const total = rows.reduce((sum,row) => sum + Number(row.settlementMinor || 0),0);
+    return `<div class="d15-dialog-layer" data-finance-action="cancel-confirm"><section class="d15-confirm-dialog" role="dialog" aria-modal="true" aria-label="确认结算单" data-finance-stop><header><h2>确认结算单</h2><button type="button" class="gh-dialog-close" data-finance-action="cancel-confirm" aria-label="关闭">×</button></header><div class="d15-confirm-body"><p>共 <strong>${rows.length} 条</strong>结算单，结算金额合计</p><b>${esc(cnyWithSymbol(total))}</b><small>确认后不可撤销，请核对后操作。</small></div><footer>${button('取消','cancel-confirm')}${button('确认','confirm-statements','primary')}</footer></section></div>`;
   }
 
-  function flowPage() {
-    const rows = state.demoScenario === 'empty' ? [] : developerTransactions(state.filters);
-    const current = rows.slice((state.page - 1) * PAGE_SIZE, state.page * PAGE_SIZE);
-    return `${settlementFilters()}<section class="gh-card"><header class="gh-card-head"><div><h2>交易流水</h2><p>只读展示第三方支付商回传并已锁定的交易事实。</p></div></header>${current.length ? `<div class="gh-table-wrap"><table class="gh-table d15-transaction-table"><thead><tr><th>事件／游戏</th><th>第三方支付商</th><th>买家国家或地区</th><th>原币</th><th>税种／实际税率</th><th>税额</th><th>支付费</th><th>汇率</th><th>结算金额</th></tr></thead><tbody>${current.map(item => `<tr><td><strong>${eventLabel(item.eventType)} · ${esc(item.gameName)}</strong><small>${esc(item.eventId)}</small></td><td>${esc(item.provider)}</td><td>${esc(item.buyerRegion)}</td><td>${esc(item.originalCurrency)} ${esc(ledger.decimal(item.originalAmountMinor))}</td><td>${esc(item.salesTaxType)} · ${percent(item.salesTaxRate)}</td><td>${esc(usdAmount(item.salesTaxMinor))}</td><td>${esc(usdAmount(item.providerFeeMinor))}</td><td>${Number(item.fxRate).toFixed(4)}</td><td class="d15-payable">${esc(usdAmount(item.payableMinor))}</td></tr>`).join('')}</tbody></table></div>${pagination(rows.length)}` : emptyState(state.demoScenario === 'empty' ? '暂无交易流水' : '未找到符合条件的交易流水','请调整筛选条件或等待账期锁定。')}</section>`;
-  }
-
-  const pageContent = () => state.route === 'entity' ? entityPage() : state.route === 'flows' ? flowPage() : settlementPage();
+  const pageContent = () => state.route === 'entity' ? entityPage() : settlementPage();
   const scenario = () => `<section class="d15-demo"><button type="button" data-finance-action="demo-toggle" aria-expanded="${state.demoOpen}" data-testid="scenario-orb"><b>Demo</b><span>状态</span></button>${state.demoOpen ? `<aside><strong>页面状态</strong><button type="button" data-finance-action="scenario" data-scenario="exhaustive" class="${state.demoScenario === 'exhaustive' ? 'is-active' : ''}">穷举态</button><button type="button" data-finance-action="scenario" data-scenario="empty" class="${state.demoScenario === 'empty' ? 'is-active' : ''}">缺省态</button></aside>` : ''}</section>`;
   const logo = () => `<svg viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" rx="10" fill="#f3b71b"/><path d="M10 18.3c0-5.3 3.7-9.1 8.9-9.1 2.6 0 4.8.9 6.4 2.4l-3.1 3.1a4.7 4.7 0 0 0-3.3-1.3c-2.8 0-4.7 2-4.7 4.9 0 2.8 1.9 4.9 4.8 4.9 2 0 3.3-.8 4-2.1h-4.6v-3.8h8.7c.1.6.1 1.2.1 1.8 0 5.1-3.4 8.8-8.3 8.8-5.2 0-8.9-4-8.9-9.6Z" fill="#422d00"/></svg>`;
   function standaloneRender() {
-    const title = state.route === 'entity' ? '财务主体' : state.route === 'flows' ? '交易流水' : '对账结算';
-    const description = state.route === 'entity' ? '维护财务主体、税务与收款资料。' : state.route === 'flows' ? '核对第三方支付商回传的交易事实。' : '查看全部游戏或单款游戏的月度结算总额。';
-    app.innerHTML = `<div class="gh-app d15-app" data-testid="developer-finance-demo"><header class="gh-topbar"><div class="gh-brand">${logo()}<span>PC 发行平台<small>开发者中心</small></span></div><div class="gh-user"><div class="gh-avatar">星</div><div class="gh-user-copy"><strong>星海互动</strong><small>企业开发者</small></div></div></header><div class="gh-layout"><aside class="gh-sidebar"><div class="gh-sidebar-label">财务</div><nav class="gh-nav d15-nav" aria-label="财务导航"><button type="button" data-route="entity" class="${state.route === 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">主</span>财务主体</button><button type="button" data-route="settlement" class="${state.route !== 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">结</span>对账结算</button></nav></aside><main class="gh-main"><div class="gh-content">${pageHead(title,description)}${pageContent()}</div></main></div>${scenario()}${settlementDrawer()}</div>`;
-    document.body.classList.toggle('finance-overlay-open', Boolean(state.activeEntityKey));
+    const title = state.route === 'entity' ? '财务主体' : '对账结算';
+    const description = state.route === 'entity' ? '维护结算主体与银行账户资料。' : '核对并确认按月生成的游戏结算单。';
+    app.innerHTML = `<div class="gh-app d15-app" data-testid="developer-finance-demo"><header class="gh-topbar"><div class="gh-brand">${logo()}<span>PC 发行平台<small>开发者中心</small></span></div><div class="gh-user"><div class="gh-avatar">星</div><div class="gh-user-copy"><strong>星海互动</strong><small>企业开发者</small></div></div></header><div class="gh-layout"><aside class="gh-sidebar"><div class="gh-sidebar-label">财务</div><nav class="gh-nav d15-nav" aria-label="财务导航"><button type="button" data-route="entity" class="${state.route === 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">主</span>财务主体</button><button type="button" data-route="settlement" class="${state.route !== 'entity' ? 'is-active' : ''}"><span class="gh-nav-icon">结</span>对账结算</button></nav></aside><main class="gh-main"><div class="gh-content">${pageHead(title,description)}${pageContent()}</div></main></div>${scenario()}${confirmationDialog()}</div>`;
+    document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length));
   }
 
+  const focusFirstConfirmationControl = () => requestAnimationFrame(() => {
+    const dialog = document.querySelector('.d15-confirm-dialog');
+    if (!dialog || dialog.contains(document.activeElement)) return;
+    dialog.querySelector('button:not([disabled])')?.focus();
+  });
+  const restoreConfirmationFocus = target => requestAnimationFrame(() => {
+    if (!target) return;
+    let control = null;
+    if (target.type === 'batch') control = document.querySelector('[data-finance-action="open-batch-confirm"]');
+    if (target.type === 'statement') {
+      control = [...document.querySelectorAll('[data-confirm-statement-id]')].find(node => node.dataset.confirmStatementId === target.id)
+        || [...document.querySelectorAll('[data-statement-id]')].find(node => node.dataset.statementId === target.id);
+      if (control?.matches('tr')) control.tabIndex = -1;
+      if (!control) control = document.querySelector('[data-finance-action="open-batch-confirm"]');
+    }
+    control?.focus();
+  });
   const rerender = () => {
     if (embedded && typeof state.callbacks.onChange === 'function') state.callbacks.onChange({ preserveScroll:true });
     else standaloneRender();
+    if (state.confirmationIds.length) focusFirstConfirmationControl();
+  };
+  const closeConfirmation = () => {
+    const returnTarget = state.confirmationReturn;
+    state.confirmationIds = [];
+    state.confirmationReturn = null;
+    rerender();
+    restoreConfirmationFocus(returnTarget);
   };
   const readFilters = () => {
     state.filters = {
-      month:document.querySelector('[data-d15-filter="month"]')?.value || 'all',
-      game:document.querySelector('[data-d15-filter="game"]')?.value || 'all',
+      billingMonth:document.querySelector('[data-d15-filter="billingMonth"]')?.value || 'all',
+      settlementMonth:document.querySelector('[data-d15-filter="settlementMonth"]')?.value || 'all',
+      gameId:document.querySelector('[data-d15-filter="gameId"]')?.value || 'all',
+      status:document.querySelector('[data-d15-filter="status"]')?.value || 'all',
     };
     state.page = 1;
+    state.selectedStatementIds = [];
+    state.confirmationIds = [];
+    state.confirmationReturn = null;
     state.exportMessage = '';
   };
   const save = (content, filename) => {
@@ -12465,103 +12887,267 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     } catch { return false; }
   };
 
+  const startEntityEdit = () => {
+    state.entityMode = 'edit';
+    state.entityDraft = cloneEntity(draftSource());
+    state.entityFile = null;
+    state.entityErrors = {};
+    state.entityError = '';
+    rerender();
+  };
+  const cancelEntityEdit = () => {
+    state.entityMode = 'view';
+    state.entityDraft = null;
+    state.entityFile = null;
+    state.entityErrors = {};
+    state.entityError = '';
+    rerender();
+  };
+  const readEntityDraft = () => {
+    const form = document.querySelector('[data-d15-entity-form]');
+    const draft = cloneEntity(state.entityDraft || draftSource() || {});
+    entityFields.forEach(field => { draft[field.key] = form?.elements.namedItem(field.key)?.value?.trim() || ''; });
+    const file = form?.elements.namedItem('bankProof')?.files?.[0] || state.entityFile;
+    if (file) draft.bankProof = { name:file.name, type:file.type, size:file.size };
+    return draft;
+  };
+  const validateEntityDraft = draft => {
+    const errors = {};
+    entityFields.forEach(field => { if (!draft[field.key]) errors[field.key] = `${field.label}为必填项`; });
+    if (!errors.phone && !/^1[3-9]\d{9}$/.test(draft.phone)) errors.phone = '请填写正确的中国大陆手机号';
+    if (!errors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.email)) errors.email = '请填写正确的邮箱';
+    if (!errors.bankAccountName && !errors.legalName && draft.bankAccountName !== draft.legalName) errors.bankAccountName = '银行账户户名必须与企业法定名称一致';
+    if (!draft.bankProof?.name) errors.bankProof = '请上传银行账户证明附件';
+    else if (!['image/jpeg','image/png','image/webp'].includes(draft.bankProof.type)) errors.bankProof = '银行证明附件仅支持 JPG、PNG、WEBP';
+    else if (Number(draft.bankProof.size || 0) > 10 * 1024 * 1024) errors.bankProof = '银行证明附件不能超过 10 MB';
+    return errors;
+  };
+  const focusFirstEntityError = () => {
+    const firstError = document.querySelector('[data-d15-entity-form] [aria-invalid="true"]');
+    firstError?.scrollIntoView({ block:'center', behavior:'smooth' });
+    firstError?.focus();
+  };
+  const submitEntity = () => {
+    const draft = readEntityDraft();
+    const errors = validateEntityDraft(draft);
+    state.entityDraft = draft;
+    state.entityErrors = errors;
+    state.entityError = Object.values(errors)[0] || '';
+    if (state.entityError) {
+      rerender();
+      focusFirstEntityError();
+      return;
+    }
+    try {
+      statements.submitFinancialEntity(state.statementState, {
+        ...draft,
+        developerId:DEVELOPER_ID,
+        developerName:DEVELOPER_NAME,
+        submittedBy:draft.contactName,
+      });
+      state.entityMode = 'view';
+      state.entityDraft = null;
+      state.entityFile = null;
+      state.entityErrors = {};
+      state.entityError = '';
+      rerender();
+    } catch (error) {
+      state.entityError = error?.message || '提交失败，请重试';
+      rerender();
+    }
+  };
+  const reviewEntity = (result, reason = '') => {
+    const pending = entityApplications().find(application => application.status === 'pending');
+    if (!pending) return false;
+    statements.reviewFinancialEntity(state.statementState, pending.id, {
+      result,
+      reason,
+      operator:'平台运营 李然',
+    });
+    state.entityMode = 'view';
+    state.entityDraft = null;
+    state.entityFile = null;
+    state.entityErrors = {};
+    state.entityError = '';
+    rerender();
+    return true;
+  };
+
   document.addEventListener('click', event => {
     const routeButton = event.target.closest('[data-route]');
     if (routeButton && !embedded) {
       state.route = routeButton.dataset.route === 'entity' ? 'entity' : 'settlement';
       state.page = 1;
-      state.activeEntityKey = '';
+      state.selectedStatementIds = [];
+      state.confirmationIds = [];
+      state.confirmationReturn = null;
       location.hash = `#/${state.route}`;
       standaloneRender();
       return;
     }
     const control = event.target.closest('[data-finance-action]');
-    if (!control || control.disabled) return;
+    if (!control || control.disabled || control.getAttribute('aria-disabled') === 'true') return;
     const action = control.dataset.financeAction;
-    if (action === 'close-detail' && event.target.closest('[data-finance-stop]') && !event.target.closest('.gh-dialog-close') && !event.target.closest('.d15-drawer-foot')) return;
+    if (action === 'cancel-confirm' && control.classList.contains('d15-dialog-layer') && event.target.closest('[data-finance-stop]')) return;
     if (action === 'query') { readFilters(); rerender(); }
-    if (action === 'reset-filters') { state.filters = { month:'all',game:'all' }; state.page = 1; state.exportMessage = ''; rerender(); }
+    if (action === 'reset-filters') { state.filters = { billingMonth:'all',settlementMonth:'all',gameId:'all',status:'all' }; state.page = 1; state.selectedStatementIds = []; state.confirmationIds = []; state.confirmationReturn = null; state.exportMessage = ''; rerender(); }
     if (action === 'page') { state.page = Math.max(1,Number(control.dataset.page) || 1); rerender(); }
-    if (action === 'open-settlement') { state.activeEntityKey = control.dataset.entityKey; rerender(); }
-    if (action === 'close-detail') { state.activeEntityKey = ''; rerender(); }
-    if (action === 'toggle-history') { state.historyOpen = !state.historyOpen; rerender(); }
+    if (action === 'open-confirm') { state.confirmationReturn = { type:'statement',id:control.dataset.confirmStatementId }; state.confirmationIds = [control.dataset.confirmStatementId].filter(Boolean); rerender(); }
+    if (action === 'open-batch-confirm') { state.confirmationReturn = { type:'batch' }; state.confirmationIds = selectedPendingRows().map(row => row.id); rerender(); }
+    if (action === 'cancel-confirm') closeConfirmation();
+    if (action === 'confirm-statements') {
+      const ids = confirmationRows().map(row => row.id);
+      statements.confirmStatements(state.statementState,ids,{ confirmedBy:'开发者 王明' });
+      const confirmed = new Set(ids);
+      state.selectedStatementIds = state.selectedStatementIds.filter(id => !confirmed.has(id));
+      closeConfirmation();
+    }
+    if (action === 'edit-entity') startEntityEdit();
+    if (action === 'cancel-entity') cancelEntityEdit();
     if (action === 'export-settlements') {
       const rows = visibleSettlements();
-      const headers = ['结算月','游戏范围','用户实付（美元）','退款（美元）','拒付（美元）','销售税（美元）','支付费（美元）','平台分成（美元）','预扣税（美元）','应结算金额（美元）','人民币参考额','锁定汇率'];
-      const csvRows = rows.map(row => [row.month,gameLabel(row),...sumKeys.map(key => decimalAmount(row[key])),(Number(row.payableMinor || 0) / 100 * lockedUsdCnyRate(row.month)).toFixed(2),lockedUsdCnyRate(row.month).toFixed(2)]);
-      const csv = `\uFEFF${[headers,...csvRows].map(columns => columns.map(value => `"${String(value ?? '').replaceAll('"','""')}"`).join(',')).join('\r\n')}`;
-      const ok = save(csv,`对账结算_${state.filters.month === 'all' ? '全部月份' : state.filters.month}.csv`);
+      const csv = statements.exportStatementsCsv(rows,{ includeDeveloper:false,includeRatioVersion:false });
+      const ok = save(csv,`对账结算_${state.filters.billingMonth === 'all' ? '全部账单月' : state.filters.billingMonth}.csv`);
       state.exportMessage = ok ? `已导出 ${rows.length} 条结算记录` : '导出失败，请重试';
       rerender();
     }
-    if (action === 'export-detail') {
-      const row = activeEntityRow();
-      if (!row) return;
-      const rows = ledger.gameRowsFor(state.ledgerState,{ developer:'星海互动',month:row.month,gameId:row.gameFilter });
-      save(ledger.exportGameCsv(rows),`游戏构成_${row.month}_${row.entityVersion}.csv`);
-    }
     if (action === 'demo-toggle') { state.demoOpen = !state.demoOpen; rerender(); }
-    if (action === 'scenario') { state.demoScenario = control.dataset.scenario; state.demoOpen = false; state.activeEntityKey = ''; state.page = 1; rerender(); }
+    if (action === 'scenario') { state.demoScenario = control.dataset.scenario; state.demoOpen = false; state.selectedStatementIds = []; state.confirmationIds = []; state.confirmationReturn = null; state.page = 1; rerender(); }
+  });
+
+  document.addEventListener('submit', event => {
+    if (!event.target.matches('[data-d15-entity-form]')) return;
+    event.preventDefault();
+    submitEntity();
+  });
+
+  document.addEventListener('input', event => {
+    if (!event.target.matches('[data-d15-entity-form] input:not([type="file"])')) return;
+    const key = event.target.name;
+    state.entityDraft = { ...(state.entityDraft || {}), [key]:event.target.value };
+    if (state.entityErrors[key]) state.entityErrors = { ...state.entityErrors, [key]:'' };
+  });
+
+  document.addEventListener('change', event => {
+    if (event.target.matches('[data-d15-select-statement]')) {
+      const selected = new Set(state.selectedStatementIds);
+      if (event.target.checked) selected.add(event.target.value);
+      else selected.delete(event.target.value);
+      state.selectedStatementIds = [...selected];
+      rerender();
+      return;
+    }
+    if (event.target.matches('[data-d15-select-page]')) {
+      const selected = new Set(state.selectedStatementIds);
+      currentSettlements().filter(row => row.status === 'pending').forEach(row => {
+        if (event.target.checked) selected.add(row.id);
+        else selected.delete(row.id);
+      });
+      state.selectedStatementIds = [...selected];
+      rerender();
+      return;
+    }
+    if (!event.target.matches('[data-d15-entity-form] input[type="file"]')) return;
+    const file = event.target.files?.[0];
+    if (!file) return;
+    state.entityFile = file;
+    state.entityDraft = { ...(state.entityDraft || {}), bankProof:{ name:file.name, type:file.type, size:file.size } };
+    state.entityErrors = { ...state.entityErrors, bankProof:'' };
+    state.entityError = '';
+    const name = event.target.closest('.d15-entity-upload')?.querySelector('[data-d15-upload-name]');
+    if (name) name.textContent = file.name;
   });
 
   window.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && state.activeEntityKey) { state.activeEntityKey = ''; rerender(); }
+    const dialog = document.querySelector('.d15-confirm-dialog');
+    if (event.key === 'Tab' && dialog) {
+      const focusable = [...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+        .filter(node => node.getClientRects().length > 0 && node.getAttribute('aria-disabled') !== 'true');
+      if (focusable.length) {
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      event.stopImmediatePropagation();
+      return;
+    }
+    if (event.key === 'Escape' && state.confirmationIds.length) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      closeConfirmation();
+    }
   });
   window.addEventListener('hashchange', () => {
     if (embedded) return;
     const route = location.hash.replace(/^#\/?/,'');
-    state.route = route === 'entity' ? 'entity' : route.includes('flows') ? 'flows' : 'settlement';
+    state.route = route === 'entity' ? 'entity' : 'settlement';
     state.page = 1;
-    state.activeEntityKey = '';
+    state.selectedStatementIds = [];
+    state.confirmationIds = [];
+    state.confirmationReturn = null;
     standaloneRender();
   });
 
   window.__developerFinanceDemo = {
     snapshot:() => ({
       scenario:state.demoScenario,
-      snapshotId:state.ledgerState.snapshotId,
-      immutable:Object.isFrozen(state.ledgerState.events) && state.ledgerState.events.every(Object.isFrozen),
-      events:state.ledgerState.events.length,
-      settlements:developerMonthRows({ month:'all',game:'all' }),
+      settlements:allSettlements(),
       visibleSettlements:visibleSettlements(),
-      games:developerGameRows({ month:'all',game:'all' }),
+      selectedStatementIds:[...state.selectedStatementIds],
+      financialEntity:activeFinancialEntity(),
+      financialEntityApplications:entityApplications(),
     }),
+    reviewEntity,
     setDemoScenario:scenarioName => { state.demoScenario = scenarioName; rerender(); },
     reset:() => location.reload(),
   };
 
   if (embedded) {
     window.PublisherFinance = {
-      routeIds:['P15-01','P15-02','P15-03'],
+      routeIds:['P15-01','P15-02'],
       createState:() => state,
       render:(_financeState, options = {}) => {
-        state.route = options.routeId === 'P15-01' ? 'entity' : options.routeId === 'P15-03' ? 'flows' : 'settlement';
-        return `<section class="publisher-finance" data-testid="developer-finance-demo" data-finance-route="${esc(options.routeId || 'P15-01')}">${pageContent()}${settlementDrawer()}</section>`;
+        state.route = options.routeId === 'P15-01' ? 'entity' : 'settlement';
+        const canonicalRoute = state.route === 'entity' ? 'P15-01' : 'P15-02';
+        return `<section class="publisher-finance" data-testid="developer-finance-demo" data-finance-route="${canonicalRoute}">${pageContent()}${confirmationDialog()}</section>`;
       },
       bind:(_root, options = {}) => {
         state.callbacks.onChange = typeof options.onChange === 'function' ? options.onChange : null;
         state.callbacks.onNavigate = typeof options.onNavigate === 'function' ? options.onNavigate : null;
-        document.body.classList.toggle('finance-overlay-open', Boolean(state.activeEntityKey));
+        document.body.classList.toggle('finance-overlay-open', Boolean(state.confirmationIds.length));
       },
-      closeOverlays:() => { state.activeEntityKey = ''; document.body.classList.remove('finance-overlay-open'); },
+      closeOverlays:() => {
+        state.selectedStatementIds = [];
+        state.confirmationIds = [];
+        state.confirmationReturn = null;
+        document.body.classList.remove('finance-overlay-open');
+      },
       applyEntryContext:(_financeState, context = {}) => {
         const filters = context.filters || {};
         state.filters = {
-          month:filters.month || 'all',
-          game:filters.gameId || context.gameId || 'all',
+          billingMonth:filters.billingMonth || filters.month || 'all',
+          settlementMonth:filters.settlementMonth || 'all',
+          gameId:filters.gameId || context.gameId || 'all',
+          status:filters.status || 'all',
         };
         state.page = 1;
+        state.selectedStatementIds = [];
+        state.confirmationIds = [];
+        state.confirmationReturn = null;
       },
       setScenario:(_financeState, scenarioName) => {
         state.demoScenario = ['exhaustive','empty'].includes(scenarioName) ? scenarioName : 'exhaustive';
-        state.activeEntityKey = '';
+        state.selectedStatementIds = [];
+        state.confirmationIds = [];
+        state.confirmationReturn = null;
         state.page = 1;
         rerender();
       },
     };
   } else {
     const route = location.hash.replace(/^#\/?/,'');
-    state.route = route === 'entity' ? 'entity' : route.includes('flows') ? 'flows' : 'settlement';
+    state.route = route === 'entity' ? 'entity' : 'settlement';
     standaloneRender();
   }
 })();
@@ -14240,7 +14826,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     'P04-08': '数据导出与说明',
     'P15-01': '财务主体',
     'P15-02': '对账结算',
-    'P15-03': '对账流水',
   };
   const pageMeta = {
     'P01-04': { summary: '查看当前游戏的发行准备、阶段结果与核心数据。', status: '预发布需修改', primaryAction: '编辑游戏资料', action: 'edit-game-profile' },
@@ -14346,9 +14931,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
     const allowed = routes.filter(item => item.role === role && item.id !== 'P01-01');
     const consoleRouteIds = ['P01-04', 'P01-05', 'P01-06', 'P01-07'];
-    if (role === 'developer' && ['P15-01','P15-02','P15-03'].includes(route.id)) {
+    if (role === 'developer' && ['P15-01','P15-02'].includes(route.id)) {
       const isEnglish = language === 'en';
-      const settlementActive = route.id === 'P15-02' || route.id === 'P15-03';
+      const settlementActive = route.id === 'P15-02';
       return `<aside class="side-nav side-nav--finance" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">${isEnglish ? 'Games' : '游戏'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Developer navigation' : '开发者导航'}"><a class="nav-item" href="#/P02-01">${icon('game')}<span>${isEnglish ? 'Game management' : '游戏管理'}</span></a></nav><div class="nav-label">${isEnglish ? 'Finance' : '财务'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Finance navigation' : '财务导航'}"><a class="nav-item${route.id === 'P15-01' ? ' is-active' : ''}" href="#/P15-01"${route.id === 'P15-01' ? ' aria-current="page"' : ''}>${icon('vendor')}<span>${isEnglish ? 'Finance entity' : '财务主体'}</span></a><a class="nav-item${settlementActive ? ' is-active' : ''}" href="#/P15-02"${settlementActive ? ' aria-current="page"' : ''}>${icon('chart')}<span>${isEnglish ? 'Reconciliation & settlement' : '对账结算'}</span></a></nav><div class="nav-label">${isEnglish ? 'Company' : '厂商管理'}</div><nav class="nav-list"><button type="button" class="nav-item" data-portal-action="open-vendor-settings">${icon('vendor')}<span>${isEnglish ? 'Company settings' : '厂商设置'}</span></button></nav></aside>`;
     }
     if (role === 'operations' && route.moduleId === '01') {
@@ -14400,9 +14985,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderContext = ({ portalData, redacted, route, editorMode = 'edit', language = 'zh' }) => {
     if (redacted) return '';
     const context = portalData.context || {};
-    if (['P15-01','P15-02','P15-03'].includes(route.id)) {
+    if (['P15-01','P15-02'].includes(route.id)) {
       const isEnglish = language === 'en';
-      const end = route.id === 'P15-01' ? (isEnglish ? 'Finance entity' : '财务主体') : route.id === 'P15-02' ? (isEnglish ? 'Reconciliation & settlement' : '对账结算') : (isEnglish ? 'Reconciliation & settlement / Reconciliation flows' : '对账结算 / 对账流水');
+      const end = route.id === 'P15-01' ? (isEnglish ? 'Finance entity' : '财务主体') : (isEnglish ? 'Reconciliation & settlement' : '对账结算');
       return `<div class="context-bar"><span>${isEnglish ? 'Developer platform' : '开发者平台'}</span><span class="context-divider">/</span><span>${isEnglish ? 'Finance' : '财务'}</span><span class="context-divider">/</span><span class="context-value">${end}</span></div>`;
     }
     if (route.id === 'P01-02') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span><span>厂商工作台</span></div>`;
@@ -14413,8 +14998,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const renderPageHeader = ({ route, page, state, redacted, editorMode = 'edit', language = 'zh' }) => {
-    if (['P15-01','P15-02','P15-03'].includes(route.id)) {
-      const EnglishTitles = { 'P15-01':'Finance entity', 'P15-02':'Reconciliation & settlement', 'P15-03':'Reconciliation flows' };
+    if (['P15-01','P15-02'].includes(route.id)) {
+      const EnglishTitles = { 'P15-01':'Finance entity', 'P15-02':'Reconciliation & settlement' };
       return `<header class="page-header"><div><h1 class="page-title" data-page-title>${e(language === 'en' ? EnglishTitles[route.id] : publicTitle(route))}</h1></div></header>`;
     }
     if (['P01-01', 'P01-02', 'P01-03', 'P01-08', 'P01-09', 'P01-10', 'P02-01'].includes(route.id)) return '';
@@ -14498,7 +15083,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const isEntryChoice = isOnboarding && accountTier === 'unselected' && qualification?.status === 'unsubmitted';
     const isConfiguration = ['P01-09', 'P01-10'].includes(route.id);
     const isPublisherWorkspace = route.id === 'P02-01';
-    const isFinanceWorkspace = ['P15-01','P15-02','P15-03'].includes(route.id);
+    const isFinanceWorkspace = ['P15-01','P15-02'].includes(route.id);
     const helpLanguage = role === 'developer' ? language : 'zh';
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
     const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}${isFinanceWorkspace ? ' is-finance-workspace' : ''}`;
@@ -14877,7 +15462,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   });
   const parseLocation = () => {
     const raw = location.hash.replace(/^#\/?/, '');
-    const [routePart, queryPart = ''] = raw.split('?');
+    const [requestedRoutePart, queryPart = ''] = raw.split('?');
+    const routePart = requestedRoutePart === 'P15-03' ? 'P15-02' : requestedRoutePart;
+    if (routePart !== requestedRoutePart) history.replaceState(null, '', `${location.href.split('#')[0]}#/${routePart}${queryPart ? `?${queryPart}` : ''}`);
     const query = new URLSearchParams(queryPart);
     const requested = routes.find(item => item.id === routePart);
     let route = requested || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
@@ -17768,23 +18355,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         onFinance: (target, filters) => {
           persistPublisherWorkspace();
           const lockedStatement = window.PublisherDataDashboard.statements().find(item => item.status === 'locked');
-          const flowFilters = { ...filters, game:dashboardGame?.gameId || '' };
+          const flowFilters = { ...filters, gameId:dashboardGame?.gameId || '' };
           if (hasFinanceRoutes && window.PublisherFinance) {
-            const routeId = target === 'settlement/flows' ? 'P15-03' : 'P15-02';
             window.PublisherFinance.applyEntryContext(memory.finance, {
               source:'publisher-data-dashboard',
               target,
-              game:dashboardGame?.gameId || '',
+              gameId:dashboardGame?.gameId || '',
               filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' },
             });
-            navigate({ routeId, state:'default' });
+            navigate({ routeId:'P15-02', state:'default' });
             return;
           }
           const query = target === 'settlement/flows'
-            ? new URLSearchParams({ game:flowFilters.game, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
+            ? new URLSearchParams({ game:flowFilters.gameId, fulfillment:flowFilters.fulfillment || 'all', range:flowFilters.range || '30d', ledger_source:'direct_sale' })
             : new URLSearchParams({ statement:lockedStatement?.id || '', ledger_source:'direct_sale' });
           window.name = JSON.stringify({ source:'gamehub-publisher-data-dashboard', version:1, targetRoute:target, filters:target === 'settlement/flows' ? flowFilters : { statement:lockedStatement?.id || '', ledgerSource:'direct_sale' }, expiresAt:Date.now() + 30 * 60 * 1000 });
-          location.href = `15-开发者财务结算demo.html#/${target}?${query.toString()}`;
+          location.href = `15-开发者财务结算demo.html#/settlement?${query.toString()}`;
         },
       });
     }

@@ -88,11 +88,11 @@ test('财务主体与对账结算仍是两个独立入口',async () => {
   await page.waitForFunction(() => location.hash === '#/P15-02');
   assert.equal(await page.getByRole('heading',{ level:1,name:'对账结算' }).count(),1);
   assert.equal(await page.locator('[data-testid="settlement-table"]').count(),1);
-  assert.deepEqual(await page.locator('[data-d15-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.d15Filter)),['month','game']);
-  assert.equal(await page.locator('[data-d15-settlement-row]').count(),3);
-  assert.equal(await page.locator('[data-testid="settlement-table"] tbody td').filter({ hasText:/USD/ }).count(),0);
-  assert.match(await page.locator('[data-d15-cny-reference]').first().innerText(),/^约 ¥/);
-  assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/调整额|付款状态|发票|付款尝试/);
+  assert.deepEqual(await page.locator('[data-d15-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.d15Filter)),['billingMonth','settlementMonth','gameId','status']);
+  assert.equal(await page.locator('[data-d15-settlement-row]').count(),20);
+  const headers = await page.locator('[data-testid="settlement-table"] th').allTextContents();
+  assert.deepEqual(headers,['','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）','状态','操作']);
+  assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/美元|USD|查看详情|第三方支付商|交易流水|调整额|付款状态|发票|付款尝试/);
 });
 
 test('财务整合版可提交主体变更且不覆盖当前生效资料',async () => {
@@ -115,21 +115,55 @@ test('财务整合版可提交主体变更且不覆盖当前生效资料',async 
   assert.match(await page.locator('[data-d15-entity-details]').innerText(),/深圳星海互动科技有限公司/);
 });
 
-test('结算详情单层展示游戏和支付商税费事实',async () => {
+test('财务整合版支持结算单确认',async () => {
   await open('/P15-02');
-  await page.getByRole('button',{ name:'查看详情' }).first().click();
-  assert.equal(await page.getByRole('dialog').count(),1);
-  const text = await page.getByRole('dialog').innerText();
-  for (const label of ['游戏构成','交易流水','第三方支付商','买家国家或地区','实际税率','税额','支付费','汇率','销售税','预扣税']) assert.match(text,new RegExp(label));
-  assert.doesNotMatch(text,/买家姓名|邮箱|卡号|支付账号|支付商密钥/);
+  const pending = page.locator('[data-d15-settlement-row][data-status="pending"]').first();
+  const id = await pending.getAttribute('data-statement-id');
+  await pending.getByRole('button',{ name:'确认',exact:true }).click();
+  const dialog = page.getByRole('dialog',{ name:'确认结算单' });
+  assert.match(await dialog.innerText(),/1 条/);
   assert.equal(await page.locator('.developer-demo-state-switcher').isVisible(),false);
+  await dialog.getByRole('button',{ name:'确认',exact:true }).click();
+  assert.equal(await page.locator(`[data-statement-id="${id}"]`).getAttribute('data-status'),'confirmed');
 });
 
-test('对账流水次级路由仍保持对账结算高亮',async () => {
+test('财务整合版筛选待确认后保留稳定焦点',async () => {
+  await open('/P15-02');
+  await page.locator('[data-d15-filter="status"]').selectOption('pending');
+  await page.getByRole('button',{ name:'查询' }).click();
+  const row = page.locator('[data-d15-settlement-row]').first();
+  const id = await row.getAttribute('data-statement-id');
+  await row.getByRole('button',{ name:'确认',exact:true }).click();
+  await page.getByRole('dialog',{ name:'确认结算单' }).getByRole('button',{ name:'确认',exact:true }).click();
+  assert.equal(await page.locator(`[data-statement-id="${id}"]`).count(),0);
+  const fallback = page.getByRole('button',{ name:'批量确认' });
+  assert.equal(await fallback.isVisible(),true);
+  assert.equal(await fallback.evaluate(node => node === document.activeElement),true);
+});
+
+test('旧财务次级路由安全回落到对账结算',async () => {
   await open('/P15-03');
+  await page.waitForFunction(() => location.hash === '#/P15-02');
   assert.equal(await page.locator('.side-nav .nav-item.is-active').innerText(),'对账结算');
-  assert.match(await page.locator('.context-bar').innerText(),/开发者平台\s*\/\s*财务\s*\/\s*对账结算\s*\/\s*对账流水/);
-  assert.match(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/第三方支付商/);
+  assert.equal(await page.locator('[data-testid="settlement-table"]').count(),1);
+  assert.equal(await page.locator('[data-testid="developer-finance-demo"]').getAttribute('data-finance-route'),'P15-02');
+  assert.doesNotMatch(await page.locator('.context-bar').innerText(),/对账流水/);
+  assert.doesNotMatch(await page.locator('.page-header').innerText(),/对账流水/);
+  assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/第三方支付商|交易流水/);
+  assert.deepEqual(await page.evaluate(() => window.PublisherFinance.routeIds),['P15-01','P15-02']);
+  assert.equal(await page.evaluate(() => JSON.parse(document.getElementById('portal-routes').textContent).some(route => route.id === 'P15-03')),false);
+});
+
+test('财务整合版离开对账页后清空批量选择',async () => {
+  await open('/P15-02');
+  await page.locator('[data-d15-settlement-row][data-status="pending"] input[type="checkbox"]').first().check();
+  assert.equal(await page.getByRole('button',{ name:'批量确认' }).getAttribute('aria-disabled'),null);
+  await page.locator('.side-nav').getByText('财务主体',{ exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P15-01');
+  await page.locator('.side-nav').getByText('对账结算',{ exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P15-02');
+  assert.equal(await page.locator('[data-d15-select-statement]:checked').count(),0);
+  assert.equal(await page.getByRole('button',{ name:'批量确认' }).getAttribute('aria-disabled'),'true');
 });
 
 test('390px 财务整合页无根页面横向溢出',async () => {
@@ -137,4 +171,17 @@ test('390px 财务整合页无根页面横向溢出',async () => {
   await open('/P15-02');
   const dimensions = await page.evaluate(() => ({ client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth }));
   assert.equal(dimensions.scroll,dimensions.client);
+  const tableScroll = await page.locator('[data-testid="settlement-table"]').evaluate(table => {
+    const wrap = table.closest('.gh-table-wrap');
+    wrap.scrollLeft = 120;
+    return {
+      client:wrap.clientWidth,
+      scroll:wrap.scrollWidth,
+      overflowX:getComputedStyle(wrap).overflowX,
+      scrollLeft:wrap.scrollLeft,
+    };
+  });
+  assert.ok(tableScroll.scroll > tableScroll.client);
+  assert.ok(['auto','scroll'].includes(tableScroll.overflowX));
+  assert.ok(tableScroll.scrollLeft > 0);
 });

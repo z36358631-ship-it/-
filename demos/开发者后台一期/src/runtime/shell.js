@@ -60,7 +60,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     'P04-08': '数据导出与说明',
     'P15-01': '财务主体',
     'P15-02': '对账结算',
-    'P15-03': '对账流水',
   };
   const pageMeta = {
     'P01-04': { summary: '查看当前游戏的发行准备、阶段结果与核心数据。', status: '预发布需修改', primaryAction: '编辑游戏资料', action: 'edit-game-profile' },
@@ -166,9 +165,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {
     const allowed = routes.filter(item => item.role === role && item.id !== 'P01-01');
     const consoleRouteIds = ['P01-04', 'P01-05', 'P01-06', 'P01-07'];
-    if (role === 'developer' && ['P15-01','P15-02','P15-03'].includes(route.id)) {
+    if (role === 'developer' && ['P15-01','P15-02'].includes(route.id)) {
       const isEnglish = language === 'en';
-      const settlementActive = route.id === 'P15-02' || route.id === 'P15-03';
+      const settlementActive = route.id === 'P15-02';
       return `<aside class="side-nav side-nav--finance" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">${isEnglish ? 'Games' : '游戏'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Developer navigation' : '开发者导航'}"><a class="nav-item" href="#/P02-01">${icon('game')}<span>${isEnglish ? 'Game management' : '游戏管理'}</span></a></nav><div class="nav-label">${isEnglish ? 'Finance' : '财务'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Finance navigation' : '财务导航'}"><a class="nav-item${route.id === 'P15-01' ? ' is-active' : ''}" href="#/P15-01"${route.id === 'P15-01' ? ' aria-current="page"' : ''}>${icon('vendor')}<span>${isEnglish ? 'Finance entity' : '财务主体'}</span></a><a class="nav-item${settlementActive ? ' is-active' : ''}" href="#/P15-02"${settlementActive ? ' aria-current="page"' : ''}>${icon('chart')}<span>${isEnglish ? 'Reconciliation & settlement' : '对账结算'}</span></a></nav><div class="nav-label">${isEnglish ? 'Company' : '厂商管理'}</div><nav class="nav-list"><button type="button" class="nav-item" data-portal-action="open-vendor-settings">${icon('vendor')}<span>${isEnglish ? 'Company settings' : '厂商设置'}</span></button></nav></aside>`;
     }
     if (role === 'operations' && route.moduleId === '01') {
@@ -220,9 +219,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderContext = ({ portalData, redacted, route, editorMode = 'edit', language = 'zh' }) => {
     if (redacted) return '';
     const context = portalData.context || {};
-    if (['P15-01','P15-02','P15-03'].includes(route.id)) {
+    if (['P15-01','P15-02'].includes(route.id)) {
       const isEnglish = language === 'en';
-      const end = route.id === 'P15-01' ? (isEnglish ? 'Finance entity' : '财务主体') : route.id === 'P15-02' ? (isEnglish ? 'Reconciliation & settlement' : '对账结算') : (isEnglish ? 'Reconciliation & settlement / Reconciliation flows' : '对账结算 / 对账流水');
+      const end = route.id === 'P15-01' ? (isEnglish ? 'Finance entity' : '财务主体') : (isEnglish ? 'Reconciliation & settlement' : '对账结算');
       return `<div class="context-bar"><span>${isEnglish ? 'Developer platform' : '开发者平台'}</span><span class="context-divider">/</span><span>${isEnglish ? 'Finance' : '财务'}</span><span class="context-divider">/</span><span class="context-value">${end}</span></div>`;
     }
     if (route.id === 'P01-02') return `<div class="context-bar">${icon('vendor')}<span class="context-value">${e(context.vendorName || '未选择厂商')}</span><span class="context-divider">/</span><span>厂商工作台</span></div>`;
@@ -233,8 +232,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   const renderPageHeader = ({ route, page, state, redacted, editorMode = 'edit', language = 'zh' }) => {
-    if (['P15-01','P15-02','P15-03'].includes(route.id)) {
-      const EnglishTitles = { 'P15-01':'Finance entity', 'P15-02':'Reconciliation & settlement', 'P15-03':'Reconciliation flows' };
+    if (['P15-01','P15-02'].includes(route.id)) {
+      const EnglishTitles = { 'P15-01':'Finance entity', 'P15-02':'Reconciliation & settlement' };
       return `<header class="page-header"><div><h1 class="page-title" data-page-title>${e(language === 'en' ? EnglishTitles[route.id] : publicTitle(route))}</h1></div></header>`;
     }
     if (['P01-01', 'P01-02', 'P01-03', 'P01-08', 'P01-09', 'P01-10', 'P02-01'].includes(route.id)) return '';
@@ -318,7 +317,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const isEntryChoice = isOnboarding && accountTier === 'unselected' && qualification?.status === 'unsubmitted';
     const isConfiguration = ['P01-09', 'P01-10'].includes(route.id);
     const isPublisherWorkspace = route.id === 'P02-01';
-    const isFinanceWorkspace = ['P15-01','P15-02','P15-03'].includes(route.id);
+    const isFinanceWorkspace = ['P15-01','P15-02'].includes(route.id);
     const helpLanguage = role === 'developer' ? language : 'zh';
     const helpContent = managedContent?.[helpLanguage]?.help || portalData.helpCenter;
     const frameClass = `${isLogin ? ' is-login' : ''}${isOnboarding ? ' is-onboarding' : ''}${isEntryChoice ? ' is-entry-choice' : ''}${showPlatformConsole ? ' is-platform-console' : ''}${isPublisherWorkspace ? ' is-publisher-workspace' : ''}${isFinanceWorkspace ? ' is-finance-workspace' : ''}`;

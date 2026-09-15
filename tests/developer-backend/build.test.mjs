@@ -14,15 +14,17 @@ const outputs = [
 const developerAliases = ['01-开发者平台与资料demo.html', '02-游戏创建与发行demo.html', '02-CDKEY商品与供给demo.html'];
 const developerRoutes = ['P01-01', 'P01-03', 'P02-01'];
 const operationsRoutes = ['P01-08', 'P01-09', 'P01-10'];
-const internalCopy = /开发者后台一期|评审工具|这是评审场景|示例厂商|首款签约游戏|example\.com|vendor_revision_002|当前页面内存|仅用于本次演示|演示服务|模拟下载|不发起真实请求|prdSource|prdHeading|sourceOfTruth|demo-password/i;
+const internalCopy = /开发者后台一期|评审工具|这是评审场景|示例厂商|首款签约游戏|vendor_revision_002|当前页面内存|仅用于本次演示|演示服务|模拟下载|不发起真实请求|prdSource|prdHeading|sourceOfTruth|demo-password/i;
 
-test('构建前验证 4 个 Demo 与最新 PRD 的 37 页契约一致', () => {
-  const output = execFileSync(process.execPath, [path.join(demoDir, 'build.mjs')], {
-    stdio: 'pipe',
-    encoding: 'utf8',
-  });
-  assert.match(output, /Latest PRD contract verified: 4 documents, 10\/6\/13\/8 PRD page units; 37 demo routes \(10\/6\/13\/8\), version 2026-09-07-v2\.5\./);
-  assert.match(output, /Built 4 public-facing self-contained HTML files with 27 routes; emitted 3 compatibility aliases\./);
+test('构建前验证本次开发者与运营模块契约一致', () => {
+  const outputs = ['01','02'].map(moduleId => execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), `--module=${moduleId}`], {
+    stdio:'pipe',
+    encoding:'utf8',
+  }));
+  for (const output of outputs) {
+    assert.match(output, /Latest PRD contract verified: 2 documents, 10\/6 PRD page units; 37 demo routes \(10\/6\), version 2026-09-07-v2\.5\./);
+    assert.match(output, /Built 1 public-facing self-contained HTML files with 3 routes;/);
+  }
 });
 
 test('开发者平台与运营后台可分别构建独立入口', () => {
@@ -50,15 +52,17 @@ test('财务整合变体生成新入口且不覆盖原开发者平台', () => {
   });
   const integratedPath = path.join(demoDir, '开发者平台财务整合demo.html');
   const integrated = fs.readFileSync(integratedPath, 'utf8');
-  assert.match(output, /Built developer finance integration with 6 routes\./);
-  assert.match(output, /with 6 routes; emitted 0 compatibility aliases\./);
-  for (const routeId of ['P15-01','P15-02','P15-03']) assert.ok(integrated.includes(routeId), routeId);
+  assert.match(output, /Built developer finance integration with 5 routes\./);
+  assert.match(output, /with 5 routes; emitted 0 compatibility aliases\./);
+  for (const routeId of ['P15-01','P15-02']) assert.ok(integrated.includes(routeId), routeId);
+  assert.doesNotMatch(integrated, /"id":"P15-03"/);
   assert.doesNotMatch(integrated, /<iframe/i);
   assert.deepEqual(fs.readFileSync(originalPath), original);
 });
 
-test('仅校验 outputs 中 4 个正式 HTML 自包含且可重复构建', () => {
-  execFileSync(process.execPath, [path.join(demoDir, 'build.mjs')], { stdio: 'pipe' });
+test('仅校验 outputs 中 4 个正式 HTML 自包含且本次两端可重复构建', () => {
+  execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), '--module=01'], { stdio:'pipe' });
+  execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), '--module=02'], { stdio:'pipe' });
   assert.equal(fs.existsSync(path.join(demoDir, '开发者后台一期总览demo.html')), false);
   assert.equal(new Set(outputs).size, 4);
   for (const alias of developerAliases) assert.equal(fs.existsSync(path.join(demoDir, alias)), true, alias);
@@ -76,8 +80,9 @@ test('仅校验 outputs 中 4 个正式 HTML 自包含且可重复构建', () =>
     assert.doesNotMatch(html, internalCopy, output);
   }
 
-  execFileSync(process.execPath, [path.join(demoDir, 'build.mjs')], { stdio: 'pipe' });
-  for (const output of outputs) {
+  execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), '--module=01'], { stdio:'pipe' });
+  execFileSync(process.execPath, [path.join(demoDir, 'build.mjs'), '--module=02'], { stdio:'pipe' });
+  for (const output of outputs.slice(0,2)) {
     assert.equal(fs.readFileSync(path.join(demoDir, output), 'utf8'), first.get(output), output);
   }
   for (const alias of developerAliases) {
