@@ -128,6 +128,7 @@ test('三份财务 Demo 各注入一次同一共享结算账本', () => {
   for (const output of financeOutputs) {
     const html = fs.readFileSync(path.join(demoDir, output), 'utf8');
     assert.equal((html.match(/window\.PublisherSettlementLedger\s*=/g) || []).length, 1, output);
+    assert.equal((html.match(/window\.PublisherSettlementStatements\s*=/g) || []).length, 1, output);
     assert.match(html, /SETTLEMENT-SNAPSHOT-2026-09-14-V1/, output);
   }
 });

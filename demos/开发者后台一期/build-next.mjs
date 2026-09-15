@@ -8,6 +8,7 @@ const read = (...parts) => fs.readFileSync(path.join(srcDir, ...parts), 'utf8').
 const sharedCss = read('next-shared', 'styles.css');
 const sharedRuntime = read('next-shared', 'context.js');
 const financeLedgerRuntime = read('finance-ledger', 'model.js');
+const financeStatementsRuntime = read('finance-statements', 'model.js');
 const modules = [
   { source:'demo06-next', output:'06-游戏创建与发行资料demo.html', title:'游戏创建与发行资料' },
   { source:'demo07', output:'07-开发接入与资源中心demo.html', title:'开发接入与资源中心' },
@@ -17,7 +18,7 @@ const modules = [
 
 for (const module of modules) {
   const css = `${sharedCss}\n\n${read(module.source, 'styles.css')}`;
-  const financeRuntime = module.source === 'demo15' ? `${financeLedgerRuntime}\n\n` : '';
+  const financeRuntime = module.source === 'demo15' ? `${financeLedgerRuntime}\n\n${financeStatementsRuntime}\n\n` : '';
   const runtime = `${sharedRuntime}\n\n${financeRuntime}${read(module.source, 'app.js')}`;
   const html = `<!doctype html>
 <html lang="zh-CN">

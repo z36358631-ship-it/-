@@ -111,6 +111,7 @@ const publisherRuntime = [
   ...publisherRuntimeFiles.map(file => read('runtime', file).trim()),
   ...(financeIntegrated ? [
     read('finance-ledger', 'model.js').trim(),
+    read('finance-statements', 'model.js').trim(),
     `window.__PUBLISHER_FINANCE_EMBEDDED__ = true;\n${read('demo15', 'app.js').trim()}`,
   ] : []),
 ].join('\n\n');

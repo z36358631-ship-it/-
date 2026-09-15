@@ -9,6 +9,7 @@ const modelFile = path.join(demoDir, 'src', 'demo16', 'model.js');
 const appFile = path.join(demoDir, 'src', 'demo16', 'app.js');
 const styleFile = path.join(demoDir, 'src', 'demo16', 'styles.css');
 const ledgerFile = path.join(demoDir, 'src', 'finance-ledger', 'model.js');
+const statementsFile = path.join(demoDir, 'src', 'finance-statements', 'model.js');
 
 const read = file => fs.readFileSync(file, 'utf8');
 const replaceJsonTextarea = (html, id, update) => {
@@ -48,7 +49,7 @@ const applicationMarker = '(function startApplication(namespace) {';
 const markerIndex = html.lastIndexOf(applicationMarker);
 if (markerIndex < 0) throw new Error('未找到主应用启动位置');
 
-const injectedScript = `${read(ledgerFile)}\n\n${read(modelFile)}\n\n${read(appFile)}\n\n`;
+const injectedScript = `${read(ledgerFile)}\n\n${read(statementsFile)}\n\n${read(modelFile)}\n\n${read(appFile)}\n\n`;
 html = `${html.slice(0, markerIndex)}${injectedScript}${html.slice(markerIndex)}`;
 
 fs.writeFileSync(outputFile, html, 'utf8');
