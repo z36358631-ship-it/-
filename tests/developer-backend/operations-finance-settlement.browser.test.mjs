@@ -143,18 +143,23 @@ test('游戏销售与 CDKEY 详情同源，退款与拒付不增加详情',async
   const game = page.locator('[data-fo-game-row][data-item-type="game_sales_share"]').first();
   await game.getByRole('button',{ name:'查看详情' }).click();
   const gameDrawer = page.getByRole('dialog',{ name:'游戏销售分成明细' });
-  assert.deepEqual(await gameDrawer.locator('[data-testid="fo-game-sales-detail-table"] thead th').allTextContents(),[
-    '商品类型','商品名称','用户实付','支付费','税费','退款与拒付','平台实收','适用档位','平台分成比例','平台分成','结算金额',
+  assert.deepEqual(await gameDrawer.locator('.fo-detail-summary span').allTextContents(),[
+    '用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）',
   ]);
-  for (const label of ['游戏本体','DLC','规则版本','生效账单月','各档计费']) assert.match(await gameDrawer.innerText(),new RegExp(label));
+  assert.deepEqual(await gameDrawer.locator('[data-testid="fo-game-sales-detail-table"] thead th').allTextContents(),[
+    '商品类型','商品名称','用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）',
+  ]);
+  for (const label of ['游戏本体','DLC','用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）']) assert.match(await gameDrawer.innerText(),new RegExp(label));
+  assert.doesNotMatch(await gameDrawer.innerText(),/支付费|税费|退款与拒付|适用档位|规则版本|生效账单月|各档计费/);
   await gameDrawer.getByRole('button',{ name:'关闭' }).last().click();
   const cdkey = page.locator('[data-fo-game-row][data-item-type="cdkey_sales_share"]').first();
   await cdkey.getByRole('button',{ name:'查看详情' }).click();
   const cdkeyDrawer = page.getByRole('dialog',{ name:'CDKEY 销售明细' });
   assert.deepEqual(await cdkeyDrawer.locator('[data-testid="fo-cdkey-detail-table"] thead th').allTextContents(),[
-    '渠道','商品类型','商品／DLC','用户实付','支付费','税费','退款与拒付','平台实收','平台分成','结算金额',
+    '渠道','商品类型','商品／DLC','用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）',
   ]);
   assert.match(await cdkeyDrawer.innerText(),/平台分成\s*0\.00/);
+  assert.doesNotMatch(await cdkeyDrawer.innerText(),/支付费|税费|退款与拒付|适用档位/);
   await cdkeyDrawer.getByRole('button',{ name:'关闭' }).last().click();
   assert.equal(await page.locator('[data-fo-game-row][data-item-type="refund_chargeback_adjustment"]').first().getByRole('button',{ name:'查看详情' }).count(),0);
 });

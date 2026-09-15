@@ -170,7 +170,7 @@ test('开发者对账结算使用固定字段、N+1和人民币公式',async () 
   const table = page.locator('[data-testid="settlement-table"]');
   assert.deepEqual(await table.locator('th').allTextContents(),[
     '','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）',
-    '结算比例','实际到账金额（CNY）','结算金额（CNY）','状态','操作',
+    '实际到账金额（CNY）','结算比例','结算金额（CNY）','状态','操作',
   ]);
   assert.deepEqual(await page.locator('[data-d15-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.d15Filter)),[
     'billingMonth','settlementMonth','gameId','status',
@@ -194,8 +194,8 @@ test('开发者对账结算使用固定字段、N+1和人民币公式',async () 
   const negative = page.locator('[data-d15-settlement-row][data-item-type="refund_chargeback_adjustment"]').first();
   assert.ok(Number(await negative.getAttribute('data-platform-received-minor')) < 0);
   assert.ok(Number(await negative.getAttribute('data-payable-minor')) < 0);
-  assert.equal(await negative.locator('td').nth(7).innerText(),'100%');
-  assert.match(await negative.locator('td').nth(8).innerText(),/^-/);
+  assert.match(await negative.locator('td').nth(7).innerText(),/^-/);
+  assert.equal(await negative.locator('td').nth(8).innerText(),'100%');
   assert.match(await negative.locator('td').nth(9).innerText(),/^-/);
 });
 
@@ -217,8 +217,11 @@ test('CDKEY 结算项可查看渠道与本体、DLC金额明细',async () => {
   await row.getByRole('button',{ name:'查看详情' }).click();
   const drawer = page.getByRole('dialog',{ name:'CDKEY 销售明细' });
   const text = await drawer.innerText();
-  for (const label of ['渠道','商品类型','商品／DLC','用户支付金额','支付费','税费','实际到账金额','结算比例','结算金额','游戏本体','DLC']) assert.match(text,new RegExp(label));
-  assert.doesNotMatch(text,/平台分成/);
+  assert.deepEqual(await drawer.locator('[data-testid="cdkey-detail-table"] thead th').allTextContents(),[
+    '渠道','商品类型','商品／DLC','用户支付金额（CNY）','实际到账金额（CNY）','结算比例','结算金额（CNY）',
+  ]);
+  for (const label of ['渠道','商品类型','商品／DLC','用户支付金额（CNY）','实际到账金额（CNY）','结算比例','结算金额（CNY）','游戏本体','DLC']) assert.match(text,new RegExp(label));
+  assert.doesNotMatch(text,/支付费|税费|退款与拒付|适用档位|平台分成/);
   assert.ok(await drawer.locator('tbody tr').count() >= 3);
   await page.keyboard.press('Escape');
   assert.equal(await drawer.count(),0);

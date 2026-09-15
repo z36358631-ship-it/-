@@ -91,7 +91,14 @@ test('财务主体与对账结算仍是两个独立入口',async () => {
   assert.deepEqual(await page.locator('[data-d15-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.d15Filter)),['billingMonth','settlementMonth','gameId','status']);
   assert.equal(await page.locator('[data-d15-settlement-row]').count(),20);
   const headers = await page.locator('[data-testid="settlement-table"] th').allTextContents();
-  assert.deepEqual(headers,['','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）','状态','操作']);
+  assert.deepEqual(headers,['','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','实际到账金额（CNY）','结算比例','结算金额（CNY）','状态','操作']);
+  const statusAlignment = await page.locator('[data-d15-settlement-row]').first().locator('td').nth(10).evaluate(cell => {
+    const tag = cell.querySelector('.gh-tag');
+    const cellRect = cell.getBoundingClientRect();
+    const tagRect = tag.getBoundingClientRect();
+    return Math.abs((cellRect.top + cellRect.height / 2) - (tagRect.top + tagRect.height / 2));
+  });
+  assert.ok(statusAlignment <= 1);
   const text = await page.locator('[data-testid="developer-finance-demo"]').innerText();
   for (const label of ['游戏销售分成','CDKEY 销售分成','退款与拒付','查看详情']) assert.match(text,new RegExp(label));
   assert.doesNotMatch(text,/DLC 销售分成/);
@@ -130,22 +137,25 @@ test('游戏销售分成与 CDKEY 使用同源半屏明细，退款与拒付无�
   await gameRow.getByRole('button',{ name:'查看详情' }).click();
   const gameDrawer = page.getByRole('dialog',{ name:'游戏销售分成明细' });
   await gameDrawer.waitFor();
+  assert.deepEqual(await gameDrawer.locator('.d15-detail-summary span').allTextContents(),[
+    '用户支付金额（CNY）','实际到账金额（CNY）','结算比例','结算金额（CNY）',
+  ]);
   assert.deepEqual(await gameDrawer.locator('[data-testid="game-sales-detail-table"] thead th').allTextContents(),[
-    '商品类型','商品名称','用户支付金额','支付费','税费','退款与拒付','实际到账金额','适用档位','结算比例','结算金额',
+    '商品类型','商品名称','用户支付金额（CNY）','实际到账金额（CNY）','结算比例','结算金额（CNY）',
   ]);
   const gameText = await gameDrawer.innerText();
-  for (const label of ['游戏本体','DLC','规则版本','生效账单月','各档结算']) assert.match(gameText,new RegExp(label));
-  assert.doesNotMatch(gameText,/平台分成/);
+  for (const label of ['游戏本体','DLC']) assert.match(gameText,new RegExp(label));
+  assert.doesNotMatch(gameText,/支付费|税费|退款与拒付|适用档位|规则版本|生效账单月|各档结算|平台分成/);
   await gameDrawer.getByRole('button',{ name:'关闭' }).click();
 
   const cdkeyRow = page.locator('[data-d15-settlement-row][data-item-type="cdkey_sales_share"]').first();
   await cdkeyRow.getByRole('button',{ name:'查看详情' }).click();
   const cdkeyDrawer = page.getByRole('dialog',{ name:'CDKEY 销售明细' });
   assert.deepEqual(await cdkeyDrawer.locator('[data-testid="cdkey-detail-table"] thead th').allTextContents(),[
-    '渠道','商品类型','商品／DLC','用户支付金额','支付费','税费','退款与拒付','实际到账金额','结算比例','结算金额',
+    '渠道','商品类型','商品／DLC','用户支付金额（CNY）','实际到账金额（CNY）','结算比例','结算金额（CNY）',
   ]);
   assert.match(await cdkeyDrawer.innerText(),/结算比例\s*100%/);
-  assert.doesNotMatch(await cdkeyDrawer.innerText(),/平台分成/);
+  assert.doesNotMatch(await cdkeyDrawer.innerText(),/支付费|税费|退款与拒付|适用档位|平台分成/);
   await cdkeyDrawer.getByRole('button',{ name:'关闭' }).click();
 
   const adjustment = page.locator('[data-d15-settlement-row][data-item-type="refund_chargeback_adjustment"]').first();
