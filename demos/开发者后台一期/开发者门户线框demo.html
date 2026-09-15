@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>盖世游戏开发者平台｜门户线框</title>
+  <style>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: #141820;
+      background: #ffffff;
+      font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, a { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      width: 100%;
+      height: 64px;
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      background: #0b111d;
+    }
+    .site-header .container {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; min-width: 0; }
+    .brand-mark {
+      position: relative;
+      width: 30px;
+      height: 20px;
+      border: 2px solid #ffffff;
+      border-radius: 7px;
+      transform: skewX(-12deg);
+    }
+    .brand-mark::before, .brand-mark::after {
+      content: "";
+      position: absolute;
+      top: 7px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #ffffff;
+    }
+    .brand-mark::before { left: 7px; }
+    .brand-mark::after { right: 7px; }
+    .brand-copy strong, .brand-copy span { display: block; white-space: nowrap; }
+    .brand-copy strong { font-size: 15px; line-height: 1.25; }
+    .brand-copy span { margin-top: 2px; color: #aeb6c4; font-size: 10px; letter-spacing: .08em; }
+    .site-nav { display: flex; align-items: center; gap: 10px; }
+    .nav-link, .language-button {
+      min-height: 36px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #d7dce5;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      cursor: pointer;
+    }
+    .nav-link:hover, .language-button:hover { color: #ffffff; background: rgba(255,255,255,.08); }
+    .nav-login { border: 1px solid rgba(255,255,255,.45); }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      color: #ffffff;
+      background: #131a2b;
+      isolation: isolate;
+    }
+    .hero::before, .hero::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      border: 72px solid rgba(255,255,255,.035);
+      border-radius: 50%;
+    }
+    .hero::before { width: 560px; height: 560px; top: -280px; right: 7%; }
+    .hero::after { width: 370px; height: 370px; top: -116px; right: 15%; border-width: 56px; }
+    .hero-main {
+      min-height: 420px;
+      padding: 86px 0 58px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .hero h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(40px, 5vw, 64px);
+      line-height: 1.18;
+      letter-spacing: -.045em;
+    }
+    .hero h1 span { display: block; }
+    .primary-action {
+      min-width: 168px;
+      min-height: 46px;
+      margin-top: 34px;
+      padding: 0 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #111827;
+      font-weight: 700;
+      border: 1px solid #ffffff;
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+    .primary-action:hover { background: #e8ebef; }
+    .platform-stats {
+      padding: 28px 0 36px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid rgba(255,255,255,.18);
+    }
+    .stat { min-height: 82px; display: grid; place-content: center; text-align: center; }
+    .stat + .stat { border-left: 1px solid rgba(255,255,255,.18); }
+    .stat span, .stat strong { display: block; }
+    .stat span { color: #b4bdcb; font-size: 14px; }
+    .stat strong { margin-top: 8px; font-size: clamp(25px, 3vw, 36px); line-height: 1; }
+
+    .feature-section { width: 100%; background: #ffffff; }
+    .feature-section.is-muted { background: #f4f5f7; }
+    .feature {
+      min-height: 470px;
+      padding: 78px 0;
+      display: grid;
+      grid-template-columns: minmax(0, .92fr) minmax(480px, 1.08fr);
+      align-items: center;
+      gap: 84px;
+    }
+    .feature.is-reversed { grid-template-columns: minmax(480px, 1.08fr) minmax(0, .92fr); }
+    .feature-copy h2 {
+      margin: 0;
+      font-size: clamp(30px, 3vw, 42px);
+      line-height: 1.28;
+      letter-spacing: -.025em;
+    }
+    .feature-copy p {
+      max-width: 510px;
+      margin: 20px 0 0;
+      color: #5b626d;
+      font-size: 16px;
+      line-height: 1.9;
+    }
+    .feature-tags { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 9px; }
+    .feature-tags span {
+      padding: 7px 10px;
+      color: #39404a;
+      font-size: 12px;
+      border: 1px solid #aeb4bd;
+      border-radius: 4px;
+      background: #ffffff;
+    }
+
+    .wire-window {
+      min-height: 300px;
+      padding: 16px;
+      border: 1px solid #8c939d;
+      border-radius: 12px;
+      background: #e3e5e8;
+      box-shadow: 0 18px 46px rgba(22,28,38,.08);
+    }
+    .wire-window__title {
+      height: 31px;
+      display: flex;
+      align-items: center;
+      color: #343a43;
+      font-size: 11px;
+      border-bottom: 1px solid #9ca2ab;
+    }
+    .admin-wire { height: 218px; margin-top: 14px; display: grid; grid-template-columns: 116px 1fr; gap: 12px; }
+    .wire-sidebar { border: 1px solid #a0a6af; background: #c9cdd3; }
+    .wire-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .wire-card { min-height: 88px; border: 1px solid #a0a6af; background: #ffffff; }
+    .wire-card.is-wide { grid-column: 1 / -1; }
+
+    .lifecycle-section {
+      width: 100%;
+      padding: 82px 0 88px;
+      text-align: center;
+      border-top: 1px solid #d3d7dc;
+      border-bottom: 1px solid #d3d7dc;
+      background: #ffffff;
+    }
+    .section-heading h2 { margin: 0; font-size: clamp(30px, 3vw, 42px); letter-spacing: -.025em; }
+    .section-heading p { margin: 12px 0 0; color: #6c737d; font-size: 15px; }
+    .lifecycle {
+      position: relative;
+      width: min(920px, 100%);
+      min-height: 260px;
+      margin: 44px auto 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items: end;
+      gap: 16px;
+    }
+    .phase {
+      position: relative;
+      padding: 22px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      border: 1px solid #89919c;
+      background: #eceef1;
+    }
+    .phase:nth-child(1) { height: 135px; }
+    .phase:nth-child(2) { height: 178px; background: #e0e3e7; }
+    .phase:nth-child(3) { height: 235px; color: #ffffff; background: #737b87; }
+    .phase:nth-child(4) { height: 198px; background: #d3d7dc; }
+    .phase strong { font-size: 19px; }
+    .phase span { margin-top: 10px; font-size: 12px; line-height: 1.55; opacity: .78; }
+
+    .delivery-wire { min-height: 218px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .delivery-node {
+      width: 112px;
+      min-height: 86px;
+      padding: 16px 9px;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.55;
+      border: 1px solid #979da6;
+      background: #ffffff;
+    }
+    .delivery-arrow { flex: 1; height: 1px; background: #858c96; }
+    .chart-metrics { margin: 14px 0 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .chart-metrics span { height: 45px; border: 1px solid #a0a6af; background: #ffffff; }
+    .chart {
+      position: relative;
+      height: 160px;
+      overflow: hidden;
+      border: 1px solid #a0a6af;
+      background: repeating-linear-gradient(to bottom, #ffffff 0, #ffffff 39px, #e4e6e9 40px);
+    }
+    .chart svg { position: absolute; inset: 18px 18px 14px; width: calc(100% - 36px); height: calc(100% - 32px); }
+
+    @media (max-width: 920px) {
+      .feature, .feature.is-reversed { min-height: 0; grid-template-columns: 1fr; gap: 38px; padding: 62px 0; }
+      .feature.is-reversed .feature-visual { order: 2; }
+      .feature.is-reversed .feature-copy { order: 1; }
+      .feature-copy p { max-width: none; }
+    }
+    @media (max-width: 700px) {
+      .container { width: min(100% - 32px, 1180px); }
+      .site-header { height: 58px; }
+      .brand-copy span, .nav-help { display: none; }
+      .site-nav { gap: 2px; }
+      .nav-link, .language-button { min-height: 32px; padding: 0 9px; font-size: 13px; }
+      .hero-main { min-height: 340px; padding: 62px 0 38px; }
+      .hero h1 { font-size: clamp(34px, 10vw, 48px); }
+      .primary-action { margin-top: 28px; }
+      .platform-stats { padding: 22px 0 26px; grid-template-columns: 1fr; }
+      .stat { min-height: 72px; }
+      .stat + .stat { border-top: 1px solid rgba(255,255,255,.18); border-left: 0; }
+      .feature { padding: 50px 0; }
+      .wire-window { min-height: 245px; padding: 12px; }
+      .admin-wire { height: 174px; grid-template-columns: 78px 1fr; gap: 8px; }
+      .wire-cards { gap: 7px; }
+      .wire-card { min-height: 68px; }
+      .lifecycle-section { padding: 58px 0; }
+      .lifecycle { min-height: 0; grid-template-columns: 1fr 1fr; align-items: stretch; gap: 10px; }
+      .phase:nth-child(n) { height: auto; min-height: 132px; }
+      .delivery-wire { min-height: 160px; gap: 6px; }
+      .delivery-node { width: 86px; min-height: 74px; font-size: 11px; }
+      .chart-metrics { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 430px) {
+      .brand-mark { width: 26px; }
+      .brand-copy strong { font-size: 13px; }
+      .nav-login { display: none; }
+      .feature-copy h2, .section-heading h2 { font-size: 30px; }
+      .delivery-node { width: 76px; padding-inline: 5px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="#top" aria-label="盖世游戏开发者平台">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-copy"><strong data-i18n="brand">盖世游戏</strong><span data-i18n="platform">开发者平台</span></span>
+      </a>
+      <nav class="site-nav" aria-label="门户导航">
+        <a class="nav-link nav-help" href="https://gamehub.xiaoji.com/zh-cn/#faq" target="_blank" rel="noopener noreferrer" data-i18n="help">帮助中心</a>
+        <button class="language-button" type="button" data-language-toggle>EN</button>
+        <a class="nav-link nav-login" href="02-游戏创建与发行demo.html#/P01-01" data-i18n="login">登录</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-main">
+        <h1 data-i18n-html="hero"><span>面向 PC 游戏厂商的</span><span>一体化发行平台</span></h1>
+        <a class="primary-action" href="02-游戏创建与发行demo.html#/P01-01" data-i18n="console">进入控制台</a>
+      </div>
+      <div class="container platform-stats" aria-label="平台数据">
+        <div class="stat"><span data-i18n="usersLabel">用户体量</span><strong data-i18n="usersValue">约 400 万+</strong></div>
+        <div class="stat"><span data-i18n="impressionsLabel">月曝光次数</span><strong data-i18n="impressionsValue">约 4000 万+</strong></div>
+        <div class="stat"><span data-i18n="launchesLabel">合作平台游戏启动数</span><strong data-i18n="launchesValue">约 1000 万+</strong></div>
+      </div>
+    </section>
+
+    <section class="feature-section is-muted">
+      <div class="container feature">
+        <div class="feature-copy">
+          <h2 data-i18n="supportTitle">完善的游戏接入与发行支持</h2>
+          <p data-i18n="supportBody">统一管理开发者认证、游戏创建、基础资料、游戏素材、发行设置与资质认证，让发行准备集中在一套流程内完成。</p>
+          <div class="feature-tags"><span data-i18n="tagVerification">企业认证</span><span data-i18n="tagGame">游戏建档</span><span data-i18n="tagProfile">资料与资质</span><span data-i18n="tagRelease">发布申请</span></div>
+        </div>
+        <div class="feature-visual wire-window" aria-label="游戏资料与发布进度示意">
+          <div class="wire-window__title" data-i18n="supportMock">后台界面示意｜游戏资料与发布进度</div>
+          <div class="admin-wire"><div class="wire-sidebar"></div><div class="wire-cards"><div class="wire-card"></div><div class="wire-card"></div><div class="wire-card is-wide"></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lifecycle-section">
+      <div class="container">
+        <div class="section-heading"><h2 data-i18n="lifecycleTitle">服务游戏全生命周期</h2><p data-i18n="lifecycleBody">围绕不同发行阶段，提供对应的平台能力支持</p></div>
+        <div class="lifecycle">
+          <article class="phase"><strong data-i18n="phase1">准备期</strong><span data-i18n="phase1Body">主体认证／游戏建档</span></article>
+          <article class="phase"><strong data-i18n="phase2">测试期</strong><span data-i18n="phase2Body">资料完善／版本提测</span></article>
+          <article class="phase"><strong data-i18n="phase3">首发期</strong><span data-i18n="phase3Body">发布审核／商品交付</span></article>
+          <article class="phase"><strong data-i18n="phase4">运营期</strong><span data-i18n="phase4Body">经营数据／结算对账</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature-section is-muted">
+      <div class="container feature is-reversed">
+        <div class="feature-visual wire-window" aria-label="商品权益交付链路示意">
+          <div class="wire-window__title" data-i18n="deliveryMock">交付链路示意｜商品 → 权益 → 玩家</div>
+          <div class="delivery-wire"><div class="delivery-node" data-i18n-html="deliveryNode1">游戏／DLC</div><div class="delivery-arrow"></div><div class="delivery-node" data-i18n-html="deliveryNode2">直接购买<br>CDKEY</div><div class="delivery-arrow"></div><div class="delivery-node" data-i18n-html="deliveryNode3">Android<br>Mac</div></div>
+        </div>
+        <div class="feature-copy">
+          <h2 data-i18n="deliveryTitle">专业的游戏分发与交付能力</h2>
+          <p data-i18n="deliveryBody">支持买断游戏与 DLC，通过直接购买或 CDKEY 完成商品供给和权益交付，并通过盖世游戏 Android 与 Mac 客户端触达 PC 游戏玩家。</p>
+          <div class="feature-tags"><span data-i18n="tagBuyout">买断游戏</span><span>DLC</span><span data-i18n="tagDirect">直接购买</span><span>CDKEY</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feature-section">
+      <div class="container feature">
+        <div class="feature-copy">
+          <h2 data-i18n="dataTitle">清晰的经营数据与结算信息</h2>
+          <p data-i18n="dataBody">按单个游戏查看曝光转化与用户数据，并追踪购买、免费领取、退款、拒付、预估收入和待结算结果。</p>
+          <div class="feature-tags"><span data-i18n="tagConversion">曝光转化</span><span data-i18n="tagUserData">用户数据</span><span data-i18n="tagOrders">订单明细</span><span data-i18n="tagSettlement">收入结算</span></div>
+        </div>
+        <div class="feature-visual wire-window" aria-label="单游戏数据看板示意">
+          <div class="wire-window__title" data-i18n="dataMock">数据看板示意｜按日查看单游戏趋势</div>
+          <div class="chart-metrics"><span></span><span></span><span></span><span></span></div>
+          <div class="chart"><svg viewBox="0 0 520 130" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,98 65,80 130,88 195,50 260,68 325,34 390,54 455,28 520,42" fill="none" stroke="#6e7682" stroke-width="3" vector-effect="non-scaling-stroke"/></svg></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const translations = {
+        en: {
+          brand: 'GameHub', platform: 'Developer Platform', help: 'Help Center', login: 'Sign in', console: 'Enter Console',
+          hero: '<span>An integrated publishing platform</span><span>for PC game publishers</span>',
+          usersLabel: 'User reach', usersValue: 'Approx. 4M+', impressionsLabel: 'Monthly impressions', impressionsValue: 'Approx. 40M+', launchesLabel: 'Partner game launches', launchesValue: 'Approx. 10M+',
+          supportTitle: 'Complete game onboarding and publishing support', supportBody: 'Manage developer verification, game setup, store information, media assets, publishing settings and qualifications in one consistent workflow.',
+          tagVerification: 'Company verification', tagGame: 'Game setup', tagProfile: 'Information and qualifications', tagRelease: 'Release submission', supportMock: 'Console wireframe | Game information and release progress',
+          lifecycleTitle: 'Support across the game lifecycle', lifecycleBody: 'Provide the right platform capabilities for each publishing stage',
+          phase1: 'Preparation', phase1Body: 'Verification / game setup', phase2: 'Testing', phase2Body: 'Information / build testing', phase3: 'Launch', phase3Body: 'Review / product delivery', phase4: 'Operations', phase4Body: 'Performance / settlement',
+          deliveryMock: 'Delivery flow | Product → entitlement → player', deliveryNode1: 'Game / DLC', deliveryNode2: 'Direct purchase<br>CDKEY', deliveryNode3: 'Android<br>Mac',
+          deliveryTitle: 'Professional game distribution and delivery', deliveryBody: 'Support buyout games and DLC through direct purchase or CDKEY fulfillment, reaching PC game players through GameHub clients on Android and Mac.', tagBuyout: 'Buyout games', tagDirect: 'Direct purchase',
+          dataTitle: 'Clear performance and settlement information', dataBody: 'Review impressions, acquisition and user data by game, then track purchases, free claims, refunds, chargebacks, estimated revenue and pending settlement.',
+          tagConversion: 'Conversion', tagUserData: 'User data', tagOrders: 'Order details', tagSettlement: 'Revenue and settlement', dataMock: 'Dashboard wireframe | Daily single-game trend'
+        }
+      };
+      const zh = {};
+      document.querySelectorAll('[data-i18n]').forEach(node => { zh[node.dataset.i18n] = node.textContent; });
+      document.querySelectorAll('[data-i18n-html]').forEach(node => { zh[node.dataset.i18nHtml] = node.innerHTML; });
+      let language = 'zh';
+      const toggle = document.querySelector('[data-language-toggle]');
+      toggle.addEventListener('click', () => {
+        language = language === 'zh' ? 'en' : 'zh';
+        const dictionary = language === 'en' ? translations.en : zh;
+        document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
+        document.title = language === 'en' ? 'GameHub Developer Platform | Portal Wireframe' : '盖世游戏开发者平台｜门户线框';
+        document.querySelector('.brand').setAttribute('aria-label', language === 'en' ? 'GameHub Developer Platform' : '盖世游戏开发者平台');
+        document.querySelector('.site-nav').setAttribute('aria-label', language === 'en' ? 'Portal navigation' : '门户导航');
+        document.querySelectorAll('[data-i18n]').forEach(node => { node.textContent = dictionary[node.dataset.i18n]; });
+        document.querySelectorAll('[data-i18n-html]').forEach(node => { node.innerHTML = dictionary[node.dataset.i18nHtml]; });
+        toggle.textContent = language === 'en' ? '中文' : 'EN';
+      });
+    })();
+  </script>
+</body>
+</html>
