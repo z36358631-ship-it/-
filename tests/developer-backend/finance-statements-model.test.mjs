@@ -235,7 +235,7 @@ test('首次财务主体审核通过后才成为生效版本', () => {
   assert.equal(model.financialEntity(state, 'DEV-NEW').legalName, '深圳新工作室科技有限公司');
 });
 
-test('两类 CSV 包含快照字段、防公式注入，主体名单仅导出已确认记录', () => {
+test('前后台 CSV 使用各自字段口径，且所有状态均可导出', () => {
   const model = loadModel();
   const state = model.createState();
   const row = model.statementsFor(state, { developerId:'DEV-1001' })[0];
@@ -244,10 +244,15 @@ test('两类 CSV 包含快照字段、防公式注入，主体名单仅导出已
   assert.match(statementCsv, /"'=CMD\(\)"/);
   assert.match(statementCsv, /"'\+hack"/);
   assert.doesNotMatch(statementCsv,/汇率版本|CNYUSD/);
+  const developerStatementCsv = model.exportStatementsCsv([row], { audience:'developer' });
+  for (const label of ['用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）']) assert.match(developerStatementCsv,new RegExp(label));
+  assert.doesNotMatch(developerStatementCsv,/平台分成/);
   const operationsStatementCsv = model.exportStatementsCsv([row], { includeDeveloper:true,includeFxVersion:true });
   assert.match(operationsStatementCsv,/汇率版本|CNYUSD/);
   const summaries = model.entitySummariesFor(state, { developerId:'DEV-1001' });
   const csv = model.exportEntitySummariesCsv(summaries.map((item,index) => ({ ...item, status:index ? 'pending' : 'confirmed' })));
   for (const label of ['结算单 ID','游戏及 DLC 销售金额','CDKEY 销售金额','综合税率','应结算金额（USD）','规则版本']) assert.match(csv, new RegExp(label));
-  assert.equal(csv.split('\r\n').length, 2);
+  assert.match(csv,/待确认/);
+  assert.match(csv,/已确认/);
+  assert.equal(csv.split('\r\n').length, summaries.length + 1);
 });

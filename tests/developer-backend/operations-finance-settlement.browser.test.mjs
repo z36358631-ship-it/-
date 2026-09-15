@@ -54,18 +54,18 @@ test('运营财务独立生成，保留面包屑和主体汇总、游戏明细�
   assert.doesNotMatch(text,/调整额|付款条件|发票|付款成功|付款失败|付款凭证|付款尝试|预扣税|销售税/);
 });
 
-test('主体汇总来自共享结算快照且待确认不得进入打款导出',async () => {
+test('主体汇总来自共享结算快照且所有状态均可导出',async () => {
   await open();
   assert.ok(await page.locator('[data-fo-entity-row]').count() > 0);
-  assert.equal(await page.locator('[data-fo-entity-row][data-status="pending"] [data-fo-select-row]:not([disabled])').count(),0);
-  assert.equal(await page.getByRole('button',{ name:/导出已确认/ }).isDisabled(),true);
+  assert.ok(await page.locator('[data-fo-entity-row][data-status="pending"] [data-fo-select-row]:not([disabled])').count() > 0);
+  assert.equal(await page.getByRole('button',{ name:/导出当前结果/ }).isDisabled(),false);
   const summary = await page.evaluate(() => window.__financeOperationsDemo.snapshot().entityRows[0]);
   const fields = ['gameSalesMinor','cdkeySalesMinor','userPaidMinor','platformReceivedMinor','paymentFeeMinor','taxMinor','refundChargebackMinor','platformShareMinor','payableMinor','payableUsdMinor'];
   fields.forEach(field => assert.equal(typeof summary[field],'number',`${field} 应来自共享快照`));
   assert.ok(summary.entityVersion && summary.accountVersion && summary.tierRuleVersions.length);
 });
 
-test('游戏明细字段与开发者端一致，本体与 DLC 合并为三类结算项',async () => {
+test('游戏明细保留运营端平台分成字段，本体与 DLC 合并为三类结算项',async () => {
   await open();
   await page.getByRole('tab',{ name:'游戏明细' }).click();
   assert.deepEqual(await page.locator('[data-testid="game-detail-table"] thead th').allTextContents(),[
@@ -106,35 +106,34 @@ test('前后台列表均按每页 20 条，游戏筛选和重置互不串页',as
   assert.equal(await page.locator('[data-fo-filter="billingMonth"]').inputValue(),'all');
 });
 
-test('主体汇总只导出已确认记录和完整快照字段',async () => {
+test('主体汇总可导出待确认记录和完整快照字段',async () => {
   await open();
-  await page.locator('[data-fo-filter="billingMonth"]').selectOption('2026-07');
-  await page.getByRole('button',{ name:'查询' }).click();
-  const target = page.locator('[data-fo-entity-row][data-status="confirmed"]').first();
+  const target = page.locator('[data-fo-entity-row][data-status="pending"]').first();
   await target.locator('[data-fo-select-row]').check();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button',{ name:'导出选中（1）' }).click();
   const download = await downloadPromise;
-  assert.equal(download.suggestedFilename(),'主体结算表_2026-07.csv');
+  assert.equal(download.suggestedFilename(),'主体结算表_2026-08.csv');
   const csv = fs.readFileSync(await download.path(),'utf8');
-  for (const label of ['结算单 ID','开发者','财务主体','主体版本','账户版本','规则版本','游戏及 DLC 销售金额','CDKEY 销售金额','平台实收','综合税率','应结算金额（CNY）','应结算金额（USD）','银行账号']) assert.match(csv,new RegExp(label));
-  assert.doesNotMatch(csv,/待确认|调整额|付款状态|付款凭证|发票/);
+  for (const label of ['结算单 ID','开发者','财务主体','主体版本','账户版本','规则版本','游戏及 DLC 销售金额','CDKEY 销售金额','平台实收','综合税率','应结算金额（CNY）','应结算金额（USD）','状态','银行账号']) assert.match(csv,new RegExp(label));
+  assert.match(csv,/待确认/);
+  assert.doesNotMatch(csv,/调整额|付款状态|付款凭证|发票/);
   assert.equal(csv.trim().split(/\r?\n/).length,2);
 });
 
-test('游戏明细只导出已确认记录',async () => {
+test('游戏明细可导出待确认记录',async () => {
   await open();
   await page.getByRole('tab',{ name:'游戏明细' }).click();
-  await page.locator('[data-fo-filter="billingMonth"]').selectOption('2026-07');
+  await page.locator('[data-fo-filter="billingMonth"]').selectOption('2026-08');
   await page.getByRole('button',{ name:'查询' }).click();
-  await page.locator('[data-fo-game-row][data-status="confirmed"]').first().locator('[data-fo-select-row]').check();
+  await page.locator('[data-fo-game-row][data-status="pending"]').first().locator('[data-fo-select-row]').check();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button',{ name:'导出选中（1）' }).click();
   const download = await downloadPromise;
-  assert.equal(download.suggestedFilename(),'游戏结算明细_2026-07.csv');
+  assert.equal(download.suggestedFilename(),'游戏结算明细_2026-08.csv');
   const csv = fs.readFileSync(await download.path(),'utf8');
   for (const label of ['结算单 ID','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）','状态']) assert.match(csv,new RegExp(label));
-  assert.doesNotMatch(csv,/待确认/);
+  assert.match(csv,/待确认/);
   assert.equal(csv.trim().split(/\r?\n/).length,2);
 });
 

@@ -12788,25 +12788,34 @@ window.PublisherSettlementStatements = (() => {
   const exportStatementsCsv = (rows,options = {}) => {
     const includeDeveloper = Boolean(options.includeDeveloper);
     const includeFxVersion = Boolean(options.includeFxVersion);
+    const developerView = options.audience === 'developer';
     const headers = [
       '结算单 ID',...(includeDeveloper ? ['开发者','财务主体'] : []),'主体版本','账户版本','规则版本','游戏 ID','游戏名称','账单月份','结算月份','结算项',
-      '用户实付','平台实收','支付费','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）',...(includeFxVersion ? ['汇率版本'] : []),'状态',
+      ...(developerView
+        ? ['用户支付金额（CNY）','支付费','税费','退款与拒付','结算比例','实际到账金额（CNY）','结算金额（CNY）']
+        : ['用户实付','平台实收','支付费','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）']),
+      ...(includeFxVersion ? ['汇率版本'] : []),'状态',
     ];
-    const lines = (rows || []).map(row => [
-      safeCell(row.id),...(includeDeveloper ? [safeCell(row.developerName),safeCell(row.entityName)] : []),safeCell(row.entityVersion),safeCell(row.accountVersion),safeCell(row.tierRuleVersion),
-      safeCell(row.gameId),safeCell(row.gameName),safeCell(row.billingMonth),safeCell(row.settlementMonth),safeCell(row.itemLabel),quote(decimal(row.userPaidMinor)),quote(decimal(row.platformReceivedMinor)),
-      quote(decimal(row.paymentFeeMinor)),quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),
-      quote(decimal(row.payableMinor)),...(includeFxVersion ? [safeCell(row.fxRateVersion)] : []),safeCell(statusLabel(row.status)),
-    ].join(','));
+    const lines = (rows || []).map(row => {
+      const settlementRate = row.ratioPercent ?? (row.platformShareRate == null ? null : 100 - row.platformShareRate);
+      return [
+        safeCell(row.id),...(includeDeveloper ? [safeCell(row.developerName),safeCell(row.entityName)] : []),safeCell(row.entityVersion),safeCell(row.accountVersion),safeCell(row.tierRuleVersion),
+        safeCell(row.gameId),safeCell(row.gameName),safeCell(row.billingMonth),safeCell(row.settlementMonth),safeCell(row.itemLabel),
+        ...(developerView
+          ? [quote(decimal(row.userPaidMinor)),quote(decimal(row.paymentFeeMinor)),quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(settlementRate)),quote(decimal(row.platformReceivedMinor)),quote(decimal(row.payableMinor))]
+          : [quote(decimal(row.userPaidMinor)),quote(decimal(row.platformReceivedMinor)),quote(decimal(row.paymentFeeMinor)),quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),quote(decimal(row.payableMinor))]),
+        ...(includeFxVersion ? [safeCell(row.fxRateVersion)] : []),safeCell(statusLabel(row.status)),
+      ].join(',');
+    });
     return csv(headers,lines);
   };
   const exportEntitySummariesCsv = rows => {
-    const exportable = (rows || []).filter(row => row.status === 'confirmed' && row.payableUsdMinor != null);
-    const headers = ['结算单 ID','账单月份','结算月份','开发者','财务主体','主体版本','账户版本','规则版本','游戏及 DLC 销售金额','CDKEY 销售金额','用户实付','平台实收','支付费','综合税率','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）','应结算金额（USD）','汇率版本','银行账户名','银行账号','开户行'];
+    const exportable = rows || [];
+    const headers = ['结算单 ID','账单月份','结算月份','开发者','财务主体','主体版本','账户版本','规则版本','游戏及 DLC 销售金额','CDKEY 销售金额','用户实付','平台实收','支付费','综合税率','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）','应结算金额（USD）','汇率版本','状态','银行账户名','银行账号','开户行'];
     const lines = exportable.map(row => [
       safeCell(row.statementIds.join('|')),safeCell(row.billingMonth),safeCell(row.settlementMonth),safeCell(row.developerName),safeCell(row.entityName),safeCell(row.entityVersion),safeCell(row.accountVersion),safeCell(row.tierRuleVersions.join('|')),
       quote(decimal(row.gameSalesMinor)),quote(decimal(row.cdkeySalesMinor)),quote(decimal(row.userPaidMinor)),quote(decimal(row.platformReceivedMinor)),quote(decimal(row.paymentFeeMinor)),safeCell(percent(row.weightedTaxRate == null ? null : row.weightedTaxRate * 100)),
-      quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),quote(decimal(row.payableMinor)),quote(decimal(row.payableUsdMinor)),safeCell(row.fxRateVersion),safeCell(row.bankAccountName),safeCell(row.bankAccount),safeCell(row.bankName),
+      quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),quote(decimal(row.payableMinor)),quote(decimal(row.payableUsdMinor)),safeCell(row.fxRateVersion),safeCell(statusLabel(row.status)),safeCell(row.bankAccountName),safeCell(row.bankAccount),safeCell(row.bankName),
     ].join(','));
     return csv(headers,lines);
   };
@@ -12831,6 +12840,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
   const cny = minor => (Number(minor || 0) / 100).toLocaleString('zh-CN', { minimumFractionDigits:2, maximumFractionDigits:2 });
   const cnyWithSymbol = minor => Number(minor || 0) < 0 ? `-¥${cny(Math.abs(Number(minor)))}` : `¥${cny(minor)}`;
   const percent = value => value == null ? '—' : `${Number(value).toFixed(2).replace(/\.00$/,'')}%`;
+  const settlementRate = row => row?.ratioPercent ?? (row?.platformShareRate == null ? null : 100 - Number(row.platformShareRate));
 
   const state = {
     statementState:statements.createState(),
@@ -13006,7 +13016,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
       ...(row.itemType === 'cdkey_sales_share' ? [button('查看详情','view-cdkey','link',`data-cdkey-statement-id="${esc(row.id)}"`)] : []),
       ...(selectable ? [button('确认','open-confirm','link',`data-confirm-statement-id="${esc(row.id)}"`)] : []),
     ];
-    return `<tr data-d15-settlement-row data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-platform-received-minor="${esc(row.platformReceivedMinor)}" data-platform-share-minor="${esc(row.platformShareMinor)}" data-payable-minor="${esc(row.payableMinor)}" data-status="${esc(row.status)}"><td class="d15-check"><input type="checkbox" data-d15-select-statement value="${esc(row.id)}" aria-label="选择 ${esc(row.id)}"${checked ? ' checked' : ''}${selectable ? '' : ' disabled'}></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td class="d15-number">${esc(cny(row.userPaidMinor))}</td><td class="d15-number">${esc(cny(row.platformReceivedMinor))}</td><td class="d15-number">${esc(percent(row.platformShareRate))}</td><td class="d15-number">${esc(cny(row.platformShareMinor))}</td><td class="d15-number d15-payable">${esc(cny(row.payableMinor))}</td><td><span class="gh-tag ${row.status === 'confirmed' ? 'success' : 'warning'}">${row.status === 'confirmed' ? '已确认' : '待确认'}</span></td><td><div class="d15-row-actions">${actions.length ? actions.join('') : '—'}</div></td></tr>`;
+    return `<tr data-d15-settlement-row data-statement-id="${esc(row.id)}" data-game-id="${esc(row.gameId)}" data-billing-month="${esc(row.billingMonth)}" data-settlement-month="${esc(row.settlementMonth)}" data-item-type="${esc(row.itemType)}" data-platform-received-minor="${esc(row.platformReceivedMinor)}" data-platform-share-minor="${esc(row.platformShareMinor)}" data-settlement-rate="${esc(settlementRate(row))}" data-payable-minor="${esc(row.payableMinor)}" data-status="${esc(row.status)}"><td class="d15-check"><input type="checkbox" data-d15-select-statement value="${esc(row.id)}" aria-label="选择 ${esc(row.id)}"${checked ? ' checked' : ''}${selectable ? '' : ' disabled'}></td><td>${esc(row.gameId)}</td><td><strong>${esc(row.gameName)}</strong></td><td>${esc(row.billingMonth)}</td><td>${esc(row.settlementMonth)}</td><td>${esc(row.itemLabel)}</td><td class="d15-number">${esc(cny(row.userPaidMinor))}</td><td class="d15-number">${esc(percent(settlementRate(row)))}</td><td class="d15-number">${esc(cny(row.platformReceivedMinor))}</td><td class="d15-number d15-payable">${esc(cny(row.payableMinor))}</td><td><span class="gh-tag ${row.status === 'confirmed' ? 'success' : 'warning'}">${row.status === 'confirmed' ? '已确认' : '待确认'}</span></td><td><div class="d15-row-actions">${actions.length ? actions.join('') : '—'}</div></td></tr>`;
   };
 
   function settlementPage() {
@@ -13015,7 +13025,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     const currentPending = current.filter(row => row.status === 'pending');
     const selected = selectedPendingRows();
     const allCurrentSelected = currentPending.length > 0 && currentPending.every(row => state.selectedStatementIds.includes(row.id));
-    const table = current.length ? `<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th class="d15-check"><input type="checkbox" data-d15-select-page aria-label="选择本页待确认"${allCurrentSelected ? ' checked' : ''}${currentPending.length ? '' : ' disabled'}></th><th>游戏 ID</th><th>游戏名称</th><th>账单月份</th><th>结算月份</th><th>结算项</th><th>用户实付</th><th>平台实收</th><th>平台分成比例</th><th>平台分成</th><th>应结算金额（CNY）</th><th>状态</th><th>操作</th></tr></thead><tbody>${current.map(settlementRow).join('')}</tbody></table></div>${pagination(rows.length)}` : emptyState(state.demoScenario === 'empty' ? '暂无结算记录' : '未找到符合条件的记录', state.demoScenario === 'empty' ? '账单生成后，结算记录会展示在这里。' : '请调整筛选条件或重置后再试。');
+    const table = current.length ? `<div class="gh-table-wrap"><table class="gh-table d15-settlement-table" data-testid="settlement-table"><thead><tr><th class="d15-check"><input type="checkbox" data-d15-select-page aria-label="选择本页待确认"${allCurrentSelected ? ' checked' : ''}${currentPending.length ? '' : ' disabled'}></th><th>游戏 ID</th><th>游戏名称</th><th>账单月份</th><th>结算月份</th><th>结算项</th><th>用户支付金额（CNY）</th><th>结算比例</th><th>实际到账金额（CNY）</th><th>结算金额（CNY）</th><th>状态</th><th>操作</th></tr></thead><tbody>${current.map(settlementRow).join('')}</tbody></table></div>${pagination(rows.length)}` : emptyState(state.demoScenario === 'empty' ? '暂无结算记录' : '未找到符合条件的记录', state.demoScenario === 'empty' ? '账单生成后，结算记录会展示在这里。' : '请调整筛选条件或重置后再试。');
     return `${settlementFilters()}<section class="gh-card d15-settlement-card"><header class="gh-card-head"><div><h2>对账结算</h2></div><div class="d15-settlement-actions">${button('批量确认','open-batch-confirm','',selected.length ? '' : 'aria-disabled="true"')}${button('导出当前结果','export-settlements','',rows.length ? '' : 'disabled')}</div></header>${state.exportMessage ? `<div class="d15-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-d15-export-status>${esc(state.exportMessage)}</div>` : ''}${table}</section>`;
   }
 
@@ -13042,7 +13052,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
   const tierRange = tier => tier.toMinor == null
     ? `¥${cny(tier.fromMinor)} 以上`
     : `¥${cny(tier.fromMinor)}—¥${cny(tier.toMinor)}`;
-  const detailSummary = row => `<section class="d15-cdkey-summary d15-detail-summary"><div><span>用户实付</span><strong>${esc(cnyWithSymbol(row.userPaidMinor))}</strong></div><div><span>平台实收</span><strong>${esc(cnyWithSymbol(row.platformReceivedMinor))}</strong></div><div><span>平台分成</span><strong>${esc(cnyWithSymbol(row.platformShareMinor))}</strong></div><div><span>应结算金额</span><strong>${esc(cnyWithSymbol(row.payableMinor))}</strong></div></section>`;
+  const detailSummary = row => `<section class="d15-cdkey-summary d15-detail-summary"><div><span>用户支付金额</span><strong>${esc(cnyWithSymbol(row.userPaidMinor))}</strong></div><div><span>结算比例</span><strong>${esc(percent(settlementRate(row)))}</strong></div><div><span>实际到账金额</span><strong>${esc(cnyWithSymbol(row.platformReceivedMinor))}</strong></div><div><span>结算金额</span><strong>${esc(cnyWithSymbol(row.payableMinor))}</strong></div></section>`;
 
   function gameSalesDrawer() {
     if (!state.gameSalesDetailId) return '';
@@ -13050,7 +13060,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     if (!row) return '';
     const details = row.gameSalesDetails || [];
     const tiers = (row.tierSnapshots || []).filter(tier => tier.chargeableMinor > 0);
-    return `<div class="d15-drawer-layer" data-finance-action="close-game-sales"><aside class="d15-cdkey-drawer d15-settlement-drawer" role="dialog" aria-modal="true" aria-label="游戏销售分成明细" data-finance-stop><header><div><h2>游戏销售分成明细</h2><p>${esc(row.gameName)} · ${esc(row.billingMonth)} 账单 / ${esc(row.settlementMonth)} 结算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-game-sales" aria-label="关闭">×</button></header>${detailSummary(row)}<section class="d15-tier-snapshot"><div><span>规则版本</span><strong>${esc(row.tierRuleVersion)}</strong></div><div><span>生效账单月</span><strong>${esc(row.tierRuleEffectiveBillingMonth === '0000-01' ? '平台默认' : row.tierRuleEffectiveBillingMonth)}</strong></div><div class="wide"><span>各档计费</span><strong>${tiers.map(tier => `${tierRange(tier)}：${cny(tier.chargeableMinor)} × ${percent(tier.platformRate)} = ${cny(tier.shareMinor)}`).join('；') || '—'}</strong></div></section><div class="d15-cdkey-body"><div class="gh-table-wrap"><table class="gh-table d15-cdkey-table d15-game-sales-table" data-testid="game-sales-detail-table"><thead><tr><th>商品类型</th><th>商品名称</th><th>用户实付</th><th>支付费</th><th>税费</th><th>退款与拒付</th><th>平台实收</th><th>适用档位</th><th>平台分成比例</th><th>平台分成</th><th>结算金额</th></tr></thead><tbody>${details.map(item => `<tr><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td class="d15-number">${esc(cny(item.userPaidMinor))}</td><td class="d15-number">${esc(cny(item.paymentFeeMinor))}</td><td class="d15-number">${esc(cny(item.taxMinor))}</td><td class="d15-number">${esc(cny(item.refundChargebackMinor))}</td><td class="d15-number">${esc(cny(item.platformReceivedMinor))}</td><td>${esc(item.applicableTier || '—')}</td><td class="d15-number">${esc(percent(item.platformShareRate))}</td><td class="d15-number">${esc(cny(item.platformShareMinor))}</td><td class="d15-number d15-payable">${esc(cny(item.payableMinor))}</td></tr>`).join('')}</tbody></table></div></div></aside></div>`;
+    return `<div class="d15-drawer-layer" data-finance-action="close-game-sales"><aside class="d15-cdkey-drawer d15-settlement-drawer" role="dialog" aria-modal="true" aria-label="游戏销售分成明细" data-finance-stop><header><div><h2>游戏销售分成明细</h2><p>${esc(row.gameName)} · ${esc(row.billingMonth)} 账单 / ${esc(row.settlementMonth)} 结算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-game-sales" aria-label="关闭">×</button></header>${detailSummary(row)}<section class="d15-tier-snapshot"><div><span>规则版本</span><strong>${esc(row.tierRuleVersion)}</strong></div><div><span>生效账单月</span><strong>${esc(row.tierRuleEffectiveBillingMonth === '0000-01' ? '平台默认' : row.tierRuleEffectiveBillingMonth)}</strong></div><div class="wide"><span>各档结算</span><strong>${tiers.map(tier => `${tierRange(tier)}：${cny(tier.chargeableMinor)} × ${percent(100 - tier.platformRate)} = ${cny(tier.chargeableMinor - tier.shareMinor)}`).join('；') || '—'}</strong></div></section><div class="d15-cdkey-body"><div class="gh-table-wrap"><table class="gh-table d15-cdkey-table d15-game-sales-table" data-testid="game-sales-detail-table"><thead><tr><th>商品类型</th><th>商品名称</th><th>用户支付金额</th><th>支付费</th><th>税费</th><th>退款与拒付</th><th>实际到账金额</th><th>适用档位</th><th>结算比例</th><th>结算金额</th></tr></thead><tbody>${details.map(item => `<tr><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td class="d15-number">${esc(cny(item.userPaidMinor))}</td><td class="d15-number">${esc(cny(item.paymentFeeMinor))}</td><td class="d15-number">${esc(cny(item.taxMinor))}</td><td class="d15-number">${esc(cny(item.refundChargebackMinor))}</td><td class="d15-number">${esc(cny(item.platformReceivedMinor))}</td><td>${esc(item.applicableTier || '—')}</td><td class="d15-number">${esc(percent(settlementRate(item)))}</td><td class="d15-number d15-payable">${esc(cny(item.payableMinor))}</td></tr>`).join('')}</tbody></table></div></div></aside></div>`;
   }
 
   function cdkeyDrawer() {
@@ -13058,7 +13068,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     const row = allSettlements().find(item => item.id === state.cdkeyDetailId && item.itemType === 'cdkey_sales_share');
     if (!row) return '';
     const details = row.cdkeyDetails || [];
-    return `<div class="d15-drawer-layer" data-finance-action="close-cdkey"><aside class="d15-cdkey-drawer d15-settlement-drawer" role="dialog" aria-modal="true" aria-label="CDKEY 销售明细" data-finance-stop><header><div><h2>CDKEY 销售明细</h2><p>${esc(row.gameName)} · ${esc(row.billingMonth)} 账单 / ${esc(row.settlementMonth)} 结算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-cdkey" aria-label="关闭">×</button></header>${detailSummary(row)}<div class="d15-cdkey-body"><div class="gh-table-wrap"><table class="gh-table d15-cdkey-table" data-testid="cdkey-detail-table"><thead><tr><th>渠道</th><th>商品类型</th><th>商品／DLC</th><th>用户实付</th><th>支付费</th><th>税费</th><th>退款与拒付</th><th>平台实收</th><th>平台分成</th><th>结算金额</th></tr></thead><tbody>${details.map(item => `<tr><td>${esc(item.channel)}</td><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td class="d15-number">${esc(cny(item.userPaidMinor))}</td><td class="d15-number">${esc(cny(item.paymentFeeMinor))}</td><td class="d15-number">${esc(cny(item.taxMinor))}</td><td class="d15-number">${esc(cny(item.refundChargebackMinor))}</td><td class="d15-number">${esc(cny(item.platformReceivedMinor))}</td><td class="d15-number">${esc(cny(item.platformShareMinor))}</td><td class="d15-number d15-payable">${esc(cny(item.payableMinor))}</td></tr>`).join('')}</tbody></table></div></div></aside></div>`;
+    return `<div class="d15-drawer-layer" data-finance-action="close-cdkey"><aside class="d15-cdkey-drawer d15-settlement-drawer" role="dialog" aria-modal="true" aria-label="CDKEY 销售明细" data-finance-stop><header><div><h2>CDKEY 销售明细</h2><p>${esc(row.gameName)} · ${esc(row.billingMonth)} 账单 / ${esc(row.settlementMonth)} 结算</p></div><button type="button" class="gh-dialog-close" data-finance-action="close-cdkey" aria-label="关闭">×</button></header>${detailSummary(row)}<div class="d15-cdkey-body"><div class="gh-table-wrap"><table class="gh-table d15-cdkey-table" data-testid="cdkey-detail-table"><thead><tr><th>渠道</th><th>商品类型</th><th>商品／DLC</th><th>用户支付金额</th><th>支付费</th><th>税费</th><th>退款与拒付</th><th>实际到账金额</th><th>结算比例</th><th>结算金额</th></tr></thead><tbody>${details.map(item => `<tr><td>${esc(item.channel)}</td><td>${esc(item.productType)}</td><td><strong>${esc(item.productName)}</strong></td><td class="d15-number">${esc(cny(item.userPaidMinor))}</td><td class="d15-number">${esc(cny(item.paymentFeeMinor))}</td><td class="d15-number">${esc(cny(item.taxMinor))}</td><td class="d15-number">${esc(cny(item.refundChargebackMinor))}</td><td class="d15-number">${esc(cny(item.platformReceivedMinor))}</td><td class="d15-number">${esc(percent(settlementRate(item)))}</td><td class="d15-number d15-payable">${esc(cny(item.payableMinor))}</td></tr>`).join('')}</tbody></table></div></div></aside></div>`;
   }
 
   const auxiliaryOverlays = () => `${confirmationDialog()}${historyDialog()}${proofDialog()}${gameSalesDrawer()}${cdkeyDrawer()}`;
@@ -13268,7 +13278,7 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
     if (action === 'close-cdkey') { state.cdkeyDetailId = ''; rerender(); }
     if (action === 'export-settlements') {
       const rows = visibleSettlements();
-      const csv = statements.exportStatementsCsv(rows,{ includeDeveloper:false });
+      const csv = statements.exportStatementsCsv(rows,{ includeDeveloper:false,audience:'developer' });
       const ok = save(csv,`对账结算_${state.filters.billingMonth === 'all' ? '全部账单月' : state.filters.billingMonth}.csv`);
       state.exportMessage = ok ? `已导出 ${rows.length} 条结算记录` : '导出失败，请重试';
       rerender();
@@ -13380,6 +13390,8 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
       createState:() => state,
       render:(_financeState, options = {}) => {
         state.route = options.routeId === 'P15-01' ? 'entity' : 'settlement';
+        state.enterpriseCertificationStatus = options.access?.qualificationStatus || 'approved';
+        state.demoScenario = state.enterpriseCertificationStatus === 'approved' ? 'exhaustive' : 'empty';
         const canonicalRoute = state.route === 'entity' ? 'P15-01' : 'P15-02';
         return `<section class="publisher-finance" data-testid="developer-finance-demo" data-finance-route="${canonicalRoute}">${pageContent()}${auxiliaryOverlays()}</section>`;
       },
@@ -15188,8 +15200,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
       const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
       if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
-      const scenarios = [['exhaustive','穷举态','Exhaustive'],['empty','缺省态','Empty']];
-      return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Finance scenarios' : '财务场景'}</strong><small>${isEnglish ? 'Switch the current finance dataset.' : '切换当前财务数据。'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Finance scenario' : '财务场景'}">${scenarios.map(([value, zh, en]) => `<button type="button" role="radio" aria-checked="${demoState.financeScenario === value}" class="${demoState.financeScenario === value ? 'is-active' : ''}" data-portal-action="demo-finance-scenario" data-finance-scenario="${value}">${isEnglish ? en : zh}</button>`).join('')}</div></section></aside></section>`;
+      const statuses = [
+        ['approved','认证通过','Approved'],
+        ['pending','审核中','In review'],
+        ['rejected','认证未通过','Not approved'],
+        ['delisted','已下架','Delisted'],
+      ];
+      return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Company verification' : '企业认证状态'}</strong><small>${isEnglish ? 'The finance pages follow the verification result.' : '财务主体与对账结算随认证结果联动。'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Company verification status' : '企业认证状态'}">${statuses.map(([value, zh, en]) => `<button type="button" role="radio" aria-checked="${demoState.qualificationStatus === value}" class="${demoState.qualificationStatus === value ? 'is-active' : ''}" data-portal-action="demo-finance-qualification-status" data-demo-finance-qualification-status="${value}">${isEnglish ? en : zh}</button>`).join('')}</div></section><footer><span>${demoState.qualificationStatus === 'approved' ? (isEnglish ? 'Finance data is available' : '认证通过：展示完整数据') : (isEnglish ? 'Finance pages show the empty state' : '非通过状态：展示缺省态')}</span></footer></aside></section>`;
     }
     const qualificationStatus = demoState.qualificationStatus || 'unsubmitted';
     const releaseStatus = demoState.releaseStatus || '';
@@ -16836,8 +16853,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         navigate({ routeId:'P02-01', state:'default' });
         return;
       }
-      if (action === 'demo-finance-scenario' && hasFinanceRoutes) {
-        window.PublisherFinance?.setScenario(memory.finance, event.currentTarget.dataset.financeScenario || 'exhaustive');
+      if (action === 'demo-finance-qualification-status' && hasFinanceRoutes) {
+        const nextStatus = event.currentTarget.dataset.demoFinanceQualificationStatus || '';
+        if (!['approved','pending','rejected','delisted'].includes(nextStatus)) return;
+        memory.qualificationPreview = buildQualificationPreview(nextStatus);
+        memory.demoPreview.open = false;
+        delete memory.result[route.id];
+        clearPreviewQuery();
+        render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
         return;
       }
       if (action === 'switch-portal-side') {
@@ -18548,6 +18572,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ? { ...memory.registration, accountTier: qualificationForView.status === 'approved' ? 'enterprise' : 'registered' }
       : memory.registration;
     const channelMode = route.id === 'P02-01' && String(memory.page['P02-01']?.gameSection || '').startsWith('channel-');
+    const financeMode = financeRouteIds.has(route.id);
     const channelBatchOutcome = memory.demoPreview.channelBatchOutcome || 'generated';
     const demoState = {
       open: memory.demoPreview.open,
@@ -18555,10 +18580,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       releaseStatus: memory.demoPreview.releaseStatus,
       channelMode,
       channelBatchOutcome,
-      active: channelMode
+      active: financeMode
+        ? Boolean(memory.qualificationPreview)
+        : channelMode
         ? Boolean(channelBatchOutcome !== 'generated')
         : Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
-      financeMode: financeRouteIds.has(route.id),
+      financeMode,
       financeScenario: memory.finance?.demoScenario || 'exhaustive',
     };
     document.documentElement.lang = memory.shell.language === 'en' && role === 'developer' ? 'en' : 'zh-CN';

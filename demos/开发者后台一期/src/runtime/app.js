@@ -1453,8 +1453,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         navigate({ routeId:'P02-01', state:'default' });
         return;
       }
-      if (action === 'demo-finance-scenario' && hasFinanceRoutes) {
-        window.PublisherFinance?.setScenario(memory.finance, event.currentTarget.dataset.financeScenario || 'exhaustive');
+      if (action === 'demo-finance-qualification-status' && hasFinanceRoutes) {
+        const nextStatus = event.currentTarget.dataset.demoFinanceQualificationStatus || '';
+        if (!['approved','pending','rejected','delisted'].includes(nextStatus)) return;
+        memory.qualificationPreview = buildQualificationPreview(nextStatus);
+        memory.demoPreview.open = false;
+        delete memory.result[route.id];
+        clearPreviewQuery();
+        render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
         return;
       }
       if (action === 'switch-portal-side') {
@@ -3165,6 +3172,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ? { ...memory.registration, accountTier: qualificationForView.status === 'approved' ? 'enterprise' : 'registered' }
       : memory.registration;
     const channelMode = route.id === 'P02-01' && String(memory.page['P02-01']?.gameSection || '').startsWith('channel-');
+    const financeMode = financeRouteIds.has(route.id);
     const channelBatchOutcome = memory.demoPreview.channelBatchOutcome || 'generated';
     const demoState = {
       open: memory.demoPreview.open,
@@ -3172,10 +3180,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       releaseStatus: memory.demoPreview.releaseStatus,
       channelMode,
       channelBatchOutcome,
-      active: channelMode
+      active: financeMode
+        ? Boolean(memory.qualificationPreview)
+        : channelMode
         ? Boolean(channelBatchOutcome !== 'generated')
         : Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
-      financeMode: financeRouteIds.has(route.id),
+      financeMode,
       financeScenario: memory.finance?.demoScenario || 'exhaustive',
     };
     document.documentElement.lang = memory.shell.language === 'en' && role === 'developer' ? 'en' : 'zh-CN';

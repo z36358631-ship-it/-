@@ -459,25 +459,34 @@ window.PublisherSettlementStatements = (() => {
   const exportStatementsCsv = (rows,options = {}) => {
     const includeDeveloper = Boolean(options.includeDeveloper);
     const includeFxVersion = Boolean(options.includeFxVersion);
+    const developerView = options.audience === 'developer';
     const headers = [
       '结算单 ID',...(includeDeveloper ? ['开发者','财务主体'] : []),'主体版本','账户版本','规则版本','游戏 ID','游戏名称','账单月份','结算月份','结算项',
-      '用户实付','平台实收','支付费','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）',...(includeFxVersion ? ['汇率版本'] : []),'状态',
+      ...(developerView
+        ? ['用户支付金额（CNY）','支付费','税费','退款与拒付','结算比例','实际到账金额（CNY）','结算金额（CNY）']
+        : ['用户实付','平台实收','支付费','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）']),
+      ...(includeFxVersion ? ['汇率版本'] : []),'状态',
     ];
-    const lines = (rows || []).map(row => [
-      safeCell(row.id),...(includeDeveloper ? [safeCell(row.developerName),safeCell(row.entityName)] : []),safeCell(row.entityVersion),safeCell(row.accountVersion),safeCell(row.tierRuleVersion),
-      safeCell(row.gameId),safeCell(row.gameName),safeCell(row.billingMonth),safeCell(row.settlementMonth),safeCell(row.itemLabel),quote(decimal(row.userPaidMinor)),quote(decimal(row.platformReceivedMinor)),
-      quote(decimal(row.paymentFeeMinor)),quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),
-      quote(decimal(row.payableMinor)),...(includeFxVersion ? [safeCell(row.fxRateVersion)] : []),safeCell(statusLabel(row.status)),
-    ].join(','));
+    const lines = (rows || []).map(row => {
+      const settlementRate = row.ratioPercent ?? (row.platformShareRate == null ? null : 100 - row.platformShareRate);
+      return [
+        safeCell(row.id),...(includeDeveloper ? [safeCell(row.developerName),safeCell(row.entityName)] : []),safeCell(row.entityVersion),safeCell(row.accountVersion),safeCell(row.tierRuleVersion),
+        safeCell(row.gameId),safeCell(row.gameName),safeCell(row.billingMonth),safeCell(row.settlementMonth),safeCell(row.itemLabel),
+        ...(developerView
+          ? [quote(decimal(row.userPaidMinor)),quote(decimal(row.paymentFeeMinor)),quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(settlementRate)),quote(decimal(row.platformReceivedMinor)),quote(decimal(row.payableMinor))]
+          : [quote(decimal(row.userPaidMinor)),quote(decimal(row.platformReceivedMinor)),quote(decimal(row.paymentFeeMinor)),quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),quote(decimal(row.payableMinor))]),
+        ...(includeFxVersion ? [safeCell(row.fxRateVersion)] : []),safeCell(statusLabel(row.status)),
+      ].join(',');
+    });
     return csv(headers,lines);
   };
   const exportEntitySummariesCsv = rows => {
-    const exportable = (rows || []).filter(row => row.status === 'confirmed' && row.payableUsdMinor != null);
-    const headers = ['结算单 ID','账单月份','结算月份','开发者','财务主体','主体版本','账户版本','规则版本','游戏及 DLC 销售金额','CDKEY 销售金额','用户实付','平台实收','支付费','综合税率','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）','应结算金额（USD）','汇率版本','银行账户名','银行账号','开户行'];
+    const exportable = rows || [];
+    const headers = ['结算单 ID','账单月份','结算月份','开发者','财务主体','主体版本','账户版本','规则版本','游戏及 DLC 销售金额','CDKEY 销售金额','用户实付','平台实收','支付费','综合税率','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）','应结算金额（USD）','汇率版本','状态','银行账户名','银行账号','开户行'];
     const lines = exportable.map(row => [
       safeCell(row.statementIds.join('|')),safeCell(row.billingMonth),safeCell(row.settlementMonth),safeCell(row.developerName),safeCell(row.entityName),safeCell(row.entityVersion),safeCell(row.accountVersion),safeCell(row.tierRuleVersions.join('|')),
       quote(decimal(row.gameSalesMinor)),quote(decimal(row.cdkeySalesMinor)),quote(decimal(row.userPaidMinor)),quote(decimal(row.platformReceivedMinor)),quote(decimal(row.paymentFeeMinor)),safeCell(percent(row.weightedTaxRate == null ? null : row.weightedTaxRate * 100)),
-      quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),quote(decimal(row.payableMinor)),quote(decimal(row.payableUsdMinor)),safeCell(row.fxRateVersion),safeCell(row.bankAccountName),safeCell(row.bankAccount),safeCell(row.bankName),
+      quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),quote(decimal(row.payableMinor)),quote(decimal(row.payableUsdMinor)),safeCell(row.fxRateVersion),safeCell(statusLabel(row.status)),safeCell(row.bankAccountName),safeCell(row.bankAccount),safeCell(row.bankName),
     ].join(','));
     return csv(headers,lines);
   };

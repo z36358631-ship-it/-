@@ -32,7 +32,7 @@ window.PublisherFinanceOperationsModel = (() => {
   const gameRows = state => state.scenario === 'empty' ? [] : statements.statementsFor(state.statementState,state.filters.game);
   const allGameRows = state => statements.statementsFor(state.statementState);
   const exportEntityCsv = rows => statements.exportEntitySummariesCsv(rows);
-  const exportGameCsv = rows => statements.exportStatementsCsv((rows || []).filter(row => row.status === 'confirmed'),{ includeDeveloper:true,includeFxVersion:true });
+  const exportGameCsv = rows => statements.exportStatementsCsv(rows || [],{ includeDeveloper:true,includeFxVersion:true });
 
   return Object.freeze({ createState,entityRows,gameRows,allGameRows,exportEntityCsv,exportGameCsv,statements });
 })();

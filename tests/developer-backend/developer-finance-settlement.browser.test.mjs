@@ -169,8 +169,8 @@ test('开发者对账结算使用固定字段、N+1和人民币公式',async () 
   await open('/settlement');
   const table = page.locator('[data-testid="settlement-table"]');
   assert.deepEqual(await table.locator('th').allTextContents(),[
-    '','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户实付',
-    '平台实收','平台分成比例','平台分成','应结算金额（CNY）','状态','操作',
+    '','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）',
+    '结算比例','实际到账金额（CNY）','结算金额（CNY）','状态','操作',
   ]);
   assert.deepEqual(await page.locator('[data-d15-filter]').evaluateAll(nodes => nodes.map(node => node.dataset.d15Filter)),[
     'billingMonth','settlementMonth','gameId','status',
@@ -194,8 +194,9 @@ test('开发者对账结算使用固定字段、N+1和人民币公式',async () 
   const negative = page.locator('[data-d15-settlement-row][data-item-type="refund_chargeback_adjustment"]').first();
   assert.ok(Number(await negative.getAttribute('data-platform-received-minor')) < 0);
   assert.ok(Number(await negative.getAttribute('data-payable-minor')) < 0);
-  assert.match(await negative.locator('td').nth(7).innerText(),/^-/);
-  assert.match(await negative.locator('td').nth(10).innerText(),/^-/);
+  assert.equal(await negative.locator('td').nth(7).innerText(),'100%');
+  assert.match(await negative.locator('td').nth(8).innerText(),/^-/);
+  assert.match(await negative.locator('td').nth(9).innerText(),/^-/);
 });
 
 test('四项筛选支持账单月、结算月、游戏和状态',async () => {
@@ -216,7 +217,8 @@ test('CDKEY 结算项可查看渠道与本体、DLC金额明细',async () => {
   await row.getByRole('button',{ name:'查看详情' }).click();
   const drawer = page.getByRole('dialog',{ name:'CDKEY 销售明细' });
   const text = await drawer.innerText();
-  for (const label of ['渠道','商品类型','商品／DLC','用户实付','支付费','税费','平台实收','平台分成','结算金额','游戏本体','DLC']) assert.match(text,new RegExp(label));
+  for (const label of ['渠道','商品类型','商品／DLC','用户支付金额','支付费','税费','实际到账金额','结算比例','结算金额','游戏本体','DLC']) assert.match(text,new RegExp(label));
+  assert.doesNotMatch(text,/平台分成/);
   assert.ok(await drawer.locator('tbody tr').count() >= 3);
   await page.keyboard.press('Escape');
   assert.equal(await drawer.count(),0);
@@ -366,7 +368,8 @@ test('开发者可导出当前结算结果',async () => {
   const download = await downloadPromise;
   assert.match(download.suggestedFilename(),/^对账结算_/);
   const csv = fs.readFileSync(await download.path(),'utf8');
-  for (const label of ['结算单 ID','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户实付','平台实收','平台分成比例','平台分成','应结算金额（CNY）','状态']) assert.match(csv,new RegExp(label));
+  for (const label of ['结算单 ID','游戏 ID','游戏名称','账单月份','结算月份','结算项','用户支付金额（CNY）','结算比例','实际到账金额（CNY）','结算金额（CNY）','状态']) assert.match(csv,new RegExp(label));
+  assert.doesNotMatch(csv,/平台分成/);
   assert.doesNotMatch(csv,/操作|开发者|财务主体|美元|USD|人民币参考额|锁定汇率|调整额|付款状态|发票/);
   assert.equal(csv.trim().split(/\r?\n/).length,4);
   assert.match(csv,/GAME-48291/);
