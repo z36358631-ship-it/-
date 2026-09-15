@@ -200,14 +200,14 @@ test('开发者对账结算使用固定字段、N+1和人民币公式',async () 
 
 test('四项筛选支持账单月、结算月、游戏和状态',async () => {
   await open('/settlement');
-  await page.locator('[data-d15-filter="billingMonth"]').selectOption('2026-07');
-  await page.locator('[data-d15-filter="settlementMonth"]').selectOption('2026-08');
+  await page.locator('[data-d15-filter="billingMonth"]').selectOption('2026-08');
+  await page.locator('[data-d15-filter="settlementMonth"]').selectOption('2026-09');
   await page.locator('[data-d15-filter="gameId"]').selectOption('GAME-48291');
   await page.locator('[data-d15-filter="status"]').selectOption('pending');
   await page.getByRole('button',{ name:'查询' }).click();
   const rows = await page.locator('[data-d15-settlement-row]').evaluateAll(nodes => nodes.map(node => ({ ...node.dataset })));
   assert.ok(rows.length > 0);
-  assert.ok(rows.every(row => row.billingMonth === '2026-07' && row.settlementMonth === '2026-08' && row.gameId === 'GAME-48291' && row.status === 'pending'));
+  assert.ok(rows.every(row => row.billingMonth === '2026-08' && row.settlementMonth === '2026-09' && row.gameId === 'GAME-48291' && row.status === 'pending'));
 });
 
 test('CDKEY 结算项可查看渠道与本体、DLC金额明细',async () => {
@@ -237,7 +237,9 @@ test('单条确认显示数量和金额，确认后不可再次操作',async () 
   const confirmed = page.locator(`[data-statement-id="${pendingId}"]`);
   assert.equal(await confirmed.getAttribute('data-status'),'confirmed');
   assert.equal(await confirmed.getByRole('button',{ name:'确认',exact:true }).count(),0);
-  assert.equal((await confirmed.locator('td').last().innerText()).trim(),'—');
+  const itemType = await confirmed.getAttribute('data-item-type');
+  const expectedAction = ['game_sales_share','cdkey_sales_share'].includes(itemType) ? '查看详情' : '—';
+  assert.equal((await confirmed.locator('td').last().innerText()).trim(),expectedAction);
 });
 
 test('确认弹窗聚焦、焦点陷阱和关闭后焦点恢复完整',async () => {

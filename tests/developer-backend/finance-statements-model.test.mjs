@@ -243,6 +243,9 @@ test('两类 CSV 包含快照字段、防公式注入，主体名单仅导出已
   for (const label of ['结算单 ID','开发者','财务主体','主体版本','账户版本','规则版本','用户实付','平台实收','平台分成','应结算金额（CNY）']) assert.match(statementCsv, new RegExp(label));
   assert.match(statementCsv, /"'=CMD\(\)"/);
   assert.match(statementCsv, /"'\+hack"/);
+  assert.doesNotMatch(statementCsv,/汇率版本|CNYUSD/);
+  const operationsStatementCsv = model.exportStatementsCsv([row], { includeDeveloper:true,includeFxVersion:true });
+  assert.match(operationsStatementCsv,/汇率版本|CNYUSD/);
   const summaries = model.entitySummariesFor(state, { developerId:'DEV-1001' });
   const csv = model.exportEntitySummariesCsv(summaries.map((item,index) => ({ ...item, status:index ? 'pending' : 'confirmed' })));
   for (const label of ['结算单 ID','游戏及 DLC 销售金额','CDKEY 销售金额','综合税率','应结算金额（USD）','规则版本']) assert.match(csv, new RegExp(label));

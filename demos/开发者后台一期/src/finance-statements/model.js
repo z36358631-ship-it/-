@@ -458,15 +458,16 @@ window.PublisherSettlementStatements = (() => {
   const csv = (headers,lines) => `\uFEFF${[headers.map(safeCell).join(','),...lines].join('\r\n')}`;
   const exportStatementsCsv = (rows,options = {}) => {
     const includeDeveloper = Boolean(options.includeDeveloper);
+    const includeFxVersion = Boolean(options.includeFxVersion);
     const headers = [
       '结算单 ID',...(includeDeveloper ? ['开发者','财务主体'] : []),'主体版本','账户版本','规则版本','游戏 ID','游戏名称','账单月份','结算月份','结算项',
-      '用户实付','平台实收','支付费','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）','汇率版本','状态',
+      '用户实付','平台实收','支付费','税费','退款与拒付','平台分成比例','平台分成','应结算金额（CNY）',...(includeFxVersion ? ['汇率版本'] : []),'状态',
     ];
     const lines = (rows || []).map(row => [
       safeCell(row.id),...(includeDeveloper ? [safeCell(row.developerName),safeCell(row.entityName)] : []),safeCell(row.entityVersion),safeCell(row.accountVersion),safeCell(row.tierRuleVersion),
       safeCell(row.gameId),safeCell(row.gameName),safeCell(row.billingMonth),safeCell(row.settlementMonth),safeCell(row.itemLabel),quote(decimal(row.userPaidMinor)),quote(decimal(row.platformReceivedMinor)),
       quote(decimal(row.paymentFeeMinor)),quote(decimal(row.taxMinor)),quote(decimal(row.refundChargebackMinor)),safeCell(percent(row.platformShareRate)),quote(decimal(row.platformShareMinor)),
-      quote(decimal(row.payableMinor)),safeCell(row.fxRateVersion),safeCell(statusLabel(row.status)),
+      quote(decimal(row.payableMinor)),...(includeFxVersion ? [safeCell(row.fxRateVersion)] : []),safeCell(statusLabel(row.status)),
     ].join(','));
     return csv(headers,lines);
   };
