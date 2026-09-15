@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>财务主体与对账结算流程</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;background:#fff;color:#162033;font-family:"Microsoft YaHei","Noto Sans SC",sans-serif}body{width:4800px;padding:64px 72px 78px}.title{margin:0 0 42px;font-size:52px;line-height:1.2}.flow-row{margin:0 0 50px}.flow-row:last-child{margin-bottom:0}.row-title{display:flex;align-items:center;gap:18px;margin:0 0 20px;font-size:34px;line-height:1.2}.row-title b{display:inline-flex;width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;color:#fff;background:#146fe8;font-size:24px}.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:62px}.step{position:relative;min-width:0}.step:not(:last-child)::after{content:"→";position:absolute;right:-51px;top:50%;z-index:2;color:#7c8ca5;font-size:58px;font-weight:600;line-height:1}.step h3{margin:0 0 14px;color:#1d2a40;font-size:26px;line-height:1.25}.shot{overflow:hidden;width:100%;height:570px;border:2px solid #d9e0ea;border-radius:14px;background:#f5f7fa;box-shadow:0 10px 28px rgba(20,35,58,.10)}.shot img{display:block;width:100%;height:100%;object-fit:cover;object-position:left top}.flow-row:nth-of-type(2) .row-title b{background:#0ca2ad}.flow-row:nth-of-type(3) .row-title b{background:#7657d6}.flow-row:nth-of-type(4) .row-title b{background:#d48300}
+  </style>
+</head>
+<body>
+  <h1 class="title">财务主体与对账结算流程</h1>
+  <section class="flow-row">
+    <h2 class="row-title"><b>1</b>财务主体</h2>
+    <div class="steps">
+      <article class="step"><h3>1.1 查看当前主体</h3><div class="shot"><img src="15-flow-01-entity-current.png" alt="查看当前主体"></div></article>
+      <article class="step"><h3>1.2 修改资料</h3><div class="shot"><img src="15-flow-02-entity-edit.png" alt="修改资料"></div></article>
+      <article class="step"><h3>1.3 提交审核</h3><div class="shot"><img src="15-flow-03-entity-pending.png" alt="提交审核"></div></article>
+      <article class="step"><h3>1.4 审核通过并生效</h3><div class="shot"><img src="15-flow-04-entity-approved.png" alt="审核通过并生效"></div></article>
+    </div>
+  </section>
+  <section class="flow-row">
+    <h2 class="row-title"><b>2</b>开发者对账</h2>
+    <div class="steps">
+      <article class="step"><h3>2.1 查看 N+1 账单</h3><div class="shot"><img src="15-flow-05-statement-list.png" alt="查看N+1账单"></div></article>
+      <article class="step"><h3>2.2 查看销售明细</h3><div class="shot"><img src="15-flow-06-statement-detail.png" alt="查看销售明细"></div></article>
+      <article class="step"><h3>2.3 确认结算</h3><div class="shot"><img src="15-flow-07-statement-confirm.png" alt="确认结算"></div></article>
+      <article class="step"><h3>2.4 确认完成</h3><div class="shot"><img src="15-flow-08-statement-confirmed.png" alt="确认完成"></div></article>
+    </div>
+  </section>
+  <section class="flow-row">
+    <h2 class="row-title"><b>3</b>运营结算</h2>
+    <div class="steps">
+      <article class="step"><h3>3.1 配置分成规则</h3><div class="shot"><img src="15-flow-09-tier-config.png" alt="配置分成规则"></div></article>
+      <article class="step"><h3>3.2 查看主体汇总</h3><div class="shot"><img src="15-flow-10-ops-entity-summary.png" alt="查看主体汇总"></div></article>
+      <article class="step"><h3>3.3 核对游戏明细</h3><div class="shot"><img src="15-flow-11-ops-game-detail.png" alt="核对游戏明细"></div></article>
+      <article class="step"><h3>3.4 勾选并导出</h3><div class="shot"><img src="15-flow-12-ops-export-selected.png" alt="勾选并导出"></div></article>
+    </div>
+  </section>
+</body>
+</html>
