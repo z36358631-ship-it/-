@@ -262,7 +262,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   ];
   const publisherChannelConsoleSections = [
     ['channel-supply', '渠道与供货', 'key', '渠道 供货 API 文件 Key 合作'],
-    ['channel-revenue', '销售与收益', 'finance', '渠道 销售 本体 DLC SKU 退款 拒付 收益'],
+    ['channel-revenue', '分销数据', 'chart', '渠道 Key 发放 兑换 未兑换 兑换率'],
   ];
   const publisherAccessFor = access => access && typeof access === 'object' ? access : {
     accountKind: 'enterprise', qualificationStatus: 'approved', canCreateGameDraft: true,
@@ -720,7 +720,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selectedKey = state.selectedGame || 'existing';
     const game = getPublisherGame(state, selectedKey) || getPublisherGame(state, 'existing') || getPublisherGames(state)[0];
     if (!game) return '';
-    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '经营数据': 'Analytics', '渠道与供货': 'Channels & supply', '销售与收益': 'Sales & revenue', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
+    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '经营数据': 'Analytics', '渠道与供货': 'Channels & supply', '分销数据': 'Distribution data', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
     const profileComponent = window.PublisherGameProfile;
     let publicationDraft;
     if (profileComponent) {

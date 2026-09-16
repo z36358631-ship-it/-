@@ -282,66 +282,66 @@
           {
             "id": "channel-distribution-overview",
             "category": "发行与供给",
-            "question": "渠道分销使用说明",
-            "answer": "适用于企业开发者向自定义第三方渠道持续提供盖世 Key，并按渠道、销售项、SKU 和币种查看回传的销售与预估收益。",
-            "steps": ["在单游戏控制台进入“渠道与供货”，创建渠道并选择本体或 DLC 销售项。", "选择“接口自动发码”或“下载兑换码文件”；一个渠道固定使用一种供货方式。", "在“销售与收益”查看 API 回传或文件清单导入后的结果。"],
-            "details": ["合作状态包含合作中、已暂停、清算中、已停止和风险暂停。", "渠道不设置地区、审批或商业额度；不同币种始终分行展示。", "若渠道数据缺失，先检查凭证、文件下载记录或销售清单导入结果。"]
+            "question": "渠道投放使用说明",
+            "answer": "企业开发者可为外部渠道配置本体或 DLC，并通过 API 或兑换码文件交付 Key。",
+            "steps": ["创建渠道并选择销售项。", "选择一种供货方式；同一渠道不混用 API 和文件。", "在分销数据查看发放、兑换、未兑换和兑换率。"],
+            "details": ["仅企业开发者可创建渠道，创建后无需平台审批。", "渠道不设置地区、商业额度或授权计划。", "合作状态包括合作中、已暂停、已停止和风险暂停。"]
           },
           {
             "id": "channel-api-integration",
             "category": "发行与供给",
             "question": "接口自动发码接入指南",
-            "answer": "适用于渠道在用户付款成功后按订单实时领取一个 Key；凭证属于渠道，不绑定批次或单个 SKU。",
-            "steps": ["创建供货方式为“接口自动发码”的渠道并配置可销售的本体或 DLC。", "在“管理接入”中生成 client_id，并立即保存只显示一次的 Secret。", "渠道在订单支付成功后携带渠道订单号、SKU、幂等键、支付时间、金额和币种请求发码。", "用原渠道订单号查询交付结果，并回传退款或拒付事件。"],
-            "details": ["API 不填写数量，也没有开发者可见的固定额度或补量操作。", "Secret 遗失或疑似泄露时轮换密钥，旧 Secret 立即失效。", "响应超时时先查询原订单，不得更换订单号重复发码。"]
+            "answer": "接口渠道在需要 Key 时按渠道订单号请求，平台负责幂等、发码和结果查询。",
+            "steps": ["创建接口渠道并生成 client_id 和一次性 Secret。", "渠道用同一订单号重试；超时后先查询原订单。", "凭证泄露时暂停渠道并轮换 Secret。"],
+            "details": ["API 不填写数量，也没有固定额度或补量操作。", "凭证属于渠道，不绑定批次或单个 SKU。", "Secret 仅在生成或轮换时显示一次，旧 Secret 立即失效。"]
           },
           {
             "id": "channel-api-reference",
             "category": "发行与供给",
             "question": "API 鉴权、发码、查询与错误码",
-            "answer": "接口使用渠道 client_id 与 Secret 完成鉴权，以 channel_id 和 channel_order_id 保证订单唯一，并通过幂等键安全重试。",
-            "steps": ["发码请求示例：POST /openapi/v1/cdkeys/allocate；请求头填写 X-Client-Id、X-Timestamp、X-Nonce、X-Signature 和 Idempotency-Key；请求体为 {\"channel_order_id\":\"ORDER-20260916-001\",\"sku_id\":\"BASE-GLOBAL\",\"amount\":12.99,\"currency\":\"USD\",\"paid_at\":\"2026-09-16T09:00:00+08:00\"}。", "发码成功响应示例：HTTP 200；{\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\",\"delivered_at\":\"2026-09-16T09:00:02+08:00\"}}。", "查询请求示例：GET /openapi/v1/cdkeys/orders/ORDER-20260916-001，鉴权头与发码接口一致；发码超时后复用原渠道订单号查询，不得新建订单号。", "查询响应示例：HTTP 200；{\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\"}}；退款和拒付仍引用该渠道订单号。"],
-            "details": ["INVALID_CREDENTIAL（HTTP 401）：凭证无效。检查 client_id、签名、时间戳和服务器时钟；Secret 遗失或泄露时先轮换，再用新 Secret 重试。", "IDEMPOTENCY_CONFLICT（HTTP 409）：同一幂等键或渠道订单号的参数与首次请求不一致。停止改参重试，使用原参数重试或查询原订单；只有新订单才生成新订单号和幂等键。", "CHANNEL_PAUSED（HTTP 423）：渠道已暂停或进入清算。停止新发码；恢复合作后再提交新订单，清算中仅查询和补报原订单。", "SKU_INVALID（HTTP 422）：SKU 不存在、未配置到该渠道或已停供。刷新渠道销售项配置，确认 SKU 可售后再发起新请求。", "RATE_LIMITED（HTTP 429）：请求超过频控。按 Retry-After 延迟并指数退避，重试时保持原订单号、幂等键和参数。", "RISK_RESTRICTED（HTTP 403）：命中平台风险限制。停止自动重试，保留脱敏 request_id 与渠道订单号，并按平台提示处理或联系 dev@xiaoji.com。", "示例中的 Secret 与 Key 均为占位符；请求、响应和日志不得记录或长期保存明文 Secret，业务日志中的 Key 也必须脱敏。"]
+            "answer": "接口提供鉴权、按单发码和原订单查询；渠道订单号用于幂等，不代表平台确认销售。",
+            "steps": ["发码请求示例：POST /openapi/v1/cdkeys/allocate；请求头填写 X-Client-Id、X-Timestamp、X-Nonce、X-Signature 和 Idempotency-Key；请求体为 {\"channel_id\":\"CH-240901\",\"channel_order_id\":\"ORDER-20260916-001\",\"sku_id\":\"BASE-GLOBAL\",\"request_id\":\"REQ-20260916-001\"}。", "发码成功响应示例：HTTP 200；{\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\",\"delivered_at\":\"2026-09-16T09:00:02+08:00\"}}。", "查询请求示例：GET /openapi/v1/cdkeys/orders/ORDER-20260916-001?channel_id=CH-240901，鉴权头与发码接口一致；超时后复用原渠道订单号查询，不得新建订单号。", "查询响应示例：HTTP 200；{\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\"}}。"],
+            "details": ["INVALID_CREDENTIAL（HTTP 401）：凭证无效。检查 client_id、签名、时间戳和服务器时钟；Secret 遗失或泄露时先轮换，再用新 Secret 重试。", "IDEMPOTENCY_CONFLICT（HTTP 409）：同一幂等键或渠道订单号的参数与首次请求不一致。停止改参重试，使用原参数重试或查询原订单；只有新请求才生成新订单号和幂等键。", "CHANNEL_PAUSED（HTTP 423）：渠道已暂停或停止。停止新发码；恢复合作后再提交新请求，已停止渠道不可恢复。", "SKU_INVALID（HTTP 422）：SKU 不存在、未配置到该渠道或已停供。刷新渠道销售项配置，确认 SKU 可供给后再发起新请求。", "RATE_LIMITED（HTTP 429）：请求超过频控。按 Retry-After 延迟并指数退避，重试时保持原订单号、幂等键和参数。", "RISK_RESTRICTED（HTTP 403）：命中平台风险限制。停止自动重试，保留脱敏 request_id 与渠道订单号，并按平台提示处理或联系 dev@xiaoji.com。", "示例中的 Secret 与 Key 均为占位符；请求、响应和日志不得记录或长期保存明文 Secret，业务日志中的 Key 也必须脱敏。"]
           },
           {
             "id": "channel-file-delivery",
             "category": "发行与供给",
             "question": "下载兑换码文件教程",
-            "answer": "适用于需要离线导入或线下分发的渠道；开发者按实际数量和有效期生成并下载 CSV 文件。",
-            "steps": ["创建供货方式为“下载兑换码文件”的渠道。", "点击“创建文件”，填写正整数数量和有效期后生成并下载。", "下载成功后在渠道行查看文件名、下载账号、时间和次数。"],
-            "details": ["文件可能处于生成中、待下载、已下载、已取消、已到期或生成失败。", "已下载 Key 视为已暴露，不得回库或重复分配。", "生成失败可保留参数重试；未下载文件可取消，超过技术上限时需拆分文件。"]
+            "answer": "文件渠道按销售项、数量和有效期同步生成兑换码文件，成功后立即下载。",
+            "steps": ["在渠道管理为文件渠道选择创建文件。", "填写销售项、数量和有效期。", "点击生成并下载，文件名包含渠道名和批次号。"],
+            "details": ["生成完成后立即触发下载，不保留待下载或生成中状态。", "触发下载后 Key 视为已交付；浏览器取消保存也不回库。", "生成或返回文件前失败会保留原参数和失败原因，可重新生成。"]
           },
           {
-            "id": "channel-sales-events",
+            "id": "channel-key-metrics",
             "category": "发行与供给",
-            "question": "销售、退款和拒付回传说明",
-            "answer": "API 渠道在付款成功后请求发码并同步记录销售，退款和拒付再用原渠道订单号回传。",
-            "steps": ["销售事件包含渠道订单号、SKU、用户实付金额、币种和支付时间。", "退款或拒付发生后引用原订单号回传对应事件。", "在“销售与收益”检查销量、退款、拒付、销售额、销售净额和预估收益。"],
-            "details": ["退款或拒付不使 Key 重新可售；未兑退款可作废但不能回库。", "同一渠道订单和事件按幂等规则处理，不重复统计。", "销售未回传时标记待补报，不虚构销售额或收益。"]
+            "question": "Key 状态与兑换数据口径",
+            "answer": "分销数据只展示平台可验证的发放和兑换结果，不推算渠道销量或收入。",
+            "steps": ["发放量为 API 成功发码量加文件成功交付量。", "未兑换量为发放量减兑换量，不代表渠道库存。", "兑换率为兑换量除以发放量；发放量为零时显示“—”。"],
+            "details": ["渠道订单号仅用于 API 幂等和查询，不能作为销售凭证。", "文件下载量、Key 发放量和渠道实际销量是不同口径。", "盖世不采集渠道定价、收款或终端订单，因此不展示销售额和收益。"]
           },
           {
-            "id": "channel-sales-import",
+            "id": "channel-file-records",
             "category": "发行与供给",
-            "question": "文件渠道销售清单导入说明",
-            "answer": "文件渠道通过 CSV 导入真实销售、退款和拒付；平台校验 Key 归属后只保存不可逆指纹。",
-            "steps": ["准备 channel_order_id、key、sku_id、amount、currency、sold_at、event 七列。", "在“销售与收益”选择对应文件渠道并上传 CSV。", "确认成功、跳过和失败条数，再检查按渠道、销售项、SKU 与币种聚合的结果。"],
-            "details": ["event 仅支持 sale、refund、chargeback。", "同一渠道订单与事件重复导入会跳过，不重复计数。", "Key 不属于该渠道、SKU 不匹配、金额或时间格式错误时拒绝该行，页面和记录不回显明文 Key。"]
+            "question": "文件批次和下载记录说明",
+            "answer": "文件批次记录销售项、数量、有效期、结果、下载账号和时间；平台不在页面回显明文 Key。",
+            "steps": ["文件生成并触发下载后，Key 视为已交付，不回库也不重复分配。", "生成或返回文件前失败保留原参数，可重新生成。", "下载记录用于审计，不是结算表。"],
+            "details": ["批次状态只记录已下载、生成失败、已取消或已到期。", "平台仅保存不可逆 Key 指纹用于归属和兑换校验。", "文件遗失或泄露后不能再次显示原 Key，应停止渠道并联系 dev@xiaoji.com。"]
           },
           {
-            "id": "channel-stop-clearing",
+            "id": "channel-stop-delivery",
             "category": "发行与供给",
-            "question": "停止合作与剩余 Key 处理",
-            "answer": "正常停止合作会立即禁止新供货并进入 30 个自然日清算期，同时保留已暴露 Key 的既有权益和历史记录。",
-            "steps": ["在渠道行选择“停止合作”，核对 API 已发未兑、文件已暴露、已售未兑、已兑、待补报和待调整数量。", "确认影响后停止新发码、新建文件和未下载文件下载。", "清算期内只处理原订单查询、交付确认及销售、退款、拒付补报。", "清算结束后渠道转为已停止并只读保留。"],
-            "details": ["未下载文件取消；已下载 Key 不回库、不批量作废。", "已售未兑 Key 在原有效期内继续有效，退款或拒付按统一权益政策处理。", "风险暂停由平台处置，与开发者正常停止合作分开。"]
+            "question": "停止合作与已交付 Key 处理",
+          "answer": "停止合作会立即关闭新发码和新文件，历史数据继续保留，已交付 Key 仍按原有效期兑换。",
+            "steps": ["确认停止后 API 凭证立即停用。", "未完成的生成操作不新增文件记录。", "已下载 Key 不回库，仍按原有效期兑换。"],
+            "details": ["停止合作后渠道只读，不能直接恢复。", "已交付 Key 不批量作废，避免影响已获得 Key 的用户。", "风险暂停由平台处置，与开发者主动停止合作分开。"]
           },
           {
-            "id": "channel-revenue-metrics",
+            "id": "channel-responsibility-boundary",
             "category": "发行与供给",
-            "question": "渠道销售与收益数据口径",
-            "answer": "渠道页面展示第三方回传口径，不是平台正式账单；数据按渠道、销售项、SKU 和币种分组。",
-            "steps": ["销售额为渠道回传的用户实付合计。", "销售净额为销售额减退款、拒付和已明确税费。", "仅在已配置分成规则时计算预估收益；否则显示“—”。"],
-            "details": ["不同币种始终分行，不跨币种合计。", "文件渠道未导入销售清单时只展示已下载和已兑换，不显示虚构金额。", "月份锁定后的迟到退款或拒付进入后续月份历史调整。"]
+            "question": "三方责任与渠道结算边界",
+            "answer": "盖世提供 Key 生成、交付、兑换和审计；开发者与渠道自行约定销售、售后和结算。",
+            "steps": ["开发者负责选择渠道并约定价格和结算方式。", "渠道负责终端销售、收款、退款、拒付和用户服务。", "盖世不展示渠道销量、销售额、收益或结算结果。"],
+            "details": ["盖世不与第三方渠道签约、收款或向开发者分账。", "分销数据不能替代开发者与渠道之间的销售或结算凭证。", "渠道纠纷由开发者按双方约定处理；Key 生成、交付或兑换异常可联系 dev@xiaoji.com。"]
           },
           {
             "id": "developer-services-placeholder",
@@ -608,66 +608,66 @@
           {
             "id": "channel-distribution-overview",
             "category": "Publishing & supply",
-            "question": "Channel distribution overview",
-            "answer": "For company developers supplying GameHub Keys to named third-party channels and reviewing reported sales and estimated revenue by channel, product, SKU and currency.",
-            "steps": ["Open Channel supply in a game's console, create a channel and select the base game or DLC product.", "Choose Automatic Key API or Download Key file; each channel uses one supply method.", "Review API reports or imported file-channel sales under Sales and revenue."],
-            "details": ["Partnership states are Active, Paused, Clearing, Stopped and Risk paused.", "Channels have no territory, approval or commercial quota setting; currencies stay on separate rows.", "When data is missing, check credentials, file download records or the sales-import result."]
+            "question": "Channel distribution guide",
+            "answer": "Enterprise developers can assign base games or DLC to external channels and deliver Keys through an API or a downloadable file.",
+            "steps": ["Create a channel and select products.", "Choose one supply method; a channel cannot mix API and file delivery.", "Use Distribution data to review issued, redeemed, unredeemed, and redemption rate metrics."],
+            "details": ["Only enterprise developers can create channels, and no platform approval is required.", "Channels have no territory, commercial quota, or authorization-plan setting.", "Partnership states are Active, Paused, Stopped, and Risk paused."]
           },
           {
             "id": "channel-api-integration",
             "category": "Publishing & supply",
-            "question": "Automatic Key API integration guide",
-            "answer": "For channels that request one Key per paid order in real time. Credentials belong to the channel, not to a batch or individual SKU.",
-            "steps": ["Create an Automatic Key API channel and select eligible base-game or DLC products.", "Generate the client_id under Manage integration and save the one-time Secret immediately.", "After payment succeeds, send the channel order, SKU, idempotency key, payment time, amount and currency.", "Query the original order for delivery status and report refunds or chargebacks against it."],
-            "details": ["The API has no quantity field, visible fixed quota or replenishment action.", "Rotate the Secret if it is lost or exposed; the old Secret becomes invalid immediately.", "After a timeout, query the original order instead of creating a new order number."]
+            "question": "Automatic Key API integration",
+            "answer": "API channels request a Key with a channel order ID. The platform provides idempotent issuance and order lookup.",
+            "steps": ["Create an API channel and generate a client_id and one-time Secret.", "Retry with the same order ID and query the original order after a timeout.", "Pause the channel and rotate the Secret if credentials leak."],
+            "details": ["The API has no quantity field, fixed quota, or replenishment action.", "Credentials belong to the channel, not to a batch or individual SKU.", "The Secret appears only when created or rotated, and the old Secret becomes invalid immediately."]
           },
           {
             "id": "channel-api-reference",
             "category": "Publishing & supply",
-            "question": "API authentication, delivery, query and error codes",
-            "answer": "Authenticate with the channel client_id and Secret, enforce order uniqueness with channel_id and channel_order_id, and retry safely with an idempotency key.",
-            "steps": ["Delivery request: POST /openapi/v1/cdkeys/allocate. Send X-Client-Id, X-Timestamp, X-Nonce, X-Signature and Idempotency-Key headers with {\"channel_order_id\":\"ORDER-20260916-001\",\"sku_id\":\"BASE-GLOBAL\",\"amount\":12.99,\"currency\":\"USD\",\"paid_at\":\"2026-09-16T09:00:00+08:00\"} after payment succeeds.", "Successful delivery response: HTTP 200 with {\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\",\"delivered_at\":\"2026-09-16T09:00:02+08:00\"}}.", "Query request: GET /openapi/v1/cdkeys/orders/ORDER-20260916-001 with the same authentication headers. After a delivery timeout, query with the original channel order number instead of creating a new one.", "Query response: HTTP 200 with {\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\"}}. Refunds and chargebacks must reference that channel order."],
-            "details": ["INVALID_CREDENTIAL (HTTP 401): verify client_id, signature, timestamp and server clock. If the Secret is lost or exposed, rotate it before retrying with the new Secret.", "IDEMPOTENCY_CONFLICT (HTTP 409): the idempotency key or channel order was reused with changed parameters. Stop altered retries; repeat the original parameters or query the original order. Create a new order number and idempotency key only for a new order.", "CHANNEL_PAUSED (HTTP 423): the channel is paused or clearing. Stop new delivery; resume new orders only after the partnership is active. Clearing permits only original-order queries and reports.", "SKU_INVALID (HTTP 422): the SKU does not exist, is not assigned to the channel or is unavailable. Refresh channel products and retry only after the SKU is sellable.", "RATE_LIMITED (HTTP 429): follow Retry-After and use exponential backoff while preserving the original order number, idempotency key and parameters.", "RISK_RESTRICTED (HTTP 403): stop automatic retries, retain only masked request_id and channel-order evidence, and follow the platform instruction or contact dev@xiaoji.com.", "Secrets and Keys in examples are placeholders. Never log or retain a plaintext Secret, and mask Keys in business logs."]
+            "question": "API authentication, issuance, lookup, and errors",
+            "answer": "The API supports authentication, per-order Key issuance, and original-order lookup. A channel order ID is for idempotency and is not a platform-confirmed sale.",
+            "steps": ["Issuance request: POST /openapi/v1/cdkeys/allocate. Send X-Client-Id, X-Timestamp, X-Nonce, X-Signature, and Idempotency-Key headers with {\"channel_id\":\"CH-240901\",\"channel_order_id\":\"ORDER-20260916-001\",\"sku_id\":\"BASE-GLOBAL\",\"request_id\":\"REQ-20260916-001\"}.", "Successful issuance response: HTTP 200 with {\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\",\"delivered_at\":\"2026-09-16T09:00:02+08:00\"}}.", "Lookup request: GET /openapi/v1/cdkeys/orders/ORDER-20260916-001?channel_id=CH-240901 with the same authentication headers. After a timeout, query with the original channel order ID instead of creating a new one.", "Lookup response: HTTP 200 with {\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\"}}."],
+            "details": ["INVALID_CREDENTIAL (HTTP 401): verify client_id, signature, timestamp, and server clock. If the Secret is lost or exposed, rotate it before retrying with the new Secret.", "IDEMPOTENCY_CONFLICT (HTTP 409): the idempotency key or channel order was reused with changed parameters. Stop altered retries; repeat the original parameters or query the original order. Create a new order ID and idempotency key only for a new request.", "CHANNEL_PAUSED (HTTP 423): the channel is paused or stopped. Stop new issuance; submit new requests only after a paused partnership becomes active. A stopped channel cannot be restored.", "SKU_INVALID (HTTP 422): the SKU does not exist, is not assigned to the channel, or is unavailable. Refresh channel products and retry only after the SKU is available for supply.", "RATE_LIMITED (HTTP 429): follow Retry-After and use exponential backoff while preserving the original order ID, idempotency key, and parameters.", "RISK_RESTRICTED (HTTP 403): stop automatic retries, retain only masked request_id and channel-order evidence, and follow the platform instruction or contact dev@xiaoji.com.", "Secrets and Keys in examples are placeholders. Never log or retain a plaintext Secret, and mask Keys in business logs."]
           },
           {
             "id": "channel-file-delivery",
             "category": "Publishing & supply",
-            "question": "Download Key file guide",
-            "answer": "For offline import or physical distribution. Generate and download a CSV using the required quantity and expiry date.",
-            "steps": ["Create a Download Key file channel.", "Select Create file, enter a positive quantity and expiry date, then generate and download it.", "After download, review the filename, account, time and download count in the channel row."],
-            "details": ["A file can be Generating, Ready to download, Downloaded, Cancelled, Expired or Failed.", "Downloaded Keys are exposed and cannot return to inventory or be reassigned.", "Retry failed generation with the original parameters; cancel an undownloaded file or split files above the technical limit."]
+            "question": "Download a Key file",
+            "answer": "File channels synchronously generate a Key file for a selected product, quantity, and expiration date, then download it immediately.",
+            "steps": ["Open Create file for a file channel.", "Choose the product, quantity, and expiration date.", "Select Generate and download; the file name contains the channel name and batch ID."],
+            "details": ["A completed file starts downloading immediately, with no Generating or Ready state retained.", "Keys are delivered once the download starts; cancelling the browser save does not return them to inventory.", "A failure before the file response retains its original parameters and failure reason for retry."]
           },
           {
-            "id": "channel-sales-events",
+            "id": "channel-key-metrics",
             "category": "Publishing & supply",
-            "question": "Reporting sales, refunds and chargebacks",
-            "answer": "API channels request a Key after successful payment and record the sale, then report refunds and chargebacks against the original order.",
-            "steps": ["A sale includes the channel order, SKU, user-paid amount, currency and payment time.", "Report a refund or chargeback using the original channel order.", "Check sales, refunds, chargebacks, gross sales, net sales and estimated revenue under Sales and revenue."],
-            "details": ["A refund or chargeback never makes a Key resellable; a refunded unredeemed Key may be voided but not returned.", "The same channel order and event are idempotent and are not counted twice.", "Missing reports are marked Needs reporting and never create invented sales or revenue."]
+            "question": "Key status and redemption metrics",
+            "answer": "Distribution data contains only verifiable issuance and redemption results. It does not estimate channel sales or revenue.",
+            "steps": ["Issued equals successful API issuance plus successfully delivered file Keys.", "Unredeemed equals issued minus redeemed and does not represent channel inventory.", "Redemption rate equals redeemed divided by issued; show an em dash when issued is zero."],
+            "details": ["A channel order ID supports API idempotency and lookup; it is not proof of a sale.", "File downloads, issued Keys, and actual channel sales are separate metrics.", "GameHub does not collect channel pricing, payment, or end-customer orders, so it does not show sales or earnings."]
           },
           {
-            "id": "channel-sales-import",
+            "id": "channel-file-records",
             "category": "Publishing & supply",
-            "question": "Import file-channel sales CSV",
-            "answer": "File channels import real sales, refunds and chargebacks from CSV. After ownership validation, the platform stores only an irreversible Key fingerprint.",
-            "steps": ["Prepare channel_order_id, key, sku_id, amount, currency, sold_at and event columns.", "Select the file channel under Sales and revenue and upload the CSV.", "Review imported, skipped and failed counts, then inspect results grouped by channel, product, SKU and currency."],
-            "details": ["event accepts only sale, refund and chargeback.", "Duplicate channel-order and event pairs are skipped without double counting.", "Rows with a foreign Key, mismatched SKU or invalid amount/time fail, and plaintext Keys are never displayed or stored."]
+            "question": "File batches and download records",
+            "answer": "A file batch records product, quantity, expiration, result, downloading account, and time. Plaintext Keys are not displayed in the portal.",
+            "steps": ["Keys are delivered once the generated file starts downloading and cannot return to inventory.", "A failure before the file response keeps its original parameters for retry.", "A download record is an audit record, not a settlement statement."],
+            "details": ["Batch states are Downloaded, Failed, Cancelled, or Expired.", "The platform stores only irreversible Key fingerprints for ownership and redemption checks.", "A lost or exposed file cannot reveal the original Keys again; stop the channel and contact dev@xiaoji.com."]
           },
           {
-            "id": "channel-stop-clearing",
+            "id": "channel-stop-delivery",
             "category": "Publishing & supply",
-            "question": "Stopping a partnership and handling remaining Keys",
-            "answer": "A normal stop immediately blocks new supply and starts a 30-calendar-day clearing period while preserving existing rights and history for exposed Keys.",
-            "steps": ["Select Stop partnership and review API issued-unredeemed, file exposed, sold-unredeemed, redeemed, missing-report and pending-adjustment counts.", "Confirm the impact to stop new API delivery, file creation and undownloaded-file downloads.", "During clearing, process only original-order queries, delivery confirmation and sales, refund or chargeback reports.", "After clearing, the channel becomes Stopped and remains read-only."],
-            "details": ["Undownloaded files are cancelled; downloaded Keys are neither returned nor bulk-voided.", "Sold unredeemed Keys remain valid until their original expiry, subject to the shared refund policy.", "Platform Risk paused handling is separate from a developer-initiated normal stop."]
+            "question": "Stop cooperation and handle delivered Keys",
+            "answer": "Stopping cooperation immediately blocks new issuance and new files while retaining historical records.",
+            "steps": ["API credentials are disabled after confirmation.", "Incomplete generation creates no file record.", "Downloaded Keys do not return to inventory and remain redeemable until their original expiration date."],
+            "details": ["A stopped channel is read-only and cannot be restored directly.", "Delivered Keys are not bulk-voided, avoiding disruption for users who already received them.", "Platform Risk paused handling is separate from a developer-initiated stop."]
           },
           {
-            "id": "channel-revenue-metrics",
+            "id": "channel-responsibility-boundary",
             "category": "Publishing & supply",
-            "question": "Channel sales and revenue metrics",
-            "answer": "Channel figures are third-party reports, not an official platform statement, and are grouped by channel, product, SKU and currency.",
-            "steps": ["Gross sales are the reported user-paid amounts.", "Net sales equal gross sales minus refunds, chargebacks and confirmed taxes.", "Estimated revenue is calculated only when a revenue-share rule exists; otherwise it shows a dash."],
-            "details": ["Currencies remain on separate rows and are never summed across currencies.", "Before a file channel imports sales, show downloaded and redeemed counts without invented money values.", "Late refunds or chargebacks after a month is locked become adjustments in a later month."]
+            "question": "Responsibilities and settlement boundary",
+            "answer": "GameHub provides Key generation, delivery, redemption, and audit records. Developers and channels agree on sales, support, and settlement independently.",
+            "steps": ["Developers select channels and agree on pricing and settlement.", "Channels handle end-customer sales, payment, refunds, chargebacks, and support.", "GameHub does not present channel sales, revenue, earnings, or settlement results."],
+            "details": ["GameHub does not contract with third-party channels, collect their payments, or settle funds with developers.", "Distribution data cannot replace sales or settlement evidence between a developer and channel.", "Developers handle channel disputes under their agreement; contact dev@xiaoji.com for Key generation, delivery, or redemption issues."]
           },
           {
             "id": "developer-services-placeholder",
@@ -810,66 +810,66 @@
       {
         "id": "channel-distribution-overview",
         "category": "发行与供给",
-        "question": "渠道分销使用说明",
-        "answer": "适用于企业开发者向自定义第三方渠道持续提供盖世 Key，并按渠道、销售项、SKU 和币种查看回传的销售与预估收益。",
-        "steps": ["在单游戏控制台进入“渠道与供货”，创建渠道并选择本体或 DLC 销售项。", "选择“接口自动发码”或“下载兑换码文件”；一个渠道固定使用一种供货方式。", "在“销售与收益”查看 API 回传或文件清单导入后的结果。"],
-        "details": ["合作状态包含合作中、已暂停、清算中、已停止和风险暂停。", "渠道不设置地区、审批或商业额度；不同币种始终分行展示。", "若渠道数据缺失，先检查凭证、文件下载记录或销售清单导入结果。"]
+        "question": "渠道投放使用说明",
+        "answer": "企业开发者可为外部渠道配置本体或 DLC，并通过 API 或兑换码文件交付 Key。",
+        "steps": ["创建渠道并选择销售项。", "选择一种供货方式；同一渠道不混用 API 和文件。", "在分销数据查看发放、兑换、未兑换和兑换率。"],
+        "details": ["仅企业开发者可创建渠道，创建后无需平台审批。", "渠道不设置地区、商业额度或授权计划。", "合作状态包括合作中、已暂停、已停止和风险暂停。"]
       },
       {
         "id": "channel-api-integration",
         "category": "发行与供给",
         "question": "接口自动发码接入指南",
-        "answer": "适用于渠道在用户付款成功后按订单实时领取一个 Key；凭证属于渠道，不绑定批次或单个 SKU。",
-        "steps": ["创建供货方式为“接口自动发码”的渠道并配置可销售的本体或 DLC。", "在“管理接入”中生成 client_id，并立即保存只显示一次的 Secret。", "渠道在订单支付成功后携带渠道订单号、SKU、幂等键、支付时间、金额和币种请求发码。", "用原渠道订单号查询交付结果，并回传退款或拒付事件。"],
-        "details": ["API 不填写数量，也没有开发者可见的固定额度或补量操作。", "Secret 遗失或疑似泄露时轮换密钥，旧 Secret 立即失效。", "响应超时时先查询原订单，不得更换订单号重复发码。"]
+        "answer": "接口渠道在需要 Key 时按渠道订单号请求，平台负责幂等、发码和结果查询。",
+        "steps": ["创建接口渠道并生成 client_id 和一次性 Secret。", "渠道用同一订单号重试；超时后先查询原订单。", "凭证泄露时暂停渠道并轮换 Secret。"],
+        "details": ["API 不填写数量，也没有固定额度或补量操作。", "凭证属于渠道，不绑定批次或单个 SKU。", "Secret 仅在生成或轮换时显示一次，旧 Secret 立即失效。"]
       },
       {
         "id": "channel-api-reference",
         "category": "发行与供给",
         "question": "API 鉴权、发码、查询与错误码",
-        "answer": "接口使用渠道 client_id 与 Secret 完成鉴权，以 channel_id 和 channel_order_id 保证订单唯一，并通过幂等键安全重试。",
-        "steps": ["发码请求示例：POST /openapi/v1/cdkeys/allocate；请求头填写 X-Client-Id、X-Timestamp、X-Nonce、X-Signature 和 Idempotency-Key；请求体为 {\"channel_order_id\":\"ORDER-20260916-001\",\"sku_id\":\"BASE-GLOBAL\",\"amount\":12.99,\"currency\":\"USD\",\"paid_at\":\"2026-09-16T09:00:00+08:00\"}。", "发码成功响应示例：HTTP 200；{\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\",\"delivered_at\":\"2026-09-16T09:00:02+08:00\"}}。", "查询请求示例：GET /openapi/v1/cdkeys/orders/ORDER-20260916-001，鉴权头与发码接口一致；发码超时后复用原渠道订单号查询，不得新建订单号。", "查询响应示例：HTTP 200；{\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\"}}；退款和拒付仍引用该渠道订单号。"],
-        "details": ["INVALID_CREDENTIAL（HTTP 401）：凭证无效。检查 client_id、签名、时间戳和服务器时钟；Secret 遗失或泄露时先轮换，再用新 Secret 重试。", "IDEMPOTENCY_CONFLICT（HTTP 409）：同一幂等键或渠道订单号的参数与首次请求不一致。停止改参重试，使用原参数重试或查询原订单；只有新订单才生成新订单号和幂等键。", "CHANNEL_PAUSED（HTTP 423）：渠道已暂停或进入清算。停止新发码；恢复合作后再提交新订单，清算中仅查询和补报原订单。", "SKU_INVALID（HTTP 422）：SKU 不存在、未配置到该渠道或已停供。刷新渠道销售项配置，确认 SKU 可售后再发起新请求。", "RATE_LIMITED（HTTP 429）：请求超过频控。按 Retry-After 延迟并指数退避，重试时保持原订单号、幂等键和参数。", "RISK_RESTRICTED（HTTP 403）：命中平台风险限制。停止自动重试，保留脱敏 request_id 与渠道订单号，并按平台提示处理或联系 dev@xiaoji.com。", "示例中的 Secret 与 Key 均为占位符；请求、响应和日志不得记录或长期保存明文 Secret，业务日志中的 Key 也必须脱敏。"]
+        "answer": "接口提供鉴权、按单发码和原订单查询；渠道订单号用于幂等，不代表平台确认销售。",
+        "steps": ["发码请求示例：POST /openapi/v1/cdkeys/allocate；请求头填写 X-Client-Id、X-Timestamp、X-Nonce、X-Signature 和 Idempotency-Key；请求体为 {\"channel_id\":\"CH-240901\",\"channel_order_id\":\"ORDER-20260916-001\",\"sku_id\":\"BASE-GLOBAL\",\"request_id\":\"REQ-20260916-001\"}。", "发码成功响应示例：HTTP 200；{\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\",\"delivered_at\":\"2026-09-16T09:00:02+08:00\"}}。", "查询请求示例：GET /openapi/v1/cdkeys/orders/ORDER-20260916-001?channel_id=CH-240901，鉴权头与发码接口一致；超时后复用原渠道订单号查询，不得新建订单号。", "查询响应示例：HTTP 200；{\"code\":\"OK\",\"data\":{\"channel_order_id\":\"ORDER-20260916-001\",\"delivery_status\":\"DELIVERED\",\"key\":\"key_xxxxxxxxxxxx\"}}。"],
+        "details": ["INVALID_CREDENTIAL（HTTP 401）：凭证无效。检查 client_id、签名、时间戳和服务器时钟；Secret 遗失或泄露时先轮换，再用新 Secret 重试。", "IDEMPOTENCY_CONFLICT（HTTP 409）：同一幂等键或渠道订单号的参数与首次请求不一致。停止改参重试，使用原参数重试或查询原订单；只有新请求才生成新订单号和幂等键。", "CHANNEL_PAUSED（HTTP 423）：渠道已暂停或停止。停止新发码；恢复合作后再提交新请求，已停止渠道不可恢复。", "SKU_INVALID（HTTP 422）：SKU 不存在、未配置到该渠道或已停供。刷新渠道销售项配置，确认 SKU 可供给后再发起新请求。", "RATE_LIMITED（HTTP 429）：请求超过频控。按 Retry-After 延迟并指数退避，重试时保持原订单号、幂等键和参数。", "RISK_RESTRICTED（HTTP 403）：命中平台风险限制。停止自动重试，保留脱敏 request_id 与渠道订单号，并按平台提示处理或联系 dev@xiaoji.com。", "示例中的 Secret 与 Key 均为占位符；请求、响应和日志不得记录或长期保存明文 Secret，业务日志中的 Key 也必须脱敏。"]
       },
       {
         "id": "channel-file-delivery",
         "category": "发行与供给",
         "question": "下载兑换码文件教程",
-        "answer": "适用于需要离线导入或线下分发的渠道；开发者按实际数量和有效期生成并下载 CSV 文件。",
-        "steps": ["创建供货方式为“下载兑换码文件”的渠道。", "点击“创建文件”，填写正整数数量和有效期后生成并下载。", "下载成功后在渠道行查看文件名、下载账号、时间和次数。"],
-        "details": ["文件可能处于生成中、待下载、已下载、已取消、已到期或生成失败。", "已下载 Key 视为已暴露，不得回库或重复分配。", "生成失败可保留参数重试；未下载文件可取消，超过技术上限时需拆分文件。"]
+        "answer": "文件渠道按销售项、数量和有效期同步生成兑换码文件，成功后立即下载。",
+        "steps": ["在渠道管理为文件渠道选择创建文件。", "填写销售项、数量和有效期。", "点击生成并下载，文件名包含渠道名和批次号。"],
+        "details": ["生成完成后立即触发下载，不保留待下载或生成中状态。", "触发下载后 Key 视为已交付；浏览器取消保存也不回库。", "生成或返回文件前失败会保留原参数和失败原因，可重新生成。"]
       },
       {
-        "id": "channel-sales-events",
+        "id": "channel-key-metrics",
         "category": "发行与供给",
-        "question": "销售、退款和拒付回传说明",
-        "answer": "API 渠道在付款成功后请求发码并同步记录销售，退款和拒付再用原渠道订单号回传。",
-        "steps": ["销售事件包含渠道订单号、SKU、用户实付金额、币种和支付时间。", "退款或拒付发生后引用原订单号回传对应事件。", "在“销售与收益”检查销量、退款、拒付、销售额、销售净额和预估收益。"],
-        "details": ["退款或拒付不使 Key 重新可售；未兑退款可作废但不能回库。", "同一渠道订单和事件按幂等规则处理，不重复统计。", "销售未回传时标记待补报，不虚构销售额或收益。"]
+        "question": "Key 状态与兑换数据口径",
+        "answer": "分销数据只展示平台可验证的发放和兑换结果，不推算渠道销量或收入。",
+        "steps": ["发放量为 API 成功发码量加文件成功交付量。", "未兑换量为发放量减兑换量，不代表渠道库存。", "兑换率为兑换量除以发放量；发放量为零时显示“—”。"],
+        "details": ["渠道订单号仅用于 API 幂等和查询，不能作为销售凭证。", "文件下载量、Key 发放量和渠道实际销量是不同口径。", "盖世不采集渠道定价、收款或终端订单，因此不展示销售额和收益。"]
       },
       {
-        "id": "channel-sales-import",
+        "id": "channel-file-records",
         "category": "发行与供给",
-        "question": "文件渠道销售清单导入说明",
-        "answer": "文件渠道通过 CSV 导入真实销售、退款和拒付；平台校验 Key 归属后只保存不可逆指纹。",
-        "steps": ["准备 channel_order_id、key、sku_id、amount、currency、sold_at、event 七列。", "在“销售与收益”选择对应文件渠道并上传 CSV。", "确认成功、跳过和失败条数，再检查按渠道、销售项、SKU 与币种聚合的结果。"],
-        "details": ["event 仅支持 sale、refund、chargeback。", "同一渠道订单与事件重复导入会跳过，不重复计数。", "Key 不属于该渠道、SKU 不匹配、金额或时间格式错误时拒绝该行，页面和记录不回显明文 Key。"]
+        "question": "文件批次和下载记录说明",
+        "answer": "文件批次记录销售项、数量、有效期、结果、下载账号和时间；平台不在页面回显明文 Key。",
+        "steps": ["文件生成并触发下载后，Key 视为已交付，不回库也不重复分配。", "生成或返回文件前失败保留原参数，可重新生成。", "下载记录用于审计，不是结算表。"],
+        "details": ["批次状态只记录已下载、生成失败、已取消或已到期。", "平台仅保存不可逆 Key 指纹用于归属和兑换校验。", "文件遗失或泄露后不能再次显示原 Key，应停止渠道并联系 dev@xiaoji.com。"]
       },
       {
-        "id": "channel-stop-clearing",
+        "id": "channel-stop-delivery",
         "category": "发行与供给",
-        "question": "停止合作与剩余 Key 处理",
-        "answer": "正常停止合作会立即禁止新供货并进入 30 个自然日清算期，同时保留已暴露 Key 的既有权益和历史记录。",
-        "steps": ["在渠道行选择“停止合作”，核对 API 已发未兑、文件已暴露、已售未兑、已兑、待补报和待调整数量。", "确认影响后停止新发码、新建文件和未下载文件下载。", "清算期内只处理原订单查询、交付确认及销售、退款、拒付补报。", "清算结束后渠道转为已停止并只读保留。"],
-        "details": ["未下载文件取消；已下载 Key 不回库、不批量作废。", "已售未兑 Key 在原有效期内继续有效，退款或拒付按统一权益政策处理。", "风险暂停由平台处置，与开发者正常停止合作分开。"]
+        "question": "停止合作与已交付 Key 处理",
+        "answer": "停止合作会立即关闭新发码和新文件，历史数据继续保留，已交付 Key 仍按原有效期兑换。",
+        "steps": ["确认停止后 API 凭证立即停用。", "未完成的生成操作不新增文件记录。", "已下载 Key 不回库，仍按原有效期兑换。"],
+        "details": ["停止合作后渠道只读，不能直接恢复。", "已交付 Key 不批量作废，避免影响已获得 Key 的用户。", "风险暂停由平台处置，与开发者主动停止合作分开。"]
       },
       {
-        "id": "channel-revenue-metrics",
+        "id": "channel-responsibility-boundary",
         "category": "发行与供给",
-        "question": "渠道销售与收益数据口径",
-        "answer": "渠道页面展示第三方回传口径，不是平台正式账单；数据按渠道、销售项、SKU 和币种分组。",
-        "steps": ["销售额为渠道回传的用户实付合计。", "销售净额为销售额减退款、拒付和已明确税费。", "仅在已配置分成规则时计算预估收益；否则显示“—”。"],
-        "details": ["不同币种始终分行，不跨币种合计。", "文件渠道未导入销售清单时只展示已下载和已兑换，不显示虚构金额。", "月份锁定后的迟到退款或拒付进入后续月份历史调整。"]
+        "question": "三方责任与渠道结算边界",
+        "answer": "盖世提供 Key 生成、交付、兑换和审计；开发者与渠道自行约定销售、售后和结算。",
+        "steps": ["开发者负责选择渠道并约定价格和结算方式。", "渠道负责终端销售、收款、退款、拒付和用户服务。", "盖世不展示渠道销量、销售额、收益或结算结果。"],
+        "details": ["盖世不与第三方渠道签约、收款或向开发者分账。", "分销数据不能替代开发者与渠道之间的销售或结算凭证。", "渠道纠纷由开发者按双方约定处理；Key 生成、交付或兑换异常可联系 dev@xiaoji.com。"]
       }
     ],
     "contact": {

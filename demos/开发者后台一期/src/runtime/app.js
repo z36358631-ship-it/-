@@ -17,7 +17,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }
   };
   const writeStorage = (storage, key, value) => {
-    try { storage.setItem(key, JSON.stringify(value)); } catch { /* 浏览器禁用存储时仍保持本次会话可用 */ }
+    try { storage.setItem(key, JSON.stringify(value)); return true; } catch { return false; }
   };
   const cloneJson = value => JSON.parse(JSON.stringify(value));
   const qualificationStorageKey = 'gamehub-company-verification-v3';
@@ -227,7 +227,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     registration: restoredRegistration,
     qualification: restoredQualification,
     qualificationPreview: null,
-    demoPreview: { open: false, releaseStatus: '', channelBatchOutcome: 'generated' },
+    demoPreview: { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' },
     channelTransientSecret: '',
     finance: hasFinanceRoutes ? window.PublisherFinance.createState() : null,
     managedContent,
@@ -317,7 +317,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const dataDashboard = window.PublisherDataDashboard?.createState(restoredPublisherWorkspace.dataDashboard || {}) || restoredPublisherWorkspace.dataDashboard || {};
     const channelDistribution = window.PublisherChannelDistribution?.createState(restoredPublisherWorkspace.channelDistribution || {})
       || restoredPublisherWorkspace.channelDistribution
-      || { activeChannelId:'', dialog:'', dialogChannelId:'', channels:[], fileBatches:[], sales:[], salesEvents:[], downloads:[] };
+      || { activeChannelId:'', supplyTab:'channels', dialog:'', dialogChannelId:'', channels:[], fileBatches:[], downloads:[], keyMetrics:[] };
     dataDashboard.selectedOrder = '';
     dataDashboard.scopeOpen = false;
     delete dataDashboard.__keywordTimer;
@@ -520,7 +520,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
     memory.qualificationPreview = null;
-    memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'generated' };
+    memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' };
     delete memory.result['P01-03'];
     memory.session.expiresAt = Date.now() + 8 * 60 * 60 * 1000;
     persistPublisherSession();
@@ -596,7 +596,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         vendorReviews: normalizeVendorReviews(storedAccountRegistration?.vendorReviews),
       };
       memory.qualificationPreview = null;
-      memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'generated' };
+      memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' };
     }
     if (accountChanged || activeGameChanged) {
       loadPublisherWorkspaceForSession();
@@ -1148,17 +1148,32 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (!value || typeof value !== 'object') return value;
       return Object.fromEntries(Object.entries(value).filter(([key]) => !blockedKeys.has(key)));
     };
-    const secretFields = new Set(['secret', 'clientSecret', 'channelSecret', 'transientSecret']);
-    const rawKeyFields = new Set(['key', 'keys', 'rawKey', 'rawKeys', 'content', 'csv']);
+    const secretFields = new Set(['secret', 'clientSecret', 'channelSecret', 'transientSecret', 'issued', 'sold', 'redeemed', 'lastSalesImportedAt', 'shareRate', 'counts', 'clearingUntil']);
+    const rawKeyFields = new Set(['key', 'keys', 'rawKey', 'rawKeys', 'content', 'csv', 'keyFingerprints']);
+    const { sales, salesEvents, ...rest } = source;
+    const safeMetric = value => Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : 0;
     return {
-      ...source,
+      ...rest,
+      supplyTab:['channels','batches'].includes(source.supplyTab) ? source.supplyTab : 'channels',
       dialog:'',
       dialogChannelId:'',
       dialogBatchId:'',
-      channels:Array.isArray(source.channels) ? source.channels.map(item => strip(item, secretFields)) : [],
-      fileBatches:Array.isArray(source.fileBatches) ? source.fileBatches.map(item => strip(item, rawKeyFields)) : [],
+      channels:Array.isArray(source.channels) ? source.channels.map(item => {
+        const safe = strip(item, secretFields);
+        return safe?.status === 'clearing' ? { ...safe, status:'stopped' } : safe;
+      }) : [],
+      fileBatches:Array.isArray(source.fileBatches) ? source.fileBatches
+        .filter(item => ['downloaded','cancelled','expired','failed'].includes(item?.status))
+        .map(item => strip(item, rawKeyFields)) : [],
       downloads:Array.isArray(source.downloads) ? source.downloads.map(item => strip(item, rawKeyFields)) : [],
-      salesEvents:Array.isArray(source.salesEvents) ? source.salesEvents.map(item => strip(item, rawKeyFields)) : [],
+      keyMetrics:Array.isArray(source.keyMetrics) ? source.keyMetrics.map(item => ({
+        channelId:String(item?.channelId || ''),
+        skuId:String(item?.skuId || ''),
+        issued:safeMetric(item?.issued),
+        redeemed:safeMetric(item?.redeemed),
+        lastDeliveredAt:String(item?.lastDeliveredAt || ''),
+        lastRedeemedAt:String(item?.lastRedeemedAt || ''),
+      })) : [],
     };
   };
   const persistPublisherWorkspace = () => {
@@ -1175,11 +1190,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (publisherAccountContext && memory.session.authenticated && memory.session.accountKey) {
       const activeGameId = String(persistableWorkspace.selectedGame || memory.session.activeGameId || 'existing');
       memory.session.activeGameId = activeGameId;
-      publisherAccountContext.saveWorkspace(localStorage, memory.session.accountKey, publisherWorkspaceScopeKey, persistableWorkspace);
+      const saved = publisherAccountContext.saveWorkspace(localStorage, memory.session.accountKey, publisherWorkspaceScopeKey, persistableWorkspace);
       persistPublisherSession();
-      return;
+      return saved;
     }
-    if (!publisherAccountContext) writeStorage(localStorage, publisherWorkspaceStorageKey, persistableWorkspace);
+    if (!publisherAccountContext) return writeStorage(localStorage, publisherWorkspaceStorageKey, persistableWorkspace);
+    return false;
   };
   const restoreActiveHorizontalItem = (selector, previousLeft = 0) => {
     const scroller = root.querySelector(selector);
@@ -1199,10 +1215,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const currentGameNavigation = preserveScroll ? root.querySelector('.publisher-game-nav') : null;
     const gameNavigationLeft = currentGameNavigation?.scrollLeft || 0;
     memory.page[routeId] = { ...(memory.page[routeId] || {}), ...patch };
-    persistPublisherWorkspace();
+    const persisted = persistPublisherWorkspace();
     render();
     if (position) root.querySelector('.workspace')?.scrollTo({ ...position, behavior: 'instant' });
     if (currentGameNavigation) restoreActiveHorizontalItem('.publisher-game-nav', gameNavigationLeft);
+    return persisted;
   };
   const savePublisherPublication = async (draft, submit = false) => {
     const access = publisherAccess();
@@ -1374,9 +1391,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
   const createKeyFile = async ({ quantity, skuId, validUntil }) => {
     const keys = Array.from({ length:quantity }, createDemoKey);
-    const content = ['key,sku_id,valid_until', ...keys.map(key => `${key},${skuId},${validUntil}`)].join('\r\n');
-    const keyFingerprints = await Promise.all(keys.map(fingerprintKey));
-    return { content, keyFingerprints };
+    const content = ['cdkey,sku_id,valid_until', ...keys.map(key => `${key},${skuId},${validUntil}`)].join('\r\n');
+    const keyFingerprintDigest = await fingerprintKey(keys.join('\n'));
+    return { content, keyFingerprintDigest, fingerprintCount:keys.length };
   };
   const localDateToken = (date = new Date()) => [
     date.getFullYear(),
@@ -1399,88 +1416,34 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     } while (used.has(id));
     return id;
   };
-  const parseCsv = text => {
-    const rows = [];
-    let row = [];
-    let value = '';
-    let quoted = false;
-    const source = String(text || '').replace(/^\uFEFF/, '');
-    for (let index = 0; index < source.length; index += 1) {
-      const character = source[index];
-      if (character === '"') {
-        if (quoted && source[index + 1] === '"') { value += '"'; index += 1; }
-        else quoted = !quoted;
-      } else if (character === ',' && !quoted) {
-        row.push(value.trim());
-        value = '';
-      } else if ((character === '\n' || character === '\r') && !quoted) {
-        if (character === '\r' && source[index + 1] === '\n') index += 1;
-        row.push(value.trim());
-        if (row.some(cell => cell !== '')) rows.push(row);
-        row = [];
-        value = '';
-      } else value += character;
-    }
-    row.push(value.trim());
-    if (row.some(cell => cell !== '')) rows.push(row);
-    return rows;
-  };
   const channelDistributionState = () => window.PublisherChannelDistribution?.createState(memory.page['P02-01']?.channelDistribution || {})
     || memory.page['P02-01']?.channelDistribution
-    || { activeChannelId:'', dialog:'', dialogChannelId:'', channels:[], fileBatches:[], sales:[], salesEvents:[], downloads:[] };
+    || { activeChannelId:'', supplyTab:'channels', dialog:'', dialogChannelId:'', channels:[], fileBatches:[], downloads:[], keyMetrics:[] };
   const updateChannelDistribution = (next, options = { preserveScroll:true }) => {
     const current = channelDistributionState();
     const value = typeof next === 'function' ? next(current) : next;
-    updatePublisherWorkspace({ channelDistribution:value, channelDialog:'' }, options);
+    return updatePublisherWorkspace({ channelDistribution:value, channelDialog:'' }, options);
   };
   const findChannel = (state, channelId) => (state.channels || []).find(item => item.id === channelId);
-  const salesGroupKey = item => `${item.skuId || ''}\u0000${String(item.currency || '').toUpperCase()}`;
-  const aggregateImportedSales = (state, channelId) => {
-    const events = (state.salesEvents || []).filter(item => item.channelId === channelId);
-    const grouped = new Map();
-    events.forEach(item => {
-      const key = salesGroupKey(item);
-      if (!grouped.has(key)) grouped.set(key, []);
-      grouped.get(key).push(item);
-    });
-    const previousRows = Array.isArray(state.sales) ? state.sales : [];
-    const previousByKey = new Map(previousRows.filter(item => item.channelId === channelId).map(item => [salesGroupKey(item), item]));
-    const importedKeys = new Set(grouped.keys());
-    const preserved = previousRows.filter(item => item.channelId !== channelId || !importedKeys.has(salesGroupKey(item)));
-    const channel = findChannel(state, channelId) || {};
-    const rows = [...grouped.entries()].map(([key, records]) => {
-      const [skuId, currency] = key.split('\u0000');
-      const previous = previousByKey.get(key) || {};
-      const sales = records.filter(item => item.event === 'sale');
-      const refunds = records.filter(item => item.event === 'refund');
-      const chargebacks = records.filter(item => item.event === 'chargeback');
-      const salesAmount = sales.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      const refundAmount = refunds.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      const chargebackAmount = chargebacks.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      const netAmount = Math.round((salesAmount - refundAmount - chargebackAmount - Number(previous.taxAmount || 0)) * 100) / 100;
-      const shareRate = Number.isFinite(Number(previous.shareRate)) ? Number(previous.shareRate) : Number.isFinite(Number(channel.shareRate)) ? Number(channel.shareRate) : null;
-      const isDlc = /^DLC-/i.test(skuId);
-      return {
-        ...previous,
-        id:previous.id || `SALE-${channelId}-${skuId}-${currency}`,
-        channelId,
-        productType:previous.productType || (isDlc ? 'dlc' : 'base'),
-        productName:previous.productName || (isDlc ? '远航季票' : '星海远征'),
-        skuId,
-        currency,
-        sold:sales.length,
-        refunds:refunds.length,
-        chargebacks:chargebacks.length,
-        salesAmount:Math.round(salesAmount * 100) / 100,
-        netAmount,
-        estimatedRevenue:shareRate === null ? null : Math.round(netAmount * shareRate * 100) / 100,
-        shareRate,
-        dataStatus:'updated',
-        updatedAt:nowText(),
-      };
-    });
-    return [...preserved, ...rows];
+  const upsertKeyMetric = (items = [], change = {}) => {
+    const channelId = String(change.channelId || '');
+    const skuId = String(change.skuId || '');
+    const found = items.find(item => item.channelId === channelId && item.skuId === skuId);
+    if (!found) return [...items, {
+      channelId,
+      skuId,
+      issued:Math.max(0, Number(change.issuedDelta || 0)),
+      redeemed:0,
+      lastDeliveredAt:String(change.lastDeliveredAt || ''),
+      lastRedeemedAt:'',
+    }];
+    return items.map(item => item === found ? {
+      ...item,
+      issued:Math.max(0, Number(item.issued || 0) + Number(change.issuedDelta || 0)),
+      lastDeliveredAt:String(change.lastDeliveredAt || item.lastDeliveredAt || ''),
+    } : item);
   };
+  const safeFileNamePart = value => String(value || '渠道').replace(/[\\/:*?"<>|\s]+/g, '').slice(0, 32) || '渠道';
   const downloadTextFile = (fileName, content, type = 'text/plain;charset=utf-8') => {
     const url = URL.createObjectURL(new Blob([content], { type }));
     const link = document.createElement('a');
@@ -1847,6 +1810,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         updatePublisherWorkspace({ gameTab:'release', gameSection:requested, channelDialog:'', channelDistribution:{ ...distribution, dialog:'', dialogChannelId:'', dialogBatchId:'' } }, { preserveScroll:true });
         return;
       }
+      if (route.id === 'P02-01' && action === 'channel-supply-tab') {
+        const supplyTab = event.currentTarget.dataset.channelSupplyTab;
+        if (!['channels','batches'].includes(supplyTab)) return;
+        updateChannelDistribution(state => ({ ...state, supplyTab, dialog:'', dialogChannelId:'', dialogBatchId:'' }));
+        return;
+      }
       if (route.id === 'P02-01' && action === 'channel-create-open') {
         if (publisherAccessForView().qualificationStatus !== 'approved') return;
         memory.channelTransientSecret = '';
@@ -1875,7 +1844,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const channel = {
           id:createChannelId(current.channels), name, delivery:delivery === 'file' ? 'file' : 'api', productIds:[productId],
           status:'active', credentialStatus:delivery === 'file' ? 'not_applicable' : 'pending', clientId:'', secretLast4:'',
-          issued:0, sold:0, redeemed:0, lastDeliveredAt:'', createdAt:nowText(),
+          lastDeliveredAt:'', createdAt:nowText(),
         };
         updateChannelDistribution({ ...current, activeChannelId:channel.id, dialog:'', dialogChannelId:'', channels:[...(current.channels || []), channel] });
         resultMessage(route.id, '渠道已创建', delivery === 'file' ? '可按实际需要创建兑换码文件。' : '请进入“管理接入”生成渠道级凭证。');
@@ -1885,7 +1854,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const current = channelDistributionState();
         const channelId = event.currentTarget.dataset.channelId || current.dialogChannelId || current.activeChannelId;
         const channel = findChannel(current, channelId);
-        if (!channel || channel.delivery !== 'api' || ['clearing','stopped','risk_paused'].includes(channel.status)) return;
+        if (!channel || channel.delivery !== 'api' || ['stopped','risk_paused'].includes(channel.status)) return;
         if (action === 'channel-api-generate' && !channel.clientId) {
           const secret = createChannelSecret();
           memory.channelTransientSecret = secret;
@@ -1912,7 +1881,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const current = channelDistributionState();
         const channelId = current.dialogChannelId || event.currentTarget.dataset.channelId || current.activeChannelId;
         const channel = findChannel(current, channelId);
-        if (!channel?.clientId || ['clearing','stopped'].includes(channel.status)) return;
+        if (!channel?.clientId || channel.status === 'stopped') return;
         const secret = createChannelSecret();
         memory.channelTransientSecret = secret;
         updateChannelDistribution({
@@ -1971,24 +1940,17 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         if (error) error.textContent = '';
         const dateToken = localDateToken();
         const batchId = retryBatch?.id || `FB-${dateToken}-${String((current.fileBatches || []).length + 1).padStart(4, '0')}`;
-        const fileName = `gamehub_${channelId}_${batchId}.csv`;
-        const startedAt = nowText();
-        const generatingBatch = {
-          id:batchId, channelId, skuId, quantity, validUntil, status:'generating',
-          createdAt:retryBatch?.createdAt || startedAt,
-        };
-        updateChannelDistribution({
-          ...current, dialog:'', dialogChannelId:'', dialogBatchId:'',
-          fileBatches:retryBatch
-            ? current.fileBatches.map(item => item.id === batchId ? generatingBatch : item)
-            : [...(current.fileBatches || []), generatingBatch],
-        });
+        const fileName = `盖世游戏兑换码_${safeFileNamePart(channel.name)}_${batchId}.csv`;
+        const generateButton = event.currentTarget;
+        const originalButtonText = generateButton.textContent;
+        generateButton.disabled = true;
+        generateButton.setAttribute('aria-busy', 'true');
+        generateButton.textContent = memory.shell.language === 'en' ? 'Generating…' : '生成中…';
         try {
           const generated = await createKeyFile({ quantity, skuId, validUntil });
           const latest = channelDistributionState();
           const latestChannel = findChannel(latest, channelId);
-          const latestBatch = (latest.fileBatches || []).find(item => item.id === batchId);
-          if (latestChannel?.status !== 'active' || latestBatch?.status !== 'generating') {
+          if (latestChannel?.status !== 'active') {
             resultMessage(route.id, '文件生成已取消', '渠道已停止供货或该批次已取消，未下载或暴露任何 Key。', 'warning');
             return;
           }
@@ -1996,73 +1958,47 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           const downloadedAt = nowText();
           const download = {
             id:`DL-${dateToken}-${String((latest.downloads || []).length + 1).padStart(4, '0')}`,
-            channelId, batchId, skuId, fileName, quantity, keyFingerprints:generated.keyFingerprints,
+            channelId, batchId, skuId, fileName, quantity, keyFingerprintDigest:generated.keyFingerprintDigest, fingerprintCount:generated.fingerprintCount,
             downloadedAt, downloadedBy:'当前开发者', downloadCount:1,
           };
-          const nextBatch = { ...latestBatch, status:'downloaded', downloadedAt };
-          updateChannelDistribution({
+          const nextBatch = {
+            id:batchId, channelId, skuId, quantity, validUntil, status:'downloaded',
+            createdAt:retryBatch?.createdAt || downloadedAt, downloadedAt,
+          };
+          const persisted = updateChannelDistribution({
             ...latest, dialog:'', dialogChannelId:'', dialogBatchId:'',
-            fileBatches:latest.fileBatches.map(item => item.id === batchId ? nextBatch : item),
+            fileBatches:retryBatch
+              ? (latest.fileBatches || []).map(item => item.id === batchId ? nextBatch : item)
+              : [nextBatch, ...(latest.fileBatches || [])],
             downloads:[...(latest.downloads || []), download],
-            channels:latest.channels.map(item => item.id === channelId ? { ...item, issued:Number(item.issued || 0) + quantity, lastDeliveredAt:downloadedAt } : item),
+            channels:latest.channels.map(item => item.id === channelId ? { ...item, lastDeliveredAt:downloadedAt } : item),
+            keyMetrics:upsertKeyMetric(latest.keyMetrics, { channelId, skuId, issuedDelta:quantity, lastDeliveredAt:downloadedAt }),
           });
-          resultMessage(route.id, 'Key 文件已下载', '明文 Key 只存在于本次下载文件；平台仅保存 SHA-256 指纹和下载审计。');
-        } catch {
+          resultMessage(route.id, '兑换码文件已下载', persisted === false ? '文件已交付，但浏览器未能保存审计记录；请联系平台处理。' : '平台仅保存批次指纹和下载记录，不回显明文。', persisted === false ? 'warning' : 'success');
+        } catch (generationError) {
           const latest = channelDistributionState();
           const latestChannel = findChannel(latest, channelId);
-          const latestBatch = (latest.fileBatches || []).find(item => item.id === batchId);
-          if (latestChannel?.status !== 'active' || latestBatch?.status !== 'generating') return;
+          if (latestChannel?.status !== 'active') return;
           const failedAt = nowText();
-          const failedBatch = { ...latestBatch, status:'failed', createdAt:latestBatch.createdAt || failedAt, failureReason:'浏览器无法完成安全随机数或文件生成' };
+          const failedBatch = {
+            id:batchId, channelId, skuId, quantity, validUntil, status:'failed',
+            createdAt:retryBatch?.createdAt || failedAt,
+            failureReason:generationError?.message || '浏览器无法完成安全随机数或文件生成',
+          };
           updateChannelDistribution({
-            ...latest, dialog:'', dialogChannelId:'', dialogBatchId:'',
-            fileBatches:latest.fileBatches.map(item => item.id === batchId ? failedBatch : item),
+            ...latest, dialog:'file-create', dialogChannelId:channelId, dialogBatchId:batchId,
+            fileBatches:retryBatch
+              ? (latest.fileBatches || []).map(item => item.id === batchId ? failedBatch : item)
+              : [failedBatch, ...(latest.fileBatches || [])],
           });
           resultMessage(route.id, '文件生成失败', '请确认浏览器支持安全随机数与 SHA-256 后重试。', 'danger');
-        }
-        return;
-      }
-      if (route.id === 'P02-01' && action === 'channel-file-download') {
-        const current = channelDistributionState();
-        const batchId = event.currentTarget.dataset.batchId || '';
-        const batch = (current.fileBatches || []).find(item => item.id === batchId);
-        const channel = batch && findChannel(current, batch.channelId);
-        if (!batch || batch.status !== 'ready' || channel?.status !== 'active') return;
-        const fileName = `gamehub_${batch.channelId}_${batch.id}.csv`;
-        try {
-          const generated = await createKeyFile({ quantity:Number(batch.quantity || 0), skuId:batch.skuId, validUntil:batch.validUntil });
-          const latest = channelDistributionState();
-          const latestChannel = findChannel(latest, batch.channelId);
-          const latestBatch = (latest.fileBatches || []).find(item => item.id === batch.id);
-          if (latestChannel?.status !== 'active' || latestBatch?.status !== 'ready') {
-            resultMessage(route.id, '下载已取消', '渠道已停止供货或该批次已取消，未下载或暴露任何 Key。', 'warning');
-            return;
+        } finally {
+          if (generateButton.isConnected) {
+            generateButton.disabled = false;
+            generateButton.removeAttribute('aria-busy');
+            generateButton.textContent = originalButtonText;
           }
-          downloadTextFile(fileName, generated.content, 'text/csv;charset=utf-8');
-          const downloadedAt = nowText();
-          const record = { id:`DL-${localDateToken()}-${String((latest.downloads || []).length + 1).padStart(4, '0')}`, channelId:batch.channelId, batchId:batch.id, skuId:batch.skuId, fileName, quantity:Number(batch.quantity || 0), keyFingerprints:generated.keyFingerprints, downloadedAt, downloadedBy:'当前开发者', downloadCount:1 };
-          updateChannelDistribution({
-            ...latest,
-            fileBatches:latest.fileBatches.map(item => item.id === batch.id ? { ...item, status:'downloaded', downloadedAt } : item),
-            downloads:[...(latest.downloads || []), record],
-            channels:latest.channels.map(item => item.id === batch.channelId ? { ...item, issued:Number(item.issued || 0) + Number(batch.quantity || 0), lastDeliveredAt:downloadedAt } : item),
-          });
-          resultMessage(route.id, 'Key 文件已下载', '下载成功后批次已记为已暴露。');
-        } catch {
-          const latest = channelDistributionState();
-          const latestChannel = findChannel(latest, batch.channelId);
-          const latestBatch = (latest.fileBatches || []).find(item => item.id === batch.id);
-          if (latestChannel?.status !== 'active' || latestBatch?.status !== 'ready') return;
-          updateChannelDistribution({ ...latest, fileBatches:latest.fileBatches.map(item => item.id === batch.id ? { ...item, status:'failed', failureReason:'文件生成失败' } : item) });
-          resultMessage(route.id, '文件生成失败', '请稍后重试。', 'danger');
         }
-        return;
-      }
-      if (route.id === 'P02-01' && action === 'channel-file-cancel') {
-        const current = channelDistributionState();
-        const batchId = event.currentTarget.dataset.batchId || '';
-        updateChannelDistribution({ ...current, fileBatches:(current.fileBatches || []).map(item => item.id === batchId && item.status === 'ready' ? { ...item, status:'cancelled', cancelledAt:nowText() } : item) });
-        resultMessage(route.id, '文件批次已取消', '未下载 Key 未暴露，不会再提供下载。', 'warning');
         return;
       }
       if (route.id === 'P02-01' && (action === 'channel-download-record' || action === 'channel-file-record')) {
@@ -2101,32 +2037,19 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const stoppedAt = nowText();
         updateChannelDistribution({
           ...current, dialog:'', dialogChannelId:'', dialogBatchId:'',
-          channels:current.channels.map(item => item.id === channelId ? { ...item, status:'clearing', stoppedAt, clearingUntil:addCalendarDays(new Date(), 30), credentialStatus:item.delivery === 'api' ? 'disabled' : item.credentialStatus } : item),
-          fileBatches:(current.fileBatches || []).map(item => item.channelId === channelId && ['generating','ready'].includes(item.status) ? { ...item, status:'cancelled', cancelledAt:stoppedAt } : item),
+          channels:current.channels.map(item => {
+            if (item.id !== channelId) return item;
+            const { clearingUntil, ...rest } = item;
+            return { ...rest, status:'stopped', stoppedAt, credentialStatus:item.delivery === 'api' ? 'disabled' : item.credentialStatus };
+          }),
         });
-        resultMessage(route.id, '渠道进入清算中', '新供货已停止；未来 30 个自然日继续接收销售、退款和拒付补报。', 'warning');
+        resultMessage(route.id, '合作已停止', '新发码和新文件已关闭；已下载 Key 仍按原有效期兑换。', 'warning');
         return;
       }
       if (route.id === 'P02-01' && (action === 'channel-anomaly' || action === 'channel-anomaly-detail')) {
         const current = channelDistributionState();
         const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
         updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'anomaly', dialogChannelId:channelId });
-        return;
-      }
-      if (route.id === 'P02-01' && action === 'channel-sales-import') {
-        const target = root.querySelector('[data-channel-sales-target]');
-        const channelId = String(target?.value || event.currentTarget.dataset.channelId || '').trim();
-        const current = channelDistributionState();
-        const channel = findChannel(current, channelId);
-        if (!channel || channel.delivery !== 'file') {
-          resultMessage(route.id, '请选择文件渠道', '导入前请先选择销售清单所属的文件渠道。', 'warning');
-          target?.focus();
-          return;
-        }
-        const inputs = [...root.querySelectorAll('[data-channel-sales-file]')];
-        const input = (channelId ? inputs.find(item => item.dataset.channelId === channelId) : null) || inputs[0];
-        if (input) input.dataset.channelId = channelId;
-        input?.click();
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-help-open') {
@@ -2308,7 +2231,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         window.name = '';
         memory.shell.helpOpen = false;
         memory.qualificationPreview = null;
-        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'generated' };
+        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' };
         navigate({ routeId: 'P01-01', state: 'default' });
         return;
       }
@@ -2698,7 +2621,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           memory.registration = { ...memory.registration, vendorReviews:cloneJson(memory.demoPreview.vendorReviewsSnapshot) };
         }
         memory.qualificationPreview = null;
-        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'generated' };
+        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' };
         delete memory.result[route.id];
         clearPreviewQuery();
         render();
@@ -2724,11 +2647,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (action === 'demo-channel-batch-outcome') {
         const nextOutcome = event.currentTarget.dataset.demoChannelBatchOutcome || '';
-        if (!['generated','pending','rejected','failed'].includes(nextOutcome)) return;
+        if (!['downloaded','cancelled','expired','failed'].includes(nextOutcome)) return;
         if (publisherAccessForView().qualificationStatus !== 'approved') memory.qualificationPreview = buildQualificationPreview('approved');
         memory.demoPreview = { ...memory.demoPreview, open:false, channelBatchOutcome:nextOutcome };
         const distribution = channelDistributionState();
-        const previewStatus = { generated:'downloaded', pending:'generating', rejected:'cancelled', failed:'failed' }[nextOutcome];
+        const previewStatus = nextOutcome;
         memory.page['P02-01'] = {
           ...(memory.page['P02-01'] || {}),
           workspaceView:'game', selectedGame:'existing', gameSection:'channel-supply', channelDialog:'',
@@ -3128,7 +3051,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           const fileName = 'KEY-20260903-002.csv';
           target.innerHTML = `<div class="one-time-result" data-one-time-key-download><strong>批次生成成功</strong><span>${fileName}；请在当前有效窗口内完成一次性下载，成功后不能再次查看 Key 明文。</span><div class="form-actions">${c.button({ label: '下载 CSV', variant: 'primary', action: 'download-key-csv' })}</div></div>`;
           target.querySelector('[data-portal-action="download-key-csv"]')?.addEventListener('click', clickEvent => {
-            downloadTextFile(fileName, 'key,batch_id,game_id,sku_id\nGH-7Q4M-9K2P-X8LW,KEY-20260903-002,GAME-48291,SKU-CN-001\n', 'text/csv;charset=utf-8');
+            downloadTextFile(fileName, `key,batch_id,game_id,sku_id\n${createDemoKey()},KEY-20260903-002,GAME-48291,SKU-CN-001\n`, 'text/csv;charset=utf-8');
             clickEvent.currentTarget.closest('[data-one-time-key-download]')?.remove();
             resultMessage(route.id, 'CSV 已下载', '一次性下载窗口已关闭，后续仅保留批次信息和审计记录。');
           });
@@ -3357,81 +3280,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       confirm.disabled = !event.currentTarget.checked;
       confirm.setAttribute('aria-disabled', String(confirm.disabled));
     });
-    root.querySelectorAll('[data-channel-sales-file]').forEach(input => input.addEventListener('change', async event => {
-      const file = event.currentTarget.files?.[0];
-      if (!file) return;
-      const current = channelDistributionState();
-      const channelId = String(root.querySelector('[data-channel-sales-target]')?.value || event.currentTarget.dataset.channelId || '').trim();
-      const channel = findChannel(current, channelId);
-      if (!channel || channel.delivery !== 'file') {
-        resultMessage(route.id, '导入失败', '请选择文件供货渠道后再导入销售清单。', 'warning');
-        event.currentTarget.value = '';
-        return;
-      }
-      try {
-        const rows = parseCsv(await file.text());
-        const required = ['channel_order_id','key','sku_id','amount','currency','sold_at','event'];
-        const headers = rows.shift() || [];
-        const indexes = Object.fromEntries(required.map(name => [name, headers.indexOf(name)]));
-        if (required.some(name => indexes[name] < 0)) throw new Error(`缺少必填列：${required.filter(name => indexes[name] < 0).join('、')}`);
-        const persistedEvents = Array.isArray(current.salesEvents) ? current.salesEvents : [];
-        const duplicateIds = new Set(persistedEvents.filter(item => item.channelId === channelId).map(item => `${item.channelOrderId}\u0000${item.event}`));
-        const soldFingerprints = new Set(persistedEvents
-          .filter(item => item.channelId === channelId && item.event === 'sale' && item.keyFingerprint)
-          .map(item => item.keyFingerprint));
-        const downloads = (current.downloads || []).filter(item => item.channelId === channelId);
-        const fingerprintOwners = new Map();
-        downloads.forEach(download => (download.keyFingerprints || []).forEach(fingerprint => fingerprintOwners.set(fingerprint, download.skuId || '')));
-        if (!fingerprintOwners.size) throw new Error('该渠道暂无已下载 Key，无法校验销售清单归属');
-        const additions = [];
-        let duplicateCount = 0;
-        for (let index = 0; index < rows.length; index += 1) {
-          const cells = rows[index];
-          const line = index + 2;
-          const channelOrderId = String(cells[indexes.channel_order_id] || '').trim();
-          const rawKey = String(cells[indexes.key] || '').trim();
-          const skuId = String(cells[indexes.sku_id] || '').trim();
-          const amount = Number(cells[indexes.amount]);
-          const currency = String(cells[indexes.currency] || '').trim().toUpperCase();
-          const soldAt = String(cells[indexes.sold_at] || '').trim();
-          const saleEvent = String(cells[indexes.event] || '').trim().toLowerCase();
-          if (!channelOrderId || !rawKey || !skuId || !Number.isFinite(amount) || amount < 0 || !/^[A-Z]{3}$/.test(currency) || !soldAt || !['sale','refund','chargeback'].includes(saleEvent)) {
-            throw new Error(`第 ${line} 行字段不完整或格式错误`);
-          }
-          const keyFingerprint = await fingerprintKey(rawKey);
-          const ownerSku = fingerprintOwners.get(keyFingerprint);
-          if (ownerSku === undefined) throw new Error(`第 ${line} 行 Key 不属于该渠道的已下载文件`);
-          if (ownerSku && ownerSku !== skuId) throw new Error(`第 ${line} 行 SKU 与 Key 文件不一致`);
-          const duplicateId = `${channelOrderId}\u0000${saleEvent}`;
-          if (duplicateIds.has(duplicateId)) { duplicateCount += 1; continue; }
-          if (saleEvent === 'sale' && soldFingerprints.has(keyFingerprint)) { duplicateCount += 1; continue; }
-          duplicateIds.add(duplicateId);
-          if (saleEvent === 'sale') soldFingerprints.add(keyFingerprint);
-          additions.push({
-            id:`SE-${channelId}-${channelOrderId}-${saleEvent}`,
-            channelId, channelOrderId, event:saleEvent, skuId, currency, amount, soldAt, keyFingerprint, importedAt:nowText(),
-          });
-        }
-        if (!additions.length) {
-          resultMessage(route.id, '没有新增销售记录', duplicateCount ? `已跳过 ${duplicateCount} 条重复记录。` : '文件中没有可导入的数据。', 'info');
-          event.currentTarget.value = '';
-          return;
-        }
-        const salesEvents = [...persistedEvents, ...additions];
-        const withEvents = { ...current, salesEvents };
-        const sales = aggregateImportedSales(withEvents, channelId);
-        const sold = salesEvents.filter(item => item.channelId === channelId && item.event === 'sale').length;
-        updateChannelDistribution({
-          ...withEvents, sales,
-          channels:current.channels.map(item => item.id === channelId ? { ...item, sold, lastSalesImportedAt:nowText() } : item),
-        });
-        resultMessage(route.id, `已导入 ${additions.length} 条销售记录`, duplicateCount ? `${channel.name}：另有 ${duplicateCount} 条重复记录已跳过。` : `${channel.name}：Key 已转换为 SHA-256 指纹，页面和存储均不保留明文。`);
-      } catch (error) {
-        resultMessage(route.id, '导入失败', error?.message || '销售清单无法读取，请检查 CSV 格式。', 'danger');
-      } finally {
-        event.currentTarget.value = '';
-      }
-    }));
     root.querySelector('[data-help-search-input]')?.addEventListener('keydown', event => {
       if (event.key !== 'Enter') return;
       event.preventDefault();
@@ -3626,7 +3474,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       : memory.registration;
     const channelMode = route.id === 'P02-01' && String(memory.page['P02-01']?.gameSection || '').startsWith('channel-');
     const financeMode = financeRouteIds.has(route.id);
-    const channelBatchOutcome = memory.demoPreview.channelBatchOutcome || 'generated';
+    const channelBatchOutcome = memory.demoPreview.channelBatchOutcome || 'downloaded';
     const demoState = {
       open: memory.demoPreview.open,
       qualificationStatus: qualificationForView.status || 'unsubmitted',
@@ -3637,7 +3485,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       active: financeMode
         ? Boolean(memory.qualificationPreview)
         : channelMode
-        ? Boolean(channelBatchOutcome !== 'generated')
+        ? Boolean(channelBatchOutcome !== 'downloaded')
         : Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
       financeMode,
       financeScenario: memory.finance?.demoScenario || 'exhaustive',
