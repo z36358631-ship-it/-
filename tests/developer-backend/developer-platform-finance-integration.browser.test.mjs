@@ -34,7 +34,7 @@ async function seedAccount() {
 async function open(route = '/P15-01') {
   await seedAccount();
   await page.goto(url(route),{ waitUntil:'load' });
-  if (route === '/P01-01' || route.startsWith('/P15-')) await page.locator('[data-testid="developer-finance-demo"]').waitFor();
+  if (route.startsWith('/P15-')) await page.locator('[data-testid="developer-finance-demo"]').waitFor();
   else await page.locator('[data-publisher-workspace]').waitFor();
 }
 
@@ -48,8 +48,8 @@ afterEach(async () => { await page?.close(); page = null; });
 after(async () => { await browser?.close(); });
 
 test('财务整合版复用平台壳且财务侧栏保持白底浅灰选中',async () => {
-  await open('/P01-01');
-  assert.equal(new URL(page.url()).hash,'#/P01-01');
+  await open('/P15-01');
+  assert.equal(new URL(page.url()).hash,'#/P15-01');
   assert.equal(await page.getByRole('heading',{ level:1,name:'财务主体' }).count(),1);
   assert.equal(await page.locator('.top-bar').count(),1);
   assert.equal(await page.locator('.side-nav').count(),1);
@@ -67,25 +67,38 @@ test('财务整合版复用平台壳且财务侧栏保持白底浅灰选中',asy
   assert.notEqual(colors.background,'rgb(31, 58, 104)');
 });
 
-test('财务主体主入口在无登录存储时仍可使用左侧导航',async () => {
+test('新开发者首次进入保持未登录状态，财务路由回落登录页',async () => {
   await page.goto(url('/P01-01'),{ waitUntil:'load' });
   await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
   await page.reload({ waitUntil:'load' });
-  await page.locator('[data-testid="developer-finance-demo"]').waitFor();
+  await page.locator('[data-public-landing]').waitFor();
+  assert.equal(new URL(page.url()).hash,'#/P01-01');
+  assert.equal(await page.getByRole('button',{ name:'登录',exact:true }).count(),1);
+  assert.equal(await page.locator('[data-testid="developer-finance-demo"]').count(),0);
+  assert.equal(await page.locator('.side-nav').count(),0);
+
+  await page.goto(url('/P15-01'),{ waitUntil:'load' });
+  await page.waitForFunction(() => location.hash === '#/P01-01');
+  await page.locator('[data-public-landing]').waitFor();
+  assert.equal(await page.locator('[data-testid="developer-finance-demo"]').count(),0);
+});
+
+test('企业认证通过后可使用财务与工作台左侧导航',async () => {
+  await open('/P15-01');
 
   await page.locator('.side-nav').getByText('对账结算',{ exact:true }).click();
   await page.waitForFunction(() => location.hash === '#/P15-02');
   await page.getByRole('heading',{ level:1,name:'对账结算' }).waitFor();
 
   await page.locator('.side-nav').getByText('财务主体',{ exact:true }).click();
-  await page.waitForFunction(() => location.hash === '#/P01-01');
+  await page.waitForFunction(() => location.hash === '#/P15-01');
   await page.getByRole('heading',{ level:1,name:'财务主体' }).waitFor();
 
   await page.getByRole('button',{ name:'厂商设置',exact:true }).click();
   await page.waitForFunction(() => location.hash === '#/P02-01');
   await page.locator('[data-publisher-page="vendor"]').waitFor();
 
-  await page.goto(url('/P01-01'),{ waitUntil:'load' });
+  await page.goto(url('/P15-01'),{ waitUntil:'load' });
   await page.locator('[data-testid="developer-finance-demo"]').waitFor();
   await page.locator('.side-nav').getByText('游戏管理',{ exact:true }).click();
   await page.waitForFunction(() => location.hash === '#/P02-01');
@@ -244,7 +257,7 @@ test('旧财务次级路由安全回落到对账结算',async () => {
   assert.doesNotMatch(await page.locator('.context-bar').innerText(),/对账流水/);
   assert.doesNotMatch(await page.locator('.page-header').innerText(),/对账流水/);
   assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/第三方支付商|交易流水/);
-  assert.deepEqual(await page.evaluate(() => window.PublisherFinance.routeIds),['P01-01','P15-01','P15-02']);
+  assert.deepEqual(await page.evaluate(() => window.PublisherFinance.routeIds),['P15-01','P15-02']);
   assert.equal(await page.evaluate(() => JSON.parse(document.getElementById('portal-routes').textContent).some(route => route.id === 'P15-03')),false);
 });
 
@@ -253,7 +266,7 @@ test('财务整合版离开对账页后清空批量选择',async () => {
   await page.locator('[data-d15-settlement-row][data-status="pending"] input[type="checkbox"]').first().check();
   assert.equal(await page.getByRole('button',{ name:'批量确认' }).getAttribute('aria-disabled'),null);
   await page.locator('.side-nav').getByText('财务主体',{ exact:true }).click();
-  await page.waitForFunction(() => location.hash === '#/P01-01');
+  await page.waitForFunction(() => location.hash === '#/P15-01');
   await page.locator('.side-nav').getByText('对账结算',{ exact:true }).click();
   await page.waitForFunction(() => location.hash === '#/P15-02');
   assert.equal(await page.locator('[data-d15-select-statement]:checked').count(),0);
