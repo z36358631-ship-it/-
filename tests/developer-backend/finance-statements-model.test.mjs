@@ -115,7 +115,12 @@ test('阶梯规则按财务主体保存，校验档位与有效时间', () => {
   ] }), /不得高于/);
   assert.throws(() => model.saveTierRule(state, { ...base, tiers:[{ fromMinor:0, toMinor:null, platformRate:101 }] }), /0%-100%/);
   assert.throws(() => model.saveTierRule(state, { ...base, tiers:[{ fromMinor:0, toMinor:null, platformRate:'' }] }), /填写平台分成比例/);
-  assert.throws(() => model.saveTierRule(state, { ...base, tiers:[{ fromMinor:0, toMinor:'', platformRate:30 },{ fromMinor:'', toMinor:null, platformRate:20 }] }), /金额范围无效/);
+  assert.throws(() => model.saveTierRule(state, { ...base, tiers:[
+    { fromMinor:0, toMinor:'', platformRate:30 },{ fromMinor:100000000, toMinor:null, platformRate:20 },
+  ] }), /第 1 档金额范围无效/);
+  assert.throws(() => model.saveTierRule(state, { ...base, tiers:[
+    { fromMinor:0, toMinor:100000000, platformRate:30 },{ fromMinor:'', toMinor:null, platformRate:20 },
+  ] }), /第 2 档金额范围无效/);
   assert.throws(() => model.saveTierRule(state, { ...base, startDate:'2026-09-15', tiers:[{ fromMinor:0, toMinor:null, platformRate:30 }] }), /每月 1 日/);
   assert.throws(() => model.saveTierRule(state, { ...base, endDate:'2026-08-01', tiers:[{ fromMinor:0, toMinor:null, platformRate:30 }] }), /结束日期/);
   const saved = model.saveTierRule(state, { ...base, operator:'李然', operatedAt:'2026-09-15 10:00', tiers:[

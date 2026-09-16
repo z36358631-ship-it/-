@@ -137,7 +137,7 @@ const createTierDraft = financialEntityId => {
 
 - [ ] **Step 5: Render the compact tier-card grid**
 
-Render each card as `[lower] < 月结算金额（元） ≤ [upper]` plus a compact rate input. The first lower boundary is static `0`; the last upper boundary is static `不设上限`; finite upper bounds and rates are editable.
+Render each card as `[lower] < 月结算金额（元） ≤ [upper]` plus a compact rate input. Only the first lower boundary is static `0`, and only the last upper boundary is static `不设上限`; every other lower and upper boundary is editable.
 
 - [ ] **Step 6: Implement add/delete boundary normalization**
 
@@ -149,7 +149,7 @@ const normalizeDraftBounds = tiers => tiers.map((tier,index) => ({
 }));
 ```
 
-Adding inserts an empty finite tier before the current no-limit tier and retains the original no-limit rate. Only middle tiers can be deleted; deletion reconnects adjacent boundaries while preserving fixed `0` and no-limit boundaries.
+Adding inserts a finite tier before the current no-limit tier, prefills its lower boundary from the former last tier, leaves its upper boundary and rate empty, and retains the original no-limit rate. Only middle tiers can be deleted; saving validates that every adjacent upper and lower boundary is equal.
 
 - [ ] **Step 7: Add responsive compact-grid styles**
 
