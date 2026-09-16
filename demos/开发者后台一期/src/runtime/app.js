@@ -325,7 +325,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const dataDashboard = window.PublisherDataDashboard?.createState(restoredPublisherWorkspace.dataDashboard || {}) || restoredPublisherWorkspace.dataDashboard || {};
     const channelDistribution = window.PublisherChannelDistribution?.createState(restoredPublisherWorkspace.channelDistribution || {})
       || restoredPublisherWorkspace.channelDistribution
-      || { activeChannelId:'', supplyTab:'channels', dialog:'', dialogChannelId:'', channels:[], fileBatches:[], downloads:[], keyMetrics:[] };
+      || { activeChannelId:'', supplyTab:'channels', dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'', channels:[], batches:[], downloads:[], keyMetrics:[] };
     dataDashboard.selectedOrder = '';
     dataDashboard.scopeOpen = false;
     delete dataDashboard.__keywordTimer;
@@ -1164,19 +1164,19 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ...rest,
       supplyTab:['channels','batches'].includes(source.supplyTab) ? source.supplyTab : 'channels',
       dialog:'',
+      dialogTargetType:'',
       dialogChannelId:'',
       dialogBatchId:'',
       channels:Array.isArray(source.channels) ? source.channels.map(item => {
         const safe = strip(item, secretFields);
         return safe?.status === 'clearing' ? { ...safe, status:'stopped' } : safe;
       }) : [],
-      fileBatches:Array.isArray(source.fileBatches) ? source.fileBatches
-        .filter(item => ['downloaded','cancelled','expired','failed'].includes(item?.status))
-        .map(item => strip(item, rawKeyFields)) : [],
+      batches:Array.isArray(source.batches) ? source.batches.map(item => strip(strip(item, secretFields), rawKeyFields)) : [],
       downloads:Array.isArray(source.downloads) ? source.downloads.map(item => strip(item, rawKeyFields)) : [],
       keyMetrics:Array.isArray(source.keyMetrics) ? source.keyMetrics.map(item => ({
         channelId:String(item?.channelId || ''),
         skuId:String(item?.skuId || ''),
+        delivery:item?.delivery === 'api' ? 'api' : 'file',
         issued:safeMetric(item?.issued),
         redeemed:safeMetric(item?.redeemed),
         periods:Array.isArray(item?.periods) ? item.periods.map(period => ({
@@ -1429,24 +1429,78 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     } while (used.has(id));
     return id;
   };
+  const createBatchId = batches => {
+    const prefix = `BT-${localDateToken()}-`;
+    const used = new Set((batches || []).map(item => String(item.id || '')));
+    let sequence = (batches || []).reduce((max, item) => {
+      const match = String(item.id || '').match(/^BT-\d{8}-(\d+)$/);
+      return match ? Math.max(max, Number(match[1]) || 0) : max;
+    }, 0) + 1;
+    let id = `${prefix}${String(sequence).padStart(4, '0')}`;
+    while (used.has(id)) {
+      sequence += 1;
+      id = `${prefix}${String(sequence).padStart(4, '0')}`;
+    }
+    return id;
+  };
+  const createDownloadId = downloads => `DL-${localDateToken()}-${String((downloads || []).length + 1).padStart(4, '0')}`;
   const channelDistributionState = () => window.PublisherChannelDistribution?.createState(memory.page['P02-01']?.channelDistribution || {})
     || memory.page['P02-01']?.channelDistribution
-    || { activeChannelId:'', supplyTab:'channels', dialog:'', dialogChannelId:'', channels:[], fileBatches:[], downloads:[], keyMetrics:[] };
+    || { activeChannelId:'', supplyTab:'channels', dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'', channels:[], batches:[], downloads:[], keyMetrics:[] };
   const updateChannelDistribution = (next, options = { preserveScroll:true }) => {
     const current = channelDistributionState();
     const value = typeof next === 'function' ? next(current) : next;
     return updatePublisherWorkspace({ channelDistribution:value, channelDialog:'' }, options);
   };
   const findChannel = (state, channelId) => (state.channels || []).find(item => item.id === channelId);
-  const channelCanSupply = channel => window.PublisherChannelDistribution?.canSupply(channel) === true;
+  const findBatch = (state, batchId) => (state.batches || []).find(item => item.id === batchId);
+  const channelCanSupply = channel => {
+    if (!channel || channel.deleted || channel.enabled === false) return false;
+    const external = window.PublisherChannelDistribution?.effectiveChannelStatus;
+    return typeof external === 'function' ? external(channel) === 'active' : true;
+  };
+  const batchCanSupply = (batch, channel) => {
+    if (!batch || batch.deleted || batch.enabled === false || !channelCanSupply(channel)) return false;
+    const external = window.PublisherChannelDistribution?.canSupplyBatch;
+    if (typeof external === 'function') return external(batch, channel) === true;
+    const now = Date.now();
+    if (batch.effectiveStart && new Date(batch.effectiveStart).getTime() > now) return false;
+    if (batch.effectiveEnd && new Date(batch.effectiveEnd).getTime() < now) return false;
+    return true;
+  };
+  const batchCoreLocked = batch => {
+    const external = window.PublisherChannelDistribution?.batchCoreLocked;
+    if (typeof external === 'function') return external(batch || {}) === true;
+    return batch?.delivery === 'file'
+      ? batch?.supplyState === 'downloaded'
+      : Number(batch?.apiStats?.succeeded || 0) > 0;
+  };
+  const patchChannel = (state, channelId, patch) => ({
+    ...state,
+    channels:(state.channels || []).map(item => item.id === channelId ? { ...item, ...patch, updatedAt:nowText() } : item),
+  });
+  const patchBatch = (state, batchId, patch) => ({
+    ...state,
+    batches:(state.batches || []).map(item => item.id === batchId ? { ...item, ...patch, updatedAt:nowText() } : item),
+  });
+  const hasEnabledApiBatch = (state, { channelId, skuId, excludeBatchId = '' }) => (state.batches || []).some(item => (
+    item.id !== excludeBatchId
+    && !item.deleted
+    && item.enabled !== false
+    && item.delivery === 'api'
+    && item.channelId === channelId
+    && item.skuId === skuId
+  ));
   const upsertKeyMetric = (items = [], change = {}) => {
     const channelId = String(change.channelId || '');
     const skuId = String(change.skuId || '');
-    const found = items.find(item => item.channelId === channelId && item.skuId === skuId);
+    const delivery = change.delivery === 'api' ? 'api' : 'file';
+    const found = items.find(item => item.channelId === channelId && item.skuId === skuId && (item.delivery === 'api' ? 'api' : 'file') === delivery);
     const issuedAt = String(change.lastDeliveredAt || localIsoDate()).slice(0,10);
     if (!found) return [...items, {
       channelId,
       skuId,
+      delivery,
       issued:Math.max(0, Number(change.issuedDelta || 0)),
       redeemed:0,
       periods:[{ issuedAt, issued:Math.max(0,Number(change.issuedDelta || 0)), redeemed:0 }],
@@ -1470,6 +1524,79 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+  const formValue = selector => String(root.querySelector(selector)?.value || '').trim();
+  const setFormError = (inputSelector, errorSelector, message = '') => {
+    const input = root.querySelector(inputSelector);
+    const error = root.querySelector(errorSelector);
+    if (message) input?.setAttribute('aria-invalid', 'true');
+    else input?.removeAttribute('aria-invalid');
+    if (error) error.textContent = message;
+    if (message) input?.focus();
+    return !message;
+  };
+  const dateRangeIsValid = (start, end) => !start || !end || new Date(end).getTime() >= new Date(start).getTime();
+  const readChannelForm = () => ({
+    name:formValue('[data-channel-name]'),
+    effectiveStart:formValue('[data-channel-effective-start]'),
+    effectiveEnd:formValue('[data-channel-effective-end]'),
+    enabled:formValue('[data-channel-enabled]') !== 'false',
+    note:formValue('[data-channel-note]').slice(0, 200),
+  });
+  const readBatchForm = fallback => {
+    const delivery = formValue('[data-channel-batch-delivery]') || fallback?.delivery || 'file';
+    return {
+      name:formValue('[data-channel-batch-name]'),
+      channelId:formValue('[data-channel-batch-channel]') || fallback?.channelId || '',
+      skuId:formValue('[data-channel-batch-sku]') || fallback?.skuId || '',
+      delivery,
+      quantity:delivery === 'file' ? Number(formValue('[data-channel-batch-quantity]') || fallback?.quantity || 0) : null,
+      validUntil:delivery === 'file' ? (formValue('[data-channel-batch-valid-until]') || fallback?.validUntil || '') : '',
+      effectiveStart:formValue('[data-channel-batch-effective-start]') || fallback?.effectiveStart || '',
+      effectiveEnd:formValue('[data-channel-batch-effective-end]'),
+      enabled:formValue('[data-channel-batch-enabled]') !== 'false',
+      note:formValue('[data-channel-batch-note]').slice(0, 200),
+    };
+  };
+  const validateChannelForm = (value, state, excludeChannelId = '') => {
+    setFormError('[data-channel-name]', '[data-channel-name-error]');
+    setFormError('[data-channel-effective-start]', '[data-channel-effective-start-error]');
+    setFormError('[data-channel-effective-end]', '[data-channel-effective-end-error]');
+    if (value.name.length < 1 || value.name.length > 50) return setFormError('[data-channel-name]', '[data-channel-name-error]', '请输入 1—50 个字的渠道名称。');
+    if ((state.channels || []).some(item => item.id !== excludeChannelId && !item.deleted && String(item.name || '').trim().toLocaleLowerCase() === value.name.toLocaleLowerCase())) {
+      return setFormError('[data-channel-name]', '[data-channel-name-error]', '该渠道名称已存在。');
+    }
+    if (!value.effectiveStart) return setFormError('[data-channel-effective-start]', '[data-channel-effective-start-error]', '请选择合作开始时间。');
+    if (!dateRangeIsValid(value.effectiveStart, value.effectiveEnd)) return setFormError('[data-channel-effective-end]', '[data-channel-effective-end-error]', '结束时间不能早于开始时间。');
+    return true;
+  };
+  const validateBatchForm = (value, state, excludeBatchId = '') => {
+    [
+      ['[data-channel-batch-name]', '[data-channel-batch-name-error]'],
+      ['[data-channel-batch-delivery]', '[data-channel-batch-delivery-error]'],
+      ['[data-channel-batch-effective-start]', '[data-channel-batch-effective-start-error]'],
+      ['[data-channel-batch-effective-end]', '[data-channel-batch-effective-end-error]'],
+      ['[data-channel-batch-quantity]', '[data-channel-batch-quantity-error]'],
+      ['[data-channel-batch-valid-until]', '[data-channel-batch-valid-until-error]'],
+    ].forEach(([input, error]) => setFormError(input, error));
+    if (value.name.length < 1 || value.name.length > 50) return setFormError('[data-channel-batch-name]', '[data-channel-batch-name-error]', '请输入 1—50 个字的批次名称。');
+    const channel = findChannel(state, value.channelId);
+    if (!channel || channel.deleted) return setFormError('[data-channel-batch-channel]', '[data-channel-batch-channel-error]', '请选择有效渠道。');
+    if (!value.skuId) return setFormError('[data-channel-batch-sku]', '[data-channel-batch-sku-error]', '请选择销售项。');
+    if (!['file', 'api'].includes(value.delivery)) return setFormError('[data-channel-batch-delivery]', '[data-channel-batch-delivery-error]', '请选择供给方式。');
+    if (!value.effectiveStart) return setFormError('[data-channel-batch-effective-start]', '[data-channel-batch-effective-start-error]', '请选择生效开始时间。');
+    if (!dateRangeIsValid(value.effectiveStart, value.effectiveEnd)) return setFormError('[data-channel-batch-effective-end]', '[data-channel-batch-effective-end-error]', '结束时间不能早于开始时间。');
+    if (value.delivery === 'file' && (!Number.isInteger(value.quantity) || value.quantity < 1 || value.quantity > 100000)) {
+      return setFormError('[data-channel-batch-quantity]', '[data-channel-batch-quantity-error]', '请输入 1—100,000 的整数。');
+    }
+    if (value.delivery === 'file' && !value.validUntil) return setFormError('[data-channel-batch-valid-until]', '[data-channel-batch-valid-until-error]', '请选择 Key 有效期。');
+    if (value.delivery === 'file' && value.validUntil < value.effectiveStart.slice(0, 10)) {
+      return setFormError('[data-channel-batch-valid-until]', '[data-channel-batch-valid-until-error]', 'Key 有效期不能早于批次生效时间。');
+    }
+    if (value.delivery === 'api' && value.enabled && hasEnabledApiBatch(state, { channelId:value.channelId, skuId:value.skuId, excludeBatchId })) {
+      return setFormError('[data-channel-batch-delivery]', '[data-channel-batch-delivery-error]', '同一渠道和销售项已有启用中的 API 批次。');
+    }
+    return true;
   };
   const openCdkeyTab = index => {
     const targetModule = modules.find(item => item.id === '02');
@@ -1824,13 +1951,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         if (requested === 'analytics' && !publisherAccessForView().canViewPublisherData) return;
         memory.channelTransientSecret = '';
         const distribution = channelDistributionState();
-        updatePublisherWorkspace({ gameTab:'release', gameSection:requested, channelDialog:'', channelDistribution:{ ...distribution, dialog:'', dialogChannelId:'', dialogBatchId:'' } }, { preserveScroll:true });
+        updatePublisherWorkspace({ gameTab:'release', gameSection:requested, channelDialog:'', channelDistribution:{ ...distribution, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' } }, { preserveScroll:true });
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-supply-tab') {
         const supplyTab = event.currentTarget.dataset.channelSupplyTab;
         if (!['channels','batches'].includes(supplyTab)) return;
-        updateChannelDistribution(state => ({ ...state, supplyTab, dialog:'', dialogChannelId:'', dialogBatchId:'' }));
+        updateChannelDistribution(state => ({ ...state, supplyTab, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' }));
         return;
       }
       if (route.id === 'P02-01' && ['channel-filter-submit','channel-filter-reset'].includes(action)) {
@@ -1839,318 +1966,425 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         if (!key) return;
         const defaults = scope === 'distribution'
           ? { channelId:'', start:'2026-08-18', end:'2026-09-16' }
-          : { channelId:'', start:'', end:'' };
+          : scope === 'batches'
+            ? { keyword:'', channelId:'', delivery:'', status:'', start:'', end:'' }
+            : { keyword:'', status:'', start:'', end:'' };
         const form = root.querySelector(`[data-channel-filter-form="${scope}"]`);
-        const filters = action === 'channel-filter-reset' ? defaults : {
+        const filters = action === 'channel-filter-reset' ? defaults : scope === 'distribution' ? {
           channelId:String(form?.querySelector('[data-channel-filter-keyword]')?.value || '').trim(),
+          start:String(form?.querySelector('[data-channel-filter-start]')?.value || ''),
+          end:String(form?.querySelector('[data-channel-filter-end]')?.value || ''),
+        } : scope === 'batches' ? {
+          keyword:String(form?.querySelector('[data-channel-filter-batch-keyword]')?.value || '').trim(),
+          channelId:String(form?.querySelector('[data-channel-filter-channel-id]')?.value || ''),
+          delivery:String(form?.querySelector('[data-channel-filter-delivery]')?.value || ''),
+          status:String(form?.querySelector('[data-channel-filter-status]')?.value || ''),
+          start:String(form?.querySelector('[data-channel-filter-start]')?.value || ''),
+          end:String(form?.querySelector('[data-channel-filter-end]')?.value || ''),
+        } : {
+          keyword:String(form?.querySelector('[data-channel-filter-keyword]')?.value || '').trim(),
+          status:String(form?.querySelector('[data-channel-filter-status]')?.value || ''),
           start:String(form?.querySelector('[data-channel-filter-start]')?.value || ''),
           end:String(form?.querySelector('[data-channel-filter-end]')?.value || ''),
         };
         updateChannelDistribution(state => ({ ...state, [key]:filters }));
         return;
       }
-      if (route.id === 'P02-01' && action === 'channel-create-open') {
-        if (publisherAccessForView().qualificationStatus !== 'approved') return;
-        memory.channelTransientSecret = '';
-        updateChannelDistribution(state => ({ ...state, dialog:'create', dialogChannelId:'', dialogBatchId:'' }));
+      if (route.id === 'P02-01' && action === 'channel-view') {
+        const current = channelDistributionState();
+        const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
+        if (!findChannel(current, channelId)) return;
+        updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'channel-view', dialogTargetType:'channel', dialogChannelId:channelId, dialogBatchId:'' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-edit-open') {
+        const current = channelDistributionState();
+        const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
+        const channel = findChannel(current, channelId);
+        if (!channel || channel.deleted) return;
+        updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'edit', dialogTargetType:'channel', dialogChannelId:channelId, dialogBatchId:'' });
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-create-submit') {
-        const nameInput = root.querySelector('[data-channel-name]');
-        const nameError = root.querySelector('[data-channel-name-error]');
-        const name = String(nameInput?.value || '').trim();
-        const productId = root.querySelector('[data-channel-product]')?.value || 'BASE-GLOBAL';
-        const delivery = root.querySelector('[data-channel-delivery]')?.value || 'api';
-        const effectiveStartInput = root.querySelector('[data-channel-effective-start]');
-        const effectiveEndInput = root.querySelector('[data-channel-effective-end]');
-        const effectiveStart = String(effectiveStartInput?.value || '');
-        const effectiveEnd = String(effectiveEndInput?.value || '');
-        const startError = root.querySelector('[data-channel-effective-start-error]');
-        const endError = root.querySelector('[data-channel-effective-end-error]');
-        const quantityInput = root.querySelector('[data-channel-first-batch-quantity]');
-        const quantityError = root.querySelector('[data-channel-first-batch-error]');
-        const quantity = Number(quantityInput?.value || 0);
-        if (name.length < 1 || name.length > 50) {
-          nameInput?.setAttribute('aria-invalid', 'true');
-          if (nameError) nameError.textContent = memory.shell.language === 'en' ? 'Enter a channel name between 1 and 50 characters.' : '请输入 1—50 个字的渠道名称。';
-          nameInput?.focus();
-          return;
-        }
-        if (!effectiveStart) {
-          effectiveStartInput?.setAttribute('aria-invalid','true');
-          if (startError) startError.textContent = memory.shell.language === 'en' ? 'Select an effective start time.' : '请选择生效开始时间。';
-          effectiveStartInput?.focus();
-          return;
-        }
-        if (effectiveEnd && new Date(effectiveEnd).getTime() < new Date(effectiveStart).getTime()) {
-          effectiveEndInput?.setAttribute('aria-invalid','true');
-          if (endError) endError.textContent = memory.shell.language === 'en' ? 'The end date cannot be earlier than the start date.' : '结束日期不能早于开始日期。';
-          effectiveEndInput?.focus();
-          return;
-        }
-        if (delivery === 'file' && (!Number.isInteger(quantity) || quantity < 1 || quantity > 100000)) {
-          quantityInput?.setAttribute('aria-invalid','true');
-          if (quantityError) quantityError.textContent = memory.shell.language === 'en' ? 'Enter an integer from 1 to 100,000.' : '请输入 1—100,000 的整数。';
-          quantityInput?.focus();
-          return;
-        }
         const current = channelDistributionState();
-        if ((current.channels || []).some(item => String(item.name).trim().toLocaleLowerCase() === name.toLocaleLowerCase())) {
-          nameInput?.setAttribute('aria-invalid', 'true');
-          if (nameError) nameError.textContent = memory.shell.language === 'en' ? 'This channel name is already in use.' : '该渠道名称已存在，请更换后再试。';
-          nameInput?.focus();
-          return;
-        }
+        const value = readChannelForm();
+        if (!validateChannelForm(value, current)) return;
+        const createdAt = nowText();
         const channel = {
-          id:createChannelId(current.channels), name, delivery:delivery === 'file' ? 'file' : 'api', productIds:[productId],
-          status:'active', credentialStatus:delivery === 'file' ? 'not_applicable' : 'pending', clientId:'', secretLast4:'',
-          effectiveStart, effectiveEnd, lastDeliveredAt:'', createdAt:nowText(),
+          id:createChannelId(current.channels),
+          ...value,
+          deleted:false,
+          createdAt,
+          updatedAt:createdAt,
         };
-        if (delivery !== 'file') {
-          updateChannelDistribution({ ...current, activeChannelId:channel.id, dialog:'', dialogChannelId:'', channels:[...(current.channels || []), channel] });
-          resultMessage(route.id, '渠道已创建', '请进入“管理接入”生成渠道级凭证。');
+        updateChannelDistribution({
+          ...current,
+          activeChannelId:channel.id,
+          dialog:'',
+          dialogTargetType:'',
+          dialogChannelId:'',
+          channels:[channel, ...(current.channels || [])],
+        });
+        resultMessage(route.id, '渠道已创建', '可前往“批次管理”创建供给批次。');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-edit-submit') {
+        const current = channelDistributionState();
+        const channelId = event.currentTarget.dataset.channelId || current.dialogChannelId;
+        const channel = findChannel(current, channelId);
+        if (!channel || channel.deleted) return;
+        const value = readChannelForm();
+        if (!validateChannelForm(value, current, channelId)) return;
+        const next = patchChannel(current, channelId, value);
+        updateChannelDistribution({ ...next, activeChannelId:channelId, dialog:'', dialogTargetType:'', dialogChannelId:'' });
+        resultMessage(route.id, '渠道已保存', '合作资料和状态已更新。');
+        return;
+      }
+      if (route.id === 'P02-01' && (action === 'channel-disable-open' || action === 'channel-delete-open')) {
+        const current = channelDistributionState();
+        const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
+        const channel = findChannel(current, channelId);
+        if (!channel || channel.deleted) return;
+        updateChannelDistribution({
+          ...current,
+          activeChannelId:channelId,
+          dialog:action === 'channel-delete-open' ? 'delete-confirm' : 'disable-confirm',
+          dialogTargetType:'channel',
+          dialogChannelId:channelId,
+          dialogBatchId:'',
+        });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-enable') {
+        const current = channelDistributionState();
+        const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
+        const channel = findChannel(current, channelId);
+        if (!channel || channel.deleted || channel.enabled !== false) return;
+        updateChannelDistribution(patchChannel(current, channelId, { enabled:true }));
+        resultMessage(route.id, '渠道已启用', '未删除、未结束且已启用的批次恢复供给。');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-disable-confirm') {
+        const current = channelDistributionState();
+        if (current.dialogTargetType === 'batch') {
+          const batchId = current.dialogBatchId || event.currentTarget.dataset.batchId;
+          if (!findBatch(current, batchId)) return;
+          const next = patchBatch(current, batchId, { enabled:false });
+          updateChannelDistribution({ ...next, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' });
+          resultMessage(route.id, '批次已停用', '已停止新供给；已发 Key 继续有效。', 'warning');
           return;
         }
-        const createButton = event.currentTarget;
-        const originalButtonText = createButton.textContent;
-        const dateToken = localDateToken();
-        const batchId = `FB-${dateToken}-${String((current.fileBatches || []).length + 1).padStart(4,'0')}`;
-        const fileName = `盖世游戏兑换码_${safeFileNamePart(channel.name)}_${batchId}.csv`;
-        const validUntil = effectiveEnd ? effectiveEnd.slice(0,10) : addCalendarDays(new Date(effectiveStart),180);
-        createButton.disabled = true;
-        createButton.setAttribute('aria-busy','true');
-        createButton.textContent = memory.shell.language === 'en' ? 'Generating…' : '生成中…';
+        const channelId = current.dialogChannelId || event.currentTarget.dataset.channelId;
+        if (!findChannel(current, channelId)) return;
+        const next = patchChannel(current, channelId, { enabled:false });
+        updateChannelDistribution({ ...next, dialog:'', dialogTargetType:'', dialogChannelId:'' });
+        resultMessage(route.id, '渠道已停用', '该渠道的批次已停止新供给；已发 Key 继续有效。', 'warning');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'channel-delete-confirm') {
+        const current = channelDistributionState();
+        if (current.dialogTargetType === 'batch') {
+          const batchId = current.dialogBatchId || event.currentTarget.dataset.batchId;
+          const batch = findBatch(current, batchId);
+          if (!batch) return;
+          const supplied = batchCoreLocked(batch);
+          const batches = supplied
+            ? (current.batches || []).map(item => item.id === batchId ? { ...item, enabled:false, deleted:true, deletedAt:nowText(), updatedAt:nowText() } : item)
+            : (current.batches || []).filter(item => item.id !== batchId);
+          updateChannelDistribution({ ...current, batches, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' });
+          resultMessage(route.id, '批次已删除', supplied ? '已保留历史 Key、下载、兑换和审计记录。' : '未发生供给，该批次已删除。', 'warning');
+          return;
+        }
+        const channelId = current.dialogChannelId || event.currentTarget.dataset.channelId;
+        if (!findChannel(current, channelId)) return;
+        const next = patchChannel(current, channelId, { enabled:false, deleted:true, deletedAt:nowText() });
+        updateChannelDistribution({ ...next, activeChannelId:'', dialog:'', dialogTargetType:'', dialogChannelId:'' });
+        resultMessage(route.id, '渠道已删除', '当前列表不再显示；历史批次、Key 和记录已保留。', 'warning');
+        return;
+      }
+      if (route.id === 'P02-01' && (action === 'batch-create-open' || action === 'channel-batch-create-open')) {
+        const current = channelDistributionState();
+        if (!(current.channels || []).some(item => !item.deleted)) {
+          resultMessage(route.id, '暂无可用渠道', '请先创建渠道。', 'warning');
+          return;
+        }
+        memory.channelTransientSecret = '';
+        updateChannelDistribution({ ...current, supplyTab:'batches', dialog:'batch-create', dialogTargetType:'batch', dialogChannelId:'', dialogBatchId:'' });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'batch-view') {
+        const current = channelDistributionState();
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch) return;
+        updateChannelDistribution({ ...current, activeChannelId:batch.channelId, dialog:'batch-view', dialogTargetType:'batch', dialogChannelId:batch.channelId, dialogBatchId:batchId });
+        return;
+      }
+      if (route.id === 'P02-01' && (action === 'batch-edit-open' || action === 'channel-batch-edit-open')) {
+        const current = channelDistributionState();
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch || batch.deleted) return;
+        updateChannelDistribution({ ...current, activeChannelId:batch.channelId, dialog:'batch-edit', dialogTargetType:'batch', dialogChannelId:batch.channelId, dialogBatchId:batchId });
+        return;
+      }
+      if (route.id === 'P02-01' && ['batch-create-submit', 'channel-batch-create-submit'].includes(action)) {
+        const current = channelDistributionState();
+        const value = readBatchForm();
+        if (!validateBatchForm(value, current)) return;
+        const createdAt = nowText();
+        const batch = {
+          id:createBatchId(current.batches),
+          ...value,
+          deleted:false,
+          supplyState:value.delivery === 'file' ? 'pending' : 'pending_credentials',
+          clientId:'',
+          secretLast4:'',
+          apiStats:value.delivery === 'api' ? { succeeded:0, failed:0 } : undefined,
+          apiCalls:value.delivery === 'api' ? [] : undefined,
+          createdAt,
+          updatedAt:createdAt,
+        };
+        updateChannelDistribution({
+          ...current,
+          supplyTab:'batches',
+          activeChannelId:batch.channelId,
+          dialog:'',
+          dialogTargetType:'',
+          dialogChannelId:'',
+          dialogBatchId:'',
+          batches:[batch, ...(current.batches || [])],
+        });
+        resultMessage(route.id, '批次已创建', batch.delivery === 'file' ? '点击“下载文件”生成本批兑换码。' : '点击“管理接入”生成 API 凭证。');
+        return;
+      }
+      if (route.id === 'P02-01' && ['batch-edit-submit', 'channel-batch-edit-submit'].includes(action)) {
+        const current = channelDistributionState();
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch || batch.deleted) return;
+        const locked = batchCoreLocked(batch);
+        const submitted = readBatchForm(batch);
+        const value = locked ? {
+          ...submitted,
+          channelId:batch.channelId,
+          skuId:batch.skuId,
+          delivery:batch.delivery,
+          quantity:batch.quantity,
+          validUntil:batch.validUntil,
+        } : submitted;
+        if (!validateBatchForm(value, current, batchId)) return;
+        const deliveryChanged = !locked && value.delivery !== batch.delivery;
+        const patch = {
+          ...value,
+          ...(deliveryChanged ? {
+            supplyState:value.delivery === 'file' ? 'pending' : 'pending_credentials',
+            clientId:'',
+            secretLast4:'',
+            apiStats:value.delivery === 'api' ? { succeeded:0, failed:0 } : undefined,
+            apiCalls:value.delivery === 'api' ? [] : undefined,
+          } : {}),
+        };
+        const next = patchBatch(current, batchId, patch);
+        updateChannelDistribution({ ...next, activeChannelId:value.channelId, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' });
+        resultMessage(route.id, '批次已保存', locked ? '已保留渠道、销售项、供给方式和数量等核心字段。' : '批次资料已更新。');
+        return;
+      }
+      if (route.id === 'P02-01' && ['batch-disable-open', 'batch-delete-open'].includes(action)) {
+        const current = channelDistributionState();
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch || batch.deleted) return;
+        updateChannelDistribution({
+          ...current,
+          activeChannelId:batch.channelId,
+          dialog:action === 'batch-delete-open' ? 'delete-confirm' : 'disable-confirm',
+          dialogTargetType:'batch',
+          dialogChannelId:batch.channelId,
+          dialogBatchId:batchId,
+        });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'batch-enable') {
+        const current = channelDistributionState();
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch || batch.deleted || batch.enabled !== false) return;
+        if (batch.delivery === 'api' && hasEnabledApiBatch(current, { channelId:batch.channelId, skuId:batch.skuId, excludeBatchId:batch.id })) {
+          resultMessage(route.id, '无法启用', '同一渠道和销售项已有启用中的 API 批次。', 'warning');
+          return;
+        }
+        updateChannelDistribution(patchBatch(current, batchId, { enabled:true }));
+        resultMessage(route.id, '批次已启用', channelCanSupply(findChannel(current, batch.channelId)) ? '已恢复新供给。' : '批次已启用，渠道恢复后才会生效。');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'batch-disable-confirm') {
+        const current = channelDistributionState();
+        const batchId = current.dialogBatchId || event.currentTarget.dataset.batchId;
+        if (!findBatch(current, batchId)) return;
+        const next = patchBatch(current, batchId, { enabled:false });
+        updateChannelDistribution({ ...next, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' });
+        resultMessage(route.id, '批次已停用', '已停止新供给；已发 Key 继续有效。', 'warning');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'batch-delete-confirm') {
+        const current = channelDistributionState();
+        const batchId = current.dialogBatchId || event.currentTarget.dataset.batchId;
+        const batch = findBatch(current, batchId);
+        if (!batch) return;
+        const supplied = batchCoreLocked(batch);
+        const batches = supplied
+          ? (current.batches || []).map(item => item.id === batchId ? { ...item, enabled:false, deleted:true, deletedAt:nowText(), updatedAt:nowText() } : item)
+          : (current.batches || []).filter(item => item.id !== batchId);
+        updateChannelDistribution({ ...current, batches, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' });
+        resultMessage(route.id, '批次已删除', supplied ? '已保留历史 Key、下载、兑换和审计记录。' : '未发生供给，该批次已删除。', 'warning');
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'batch-download') {
+        const current = channelDistributionState();
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        const channel = findChannel(current, batch?.channelId);
+        if (!batch || batch.delivery !== 'file' || batch.supplyState !== 'pending') return;
+        if (!batchCanSupply(batch, channel)) {
+          resultMessage(route.id, '当前不可下载', '请检查渠道、批次状态和生效时间。', 'warning');
+          return;
+        }
+        const downloadButton = event.currentTarget;
+        const originalText = downloadButton.textContent;
+        downloadButton.disabled = true;
+        downloadButton.setAttribute('aria-busy', 'true');
+        downloadButton.textContent = '生成中…';
         try {
-          const generated = await createKeyFile({ quantity, skuId:productId, validUntil });
+          const generated = await createKeyFile({ quantity:batch.quantity, skuId:batch.skuId, validUntil:batch.validUntil });
+          const latest = channelDistributionState();
+          const latestBatch = findBatch(latest, batchId);
+          const latestChannel = findChannel(latest, latestBatch?.channelId);
+          if (!latestBatch || latestBatch.supplyState !== 'pending' || !batchCanSupply(latestBatch, latestChannel)) {
+            resultMessage(route.id, '下载已停止', '生成期间状态已变更，未下载任何 Key。', 'warning');
+            return;
+          }
+          const fileName = `盖世游戏兑换码_${safeFileNamePart(latestChannel.name)}_${latestBatch.id}.csv`;
           downloadTextFile(fileName, generated.content, 'text/csv;charset=utf-8');
           const downloadedAt = nowText();
-          const batch = { id:batchId, channelId:channel.id, skuId:productId, quantity, validUntil, status:'downloaded', createdAt:downloadedAt, downloadedAt };
-          const download = { id:`DL-${dateToken}-${String((current.downloads || []).length + 1).padStart(4,'0')}`, channelId:channel.id, batchId, skuId:productId, fileName, quantity, keyFingerprintDigest:generated.keyFingerprintDigest, fingerprintCount:generated.fingerprintCount, downloadedAt, downloadedBy:'当前开发者', downloadCount:1 };
-          const persisted = updateChannelDistribution({
-            ...current,
-            activeChannelId:channel.id,
-            dialog:'',
-            dialogChannelId:'',
-            channels:[...(current.channels || []), { ...channel, lastDeliveredAt:downloadedAt }],
-            fileBatches:[batch, ...(current.fileBatches || [])],
-            downloads:[...(current.downloads || []), download],
-            keyMetrics:upsertKeyMetric(current.keyMetrics, { channelId:channel.id, skuId:productId, issuedDelta:quantity, lastDeliveredAt:downloadedAt }),
+          updateChannelDistribution({
+            ...latest,
+            batches:(latest.batches || []).map(item => item.id === batchId ? { ...item, supplyState:'downloaded', downloadedAt, lastSuppliedAt:downloadedAt, updatedAt:downloadedAt } : item),
+            downloads:[...(latest.downloads || []), {
+              id:createDownloadId(latest.downloads),
+              channelId:latestBatch.channelId,
+              batchId:latestBatch.id,
+              skuId:latestBatch.skuId,
+              fileName,
+              quantity:latestBatch.quantity,
+              keyFingerprintDigest:generated.keyFingerprintDigest,
+              fingerprintCount:generated.fingerprintCount,
+              downloadedAt,
+              downloadedBy:'当前开发者',
+              downloadCount:1,
+            }],
+            keyMetrics:upsertKeyMetric(latest.keyMetrics, { channelId:latestBatch.channelId, skuId:latestBatch.skuId, delivery:'file', issuedDelta:latestBatch.quantity, lastDeliveredAt:downloadedAt }),
           });
-          resultMessage(route.id, '渠道已创建，首批文件已下载', persisted === false ? '浏览器未能保存下载记录，请联系平台处理。' : '平台保存批次指纹和下载记录，不保存明文兑换码。', persisted === false ? 'warning' : 'success');
-        } catch {
-          resultMessage(route.id, '创建失败', '兑换码文件未生成，渠道也未创建，请重试。', 'danger');
+          resultMessage(route.id, '兑换码文件已下载', '页面不保存或回显明文 Key。');
+        } catch (error) {
+          resultMessage(route.id, '文件生成失败', '请确认浏览器支持安全随机数和 SHA-256 后重试。', 'danger');
         } finally {
-          if (createButton.isConnected) {
-            createButton.disabled = false;
-            createButton.removeAttribute('aria-busy');
-            createButton.textContent = originalButtonText;
+          if (downloadButton.isConnected) {
+            downloadButton.disabled = false;
+            downloadButton.removeAttribute('aria-busy');
+            downloadButton.textContent = originalText;
           }
         }
         return;
       }
-      if (route.id === 'P02-01' && (action === 'channel-api-access' || action === 'channel-api-generate')) {
+      if (route.id === 'P02-01' && ['batch-api-access', 'batch-api-generate'].includes(action)) {
         const current = channelDistributionState();
-        const channelId = event.currentTarget.dataset.channelId || current.dialogChannelId || current.activeChannelId;
-        const channel = findChannel(current, channelId);
-        if (!channel || channel.delivery !== 'api' || ['stopped','risk_paused'].includes(channel.status)) return;
-        if (action === 'channel-api-generate' && !channel.clientId) {
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch || batch.deleted || batch.delivery !== 'api') return;
+        if (action === 'batch-api-generate' && !batch.clientId) {
           const secret = createChannelSecret();
+          const clientId = `cli_${batch.id.replace(/[^a-z0-9]/gi, '').toLowerCase()}_${localDateToken()}`;
           memory.channelTransientSecret = secret;
-          const clientId = `cli_${channel.id.replace(/[^a-z0-9]/gi, '').toLowerCase()}_${localDateToken()}`;
-          updateChannelDistribution({
-            ...current, activeChannelId:channelId, dialog:'api-access', dialogChannelId:channelId,
-            channels:current.channels.map(item => item.id === channelId ? { ...item, clientId, secretLast4:secret.slice(-4), credentialStatus:'active', rotatedAt:nowText() } : item),
+          const next = patchBatch(current, batchId, {
+            clientId,
+            secretLast4:secret.slice(-4),
+            credentialStatus:'active',
+            supplyState:'active',
+            rotatedAt:nowText(),
           });
+          updateChannelDistribution({ ...next, activeChannelId:batch.channelId, dialog:'api-access', dialogTargetType:'batch', dialogChannelId:batch.channelId, dialogBatchId:batchId });
         } else {
           memory.channelTransientSecret = '';
-          updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'api-access', dialogChannelId:channelId });
+          updateChannelDistribution({ ...current, activeChannelId:batch.channelId, dialog:'api-access', dialogTargetType:'batch', dialogChannelId:batch.channelId, dialogBatchId:batchId });
         }
         return;
       }
-      if (route.id === 'P02-01' && action === 'channel-api-rotate') {
+      if (route.id === 'P02-01' && action === 'batch-api-rotate') {
         const current = channelDistributionState();
-        const channelId = event.currentTarget.dataset.channelId || current.dialogChannelId || current.activeChannelId;
-        if (!findChannel(current, channelId)?.clientId) return;
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch?.clientId || batch.deleted || batch.delivery !== 'api') return;
         memory.channelTransientSecret = '';
-        updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'api-rotate', dialogChannelId:channelId });
+        updateChannelDistribution({ ...current, activeChannelId:batch.channelId, dialog:'api-rotate', dialogTargetType:'batch', dialogChannelId:batch.channelId, dialogBatchId:batchId });
         return;
       }
-      if (route.id === 'P02-01' && action === 'channel-api-rotate-confirm') {
+      if (route.id === 'P02-01' && action === 'batch-api-rotate-confirm') {
         const current = channelDistributionState();
-        const channelId = current.dialogChannelId || event.currentTarget.dataset.channelId || current.activeChannelId;
-        const channel = findChannel(current, channelId);
-        if (!channel?.clientId || channel.status === 'stopped') return;
+        const batchId = current.dialogBatchId || event.currentTarget.dataset.batchId;
+        const batch = findBatch(current, batchId);
+        if (!batch?.clientId || batch.deleted || batch.delivery !== 'api') return;
         const secret = createChannelSecret();
         memory.channelTransientSecret = secret;
-        updateChannelDistribution({
-          ...current, activeChannelId:channelId, dialog:'api-access', dialogChannelId:channelId,
-          channels:current.channels.map(item => item.id === channelId ? { ...item, secretLast4:secret.slice(-4), credentialStatus:'active', rotatedAt:nowText() } : item),
-        });
-        resultMessage(route.id, '密钥已轮换', '旧 Secret 已立即失效；新 Secret 仅在当前弹窗显示一次。', 'warning');
+        const next = patchBatch(current, batchId, { secretLast4:secret.slice(-4), credentialStatus:'active', rotatedAt:nowText() });
+        updateChannelDistribution({ ...next, activeChannelId:batch.channelId, dialog:'api-access', dialogTargetType:'batch', dialogChannelId:batch.channelId, dialogBatchId:batchId });
+        resultMessage(route.id, '密钥已轮换', '旧 Secret 已失效；新 Secret 仅在当前弹窗显示一次。', 'warning');
         return;
       }
-      if (route.id === 'P02-01' && ['channel-client-id-copy','channel-secret-copy'].includes(action)) {
+      if (route.id === 'P02-01' && ['batch-client-id-copy', 'batch-secret-copy'].includes(action)) {
         const current = channelDistributionState();
-        const channelId = event.currentTarget.dataset.channelId || current.dialogChannelId || current.activeChannelId;
-        const channel = findChannel(current, channelId);
-        const value = action === 'channel-client-id-copy' ? channel?.clientId : memory.channelTransientSecret;
+        const batch = findBatch(current, event.currentTarget.dataset.batchId || current.dialogBatchId);
+        const value = action === 'batch-client-id-copy' ? batch?.clientId : memory.channelTransientSecret;
         if (!value || !navigator.clipboard?.writeText) {
-          resultMessage(route.id, '复制失败', action === 'channel-secret-copy' && !value ? 'Secret 已隐藏；如已遗失，请轮换密钥。' : '当前浏览器未授予剪贴板权限，请手动选择内容。', 'warning');
+          resultMessage(route.id, '复制失败', action === 'batch-secret-copy' && !value ? 'Secret 已隐藏；如已遗失，请轮换密钥。' : '当前浏览器未授予剪贴板权限。', 'warning');
           return;
         }
         try {
           await navigator.clipboard.writeText(value);
-          resultMessage(route.id, action === 'channel-secret-copy' ? 'Secret 已复制' : 'client_id 已复制', '请通过安全方式交付给渠道方。');
+          resultMessage(route.id, action === 'batch-secret-copy' ? 'Secret 已复制' : 'client_id 已复制', '请通过安全方式交付给渠道方。');
         } catch {
-          resultMessage(route.id, '复制失败', '当前浏览器未授予剪贴板权限，请手动选择内容。', 'warning');
+          resultMessage(route.id, '复制失败', '当前浏览器未授予剪贴板权限。', 'warning');
         }
         return;
       }
-      if (route.id === 'P02-01' && (action === 'channel-file-create' || action === 'channel-file-retry')) {
+      if (route.id === 'P02-01' && ['batch-api-simulate', 'batch-api-simulate-success', 'batch-api-call-success'].includes(action)) {
         const current = channelDistributionState();
-        const retryBatchId = event.currentTarget.dataset.batchId || '';
-        const retryBatch = (current.fileBatches || []).find(item => item.id === retryBatchId);
-        const channelId = event.currentTarget.dataset.channelId || retryBatch?.channelId || current.activeChannelId;
-        const channel = findChannel(current, channelId);
-        if (!channel || channel.delivery !== 'file' || !channelCanSupply(channel)) {
-          resultMessage(route.id, '当前不可创建文件', '请检查渠道生效时间和合作状态。', 'warning');
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        const channel = findChannel(current, batch?.channelId);
+        if (!batch?.clientId || batch.delivery !== 'api' || !batchCanSupply(batch, channel)) {
+          resultMessage(route.id, '接口取码失败', '请检查渠道、批次和 API 凭证状态。', 'warning');
           return;
         }
-        memory.channelTransientSecret = '';
-        updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'file-create', dialogChannelId:channelId, dialogBatchId:retryBatchId });
-        return;
-      }
-      if (route.id === 'P02-01' && action === 'channel-file-generate') {
-        const current = channelDistributionState();
-        const channelId = event.currentTarget.dataset.channelId || current.dialogChannelId || current.activeChannelId;
-        const channel = findChannel(current, channelId);
-        const retryBatch = (current.fileBatches || []).find(item => item.id === current.dialogBatchId);
-        const quantityInput = root.querySelector('[data-channel-file-quantity]');
-        const error = root.querySelector('[data-channel-file-error]');
-        const quantity = Number(quantityInput?.value || retryBatch?.quantity || 0);
-        const skuId = root.querySelector('[data-channel-file-sku]')?.value || retryBatch?.skuId || channel?.productIds?.[0] || 'BASE-GLOBAL';
-        const validUntil = root.querySelector('[data-channel-file-valid-until]')?.value || retryBatch?.validUntil || addCalendarDays(new Date(), 180);
-        if (!channel || channel.delivery !== 'file' || !channelCanSupply(channel)) return;
-        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100000) {
-          quantityInput?.setAttribute('aria-invalid', 'true');
-          if (error) error.textContent = quantity > 100000 ? '单批最多生成 100,000 个。' : '请输入 1—100,000 的整数。';
-          quantityInput?.focus();
-          return;
-        }
-        quantityInput?.removeAttribute('aria-invalid');
-        if (error) error.textContent = '';
-        const dateToken = localDateToken();
-        const batchId = retryBatch?.id || `FB-${dateToken}-${String((current.fileBatches || []).length + 1).padStart(4, '0')}`;
-        const fileName = `盖世游戏兑换码_${safeFileNamePart(channel.name)}_${batchId}.csv`;
-        const generateButton = event.currentTarget;
-        const originalButtonText = generateButton.textContent;
-        generateButton.disabled = true;
-        generateButton.setAttribute('aria-busy', 'true');
-        generateButton.textContent = memory.shell.language === 'en' ? 'Generating…' : '生成中…';
-        try {
-          const generated = await createKeyFile({ quantity, skuId, validUntil });
-          const latest = channelDistributionState();
-          const latestChannel = findChannel(latest, channelId);
-          if (!channelCanSupply(latestChannel)) {
-            resultMessage(route.id, '文件生成已取消', '渠道已停止供货或该批次已取消，未下载或暴露任何 Key。', 'warning');
-            return;
-          }
-          downloadTextFile(fileName, generated.content, 'text/csv;charset=utf-8');
-          const downloadedAt = nowText();
-          const download = {
-            id:`DL-${dateToken}-${String((latest.downloads || []).length + 1).padStart(4, '0')}`,
-            channelId, batchId, skuId, fileName, quantity, keyFingerprintDigest:generated.keyFingerprintDigest, fingerprintCount:generated.fingerprintCount,
-            downloadedAt, downloadedBy:'当前开发者', downloadCount:1,
-          };
-          const nextBatch = {
-            id:batchId, channelId, skuId, quantity, validUntil, status:'downloaded',
-            createdAt:retryBatch?.createdAt || downloadedAt, downloadedAt,
-          };
-          const persisted = updateChannelDistribution({
-            ...latest, dialog:'', dialogChannelId:'', dialogBatchId:'',
-            fileBatches:retryBatch
-              ? (latest.fileBatches || []).map(item => item.id === batchId ? nextBatch : item)
-              : [nextBatch, ...(latest.fileBatches || [])],
-            downloads:[...(latest.downloads || []), download],
-            channels:latest.channels.map(item => item.id === channelId ? { ...item, lastDeliveredAt:downloadedAt } : item),
-            keyMetrics:upsertKeyMetric(latest.keyMetrics, { channelId, skuId, issuedDelta:quantity, lastDeliveredAt:downloadedAt }),
-          });
-          resultMessage(route.id, '兑换码文件已下载', persisted === false ? '文件已生成，但浏览器未能保存下载记录；请联系平台处理。' : '平台仅保存批次指纹和下载记录，不回显明文。', persisted === false ? 'warning' : 'success');
-        } catch (generationError) {
-          const latest = channelDistributionState();
-          const latestChannel = findChannel(latest, channelId);
-          if (!channelCanSupply(latestChannel)) return;
-          const failedAt = nowText();
-          const failedBatch = {
-            id:batchId, channelId, skuId, quantity, validUntil, status:'failed',
-            createdAt:retryBatch?.createdAt || failedAt,
-            failureReason:generationError?.message || '浏览器无法完成安全随机数或文件生成',
-          };
-          updateChannelDistribution({
-            ...latest, dialog:'file-create', dialogChannelId:channelId, dialogBatchId:batchId,
-            fileBatches:retryBatch
-              ? (latest.fileBatches || []).map(item => item.id === batchId ? failedBatch : item)
-              : [failedBatch, ...(latest.fileBatches || [])],
-          });
-          resultMessage(route.id, '文件生成失败', '请确认浏览器支持安全随机数与 SHA-256 后重试。', 'danger');
-        } finally {
-          if (generateButton.isConnected) {
-            generateButton.disabled = false;
-            generateButton.removeAttribute('aria-busy');
-            generateButton.textContent = originalButtonText;
-          }
-        }
-        return;
-      }
-      if (route.id === 'P02-01' && (action === 'channel-download-record' || action === 'channel-file-record')) {
-        const current = channelDistributionState();
-        const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
-        updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'download-record', dialogChannelId:channelId, dialogBatchId:event.currentTarget.dataset.batchId || '' });
-        return;
-      }
-      if (route.id === 'P02-01' && (action === 'channel-pause' || action === 'channel-resume')) {
-        const current = channelDistributionState();
-        const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
-        const channel = findChannel(current, channelId);
-        if (!channel || (action === 'channel-pause' ? channel.status !== 'active' : channel.status !== 'paused')) return;
-        const pausing = action === 'channel-pause';
-        updateChannelDistribution({
-          ...current,
-          channels:current.channels.map(item => item.id === channelId ? { ...item, status:pausing ? 'paused' : 'active', credentialStatus:item.delivery === 'api' ? (pausing ? 'paused' : item.clientId ? 'active' : 'pending') : item.credentialStatus } : item),
+        const suppliedAt = nowText();
+        const requestId = `REQ-${localDateToken()}-${String((batch.apiCalls || []).length + 1).padStart(4, '0')}`;
+        const next = patchBatch(current, batchId, {
+          supplyState:'active',
+          lastSuppliedAt:suppliedAt,
+          apiStats:{ ...(batch.apiStats || {}), succeeded:Number(batch.apiStats?.succeeded || 0) + 1 },
+          apiCalls:[{ requestId, status:'succeeded', suppliedAt }, ...(batch.apiCalls || [])],
         });
-        resultMessage(route.id, pausing ? '供货已暂停' : '供货已恢复', pausing ? '只阻止新发码与新文件，历史 Key 和记录不受影响。' : '渠道已恢复新供货。', pausing ? 'warning' : 'success');
-        return;
-      }
-      if (route.id === 'P02-01' && action === 'channel-stop') {
-        const current = channelDistributionState();
-        const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
-        const channel = findChannel(current, channelId);
-        if (!channel || !['active','paused'].includes(channel.status)) return;
-        memory.channelTransientSecret = '';
-        updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'stop', dialogChannelId:channelId });
-        return;
-      }
-      if (route.id === 'P02-01' && action === 'channel-stop-confirm') {
-        const current = channelDistributionState();
-        const channelId = current.dialogChannelId || event.currentTarget.dataset.channelId || current.activeChannelId;
-        const channel = findChannel(current, channelId);
-        if (!channel || !root.querySelector('[data-channel-stop-ack]')?.checked) return;
-        const stoppedAt = nowText();
         updateChannelDistribution({
-          ...current, dialog:'', dialogChannelId:'', dialogBatchId:'',
-          channels:current.channels.map(item => {
-            if (item.id !== channelId) return item;
-            const { clearingUntil, ...rest } = item;
-            return { ...rest, status:'stopped', stoppedAt, credentialStatus:item.delivery === 'api' ? 'disabled' : item.credentialStatus };
-          }),
+          ...next,
+          keyMetrics:upsertKeyMetric(current.keyMetrics, { channelId:batch.channelId, skuId:batch.skuId, delivery:'api', issuedDelta:1, lastDeliveredAt:suppliedAt }),
         });
-        resultMessage(route.id, '合作已停止', '新发码和新文件已关闭；已下载 Key 仍按原有效期兑换。', 'warning');
+        resultMessage(route.id, '接口取码成功', '已记录本次调用，页面不回显明文 Key。');
         return;
       }
-      if (route.id === 'P02-01' && (action === 'channel-anomaly' || action === 'channel-anomaly-detail')) {
-        const current = channelDistributionState();
-        const channelId = event.currentTarget.dataset.channelId || current.activeChannelId;
-        updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'anomaly', dialogChannelId:channelId });
+      if (route.id === 'P02-01' && action === 'channel-create-open') {
+        if (publisherAccessForView().qualificationStatus !== 'approved') return;
+        memory.channelTransientSecret = '';
+        updateChannelDistribution(state => ({ ...state, dialog:'create', dialogTargetType:'channel', dialogChannelId:'', dialogBatchId:'' }));
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-help-open') {
@@ -2165,7 +2399,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'channel-dialog-close') {
         memory.channelTransientSecret = '';
-        updateChannelDistribution(state => ({ ...state, dialog:'', dialogChannelId:'', dialogBatchId:'' }));
+        updateChannelDistribution(state => ({ ...state, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' }));
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-profile-anchor') {
@@ -2758,8 +2992,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           workspaceView:'game', selectedGame:'existing', gameSection:'channel-supply', channelDialog:'',
           channelDistribution:{
             ...distribution,
-            dialog:'', dialogChannelId:'', dialogBatchId:'',
-            fileBatches:(distribution.fileBatches || []).map((item, index) => index === 0 ? { ...item, status:previewStatus } : item),
+            dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'',
+            batches:(distribution.batches || []).map((item, index) => index === 0 ? { ...item, supplyState:previewStatus === 'downloaded' ? 'downloaded' : 'pending' } : item),
           },
         };
         persistPublisherWorkspace();
@@ -3136,7 +3370,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'add-credential-scope') {
-        resultMessage(route.id, '可添加已授权 Scope', '仅展示当前厂商已获授权的 Game／SKU、地区和剩余额度。', 'info');
+        resultMessage(route.id, '可添加已授权 Scope', '仅展示当前厂商已获授权的 Game／SKU、地区和授权范围。', 'info');
         return;
       }
       if (route.id === 'P02-05') {
@@ -3375,19 +3609,27 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (event.currentTarget.hasAttribute('data-primary-action') && destination) { navigate({ routeId: destination, state: 'default' }); return; }
       resultMessage(route.id, '操作已完成', '最新状态已保存。');
     }));
-    const channelDelivery = root.querySelector('[data-channel-delivery]');
-    const syncChannelDeliveryFields = () => {
-      const slot = root.querySelector('[data-channel-first-batch-slot]');
-      const submit = root.querySelector('[data-channel-create-submit]');
-      if (!slot || !submit) return;
-      const isFile = channelDelivery?.value === 'file';
-      slot.innerHTML = isFile
-        ? `<label><span>${memory.shell.language === 'en' ? 'Initial Key quantity' : '首批兑换码数量'}</span><input type="number" min="1" max="100000" step="1" value="100" aria-label="${memory.shell.language === 'en' ? 'Initial Key quantity' : '首批兑换码数量'}" data-channel-first-batch-quantity><small>${memory.shell.language === 'en' ? 'Enter 1–100,000.' : '单次可生成 1—100,000 个'}</small><em data-channel-first-batch-error></em></label>`
-        : '';
-      submit.textContent = isFile ? (memory.shell.language === 'en' ? 'Create and download' : '创建并下载') : (memory.shell.language === 'en' ? 'Create channel' : '创建渠道');
+    const batchDelivery = root.querySelector('[data-channel-batch-delivery]');
+    const syncBatchDeliveryFields = () => {
+      const slot = root.querySelector('[data-channel-batch-file-fields]');
+      if (!slot || !batchDelivery) return;
+      const isFile = batchDelivery.value === 'file';
+      const current = channelDistributionState();
+      const batch = findBatch(current, current.dialogBatchId);
+      const locked = root.querySelector('[data-channel-batch-form]')?.dataset.batchCoreLocked === 'true' || batchCoreLocked(batch || {});
+      slot.hidden = !isFile;
+      if (!isFile) {
+        slot.innerHTML = '';
+        setFormError('[data-channel-batch-quantity]', '[data-channel-batch-quantity-error]');
+        setFormError('[data-channel-batch-valid-until]', '[data-channel-batch-valid-until-error]');
+        return;
+      }
+      const quantity = Number(batch?.quantity || 100);
+      const validUntil = String(batch?.validUntil || addCalendarDays(new Date(), 180)).slice(0, 10);
+      slot.innerHTML = `<label><span>${memory.shell.language === 'en' ? 'Key quantity' : 'Key 数量'}</span><input type="number" min="1" max="100000" step="1" value="${quantity}" ${locked ? 'disabled' : ''} aria-label="${memory.shell.language === 'en' ? 'Key quantity' : 'Key 数量'}" data-channel-batch-quantity><small>${memory.shell.language === 'en' ? '1–100,000 per batch' : '单批 1—100,000 个'}</small><em data-channel-batch-quantity-error></em></label><label><span>${memory.shell.language === 'en' ? 'Key expiry date' : 'Key 有效期'}</span><input type="date" value="${c.escapeHtml(validUntil)}" ${locked ? 'disabled' : ''} aria-label="${memory.shell.language === 'en' ? 'Key expiry date' : 'Key 有效期'}" data-channel-batch-valid-until><em data-channel-batch-valid-until-error></em></label>`;
     };
-    channelDelivery?.addEventListener('change', syncChannelDeliveryFields);
-    syncChannelDeliveryFields();
+    batchDelivery?.addEventListener('change', syncBatchDeliveryFields);
+    syncBatchDeliveryFields();
 
     const channelRoot = root.querySelector('.publisher-channel');
     const refreshChannelDatePicker = wrapper => {
@@ -3483,20 +3725,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           : (memory.shell.language === 'en' ? 'All time' : '全部时间');
         startInput?.removeAttribute('aria-invalid');
         endInput?.removeAttribute('aria-invalid');
-        const startError = root.querySelector('[data-channel-effective-start-error]');
-        const endError = root.querySelector('[data-channel-effective-end-error]');
+        const startError = wrapper.closest('[data-channel-batch-form]')
+          ? root.querySelector('[data-channel-batch-effective-start-error]')
+          : root.querySelector('[data-channel-effective-start-error]');
+        const endError = wrapper.closest('[data-channel-batch-form]')
+          ? root.querySelector('[data-channel-batch-effective-end-error]')
+          : root.querySelector('[data-channel-effective-end-error]');
         if (startError) startError.textContent = '';
         if (endError) endError.textContent = '';
         popover.hidden = true;
       }
     });
 
-    root.querySelector('[data-channel-stop-ack]')?.addEventListener('change', event => {
-      const confirm = root.querySelector('[data-portal-action="channel-stop-confirm"]');
-      if (!confirm) return;
-      confirm.disabled = !event.currentTarget.checked;
-      confirm.setAttribute('aria-disabled', String(confirm.disabled));
-    });
     root.querySelector('[data-help-search-input]')?.addEventListener('keydown', event => {
       if (event.key !== 'Enter') return;
       event.preventDefault();
