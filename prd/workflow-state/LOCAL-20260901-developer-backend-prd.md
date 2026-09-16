@@ -98,7 +98,7 @@
 | 定价截图 | `public/prd/genuine-game-distribution-phase1/developer-backend-final/03/03-v22-*.png` | 3 张已同步并公开 | 已固定到提交 `d730f4b09cf2d29964b383e30be55c4adb35df78`；PRD 全部 19/19 图片公网通过 |
 | 定价回归 | `tests/developer-backend/game-profile-pricing.browser.test.mjs`、`game-release-review-pricing.browser.test.mjs`、`admin-review-completeness.browser.test.mjs` | 本轮 12/12 通过 | 另有 8 个历史后台失败，均为旧导航、状态、分页、面包屑及旧预期，不属于本轮定价范围 |
 | 财务主体与对账结算 PRD | `prd/发行平台专项/开发者后台PRD/15-开发者财务主体与对账结算PRD.md` | V2.2 已同步主体级阶梯分成入口、时间范围、档位和埋点 | 质量门禁 0 error／0 warning；财务聚焦回归 39/39 |
-| 财务 PRD 图片 | `public/prd/developer-finance-settlement-v2/` | 阶梯配置图已替换为当前 Demo 实际页面；正文引用 10 张 | 公网图片待固定提交后复核；飞书真实转存未验证 |
+| 财务 PRD 图片 | `public/prd/developer-finance-settlement-v2/` | 阶梯配置图已替换为当前 Demo 实际页面；正文引用 10 张 | 阶梯图固定提交 `f30e7a07c4170c449583aced099d0160a0e3499e`；飞书真实转存未验证 |
 
 ## 修改与验证
 
