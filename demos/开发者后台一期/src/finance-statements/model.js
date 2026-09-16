@@ -47,13 +47,8 @@ window.PublisherSettlementStatements = (() => {
     return text;
   };
   const billingDate = value => `${assertMonth(value)}-01`;
-  const assertMonthBoundary = (value,label) => {
-    const date = assertDate(value,label);
-    if (!date.endsWith('-01')) throw new Error(`${label}须为每月 1 日`);
-    return date;
-  };
-  const rangeContains = (rule,date) => rule.startDate <= date && (!rule.endDate || date < rule.endDate);
-  const rangesOverlap = (left,right) => (!left.endDate || right.startDate < left.endDate) && (!right.endDate || left.startDate < right.endDate);
+  const rangeContains = (rule,date) => rule.startDate <= date && (!rule.endDate || date <= rule.endDate);
+  const rangesOverlap = (left,right) => (!left.endDate || right.startDate <= left.endDate) && (!right.endDate || left.startDate <= right.endDate);
   const nowText = () => {
     const date = new Date();
     const pad = value => String(value).padStart(2, '0');
@@ -344,10 +339,10 @@ window.PublisherSettlementStatements = (() => {
   const saveTierRule = (state,input = {}) => {
     const financialEntityId = String(input.financialEntityId || '').trim();
     if (!financialEntityId) throw new Error('请选择财务主体');
-    const startDate = assertMonthBoundary(input.startDate,'开始日期');
+    const startDate = assertDate(input.startDate,'开始日期');
     const endDate = String(input.endDate || '').trim();
-    if (endDate) assertMonthBoundary(endDate,'结束日期');
-    if (endDate && endDate <= startDate) throw new Error('结束日期必须晚于开始日期');
+    if (endDate) assertDate(endDate,'结束日期');
+    if (endDate && endDate < startDate) throw new Error('结束日期不得早于开始日期');
     const reason = String(input.reason || '').trim();
     if (input.canManageFinance === false) throw new Error('无财务配置权限');
     const tiers = normalizeTiers(input.tiers);

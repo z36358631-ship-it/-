@@ -63,8 +63,8 @@ const normalizeDate = (value,label) => {
   if (!DATE_PATTERN.test(text) || Number.isNaN(Date.parse(`${text}T00:00:00+08:00`))) throw new Error(`${label}\u683c\u5f0f应为 YYYY-MM-DD`);
   return text;
 };
-const rangeContains = (rule,date) => rule.startDate <= date && (!rule.endDate || date < rule.endDate);
-const rangesOverlap = (left,right) => (!left.endDate || right.startDate < left.endDate) && (!right.endDate || left.startDate < right.endDate);
+const rangeContains = (rule,date) => rule.startDate <= date && (!rule.endDate || date <= rule.endDate);
+const rangesOverlap = (left,right) => (!left.endDate || right.startDate <= left.endDate) && (!right.endDate || left.startDate <= right.endDate);
 ```
 
 Change `defaultTierRule`, `tierRuleFor`, and `saveTierRule` to store `financialEntityId`, `startDate`, `endDate`, and optional `reason`; remove `gameId` and `effectiveBillingMonth` from new versions.
@@ -162,6 +162,8 @@ Adding inserts a finite tier before the current no-limit tier, prefills its lowe
 @media (max-width:760px) { .fo-tier-grid { grid-template-columns:1fr; } }
 ```
 
+Reuse the existing date-range component for the rule validity period. Replace data-query presets with `1 个月 / 3 个月 / 6 个月 / 1 年 / 长期 / 自定义`; allow daily selection without a 180-day cap, and treat a blank end date as long-term validity.
+
 - [ ] **Step 8: Rebuild the single-file Demo and rerun browser tests**
 
 Run: `node demos/开发者后台一期/build-finance-operations.mjs`
@@ -215,7 +217,7 @@ Replace all current references to `开发者＋游戏＋生效账单月` with `�
 
 - [ ] **Step 2: Update the page-level six-element table**
 
-Document the selector, required/optional fields, compact multi-column card grid, fixed `0`/no-limit boundaries, add/delete normalization, date overlap blocking, optional reason, versioning, and locked-bill snapshots.
+Document the selector, reusable date-range picker, uncapped validity period, required/optional fields, compact multi-column card grid, fixed `0`/no-limit boundaries, add/delete normalization, date overlap blocking, optional reason, versioning, and locked-bill snapshots.
 
 - [ ] **Step 3: Update event and parameter tables**
 

@@ -172,6 +172,18 @@ test('主体汇总统一配置主体级阶梯分成',async () => {
   assert.equal(await drawer.locator('[name="financialEntityId"]').count(),1);
   assert.equal(await drawer.locator('[name="startDate"]').count(),1);
   assert.equal(await drawer.locator('[name="endDate"]').count(),1);
+  const timeButton = drawer.locator('[data-fo-action="tier-date-open"]');
+  assert.equal(await timeButton.count(),1);
+  assert.match((await timeButton.innerText()).replace(/\s+/g,' '),/长期.*2026-09-01.*长期有效/);
+  await timeButton.click();
+  const dateDialog = drawer.getByRole('dialog',{ name:'选择规则有效期' });
+  assert.deepEqual(await dateDialog.locator('[data-tier-date-preset]').allTextContents(),['1 个月','3 个月','6 个月','1 年','长期','自定义']);
+  assert.doesNotMatch(await dateDialog.innerText(),/180 天|数据截至/);
+  await dateDialog.getByRole('button',{ name:'1 年',exact:true }).click();
+  assert.match((await dateDialog.locator('.publisher-dashboard-date-summary').innerText()).replace(/\s+/g,' '),/2026-09-01 → 2027-08-31/);
+  await dateDialog.getByRole('button',{ name:'应用' }).click();
+  assert.equal(await drawer.locator('[name="startDate"]').inputValue(),'2026-09-01');
+  assert.equal(await drawer.locator('[name="endDate"]').inputValue(),'2027-08-31');
   assert.equal(await drawer.locator('[data-tier-card]').count(),3);
   assert.match(await drawer.innerText(),/0[\s\S]*月结算金额（元）/);
   assert.match(await drawer.innerText(),/不设上限/);
@@ -238,6 +250,20 @@ test('缺省态与筛选无结果文案不同',async () => {
   await page.locator('[data-fo-demo-toggle]').click();
   await page.getByRole('button',{ name:'缺省态' }).click();
   assert.equal(await page.getByText('暂无主体结算记录').isVisible(),true);
+});
+
+test('390px 合同有效期复用单月日期范围组件且支持一年',async () => {
+  await page.setViewportSize({ width:390,height:844 });
+  await open();
+  await page.getByRole('button',{ name:'配置阶梯分成' }).click();
+  await page.locator('[data-fo-action="tier-date-open"]').click();
+  const dialog = page.getByRole('dialog',{ name:'选择规则有效期' });
+  const box = await dialog.boundingBox();
+  assert.ok(box && box.x >= 0 && box.x + box.width <= 390);
+  assert.equal(await dialog.locator('.publisher-calendar-month:visible').count(),1);
+  await dialog.getByRole('button',{ name:'1 年',exact:true }).click();
+  await dialog.getByRole('button',{ name:'应用' }).click();
+  assert.equal(await page.locator('[name="endDate"]').inputValue(),'2027-08-31');
 });
 
 for (const viewport of [{ width:1280,height:800 },{ width:390,height:844 }]) {

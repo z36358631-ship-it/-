@@ -15,6 +15,38 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const option = (value,label,selected) => `<option value="${esc(value)}"${selected === value ? ' selected' : ''}>${esc(label)}</option>`;
   const selectOptions = (values,selected,allLabel,label = value => value) => `${option('all',allLabel,selected)}${values.map(value => option(value,label(value),selected)).join('')}`;
   const unique = (rows,key) => [...new Set(rows.map(row => row[key]).filter(Boolean))].sort((a,b) => String(b).localeCompare(String(a)));
+  const pad = value => String(value).padStart(2,'0');
+  const dateText = date => `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+  const addDays = (value,days) => {
+    const date = new Date(`${value}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return dateText(date);
+  };
+  const addMonth = (monthKey,offset) => {
+    const [year,month] = monthKey.split('-').map(Number);
+    const date = new Date(Date.UTC(year,month - 1 + offset,1));
+    return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}`;
+  };
+  const periodEnd = (startDate,months) => {
+    const [year,month,day] = startDate.split('-').map(Number);
+    const target = new Date(Date.UTC(year,month - 1 + months,1));
+    const lastDay = new Date(Date.UTC(target.getUTCFullYear(),target.getUTCMonth() + 1,0)).getUTCDate();
+    if (day > lastDay) return `${target.getUTCFullYear()}-${pad(target.getUTCMonth() + 1)}-${pad(lastDay)}`;
+    return addDays(`${target.getUTCFullYear()}-${pad(target.getUTCMonth() + 1)}-${pad(day)}`,-1);
+  };
+  const tierDatePresets = Object.freeze([
+    ['1m','1 个月',1],['3m','3 个月',3],['6m','6 个月',6],['1y','1 年',12],['longterm','长期',null],['custom','自定义',null],
+  ]);
+  const detectTierDatePreset = range => {
+    if (!range.endDate) return 'longterm';
+    return tierDatePresets.find(([, ,months]) => months && periodEnd(range.startDate,months) === range.endDate)?.[0] || 'custom';
+  };
+  const tierDatePresetLabel = value => tierDatePresets.find(([key]) => key === value)?.[1] || '自定义';
+  const monthTitle = monthKey => {
+    const [year,month] = monthKey.split('-').map(Number);
+    return `${year} 年 ${month} 月`;
+  };
+  const tierDateError = range => !range?.startDate ? '请选择开始日期' : range.endDate && range.endDate < range.startDate ? '结束日期不得早于开始日期' : '';
 
   const tabs = () => `<div class="fo-tabs" role="tablist" aria-label="财务结算视图"><button type="button" role="tab" aria-selected="${state.activeTab === 'entity'}" class="${state.activeTab === 'entity' ? 'is-active' : ''}" data-fo-action="tab" data-fo-tab="entity">主体汇总</button><button type="button" role="tab" aria-selected="${state.activeTab === 'game'}" class="${state.activeTab === 'game' ? 'is-active' : ''}" data-fo-action="tab" data-fo-tab="game">游戏明细</button></div>`;
   function filters() {
@@ -99,7 +131,43 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
   const openTierEditor = () => {
     const entity = financialEntityOptions()[0];
-    state.tierDraft = createTierDraft(entity.id); state.tierError = ''; state.tierEditorOpen = true;
+    state.tierDraft = createTierDraft(entity.id); state.tierError = ''; state.tierDateOpen = false; state.tierEditorOpen = true;
+  };
+  const tierCalendarMonth = (monthKey,index) => {
+    const [year,month] = monthKey.split('-').map(Number);
+    const first = new Date(Date.UTC(year,month - 1,1));
+    const leading = (first.getUTCDay() + 6) % 7;
+    const days = new Date(Date.UTC(year,month,0)).getUTCDate();
+    const previousDays = new Date(Date.UTC(year,month - 1,0)).getUTCDate();
+    const draft = state.tierDateDraft || { startDate:'',endDate:'' };
+    const cells = Array.from({ length:42 },(_,cellIndex) => {
+      const dayIndex = cellIndex - leading + 1;
+      let cellMonth = month; let cellYear = year; let day = dayIndex; let outside = false;
+      if (dayIndex < 1) {
+        outside = true; day = previousDays + dayIndex; cellMonth -= 1;
+        if (cellMonth === 0) { cellMonth = 12; cellYear -= 1; }
+      } else if (dayIndex > days) {
+        outside = true; day = dayIndex - days; cellMonth += 1;
+        if (cellMonth === 13) { cellMonth = 1; cellYear += 1; }
+      }
+      const value = `${cellYear}-${pad(cellMonth)}-${pad(day)}`;
+      const classes = [outside ? 'is-outside' : '',value === draft.startDate ? 'is-start' : '',value === draft.endDate ? 'is-end' : '',draft.endDate && value > draft.startDate && value < draft.endDate ? 'is-between' : ''].filter(Boolean).join(' ');
+      return `<button type="button" class="${classes}" data-fo-action="tier-calendar-day" data-tier-date="${value}"${outside ? ' disabled' : ''}>${day}</button>`;
+    }).join('');
+    const previous = index === 0 ? '<button type="button" data-fo-action="tier-calendar-prev" aria-label="上一个月">‹</button>' : '<span></span>';
+    const next = index === 1
+      ? '<button type="button" data-fo-action="tier-calendar-next" aria-label="下一个月">›</button>'
+      : '<button type="button" class="publisher-calendar-mobile-next" data-fo-action="tier-calendar-next" aria-label="下一个月">›</button>';
+    return `<section class="publisher-calendar-month" data-calendar-month="${monthKey}"><header>${previous}<strong>${monthTitle(monthKey)}</strong>${next}</header><div class="publisher-calendar-weekdays">${['一','二','三','四','五','六','日'].map(value => `<span>${value}</span>`).join('')}</div><div class="publisher-calendar-grid">${cells}</div></section>`;
+  };
+  const tierDatePicker = () => {
+    if (!state.tierDateOpen || !state.tierDateDraft) return '';
+    const draft = state.tierDateDraft;
+    const leftMonth = state.tierCalendarLeftMonth || draft.startDate.slice(0,7);
+    const anchor = state.tierDateAnchor || { left:16,top:82 };
+    const error = tierDateError(draft);
+    const shortcuts = tierDatePresets.map(([key,label]) => `<button type="button" class="${state.tierDatePreset === key ? 'is-active' : ''}" data-fo-action="tier-date-preset" data-tier-date-preset="${key}">${label}</button>`).join('');
+    return `<div class="publisher-dashboard-date-backdrop fo-tier-date-backdrop" data-fo-action="tier-date-cancel"><section class="publisher-dashboard-date-popover fo-tier-date-popover" id="fo-tier-date-dialog" style="left:${Number(anchor.left) || 16}px;top:${Number(anchor.top) || 82}px" role="dialog" aria-modal="true" aria-label="选择规则有效期" tabindex="-1" data-fo-tier-date-dialog data-fo-stop><aside class="publisher-dashboard-date-shortcuts">${shortcuts}</aside><div class="publisher-dashboard-date-main"><header class="publisher-dashboard-date-summary"><span>${esc(draft.startDate || '—')}</span><i>→</i><span>${esc(draft.endDate || '长期有效')}</span></header><div class="publisher-dashboard-calendars">${tierCalendarMonth(leftMonth,0)}${tierCalendarMonth(addMonth(leftMonth,1),1)}</div><p class="publisher-dashboard-date-error" role="alert"${error ? '' : ' hidden'}>${esc(error)}</p><footer><small>结束日期留空表示长期有效。</small><div><button type="button" data-fo-action="tier-date-cancel">取消</button><button type="button" class="is-primary" data-fo-action="tier-date-apply"${error ? ' disabled' : ''}>应用</button></div></footer></div></section></div>`;
   };
   const tierEditor = () => {
     if (!state.tierEditorOpen || !state.tierDraft) return '';
@@ -117,7 +185,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         : `<input name="to" type="number" min="0" step="0.01" value="${tier.toMinor === '' || tier.toMinor == null ? '' : esc(tier.toMinor / 100)}" aria-label="第 ${index + 1} 档上限金额">`;
       return `<article class="fo-tier-card" data-tier-card data-tier-index="${index}"><header><strong>第 ${index + 1} 档</strong>${removable ? `<button type="button" data-fo-action="remove-tier" data-tier-index="${index}">删除</button>` : ''}</header><div class="fo-tier-expression">${lower}<b>&lt;</b><span>月结算金额（元）</span><b>${last ? '&lt;' : '≤'}</b>${upper}</div><label class="fo-tier-rate"><span>平台分成比例</span><input name="rate" type="number" min="0" max="100" step="0.01" value="${tier.platformRate === '' || tier.platformRate == null ? '' : esc(tier.platformRate)}"><i>%</i></label></article>`;
     }).join('');
-    return `<div class="fo-drawer-layer" data-fo-action="close-tier-editor"><aside class="fo-drawer fo-tier-editor" role="dialog" aria-modal="true" aria-label="配置阶梯分成" data-fo-stop><header><h2>配置阶梯分成</h2><button type="button" data-fo-action="close-tier-editor" aria-label="关闭">×</button></header><div class="fo-drawer-body"><form data-fo-tier-form><section class="fo-tier-base"><label class="wide"><span>财务主体</span><select name="financialEntityId" required>${entities.map(item => option(item.id,`${item.name}（${item.developerName}）`,draft.financialEntityId)).join('')}</select></label><label><span>开始日期</span><input type="date" name="startDate" required value="${esc(draft.startDate)}"></label><label><span>结束日期（选填）</span><input type="date" name="endDate" value="${esc(draft.endDate)}"></label><label class="wide"><span>变更原因（选填）</span><input name="reason" value="${esc(draft.reason)}"></label></section><section class="fo-tier-list"><header><strong>平台分成阶梯</strong><button type="button" data-fo-action="add-tier">＋ 添加档位</button></header><div class="fo-tier-grid">${cards}</div></section>${state.tierError ? `<div class="fo-tier-error" role="alert">${esc(state.tierError)}</div>` : ''}</form></div><footer><button type="button" data-fo-action="close-tier-editor">取消</button><button type="button" class="is-primary" data-fo-action="save-tier">保存规则</button></footer></aside></div>`;
+    const datePreset = detectTierDatePreset(draft);
+    return `<div class="fo-drawer-layer" data-fo-action="close-tier-editor"><aside class="fo-drawer fo-tier-editor" role="dialog" aria-modal="true" aria-label="配置阶梯分成" data-fo-stop><header><h2>配置阶梯分成</h2><button type="button" data-fo-action="close-tier-editor" aria-label="关闭">×</button></header><div class="fo-drawer-body"><form data-fo-tier-form><section class="fo-tier-base"><label class="wide"><span>财务主体</span><select name="financialEntityId" required>${entities.map(item => option(item.id,`${item.name}（${item.developerName}）`,draft.financialEntityId)).join('')}</select></label><label class="wide fo-tier-period"><span>规则有效期</span><button type="button" class="publisher-dashboard-time-button" data-fo-action="tier-date-open" aria-haspopup="dialog" aria-controls="fo-tier-date-dialog" aria-expanded="${state.tierDateOpen}"><strong>${tierDatePresetLabel(datePreset)}</strong><small>${esc(draft.startDate)} → ${esc(draft.endDate || '长期有效')}</small><i>▾</i></button><input type="hidden" name="startDate" value="${esc(draft.startDate)}"><input type="hidden" name="endDate" value="${esc(draft.endDate)}"></label><label class="wide"><span>变更原因（选填）</span><input name="reason" value="${esc(draft.reason)}"></label></section><section class="fo-tier-list"><header><strong>平台分成阶梯</strong><button type="button" data-fo-action="add-tier">＋ 添加档位</button></header><div class="fo-tier-grid">${cards}</div></section>${state.tierError ? `<div class="fo-tier-error" role="alert">${esc(state.tierError)}</div>` : ''}</form></div><footer><button type="button" data-fo-action="close-tier-editor">取消</button><button type="button" class="is-primary" data-fo-action="save-tier">保存规则</button></footer>${tierDatePicker()}</aside></div>`;
   };
 
   const demoSwitcher = () => `<section class="fo-demo"><button type="button" data-fo-demo-toggle data-fo-action="demo-toggle" aria-expanded="${state.demoOpen}"><b>Demo</b><span>状态</span></button>${state.demoOpen ? `<aside><header><strong>结算场景</strong><button type="button" data-fo-action="demo-toggle" aria-label="关闭">×</button></header><button type="button" data-fo-action="scenario" data-fo-scenario="exhaustive" class="${state.scenario === 'exhaustive' ? 'is-active' : ''}">穷举态</button><button type="button" data-fo-action="scenario" data-fo-scenario="empty" class="${state.scenario === 'empty' ? 'is-active' : ''}">缺省态</button></aside>` : ''}</section>`;
@@ -129,10 +198,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const link = document.createElement('a'); link.href = href; link.download = filename; document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(href),0); return true;
     } catch { return false; }
   };
-  const rerender = () => {
+  const rerender = focusSelector => {
     const current = document.querySelector('[data-finance-operations]');
     if (current) current.outerHTML = renderPage();
     document.body.classList.toggle('fo-overlay-open',Boolean(state.detailStatementId || state.tierEditorOpen));
+    if (focusSelector) requestAnimationFrame(() => document.querySelector(focusSelector)?.focus());
   };
   const readFilters = () => {
     state.filters[state.activeTab] = state.activeTab === 'entity'
@@ -175,7 +245,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       state.selected[state.activeTab] = target.checked ? [...new Set([...state.selected[state.activeTab],...keys])] : state.selected[state.activeTab].filter(key => !keys.includes(key));
       rerender(); return;
     }
-    if (target.matches('[data-fo-tier-form] [name="financialEntityId"]')) { state.tierDraft = createTierDraft(target.value); rerender(); return; }
+    if (target.matches('[data-fo-tier-form] [name="financialEntityId"]')) { state.tierDraft = createTierDraft(target.value); state.tierDateOpen = false; rerender(); return; }
   });
 
   document.addEventListener('click',event => {
@@ -183,6 +253,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (!control || control.disabled) return;
     const action = control.dataset.foAction;
     if ((action === 'close-drawer' || action === 'close-tier-editor') && event.target.closest('[data-fo-stop]') && !event.target.closest('header button') && !event.target.closest('footer button')) return;
+    if (action === 'tier-date-cancel' && event.target.closest('[data-fo-tier-date-dialog]') && !event.target.closest('button[data-fo-action="tier-date-cancel"]')) return;
     if (action === 'tab') { state.activeTab = control.dataset.foTab; state.exportMessage = ''; state.tierMessage = ''; rerender(); }
     if (action === 'query') { readFilters(); rerender(); }
     if (action === 'reset') {
@@ -193,7 +264,55 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (action === 'view-game-sales' || action === 'view-cdkey') { state.detailStatementId = control.dataset.rowKey; rerender(); }
     if (action === 'close-drawer') { state.detailStatementId = ''; rerender(); }
     if (action === 'open-tier-editor') { openTierEditor(); rerender(); }
-    if (action === 'close-tier-editor') { state.tierEditorOpen = false; state.tierError = ''; rerender(); }
+    if (action === 'close-tier-editor') { state.tierEditorOpen = false; state.tierDateOpen = false; state.tierError = ''; rerender(); }
+    if (action === 'tier-date-open') {
+      const draft = readTierForm();
+      const rect = control.getBoundingClientRect();
+      const width = Math.min(760,window.innerWidth - 48);
+      state.tierDateDraft = { startDate:draft.startDate,endDate:draft.endDate };
+      state.tierDatePreset = detectTierDatePreset(state.tierDateDraft);
+      state.tierCalendarLeftMonth = draft.startDate.slice(0,7);
+      state.tierDateAnchor = {
+        left:Math.max(16,Math.min(rect.left,window.innerWidth - width - 16)),
+        top:Math.max(16,Math.min(rect.bottom + 6,window.innerHeight - 500)),
+      };
+      state.tierDateOpen = true;
+      rerender('[data-fo-tier-date-dialog]');
+    }
+    if (action === 'tier-date-cancel') {
+      state.tierDateOpen = false; state.tierDateDraft = null; rerender('[data-fo-action="tier-date-open"]');
+    }
+    if (action === 'tier-date-preset') {
+      const preset = control.dataset.tierDatePreset;
+      const startDate = state.tierDateDraft?.startDate || state.tierDraft.startDate;
+      const months = tierDatePresets.find(([key]) => key === preset)?.[2];
+      if (preset !== 'custom') state.tierDateDraft = { startDate,endDate:months ? periodEnd(startDate,months) : '' };
+      state.tierDatePreset = preset;
+      state.tierCalendarLeftMonth = startDate.slice(0,7);
+      rerender(`[data-tier-date-preset="${preset}"]`);
+    }
+    if (action === 'tier-calendar-prev' || action === 'tier-calendar-next') {
+      state.tierCalendarLeftMonth = addMonth(state.tierCalendarLeftMonth,action === 'tier-calendar-prev' ? -1 : 1);
+      rerender(`[data-fo-action="${action}"]`);
+    }
+    if (action === 'tier-calendar-day') {
+      const value = control.dataset.tierDate;
+      const draft = state.tierDateDraft || { startDate:'',endDate:'' };
+      state.tierDateDraft = !draft.startDate || draft.endDate || value < draft.startDate
+        ? { startDate:value,endDate:'' }
+        : { startDate:draft.startDate,endDate:value };
+      state.tierDatePreset = 'custom';
+      rerender(`[data-tier-date="${value}"]`);
+    }
+    if (action === 'tier-date-apply') {
+      const error = tierDateError(state.tierDateDraft);
+      if (error) { state.tierError = error; rerender(); }
+      else {
+        state.tierDraft = { ...state.tierDraft,startDate:state.tierDateDraft.startDate,endDate:state.tierDateDraft.endDate };
+        state.tierDateOpen = false; state.tierDateDraft = null; state.tierError = '';
+        rerender('[data-fo-action="tier-date-open"]');
+      }
+    }
     if (action === 'add-tier') {
       const draft = readTierForm(); const last = draft.tiers.pop();
       draft.tiers.push({ fromMinor:last.fromMinor, toMinor:'', platformRate:'' });
@@ -212,7 +331,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (action === 'save-tier') {
       try {
         const saved = model.statements.saveTierRule(state.statementState,{ ...readTierForm(),operator:'平台运营 李然' });
-        state.tierEditorOpen = false; state.tierError = ''; state.tierMessage = `已保存规则 ${saved.id}`; rerender();
+        state.tierEditorOpen = false; state.tierDateOpen = false; state.tierError = ''; state.tierMessage = `已保存规则 ${saved.id}`; rerender();
       } catch (error) { state.tierError = error?.message || '保存失败，请重试'; rerender(); }
     }
     if (action === 'export') {
@@ -225,11 +344,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (ok) state.selected[state.activeTab] = []; rerender();
     }
     if (action === 'demo-toggle') { state.demoOpen = !state.demoOpen; rerender(); }
-    if (action === 'scenario') { state.scenario = control.dataset.foScenario; state.demoOpen = false; state.pages = { entity:1,game:1 }; state.selected = { entity:[],game:[] }; state.detailStatementId = ''; state.tierEditorOpen = false; rerender(); }
+    if (action === 'scenario') { state.scenario = control.dataset.foScenario; state.demoOpen = false; state.pages = { entity:1,game:1 }; state.selected = { entity:[],game:[] }; state.detailStatementId = ''; state.tierEditorOpen = false; state.tierDateOpen = false; rerender(); }
   });
   document.addEventListener('keydown',event => {
     if (event.key !== 'Escape') return;
     if (state.detailStatementId) { state.detailStatementId = ''; rerender(); }
+    else if (state.tierDateOpen) { state.tierDateOpen = false; state.tierDateDraft = null; rerender('[data-fo-action="tier-date-open"]'); }
     else if (state.tierEditorOpen) { state.tierEditorOpen = false; rerender(); }
   });
 

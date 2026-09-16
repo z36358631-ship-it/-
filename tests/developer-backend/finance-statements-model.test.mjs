@@ -121,7 +121,13 @@ test('阶梯规则按财务主体保存，校验档位与有效时间', () => {
   assert.throws(() => model.saveTierRule(state, { ...base, tiers:[
     { fromMinor:0, toMinor:100000000, platformRate:30 },{ fromMinor:'', toMinor:null, platformRate:20 },
   ] }), /第 2 档金额范围无效/);
-  assert.throws(() => model.saveTierRule(state, { ...base, startDate:'2026-09-15', tiers:[{ fromMinor:0, toMinor:null, platformRate:30 }] }), /每月 1 日/);
+  const annualState = model.createState();
+  const annual = model.saveTierRule(annualState, {
+    ...base,startDate:'2026-09-15',endDate:'2027-09-14',tiers:[{ fromMinor:0, toMinor:null, platformRate:30 }],
+  });
+  assert.equal(annual.startDate,'2026-09-15');
+  assert.equal(annual.endDate,'2027-09-14');
+  assert.equal(model.tierRuleFor(annualState,'DEV-1001','2027-09-14').id,annual.id);
   assert.throws(() => model.saveTierRule(state, { ...base, endDate:'2026-08-01', tiers:[{ fromMinor:0, toMinor:null, platformRate:30 }] }), /结束日期/);
   const saved = model.saveTierRule(state, { ...base, operator:'李然', operatedAt:'2026-09-15 10:00', tiers:[
     { fromMinor:0, toMinor:100000000, platformRate:30 },{ fromMinor:100000000, toMinor:500000000, platformRate:25 },{ fromMinor:500000000, toMinor:null, platformRate:20 },
