@@ -66,17 +66,20 @@ test('C 端从真实产品入口推进且不包含演示标注控件', async () 
     const selectors = [
       ['#openCompatibilityReviews', '游戏详情兼容性评价入口'],
       ['#startGameButton', 'PC 游戏启动按钮'],
-      ['#launchLayer', '启动中状态层'],
-      ['#gameplayLayer', '独立横屏游戏层'],
+      ['#runtimeStage', '浏览器内运行环境层'],
+      ['#runtimeDeviceFrame', '居中横屏手机壳'],
+      ['#launchLayer', '手机内启动中状态'],
+      ['#gameplayLayer', '手机内横屏游戏画面'],
       ['#exitGameButton', '横屏退出游戏入口'],
       ['#confirmExitGameButton', '退出游戏确认操作'],
       ['#modalFeedback', '共用兼容性评价弹窗'],
       ['#fbTypeWrap', '兼容类型单选组'],
-      ['#fbSolutionSection', '3–5 星实际运行方案区'],
-      ['#cloudSharePage', '现有云分享编辑页模拟'],
+      ['#fbSolutionSection', '3–5 星分享本次运行配置区'],
       ['#solutionDetailPage', '现有方案详情页模拟'],
     ];
     for (const [selector, contract] of selectors) await requireOne(page, selector, contract);
+    assert.equal(await page.locator('#cloudSharePage').count(), 0,
+      'C 端不得保留个人云分享发布确认页');
     assert.equal(await page.locator('.demo-scenario-rail, .orient-bar, [id^="demoScenario"]').count(), 0,
       'C 端主流程不应包含场景切换栏');
     assert.equal(await page.getByText('秒玩', { exact: true }).count(), 0,
@@ -124,7 +127,7 @@ test('B 端暴露关联筛选、方案预览和导出字段预览', async () => 
   }
 });
 
-test('查看并应用他人方案后启动、退出并关联本次方案', async () => {
+test('查看并应用社区方案后在横屏手机内启动、退出并分享本次运行配置', async () => {
   const { page, errors } = await openDemo(cDemo, 'C 端', { width: 390, height: 844 });
   try {
     await page.click('#openCompatibilityReviews');
@@ -134,10 +137,18 @@ test('查看并应用他人方案后启动、退出并关联本次方案', async
       '应用成功后应返回游戏详情');
     assert.match(await page.locator('#currentAppliedSolution').innerText(), /Adreno 750 稳定方案/);
 
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.click('#startGameButton');
     await page.waitForFunction(() => document.body.dataset.journeyStage === 'gameplay');
-    await page.setViewportSize({ width: 844, height: 390 });
     assert.equal(await page.locator('#gameplayLayer').isVisible(), true);
+    const runtimeBox = await page.locator('#runtimeDeviceFrame').boundingBox();
+    assert.ok(runtimeBox, '横屏手机壳应可见');
+    assert.ok(runtimeBox.width <= 920 && runtimeBox.height <= 460,
+      '横屏手机壳不得铺满桌面浏览器');
+    assert.ok(Math.abs((runtimeBox.x + runtimeBox.width / 2) - 720) <= 2,
+      '横屏手机壳应在浏览器中水平居中');
+    assert.ok(Math.abs((runtimeBox.y + runtimeBox.height / 2) - 450) <= 2,
+      '横屏手机壳应在浏览器中垂直居中');
     await page.click('#exitGameButton');
     await page.click('#confirmExitGameButton');
     await page.setViewportSize({ width: 390, height: 844 });
@@ -145,13 +156,16 @@ test('查看并应用他人方案后启动、退出并关联本次方案', async
     assert.equal(await page.locator('#modalFeedback').getAttribute('data-entry-source'), 'proactive');
     assert.equal(await page.locator('#feedbackModalTitle').innerText(), '这次游戏体验怎么样？');
     await page.click('#fbStarsWrap [data-val="5"]');
-    assert.match(await page.locator('#fbSolutionContent').innerText(), /Adreno 750 稳定方案/);
-    await page.check('#linkCurrentSolutionCheckbox');
+    assert.match(await page.locator('#fbSolutionContent').innerText(), /分享我的启动方案和本次运行时长/);
+    await page.check('#shareSessionCheckbox');
     await page.click('#modalFeedback .btn-submit');
     const mine = await page.evaluate(() => window.getFeedbacks().find((item) => item.uid === 'me_demo_user'));
-    assert.equal(mine.solutionId, 'solution_public_01');
-    assert.equal(await page.locator('#cloudSharePage').isVisible(), false,
-      '应用他人公开方案后应关联原方案，不应创建新的云分享方案');
+    assert.equal(mine.solutionId, 'community_cfg_adreno750_stable_v1');
+    const linkedProfile = await page.evaluate((solutionId) => window.compatibilityDemo.getCommunityProfiles()
+      .find((item) => item.id === solutionId), mine.solutionId);
+    assert.equal(linkedProfile.source, '社区共同验证');
+    assert.equal(await page.locator('#cloudSharePage').count(), 0,
+      '分享运行配置不应创建个人云分享流程');
     assert.equal(await page.locator('#compatPage').isVisible(), true,
       '提交后应进入评价列表');
     assert.ok(await page.locator('[data-owner="me"]').count() > 0,
@@ -203,54 +217,124 @@ test('星级与兼容类型双向联动，1–2 星隐藏方案，3–5 星展�
   }
 });
 
-test('3–5 星仅用勾选项关联本次方案，个人方案先提交评价再确认公开', async () => {
+test('公共方案按复合键去重、会话幂等并随评价生命周期撤销贡献', async () => {
   const { page, errors } = await openDemo(cDemo, 'C 端', { width: 1280, height: 900 });
   try {
-    await page.evaluate(() => window.compatibilityDemo.setSolutionSource('public'));
+    await page.evaluate(() => window.compatibilityDemo.setSessionSnapshot({ playSessionId: '' }));
+    await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
+    await page.click('#fbStarsWrap [data-val="5"]');
+    assert.equal(await page.locator('#fbSolutionSection').isVisible(), false,
+      '无成功会话时不得展示分享区域');
+    await page.evaluate(() => {
+      window.closeFeedbackModal({ preserveDraft: false });
+      localStorage.removeItem('gh_compat_review_v12_draft');
+    });
+
+    await page.evaluate(() => window.compatibilityDemo.setSessionSnapshot({
+      configHash: 'cfg_test_dedup_v1',
+      profileName: '本次启动方案',
+      durationSeconds: 1122,
+      playSessionId: 'test_session_1',
+    }));
     await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
     assert.equal(await page.locator('#modalFeedback').evaluate((element) => element.classList.contains('show')), true,
-      '未实现契约：公开方案场景未打开共用评价弹窗');
+      '未实现契约：成功会话未打开共用评价弹窗');
     await page.click('#fbStarsWrap [data-val="5"]');
-    await requireOne(page, '#linkCurrentSolutionCheckbox', '关联本次使用方案勾选项');
-    assert.equal(await page.locator('#linkCurrentSolutionCheckbox').isChecked(), false,
-      '方案关联必须由用户主动勾选');
-    assert.match(await page.locator('#fbSolutionContent').innerText(), /关联本次使用的方案.*Adreno 750 稳定方案/s);
+    await requireOne(page, '#shareSessionCheckbox', '分享本次运行配置勾选项');
+    assert.equal(await page.locator('#shareSessionCheckbox').isChecked(), false,
+      '运行配置分享必须由用户主动勾选');
+    assert.match(await page.locator('#fbSolutionContent').innerText(), /分享我的启动方案和本次运行时长/);
     assert.equal(await page.locator('#publishSolutionButton').count(), 0, '弹窗内不应出现独立发布按钮');
     assert.equal(await page.locator('#submitReviewOnlyButton').count(), 0, '弹窗内不应出现并列的仅提交按钮');
-    await page.check('#linkCurrentSolutionCheckbox');
+    await page.check('#shareSessionCheckbox');
     await page.click('#modalFeedback .btn-submit');
-    assert.equal(await page.locator('#cloudSharePage').isVisible(), false, '公开方案无需重复发布');
-    const publicReview = await page.evaluate(() => window.getFeedbacks()[0]);
-    assert.equal(publicReview.solutionId, 'solution_public_01');
+    let matches = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
+      .filter((item) => item.configHash === 'cfg_test_dedup_v1'));
+    assert.equal(matches.length, 1);
+    assert.equal(matches[0].validationCount, 1);
+    assert.equal(matches[0].totalDurationSeconds, 1122);
 
-    await page.evaluate(() => window.compatibilityDemo.setSolutionSource('private'));
+    const firstReviewId = await page.evaluate(() => window.getFeedbacks()
+      .find((item) => item.uid === 'me_demo_user')?.id);
+    await page.evaluate((id) => window.editMyReview(id), firstReviewId);
+    assert.equal(await page.locator('#shareSessionCheckbox').isChecked(), true,
+      '编辑已分享评价时应保留勾选状态');
+    await page.click('#modalFeedback .btn-submit');
+    matches = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
+      .filter((item) => item.configHash === 'cfg_test_dedup_v1'));
+    assert.equal(matches[0].validationCount, 1, '编辑评价不得重复累计同一运行会话');
+    assert.equal(matches[0].totalDurationSeconds, 1122, '编辑评价不得重复累计同一运行时长');
+
+    await page.evaluate(() => window.compatibilityDemo.setSessionSnapshot({ playSessionId: 'test_session_2' }));
     await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
     await page.click('#fbStarsWrap [data-val="4"]');
-    await requireOne(page, '#linkCurrentSolutionCheckbox', '个人方案关联勾选项');
-    assert.equal(await page.locator('#linkCurrentSolutionCheckbox').isChecked(), false);
-    await page.check('#linkCurrentSolutionCheckbox');
+    await requireOne(page, '#shareSessionCheckbox', '重复配置分享勾选项');
+    assert.equal(await page.locator('#shareSessionCheckbox').isChecked(), false);
+    await page.check('#shareSessionCheckbox');
     await page.click('#modalFeedback .btn-submit');
-    assert.equal(await page.locator('#modalFeedback').evaluate((element) => element.classList.contains('show')), false,
-      '评价应先提交完成并关闭弹窗');
-    assert.equal(await page.locator('#cloudSharePage').isVisible(), true, '随后进入现有云分享确认页');
-    let privateReview = await page.evaluate(() => window.getFeedbacks()[0]);
-    assert.equal(privateReview.solution, null, '确认公开前评价不得关联个人方案');
+    const secondReviewId = await page.evaluate((excludedId) => window.getFeedbacks()
+      .find((item) => item.uid === 'me_demo_user' && item.id !== excludedId)?.id, firstReviewId);
+    matches = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
+      .filter((item) => item.configHash === 'cfg_test_dedup_v1'));
+    assert.equal(matches.length, 1, '相同配置不得重复保存公共方案');
+    assert.equal(matches[0].validationCount, 2);
+    assert.equal(matches[0].totalDurationSeconds, 2244);
 
-    await requireOne(page, '#cancelCloudShare', '取消云分享且不影响已提交评价');
-    await page.click('#cancelCloudShare');
-    assert.equal(await page.locator('#cloudSharePage').isVisible(), false);
-    privateReview = await page.evaluate(() => window.getFeedbacks()[0]);
-    assert.equal(privateReview.solution, null, '取消公开后评价仍应保留且无方案关联');
-
+    assert.match(await page.locator(`[data-feedback-id="${firstReviewId}"] .review-solution-meta`).innerText(), /2 次验证/,
+      '历史评价应实时展示公共方案池的最新聚合计数');
     await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
-    await page.click('#fbStarsWrap [data-val="4"]');
-    await page.check('#linkCurrentSolutionCheckbox');
+    await page.click('#fbStarsWrap [data-val="3"]');
+    await page.check('#shareSessionCheckbox');
     await page.click('#modalFeedback .btn-submit');
-    await page.click('#confirmPublishAndLink');
-    assert.equal(await page.locator('#cloudSharePage').isVisible(), false);
-    privateReview = await page.evaluate(() => window.getFeedbacks()[0]);
-    assert.equal(privateReview.solutionId, 'solution_private_01_published', '确认后才公开并关联');
-    await assertNoPageErrors(errors, '公开与个人方案分流');
+    const thirdReviewId = await page.evaluate(() => window.getFeedbacks()
+      .find((item) => item.uid === 'me_demo_user')?.id);
+    matches = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
+      .filter((item) => item.configHash === 'cfg_test_dedup_v1'));
+    assert.equal(matches[0].validationCount, 2, '同一运行会话重复分享不得重复计数');
+    assert.equal(matches[0].totalDurationSeconds, 2244, '同一运行会话重复分享不得重复累计时长');
+
+    await page.evaluate((id) => window.editMyReview(id), firstReviewId);
+    await page.click('#fbStarsWrap [data-val="1"]');
+    assert.equal(await page.locator('#fbSolutionSection').isVisible(), false);
+    await page.click('#modalFeedback .btn-submit');
+    matches = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
+      .filter((item) => item.configHash === 'cfg_test_dedup_v1'));
+    assert.equal(matches[0].validationCount, 1, '评价降为 1–2 星后应撤销对应验证贡献');
+    assert.equal(matches[0].totalDurationSeconds, 1122);
+
+    page.on('dialog', async (dialog) => dialog.accept());
+    await page.evaluate((id) => window.deleteMyReview(id), secondReviewId);
+    matches = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
+      .filter((item) => item.configHash === 'cfg_test_dedup_v1'));
+    assert.equal(matches[0].validationCount, 1, '同会话仍有评价关联时应保留唯一验证贡献');
+    await page.evaluate((id) => window.deleteMyReview(id), thirdReviewId);
+    matches = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
+      .filter((item) => item.configHash === 'cfg_test_dedup_v1'));
+    assert.equal(matches.length, 0, '最后一条有效关联删除后应移除无验证的公共方案');
+
+    await page.evaluate(() => window.compatibilityDemo.setSessionSnapshot({
+      configHash: 'cfg_composite_collision_v1',
+      engineVersion: 'demo-engine-v1',
+      playSessionId: 'composite_session_1',
+    }));
+    await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
+    await page.click('#fbStarsWrap [data-val="5"]');
+    await page.check('#shareSessionCheckbox');
+    await page.click('#modalFeedback .btn-submit');
+    await page.evaluate(() => window.compatibilityDemo.setSessionSnapshot({
+      engineVersion: 'demo-engine-v2',
+      playSessionId: 'composite_session_2',
+    }));
+    await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
+    await page.click('#fbStarsWrap [data-val="5"]');
+    await page.check('#shareSessionCheckbox');
+    await page.click('#modalFeedback .btn-submit');
+    const collisions = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
+      .filter((item) => item.configHash === 'cfg_composite_collision_v1'));
+    assert.equal(collisions.length, 2, '不同引擎版本不得因 config_hash 相同而串池');
+    assert.notEqual(collisions[0].engineVersion, collisions[1].engineVersion);
+    assert.equal(await page.locator('#cloudSharePage').count(), 0);
+    await assertNoPageErrors(errors, '公共方案池精确去重');
   } finally {
     await page.close();
   }

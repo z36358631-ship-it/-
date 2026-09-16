@@ -720,17 +720,38 @@
             color: #8de5f5; background: rgba(43,195,223,.08); border: 1px solid rgba(43,195,223,.18);
             font-size: 11px; line-height: 1.45;
         }
+        .runtime-stage {
+            position: fixed; inset: 0; z-index: 4000; display: flex; align-items: center;
+            justify-content: center; padding: 16px; background: #1a1a2e;
+        }
+        .runtime-stage[hidden] { display: none; }
+        .runtime-device-frame {
+            position: relative;
+            width: min(916px, calc(100vw - 32px), calc((100vh - 32px) * 2.0088));
+            aspect-ratio: 916 / 456; padding: 14px; border-radius: 44px; background: #1c1c1e;
+            box-shadow: 0 0 0 2px #3a3a3c, 0 0 0 6px #1c1c1e,
+                0 0 0 8px #3a3a3c, 0 30px 80px rgba(0,0,0,.9);
+        }
+        .runtime-device-frame::before {
+            content: ''; position: absolute; right: -10px; top: 80px; width: 4px; height: 60px;
+            border-radius: 2px; background: #3a3a3c; box-shadow: 0 80px 0 #3a3a3c;
+        }
+        .runtime-device-screen {
+            position: relative; width: 100%; height: 100%; overflow: hidden;
+            border-radius: 30px; background: #050607;
+        }
         .journey-layer {
-            position: absolute; inset: 0; z-index: 2100; display: flex; flex-direction: column;
+            position: absolute; inset: 0; display: flex; flex-direction: column;
             align-items: center; justify-content: center; gap: 14px; background: #090a0c;
         }
+        .journey-layer[hidden], .gameplay-layer[hidden] { display: none; }
         .launch-spinner {
             width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.12);
             border-top-color: #43c4df; animation: journey-spin .8s linear infinite;
         }
         @keyframes journey-spin { to { transform: rotate(360deg); } }
         .gameplay-layer {
-            position: fixed; inset: 0; z-index: 2200; display: flex; align-items: center;
+            position: absolute; inset: 0; display: flex; align-items: center;
             justify-content: center; overflow: hidden; background: #050607;
         }
         .gameplay-wireframe { position: absolute; inset: 0; border: 0; }
@@ -1059,28 +1080,33 @@
 
     </div><!-- /inner -->
 
-    <section id="launchLayer" class="journey-layer" hidden aria-label="游戏启动中">
-        <div class="launch-spinner" aria-hidden="true"></div>
-        <strong>正在启动游戏</strong>
-    </section>
-
-    <section id="gameplayLayer" class="gameplay-layer" hidden aria-label="游戏运行中">
-        <div id="gameplayWireframe" class="gameplay-wireframe media-wireframe" role="img" aria-label="横屏游戏画面占位">
-            <span class="media-wireframe-label">横屏游戏画面</span>
-        </div>
-        <div class="gameplay-runtime">本次游玩 <span id="sessionRuntime">18:42</span></div>
-        <button id="exitGameButton" class="game-exit-button" type="button" onclick="openExitGameConfirm()">退出游戏</button>
-        <div id="exitGameConfirm" class="exit-confirm" hidden>
-            <div class="exit-confirm-card">
-                <strong>退出游戏？</strong>
-                <p>当前游戏进度将按游戏自身规则保存。</p>
-                <div class="exit-confirm-actions">
-                    <button type="button" onclick="closeExitGameConfirm()">取消</button>
-                    <button id="confirmExitGameButton" type="button" onclick="confirmExitGame()">退出游戏</button>
-                </div>
+    <div id="runtimeStage" class="runtime-stage" hidden aria-label="游戏运行环境">
+        <div id="runtimeDeviceFrame" class="runtime-device-frame">
+            <div class="runtime-device-screen">
+                <section id="launchLayer" class="journey-layer" hidden aria-label="游戏启动中">
+                    <div class="launch-spinner" aria-hidden="true"></div>
+                    <strong>正在启动游戏</strong>
+                </section>
+                <section id="gameplayLayer" class="gameplay-layer" hidden aria-label="游戏运行中">
+                    <div id="gameplayWireframe" class="gameplay-wireframe media-wireframe" role="img" aria-label="横屏游戏画面占位">
+                        <span class="media-wireframe-label">横屏游戏画面</span>
+                    </div>
+                    <div class="gameplay-runtime">本次游玩 <span id="sessionRuntime">18:42</span></div>
+                    <button id="exitGameButton" class="game-exit-button" type="button" onclick="openExitGameConfirm()">退出游戏</button>
+                    <div id="exitGameConfirm" class="exit-confirm" hidden>
+                        <div class="exit-confirm-card">
+                            <strong>退出游戏？</strong>
+                            <p>当前游戏进度将按游戏自身规则保存。</p>
+                            <div class="exit-confirm-actions">
+                                <button type="button" onclick="closeExitGameConfirm()">取消</button>
+                                <button id="confirmExitGameButton" type="button" onclick="confirmExitGame()">退出游戏</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- 竖屏兼容性全屏面板（已废弃） -->
     <div class="compat-panel-pt" id="compatPanelPt"></div>
@@ -1129,39 +1155,6 @@
         </div>
     </div>
 
-    <!-- 复用现有云分享编辑页的离线流程模拟 -->
-    <section id="cloudSharePage" class="flow-page" hidden aria-label="云分享方案编辑">
-        <div class="flow-page-header">
-            <button id="cancelCloudShare" class="flow-back" type="button" aria-label="返回评价" onclick="cancelCloudShareDraft()">‹</button>
-            <div class="flow-title">发布运行方案</div>
-        </div>
-        <div class="flow-page-body">
-            <div class="flow-card">
-                <div class="flow-kicker">个人方案 · 未发布草稿</div>
-                <h3>检查要分享的启动方案</h3>
-                <p class="flow-copy">评价已经提交。配置来自本次实际运行记录；确认后公开给其他玩家并关联到刚才的评价，取消不会公开，也不影响已提交的评价。</p>
-                <div class="flow-field">
-                    <label for="cloudSolutionName">方案名称</label>
-                    <input id="cloudSolutionName" value="Adreno 750 稳定运行方案" maxlength="30">
-                </div>
-                <div class="flow-field">
-                    <label for="cloudSolutionSummary">方案说明</label>
-                    <textarea id="cloudSolutionSummary" maxlength="120">适用于 Adreno 750，优先稳定性与手柄兼容。</textarea>
-                </div>
-                <div class="flow-config" aria-label="实际运行配置">
-                    <div>引擎版本：Winlator 10.1</div>
-                    <div>图形驱动：Turnip 25.1</div>
-                    <div>运行架构：ARM64</div>
-                    <div>分辨率：1280 × 720</div>
-                </div>
-            </div>
-        </div>
-        <div class="flow-actions">
-            <button type="button" onclick="cancelCloudShareDraft()">取消</button>
-            <button id="confirmPublishAndLink" class="primary" type="button" onclick="confirmPublishAndLink()">确认发布并关联</button>
-        </div>
-    </section>
-
     <!-- 复用现有方案详情/应用流程的离线模拟 -->
     <section id="solutionDetailPage" class="flow-page" hidden aria-label="方案详情">
         <div class="flow-page-header">
@@ -1170,7 +1163,7 @@
         </div>
         <div class="flow-page-body">
             <div class="flow-card">
-                <div class="flow-kicker">玩家公开方案</div>
+                <div class="flow-kicker">社区共同验证</div>
                 <h3 id="solutionDetailName">Adreno 750 稳定方案</h3>
                 <p class="flow-copy">方案由实际成功启动记录持续验证。应用前会重新检查当前设备的 GPU、运行架构与辅助配置。</p>
                 <div id="solutionConfidenceLine" class="solution-confidence">同配置 · 成功率 92% · 38 次验证 · 最近验证 3 天前</div>
@@ -1308,6 +1301,16 @@
 const LS_KEY = 'gh_compat_feedbacks_gta5_v12';
 const LS_REPORTED = 'gh_compat_reported_gta5_v12';
 const LS_LIKED = 'gh_compat_liked_gta5_v12';
+const COMMUNITY_PROFILES_KEY = 'gh_community_profiles_v1';
+const COMMUNITY_PROFILE_DIMENSIONS = Object.freeze({
+    gameId: 'gta5',
+    platform: 'android',
+    gpuModel: 'Adreno 750',
+    runtimeArchitecture: 'arm64',
+    engineVersion: 'demo-engine-v1',
+    schemaVersion: '1',
+    canonicalizerVersion: '1'
+});
 
 function getReportedSet() {
     try { return new Set(JSON.parse(localStorage.getItem(LS_REPORTED) || '[]')); } catch(e) { return new Set(); }
@@ -1323,10 +1326,10 @@ const MY_UID = 'me_demo_user';
 const AVATARS = Array(7).fill('');
 
 const SEEDS = [
-    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', solution:{id:'solution_public_01',name:'Adreno 750 稳定方案',source:'玩家公开方案',status:'published',samples:38,successRate:92,lastVerifiedDays:3} },
-    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['基本可玩'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'low-sample', solution:{id:'solution_public_02',name:'Galaxy 音频兼容方案',source:'玩家公开方案',status:'published',samples:8,successRate:null,lastVerifiedDays:6} },
+    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', solution:{id:'community_cfg_adreno750_stable_v1',name:'Adreno 750 稳定方案',source:'社区共同验证',status:'published',configHash:'cfg_adreno750_stable_v1',samples:38,validationCount:38,totalDurationSeconds:186420,successRate:92,lastVerifiedDays:3} },
+    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['基本可玩'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'low-sample', solution:{id:'community_cfg_galaxy_audio_v1',name:'Galaxy 音频兼容方案',source:'社区共同验证',status:'published',configHash:'cfg_galaxy_audio_v1',samples:8,validationCount:8,totalDurationSeconds:26580,successRate:null,lastVerifiedDays:6} },
     { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.0.5', stars:5, tags:['完美兼容'], text:'启动过程很顺畅，进入游戏后画面稳定，手柄操作也没有异常。', date:'2025-04-22', likes:31 },
-    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.5', stars:3, tags:['有部分问题'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8, reviewState:'unavailable', solution:{id:'solution_unavailable_01',name:'旧版图形修复方案',source:'玩家公开方案',status:'unavailable',samples:21,successRate:76,lastVerifiedDays:18} },
+    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.5', stars:3, tags:['有部分问题'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8, reviewState:'unavailable', solution:{id:'community_cfg_legacy_graphics_v1',name:'旧版图形修复方案',source:'社区共同验证',status:'unavailable',configHash:'cfg_legacy_graphics_v1',samples:21,validationCount:21,totalDurationSeconds:48220,successRate:76,lastVerifiedDays:18} },
     { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.0.3', stars:4, tags:['基本可玩'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', html:'剧情向玩家<b>强烈推荐</b>，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
     { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro · HarmonyOS 5', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.2', stars:2, tags:['有部分问题'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5, reviewState:'none', solution:null },
     { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', html:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！<u>强烈推荐</u>。', date:'2025-04-12', likes:43 },
@@ -1343,6 +1346,137 @@ function getFeedbacks() {
 
 function saveFeedbacks(list) {
     localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+function withCommunityDimensions(profile) {
+    return { ...COMMUNITY_PROFILE_DIMENSIONS, ...profile };
+}
+
+function getCommunityProfileKey(profile) {
+    const normalized = withCommunityDimensions(profile || {});
+    return [
+        normalized.gameId,
+        normalized.platform,
+        normalized.gpuModel,
+        normalized.runtimeArchitecture,
+        normalized.engineVersion,
+        normalized.schemaVersion,
+        normalized.canonicalizerVersion,
+        normalized.configHash
+    ].join('|');
+}
+
+function getCommunityProfiles() {
+    try {
+        const raw = localStorage.getItem(COMMUNITY_PROFILES_KEY);
+        if (raw) return JSON.parse(raw).map(withCommunityDimensions);
+    } catch (error) {}
+    const profiles = SEEDS
+        .map(item => item.solution)
+        .filter(solution => solution?.status === 'published')
+        .filter((solution, index, list) => list.findIndex(item => item.id === solution.id) === index)
+        .map(solution => withCommunityDimensions({
+            ...solution,
+            validationSessionIds: [...(solution.validationSessionIds || [])],
+            validationRecords: [...(solution.validationRecords || [])]
+        }));
+    localStorage.setItem(COMMUNITY_PROFILES_KEY, JSON.stringify(profiles));
+    return profiles;
+}
+
+function saveCommunityProfiles(profiles) {
+    localStorage.setItem(COMMUNITY_PROFILES_KEY, JSON.stringify(profiles));
+}
+
+function resolveReviewSolution(review) {
+    const solutionId = review?.solutionId || review?.solution?.id || '';
+    if (solutionId) {
+        const communityProfile = getCommunityProfiles().find(item => item.id === solutionId);
+        if (communityProfile) return communityProfile;
+    }
+    return review?.solution || null;
+}
+
+function upsertCommunityProfile(snapshot, reviewId) {
+    if (!snapshot?.configHash || !snapshot?.playSessionId || !reviewId) return null;
+    const normalizedSnapshot = withCommunityDimensions(snapshot);
+    const profileKey = getCommunityProfileKey(normalizedSnapshot);
+    const profiles = getCommunityProfiles();
+    const existingIndex = profiles.findIndex(item => getCommunityProfileKey(item) === profileKey);
+    const current = existingIndex >= 0 ? { ...profiles[existingIndex] } : {
+        gameId: normalizedSnapshot.gameId,
+        platform: normalizedSnapshot.platform,
+        gpuModel: normalizedSnapshot.gpuModel,
+        runtimeArchitecture: normalizedSnapshot.runtimeArchitecture,
+        engineVersion: normalizedSnapshot.engineVersion,
+        schemaVersion: normalizedSnapshot.schemaVersion,
+        canonicalizerVersion: normalizedSnapshot.canonicalizerVersion,
+        id: ['community', normalizedSnapshot.gameId, normalizedSnapshot.configHash, normalizedSnapshot.engineVersion].join('_'),
+        name: normalizedSnapshot.profileName || '社区稳定方案',
+        source: '社区共同验证',
+        status: 'published',
+        configHash: normalizedSnapshot.configHash,
+        validationCount: 0,
+        totalDurationSeconds: 0,
+        validationSessionIds: [],
+        validationRecords: [],
+        samples: 0,
+        successRate: null,
+        lastVerifiedDays: 0
+    };
+    const records = Array.isArray(current.validationRecords)
+        ? current.validationRecords.map(record => ({ ...record, reviewIds: [...(record.reviewIds || [])] }))
+        : [];
+    const sessionId = String(normalizedSnapshot.playSessionId);
+    let record = records.find(item => item.playSessionId === sessionId);
+    if (!record) {
+        record = {
+            playSessionId: sessionId,
+            durationSeconds: Number(normalizedSnapshot.durationSeconds || 0),
+            reviewIds: [reviewId]
+        };
+        records.push(record);
+        current.validationCount = Number(current.validationCount ?? current.samples ?? 0) + 1;
+        current.totalDurationSeconds = Number(current.totalDurationSeconds || 0) + record.durationSeconds;
+    } else if (!record.reviewIds.includes(reviewId)) {
+        record.reviewIds.push(reviewId);
+    }
+    current.validationRecords = records;
+    current.validationSessionIds = records.map(item => item.playSessionId);
+    current.samples = current.validationCount;
+    current.successRate = current.validationCount >= 10 ? 92 : null;
+    current.lastVerifiedDays = 0;
+    if (existingIndex >= 0) profiles[existingIndex] = current;
+    else profiles.push(current);
+    saveCommunityProfiles(profiles);
+    return current;
+}
+
+function removeCommunityContribution(solutionId, playSessionId, reviewId) {
+    if (!solutionId || !playSessionId || !reviewId) return;
+    const profiles = getCommunityProfiles();
+    const profileIndex = profiles.findIndex(item => item.id === solutionId);
+    if (profileIndex < 0) return;
+    const current = { ...profiles[profileIndex] };
+    const records = Array.isArray(current.validationRecords)
+        ? current.validationRecords.map(record => ({ ...record, reviewIds: [...(record.reviewIds || [])] }))
+        : [];
+    const recordIndex = records.findIndex(record => record.playSessionId === playSessionId);
+    if (recordIndex < 0) return;
+    const record = records[recordIndex];
+    record.reviewIds = record.reviewIds.filter(id => id !== reviewId);
+    if (record.reviewIds.length === 0) {
+        records.splice(recordIndex, 1);
+        current.validationCount = Math.max(0, Number(current.validationCount ?? current.samples ?? 0) - 1);
+        current.totalDurationSeconds = Math.max(0, Number(current.totalDurationSeconds || 0) - Number(record.durationSeconds || 0));
+    }
+    current.validationRecords = records;
+    current.validationSessionIds = records.map(item => item.playSessionId);
+    current.samples = current.validationCount;
+    current.successRate = current.validationCount >= 10 ? 92 : null;
+    if (current.validationCount === 0) profiles.splice(profileIndex, 1);
+    else profiles[profileIndex] = current;
+    saveCommunityProfiles(profiles);
 }
 
 // ============================================================
@@ -1465,7 +1599,7 @@ function refreshPanel(side) {
 }
 
 function renderReviewSolution(review) {
-    const solution = review.solution;
+    const solution = resolveReviewSolution(review);
     if (review.stars < 3 || !solution) return '';
     if (solution.status !== 'published') return '';
     const stats = solution.samples < 10
@@ -1637,17 +1771,22 @@ let fbStarVal = 0;
 let fbMediaFiles = [];
 let editingId = null;
 let selectedCompatType = '';
-let pendingSolutionId = '';
-let solutionSourceMode = 'public';
-let pendingReviewLinkId = '';
+let shareSessionRequested = false;
 
 const journeyState = {
     stage: 'detail',
     appliedSolutionId: '',
     appliedSolutionName: '',
-    solutionSource: 'private',
+    appliedConfigHash: '',
     playSessionId: '',
-    startedAt: 0
+    startedAt: 0,
+    sessionSnapshot: {
+        ...COMMUNITY_PROFILE_DIMENSIONS,
+        configHash: 'cfg_local_default_v1',
+        profileName: '本次启动方案',
+        durationSeconds: 1122,
+        playSessionId: 'play_demo_recent_success'
+    }
 };
 
 const REVIEW_DRAFT_KEY = 'gh_compat_review_v12_draft';
@@ -1716,8 +1855,7 @@ function saveFeedbackDraft() {
         type: selectedCompatType,
         text: editor ? editor.value : '',
         media: fbMediaFiles,
-        solutionId: pendingSolutionId,
-        solutionSource: solutionSourceMode
+        shareSessionRequested
     }));
 }
 
@@ -1727,8 +1865,7 @@ function restoreFeedbackDraft() {
     fbStarVal = Number(draft?.stars) || 0;
     selectedCompatType = draft?.type || TYPE_BY_STAR[fbStarVal] || '';
     fbMediaFiles = Array.isArray(draft?.media) ? draft.media : [];
-    pendingSolutionId = draft?.solutionId || '';
-    if (draft?.solutionSource) solutionSourceMode = draft.solutionSource;
+    shareSessionRequested = Boolean(draft?.shareSessionRequested);
     document.getElementById('fbEditor').value = draft?.text || '';
     paintFbStars(fbStarVal);
     renderCompatTypes();
@@ -1756,11 +1893,6 @@ function openFeedbackModal(options = {}) {
         renderMediaList();
         renderFeedbackSolution();
     }
-    if (options.actualSolutionId) {
-        solutionSourceMode = options.solutionSource === 'private' ? 'private' : 'public';
-        pendingSolutionId = '';
-        renderFeedbackSolution();
-    }
     modal.classList.add('show');
     if (source === 'proactive') recordInviteExposure(options.gameKey || 'gta5|Adreno 750');
 }
@@ -1771,27 +1903,28 @@ function routeSessionResult(result, session = {}) {
     openFeedbackModal({
         source: 'proactive',
         gameKey: 'gta5|Adreno 750',
-        playSessionId: session.playSessionId || journeyState.playSessionId,
-        actualSolutionId: session.solutionId || journeyState.appliedSolutionId,
-        solutionSource: journeyState.solutionSource
+        playSessionId: session.playSessionId || journeyState.playSessionId
     });
 }
 
 function setJourneyStage(stage) {
     journeyState.stage = stage;
     document.body.dataset.journeyStage = stage;
+    document.getElementById('runtimeStage').hidden = stage !== 'launching' && stage !== 'gameplay';
     document.getElementById('launchLayer').hidden = stage !== 'launching';
     document.getElementById('gameplayLayer').hidden = stage !== 'gameplay';
 }
 
 function startGame() {
-    if (!journeyState.appliedSolutionId) {
-        journeyState.appliedSolutionId = 'solution_private_01';
-        journeyState.appliedSolutionName = '我的个人稳定方案';
-        journeyState.solutionSource = 'private';
-    }
     journeyState.playSessionId = 'play_' + Date.now();
     journeyState.startedAt = Date.now();
+    journeyState.sessionSnapshot = {
+        ...COMMUNITY_PROFILE_DIMENSIONS,
+        configHash: journeyState.appliedConfigHash || 'cfg_local_default_v1',
+        profileName: journeyState.appliedSolutionName || '本次启动方案',
+        durationSeconds: 0,
+        playSessionId: journeyState.playSessionId
+    };
     setJourneyStage('launching');
     window.setTimeout(() => setJourneyStage('gameplay'), 700);
 }
@@ -1806,11 +1939,11 @@ function closeExitGameConfirm() {
 
 function confirmExitGame() {
     closeExitGameConfirm();
+    journeyState.sessionSnapshot.durationSeconds = 1122;
     setJourneyStage('detail');
     setOrient('pt');
     routeSessionResult('normal', {
-        playSessionId: journeyState.playSessionId,
-        solutionId: journeyState.appliedSolutionId
+        playSessionId: journeyState.playSessionId
     });
 }
 
@@ -1861,7 +1994,7 @@ function setRating(value) {
     fbStarVal = Number(value) || 0;
     selectedCompatType = TYPE_BY_STAR[fbStarVal] || '';
     if (fbStarVal < 3) {
-        pendingSolutionId = '';
+        shareSessionRequested = false;
     }
     paintFbStars(fbStarVal);
     renderCompatTypes();
@@ -1885,79 +2018,27 @@ function renderCompatTypes() {
 function renderFeedbackSolution() {
     const section = document.getElementById('fbSolutionSection');
     const content = document.getElementById('fbSolutionContent');
-    if (fbStarVal < 3) {
+    const canShare = fbStarVal >= 3
+        && Boolean(journeyState.sessionSnapshot?.configHash)
+        && Boolean(journeyState.sessionSnapshot?.playSessionId);
+    if (!canShare) {
         section.hidden = true;
         content.innerHTML = '';
-        pendingSolutionId = '';
+        shareSessionRequested = false;
         return;
     }
     section.hidden = false;
-    const isPublic = solutionSourceMode === 'public';
-    const published = pendingSolutionId === 'solution_private_01_published';
-    const checked = isPublic
-        ? pendingSolutionId === 'solution_public_01'
-        : pendingSolutionId === 'solution_private_draft_requested' || published;
-    const solutionName = isPublic ? 'Adreno 750 稳定方案' : '我的个人稳定方案';
     content.innerHTML = `<label class="fb-solution-toggle">
-        <input id="linkCurrentSolutionCheckbox" type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCurrentSolutionLink(this.checked)">
+        <input id="shareSessionCheckbox" type="checkbox" ${shareSessionRequested ? 'checked' : ''} onchange="toggleSessionShare(this.checked)">
         <span class="fb-solution-copy">
-            <strong>关联本次使用的方案</strong>
-            <span class="fb-solution-name">${solutionName} · 本次使用</span>
+            <strong>分享我的启动方案和本次运行时长</strong>
         </span>
     </label>`;
 }
 
-function toggleCurrentSolutionLink(checked) {
-    if (!checked) pendingSolutionId = '';
-    else if (solutionSourceMode === 'public') pendingSolutionId = 'solution_public_01';
-    else if (pendingSolutionId !== 'solution_private_01_published') pendingSolutionId = 'solution_private_draft_requested';
+function toggleSessionShare(checked) {
+    shareSessionRequested = Boolean(checked);
     saveFeedbackDraft();
-}
-
-function openCloudShareDraft() {
-    document.getElementById('cloudSharePage').hidden = false;
-}
-
-function cancelCloudShareDraft() {
-    document.getElementById('cloudSharePage').hidden = true;
-    const savedReviewId = pendingReviewLinkId;
-    pendingReviewLinkId = '';
-    pendingSolutionId = '';
-    if (savedReviewId) finishReviewSubmission(savedReviewId);
-}
-
-function confirmPublishAndLink() {
-    pendingSolutionId = 'solution_private_01_published';
-    solutionSourceMode = 'private';
-    document.getElementById('cloudSharePage').hidden = true;
-    if (pendingReviewLinkId) {
-        const list = getFeedbacks();
-        const idx = list.findIndex(item => item.id === pendingReviewLinkId);
-        if (idx !== -1) {
-            const solution = createPublishedSolution('solution_private_01_published');
-            list[idx] = { ...list[idx], solutionId: solution.id, solution, reviewState: 'low-sample' };
-            saveFeedbacks(list);
-            refreshEntryCard();
-            if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
-        }
-    }
-    const savedReviewId = pendingReviewLinkId;
-    pendingReviewLinkId = '';
-    if (savedReviewId) finishReviewSubmission(savedReviewId);
-    showToast('方案已发布并关联');
-}
-
-function createPublishedSolution(solutionId) {
-    const isPublic = solutionId === 'solution_public_01';
-    return {
-        id: solutionId,
-        name: isPublic ? 'Adreno 750 稳定方案' : '我的个人稳定方案',
-        source: isPublic ? '玩家公开方案' : '我的公开方案',
-        status: 'published',
-        samples: isPublic ? 38 : 1,
-        successRate: isPublic ? 92 : null,
-        lastVerifiedDays: 0
-    };
 }
 
 function finishReviewSubmission(savedReviewId) {
@@ -1975,57 +2056,77 @@ function submitFeedback() {
     const tags = selectedCompatType ? [TYPE_LABELS[selectedCompatType]] : [];
     const text = document.getElementById('fbEditor').value.trim();
     const list = getFeedbacks();
-    const wantsPrivatePublish = fbStarVal >= 3
-        && solutionSourceMode === 'private'
-        && pendingSolutionId === 'solution_private_draft_requested';
-    const linkedSolution = wantsPrivatePublish || fbStarVal < 3 ? '' : pendingSolutionId;
-    const solution = linkedSolution ? createPublishedSolution(linkedSolution) : null;
-    let savedReviewId = '';
+    const existingIndex = editingId === null ? -1 : list.findIndex(item => item.id === editingId);
+    const existingReview = existingIndex >= 0 ? list[existingIndex] : null;
+    const existingSolution = existingReview ? resolveReviewSolution(existingReview) : null;
+    const savedReviewId = existingReview?.id || ('u_' + Date.now());
+    const wantsShare = fbStarVal >= 3 && shareSessionRequested;
+    const keepsExistingContribution = Boolean(
+        wantsShare
+        && existingSolution?.status === 'published'
+        && existingReview?.sharedPlaySessionId === journeyState.sessionSnapshot.playSessionId
+        && getCommunityProfileKey(existingSolution) === getCommunityProfileKey(journeyState.sessionSnapshot)
+    );
+    if (existingReview?.solutionId && !keepsExistingContribution) {
+        removeCommunityContribution(existingReview.solutionId, existingReview.sharedPlaySessionId, existingReview.id);
+    }
+    let solution = null;
+    if (wantsShare) {
+        if (keepsExistingContribution) {
+            solution = existingSolution;
+        } else {
+            solution = upsertCommunityProfile(journeyState.sessionSnapshot, savedReviewId);
+        }
+    }
+    const linkedSolution = solution?.id || '';
+    const linkedPlaySessionId = solution
+        ? (keepsExistingContribution ? existingReview.sharedPlaySessionId : journeyState.sessionSnapshot.playSessionId)
+        : '';
+    const reviewState = solution
+        ? (Number(solution.validationCount ?? solution.samples ?? 0) < 10 ? 'low-sample' : 'valid')
+        : (fbStarVal < 3 ? 'none' : 'unlinked');
     if (editingId !== null) {
-        const idx = list.findIndex(x => x.id === editingId);
-        if (idx !== -1) {
-            list[idx] = { ...list[idx], stars: fbStarVal, tags, text, html: '', media: fbMediaFiles, compatType: selectedCompatType, solutionId: linkedSolution, solution, reviewState: solution ? (solution.samples < 10 ? 'low-sample' : 'valid') : (fbStarVal < 3 ? 'none' : 'unlinked') };
-            savedReviewId = list[idx].id;
+        if (existingIndex !== -1) {
+            list[existingIndex] = {
+                ...list[existingIndex],
+                stars: fbStarVal,
+                tags,
+                text,
+                html: '',
+                media: fbMediaFiles,
+                compatType: selectedCompatType,
+                solutionId: linkedSolution,
+                solution: null,
+                reviewState,
+                sharedPlaySessionId: linkedPlaySessionId
+            };
         }
         saveFeedbacks(list);
         localStorage.removeItem(REVIEW_DRAFT_KEY);
         closeFeedbackModal({ preserveDraft: false });
-        refreshEntryCard();
-        if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
-        if (wantsPrivatePublish && savedReviewId) {
-            pendingReviewLinkId = savedReviewId;
-            openCloudShareDraft();
-            return;
-        }
+        finishReviewSubmission(savedReviewId);
         showToast('评价已更新！');
         return;
     }
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     const item = {
-        id: 'u_' + Date.now(), uid: MY_UID,
+        id: savedReviewId, uid: MY_UID,
         name: '我', avatar: AVATARS[0],
         device: 'Pixel 9 Pro · Android 15',
         gpu: 'Adreno 750',
         memoryGB: 12,
         stars: fbStarVal, tags, text, html: '', media: fbMediaFiles,
-        compatType: selectedCompatType, solutionId: linkedSolution, solution,
-        reviewState: solution ? (solution.samples < 10 ? 'low-sample' : 'valid') : (fbStarVal < 3 ? 'none' : 'unlinked'),
+        compatType: selectedCompatType, solutionId: linkedSolution,
+        reviewState,
+        sharedPlaySessionId: linkedPlaySessionId,
         likes: 0, appVersion: 'v6.1.2'
     };
     item.date = dateStr;
-    savedReviewId = item.id;
     list.unshift(item);
     saveFeedbacks(list);
     localStorage.removeItem(REVIEW_DRAFT_KEY);
     closeFeedbackModal({ preserveDraft: false });
-    refreshEntryCard();
-    if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
-    if (wantsPrivatePublish) {
-        pendingReviewLinkId = savedReviewId;
-        openCloudShareDraft();
-        return;
-    }
     finishReviewSubmission(savedReviewId);
     showToast('评价提交成功，感谢你的反馈！');
 }
@@ -2036,7 +2137,12 @@ function submitFeedback() {
 function deleteMyReview(id) {
     if (!confirm('确定要删除这条评价吗？')) return;
     if (!confirm('删除后无法恢复，确认删除？')) return;
-    const list = getFeedbacks().filter(x => x.id !== id);
+    const feedbacks = getFeedbacks();
+    const removed = feedbacks.find(item => item.id === id);
+    if (removed?.solutionId) {
+        removeCommunityContribution(removed.solutionId, removed.sharedPlaySessionId, removed.id);
+    }
+    const list = feedbacks.filter(x => x.id !== id);
     saveFeedbacks(list);
     refreshEntryCard();
     if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
@@ -2049,8 +2155,7 @@ function editMyReview(id) {
     editingId = id;
     fbStarVal = item.stars || 0;
     selectedCompatType = item.compatType || TYPE_BY_STAR[fbStarVal] || '';
-    pendingSolutionId = item.solutionId || item.solution?.id || '';
-    solutionSourceMode = pendingSolutionId === 'solution_public_01' ? 'public' : 'private';
+    shareSessionRequested = Boolean(item.solutionId || item.solution?.id);
     fbMediaFiles = item.media ? [...item.media] : [];
     paintFbStars(fbStarVal);
     document.getElementById('fbEditor').value = item.text || '';
@@ -2213,8 +2318,11 @@ let currentDetailSolution = null;
 let pendingAuxiliaryConfirmation = false;
 
 function findSolutionById(solutionId) {
+    const communityProfile = getCommunityProfiles().find(item => item.id === solutionId);
+    if (communityProfile) return communityProfile;
     for (const review of getFeedbacks()) {
-        if (review.solution?.id === solutionId) return review.solution;
+        const solution = resolveReviewSolution(review);
+        if (solution?.id === solutionId) return solution;
     }
     return null;
 }
@@ -2270,9 +2378,7 @@ function applyCurrentSolution() {
     const appliedSolution = { ...currentDetailSolution };
     journeyState.appliedSolutionId = appliedSolution.id;
     journeyState.appliedSolutionName = appliedSolution.name;
-    journeyState.solutionSource = 'public';
-    solutionSourceMode = 'public';
-    pendingSolutionId = '';
+    journeyState.appliedConfigHash = appliedSolution.configHash || 'cfg_adreno750_stable_v1';
     const applied = document.getElementById('currentAppliedSolution');
     applied.textContent = '当前方案：' + appliedSolution.name;
     applied.hidden = false;
@@ -2285,21 +2391,6 @@ function applyCurrentSolution() {
 function copyCurrentSolution() {
     if (!currentDetailSolution) return;
     document.getElementById('solutionApplyResult').textContent = '已复制到“我的方案”，原方案不会被修改。';
-}
-
-function setSolutionSource(mode) {
-    solutionSourceMode = mode === 'public' ? 'public' : 'private';
-    pendingSolutionId = '';
-    journeyState.solutionSource = solutionSourceMode;
-    if (solutionSourceMode === 'public') {
-        journeyState.appliedSolutionId = 'solution_public_01';
-        journeyState.appliedSolutionName = 'Adreno 750 稳定方案';
-    } else {
-        journeyState.appliedSolutionId = 'solution_private_01';
-        journeyState.appliedSolutionName = '我的个人稳定方案';
-    }
-    renderFeedbackSolution();
-    saveFeedbackDraft();
 }
 
 function setApplicationMode(mode) {
@@ -2332,9 +2423,16 @@ function resetJourney() {
         stage: 'detail',
         appliedSolutionId: '',
         appliedSolutionName: '',
-        solutionSource: 'private',
+        appliedConfigHash: '',
         playSessionId: '',
-        startedAt: 0
+        startedAt: 0,
+        sessionSnapshot: {
+            ...COMMUNITY_PROFILE_DIMENSIONS,
+            configHash: 'cfg_local_default_v1',
+            profileName: '本次启动方案',
+            durationSeconds: 1122,
+            playSessionId: 'play_demo_recent_success'
+        }
     });
     const applied = document.getElementById('currentAppliedSolution');
     applied.textContent = '';
@@ -2350,8 +2448,12 @@ function bindCompatibilityV12Demo() {
     setOrient('pt');
     window.compatibilityDemo = Object.freeze({
         getInviteState: () => JSON.parse(JSON.stringify(inviteDemoState)),
+        getCommunityProfiles: () => JSON.parse(JSON.stringify(getCommunityProfiles())),
+        setSessionSnapshot: snapshot => {
+            journeyState.sessionSnapshot = { ...journeyState.sessionSnapshot, ...snapshot };
+            return JSON.parse(JSON.stringify(journeyState.sessionSnapshot));
+        },
         simulateGlobalCooldown,
-        setSolutionSource,
         setApplicationMode,
         showSameConfigEmpty: showSameConfigEmptyScenario,
         resetJourney

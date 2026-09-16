@@ -114,34 +114,35 @@ async function captureCConnectedJourney() {
     await page.waitForTimeout(420);
     await shot(page, '04-c-applied-solution-detail-390x844.png');
 
+    await page.setViewportSize({ width: 1440, height: 900 });
     await requireOne(page, '#startGameButton', '启动游戏按钮');
     await page.click('#startGameButton');
     await page.waitForFunction(() => document.body.dataset.journeyStage === 'launching');
-    await shot(page, '05-c-launching-390x844.png');
+    await requireOne(page, '#runtimeDeviceFrame', '居中横屏手机壳');
+    await shot(page, '05-c-launching-device-1440x900.png', { fullPage: false });
 
     await page.waitForFunction(() => document.body.dataset.journeyStage === 'gameplay');
-    await page.setViewportSize({ width: 844, height: 390 });
-    await requireOne(page, '#gameplayLayer:not([hidden])', '横屏游戏层');
-    await shot(page, '06-c-gameplay-wireframe-844x390.png', { fullPage: false });
+    await requireOne(page, '#gameplayLayer:not([hidden])', '横屏手机内游戏层');
+    await shot(page, '06-c-gameplay-device-1440x900.png', { fullPage: false });
 
     await domClick(page, '#exitGameButton', '退出游戏入口');
     await requireOne(page, '#exitGameConfirm:not([hidden])', '退出游戏确认弹窗');
-    await shot(page, '07-c-exit-confirm-844x390.png', { fullPage: false });
+    await shot(page, '07-c-exit-confirm-device-1440x900.png', { fullPage: false });
 
     await page.click('#confirmExitGameButton');
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForFunction(() => document.getElementById('modalFeedback')?.classList.contains('show'));
     await page.click('#fbStarsWrap [data-val="5"]');
-    await requireOne(page, '#linkCurrentSolutionCheckbox', '关联本次实际使用方案勾选项');
+    await requireOne(page, '#shareSessionCheckbox', '分享本次运行配置勾选项');
     await shot(page, '08-c-proactive-review-390x844.png');
 
-    await page.check('#linkCurrentSolutionCheckbox');
+    await page.check('#shareSessionCheckbox');
     await page.click('#modalFeedback .btn-submit');
     await page.waitForFunction(() => document.getElementById('compatPage')?.classList.contains('show'));
     await requireOne(page, '[data-owner="me"]', '提交后的我的评价');
     const mine = await page.evaluate(() => window.getFeedbacks().find((item) => item.uid === 'me_demo_user'));
-    if (mine?.solutionId !== 'solution_public_01') {
-      throw new Error('未实现契约：我的评价未关联本次应用的公开方案');
+    if (mine?.solutionId !== 'community_cfg_adreno750_stable_v1') {
+      throw new Error('未实现契约：我的评价未关联社区共同验证方案');
     }
     await page.waitForFunction(() => !document.getElementById('toast')?.classList.contains('show'));
     await page.waitForTimeout(420);
