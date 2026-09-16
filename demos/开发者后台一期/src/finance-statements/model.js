@@ -4,6 +4,7 @@ window.PublisherSettlementStatements = (() => {
 
   const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
   const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
+  const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
   const ITEM_ORDER = Object.freeze({ game_sales_share:0, cdkey_sales_share:1, refund_chargeback_adjustment:2 });
   const ITEM_LABELS = Object.freeze({
     game_sales_share:'游戏销售分成',
@@ -34,6 +35,25 @@ window.PublisherSettlementStatements = (() => {
     const number = Number(month.slice(5, 7));
     return number === 12 ? `${year + 1}-01` : `${year}-${String(number + 1).padStart(2, '0')}`;
   };
+  const assertDate = (value,label = '日期') => {
+    const text = String(value || '').trim();
+    const match = text.match(DATE_PATTERN);
+    if (!match) throw new Error(`${label}格式应为 YYYY-MM-DD`);
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(Date.UTC(year,month - 1,day));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day) throw new Error(`${label}无效`);
+    return text;
+  };
+  const billingDate = value => `${assertMonth(value)}-01`;
+  const assertMonthBoundary = (value,label) => {
+    const date = assertDate(value,label);
+    if (!date.endsWith('-01')) throw new Error(`${label}须为每月 1 日`);
+    return date;
+  };
+  const rangeContains = (rule,date) => rule.startDate <= date && (!rule.endDate || date < rule.endDate);
+  const rangesOverlap = (left,right) => (!left.endDate || right.startDate < left.endDate) && (!right.endDate || left.startDate < right.endDate);
   const nowText = () => {
     const date = new Date();
     const pad = value => String(value).padStart(2, '0');
@@ -97,6 +117,9 @@ window.PublisherSettlementStatements = (() => {
   const normalizeTiers = tiers => {
     if (!Array.isArray(tiers) || !tiers.length) throw new Error('至少配置一个阶梯');
     return tiers.map((tier, index) => {
+      if (tier.fromMinor === '' || tier.fromMinor == null) throw new Error(`第 ${index + 1} 档金额范围无效`);
+      if (index < tiers.length - 1 && (tier.toMinor === '' || tier.toMinor == null)) throw new Error(`第 ${index + 1} 档金额范围无效`);
+      if (tier.platformRate === '' || tier.platformRate == null) throw new Error('请填写平台分成比例');
       const fromMinor = Number(tier.fromMinor);
       const toMinor = tier.toMinor == null || tier.toMinor === '' ? null : Number(tier.toMinor);
       const platformRate = Number(tier.platformRate);
@@ -125,15 +148,15 @@ window.PublisherSettlementStatements = (() => {
     return { basisMinor, platformShareMinor:roundMinor(platformShareMinor), tierSnapshots };
   };
 
-  const defaultTierRule = (developerId, gameId) => ({
-    id:`TIER-DEFAULT-${developerId}-${gameId}`, developerId, gameId, effectiveBillingMonth:'0000-01',
+  const defaultTierRule = financialEntityId => ({
+    id:`TIER-DEFAULT-${financialEntityId}`, financialEntityId, startDate:'0001-01-01', endDate:'',
     tiers:clone(DEFAULT_TIERS), reason:'平台默认阶梯', operator:'系统', operatedAt:'', status:'active',
   });
-  const tierRuleFor = (state, developerId, gameId, billingMonth) => {
-    const month = assertMonth(billingMonth);
-    const candidate = (state.tierRules || []).filter(rule => rule.developerId === developerId && rule.gameId === gameId && rule.status !== 'superseded' && rule.effectiveBillingMonth <= month)
-      .slice().sort((a,b) => b.effectiveBillingMonth.localeCompare(a.effectiveBillingMonth) || b.operatedAt.localeCompare(a.operatedAt))[0];
-    return clone(candidate || defaultTierRule(developerId, gameId));
+  const tierRuleFor = (state, financialEntityId, referenceDate) => {
+    const date = assertDate(referenceDate,'结算日期');
+    const candidate = (state.tierRules || []).filter(rule => rule.financialEntityId === financialEntityId && rule.status !== 'superseded' && rangeContains(rule,date))
+      .slice().sort((a,b) => b.startDate.localeCompare(a.startDate) || b.operatedAt.localeCompare(a.operatedAt))[0];
+    return clone(candidate || defaultTierRule(financialEntityId));
   };
 
   const productMetrics = ({ productType, productName, userPaidMinor, feeRate, channel }) => {
@@ -195,7 +218,7 @@ window.PublisherSettlementStatements = (() => {
   const createGameStatement = context => {
     const { state, game, billingMonth, gameIndex, monthIndex } = context;
     const basePaid = 7800000 + gameIndex * 925000 + monthIndex * 680000;
-    const rule = tierRuleFor(state, context.developerId, game.id, billingMonth);
+    const rule = tierRuleFor(state, context.developerId, billingDate(billingMonth));
     const rawDetails = [
       productMetrics({ productType:'游戏本体', productName:`${game.name} 标准版`, userPaidMinor:basePaid, feeRate:0.029 }),
       productMetrics({ productType:'DLC', productName:`${game.name} · 远征者扩展包`, userPaidMinor:roundMinor(basePaid * 0.28), feeRate:0.029 }),
@@ -213,7 +236,7 @@ window.PublisherSettlementStatements = (() => {
       refundMinor:0, chargebackMinor:0, salesTaxMinor:sum(gameSalesDetails,'taxMinor'), platformReceivedMinor, shareableNetMinor,
       weightedTaxRate:sum(gameSalesDetails,'taxableMinor') ? sum(gameSalesDetails,'taxMinor') / sum(gameSalesDetails,'taxableMinor') : null,
       platformShareRate:ratePercent(platformShareMinor, shareableNetMinor), platformShareMinor, payableMinor,
-      payableUsdMinor:roundMinor(payableMinor / context.fx.rate), tierRuleVersion:rule.id, tierRuleEffectiveBillingMonth:rule.effectiveBillingMonth,
+      payableUsdMinor:roundMinor(payableMinor / context.fx.rate), tierRuleVersion:rule.id, tierRuleStartDate:rule.startDate, tierRuleEndDate:rule.endDate,
       tierSnapshots:tierResult.tierSnapshots, gameSalesDetails,
     });
   };
@@ -236,7 +259,7 @@ window.PublisherSettlementStatements = (() => {
       refundChargebackMinor:0, refundMinor:0, chargebackMinor:0, salesTaxMinor:sum(details,'taxMinor'), platformReceivedMinor, shareableNetMinor:0,
       weightedTaxRate:sum(details,'taxableMinor') ? sum(details,'taxMinor') / sum(details,'taxableMinor') : null,
       platformShareRate:0, platformShareMinor:0, payableMinor:platformReceivedMinor, payableUsdMinor:roundMinor(platformReceivedMinor / context.fx.rate),
-      tierRuleVersion:'POLICY-CDKEY-0', tierRuleEffectiveBillingMonth:'0000-01', tierSnapshots:[], cdkeyDetails:details,
+      tierRuleVersion:'POLICY-CDKEY-0', tierRuleStartDate:'0001-01-01', tierRuleEndDate:'', tierSnapshots:[], cdkeyDetails:details,
     });
   };
   const createAdjustmentStatement = context => {
@@ -249,7 +272,7 @@ window.PublisherSettlementStatements = (() => {
       ...statementBase({ ...context, itemType:'refund_chargeback_adjustment', suffix:'REFUND-CHARGEBACK' }),
       userPaidMinor:0, paymentFeeMinor:0, taxMinor:0, taxableMinor:0, refundChargebackMinor, refundMinor, chargebackMinor, salesTaxMinor:0,
       platformReceivedMinor, shareableNetMinor:0, weightedTaxRate:null, platformShareRate:null, platformShareMinor:0, payableMinor:platformReceivedMinor,
-      payableUsdMinor:roundMinor(platformReceivedMinor / context.fx.rate), tierRuleVersion:'POLICY-REFUND-OFFSET', tierRuleEffectiveBillingMonth:'0000-01', tierSnapshots:[],
+      payableUsdMinor:roundMinor(platformReceivedMinor / context.fx.rate), tierRuleVersion:'POLICY-REFUND-OFFSET', tierRuleStartDate:'0001-01-01', tierRuleEndDate:'', tierSnapshots:[],
     });
   };
   const createStatement = context => context.itemType === 'game_sales_share' ? createGameStatement(context) : context.itemType === 'cdkey_sales_share' ? createCdkeyStatement(context) : createAdjustmentStatement(context);
@@ -315,31 +338,32 @@ window.PublisherSettlementStatements = (() => {
     row.platformShareRate = ratePercent(row.platformShareMinor, row.shareableNetMinor);
     row.payableMinor = roundMinor(row.platformReceivedMinor - row.platformShareMinor);
     row.payableUsdMinor = roundMinor(row.payableMinor / row.lockedFxRate);
-    row.tierRuleVersion = rule.id; row.tierRuleEffectiveBillingMonth = rule.effectiveBillingMonth; row.tierSnapshots = result.tierSnapshots;
+    row.tierRuleVersion = rule.id; row.tierRuleStartDate = rule.startDate; row.tierRuleEndDate = rule.endDate; row.tierSnapshots = result.tierSnapshots;
     Object.assign(row,withLegacyAliases(row));
   };
   const saveTierRule = (state,input = {}) => {
-    const developerId = String(input.developerId || '').trim();
-    const gameId = String(input.gameId || '').trim();
-    if (!developerId) throw new Error('缺少开发者');
-    if (!gameId) throw new Error('缺少游戏');
-    const effectiveBillingMonth = assertMonth(input.effectiveBillingMonth);
-    if (effectiveBillingMonth < String(state.currentUnlockedBillingMonth || effectiveBillingMonth)) throw new Error('生效月份不得早于当前未锁定账单月');
+    const financialEntityId = String(input.financialEntityId || '').trim();
+    if (!financialEntityId) throw new Error('请选择财务主体');
+    const startDate = assertMonthBoundary(input.startDate,'开始日期');
+    const endDate = String(input.endDate || '').trim();
+    if (endDate) assertMonthBoundary(endDate,'结束日期');
+    if (endDate && endDate <= startDate) throw new Error('结束日期必须晚于开始日期');
     const reason = String(input.reason || '').trim();
-    if (!reason) throw new Error('请填写变更原因');
     if (input.canManageFinance === false) throw new Error('无财务配置权限');
     const tiers = normalizeTiers(input.tiers);
-    (state.tierRules || []).forEach(rule => {
-      if (rule.developerId === developerId && rule.gameId === gameId && rule.effectiveBillingMonth === effectiveBillingMonth && rule.status !== 'superseded') rule.status = 'superseded';
-    });
+    const current = (state.tierRules || []).filter(rule => rule.financialEntityId === financialEntityId && rule.status !== 'superseded');
+    const replaced = current.filter(rule => rule.startDate === startDate);
+    const nextRange = { startDate,endDate };
+    if (current.some(rule => !replaced.includes(rule) && rangesOverlap(rule,nextRange))) throw new Error('同一财务主体的规则时间范围不得重叠');
+    replaced.forEach(rule => { rule.status = 'superseded'; });
     const version = {
-      id:input.id || `TIER-${effectiveBillingMonth.replace('-','')}-${String((state.tierRules || []).length + 1).padStart(3,'0')}`,
-      developerId, gameId, effectiveBillingMonth, tiers, reason, operator:String(input.operator || '平台运营').trim(), operatedAt:input.operatedAt || nowText(), status:'active',
+      id:input.id || `TIER-${startDate.replaceAll('-','')}-${String((state.tierRules || []).length + 1).padStart(3,'0')}`,
+      financialEntityId, startDate, endDate, tiers, reason, operator:String(input.operator || '平台运营').trim(), operatedAt:input.operatedAt || nowText(), status:'active',
     };
     state.tierRules.push(version);
     (state.statements || []).forEach(row => {
-      if (row.developerId !== developerId || row.gameId !== gameId || row.itemType !== 'game_sales_share' || row.status === 'confirmed' || row.lockedAt || row.billingMonth < effectiveBillingMonth) return;
-      recalculateUnlockedGameStatement(row,tierRuleFor(state,developerId,gameId,row.billingMonth));
+      if (row.developerId !== financialEntityId || row.itemType !== 'game_sales_share' || row.status === 'confirmed' || row.lockedAt) return;
+      recalculateUnlockedGameStatement(row,tierRuleFor(state,financialEntityId,billingDate(row.billingMonth)));
     });
     return clone(version);
   };

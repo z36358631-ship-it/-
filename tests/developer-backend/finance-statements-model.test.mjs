@@ -54,7 +54,8 @@ test('游戏本体与 DLC 合并，明细金额和平台分成与主表一致', 
     assert.equal(row.gameSalesDetails.reduce((sum, item) => sum + item[field], 0), row[field], `${field} 明细应与主表一致`);
   }
   assert.ok(row.tierRuleVersion);
-  assert.match(row.tierRuleEffectiveBillingMonth, /^\d{4}-\d{2}$/);
+  assert.match(row.tierRuleStartDate, /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(typeof row.tierRuleEndDate, 'string');
   assert.equal(row.tierSnapshots.reduce((sum, tier) => sum + tier.shareMinor, 0), row.platformShareMinor);
 });
 
@@ -101,10 +102,10 @@ test('阶梯平台分成按分段累进计算并保留各档快照', () => {
   assert.equal(Object.is(negative.platformShareMinor, -0), false);
 });
 
-test('阶梯规则校验连续、递减、比例范围和生效月份', () => {
+test('阶梯规则按财务主体保存，校验档位与有效时间', () => {
   const model = loadModel();
   const state = model.createState();
-  const base = { developerId:'DEV-1001', gameId:'GAME-48291', effectiveBillingMonth:'2026-09', reason:'合同续签' };
+  const base = { financialEntityId:'DEV-1001', startDate:'2026-09-01', endDate:'', reason:'' };
   assert.throws(() => model.saveTierRule(state, { ...base, tiers:[{ fromMinor:1, toMinor:null, platformRate:30 }] }), /首档/);
   assert.throws(() => model.saveTierRule(state, { ...base, tiers:[
     { fromMinor:0, toMinor:100000000, platformRate:30 },{ fromMinor:120000000, toMinor:null, platformRate:25 },
@@ -113,11 +114,21 @@ test('阶梯规则校验连续、递减、比例范围和生效月份', () => {
     { fromMinor:0, toMinor:100000000, platformRate:20 },{ fromMinor:100000000, toMinor:null, platformRate:25 },
   ] }), /不得高于/);
   assert.throws(() => model.saveTierRule(state, { ...base, tiers:[{ fromMinor:0, toMinor:null, platformRate:101 }] }), /0%-100%/);
-  assert.throws(() => model.saveTierRule(state, { ...base, effectiveBillingMonth:'2026-08', tiers:[{ fromMinor:0, toMinor:null, platformRate:30 }] }), /未锁定账单月/);
+  assert.throws(() => model.saveTierRule(state, { ...base, tiers:[{ fromMinor:0, toMinor:null, platformRate:'' }] }), /填写平台分成比例/);
+  assert.throws(() => model.saveTierRule(state, { ...base, tiers:[{ fromMinor:0, toMinor:'', platformRate:30 },{ fromMinor:'', toMinor:null, platformRate:20 }] }), /金额范围无效/);
+  assert.throws(() => model.saveTierRule(state, { ...base, startDate:'2026-09-15', tiers:[{ fromMinor:0, toMinor:null, platformRate:30 }] }), /每月 1 日/);
+  assert.throws(() => model.saveTierRule(state, { ...base, endDate:'2026-08-01', tiers:[{ fromMinor:0, toMinor:null, platformRate:30 }] }), /结束日期/);
   const saved = model.saveTierRule(state, { ...base, operator:'李然', operatedAt:'2026-09-15 10:00', tiers:[
     { fromMinor:0, toMinor:100000000, platformRate:30 },{ fromMinor:100000000, toMinor:500000000, platformRate:25 },{ fromMinor:500000000, toMinor:null, platformRate:20 },
   ] });
-  assert.equal(model.tierRuleFor(state, 'DEV-1001', 'GAME-48291', '2026-09').id, saved.id);
+  assert.equal(saved.financialEntityId,'DEV-1001');
+  assert.equal(saved.reason,'');
+  assert.equal(model.tierRuleFor(state, 'DEV-1001', '2026-09-01').id, saved.id);
+  assert.equal(model.tierRuleFor(state, 'DEV-1001', '2026-10-01').id, saved.id);
+  assert.throws(() => model.saveTierRule(state, {
+    ...base,startDate:'2026-10-01',endDate:'2027-01-01',
+    tiers:[{ fromMinor:0, toMinor:null, platformRate:20 }],
+  }), /时间范围.*重叠/);
 });
 
 test('新阶梯只重算未锁定账单，已锁定或已确认快照不变', () => {
@@ -129,7 +140,7 @@ test('新阶梯只重算未锁定账单，已锁定或已确认快照不变', ()
   state.statements.push(unlocked);
   const lockedBefore = plain(locked);
   model.saveTierRule(state, {
-    developerId:'DEV-1001', gameId:'GAME-48291', effectiveBillingMonth:'2026-09', reason:'合同变更', operator:'李然',
+    financialEntityId:'DEV-1001', startDate:'2026-09-01', endDate:'', reason:'', operator:'李然',
     tiers:[{ fromMinor:0, toMinor:null, platformRate:20 }],
   });
   assert.deepEqual(plain(model.statementsFor(state).find(row => row.id === locked.id)), lockedBefore);
@@ -137,6 +148,8 @@ test('新阶梯只重算未锁定账单，已锁定或已确认快照不变', ()
   assert.equal(changed.platformShareRate, 20);
   assert.equal(changed.platformShareMinor, Math.round(Math.max(0, changed.shareableNetMinor) * 0.2));
   assert.notEqual(changed.tierRuleVersion, unlockedRuleBefore);
+  assert.equal(changed.tierRuleStartDate,'2026-09-01');
+  assert.equal(changed.tierRuleEndDate,'');
 });
 
 test('主体汇总由共享快照生成并按金额加权综合税率', () => {

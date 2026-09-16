@@ -5832,23 +5832,36 @@ dialog.pgn-dialog::backdrop { background: rgb(30 43 55 / 22%); }
 .fo-drawer { width:min(980px,calc(100vw - 72px)); height:100%; display:flex; flex-direction:column; color:#263142; background:#fff; box-shadow:-18px 0 48px rgba(16,24,40,.2); }
 .fo-drawer > header { min-height:74px; padding:17px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:18px; border-bottom:1px solid var(--fo-line); }
 .fo-drawer h2 { margin:0; color:#1f2937; font-size:20px; }
-.fo-drawer header p { margin:6px 0 0; color:var(--fo-secondary); font-size:12px; }
-.fo-drawer header button { width:32px; height:32px; color:#667085; border:0; border-radius:6px; background:#f1f3f6; font-size:20px; }
+.fo-drawer > header p { margin:6px 0 0; color:var(--fo-secondary); font-size:12px; }
+.fo-drawer > header > button { width:32px; height:32px; color:#667085; border:0; border-radius:6px; background:#f1f3f6; font-size:20px; }
 .fo-drawer-body { min-height:0; padding:18px 20px; flex:1 1 auto; overflow:auto; }
 .fo-drawer-summary { margin-bottom:16px; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:9px; }
 .fo-drawer-summary > div { min-width:0; padding:13px; border:1px solid var(--fo-line); border-radius:7px; background:#f8f9fb; }
 .fo-drawer-summary span,.fo-drawer-summary strong { display:block; }
 .fo-drawer-summary span { color:var(--fo-secondary); font-size:11px; }
 .fo-drawer-summary strong { margin-top:7px; overflow:hidden; color:#2f3a4b; text-overflow:ellipsis; white-space:nowrap; }
-.fo-tier-base label > span,.fo-tier-row label > span { color:var(--fo-secondary); font-size:11px; }
-.fo-tier-base { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
-.fo-tier-base label,.fo-tier-row label { min-width:0; display:grid; gap:7px; }
+.fo-tier-base label > span,.fo-tier-rate > span { color:var(--fo-secondary); font-size:11px; }
+.fo-tier-base { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.fo-tier-base label { min-width:0; display:grid; gap:7px; }
 .fo-tier-base label.wide { grid-column:1 / -1; }
-.fo-tier-base input,.fo-tier-base select,.fo-tier-row input { width:100%; min-width:0; min-height:38px; padding:7px 10px; color:var(--fo-text); border:1px solid #d6dce5; border-radius:4px; background:#fff; }
+.fo-tier-base input,.fo-tier-base select,.fo-tier-card input { min-width:0; min-height:38px; padding:7px 9px; color:var(--fo-text); border:1px solid #d6dce5; border-radius:4px; background:#fff; }
+.fo-tier-base input,.fo-tier-base select { width:100%; }
 .fo-tier-list { margin-top:22px; display:grid; gap:10px; }
 .fo-tier-list > header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.fo-tier-list > header button,.fo-tier-row > button { min-height:34px; padding:0 11px; color:#4055c8; border:1px solid #cbd4f0; border-radius:4px; background:#fff; }
-.fo-tier-row { padding:12px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)) auto; align-items:end; gap:10px; border:1px solid var(--fo-line); border-radius:6px; background:#f8f9fb; }
+.fo-tier-list > header button,.fo-tier-card header button { min-height:34px; padding:0 11px; flex:0 0 auto; color:#4055c8; border:1px solid #cbd4f0; border-radius:4px; background:#fff; white-space:nowrap; }
+.fo-tier-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.fo-tier-card { min-width:0; padding:12px; border:1px solid var(--fo-line); border-radius:6px; background:#f8f9fb; }
+.fo-tier-card > header { min-height:34px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.fo-tier-card > header strong { color:#364152; font-size:13px; }
+.fo-tier-card > header button { min-height:30px; padding:0 9px; }
+.fo-tier-expression { display:flex; align-items:center; justify-content:center; gap:6px; color:#475467; font-size:11px; white-space:nowrap; }
+.fo-tier-expression b { color:#263142; font-size:15px; }
+.fo-tier-boundary { min-width:52px; height:36px; padding:0 7px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px; }
+.fo-tier-boundary.is-fixed { color:#667085; background:#eef1f5; }
+.fo-tier-expression input { width:76px; min-height:36px; }
+.fo-tier-rate { margin-top:11px; display:flex; align-items:center; gap:7px; }
+.fo-tier-rate input { width:68px; min-height:36px; }
+.fo-tier-rate i { margin-left:-27px; color:#667085; font-style:normal; pointer-events:none; }
 .fo-tier-error { margin-top:14px; padding:10px 12px; color:#b42318; border:1px solid #fecdca; border-radius:5px; background:#fef3f2; font-size:12px; }
 .fo-drawer > footer { padding:12px 20px; display:flex; justify-content:flex-end; border-top:1px solid var(--fo-line); }
 body.fo-overlay-open { overflow:hidden; }
@@ -5868,6 +5881,7 @@ body.fo-overlay-open { overflow:hidden; }
   .fo-filters,.fo-page[data-active-tab="entity"] .fo-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .fo-filter-actions { justify-content:flex-end; }
   .fo-drawer-summary { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .fo-tier-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:760px) {
   .side-nav--operations .nav-list { grid-template-columns:repeat(4,minmax(0,1fr)); }
@@ -5895,10 +5909,13 @@ body.fo-overlay-open { overflow:hidden; }
   .fo-pagination button { min-height:44px; }
   .fo-drawer { width:100vw; }
   .fo-drawer > header { padding:14px 12px; }
+  .fo-drawer > header > button { width:44px; height:44px; }
   .fo-drawer-body { padding:14px 10px; }
   .fo-drawer-summary { grid-template-columns:1fr 1fr; }
-  .fo-tier-base,.fo-tier-row { grid-template-columns:1fr; }
-  .fo-tier-row > button { min-height:40px; }
+  .fo-tier-base,.fo-tier-grid { grid-template-columns:1fr; }
+  .fo-tier-list > header button,.fo-tier-card > header button { min-height:44px; }
+  .fo-tier-boundary { height:44px; }
+  .fo-tier-expression input,.fo-tier-rate input { min-height:44px; }
   .fo-drawer > footer { padding:10px; }
   .fo-drawer > footer button { width:100%; min-height:44px; }
   .fo-demo { right:12px; bottom:12px; }
@@ -14120,6 +14137,7 @@ window.PublisherSettlementStatements = (() => {
 
   const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
   const MONTH_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
+  const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
   const ITEM_ORDER = Object.freeze({ game_sales_share:0, cdkey_sales_share:1, refund_chargeback_adjustment:2 });
   const ITEM_LABELS = Object.freeze({
     game_sales_share:'游戏销售分成',
@@ -14150,6 +14168,25 @@ window.PublisherSettlementStatements = (() => {
     const number = Number(month.slice(5, 7));
     return number === 12 ? `${year + 1}-01` : `${year}-${String(number + 1).padStart(2, '0')}`;
   };
+  const assertDate = (value,label = '日期') => {
+    const text = String(value || '').trim();
+    const match = text.match(DATE_PATTERN);
+    if (!match) throw new Error(`${label}格式应为 YYYY-MM-DD`);
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(Date.UTC(year,month - 1,day));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day) throw new Error(`${label}无效`);
+    return text;
+  };
+  const billingDate = value => `${assertMonth(value)}-01`;
+  const assertMonthBoundary = (value,label) => {
+    const date = assertDate(value,label);
+    if (!date.endsWith('-01')) throw new Error(`${label}须为每月 1 日`);
+    return date;
+  };
+  const rangeContains = (rule,date) => rule.startDate <= date && (!rule.endDate || date < rule.endDate);
+  const rangesOverlap = (left,right) => (!left.endDate || right.startDate < left.endDate) && (!right.endDate || left.startDate < right.endDate);
   const nowText = () => {
     const date = new Date();
     const pad = value => String(value).padStart(2, '0');
@@ -14213,6 +14250,9 @@ window.PublisherSettlementStatements = (() => {
   const normalizeTiers = tiers => {
     if (!Array.isArray(tiers) || !tiers.length) throw new Error('至少配置一个阶梯');
     return tiers.map((tier, index) => {
+      if (tier.fromMinor === '' || tier.fromMinor == null) throw new Error(`第 ${index + 1} 档金额范围无效`);
+      if (index < tiers.length - 1 && (tier.toMinor === '' || tier.toMinor == null)) throw new Error(`第 ${index + 1} 档金额范围无效`);
+      if (tier.platformRate === '' || tier.platformRate == null) throw new Error('请填写平台分成比例');
       const fromMinor = Number(tier.fromMinor);
       const toMinor = tier.toMinor == null || tier.toMinor === '' ? null : Number(tier.toMinor);
       const platformRate = Number(tier.platformRate);
@@ -14241,15 +14281,15 @@ window.PublisherSettlementStatements = (() => {
     return { basisMinor, platformShareMinor:roundMinor(platformShareMinor), tierSnapshots };
   };
 
-  const defaultTierRule = (developerId, gameId) => ({
-    id:`TIER-DEFAULT-${developerId}-${gameId}`, developerId, gameId, effectiveBillingMonth:'0000-01',
+  const defaultTierRule = financialEntityId => ({
+    id:`TIER-DEFAULT-${financialEntityId}`, financialEntityId, startDate:'0001-01-01', endDate:'',
     tiers:clone(DEFAULT_TIERS), reason:'平台默认阶梯', operator:'系统', operatedAt:'', status:'active',
   });
-  const tierRuleFor = (state, developerId, gameId, billingMonth) => {
-    const month = assertMonth(billingMonth);
-    const candidate = (state.tierRules || []).filter(rule => rule.developerId === developerId && rule.gameId === gameId && rule.status !== 'superseded' && rule.effectiveBillingMonth <= month)
-      .slice().sort((a,b) => b.effectiveBillingMonth.localeCompare(a.effectiveBillingMonth) || b.operatedAt.localeCompare(a.operatedAt))[0];
-    return clone(candidate || defaultTierRule(developerId, gameId));
+  const tierRuleFor = (state, financialEntityId, referenceDate) => {
+    const date = assertDate(referenceDate,'结算日期');
+    const candidate = (state.tierRules || []).filter(rule => rule.financialEntityId === financialEntityId && rule.status !== 'superseded' && rangeContains(rule,date))
+      .slice().sort((a,b) => b.startDate.localeCompare(a.startDate) || b.operatedAt.localeCompare(a.operatedAt))[0];
+    return clone(candidate || defaultTierRule(financialEntityId));
   };
 
   const productMetrics = ({ productType, productName, userPaidMinor, feeRate, channel }) => {
@@ -14311,7 +14351,7 @@ window.PublisherSettlementStatements = (() => {
   const createGameStatement = context => {
     const { state, game, billingMonth, gameIndex, monthIndex } = context;
     const basePaid = 7800000 + gameIndex * 925000 + monthIndex * 680000;
-    const rule = tierRuleFor(state, context.developerId, game.id, billingMonth);
+    const rule = tierRuleFor(state, context.developerId, billingDate(billingMonth));
     const rawDetails = [
       productMetrics({ productType:'游戏本体', productName:`${game.name} 标准版`, userPaidMinor:basePaid, feeRate:0.029 }),
       productMetrics({ productType:'DLC', productName:`${game.name} · 远征者扩展包`, userPaidMinor:roundMinor(basePaid * 0.28), feeRate:0.029 }),
@@ -14329,7 +14369,7 @@ window.PublisherSettlementStatements = (() => {
       refundMinor:0, chargebackMinor:0, salesTaxMinor:sum(gameSalesDetails,'taxMinor'), platformReceivedMinor, shareableNetMinor,
       weightedTaxRate:sum(gameSalesDetails,'taxableMinor') ? sum(gameSalesDetails,'taxMinor') / sum(gameSalesDetails,'taxableMinor') : null,
       platformShareRate:ratePercent(platformShareMinor, shareableNetMinor), platformShareMinor, payableMinor,
-      payableUsdMinor:roundMinor(payableMinor / context.fx.rate), tierRuleVersion:rule.id, tierRuleEffectiveBillingMonth:rule.effectiveBillingMonth,
+      payableUsdMinor:roundMinor(payableMinor / context.fx.rate), tierRuleVersion:rule.id, tierRuleStartDate:rule.startDate, tierRuleEndDate:rule.endDate,
       tierSnapshots:tierResult.tierSnapshots, gameSalesDetails,
     });
   };
@@ -14352,7 +14392,7 @@ window.PublisherSettlementStatements = (() => {
       refundChargebackMinor:0, refundMinor:0, chargebackMinor:0, salesTaxMinor:sum(details,'taxMinor'), platformReceivedMinor, shareableNetMinor:0,
       weightedTaxRate:sum(details,'taxableMinor') ? sum(details,'taxMinor') / sum(details,'taxableMinor') : null,
       platformShareRate:0, platformShareMinor:0, payableMinor:platformReceivedMinor, payableUsdMinor:roundMinor(platformReceivedMinor / context.fx.rate),
-      tierRuleVersion:'POLICY-CDKEY-0', tierRuleEffectiveBillingMonth:'0000-01', tierSnapshots:[], cdkeyDetails:details,
+      tierRuleVersion:'POLICY-CDKEY-0', tierRuleStartDate:'0001-01-01', tierRuleEndDate:'', tierSnapshots:[], cdkeyDetails:details,
     });
   };
   const createAdjustmentStatement = context => {
@@ -14365,7 +14405,7 @@ window.PublisherSettlementStatements = (() => {
       ...statementBase({ ...context, itemType:'refund_chargeback_adjustment', suffix:'REFUND-CHARGEBACK' }),
       userPaidMinor:0, paymentFeeMinor:0, taxMinor:0, taxableMinor:0, refundChargebackMinor, refundMinor, chargebackMinor, salesTaxMinor:0,
       platformReceivedMinor, shareableNetMinor:0, weightedTaxRate:null, platformShareRate:null, platformShareMinor:0, payableMinor:platformReceivedMinor,
-      payableUsdMinor:roundMinor(platformReceivedMinor / context.fx.rate), tierRuleVersion:'POLICY-REFUND-OFFSET', tierRuleEffectiveBillingMonth:'0000-01', tierSnapshots:[],
+      payableUsdMinor:roundMinor(platformReceivedMinor / context.fx.rate), tierRuleVersion:'POLICY-REFUND-OFFSET', tierRuleStartDate:'0001-01-01', tierRuleEndDate:'', tierSnapshots:[],
     });
   };
   const createStatement = context => context.itemType === 'game_sales_share' ? createGameStatement(context) : context.itemType === 'cdkey_sales_share' ? createCdkeyStatement(context) : createAdjustmentStatement(context);
@@ -14431,31 +14471,32 @@ window.PublisherSettlementStatements = (() => {
     row.platformShareRate = ratePercent(row.platformShareMinor, row.shareableNetMinor);
     row.payableMinor = roundMinor(row.platformReceivedMinor - row.platformShareMinor);
     row.payableUsdMinor = roundMinor(row.payableMinor / row.lockedFxRate);
-    row.tierRuleVersion = rule.id; row.tierRuleEffectiveBillingMonth = rule.effectiveBillingMonth; row.tierSnapshots = result.tierSnapshots;
+    row.tierRuleVersion = rule.id; row.tierRuleStartDate = rule.startDate; row.tierRuleEndDate = rule.endDate; row.tierSnapshots = result.tierSnapshots;
     Object.assign(row,withLegacyAliases(row));
   };
   const saveTierRule = (state,input = {}) => {
-    const developerId = String(input.developerId || '').trim();
-    const gameId = String(input.gameId || '').trim();
-    if (!developerId) throw new Error('缺少开发者');
-    if (!gameId) throw new Error('缺少游戏');
-    const effectiveBillingMonth = assertMonth(input.effectiveBillingMonth);
-    if (effectiveBillingMonth < String(state.currentUnlockedBillingMonth || effectiveBillingMonth)) throw new Error('生效月份不得早于当前未锁定账单月');
+    const financialEntityId = String(input.financialEntityId || '').trim();
+    if (!financialEntityId) throw new Error('请选择财务主体');
+    const startDate = assertMonthBoundary(input.startDate,'开始日期');
+    const endDate = String(input.endDate || '').trim();
+    if (endDate) assertMonthBoundary(endDate,'结束日期');
+    if (endDate && endDate <= startDate) throw new Error('结束日期必须晚于开始日期');
     const reason = String(input.reason || '').trim();
-    if (!reason) throw new Error('请填写变更原因');
     if (input.canManageFinance === false) throw new Error('无财务配置权限');
     const tiers = normalizeTiers(input.tiers);
-    (state.tierRules || []).forEach(rule => {
-      if (rule.developerId === developerId && rule.gameId === gameId && rule.effectiveBillingMonth === effectiveBillingMonth && rule.status !== 'superseded') rule.status = 'superseded';
-    });
+    const current = (state.tierRules || []).filter(rule => rule.financialEntityId === financialEntityId && rule.status !== 'superseded');
+    const replaced = current.filter(rule => rule.startDate === startDate);
+    const nextRange = { startDate,endDate };
+    if (current.some(rule => !replaced.includes(rule) && rangesOverlap(rule,nextRange))) throw new Error('同一财务主体的规则时间范围不得重叠');
+    replaced.forEach(rule => { rule.status = 'superseded'; });
     const version = {
-      id:input.id || `TIER-${effectiveBillingMonth.replace('-','')}-${String((state.tierRules || []).length + 1).padStart(3,'0')}`,
-      developerId, gameId, effectiveBillingMonth, tiers, reason, operator:String(input.operator || '平台运营').trim(), operatedAt:input.operatedAt || nowText(), status:'active',
+      id:input.id || `TIER-${startDate.replaceAll('-','')}-${String((state.tierRules || []).length + 1).padStart(3,'0')}`,
+      financialEntityId, startDate, endDate, tiers, reason, operator:String(input.operator || '平台运营').trim(), operatedAt:input.operatedAt || nowText(), status:'active',
     };
     state.tierRules.push(version);
     (state.statements || []).forEach(row => {
-      if (row.developerId !== developerId || row.gameId !== gameId || row.itemType !== 'game_sales_share' || row.status === 'confirmed' || row.lockedAt || row.billingMonth < effectiveBillingMonth) return;
-      recalculateUnlockedGameStatement(row,tierRuleFor(state,developerId,gameId,row.billingMonth));
+      if (row.developerId !== financialEntityId || row.itemType !== 'game_sales_share' || row.status === 'confirmed' || row.lockedAt) return;
+      recalculateUnlockedGameStatement(row,tierRuleFor(state,financialEntityId,billingDate(row.billingMonth)));
     });
     return clone(version);
   };
@@ -14718,7 +14759,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selected = selectedRows(rows);
     const targets = selected.length ? selected : rows;
     const label = selected.length ? `导出选中（${selected.length}）` : `导出当前结果（${rows.length}）`;
-    const tierButton = state.activeTab === 'game' ? `<button type="button" data-fo-action="open-tier-editor">配置阶梯分成</button>` : '';
+    const tierButton = state.activeTab === 'entity' ? `<button type="button" data-fo-action="open-tier-editor">配置阶梯分成</button>` : '';
     return `<section class="fo-card fo-table-card"><header class="fo-table-toolbar"><div><strong>${state.activeTab === 'entity' ? '主体结算汇总' : '游戏结算明细'}</strong><span>${state.activeTab === 'entity' ? '核对主体结算快照' : '核对各游戏结算快照'}</span></div><div class="fo-toolbar-actions">${tierButton}<button type="button" class="is-primary" data-fo-action="export"${targets.length ? '' : ' disabled'}>${label}</button></div></header>${state.tierMessage ? `<div class="fo-export-message" data-fo-tier-status>${esc(state.tierMessage)}</div>` : ''}${state.exportMessage ? `<div class="fo-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-fo-export-status>${esc(state.exportMessage)}</div>` : ''}${current.length ? (state.activeTab === 'entity' ? entityTable(rows,current) : gameTable(rows,current)) : empty()}</section>${rows.length ? pagination(rows.length) : ''}`;
   }
 
@@ -14738,29 +14779,45 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return statement.itemType === 'game_sales_share' ? gameSalesDrawer(statement) : statement.itemType === 'cdkey_sales_share' ? cdkeyDrawer(statement) : '';
   }
 
-  const developerOptions = () => {
-    const map = new Map(model.allGameRows(state).map(row => [row.developerId,row.developerName]));
-    return [...map.entries()].map(([id,name]) => ({ id,name }));
+  const financialEntityOptions = () => {
+    const map = new Map(model.allGameRows(state).map(row => [row.developerId,{ id:row.developerId,name:row.entityName,developerName:row.developerName }]));
+    return [...map.values()].sort((a,b) => a.name.localeCompare(b.name,'zh-CN'));
   };
-  const gameOptions = developerId => {
-    const map = new Map(model.allGameRows(state).filter(row => row.developerId === developerId).map(row => [row.gameId,row.gameName]));
-    return [...map.entries()].map(([id,name]) => ({ id,name }));
-  };
-  const createTierDraft = (developerId,gameId) => {
-    const rule = model.statements.tierRuleFor(state.statementState,developerId,gameId,'2026-09');
-    return { developerId,gameId,effectiveBillingMonth:'2026-09',reason:'',tiers:rule.tiers.map(tier => ({ ...tier })) };
+  const normalizeDraftTiers = tiers => tiers.map((tier,index) => ({
+    ...tier,
+    fromMinor:index === 0 ? 0 : tiers[index - 1].toMinor,
+    toMinor:index === tiers.length - 1 ? null : tier.toMinor,
+  }));
+  const createTierDraft = financialEntityId => {
+    const rule = model.statements.tierRuleFor(state.statementState,financialEntityId,'2026-09-01');
+    const isDefault = rule.id.startsWith('TIER-DEFAULT-');
+    return {
+      financialEntityId,
+      startDate:isDefault ? '2026-09-01' : rule.startDate,
+      endDate:isDefault ? '' : rule.endDate,
+      reason:'',
+      tiers:rule.tiers.map(tier => ({ ...tier })),
+    };
   };
   const openTierEditor = () => {
-    const developer = developerOptions()[0];
-    const game = gameOptions(developer.id)[0];
-    state.tierDraft = createTierDraft(developer.id,game.id); state.tierError = ''; state.tierEditorOpen = true;
+    const entity = financialEntityOptions()[0];
+    state.tierDraft = createTierDraft(entity.id); state.tierError = ''; state.tierEditorOpen = true;
   };
   const tierEditor = () => {
     if (!state.tierEditorOpen || !state.tierDraft) return '';
     const draft = state.tierDraft;
-    const developers = developerOptions();
-    const games = gameOptions(draft.developerId);
-    return `<div class="fo-drawer-layer" data-fo-action="close-tier-editor"><aside class="fo-drawer fo-tier-editor" role="dialog" aria-modal="true" aria-label="配置阶梯分成" data-fo-stop><header><div><h2>配置阶梯分成</h2><p>按开发者、游戏和生效账单月保存规则版本。</p></div><button type="button" data-fo-action="close-tier-editor" aria-label="关闭">×</button></header><div class="fo-drawer-body"><form data-fo-tier-form><section class="fo-tier-base"><label><span>开发者</span><select name="developerId">${developers.map(item => option(item.id,`${item.name}（${item.id}）`,draft.developerId)).join('')}</select></label><label><span>游戏</span><select name="gameId">${games.map(item => option(item.id,`${item.name}（${item.id}）`,draft.gameId)).join('')}</select></label><label><span>生效账单月</span><input type="month" name="effectiveBillingMonth" value="${esc(draft.effectiveBillingMonth)}"></label><label class="wide"><span>变更原因</span><input name="reason" value="${esc(draft.reason)}" placeholder="填写合同或规则变更原因"></label></section><section class="fo-tier-list"><header><strong>分段累进阶梯</strong><button type="button" data-fo-action="add-tier">新增档位</button></header>${draft.tiers.map((tier,index) => `<div class="fo-tier-row" data-tier-row data-tier-index="${index}"><label><span>起始金额（元）</span><input name="from" type="number" min="0" step="0.01" value="${esc(tier.fromMinor / 100)}"></label><label><span>结束金额（元）</span><input name="to" type="number" min="0" step="0.01" value="${tier.toMinor == null ? '' : esc(tier.toMinor / 100)}" placeholder="末档不设上限"></label><label><span>平台分成比例</span><input name="rate" type="number" min="0" max="100" step="0.01" value="${esc(tier.platformRate)}"></label><button type="button" data-fo-action="remove-tier" data-tier-index="${index}"${draft.tiers.length === 1 ? ' disabled' : ''}>删除</button></div>`).join('')}</section>${state.tierError ? `<div class="fo-tier-error" role="alert">${esc(state.tierError)}</div>` : ''}</form></div><footer><button type="button" data-fo-action="close-tier-editor">取消</button><button type="button" class="is-primary" data-fo-action="save-tier">保存规则</button></footer></aside></div>`;
+    const entities = financialEntityOptions();
+    const cards = draft.tiers.map((tier,index) => {
+      const first = index === 0;
+      const last = index === draft.tiers.length - 1;
+      const removable = !first && !last;
+      const lower = tier.fromMinor === '' || tier.fromMinor == null ? '—' : amount(tier.fromMinor).replace(/\.00$/,'');
+      const upper = last
+        ? `<span class="fo-tier-boundary is-fixed">不设上限</span>`
+        : `<input name="to" type="number" min="0" step="0.01" value="${tier.toMinor === '' || tier.toMinor == null ? '' : esc(tier.toMinor / 100)}" aria-label="第 ${index + 1} 档上限金额">`;
+      return `<article class="fo-tier-card" data-tier-card data-tier-index="${index}"><header><strong>第 ${index + 1} 档</strong>${removable ? `<button type="button" data-fo-action="remove-tier" data-tier-index="${index}">删除</button>` : ''}</header><div class="fo-tier-expression"><span class="fo-tier-boundary is-fixed">${esc(lower)}</span><b>&lt;</b><span>月结算金额（元）</span><b>${last ? '&lt;' : '≤'}</b>${upper}</div><label class="fo-tier-rate"><span>平台分成比例</span><input name="rate" type="number" min="0" max="100" step="0.01" value="${tier.platformRate === '' || tier.platformRate == null ? '' : esc(tier.platformRate)}"><i>%</i></label></article>`;
+    }).join('');
+    return `<div class="fo-drawer-layer" data-fo-action="close-tier-editor"><aside class="fo-drawer fo-tier-editor" role="dialog" aria-modal="true" aria-label="配置阶梯分成" data-fo-stop><header><h2>配置阶梯分成</h2><button type="button" data-fo-action="close-tier-editor" aria-label="关闭">×</button></header><div class="fo-drawer-body"><form data-fo-tier-form><section class="fo-tier-base"><label class="wide"><span>财务主体</span><select name="financialEntityId" required>${entities.map(item => option(item.id,`${item.name}（${item.developerName}）`,draft.financialEntityId)).join('')}</select></label><label><span>开始日期</span><input type="date" name="startDate" required value="${esc(draft.startDate)}"></label><label><span>结束日期（选填）</span><input type="date" name="endDate" value="${esc(draft.endDate)}"></label><label class="wide"><span>变更原因（选填）</span><input name="reason" value="${esc(draft.reason)}"></label></section><section class="fo-tier-list"><header><strong>平台分成阶梯</strong><button type="button" data-fo-action="add-tier">＋ 添加档位</button></header><div class="fo-tier-grid">${cards}</div></section>${state.tierError ? `<div class="fo-tier-error" role="alert">${esc(state.tierError)}</div>` : ''}</form></div><footer><button type="button" data-fo-action="close-tier-editor">取消</button><button type="button" class="is-primary" data-fo-action="save-tier">保存规则</button></footer></aside></div>`;
   };
 
   const demoSwitcher = () => `<section class="fo-demo"><button type="button" data-fo-demo-toggle data-fo-action="demo-toggle" aria-expanded="${state.demoOpen}"><b>Demo</b><span>状态</span></button>${state.demoOpen ? `<aside><header><strong>结算场景</strong><button type="button" data-fo-action="demo-toggle" aria-label="关闭">×</button></header><button type="button" data-fo-action="scenario" data-fo-scenario="exhaustive" class="${state.scenario === 'exhaustive' ? 'is-active' : ''}">穷举态</button><button type="button" data-fo-action="scenario" data-fo-scenario="empty" class="${state.scenario === 'empty' ? 'is-active' : ''}">缺省态</button></aside>` : ''}</section>`;
@@ -14786,14 +14843,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const readTierForm = () => {
     const form = document.querySelector('[data-fo-tier-form]');
     if (!form) return state.tierDraft;
+    const rows = [...form.querySelectorAll('[data-tier-card]')];
+    let previousUpper = 0;
     state.tierDraft = {
-      developerId:form.elements.developerId.value, gameId:form.elements.gameId.value,
-      effectiveBillingMonth:form.elements.effectiveBillingMonth.value, reason:form.elements.reason.value.trim(),
-      tiers:[...form.querySelectorAll('[data-tier-row]')].map(row => ({
-        fromMinor:Math.round(Number(row.querySelector('[name="from"]').value) * 100),
-        toMinor:row.querySelector('[name="to"]').value === '' ? null : Math.round(Number(row.querySelector('[name="to"]').value) * 100),
-        platformRate:Number(row.querySelector('[name="rate"]').value),
-      })),
+      financialEntityId:form.elements.financialEntityId.value,
+      startDate:form.elements.startDate.value,
+      endDate:form.elements.endDate.value,
+      reason:form.elements.reason.value.trim(),
+      tiers:rows.map((row,index) => {
+        const upperInput = row.querySelector('[name="to"]');
+        const upperValue = upperInput?.value.trim() || '';
+        const rateValue = row.querySelector('[name="rate"]').value.trim();
+        const toMinor = index === rows.length - 1 ? null : (upperValue === '' ? '' : Math.round(Number(upperValue) * 100));
+        const tier = { fromMinor:previousUpper,toMinor,platformRate:rateValue === '' ? '' : Number(rateValue) };
+        if (toMinor !== null && toMinor !== '') previousUpper = toMinor;
+        return tier;
+      }),
     };
     return state.tierDraft;
   };
@@ -14810,12 +14875,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       state.selected[state.activeTab] = target.checked ? [...new Set([...state.selected[state.activeTab],...keys])] : state.selected[state.activeTab].filter(key => !keys.includes(key));
       rerender(); return;
     }
-    if (target.matches('[data-fo-tier-form] [name="developerId"]')) {
-      const developerId = target.value; const game = gameOptions(developerId)[0]; state.tierDraft = createTierDraft(developerId,game.id); rerender(); return;
-    }
-    if (target.matches('[data-fo-tier-form] [name="gameId"]')) {
-      const draft = readTierForm(); state.tierDraft = createTierDraft(draft.developerId,target.value); rerender();
-    }
+    if (target.matches('[data-fo-tier-form] [name="financialEntityId"]')) { state.tierDraft = createTierDraft(target.value); rerender(); return; }
+    if (target.matches('[data-fo-tier-form] [name="to"]')) { const draft = readTierForm(); draft.tiers = normalizeDraftTiers(draft.tiers); rerender(); }
   });
 
   document.addEventListener('click',event => {
@@ -14835,11 +14896,21 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (action === 'open-tier-editor') { openTierEditor(); rerender(); }
     if (action === 'close-tier-editor') { state.tierEditorOpen = false; state.tierError = ''; rerender(); }
     if (action === 'add-tier') {
-      const draft = readTierForm(); const last = draft.tiers[draft.tiers.length - 1];
-      if (last.toMinor == null) last.toMinor = last.fromMinor + 100000000;
-      draft.tiers.push({ fromMinor:last.toMinor, toMinor:null, platformRate:last.platformRate }); rerender();
+      const draft = readTierForm(); const last = draft.tiers.pop();
+      draft.tiers.push({ fromMinor:last.fromMinor, toMinor:'', platformRate:'' });
+      draft.tiers.push({ ...last, fromMinor:last.fromMinor });
+      rerender();
     }
-    if (action === 'remove-tier') { const draft = readTierForm(); draft.tiers.splice(Number(control.dataset.tierIndex),1); rerender(); }
+    if (action === 'remove-tier') {
+      const draft = readTierForm(); const index = Number(control.dataset.tierIndex);
+      if (index > 0 && index < draft.tiers.length - 1) {
+        const removedUpper = draft.tiers[index].toMinor === '' ? draft.tiers[index + 1].fromMinor : draft.tiers[index].toMinor;
+        draft.tiers.splice(index,1);
+        draft.tiers[index - 1].toMinor = removedUpper;
+        draft.tiers = normalizeDraftTiers(draft.tiers);
+      }
+      rerender();
+    }
     if (action === 'save-tier') {
       try {
         const saved = model.statements.saveTierRule(state.statementState,{ ...readTierForm(),operator:'平台运营 李然' });

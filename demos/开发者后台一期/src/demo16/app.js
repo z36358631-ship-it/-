@@ -62,7 +62,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selected = selectedRows(rows);
     const targets = selected.length ? selected : rows;
     const label = selected.length ? `导出选中（${selected.length}）` : `导出当前结果（${rows.length}）`;
-    const tierButton = state.activeTab === 'game' ? `<button type="button" data-fo-action="open-tier-editor">配置阶梯分成</button>` : '';
+    const tierButton = state.activeTab === 'entity' ? `<button type="button" data-fo-action="open-tier-editor">配置阶梯分成</button>` : '';
     return `<section class="fo-card fo-table-card"><header class="fo-table-toolbar"><div><strong>${state.activeTab === 'entity' ? '主体结算汇总' : '游戏结算明细'}</strong><span>${state.activeTab === 'entity' ? '核对主体结算快照' : '核对各游戏结算快照'}</span></div><div class="fo-toolbar-actions">${tierButton}<button type="button" class="is-primary" data-fo-action="export"${targets.length ? '' : ' disabled'}>${label}</button></div></header>${state.tierMessage ? `<div class="fo-export-message" data-fo-tier-status>${esc(state.tierMessage)}</div>` : ''}${state.exportMessage ? `<div class="fo-export-message ${state.exportMessage.includes('失败') ? 'is-error' : ''}" data-fo-export-status>${esc(state.exportMessage)}</div>` : ''}${current.length ? (state.activeTab === 'entity' ? entityTable(rows,current) : gameTable(rows,current)) : empty()}</section>${rows.length ? pagination(rows.length) : ''}`;
   }
 
@@ -82,29 +82,45 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return statement.itemType === 'game_sales_share' ? gameSalesDrawer(statement) : statement.itemType === 'cdkey_sales_share' ? cdkeyDrawer(statement) : '';
   }
 
-  const developerOptions = () => {
-    const map = new Map(model.allGameRows(state).map(row => [row.developerId,row.developerName]));
-    return [...map.entries()].map(([id,name]) => ({ id,name }));
+  const financialEntityOptions = () => {
+    const map = new Map(model.allGameRows(state).map(row => [row.developerId,{ id:row.developerId,name:row.entityName,developerName:row.developerName }]));
+    return [...map.values()].sort((a,b) => a.name.localeCompare(b.name,'zh-CN'));
   };
-  const gameOptions = developerId => {
-    const map = new Map(model.allGameRows(state).filter(row => row.developerId === developerId).map(row => [row.gameId,row.gameName]));
-    return [...map.entries()].map(([id,name]) => ({ id,name }));
-  };
-  const createTierDraft = (developerId,gameId) => {
-    const rule = model.statements.tierRuleFor(state.statementState,developerId,gameId,'2026-09');
-    return { developerId,gameId,effectiveBillingMonth:'2026-09',reason:'',tiers:rule.tiers.map(tier => ({ ...tier })) };
+  const normalizeDraftTiers = tiers => tiers.map((tier,index) => ({
+    ...tier,
+    fromMinor:index === 0 ? 0 : tiers[index - 1].toMinor,
+    toMinor:index === tiers.length - 1 ? null : tier.toMinor,
+  }));
+  const createTierDraft = financialEntityId => {
+    const rule = model.statements.tierRuleFor(state.statementState,financialEntityId,'2026-09-01');
+    const isDefault = rule.id.startsWith('TIER-DEFAULT-');
+    return {
+      financialEntityId,
+      startDate:isDefault ? '2026-09-01' : rule.startDate,
+      endDate:isDefault ? '' : rule.endDate,
+      reason:'',
+      tiers:rule.tiers.map(tier => ({ ...tier })),
+    };
   };
   const openTierEditor = () => {
-    const developer = developerOptions()[0];
-    const game = gameOptions(developer.id)[0];
-    state.tierDraft = createTierDraft(developer.id,game.id); state.tierError = ''; state.tierEditorOpen = true;
+    const entity = financialEntityOptions()[0];
+    state.tierDraft = createTierDraft(entity.id); state.tierError = ''; state.tierEditorOpen = true;
   };
   const tierEditor = () => {
     if (!state.tierEditorOpen || !state.tierDraft) return '';
     const draft = state.tierDraft;
-    const developers = developerOptions();
-    const games = gameOptions(draft.developerId);
-    return `<div class="fo-drawer-layer" data-fo-action="close-tier-editor"><aside class="fo-drawer fo-tier-editor" role="dialog" aria-modal="true" aria-label="配置阶梯分成" data-fo-stop><header><div><h2>配置阶梯分成</h2><p>按开发者、游戏和生效账单月保存规则版本。</p></div><button type="button" data-fo-action="close-tier-editor" aria-label="关闭">×</button></header><div class="fo-drawer-body"><form data-fo-tier-form><section class="fo-tier-base"><label><span>开发者</span><select name="developerId">${developers.map(item => option(item.id,`${item.name}（${item.id}）`,draft.developerId)).join('')}</select></label><label><span>游戏</span><select name="gameId">${games.map(item => option(item.id,`${item.name}（${item.id}）`,draft.gameId)).join('')}</select></label><label><span>生效账单月</span><input type="month" name="effectiveBillingMonth" value="${esc(draft.effectiveBillingMonth)}"></label><label class="wide"><span>变更原因</span><input name="reason" value="${esc(draft.reason)}" placeholder="填写合同或规则变更原因"></label></section><section class="fo-tier-list"><header><strong>分段累进阶梯</strong><button type="button" data-fo-action="add-tier">新增档位</button></header>${draft.tiers.map((tier,index) => `<div class="fo-tier-row" data-tier-row data-tier-index="${index}"><label><span>起始金额（元）</span><input name="from" type="number" min="0" step="0.01" value="${esc(tier.fromMinor / 100)}"></label><label><span>结束金额（元）</span><input name="to" type="number" min="0" step="0.01" value="${tier.toMinor == null ? '' : esc(tier.toMinor / 100)}" placeholder="末档不设上限"></label><label><span>平台分成比例</span><input name="rate" type="number" min="0" max="100" step="0.01" value="${esc(tier.platformRate)}"></label><button type="button" data-fo-action="remove-tier" data-tier-index="${index}"${draft.tiers.length === 1 ? ' disabled' : ''}>删除</button></div>`).join('')}</section>${state.tierError ? `<div class="fo-tier-error" role="alert">${esc(state.tierError)}</div>` : ''}</form></div><footer><button type="button" data-fo-action="close-tier-editor">取消</button><button type="button" class="is-primary" data-fo-action="save-tier">保存规则</button></footer></aside></div>`;
+    const entities = financialEntityOptions();
+    const cards = draft.tiers.map((tier,index) => {
+      const first = index === 0;
+      const last = index === draft.tiers.length - 1;
+      const removable = !first && !last;
+      const lower = tier.fromMinor === '' || tier.fromMinor == null ? '—' : amount(tier.fromMinor).replace(/\.00$/,'');
+      const upper = last
+        ? `<span class="fo-tier-boundary is-fixed">不设上限</span>`
+        : `<input name="to" type="number" min="0" step="0.01" value="${tier.toMinor === '' || tier.toMinor == null ? '' : esc(tier.toMinor / 100)}" aria-label="第 ${index + 1} 档上限金额">`;
+      return `<article class="fo-tier-card" data-tier-card data-tier-index="${index}"><header><strong>第 ${index + 1} 档</strong>${removable ? `<button type="button" data-fo-action="remove-tier" data-tier-index="${index}">删除</button>` : ''}</header><div class="fo-tier-expression"><span class="fo-tier-boundary is-fixed">${esc(lower)}</span><b>&lt;</b><span>月结算金额（元）</span><b>${last ? '&lt;' : '≤'}</b>${upper}</div><label class="fo-tier-rate"><span>平台分成比例</span><input name="rate" type="number" min="0" max="100" step="0.01" value="${tier.platformRate === '' || tier.platformRate == null ? '' : esc(tier.platformRate)}"><i>%</i></label></article>`;
+    }).join('');
+    return `<div class="fo-drawer-layer" data-fo-action="close-tier-editor"><aside class="fo-drawer fo-tier-editor" role="dialog" aria-modal="true" aria-label="配置阶梯分成" data-fo-stop><header><h2>配置阶梯分成</h2><button type="button" data-fo-action="close-tier-editor" aria-label="关闭">×</button></header><div class="fo-drawer-body"><form data-fo-tier-form><section class="fo-tier-base"><label class="wide"><span>财务主体</span><select name="financialEntityId" required>${entities.map(item => option(item.id,`${item.name}（${item.developerName}）`,draft.financialEntityId)).join('')}</select></label><label><span>开始日期</span><input type="date" name="startDate" required value="${esc(draft.startDate)}"></label><label><span>结束日期（选填）</span><input type="date" name="endDate" value="${esc(draft.endDate)}"></label><label class="wide"><span>变更原因（选填）</span><input name="reason" value="${esc(draft.reason)}"></label></section><section class="fo-tier-list"><header><strong>平台分成阶梯</strong><button type="button" data-fo-action="add-tier">＋ 添加档位</button></header><div class="fo-tier-grid">${cards}</div></section>${state.tierError ? `<div class="fo-tier-error" role="alert">${esc(state.tierError)}</div>` : ''}</form></div><footer><button type="button" data-fo-action="close-tier-editor">取消</button><button type="button" class="is-primary" data-fo-action="save-tier">保存规则</button></footer></aside></div>`;
   };
 
   const demoSwitcher = () => `<section class="fo-demo"><button type="button" data-fo-demo-toggle data-fo-action="demo-toggle" aria-expanded="${state.demoOpen}"><b>Demo</b><span>状态</span></button>${state.demoOpen ? `<aside><header><strong>结算场景</strong><button type="button" data-fo-action="demo-toggle" aria-label="关闭">×</button></header><button type="button" data-fo-action="scenario" data-fo-scenario="exhaustive" class="${state.scenario === 'exhaustive' ? 'is-active' : ''}">穷举态</button><button type="button" data-fo-action="scenario" data-fo-scenario="empty" class="${state.scenario === 'empty' ? 'is-active' : ''}">缺省态</button></aside>` : ''}</section>`;
@@ -130,14 +146,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const readTierForm = () => {
     const form = document.querySelector('[data-fo-tier-form]');
     if (!form) return state.tierDraft;
+    const rows = [...form.querySelectorAll('[data-tier-card]')];
+    let previousUpper = 0;
     state.tierDraft = {
-      developerId:form.elements.developerId.value, gameId:form.elements.gameId.value,
-      effectiveBillingMonth:form.elements.effectiveBillingMonth.value, reason:form.elements.reason.value.trim(),
-      tiers:[...form.querySelectorAll('[data-tier-row]')].map(row => ({
-        fromMinor:Math.round(Number(row.querySelector('[name="from"]').value) * 100),
-        toMinor:row.querySelector('[name="to"]').value === '' ? null : Math.round(Number(row.querySelector('[name="to"]').value) * 100),
-        platformRate:Number(row.querySelector('[name="rate"]').value),
-      })),
+      financialEntityId:form.elements.financialEntityId.value,
+      startDate:form.elements.startDate.value,
+      endDate:form.elements.endDate.value,
+      reason:form.elements.reason.value.trim(),
+      tiers:rows.map((row,index) => {
+        const upperInput = row.querySelector('[name="to"]');
+        const upperValue = upperInput?.value.trim() || '';
+        const rateValue = row.querySelector('[name="rate"]').value.trim();
+        const toMinor = index === rows.length - 1 ? null : (upperValue === '' ? '' : Math.round(Number(upperValue) * 100));
+        const tier = { fromMinor:previousUpper,toMinor,platformRate:rateValue === '' ? '' : Number(rateValue) };
+        if (toMinor !== null && toMinor !== '') previousUpper = toMinor;
+        return tier;
+      }),
     };
     return state.tierDraft;
   };
@@ -154,12 +178,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       state.selected[state.activeTab] = target.checked ? [...new Set([...state.selected[state.activeTab],...keys])] : state.selected[state.activeTab].filter(key => !keys.includes(key));
       rerender(); return;
     }
-    if (target.matches('[data-fo-tier-form] [name="developerId"]')) {
-      const developerId = target.value; const game = gameOptions(developerId)[0]; state.tierDraft = createTierDraft(developerId,game.id); rerender(); return;
-    }
-    if (target.matches('[data-fo-tier-form] [name="gameId"]')) {
-      const draft = readTierForm(); state.tierDraft = createTierDraft(draft.developerId,target.value); rerender();
-    }
+    if (target.matches('[data-fo-tier-form] [name="financialEntityId"]')) { state.tierDraft = createTierDraft(target.value); rerender(); return; }
+    if (target.matches('[data-fo-tier-form] [name="to"]')) { const draft = readTierForm(); draft.tiers = normalizeDraftTiers(draft.tiers); rerender(); }
   });
 
   document.addEventListener('click',event => {
@@ -179,11 +199,21 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (action === 'open-tier-editor') { openTierEditor(); rerender(); }
     if (action === 'close-tier-editor') { state.tierEditorOpen = false; state.tierError = ''; rerender(); }
     if (action === 'add-tier') {
-      const draft = readTierForm(); const last = draft.tiers[draft.tiers.length - 1];
-      if (last.toMinor == null) last.toMinor = last.fromMinor + 100000000;
-      draft.tiers.push({ fromMinor:last.toMinor, toMinor:null, platformRate:last.platformRate }); rerender();
+      const draft = readTierForm(); const last = draft.tiers.pop();
+      draft.tiers.push({ fromMinor:last.fromMinor, toMinor:'', platformRate:'' });
+      draft.tiers.push({ ...last, fromMinor:last.fromMinor });
+      rerender();
     }
-    if (action === 'remove-tier') { const draft = readTierForm(); draft.tiers.splice(Number(control.dataset.tierIndex),1); rerender(); }
+    if (action === 'remove-tier') {
+      const draft = readTierForm(); const index = Number(control.dataset.tierIndex);
+      if (index > 0 && index < draft.tiers.length - 1) {
+        const removedUpper = draft.tiers[index].toMinor === '' ? draft.tiers[index + 1].fromMinor : draft.tiers[index].toMinor;
+        draft.tiers.splice(index,1);
+        draft.tiers[index - 1].toMinor = removedUpper;
+        draft.tiers = normalizeDraftTiers(draft.tiers);
+      }
+      rerender();
+    }
     if (action === 'save-tier') {
       try {
         const saved = model.statements.saveTierRule(state.statementState,{ ...readTierForm(),operator:'平台运营 李然' });

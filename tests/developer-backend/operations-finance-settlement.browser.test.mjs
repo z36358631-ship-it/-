@@ -164,20 +164,35 @@ test('游戏销售与 CDKEY 详情同源，退款与拒付不增加详情',async
   assert.equal(await page.locator('[data-fo-game-row][data-item-type="refund_chargeback_adjustment"]').first().getByRole('button',{ name:'查看详情' }).count(),0);
 });
 
-test('游戏明细内可按开发者和游戏配置分段累进阶梯',async () => {
+test('主体汇总统一配置主体级阶梯分成',async () => {
   await open();
-  await page.getByRole('tab',{ name:'游戏明细' }).click();
+  assert.equal(await page.getByRole('button',{ name:'配置阶梯分成' }).count(),1);
   await page.getByRole('button',{ name:'配置阶梯分成' }).click();
   const drawer = page.getByRole('dialog',{ name:'配置阶梯分成' });
-  assert.equal(await drawer.locator('[data-tier-row]').count(),3);
-  await drawer.getByRole('button',{ name:'保存规则' }).click();
-  assert.match(await drawer.getByRole('alert').innerText(),/变更原因/);
-  await drawer.locator('[name="reason"]').fill('合同续签');
+  assert.equal(await drawer.locator('[name="financialEntityId"]').count(),1);
+  assert.equal(await drawer.locator('[name="startDate"]').count(),1);
+  assert.equal(await drawer.locator('[name="endDate"]').count(),1);
+  assert.equal(await drawer.locator('[data-tier-card]').count(),3);
+  assert.match(await drawer.innerText(),/0[\s\S]*月结算金额（元）/);
+  assert.match(await drawer.innerText(),/不设上限/);
+  assert.equal(await drawer.locator('[data-tier-card]').first().getByRole('button',{ name:'删除' }).count(),0);
+  assert.equal(await drawer.locator('[data-tier-card]').last().getByRole('button',{ name:'删除' }).count(),0);
+  assert.equal(await drawer.locator('[data-tier-card]').nth(1).getByRole('button',{ name:'删除' }).count(),1);
+  const gridColumns = await drawer.locator('.fo-tier-grid').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
+  assert.equal(gridColumns,3);
+  await drawer.getByRole('button',{ name:'添加档位' }).click();
+  assert.equal(await drawer.locator('[data-tier-card]').count(),4);
+  assert.equal(await drawer.locator('[data-tier-card]').nth(2).locator('[name="to"]').inputValue(),'');
+  assert.equal(await drawer.locator('[data-tier-card]').nth(2).locator('[name="rate"]').inputValue(),'');
+  await drawer.locator('[data-tier-card]').nth(2).getByRole('button',{ name:'删除' }).click();
+  assert.equal(await drawer.locator('[data-tier-card]').count(),3);
   const rates = drawer.locator('[name="rate"]');
   for (let index = 0; index < await rates.count(); index += 1) await rates.nth(index).fill('20');
   await drawer.getByRole('button',{ name:'保存规则' }).click();
   assert.match(await page.locator('[data-fo-tier-status]').innerText(),/已保存规则/);
   assert.equal((await page.evaluate(() => window.__financeOperationsDemo.snapshot().tierRules.length)),1);
+  await page.getByRole('tab',{ name:'游戏明细' }).click();
+  assert.equal(await page.getByRole('button',{ name:'配置阶梯分成' }).count(),0);
 });
 
 test('导出失败给出重试提示',async () => {
