@@ -814,19 +814,94 @@
         .flow-actions button:not(.primary):focus-visible { outline: 2px solid #49cee5; outline-offset: 2px; background: #30353d; color: #fff; }
         .flow-actions .primary { background: linear-gradient(#159ccb,#0872a8); color: #fff; }
 
-        .solution-detail-actions { justify-content: stretch; }
-        .solution-detail-actions button { flex: 1; }
+        .solution-detail-page {
+            position: absolute; inset: 0; z-index: 1200; display: flex; flex-direction: column;
+            background: #0f1115;
+        }
+        .solution-detail-header {
+            min-height: 58px; padding: 11px 14px; display: grid;
+            grid-template-columns: 32px minmax(0,1fr) 32px; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--divider); background: rgba(15,17,21,.98);
+        }
+        .solution-detail-header .flow-title { text-align: center; }
+        .solution-refresh {
+            width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent;
+            color: #e7edf1; font-size: 25px; line-height: 1; cursor: pointer;
+        }
+        .solution-refresh:hover { background: rgba(255,255,255,.06); }
+        .solution-refresh:focus-visible { outline: 2px solid #49cee5; outline-offset: 2px; }
+        .solution-detail-body {
+            flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+            padding: 18px 18px 28px; scrollbar-width: thin;
+        }
+        #solutionDetailContent { max-width: 620px; margin: 0 auto; }
+        #solutionDetailSchemeName { margin: 8px 0 12px; color: #f3f7f9; font-size: 25px; line-height: 1.25; }
+        .solution-gpu-tag {
+            display: inline-flex; padding: 7px 10px; border-radius: 8px;
+            background: rgba(255,255,255,.08); color: #dce5ea; font-size: 12px;
+        }
+        .solution-trust-summary {
+            margin: 16px 0 24px; padding: 11px 12px; border-radius: 10px;
+            color: #87e0ef; background: rgba(43,195,223,.07);
+            border: 1px solid rgba(43,195,223,.18); font-size: 12px; line-height: 1.55;
+        }
+        .solution-config-section { margin-bottom: 24px; }
+        .solution-config-title {
+            margin: 0 0 12px; padding-left: 12px; position: relative;
+            color: #f0f4f7; font-size: 17px; line-height: 24px;
+        }
+        .solution-config-title::before {
+            content: ''; position: absolute; left: 0; top: 4px; width: 3px; height: 16px;
+            border-radius: 3px; background: #2ca8ff;
+        }
+        .solution-config-card {
+            overflow: hidden; border: 1px solid rgba(255,255,255,.1);
+            border-radius: 14px; background: #15181c;
+        }
+        .solution-config-row {
+            padding: 14px 15px; display: grid; grid-template-columns: minmax(0,1fr) auto;
+            align-items: center; gap: 18px; border-bottom: 1px solid rgba(255,255,255,.06);
+        }
+        .solution-config-row:last-child { border-bottom: 0; }
+        .solution-config-label { color: #eef3f6; font-size: 14px; font-weight: 700; }
+        .solution-config-description { margin-top: 5px; color: #7f8991; font-size: 11px; line-height: 1.45; }
+        .solution-config-value {
+            max-width: 150px; padding: 6px 9px; border-radius: 7px;
+            border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.045);
+            color: #e9eef1; font-size: 12px; line-height: 1.4; text-align: right; overflow-wrap: anywhere;
+        }
+        .solution-detail-state {
+            max-width: 620px; min-height: 280px; margin: 0 auto; display: grid;
+            place-content: center; gap: 14px; color: #a5afb6; text-align: center;
+        }
+        .solution-detail-state p { margin: 0; font-size: 14px; }
+        .solution-detail-state button {
+            justify-self: center; border: 1px solid rgba(64,165,255,.42); border-radius: 9px;
+            padding: 8px 14px; background: rgba(64,165,255,.08); color: #79c4ff; cursor: pointer;
+        }
+        .solution-detail-actions {
+            flex: none; max-width: none; margin: 0; justify-content: stretch;
+            padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+            border-top: 1px solid rgba(255,255,255,.08); background: rgba(15,17,21,.97);
+        }
+        .solution-detail-actions button { min-height: 46px; flex: 1; }
+        .solution-detail-actions button:disabled {
+            cursor: not-allowed; color: #646b70; background: #24272b; border-color: transparent; box-shadow: none;
+        }
+        .solution-apply-result { min-height: 18px; margin: -10px 0 20px; color: #ffb37b; font-size: 12px; line-height: 1.5; }
         .review-solution-card { width: 100%; margin-top: 10px; padding: 11px 12px; display: block; text-align: left; color: inherit; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); border-radius: 12px; cursor: pointer; }
         .review-solution-card:hover { border-color: rgba(64,165,255,.42); background: rgba(64,165,255,.055); }
         .review-solution-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
         .review-solution-heading strong { color: #eef3f6; font-size: 12px; font-weight: 700; }
         .review-solution-heading b { color: #7b8a94; font-size: 18px; font-weight: 400; }
         .review-solution-card .review-solution-meta { display: block; margin-top: 4px; color: #81919c; font-size: 10px; line-height: 1.45; text-align: left; }
-        .solution-confidence { margin: 12px 0; padding: 10px; color: #87e0ef; font-size: 12px; border-radius: 10px; background: rgba(43,195,223,.07); border: 1px solid rgba(43,195,223,.18); }
-        .compat-check-list { display: grid; gap: 8px; margin-top: 12px; }
-        .compat-check-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: #91a0ad; font-size: 12px; }
-        .compat-check-row strong { color: #d5dde2; text-align: right; }
-        #solutionApplyResult { min-height: 20px; color: #6fffa8; font-size: 12px; margin-top: 12px; line-height: 1.5; }
+        #copySolutionDialog { z-index: 1400; }
+        .copy-solution-box { width: 350px; }
+        .copy-solution-input {
+            width: 100%; margin-top: 12px; padding: 11px 12px; border: 1px solid rgba(255,255,255,.12);
+            border-radius: 9px; outline: 0; background: #111419; color: #fff;
+        }
+        .copy-solution-input:focus { border-color: rgba(64,165,255,.65); box-shadow: 0 0 0 2px rgba(64,165,255,.12); }
         #sameConfigEmptyState { padding: 46px 20px; text-align: center; }
         #sameConfigEmptyState strong { display: block; font-size: 15px; margin-bottom: 6px; }
         #sameConfigEmptyState p { color: #7f909d; font-size: 12px; margin-bottom: 14px; }
@@ -850,6 +925,10 @@
             .flow-config { grid-template-columns: 1fr; }
             .review-solution-card { align-items: flex-start; flex-direction: column; }
             .review-solution-card span { text-align: left; }
+            .solution-detail-body { padding: 14px 14px 24px; }
+            #solutionDetailSchemeName { font-size: 22px; }
+            .solution-config-row { grid-template-columns: minmax(0,1fr) minmax(82px, 128px); gap: 12px; }
+            .solution-detail-actions { padding-left: 14px; padding-right: 14px; }
         }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
     </style>
@@ -1155,23 +1234,24 @@
         </div>
     </div>
 
-    <!-- 复用现有方案详情/应用流程的离线模拟 -->
-    <section id="solutionDetailPage" class="flow-page" hidden aria-label="方案详情">
-        <div class="flow-page-header">
-            <button class="flow-back" type="button" aria-label="返回评价列表" onclick="closeSolutionDetail()">‹</button>
+    <!-- 复用现有启动方案详情的完整只读结构 -->
+    <section id="solutionDetailPage" class="solution-detail-page" hidden aria-label="启动方案详情">
+        <header class="solution-detail-header">
+            <button id="solutionDetailBack" class="flow-back" type="button" aria-label="返回评价列表" onclick="closeSolutionDetail()">‹</button>
             <div class="flow-title">方案详情</div>
-        </div>
-        <div class="flow-page-body">
-            <div class="flow-card">
-                <div class="flow-kicker">社区共同验证</div>
-                <h3 id="solutionDetailName">Adreno 750 稳定方案</h3>
-                <p class="flow-copy">方案由实际成功启动记录持续验证。应用前会重新检查当前设备的 GPU、运行架构与辅助配置。</p>
-                <div id="solutionConfidenceLine" class="solution-confidence">同配置 · 成功率 92% · 38 次验证 · 最近验证 3 天前</div>
-                <div id="solutionCompatibilityDiff" class="compat-check-list"></div>
-                <div id="solutionApplyResult" aria-live="polite"></div>
+            <button id="refreshSolutionDetail" class="solution-refresh" type="button" aria-label="刷新方案详情" onclick="reloadSolutionDetail()">↻</button>
+        </header>
+        <div id="solutionDetailBody" class="solution-detail-body">
+            <div id="solutionDetailState" class="solution-detail-state" hidden></div>
+            <div id="solutionDetailContent">
+                <h2 id="solutionDetailSchemeName"></h2>
+                <div id="solutionDetailGpu" class="solution-gpu-tag"></div>
+                <div id="solutionTrustSummary" class="solution-trust-summary"></div>
+                <div id="solutionConfigGroups"></div>
+                <div id="solutionApplyResult" class="solution-apply-result" aria-live="polite"></div>
             </div>
         </div>
-        <div class="flow-actions solution-detail-actions">
+        <div id="solutionDetailActions" class="flow-actions solution-detail-actions">
             <button id="applySolutionButton" class="primary" type="button" onclick="applyCurrentSolution()">应用</button>
             <button id="copySolutionButton" type="button" onclick="copyCurrentSolution()">复制</button>
         </div>
@@ -1240,11 +1320,6 @@
                         <button type="button" class="fb-tag" data-type="unplayable" aria-pressed="false">不可玩</button>
                     </div>
                 </div>
-                <div class="fb-divider"></div>
-                <section id="fbSolutionSection" class="fb-row fb-solution-section" hidden>
-                    <div id="fbSolutionContent"></div>
-                </section>
-                <div class="fb-divider"></div>
                 <div class="fb-row" style="margin-bottom:0;">
                     <div class="fb-lbl">补充说明</div>
                     <div>
@@ -1252,10 +1327,32 @@
                         <div class="fb-media-upload" id="fbMediaList"></div>
                     </div>
                 </div>
+                <section id="fbSolutionSection" class="fb-solution-section" hidden>
+                    <div class="fb-divider"></div>
+                    <div id="fbSolutionContent" class="fb-row"></div>
+                </section>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeFeedbackModal()">取消</button>
                 <button class="btn-submit" onclick="submitFeedback()">提交评价</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 复用现有“复制并保存方案”命名确认流程 -->
+    <div id="copySolutionDialog" class="modal-mask" hidden onclick="closeCopySolutionDialog(event)">
+        <div class="modal-box copy-solution-box" role="dialog" aria-modal="true" aria-labelledby="copySolutionDialogTitle" onclick="event.stopPropagation()">
+            <div class="modal-hdr">
+                <div id="copySolutionDialogTitle" class="modal-hdr-title">复制并保存方案</div>
+                <button class="modal-x" type="button" aria-label="关闭" onclick="closeCopySolutionDialog()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="flow-copy">方案将保存到“我的方案”中。</p>
+                <input id="copySolutionName" class="copy-solution-input" maxlength="30" aria-label="方案名称">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" type="button" onclick="closeCopySolutionDialog()">取消</button>
+                <button id="confirmCopySolutionButton" class="btn-submit" type="button" onclick="confirmCopyCurrentSolution()">确认复制</button>
             </div>
         </div>
     </div>
@@ -1312,6 +1409,52 @@ const COMMUNITY_PROFILE_DIMENSIONS = Object.freeze({
     canonicalizerVersion: '1'
 });
 
+const DEFAULT_SOLUTION_CONFIG_GROUPS = Object.freeze([
+    {
+        key: 'general',
+        label: '通用',
+        items: [
+            { key: 'env', label: '环境变量', description: '配置容器环境变量，匹配特定程序需求', valueType: 'text', displayValue: '未配置' },
+            { key: 'args', label: '启动参数', description: '添加程序启动参数，用于启用特定功能或解决兼容性问题', valueType: 'text', displayValue: '-dx11' },
+            { key: 'exe_path', label: '启动文件路径（仅展示）', description: '选择要运行的游戏或程序的 .exe 文件路径', valueType: 'text', displayValue: '未配置' }
+        ]
+    },
+    {
+        key: 'compatibility',
+        label: '兼容性',
+        items: [
+            { key: 'wine_ver', label: '兼容层', description: '选择 Wine 版本，不同版本的兼容性支持程度不同', valueType: 'text', displayValue: 'proton10.0-arm64x-2' },
+            { key: 'dinput', label: 'Dinput 函数库', description: '决定 dinput.dll 和 dinput8.dll 优先使用游戏自带还是 Wine 内置版本', valueType: 'text', displayValue: '优先原装' },
+            { key: 'skip_video', label: '跳过音视频解码', description: '用于处理部分游戏启动视频的兼容问题', valueType: 'boolean', displayValue: '禁用' },
+            { key: 'surface', label: '表面格式', description: '影响图形表面兼容性', valueType: 'text', displayValue: 'R8G8B8A8' },
+            { key: 'audio_drv', label: '音频驱动', description: '控制容器音频输出', valueType: 'text', displayValue: 'PulseAudio' },
+            { key: 'dxvk', label: 'DXVK 版本', description: '将 DirectX 转译为 Vulkan', valueType: 'text', displayValue: '2.3（异步编译）' },
+            { key: 'vkd3d', label: 'VKD3D 版本', description: '将 DirectX 12 转译为 Vulkan', valueType: 'text', displayValue: '2.11.1' },
+            { key: 'cpu_trans', label: 'CPU 转译器', description: '负责 x86 到 ARM64 指令转译', valueType: 'text', displayValue: 'FEX-Emu' },
+            { key: 'cpu_core', label: 'CPU 核心限制', description: '控制运行时可使用的核心数量', valueType: 'text', displayValue: '不限制' },
+            { key: 'vram', label: '显存限制', description: '设置容器显存上限', valueType: 'text', displayValue: '4096 MB' }
+        ]
+    },
+    {
+        key: 'dependencies',
+        label: '组件依赖',
+        items: [
+            { key: 'cjkfonts', label: 'CJK 字体组件', description: '为游戏提供中日韩字体', valueType: 'boolean', displayValue: '已启用' }
+        ]
+    },
+    {
+        key: 'steam',
+        label: 'Steam',
+        items: [
+            { key: 'steam_input_exp', label: 'Steam Input（实验性）', description: '通过 Steam 输入层运行手柄配置', valueType: 'boolean', displayValue: '已启用' }
+        ]
+    }
+]);
+
+function cloneSolutionConfigGroups(groups = DEFAULT_SOLUTION_CONFIG_GROUPS) {
+    return JSON.parse(JSON.stringify(groups));
+}
+
 function getReportedSet() {
     try { return new Set(JSON.parse(localStorage.getItem(LS_REPORTED) || '[]')); } catch(e) { return new Set(); }
 }
@@ -1326,8 +1469,8 @@ const MY_UID = 'me_demo_user';
 const AVATARS = Array(7).fill('');
 
 const SEEDS = [
-    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', solution:{id:'community_cfg_adreno750_stable_v1',name:'Adreno 750 稳定方案',source:'社区共同验证',status:'published',configHash:'cfg_adreno750_stable_v1',samples:38,validationCount:38,totalDurationSeconds:186420,successRate:92,lastVerifiedDays:3} },
-    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['基本可玩'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'low-sample', solution:{id:'community_cfg_galaxy_audio_v1',name:'Galaxy 音频兼容方案',source:'社区共同验证',status:'published',configHash:'cfg_galaxy_audio_v1',samples:8,validationCount:8,totalDurationSeconds:26580,successRate:null,lastVerifiedDays:6} },
+    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', solution:{id:'community_cfg_adreno750_stable_v1',name:'Adreno 750 稳定方案',source:'社区共同验证',status:'published',configHash:'cfg_adreno750_stable_v1',samples:38,validationCount:38,totalDurationSeconds:186420,successRate:92,lastVerifiedDays:3,configGroups:cloneSolutionConfigGroups()} },
+    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['基本可玩'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'low-sample', solution:{id:'community_cfg_galaxy_audio_v1',name:'Galaxy 音频兼容方案',source:'社区共同验证',status:'published',configHash:'cfg_galaxy_audio_v1',samples:8,validationCount:8,totalDurationSeconds:26580,successRate:null,lastVerifiedDays:6,configGroups:cloneSolutionConfigGroups()} },
     { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.0.5', stars:5, tags:['完美兼容'], text:'启动过程很顺畅，进入游戏后画面稳定，手柄操作也没有异常。', date:'2025-04-22', likes:31 },
     { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.5', stars:3, tags:['有部分问题'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8, reviewState:'unavailable', solution:{id:'community_cfg_legacy_graphics_v1',name:'旧版图形修复方案',source:'社区共同验证',status:'unavailable',configHash:'cfg_legacy_graphics_v1',samples:21,validationCount:21,totalDurationSeconds:48220,successRate:76,lastVerifiedDays:18} },
     { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.0.3', stars:4, tags:['基本可玩'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', html:'剧情向玩家<b>强烈推荐</b>，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
@@ -1446,6 +1589,9 @@ function upsertCommunityProfile(snapshot, reviewId) {
     current.samples = current.validationCount;
     current.successRate = current.validationCount >= 10 ? 92 : null;
     current.lastVerifiedDays = 0;
+    current.configGroups = cloneSolutionConfigGroups(
+        normalizedSnapshot.configGroups || current.configGroups || DEFAULT_SOLUTION_CONFIG_GROUPS
+    );
     if (existingIndex >= 0) profiles[existingIndex] = current;
     else profiles.push(current);
     saveCommunityProfiles(profiles);
@@ -1778,6 +1924,7 @@ const journeyState = {
     appliedSolutionId: '',
     appliedSolutionName: '',
     appliedConfigHash: '',
+    appliedConfigGroups: cloneSolutionConfigGroups(),
     playSessionId: '',
     startedAt: 0,
     sessionSnapshot: {
@@ -1785,7 +1932,8 @@ const journeyState = {
         configHash: 'cfg_local_default_v1',
         profileName: '本次启动方案',
         durationSeconds: 1122,
-        playSessionId: 'play_demo_recent_success'
+        playSessionId: 'play_demo_recent_success',
+        configGroups: cloneSolutionConfigGroups()
     }
 };
 
@@ -1923,7 +2071,10 @@ function startGame() {
         configHash: journeyState.appliedConfigHash || 'cfg_local_default_v1',
         profileName: journeyState.appliedSolutionName || '本次启动方案',
         durationSeconds: 0,
-        playSessionId: journeyState.playSessionId
+        playSessionId: journeyState.playSessionId,
+        configGroups: cloneSolutionConfigGroups(
+            journeyState.appliedConfigGroups || journeyState.sessionSnapshot?.configGroups || DEFAULT_SOLUTION_CONFIG_GROUPS
+        )
     };
     setJourneyStage('launching');
     window.setTimeout(() => setJourneyStage('gameplay'), 700);
@@ -2315,7 +2466,11 @@ function fallbackCopy(text) {
 // ============================================================
 let solutionApplicationMode = 'exact';
 let currentDetailSolution = null;
+let currentDetailSolutionId = '';
+let solutionDetailScenario = 'ready';
 let pendingAuxiliaryConfirmation = false;
+const COPIED_SOLUTIONS_KEY = 'gh_copied_solutions_v1';
+const SUPPORTED_SOLUTION_SCHEMA_VERSIONS = new Set(['1']);
 
 function findSolutionById(solutionId) {
     const communityProfile = getCommunityProfiles().find(item => item.id === solutionId);
@@ -2327,42 +2482,175 @@ function findSolutionById(solutionId) {
     return null;
 }
 
-function openSolutionDetail(solutionId) {
-    const solution = findSolutionById(solutionId);
-    if (!solution || solution.status !== 'published') return;
-    currentDetailSolution = solution;
+function buildSolutionDetailViewModel(solution) {
+    if (!solution || solution.status !== 'published') return null;
+    if (!SUPPORTED_SOLUTION_SCHEMA_VERSIONS.has(String(solution.schemaVersion || ''))) {
+        throw new Error('方案字段版本无法解析');
+    }
+    const storedGroups = cloneSolutionConfigGroups(solution.configGroups || []);
+    if (!Array.isArray(storedGroups) || storedGroups.length === 0) {
+        throw new Error('方案配置正文缺失');
+    }
+    const configGroups = storedGroups
+        .filter(group => group && typeof group.key === 'string' && Array.isArray(group.items) && group.items.length > 0)
+        .map(group => ({
+            key: group.key,
+            label: String(group.label || ''),
+            items: group.items
+                .filter(item => item && typeof item.key === 'string')
+                .map(item => ({
+                    key: item.key,
+                    label: String(item.label || ''),
+                    description: String(item.description || ''),
+                    valueType: String(item.valueType || 'text'),
+                    displayValue: String(item.displayValue || '未配置')
+                }))
+        }))
+        .filter(group => group.items.length > 0);
+    if (configGroups.length === 0) throw new Error('方案配置正文缺失');
+
+    const verificationCount = Number(solution.validationCount ?? solution.samples ?? 0);
+    const numericSuccessRate = solution.successRate === null || solution.successRate === undefined
+        ? null
+        : Number(solution.successRate);
+    const sampleSufficient = verificationCount >= 10;
+    return {
+        solutionId: solution.id,
+        solutionName: solution.name,
+        status: 'available',
+        gpu: { displayName: solution.gpuModel || '' },
+        runtimeArchitecture: solution.runtimeArchitecture,
+        engineVersion: solution.engineVersion,
+        sourceType: 'community',
+        trustSummary: {
+            verificationCount,
+            successRate: sampleSufficient && Number.isFinite(numericSuccessRate) ? numericSuccessRate : null,
+            lastVerifiedDays: Number(solution.lastVerifiedDays || 0),
+            sampleSufficient
+        },
+        configGroups,
+        actions: {
+            canApply: solutionApplicationMode !== 'hard',
+            applyDisabledReason: solutionApplicationMode === 'hard' ? '当前设备 GPU 或运行架构不兼容，无法应用。' : '',
+            canCopy: true,
+            copyDisabledReason: ''
+        }
+    };
+}
+
+function escapeSolutionText(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[character]);
+}
+
+function renderSolutionTrust(summary) {
+    const verificationCount = Number(summary.verificationCount || 0);
+    const sample = summary.sampleSufficient && Number.isFinite(summary.successRate)
+        ? '成功率 ' + summary.successRate + '% · ' + verificationCount + ' 次验证'
+        : summary.sampleSufficient
+            ? verificationCount + ' 次验证'
+            : verificationCount + ' 次验证 · 样本较少';
+    const lastVerified = Number.isFinite(summary.lastVerifiedDays)
+        ? '最近验证 ' + summary.lastVerifiedDays + ' 天前'
+        : '最近验证时间未知';
+    return '社区共同验证 · ' + sample + ' · ' + lastVerified;
+}
+
+function renderSolutionConfigGroups(groups) {
+    return groups.map(group => `
+        <section class="solution-config-section" data-config-group="${escapeSolutionText(group.key)}">
+            <h3 class="solution-config-title">${escapeSolutionText(group.label)}</h3>
+            <div class="solution-config-card">
+                ${group.items.map(item => `
+                    <div class="solution-config-row" data-config-key="${escapeSolutionText(item.key)}">
+                        <div>
+                            <div class="solution-config-label">${escapeSolutionText(item.label)}</div>
+                            ${item.description ? `<div class="solution-config-description">${escapeSolutionText(item.description)}</div>` : ''}
+                        </div>
+                        <div class="solution-config-value">${escapeSolutionText(item.displayValue || '未配置')}</div>
+                    </div>`).join('')}
+            </div>
+        </section>`).join('');
+}
+
+function setSolutionDetailActions({ canApply = false, canCopy = false, applyDisabledReason = '', copyDisabledReason = '' } = {}) {
+    const applyButton = document.getElementById('applySolutionButton');
+    const copyButton = document.getElementById('copySolutionButton');
+    applyButton.disabled = !canApply;
+    copyButton.disabled = !canCopy;
+    applyButton.title = applyDisabledReason || '';
+    copyButton.title = copyDisabledReason || '';
+}
+
+function renderSolutionDetailState(scenario = solutionDetailScenario) {
+    const state = document.getElementById('solutionDetailState');
+    const content = document.getElementById('solutionDetailContent');
+    const result = document.getElementById('solutionApplyResult');
+    const applyButton = document.getElementById('applySolutionButton');
+    const showState = (message, retry = false) => {
+        state.hidden = false;
+        state.innerHTML = '<p>' + escapeSolutionText(message) + '</p>'
+            + (retry ? '<button id="retrySolutionDetailButton" type="button" onclick="reloadSolutionDetail()">重新加载</button>' : '');
+        content.hidden = true;
+        result.textContent = '';
+        applyButton.textContent = '应用';
+        setSolutionDetailActions();
+    };
+
     pendingAuxiliaryConfirmation = false;
-    document.getElementById('solutionDetailName').textContent = solution.name;
-    document.getElementById('solutionConfidenceLine').textContent = solution.samples < 10
-        ? solution.samples + ' 次验证 · 样本较少 · 最近验证 ' + solution.lastVerifiedDays + ' 天前'
-        : '同配置 · 成功率 ' + solution.successRate + '% · ' + solution.samples + ' 次验证 · 最近验证 ' + solution.lastVerifiedDays + ' 天前';
+    applyButton.textContent = '应用';
+    if (scenario === 'loading') return showState('正在加载方案详情');
+    if (scenario === 'load-error') return showState('加载失败，请重新加载', true);
+    if (scenario === 'invalid' || !currentDetailSolution || currentDetailSolution.status !== 'published') {
+        return showState('方案已不可用');
+    }
+
+    let viewModel;
+    try {
+        viewModel = buildSolutionDetailViewModel(currentDetailSolution);
+    } catch (error) {
+        console.warn('方案详情数据异常：', error.message);
+        return showState('方案配置异常，暂时无法使用');
+    }
+    if (!viewModel) return showState('方案已不可用');
+
+    state.hidden = true;
+    state.textContent = '';
+    content.hidden = false;
+    document.getElementById('solutionDetailSchemeName').textContent = viewModel.solutionName;
+    const gpu = document.getElementById('solutionDetailGpu');
+    gpu.textContent = viewModel.gpu.displayName ? 'GPU：' + viewModel.gpu.displayName : '';
+    gpu.hidden = !viewModel.gpu.displayName;
+    document.getElementById('solutionTrustSummary').textContent = renderSolutionTrust(viewModel.trustSummary);
+    document.getElementById('solutionConfigGroups').innerHTML = renderSolutionConfigGroups(viewModel.configGroups);
+    result.textContent = viewModel.actions.applyDisabledReason || viewModel.actions.copyDisabledReason || '';
+    setSolutionDetailActions(viewModel.actions);
+}
+
+function openSolutionDetail(solutionId) {
+    currentDetailSolutionId = solutionId;
+    currentDetailSolution = findSolutionById(solutionId);
+    pendingAuxiliaryConfirmation = false;
+    closeCopySolutionDialog();
     document.getElementById('solutionDetailPage').hidden = false;
-    renderSolutionCompatibility();
+    document.getElementById('solutionDetailBody').scrollTop = 0;
+    renderSolutionDetailState(solutionDetailScenario);
+}
+
+function reloadSolutionDetail() {
+    solutionDetailScenario = 'ready';
+    if (!currentDetailSolutionId) return;
+    currentDetailSolution = findSolutionById(currentDetailSolutionId);
+    renderSolutionDetailState('ready');
 }
 
 function closeSolutionDetail() {
     document.getElementById('solutionDetailPage').hidden = true;
+    closeCopySolutionDialog();
     currentDetailSolution = null;
+    currentDetailSolutionId = '';
     pendingAuxiliaryConfirmation = false;
-}
-
-function renderSolutionCompatibility() {
-    const diff = document.getElementById('solutionCompatibilityDiff');
-    const result = document.getElementById('solutionApplyResult');
-    const button = document.getElementById('applySolutionButton');
-    if (!diff || !result || !button) return;
-    result.textContent = '';
-    pendingAuxiliaryConfirmation = false;
-    button.textContent = '应用';
-    button.disabled = solutionApplicationMode === 'hard';
-    if (solutionApplicationMode === 'exact') {
-        diff.innerHTML = '<div class="compat-check-row"><span>GPU</span><strong>Adreno 750 · 一致</strong></div><div class="compat-check-row"><span>运行架构</span><strong>ARM64 · 一致</strong></div><div class="compat-check-row"><span>配置结论</span><strong>同配置，可直接应用</strong></div>';
-    } else if (solutionApplicationMode === 'auxiliary') {
-        diff.innerHTML = '<div class="compat-check-row"><span>GPU / 架构</span><strong>一致</strong></div><div class="compat-check-row"><span>分辨率</span><strong>方案 1280×720 / 当前 1920×1080</strong></div><div class="compat-check-row"><span>配置结论</span><strong>辅助信息不同，确认后可应用</strong></div>';
-    } else {
-        diff.innerHTML = '<div class="compat-check-row"><span>GPU</span><strong>方案 Adreno 750 / 当前 Mali-G720</strong></div><div class="compat-check-row"><span>运行架构</span><strong>方案 ARM64 / 当前 x86_64</strong></div><div class="compat-check-row"><span>配置结论</span><strong>硬条件不兼容，禁止应用</strong></div>';
-        result.textContent = '当前配置与方案硬条件不一致，无法应用。';
-    }
 }
 
 function applyCurrentSolution() {
@@ -2379,6 +2667,7 @@ function applyCurrentSolution() {
     journeyState.appliedSolutionId = appliedSolution.id;
     journeyState.appliedSolutionName = appliedSolution.name;
     journeyState.appliedConfigHash = appliedSolution.configHash || 'cfg_adreno750_stable_v1';
+    journeyState.appliedConfigGroups = cloneSolutionConfigGroups(appliedSolution.configGroups || []);
     const applied = document.getElementById('currentAppliedSolution');
     applied.textContent = '当前方案：' + appliedSolution.name;
     applied.hidden = false;
@@ -2389,13 +2678,54 @@ function applyCurrentSolution() {
 }
 
 function copyCurrentSolution() {
-    if (!currentDetailSolution) return;
-    document.getElementById('solutionApplyResult').textContent = '已复制到“我的方案”，原方案不会被修改。';
+    if (!currentDetailSolution || currentDetailSolution.status !== 'published') return;
+    const dialog = document.getElementById('copySolutionDialog');
+    const input = document.getElementById('copySolutionName');
+    input.value = currentDetailSolution.name + ' - 副本';
+    dialog.hidden = false;
+    dialog.classList.add('show');
+    window.requestAnimationFrame(() => {
+        input.focus();
+        input.select();
+    });
+}
+
+function getCopiedSolutions() {
+    try {
+        const copies = JSON.parse(localStorage.getItem(COPIED_SOLUTIONS_KEY) || '[]');
+        return Array.isArray(copies) ? copies : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function closeCopySolutionDialog(event) {
+    const dialog = document.getElementById('copySolutionDialog');
+    if (!dialog || (event && event.target !== dialog)) return;
+    dialog.classList.remove('show');
+    dialog.hidden = true;
+}
+
+function confirmCopyCurrentSolution() {
+    if (!currentDetailSolution || currentDetailSolution.status !== 'published') return;
+    const input = document.getElementById('copySolutionName');
+    const name = input.value.trim() || currentDetailSolution.name + ' - 副本';
+    const copies = getCopiedSolutions();
+    copies.push({
+        id: 'copy_' + Date.now(),
+        sourceSolutionId: currentDetailSolution.id,
+        name,
+        configGroups: cloneSolutionConfigGroups(currentDetailSolution.configGroups || []),
+        cloudShared: false
+    });
+    localStorage.setItem(COPIED_SOLUTIONS_KEY, JSON.stringify(copies));
+    closeCopySolutionDialog();
+    showToast('已复制到“我的方案”');
 }
 
 function setApplicationMode(mode) {
-    solutionApplicationMode = mode;
-    if (!document.getElementById('solutionDetailPage').hidden) renderSolutionCompatibility();
+    solutionApplicationMode = ['exact', 'auxiliary', 'hard'].includes(mode) ? mode : 'exact';
+    if (!document.getElementById('solutionDetailPage').hidden) renderSolutionDetailState('ready');
 }
 
 function showSameConfigEmptyScenario() {
@@ -2424,6 +2754,7 @@ function resetJourney() {
         appliedSolutionId: '',
         appliedSolutionName: '',
         appliedConfigHash: '',
+        appliedConfigGroups: cloneSolutionConfigGroups(),
         playSessionId: '',
         startedAt: 0,
         sessionSnapshot: {
@@ -2431,7 +2762,8 @@ function resetJourney() {
             configHash: 'cfg_local_default_v1',
             profileName: '本次启动方案',
             durationSeconds: 1122,
-            playSessionId: 'play_demo_recent_success'
+            playSessionId: 'play_demo_recent_success',
+            configGroups: cloneSolutionConfigGroups()
         }
     });
     const applied = document.getElementById('currentAppliedSolution');
@@ -2449,9 +2781,15 @@ function bindCompatibilityV12Demo() {
     window.compatibilityDemo = Object.freeze({
         getInviteState: () => JSON.parse(JSON.stringify(inviteDemoState)),
         getCommunityProfiles: () => JSON.parse(JSON.stringify(getCommunityProfiles())),
+        getCopiedSolutions: () => JSON.parse(JSON.stringify(getCopiedSolutions())),
         setSessionSnapshot: snapshot => {
             journeyState.sessionSnapshot = { ...journeyState.sessionSnapshot, ...snapshot };
             return JSON.parse(JSON.stringify(journeyState.sessionSnapshot));
+        },
+        setSolutionDetailScenario: scenario => {
+            solutionDetailScenario = ['ready', 'loading', 'load-error', 'invalid'].includes(scenario)
+                ? scenario
+                : 'ready';
         },
         simulateGlobalCooldown,
         setApplicationMode,
