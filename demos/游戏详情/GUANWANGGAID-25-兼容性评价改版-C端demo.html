@@ -1,0 +1,2368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>盖世游戏 - 兼容性评价改版 v1.2 C端 Demo</title>
+    <style>
+        :root {
+            --bg-dark: #0f1115;
+            --panel-bg: #13161a;
+            --primary-blue: #009dff;
+            --blue-gradient: linear-gradient(90deg, #00bfff, #0080ff);
+            --btn-dark: #2a2d33;
+            --text-main: #ffffff;
+            --text-sub: #8a9ba8;
+            --divider: rgba(255,255,255,0.08);
+            --radius-box: 16px;
+            --radius-btn: 12px;
+            --popup-bg: #252830;
+            --star-yellow: #f5c518;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; user-select: none; }
+        /* 单文件 Demo 不依赖外部图标字体，使用轻量字符回退，避免离线出现方框。 */
+        .fas, .far, .fab { display: inline-flex; align-items: center; justify-content: center; font-style: normal; line-height: 1; }
+        .fas::before, .far::before, .fab::before { content: ''; }
+        .fa-chevron-left::before { content: '‹'; font-size: 22px; }
+        .fa-chevron-right::before { content: '›'; }
+        .fa-pause::before { content: 'Ⅱ'; }
+        .fa-play::before { content: '▶'; font-size: 0.72em; }
+        .fa-volume-mute::before { content: '×'; }
+        .fa-volume-up::before { content: '))'; font-size: 0.72em; }
+        .fa-expand-alt::before { content: '⛶'; }
+        .fa-clock::before { content: '◷'; }
+        .fa-cloud::before { content: '⌁'; }
+        .fa-star::before { content: '★'; }
+        .fa-fire::before { content: '▲'; }
+        .fa-th-large::before { content: '▦'; }
+        .fa-trash-alt::before { content: '×'; }
+        .fa-times::before { content: '×'; }
+        .fa-link::before { content: '↗'; }
+        .fa-desktop, .fa-gamepad {
+            width: 15px; height: 10px; border: 1.5px solid currentColor; border-radius: 2px;
+        }
+        .fa-desktop::after { content: ''; width: 7px; border-top: 1.5px solid currentColor; transform: translateY(7px); }
+        .fa-gamepad { border-radius: 7px 7px 4px 4px; }
+        .fa-signal::before { content: '▂▅▇'; font-size: 8px; letter-spacing: -1px; }
+        .fa-wifi::before { content: '⌁'; }
+        .fa-battery-full { width: 14px; height: 7px; border: 1px solid currentColor; border-radius: 2px; }
+        body {
+            background: #1a1a2e; height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; color: var(--text-main); gap: 16px;
+        }
+
+        /* ---- 手机壳 ---- */
+        .phone-frame {
+            position: relative;
+            border-radius: 44px;
+            background: #1c1c1e;
+            box-shadow:
+                0 0 0 2px #3a3a3c,
+                0 0 0 6px #1c1c1e,
+                0 0 0 8px #3a3a3c,
+                0 30px 80px rgba(0,0,0,0.9),
+                inset 0 0 20px rgba(0,0,0,0.4);
+            padding: 14px;
+            transition: width 0.4s ease, height 0.4s ease;
+            flex-shrink: 0;
+        }
+        /* 横版手机壳：860+28 x 400+28 */
+        .phone-frame.ls { width: 916px; height: 456px; }
+        /* 竖版手机壳：400+28 x 860+28 */
+        .phone-frame.pt { width: 456px; height: 916px; }
+        /* 横版侧边按钮装饰 */
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            right: -10px; top: 80px;
+            width: 4px; height: 60px;
+            background: #3a3a3c;
+            border-radius: 2px;
+            box-shadow: 0 80px 0 #3a3a3c;
+        }
+        .phone-frame.pt::before {
+            right: auto; top: auto;
+            left: -10px; bottom: 120px;
+            width: 4px; height: 40px;
+            box-shadow: 0 -50px 0 #3a3a3c, 0 60px 0 #3a3a3c;
+        }
+
+        /* ---- APP 外壳 ---- */
+        .shell {
+            position: relative; border-radius: 30px; overflow: hidden;
+            background: var(--bg-dark);
+            width: 100%; height: 100%;
+        }
+
+        /* 横屏：860×400 */
+        .shell.ls .inner {
+            width: 100%; height: 100%;
+            display: grid; grid-template-columns: 1fr 280px; overflow: hidden;
+        }
+        .shell.ls .col-left { height: 100%; overflow-y: auto; overflow-x: hidden; background: linear-gradient(to bottom, #1a1d24 0%, var(--bg-dark) 40%); }
+        .shell.ls .col-right { height: 100%; overflow-y: auto; background: var(--panel-bg); border-left: 1px solid var(--divider); display: flex; flex-direction: column; }
+        .shell.ls .bottom-bar { display: none !important; }
+
+        /* 竖屏：400×860 */
+        .shell.pt .inner { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+        .shell.pt .col-left { flex: 1; overflow-y: auto; overflow-x: hidden; background: var(--bg-dark); }
+        .shell.pt .col-right { display: none; }
+        .shell.pt .bottom-bar { display: flex !important; }
+
+        /* 滚动条隐藏 */
+        .col-left::-webkit-scrollbar, .col-right::-webkit-scrollbar { display: none; }
+
+        /* ---- 媒体区 ---- */
+        .media-container { width: 100%; position: relative; background: #000; overflow: hidden; flex-shrink: 0; }
+        .shell.ls .media-container { aspect-ratio: 21/9; }
+        .shell.pt .media-container { aspect-ratio: 16/9; }
+        .media-content { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hidden { display: none !important; }
+        .back-btn {
+            position: absolute; top: 14px; left: 14px; z-index: 50;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.45); border-radius: 50%; color: white; font-size: 15px; cursor: pointer; transition: 0.2s;
+        }
+        .back-btn:hover { background: rgba(0,0,0,0.7); }
+        .video-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 40%);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 16px; pointer-events: none;
+        }
+        .video-controls-layer { pointer-events: auto; }
+        .play-pause-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-size: 44px; color: rgba(255,255,255,0.85); cursor: pointer;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); opacity: 0; transition: 0.3s; pointer-events: auto;
+        }
+        .media-container:hover .play-pause-center { opacity: 1; }
+        .progress-track {
+            width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px;
+            margin-bottom: 12px; cursor: pointer; pointer-events: auto;
+        }
+        .progress-fill { height: 100%; background: var(--primary-blue); width: 0%; border-radius: 2px; }
+        .controls-row { display: flex; justify-content: space-between; align-items: center; pointer-events: auto; }
+        .toggle-capsule {
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); border-radius: 20px;
+            padding: 3px; display: flex; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tc-btn { padding: 4px 14px; font-size: 12px; color: #aaa; border-radius: 16px; cursor: pointer; transition: 0.2s; font-weight: 600; }
+        .tc-btn.active { background: #fff; color: #000; }
+        .right-icons { color: white; font-size: 15px; display: flex; gap: 14px; opacity: 0.8; cursor: pointer; }
+
+        /* ---- 左列内容区 ---- */
+        .content-pad { padding: 16px 20px 60px; }
+        .shell.ls .content-pad { padding: 20px 30px 80px; }
+
+        /* ---- 三合一信息卡：兼容性评价 + 游玩时长 + 云存档 ---- */
+        .info-card {
+            background: linear-gradient(135deg, #1c2535 0%, #111620 100%);
+            border-radius: var(--radius-box); margin-bottom: 28px;
+            border: 1px solid rgba(255,255,255,0.07); overflow: hidden;
+        }
+        /* 卡片顶部 header 行（参考原PC引擎卡样式） */
+        .info-card-hdr {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer; transition: background 0.2s;
+        }
+        .info-card-hdr:hover { background: rgba(255,255,255,0.02); }
+        .ic-hdr-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #fff; }
+        .ic-hdr-left i { font-size: 16px; color: #b0bec5; }
+        .ic-hdr-right { display: flex; align-items: center; gap: 4px; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .ic-hdr-right i { font-size: 10px; }
+        /* 主体区域 */
+        .info-card-body { display: flex; align-items: stretch; }
+        /* 横屏：三项并排一行 */
+        .shell.ls .info-card-body { flex-direction: row; }
+        .shell.ls .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative;
+        }
+        .shell.ls .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.ls .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .shell.ls .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.ls .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 竖屏：三列并排一行（图标+标签+描述格式） */
+        .shell.pt .info-card-body { flex-direction: row; }
+        .shell.pt .info-compat {
+            flex: 1; padding: 12px 10px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; min-width: 0; text-align: center; position: relative;
+        }
+        .shell.pt .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.pt .ic-main { display: flex; flex-direction: column; align-items: center; min-width: 0; width: 100%; }
+        /* 竖版：info-sub-row 两列 */
+        .shell.pt .info-sub-row { flex: 2; display: flex; flex-direction: row; }
+        .shell.pt .info-time {
+            flex: 1; padding: 10px 8px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.pt .info-cloud {
+            flex: 1; padding: 10px 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 竖版 兼容性：大图标圆圈；横版隐藏 */
+        .shell.ls .info-compat .ic-icon-wrap { display: none; }
+        .shell.pt .info-compat .ic-icon-wrap {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(80,200,120,0.15);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 4px; flex-shrink: 0;
+        }
+        .shell.pt .info-compat .ic-icon-wrap span { font-size: 13px; font-weight: 800; color: #6fffa8; }
+        /* 标签文字 */
+        .shell.pt .ic-compat-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 2px; white-space: nowrap; }
+        /* 描述：最多1行，无渐隐效果 */
+        .shell.pt .ic-compat-desc {
+            font-size: 11px; color: var(--text-sub); line-height: 1.45;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+        }
+        /* 末尾渐隐遮罩 — 已移除 */
+        .shell.pt .ic-compat-desc-wrap {
+            position: relative; width: 100%; overflow: hidden;
+        }
+        /* 竖版：隐藏绿圈、ic-sub 文字、专用描述块；显示评分行 */
+        .shell.pt .info-compat .ic-icon-wrap { display: none; }
+        .shell.pt .info-compat .ic-score-row { display: flex; flex-wrap: nowrap; }
+        .shell.pt .info-compat .ic-score { font-size: 15px; }
+        .shell.pt .info-compat .ic-stars svg { width: 9px; height: 9px; }
+        .shell.pt .info-compat .ic-sub { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .shell.pt .info-compat .ic-empty { font-size: 10px; }
+        /* 竖版描述专用 — 已由 ic-sub 替代，隐藏 */
+        .pt-compat-desc { display: none; }
+        .shell.pt .pt-compat-desc { display: none; }
+        /* 兼容性标签 */
+        .ic-compat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+        /* 共용 텍스트 */
+        .ic-score-row { display: flex; align-items: baseline; gap: 8px; margin: 4px 0 3px; }
+        .ic-score { font-size: 26px; font-weight: 800; color: #fff; }
+        .ic-stars { display: flex; gap: 2px; align-items: center; }
+        .ic-sub { font-size: 11px; color: var(--text-sub); }
+        .ic-empty { font-size: 12px; color: var(--text-sub); line-height: 1.5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px; }
+        .ic-empty .ic-icon { font-size: 18px; color: rgba(255,255,255,0.2); margin-bottom: 0; }
+        .ic-icon { font-size: 18px; color: #b0bec5; }
+        .ic-val-label { font-size: 11px; color: var(--text-sub); }
+        .ic-val { font-size: 13px; font-weight: 600; color: #fff; }
+
+        /* 横版右列 PC游戏引擎卡（横铺满底部） */
+        .shell.ls #detailPanel { flex: none; }
+        .ls-engine-card {
+            background: linear-gradient(135deg, #1c2535 0%, #111620 100%);
+            border-top: 1px solid rgba(255,255,255,0.07);
+            margin-top: auto;
+        }
+        .ls-engine-hdr {
+            padding: 12px 20px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; align-items: center;
+        }
+        .ls-engine-card .info-card-body { flex-direction: row; }
+        .ls-engine-card .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .ls-engine-card .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .ls-engine-card .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .ls-engine-card .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .ls-engine-card .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 横版时隐藏右列的 ls-engine-card（PC游戏引擎在左列显示），竖版时显示 */
+        .shell.ls .col-right .ls-engine-card { display: none; }
+        .shell.pt .col-right .ls-engine-card { display: none; }
+        /* 横版左列 info-card：水平布局与 ls-engine-card 相同 */
+        .shell.ls .col-left .info-card .info-card-body { flex-direction: row; }
+        .shell.ls .col-left .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative;
+        }
+        .shell.ls .col-left .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.ls .col-left .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .shell.ls .col-left .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.ls .col-left .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+
+        /* 横版：左列视频下方开发商信息横排 */
+        .ls-dev-bar {
+            display: none;
+            padding: 10px 30px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-wrap: wrap; gap: 0 24px; align-items: center;
+        }
+        .shell.ls .ls-dev-bar { display: flex; }
+        .ls-dev-item { display: flex; align-items: center; gap: 6px; }
+        .ls-dev-item .dev-label { font-size: 11px; color: var(--text-sub); white-space: nowrap; }
+        .ls-dev-item .dev-val { font-size: 11px; color: #ddd; font-weight: 500; white-space: nowrap; }
+        /* 横版右列 dev-info-list 隐藏 */
+        .shell.ls .col-right .dev-info-list { display: none; }
+
+        /* ---- 游戏介绍 ---- */
+        .section-header { margin-bottom: 16px; font-size: 17px; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; }
+        .section-header::before { content: ''; width: 4px; height: 17px; background: var(--primary-blue); border-radius: 2px; }
+        .intro-lead { font-size: 13px; color: #ccc; line-height: 1.7; background: rgba(255,255,255,0.04); padding: 14px; border-radius: 10px; margin-bottom: 20px; }
+        .rich-img { width: 100%; border-radius: 8px; margin-bottom: 10px; display: block; border: 1px solid rgba(255,255,255,0.06); }
+
+        /* ---- 右列状态栏 & 游戏信息 ---- */
+        .status-bar { height: 40px; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; gap: 10px; font-size: 12px; flex-shrink: 0; }
+        .game-meta { padding: 8px 20px 20px; display: flex; flex-direction: column; }
+        .title-block { margin-bottom: 14px; }
+        .title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+        .game-title { font-size: 26px; font-weight: 800; color: white; line-height: 1.2; }
+        .btn-share-icon {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--btn-dark);
+            display: flex; align-items: center; justify-content: center;
+            color: #aaa; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;
+        }
+        .btn-share-icon:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .game-subtitle { font-size: 12px; color: var(--text-sub); }
+        .rating-capsule { display: flex; height: 30px; border-radius: 6px; overflow: hidden; margin-bottom: 18px; width: fit-content; cursor: pointer; }
+        .rc-left { background: linear-gradient(90deg, #2c3e50, #34495e); padding: 0 10px; display: flex; align-items: center; gap: 5px; color: #d1d5db; font-size: 12px; font-weight: 600; }
+        .rc-right { background: #181b21; padding: 0 10px; display: flex; align-items: center; color: #6fffa8; font-size: 15px; font-weight: 700; }
+        .tags-group { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
+        .tag-hot { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 3px; }
+        .tag-normal { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); padding: 3px 9px; border-radius: 4px; font-size: 11px; }
+        .action-buttons-group { display: flex; gap: 9px; align-items: stretch; margin-bottom: 20px; position: relative; }
+        .btn-menu { width: 46px; height: 46px; flex-shrink: 0; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .btn-cloud { flex: 1; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; height: 46px; transition: 0.2s; }
+        .btn-get { flex: 1.5; background: var(--blue-gradient); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0,157,255,0.3); height: 46px; transition: 0.2s; }
+        .btn-menu:active, .btn-cloud:active, .btn-get:active { transform: scale(0.96); }
+        .menu-popup { position: absolute; top: 55px; left: 0; width: 180px; background: var(--popup-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: none; flex-direction: column; overflow: hidden; z-index: 100; }
+        .menu-item { padding: 11px 15px; font-size: 13px; color: #ccc; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 9px; }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .text-danger { color: #ff4d4f; }
+        .dev-info-list { display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); padding: 8px 0; }
+        .dev-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .dev-row:last-child { border-bottom: none; }
+        .dev-label { font-size: 12px; color: var(--text-sub); }
+        .dev-val { font-size: 12px; color: #fff; font-weight: 500; text-align: right; }
+
+        /* ---- 竖屏底部栏 ---- */
+        .bottom-bar {
+            display: none; height: 76px; flex-shrink: 0;
+            background: var(--panel-bg); border-top: 1px solid var(--divider);
+            padding: 12px 16px; align-items: center; gap: 10px;
+        }
+        .btn-cloud-pt { flex: 1; height: 48px; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .btn-get-pt { flex: 2; height: 48px; background: var(--blue-gradient); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0,157,255,0.3); }
+
+        /* ---- 分享弹窗 ---- */
+        .share-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .share-overlay.show { opacity: 1; pointer-events: auto; }
+        .share-modal {
+            background: #17191e; border-radius: 24px; width: 400px; padding: 24px 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            transform: translateY(20px) scale(0.95); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275); position: relative;
+        }
+        .share-overlay.show .share-modal { transform: translateY(0) scale(1); }
+        .share-header { text-align: center; margin-bottom: 24px; position: relative; }
+        .share-title { font-size: 16px; font-weight: 700; color: #fff; }
+        .share-close { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 20px; color: #777; cursor: pointer; transition: 0.2s; }
+        .share-close:hover { color: #fff; }
+        .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 8px; }
+        .share-option { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+        .share-icon-circle { width: 52px; height: 52px; border-radius: 50%; background: #25282e; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; transition: 0.2s; }
+        .share-option:hover .share-icon-circle { background: #32363e; transform: scale(1.08) translateY(-2px); }
+        .share-option span { font-size: 12px; color: #9aa0a6; transition: 0.2s; }
+        .share-option:hover span { color: #fff; }
+        .share-icon-circle svg { width: 28px; height: 28px; stroke: #fff; }
+
+        /* =========================================
+           兼容性评价面板（旧：已废弃）
+           ========================================= */
+        .compat-panel { display: none !important; }
+        .compat-panel-pt { display: none !important; }
+
+        /* =========================================
+           兼容性评价全屏页面（从右侧滑入）
+           ========================================= */
+        .compat-page {
+            position: absolute; inset: 0;
+            background: var(--bg-dark);
+            z-index: 80;
+            display: flex; flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+            will-change: transform;
+        }
+        .compat-page.show { transform: translateX(0); }
+
+        .compat-page-hdr {
+            padding: 12px 16px 10px; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--divider); flex-shrink: 0;
+            background: var(--panel-bg);
+        }
+        .compat-page-back {
+            width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: rgba(255,255,255,0.7); transition: 0.2s; flex-shrink: 0;
+        }
+        .compat-page-back:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .compat-page-title { font-size: 15px; font-weight: 700; color: #fff; }
+        .compat-page-body { flex: 1; overflow-y: auto; }
+        .compat-page-body::-webkit-scrollbar { display: none; }
+        /* 横版页面：评价2列；概览卡限半宽 */
+        .shell.ls .compat-page .compat-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+        .shell.ls .compat-page .compat-item:nth-last-child(-n+2) { border-bottom: none; }
+        .shell.ls .compat-overview { max-width: 50%; }
+
+        /* 概览卡 */
+        .compat-overview { padding: 18px 20px; display: flex; gap: 18px; align-items: flex-start; }
+        .ov-score-big { font-size: 50px; font-weight: 900; color: #fff; line-height: 1; min-width: 70px; }
+        .ov-right { flex: 1; }
+        .ov-stars { display: flex; gap: 4px; margin-bottom: 6px; align-items: center; }
+        .ov-count { font-size: 12px; color: var(--text-sub); }
+        .dist-bars { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .dist-row { display: flex; align-items: center; gap: 8px; }
+        .dist-lbl { font-size: 11px; color: var(--text-sub); width: 26px; text-align: right; flex-shrink: 0; }
+        .dist-track { flex: 1; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .dist-fill { height: 100%; background: var(--star-yellow); border-radius: 3px; transition: width 0.4s; }
+        .dist-cnt { font-size: 11px; color: var(--text-sub); width: 20px; flex-shrink: 0; }
+
+        /* 工具栏 */
+        .compat-toolbar {
+            padding: 0 20px 14px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+        }
+        .compat-chips { display: flex; gap: 6px; flex: 1; }
+        .chip {
+            padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+            cursor: pointer; border: 1px solid transparent; transition: 0.2s;
+        }
+        .chip.active { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
+        .btn-feedback {
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+            background: var(--blue-gradient); color: #fff; cursor: pointer; white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(0,157,255,0.3); transition: 0.2s;
+        }
+        .btn-feedback:hover { opacity: 0.9; }
+
+        /* 评价列表 */
+        .compat-list { padding: 0 20px; }
+        /* 横版单列 */
+        .shell.ls .compat-list { display: block; }
+        .compat-item { border-bottom: 1px solid var(--divider); padding: 14px 0; }
+        .compat-item:last-child { border-bottom: none; }
+        .ci-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .ci-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; flex-shrink: 0; object-fit: cover; }
+        .ci-meta { flex: 1; }
+        .ci-name { font-size: 13px; font-weight: 600; color: #ddd; }
+        .ci-device { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+        .ci-footer { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .ci-like-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; color: var(--text-sub); cursor: pointer;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; transition: 0.2s; white-space: nowrap; flex-shrink: 0; user-select: none;
+        }
+        .ci-like-btn:hover { color: #f5c518; border-color: rgba(245,197,24,0.4); }
+        .ci-like-btn.liked { color: #f5c518; border-color: rgba(245,197,24,0.5); background: rgba(245,197,24,0.08); }
+        .ci-like-btn.liked svg { fill: #f5c518; }
+        .ci-like-btn svg { transition: 0.2s; fill: rgba(255,255,255,0.35); }
+        .ci-report-btn {
+            display: inline-flex; align-items: center;
+            font-size: 12px; color: var(--text-sub); cursor: pointer;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; transition: 0.2s; white-space: nowrap; flex-shrink: 0;
+        }
+        .ci-report-btn:hover { color: #ff7875; border-color: rgba(255,120,117,0.4); }
+        .ci-report-btn.reported { color: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.06); cursor: default; pointer-events: none; }
+        .ci-mine-actions { display: flex; gap: 6px; }
+        .ci-edit-btn, .ci-delete-btn {
+            display: inline-flex; align-items: center; gap: 3px;
+            font-size: 12px; cursor: pointer;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; transition: 0.2s; white-space: nowrap; flex-shrink: 0;
+        }
+        .ci-edit-btn { color: var(--text-sub); }
+        .ci-edit-btn:hover { color: #69b1ff; border-color: rgba(105,177,255,0.4); }
+        .ci-delete-btn { color: var(--text-sub); }
+        .ci-delete-btn:hover { color: #ff7875; border-color: rgba(255,120,117,0.4); }
+        .ci-stars { display: flex; gap: 3px; margin-bottom: 6px; }
+        .ci-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+        .ci-tag { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.55); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .ci-text { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+        .ci-date { font-size: 11px; color: var(--text-sub); margin-top: 6px; }
+
+        /* 加载更多 */
+        .load-more {
+            margin: 14px 20px 24px; height: 40px; border-radius: 10px;
+            background: rgba(255,255,255,0.05); color: #aaa;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.08); transition: 0.2s;
+        }
+        .load-more:hover { background: rgba(255,255,255,0.09); color: #fff; }
+
+        /* 空状态 */
+        .compat-empty { padding: 40px 20px; text-align: center; color: var(--text-sub); font-size: 14px; }
+
+        /* =========================================
+           通用弹窗
+           ========================================= */
+        .modal-mask {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s;
+        }
+        .modal-mask.show { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: #1e2124; border-radius: 20px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            width: 380px; max-width: 95%;
+            transform: translateY(20px) scale(0.97);
+            transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .modal-mask.show .modal-box { transform: translateY(0) scale(1); }
+        .modal-hdr {
+            padding: 18px 20px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .modal-hdr-title { font-size: 17px; font-weight: 800; color: #fff; }
+        .modal-x { cursor: pointer; color: rgba(255,255,255,0.4); transition: 0.2s; }
+        .modal-x:hover { color: #fff; }
+        .modal-body { padding: 18px 20px; }
+        .modal-footer {
+            padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.15); display: flex; justify-content: flex-end; gap: 10px;
+        }
+
+        /* 表单 */
+        .fb-row { margin-bottom: 14px; }
+        .fb-lbl { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; }
+        .fb-stars-wrap { display: flex; gap: 8px; }
+        .fb-star-svg { cursor: pointer; transition: transform 0.15s; flex-shrink: 0; }
+        .fb-star-svg:hover { transform: scale(1.15); }
+        .fb-device-box { font-size: 13px; color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; }
+        .fb-tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+        .fb-tag {
+            padding: 5px 12px; border-radius: 6px; font-size: 12px;
+            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55);
+            border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: 0.2s;
+        }
+        .fb-tag.active { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
+        .fb-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 14px 0; }
+        .fb-textarea {
+            width: 100%; min-height: 70px; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+            padding: 10px 12px; color: #fff; font-size: 13px; resize: none; outline: none;
+            box-sizing: border-box; font-family: inherit;
+        }
+        .fb-textarea:focus { border-color: rgba(0,157,255,0.4); }
+        .fb-editor-toolbar {
+            display: flex; gap: 4px; padding: 6px 8px; background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1); border-bottom: none;
+            border-radius: 10px 10px 0 0;
+        }
+        .fb-editor-btn {
+            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .fb-editor-btn:hover { background: rgba(255,255,255,0.1); }
+        .fb-editor-btn.active { background: rgba(0,157,255,0.15); border-color: rgba(0,157,255,0.4); }
+        .fb-editor-btn svg { width: 14px; height: 14px; fill: rgba(255,255,255,0.7); }
+        .fb-editor-content {
+            width: 100%; min-height: 70px; max-height: 150px; overflow-y: auto;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0 0 10px 10px; padding: 10px 12px; color: #fff; font-size: 13px;
+            outline: none; box-sizing: border-box;
+        }
+        .fb-editor-content:focus { border-color: rgba(0,157,255,0.4); }
+        .fb-editor-content:empty:before { content: attr(data-placeholder); color: rgba(255,255,255,0.3); }
+        .fb-media-upload {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px;
+        }
+        .fb-media-item {
+            position: relative; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .fb-media-item img, .fb-media-item video {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .fb-media-remove {
+            position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
+            background: rgba(0,0,0,0.7); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer;
+        }
+        .fb-media-remove svg { width: 12px; height: 12px; stroke: #fff; }
+        .fb-media-add {
+            aspect-ratio: 1; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.03); display: flex; align-items: center;
+            justify-content: center; cursor: pointer; transition: 0.2s;
+        }
+        .fb-media-add:hover { background: rgba(255,255,255,0.08); border-color: rgba(0,157,255,0.4); }
+        .fb-media-add svg { width: 24px; height: 24px; fill: rgba(255,255,255,0.4); }
+        .btn-cancel {
+            padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7); transition: 0.2s;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+        .btn-submit {
+            padding: 8px 20px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+            background: var(--blue-gradient); color: #fff; border: none;
+            box-shadow: 0 3px 12px rgba(0,157,255,0.3); transition: 0.2s;
+        }
+        .btn-submit:hover { opacity: 0.9; }
+
+        /* ---- 更多菜单 ---- */
+        .ci-more-btn {
+            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+            background: transparent; color: rgba(255,255,255,0.4); font-size: 16px; font-weight: 700;
+            cursor: pointer; border-radius: 50%; transition: background 0.15s; flex-shrink: 0;
+            letter-spacing: -1px; line-height: 1; user-select: none;
+        }
+        .ci-more-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+        .ci-more-menu {
+            position: absolute; right: 0; top: 28px; z-index: 200;
+            background: #252830; border-radius: 8px; width: 120px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6); overflow: hidden;
+        }
+        .ci-more-item {
+            padding: 10px 14px; font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer;
+            transition: background 0.15s;
+        }
+        .ci-more-item:hover { background: rgba(255,255,255,0.08); }
+
+        /* ---- Toast ---- */
+        #toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px);
+            background: rgba(30,30,40,0.96); color: #fff; padding: 10px 20px;
+            border-radius: 20px; font-size: 13px; font-weight: 600;
+            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 9999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ===== GUANWANGGAID-25 v1.2：仅任务专属 Demo 使用 ===== */
+        [hidden] { display: none !important; }
+        button, input, textarea { font: inherit; }
+        button { color: inherit; }
+        .fas, .far, .fab {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1em; height: 1em; font-style: normal; vertical-align: -0.08em;
+        }
+        .fas::before, .far::before, .fab::before {
+            content: ''; width: 0.52em; height: 0.52em; border: 1.5px solid currentColor;
+            border-radius: 2px; box-sizing: border-box;
+        }
+        .fa-chevron-left::before { content: '‹'; width: auto; height: auto; border: 0; font-size: 1.5em; line-height: 1; }
+        .fa-chevron-right::before { content: '›'; width: auto; height: auto; border: 0; font-size: 1.25em; line-height: 1; }
+        .fa-times::before { content: '×'; width: auto; height: auto; border: 0; font-size: 1.2em; line-height: 1; }
+        .fa-star::before {
+            border: 0; background: currentColor;
+            clip-path: polygon(50% 0,61% 35%,98% 35%,68% 56%,79% 92%,50% 70%,21% 92%,32% 56%,2% 35%,39% 35%);
+        }
+        .fa-play::before { border: 0; border-left: 0.62em solid currentColor; border-top: 0.38em solid transparent; border-bottom: 0.38em solid transparent; border-radius: 0; width: 0; height: 0; }
+        .fa-pause::before { border: 0; width: 0.6em; height: 0.72em; background: linear-gradient(90deg,currentColor 0 32%,transparent 32% 66%,currentColor 66%); }
+
+        .media-wireframe {
+            position: relative; overflow: hidden; background: #15171a;
+            border: 1px solid rgba(255,255,255,.14);
+        }
+        .media-wireframe::before,
+        .media-wireframe::after {
+            content: ''; position: absolute; left: 50%; top: 50%; width: 140%; height: 1px;
+            background: rgba(255,255,255,.12); transform-origin: center;
+        }
+        .media-wireframe::before { transform: translate(-50%,-50%) rotate(24deg); }
+        .media-wireframe::after { transform: translate(-50%,-50%) rotate(-24deg); }
+        .media-wireframe-label {
+            position: absolute; inset: 0; display: grid; place-items: center;
+            color: #73777f; font-size: 12px; letter-spacing: .04em;
+        }
+        .rich-img.media-wireframe { min-height: 150px; }
+        .review-avatar-wireframe { width: 32px; height: 32px; border-radius: 50%; }
+
+        .btn-start-game {
+            flex: 1; min-height: 46px; border: 0; border-radius: var(--radius-btn);
+            background: var(--blue-gradient); color: #fff; font-size: 14px; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,157,255,.3);
+        }
+        .current-applied-solution {
+            margin: -6px 0 16px 55px; padding: 8px 10px; border-radius: 8px;
+            color: #8de5f5; background: rgba(43,195,223,.08); border: 1px solid rgba(43,195,223,.18);
+            font-size: 11px; line-height: 1.45;
+        }
+        .journey-layer {
+            position: absolute; inset: 0; z-index: 2100; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px; background: #090a0c;
+        }
+        .launch-spinner {
+            width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.12);
+            border-top-color: #43c4df; animation: journey-spin .8s linear infinite;
+        }
+        @keyframes journey-spin { to { transform: rotate(360deg); } }
+        .gameplay-layer {
+            position: fixed; inset: 0; z-index: 2200; display: flex; align-items: center;
+            justify-content: center; overflow: hidden; background: #050607;
+        }
+        .gameplay-wireframe { position: absolute; inset: 0; border: 0; }
+        .gameplay-runtime {
+            position: absolute; left: 18px; top: 16px; z-index: 2; padding: 7px 10px;
+            border-radius: 8px; background: rgba(0,0,0,.55); color: #c8cdd2; font-size: 11px;
+        }
+        .game-exit-button {
+            position: absolute; right: 18px; top: 14px; z-index: 2; min-width: 92px; height: 36px;
+            border-radius: 9px; border: 1px solid rgba(255,255,255,.16); background: rgba(20,22,26,.84);
+            color: #fff; cursor: pointer;
+        }
+        .exit-confirm {
+            position: absolute; inset: 0; z-index: 3; display: grid; place-items: center;
+            background: rgba(0,0,0,.72); backdrop-filter: blur(10px);
+        }
+        .exit-confirm-card {
+            width: min(330px, calc(100% - 40px)); padding: 20px; border-radius: 16px;
+            background: #202328; border: 1px solid rgba(255,255,255,.12); text-align: center;
+        }
+        .exit-confirm-card strong { display: block; margin-bottom: 7px; font-size: 17px; }
+        .exit-confirm-card p { color: #8e99a3; font-size: 12px; margin-bottom: 18px; }
+        .exit-confirm-actions { display: flex; gap: 9px; }
+        .exit-confirm-actions button { flex: 1; height: 38px; border: 0; border-radius: 9px; cursor: pointer; }
+        .exit-confirm-actions button:first-child { color: #d5dbe0; background: #30343a; }
+        .exit-confirm-actions button:last-child { color: #fff; background: linear-gradient(#159ccb,#0872a8); }
+
+        .modal-mask { transition: none; }
+        .modal-box { max-height: calc(100% - 24px); display: flex; flex-direction: column; }
+        .modal-body { overflow-y: auto; }
+        .fb-tag { appearance: none; }
+        .fb-tag[aria-pressed="true"] { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
+        .fb-solution-section { padding: 0; border: 0; background: transparent; }
+        .fb-solution-toggle { display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(255,255,255,.035); cursor: pointer; }
+        .fb-solution-toggle:hover { border-color: rgba(64,165,255,.42); background: rgba(64,165,255,.055); }
+        .fb-solution-toggle input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: #338feb; cursor: pointer; }
+        .fb-solution-copy { min-width: 0; flex: 1; }
+        .fb-solution-copy strong { display: block; color: #eef3f6; font-size: 13px; line-height: 1.35; }
+        .fb-solution-name { display: block; margin-top: 3px; color: #9aa8b2; font-size: 11px; line-height: 1.5; }
+
+        .flow-page { position: absolute; inset: 0; z-index: 1200; display: flex; flex-direction: column; background: #0f1115; }
+        .flow-page-header { min-height: 54px; padding: 11px 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--divider); background: #15181d; }
+        .flow-back { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.06); cursor: pointer; }
+        .flow-title { font-size: 15px; font-weight: 800; }
+        .flow-page-body { flex: 1; overflow-y: auto; padding: 18px; }
+        .flow-card { max-width: 620px; margin: 0 auto 14px; border: 1px solid rgba(255,255,255,.09); background: #171a1f; border-radius: 14px; padding: 16px; }
+        .flow-kicker { font-size: 11px; color: #55d1e7; margin-bottom: 5px; }
+        .flow-card h3 { font-size: 17px; margin-bottom: 7px; }
+        .flow-copy { color: #91a0ad; font-size: 12px; line-height: 1.65; }
+        .flow-field { margin-top: 14px; }
+        .flow-field label { display: block; color: #8999a5; font-size: 11px; margin-bottom: 6px; }
+        .flow-field input, .flow-field textarea { width: 100%; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: #fff; border-radius: 9px; padding: 10px 11px; outline: 0; }
+        .flow-field textarea { min-height: 78px; resize: none; }
+        .flow-config { margin-top: 12px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+        .flow-config div { padding: 9px; border-radius: 9px; background: rgba(255,255,255,.035); color: #a5b1ba; font-size: 11px; }
+        .flow-actions { max-width: 620px; width: 100%; margin: auto; display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; }
+        .flow-actions button { border: 0; border-radius: 9px; padding: 9px 14px; cursor: pointer; }
+        .flow-actions button:not(.primary) { background: #24282f; color: #d5dde3; border: 1px solid rgba(255,255,255,.18); }
+        .flow-actions button:not(.primary):hover { background: #30353d; color: #fff; border-color: rgba(255,255,255,.3); }
+        .flow-actions button:not(.primary):focus-visible { outline: 2px solid #49cee5; outline-offset: 2px; background: #30353d; color: #fff; }
+        .flow-actions .primary { background: linear-gradient(#159ccb,#0872a8); color: #fff; }
+
+        .solution-detail-actions { justify-content: stretch; }
+        .solution-detail-actions button { flex: 1; }
+        .review-solution-card { width: 100%; margin-top: 10px; padding: 11px 12px; display: block; text-align: left; color: inherit; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); border-radius: 12px; cursor: pointer; }
+        .review-solution-card:hover { border-color: rgba(64,165,255,.42); background: rgba(64,165,255,.055); }
+        .review-solution-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .review-solution-heading strong { color: #eef3f6; font-size: 12px; font-weight: 700; }
+        .review-solution-heading b { color: #7b8a94; font-size: 18px; font-weight: 400; }
+        .review-solution-card .review-solution-meta { display: block; margin-top: 4px; color: #81919c; font-size: 10px; line-height: 1.45; text-align: left; }
+        .solution-confidence { margin: 12px 0; padding: 10px; color: #87e0ef; font-size: 12px; border-radius: 10px; background: rgba(43,195,223,.07); border: 1px solid rgba(43,195,223,.18); }
+        .compat-check-list { display: grid; gap: 8px; margin-top: 12px; }
+        .compat-check-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: #91a0ad; font-size: 12px; }
+        .compat-check-row strong { color: #d5dde2; text-align: right; }
+        #solutionApplyResult { min-height: 20px; color: #6fffa8; font-size: 12px; margin-top: 12px; line-height: 1.5; }
+        #sameConfigEmptyState { padding: 46px 20px; text-align: center; }
+        #sameConfigEmptyState strong { display: block; font-size: 15px; margin-bottom: 6px; }
+        #sameConfigEmptyState p { color: #7f909d; font-size: 12px; margin-bottom: 14px; }
+        #showAllReviewsButton { border: 1px solid rgba(43,195,223,.5); color: #67d7eb; background: rgba(43,195,223,.08); border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+
+        @media (max-width: 1099px) {
+            body { gap: 0; display: block; }
+            .phone-frame { width: 100vw !important; height: 100vh !important; padding: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+            .phone-frame::before { display: none; }
+            .shell { border-radius: 0; }
+        }
+        @media (max-width: 520px) {
+            .modal-mask { align-items: flex-end; }
+            .modal-box { width: 100%; max-width: 100%; max-height: calc(100% - 12px); border-radius: 18px 18px 0 0; }
+            .modal-hdr { padding: 14px 16px; }
+            .modal-body { padding: 14px 16px; }
+            .modal-footer { padding: 12px 16px; }
+            .fb-row { margin-bottom: 10px; }
+            .fb-stars-wrap { justify-content: space-between; }
+            .fb-star-svg { width: 31px; height: 31px; }
+            .flow-config { grid-template-columns: 1fr; }
+            .review-solution-card { align-items: flex-start; flex-direction: column; }
+            .review-solution-card span { text-align: left; }
+        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame pt" id="phoneFrame">
+<div class="shell pt" id="shell" onclick="closeMenu()">
+    <div class="inner">
+
+        <!-- ===== 左列（滚动内容） ===== -->
+        <div class="col-left" id="colLeft">
+
+            <div class="media-container" onclick="togglePlay()">
+                <div id="gameHeroWireframe" class="media-content media-wireframe" role="img" aria-label="游戏视频占位"><span class="media-wireframe-label">游戏视频</span></div>
+                <div id="gameGalleryWireframe" class="media-content media-wireframe hidden" role="img" aria-label="游戏图集占位"><span class="media-wireframe-label">游戏图集</span></div>
+                <div class="back-btn" onclick="event.stopPropagation(); alert('返回')">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+                <div class="video-overlay">
+                    <i id="playPauseBtn" class="fas fa-pause play-pause-center"></i>
+                    <div class="video-controls-layer">
+                        <div class="progress-track" onclick="seekVideo(event); event.stopPropagation();">
+                            <div id="progressBar" class="progress-fill"></div>
+                        </div>
+                        <div class="controls-row">
+                            <div class="toggle-capsule" onclick="event.stopPropagation()">
+                                <div id="tabVideo" class="tc-btn active" onclick="switchMedia('video')">视频</div>
+                                <div id="tabGallery" class="tc-btn" onclick="switchMedia('gallery')">图集</div>
+                            </div>
+                            <div class="right-icons" onclick="event.stopPropagation()">
+                                <i id="muteBtn" class="fas fa-volume-mute" onclick="toggleMute()"></i>
+                                <i class="fas fa-expand-alt" onclick="alert('全屏')"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横版：视频下方开发商信息横排一行 -->
+            <div class="ls-dev-bar">
+                <div class="ls-dev-item"><span class="dev-label">开发商</span><span class="dev-val">Rockstar Games</span></div>
+                <div class="ls-dev-item"><span class="dev-label">发行日期</span><span class="dev-val">2015 年 4 月 14 日</span></div>
+                <div class="ls-dev-item"><span class="dev-label">年龄评级</span><span class="dev-val">18+</span></div>
+                <div class="ls-dev-item"><span class="dev-label">语言</span><span class="dev-val">中文、英文</span></div>
+            </div>
+
+            <div class="content-pad">
+
+                <!-- 三合一信息卡：兼容性评价 + 游玩时长 + 云存档 -->
+                <div class="info-card">
+                    <!-- 顶部 header：PC游戏引擎（无右侧文字，点击区域在下方兼容性评价处） -->
+                    <div class="info-card-hdr">
+                        <div class="ic-hdr-left">
+                            <i class="fas fa-desktop"></i>
+                            PC游戏引擎
+                        </div>
+                    </div>
+                    <!-- 主体：兼容性评分 + 游玩时长 + 云存档 -->
+                    <div class="info-card-body">
+                        <!-- 兼容性评分区（点击跳转页面） -->
+                        <div class="info-compat" id="openCompatibilityReviews" role="button" tabindex="0" onclick="openCompatPage()">
+                            <div class="ic-main">
+                                <!-- 竖版：图标圆圈 -->
+                                <div class="ic-icon-wrap">
+                                    <span id="entryScorePt" style="font-size:13px;font-weight:800;color:#6fffa8;">4.0</span>
+                                </div>
+                                <!-- 标签 + 箭头 -->
+                                <div class="ic-compat-label">兼容性评价&nbsp;<i class="fas fa-chevron-right" style="font-size:8px;color:rgba(255,255,255,0.35);vertical-align:middle;"></i></div>
+                                <!-- 横版有数据态：评分+星级+描述 -->
+                                <div id="entryHasData">
+                                    <div class="ic-score-row">
+                                        <div class="ic-score" id="entryScore">4.0</div>
+                                        <div class="ic-stars" id="entryStars">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        </div>
+                                    </div>
+                                    <div class="ic-sub" id="entrySub">整体可玩</div>
+                                    <!-- 竖版专用：描述 -->
+                                    <div class="pt-compat-desc ic-compat-desc-wrap">
+                                        <div class="ic-compat-desc" id="entryDescPt">整体可玩</div>
+                                    </div>
+                                </div>
+                                <!-- 无数据态（隐藏） -->
+                                <div id="entryNoData" class="ic-empty" style="display:none;">
+                                    <i class="fas fa-gamepad ic-icon" style="display:block; margin-bottom:4px;"></i>
+                                    暂无玩家兼容性反馈
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 游玩时长 + 云存档 -->
+                        <div class="info-sub-row">
+                            <div class="info-time">
+                                <div class="ic-val-label">游玩时长</div>
+                                <i class="far fa-clock ic-icon"></i>
+                                <div class="ic-val">139.3 小时</div>
+                            </div>
+                            <div class="info-cloud">
+                                <div class="ic-val-label">云存档</div>
+                                <i class="fas fa-cloud ic-icon" style="color:#6fffa8;"></i>
+                                <div class="ic-val">已是最新</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="currentAppliedSolution" class="current-applied-solution" hidden></div>
+
+                <!-- 游戏介绍 -->
+                <div class="section-header">游戏介绍</div>
+                <div class="intro-lead">
+                    洛圣都，一座充满活力与罪恶的城市。三位不同背景的罪犯——迈克尔、特雷弗和富兰克林，将联手策划一系列精密抢劫行动，挑战洛圣都乃至整个圣安地列斯的权贵与黑帮。超过60小时的主线剧情，以及几乎无尽的开放世界探索内容。
+                </div>
+                <div class="rich-img media-wireframe" role="img" aria-label="游戏介绍图片占位"><span class="media-wireframe-label">介绍图片</span></div>
+                <div class="rich-img media-wireframe" role="img" aria-label="游戏场景图片占位"><span class="media-wireframe-label">场景图片</span></div>
+
+                <div style="text-align:center; color:#444; font-size:12px; margin-top:40px;">- 到底了 -</div>
+            </div>
+        </div>
+
+        <!-- ===== 右列（横屏信息区） ===== -->
+        <div class="col-right" id="colRight">
+
+            <!-- 详情子面板 -->
+            <div id="detailPanel">
+                <div class="status-bar">
+                    <i class="fas fa-signal"></i>
+                    <i class="fas fa-wifi"></i>
+                    <i class="fas fa-battery-full"></i>
+                    <span>9:41</span>
+                </div>
+                <div class="game-meta">
+                    <div class="title-block">
+                        <div class="game-title">侠盗猎车手5</div>
+                        <div class="game-subtitle">Grand Theft Auto V</div>
+                    </div>
+                    <div class="rating-capsule">
+                        <div class="rc-left"><i class="fas fa-star" style="color:#6fffa8; font-size:10px;"></i>&nbsp;玩家评价: 特别好评</div>
+                        <div class="rc-right">97%</div>
+                    </div>
+                    <div class="tags-group">
+                        <div class="tag-hot"><i class="fas fa-fire"></i> 热门榜 TOP 3</div>
+                        <div class="tag-normal">开放世界</div>
+                        <div class="tag-normal">动作冒险</div>
+                        <div class="tag-normal">多人联机</div>
+                    </div>
+                    <div class="action-buttons-group">
+                        <div class="btn-menu" id="menuBtn" onclick="toggleMenu(event)">
+                            <i class="fas fa-th-large" style="color:#aaa; font-size:17px;"></i>
+                            <div class="menu-popup" id="menuPopup">
+                                <div class="menu-item" onclick="handleMenuClick('PC游戏设置')"><i class="fas fa-gamepad"></i> PC游戏设置</div>
+                                <div class="menu-item" onclick="handleMenuClick('添加到桌面')"><i class="fas fa-desktop"></i> 添加到桌面</div>
+                                <div class="menu-item" onclick="handleMenuClick('卸载游戏')">
+                                    <i class="fas fa-trash-alt text-danger"></i>
+                                    <span class="text-danger">卸载游戏</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="startGameLandscapeButton" class="btn-start-game" type="button" onclick="startGame()">启动游戏</button>
+                    </div>
+                    <div class="dev-info-list">
+                        <div class="dev-row"><span class="dev-label">开发商</span><span class="dev-val">Rockstar Games</span></div>
+                        <div class="dev-row"><span class="dev-label">发行日期</span><span class="dev-val">2015 年 4 月 14 日</span></div>
+                        <div class="dev-row"><span class="dev-label">年龄评级</span><span class="dev-val">18+</span></div>
+                        <div class="dev-row"><span class="dev-label">语言</span><span class="dev-val">中文、英文</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横版 PC游戏引擎卡（横铺满底部） -->
+            <div class="ls-engine-card">
+                <div class="info-card-hdr ls-engine-hdr">
+                    <div class="ic-hdr-left">
+                        <i class="fas fa-desktop"></i>
+                        PC游戏引擎
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    <div class="info-compat" onclick="openCompatPage()">
+                        <div class="ic-main">
+                            <div class="ic-compat-label">兼容评价&nbsp;<i class="fas fa-chevron-right" style="font-size:8px;color:rgba(255,255,255,0.35);vertical-align:middle;"></i></div>
+                            <div id="entryHasDataLs">
+                                <div class="ic-score-row">
+                                    <div class="ic-score" id="entryScoreLs">4.0</div>
+                                    <div class="ic-stars" id="entryStarsLs">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    </div>
+                                </div>
+                                <div class="ic-sub" id="entrySubLs">整体可玩</div>
+                            </div>
+                            <div id="entryNoDataLs" class="ic-empty" style="display:none;">
+                                    <i class="fas fa-gamepad ic-icon" style="display:block; margin-bottom:4px;"></i>
+                                    暂无玩家兼容性反馈
+                                </div>
+                        </div>
+                    </div>
+                    <div class="info-sub-row">
+                        <div class="info-time">
+                            <div class="ic-val-label">游玩时长</div>
+                            <i class="far fa-clock ic-icon"></i>
+                            <div class="ic-val">139.3 小时</div>
+                        </div>
+                        <div class="info-cloud">
+                            <div class="ic-val-label">云存档</div>
+                            <i class="fas fa-cloud ic-icon" style="color:#6fffa8;"></i>
+                            <div class="ic-val">已是最新</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横屏兼容性面板（已废弃，改用统一弹窗，保留空壳） -->
+            <div class="compat-panel" id="compatPanelLs"></div>
+        </div>
+
+        <!-- 竖屏底部栏 -->
+        <div class="bottom-bar" id="bottomBar">
+            <button id="startGameButton" class="btn-start-game" type="button" onclick="startGame()">启动游戏</button>
+        </div>
+
+    </div><!-- /inner -->
+
+    <section id="launchLayer" class="journey-layer" hidden aria-label="游戏启动中">
+        <div class="launch-spinner" aria-hidden="true"></div>
+        <strong>正在启动游戏</strong>
+    </section>
+
+    <section id="gameplayLayer" class="gameplay-layer" hidden aria-label="游戏运行中">
+        <div id="gameplayWireframe" class="gameplay-wireframe media-wireframe" role="img" aria-label="横屏游戏画面占位">
+            <span class="media-wireframe-label">横屏游戏画面</span>
+        </div>
+        <div class="gameplay-runtime">本次游玩 <span id="sessionRuntime">18:42</span></div>
+        <button id="exitGameButton" class="game-exit-button" type="button" onclick="openExitGameConfirm()">退出游戏</button>
+        <div id="exitGameConfirm" class="exit-confirm" hidden>
+            <div class="exit-confirm-card">
+                <strong>退出游戏？</strong>
+                <p>当前游戏进度将按游戏自身规则保存。</p>
+                <div class="exit-confirm-actions">
+                    <button type="button" onclick="closeExitGameConfirm()">取消</button>
+                    <button id="confirmExitGameButton" type="button" onclick="confirmExitGame()">退出游戏</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 竖屏兼容性全屏面板（已废弃） -->
+    <div class="compat-panel-pt" id="compatPanelPt"></div>
+
+    <!-- ===== 兼容性评价全屏页面（从右滑入） ===== -->
+    <div class="compat-page" id="compatPage" style="display:none;">
+        <div class="compat-page-hdr">
+            <div class="compat-page-back" onclick="closeCompatPage()">
+                <i class="fas fa-chevron-left" style="font-size:13px;"></i>
+            </div>
+            <div class="compat-page-title">玩家兼容性评价</div>
+        </div>
+        <div class="compat-page-body">
+            <div class="compat-overview">
+                <div class="ov-score-big" id="ovScoreLs">4.0</div>
+                <div class="ov-right">
+                    <div class="ov-stars" id="ovStarsLs">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5c518"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <div class="ov-count" id="ovCountLs">10 条玩家评价</div>
+                    <div class="dist-bars" id="distBarsLs"></div>
+                </div>
+            </div>
+            <div class="compat-toolbar">
+                <div class="compat-chips" id="chipsLs">
+                    <div class="chip active" data-view="device" onclick="setView('device',this,'ls')">同配置</div>
+                    <div class="chip" data-view="all" onclick="setView('all',this,'ls')">全部</div>
+                    <div class="chip" data-view="support" onclick="setView('support',this,'ls')">支持最多</div>
+                    <div class="chip" data-view="mine" onclick="setView('mine',this,'ls')">我的</div>
+                </div>
+                <div class="btn-feedback" id="manualReviewButton" onclick="openFeedbackModal({source:'manual'})">我要评价</div>
+            </div>
+            <div class="compat-list" id="listLs"></div>
+            <div class="load-more" id="loadMoreLs" style="display:none;" onclick="loadMore('ls')">加载更多</div>
+            <div class="compat-empty" id="emptyLs" style="display:none;">
+                <div id="sameConfigEmptyState">
+                    <strong>同配置暂无评价</strong>
+                    <p>同配置按当前游戏与 GPU 匹配，你可以查看其他配置的玩家评价。</p>
+                    <button id="showAllReviewsButton" type="button" onclick="showAllReviewsFromEmpty()">查看全部评价</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 复用现有云分享编辑页的离线流程模拟 -->
+    <section id="cloudSharePage" class="flow-page" hidden aria-label="云分享方案编辑">
+        <div class="flow-page-header">
+            <button id="cancelCloudShare" class="flow-back" type="button" aria-label="返回评价" onclick="cancelCloudShareDraft()">‹</button>
+            <div class="flow-title">发布运行方案</div>
+        </div>
+        <div class="flow-page-body">
+            <div class="flow-card">
+                <div class="flow-kicker">个人方案 · 未发布草稿</div>
+                <h3>检查要分享的启动方案</h3>
+                <p class="flow-copy">评价已经提交。配置来自本次实际运行记录；确认后公开给其他玩家并关联到刚才的评价，取消不会公开，也不影响已提交的评价。</p>
+                <div class="flow-field">
+                    <label for="cloudSolutionName">方案名称</label>
+                    <input id="cloudSolutionName" value="Adreno 750 稳定运行方案" maxlength="30">
+                </div>
+                <div class="flow-field">
+                    <label for="cloudSolutionSummary">方案说明</label>
+                    <textarea id="cloudSolutionSummary" maxlength="120">适用于 Adreno 750，优先稳定性与手柄兼容。</textarea>
+                </div>
+                <div class="flow-config" aria-label="实际运行配置">
+                    <div>引擎版本：Winlator 10.1</div>
+                    <div>图形驱动：Turnip 25.1</div>
+                    <div>运行架构：ARM64</div>
+                    <div>分辨率：1280 × 720</div>
+                </div>
+            </div>
+        </div>
+        <div class="flow-actions">
+            <button type="button" onclick="cancelCloudShareDraft()">取消</button>
+            <button id="confirmPublishAndLink" class="primary" type="button" onclick="confirmPublishAndLink()">确认发布并关联</button>
+        </div>
+    </section>
+
+    <!-- 复用现有方案详情/应用流程的离线模拟 -->
+    <section id="solutionDetailPage" class="flow-page" hidden aria-label="方案详情">
+        <div class="flow-page-header">
+            <button class="flow-back" type="button" aria-label="返回评价列表" onclick="closeSolutionDetail()">‹</button>
+            <div class="flow-title">方案详情</div>
+        </div>
+        <div class="flow-page-body">
+            <div class="flow-card">
+                <div class="flow-kicker">玩家公开方案</div>
+                <h3 id="solutionDetailName">Adreno 750 稳定方案</h3>
+                <p class="flow-copy">方案由实际成功启动记录持续验证。应用前会重新检查当前设备的 GPU、运行架构与辅助配置。</p>
+                <div id="solutionConfidenceLine" class="solution-confidence">同配置 · 成功率 92% · 38 次验证 · 最近验证 3 天前</div>
+                <div id="solutionCompatibilityDiff" class="compat-check-list"></div>
+                <div id="solutionApplyResult" aria-live="polite"></div>
+            </div>
+        </div>
+        <div class="flow-actions solution-detail-actions">
+            <button id="applySolutionButton" class="primary" type="button" onclick="applyCurrentSolution()">应用</button>
+            <button id="copySolutionButton" type="button" onclick="copyCurrentSolution()">复制</button>
+        </div>
+    </section>
+
+    <!-- 分享弹窗 -->
+    <div id="shareOverlay" class="share-overlay" onclick="closeShareModal(event)">
+        <div class="share-modal" onclick="event.stopPropagation()">
+            <div class="share-header">
+                <div class="share-title">分享至</div>
+                <i class="fas fa-times share-close" onclick="closeShareModal(event)"></i>
+            </div>
+            <div class="share-grid">
+                <div class="share-option" onclick="handleShare('微信')"><div class="share-icon-circle"><i class="fab fa-weixin"></i></div><span>微信</span></div>
+                <div class="share-option" onclick="handleShare('朋友圈')">
+                    <div class="share-icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                            <path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94" stroke-width="2"></path>
+                        </svg>
+                    </div>
+                    <span>朋友圈</span>
+                </div>
+                <div class="share-option" onclick="handleShare('QQ')"><div class="share-icon-circle"><i class="fab fa-qq"></i></div><span>QQ</span></div>
+                <div class="share-option" onclick="handleShare('微博')"><div class="share-icon-circle"><i class="fab fa-weibo"></i></div><span>微博</span></div>
+                <div class="share-option" onclick="handleShare('X')"><div class="share-icon-circle"><i class="fab fa-x-twitter"></i></div><span>X</span></div>
+                <div class="share-option" onclick="handleShare('Facebook')"><div class="share-icon-circle"><i class="fab fa-facebook-f"></i></div><span>Facebook</span></div>
+                <div class="share-option" onclick="handleShare('Discord')"><div class="share-icon-circle"><i class="fab fa-discord"></i></div><span>Discord</span></div>
+                <div class="share-option" onclick="handleShare('复制链接')"><div class="share-icon-circle"><i class="fas fa-link"></i></div><span>复制链接</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 反馈弹窗 -->
+    <div id="modalFeedback" class="modal-mask" data-entry-source="manual" onclick="closeFeedbackOnMask(event)">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="feedbackModalTitle" onclick="event.stopPropagation()">
+            <div class="modal-hdr">
+                <div class="modal-hdr-title" id="feedbackModalTitle">兼容性评价</div>
+                <div class="modal-x" onclick="closeFeedbackModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="fb-row">
+                    <div class="fb-lbl">兼容性评分</div>
+                    <div class="fb-stars-wrap" id="fbStarsWrap">
+                        <svg class="fb-star-svg" data-val="1" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="fb-star-svg" data-val="2" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="fb-star-svg" data-val="3" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="fb-star-svg" data-val="4" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <svg class="fb-star-svg" data-val="5" viewBox="0 0 24 24" width="34" height="34" fill="rgba(255,255,255,0.12)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-row">
+                    <div class="fb-lbl">设备信息</div>
+                    <div class="fb-device-box" id="fbDeviceBox">Pixel 9 Pro · Android 15 · Adreno 750</div>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-row">
+                    <div class="fb-lbl">兼容类型</div>
+                    <div class="fb-tags-wrap" id="fbTypeWrap" role="group" aria-label="兼容类型">
+                        <button type="button" class="fb-tag" data-type="perfect" aria-pressed="false">完美兼容</button>
+                        <button type="button" class="fb-tag" data-type="basic" aria-pressed="false">基本可玩</button>
+                        <button type="button" class="fb-tag" data-type="partial" aria-pressed="false">有部分问题</button>
+                        <button type="button" class="fb-tag" data-type="unplayable" aria-pressed="false">不可玩</button>
+                    </div>
+                </div>
+                <div class="fb-divider"></div>
+                <section id="fbSolutionSection" class="fb-row fb-solution-section" hidden>
+                    <div id="fbSolutionContent"></div>
+                </section>
+                <div class="fb-divider"></div>
+                <div class="fb-row" style="margin-bottom:0;">
+                    <div class="fb-lbl">补充说明</div>
+                    <div>
+                        <textarea class="fb-textarea" id="fbEditor" placeholder="详细描述遇到的问题或体验（选填，最多200字）" maxlength="200" style="height:80px;"></textarea>
+                        <div class="fb-media-upload" id="fbMediaList"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeFeedbackModal()">取消</button>
+                <button class="btn-submit" onclick="submitFeedback()">提交评价</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 举报弹窗 -->
+    <div id="modalReport" class="modal-mask" onclick="closeReportOnMask(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-hdr">
+                <div class="modal-hdr-title">举报内容</div>
+                <div class="modal-x" onclick="closeReportModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">被举报内容</div>
+                <div id="reportSnippet" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;color:rgba(255,255,255,0.8);font-size:13px;line-height:1.6;margin-bottom:16px;"></div>
+                <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">选择原因</div>
+                <div class="fb-tags-wrap" style="margin-bottom:14px;">
+                    <span class="fb-tag rr" onclick="selectReason(this)">辱骂攻击</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">广告引流</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">恶意刷分</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">与游戏无关</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">其他</span>
+                </div>
+                <textarea class="fb-textarea" id="reportNote" placeholder="补充说明（选填）" style="height:80px;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeReportModal()">取消</button>
+                <button class="btn-submit" onclick="submitReport()">提交举报</button>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /shell -->
+</div><!-- /phone-frame -->
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+//  数据层 — localStorage
+// ============================================================
+const LS_KEY = 'gh_compat_feedbacks_gta5_v12';
+const LS_REPORTED = 'gh_compat_reported_gta5_v12';
+const LS_LIKED = 'gh_compat_liked_gta5_v12';
+
+function getReportedSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_REPORTED) || '[]')); } catch(e) { return new Set(); }
+}
+function saveReportedSet(s) { localStorage.setItem(LS_REPORTED, JSON.stringify([...s])); }
+
+function getLikedSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_LIKED) || '[]')); } catch(e) { return new Set(); }
+}
+function saveLikedSet(s) { localStorage.setItem(LS_LIKED, JSON.stringify([...s])); }
+const MY_UID = 'me_demo_user';
+
+const AVATARS = Array(7).fill('');
+
+const SEEDS = [
+    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', solution:{id:'solution_public_01',name:'Adreno 750 稳定方案',source:'玩家公开方案',status:'published',samples:38,successRate:92,lastVerifiedDays:3} },
+    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['基本可玩'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'low-sample', solution:{id:'solution_public_02',name:'Galaxy 音频兼容方案',source:'玩家公开方案',status:'published',samples:8,successRate:null,lastVerifiedDays:6} },
+    { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.0.5', stars:5, tags:['完美兼容'], text:'启动过程很顺畅，进入游戏后画面稳定，手柄操作也没有异常。', date:'2025-04-22', likes:31 },
+    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.5', stars:3, tags:['有部分问题'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8, reviewState:'unavailable', solution:{id:'solution_unavailable_01',name:'旧版图形修复方案',source:'玩家公开方案',status:'unavailable',samples:21,successRate:76,lastVerifiedDays:18} },
+    { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.0.3', stars:4, tags:['基本可玩'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', html:'剧情向玩家<b>强烈推荐</b>，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
+    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro · HarmonyOS 5', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.2', stars:2, tags:['有部分问题'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5, reviewState:'none', solution:null },
+    { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', html:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！<u>强烈推荐</u>。', date:'2025-04-12', likes:43 },
+];
+
+function getFeedbacks() {
+    try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    localStorage.setItem(LS_KEY, JSON.stringify(SEEDS));
+    return [...SEEDS];
+}
+
+function saveFeedbacks(list) {
+    localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+// ============================================================
+//  统计计算
+// ============================================================
+function calcStats(list) {
+    if (!list.length) return { avg: '—', count: 0, dist: {5:0,4:0,3:0,2:0,1:0} };
+    const dist = {5:0,4:0,3:0,2:0,1:0};
+    let total = 0;
+    list.forEach(f => { dist[f.stars] = (dist[f.stars]||0)+1; total += f.stars; });
+    return { avg: (total/list.length).toFixed(1), count: list.length, dist };
+}
+
+function starsSVG(score, size) {
+    return [1,2,3,4,5].map(i => {
+        const fill = i <= Math.round(score) ? '#f5c518' : 'rgba(255,255,255,0.15)';
+        return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${fill}" style="display:inline-block;flex-shrink:0;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    }).join('');
+}
+
+// ============================================================
+//  入口卡片
+// ============================================================
+function compatSubText(avg) {
+    if (avg >= 4.2) return '大多数玩家可正常游玩';
+    if (avg >= 3.2) return '整体可玩';
+    return '兼容问题偏多';
+}
+
+function refreshEntryCard() {
+    const list = getFeedbacks();
+    const s = calcStats(list);
+    // 竖版入口卡
+    const hasData = document.getElementById('entryHasData');
+    const noData  = document.getElementById('entryNoData');
+    // 横版入口卡（右列）
+    const hasDataLs = document.getElementById('entryHasDataLs');
+    const noDataLs  = document.getElementById('entryNoDataLs');
+    const scorePt   = document.getElementById('entryScorePt');
+    if (s.count) {
+        hasData.style.display = 'block';
+        noData.style.display  = 'none';
+        document.getElementById('entryScore').textContent = s.avg;
+        document.getElementById('entryStars').innerHTML   = starsSVG(parseFloat(s.avg), 14);
+        document.getElementById('entrySub').textContent   = compatSubText(parseFloat(s.avg));
+        const descPt = document.getElementById('entryDescPt');
+        if (descPt) descPt.textContent = compatSubText(parseFloat(s.avg));
+        if (scorePt) scorePt.textContent = s.avg;
+        if (hasDataLs) {
+            hasDataLs.style.display = 'block';
+            noDataLs.style.display  = 'none';
+            document.getElementById('entryScoreLs').textContent = s.avg;
+            document.getElementById('entryStarsLs').innerHTML   = starsSVG(parseFloat(s.avg), 14);
+            document.getElementById('entrySubLs').textContent   = compatSubText(parseFloat(s.avg));
+        }
+    } else {
+        hasData.style.display = 'none';
+        noData.style.display  = 'block';
+        if (scorePt) scorePt.textContent = '–';
+        if (hasDataLs) {
+            hasDataLs.style.display = 'none';
+            noDataLs.style.display  = 'block';
+        }
+    }
+}
+
+// ============================================================
+//  面板渲染
+// ============================================================
+let viewMode = 'device';
+const CURRENT_DEVICE = 'Pixel 9 Pro';
+const CURRENT_GPU = 'Adreno 750';
+let forceSameConfigEmpty = false;
+const PAGE = 5;
+const pages = { ls: 1, pt: 1 };
+
+function refreshPanel(side) {
+    const list = getFeedbacks();
+    const s = calcStats(list);
+
+    // 概览
+    document.getElementById(side === 'ls' ? 'ovScoreLs' : 'ovScorePt').textContent = s.count ? s.avg : '—';
+    document.getElementById(side === 'ls' ? 'ovStarsLs' : 'ovStarsPt').innerHTML = s.count ? starsSVG(parseFloat(s.avg), 18) : '';
+    document.getElementById(side === 'ls' ? 'ovCountLs' : 'ovCountPt').textContent = s.count ? `${s.count} 条玩家评价` : '暂无评价';
+
+    const distEl = document.getElementById(side === 'ls' ? 'distBarsLs' : 'distBarsPt');
+    if (s.count) {
+        const mx = Math.max(...Object.values(s.dist), 1);
+        distEl.innerHTML = [5,4,3,2,1].map(n => {
+            const cnt = s.dist[n] || 0;
+            const pct = Math.round(cnt / mx * 100);
+            return `<div class="dist-row"><div class="dist-lbl">${n}星</div><div class="dist-track"><div class="dist-fill" style="width:${pct}%"></div></div><div class="dist-cnt">${cnt}</div></div>`;
+        }).join('');
+    } else {
+        distEl.innerHTML = '';
+    }
+
+    // 筛选
+    let filtered = list;
+    if (viewMode === 'device') filtered = forceSameConfigEmpty ? [] : list.filter(f => f.gpu === CURRENT_GPU);
+    else if (viewMode === 'support') filtered = list.filter(f => f.tags && f.tags.includes('完美兼容'));
+    else if (viewMode === 'mine') filtered = list.filter(f => f.uid === MY_UID);
+    // 官方置顶
+    filtered = [...filtered.filter(f => f.official), ...filtered.filter(f => !f.official)];
+
+    const shown = filtered.slice(0, pages[side] * PAGE);
+    const listEl = document.getElementById(side === 'ls' ? 'listLs' : 'listPt');
+    const loadEl = document.getElementById(side === 'ls' ? 'loadMoreLs' : 'loadMorePt');
+    const emptyEl = document.getElementById(side === 'ls' ? 'emptyLs' : 'emptyPt');
+
+    if (!filtered.length) {
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+        loadEl.style.display = 'none';
+    } else {
+        emptyEl.style.display = 'none';
+        listEl.innerHTML = shown.map(renderItem).join('');
+        loadEl.style.display = shown.length < filtered.length ? 'flex' : 'none';
+    }
+}
+
+function renderReviewSolution(review) {
+    const solution = review.solution;
+    if (review.stars < 3 || !solution) return '';
+    if (solution.status !== 'published') return '';
+    const stats = solution.samples < 10
+        ? solution.samples + ' 次验证 · 样本较少 · 最近验证 ' + solution.lastVerifiedDays + ' 天前'
+        : '同配置 · 成功率 ' + solution.successRate + '% · ' + solution.samples + ' 次验证 · 最近验证 ' + solution.lastVerifiedDays + ' 天前';
+    return '<button class="review-solution-card" type="button" aria-label="打开方案 ' + solution.name + '" onclick="openSolutionDetail(\'' + solution.id + '\')"><span class="review-solution-heading"><strong>' + solution.name + '</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">' + stats + '</span></button>';
+}
+
+function renderItem(f) {
+    const stars = [1,2,3,4,5].map(i =>
+        `<svg viewBox="0 0 24 24" width="13" height="13" fill="${i<=f.stars?'#f5c518':'rgba(255,255,255,0.15)'}"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+    ).join('');
+    const tags = (f.tags||[]).map(t => `<span class="ci-tag">${t}</span>`).join('');
+    const snippet = (f.text||'').slice(0,40) + ((f.text||'').length>40?'…':'');
+    const esc = s => s.replace(/'/g,"\\'");
+    const likedSet = getLikedSet();
+    const isLiked = likedSet.has(f.id);
+    const likeCount = (f.likes || 0) + (isLiked ? 1 : 0);
+
+    // 富文本内容
+    const content = f.html ? f.html : (f.text ? f.text : '');
+
+    // 媒体展示（最多9张，3列宫格，只显示图片）
+    const mediaHtml = (f.media && f.media.length) ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;">
+        ${f.media.slice(0,9).filter(m => m.type !== 'video').map(() =>
+            '<div class="media-wireframe" style="width:100%;aspect-ratio:1;border-radius:6px;"><span class="media-wireframe-label">评价图片</span></div>'
+        ).join('')}
+    </div>` : '';
+
+    // 官方角标
+    const officialBadge = f.official ? `<span style="background:#1677ff;color:#fff;font-size:8px;border-radius:3px;padding:1px 4px;margin-left:4px;vertical-align:middle;">官方</span>` : '';
+
+    // 置顶标识
+    const pinnedTag = f.official ? `<span style="font-size:11px;color:#69b1ff;margin-right:6px;">官方置顶</span>` : '';
+
+    // 更多菜单
+    const moreMenu = f.uid === MY_UID
+        ? `<div style="position:relative;display:inline-block;">
+            <div class="ci-more-btn" onclick="toggleMoreMenu(event,'more-${f.id}')">⋯</div>
+            <div class="ci-more-menu" id="more-${f.id}" style="display:none;">
+                <div class="ci-more-item" style="color:#ff4d4f;" onclick="closeMoreMenu('more-${f.id}');deleteMyReview('${f.id}')">删除</div>
+            </div>
+          </div>`
+        : `<div style="position:relative;display:inline-block;">
+            <div class="ci-more-btn" onclick="toggleMoreMenu(event,'more-${f.id}')">⋯</div>
+            <div class="ci-more-menu" id="more-${f.id}" style="display:none;">
+                <div class="ci-more-item" onclick="closeMoreMenu('more-${f.id}');openReportModal('${f.id}','${esc(snippet)}')">举报</div>
+            </div>
+          </div>`;
+
+    const reviewState = f.reviewState || (f.stars < 3 ? 'none' : 'unlinked');
+    return `<div class="compat-item" id="ci-${f.id}" data-feedback-id="${f.id}" data-review-state="${reviewState}" data-owner="${f.uid === MY_UID ? 'me' : 'other'}">
+        <div class="ci-hdr">
+            <div class="ci-avatar review-avatar-wireframe media-wireframe" aria-hidden="true"></div>
+            <div class="ci-meta">
+                <div class="ci-name">${pinnedTag}${f.name}${officialBadge}</div>
+                <div class="ci-device">${f.device}</div>
+                ${f.gpu ? `<div class="ci-device">GPU：${f.gpu}${f.memoryGB ? ' · 运行内存：' + f.memoryGB + 'GB' : ''}</div>` : ''}
+            </div>
+            ${moreMenu}
+        </div>
+        <div class="ci-stars">${stars}</div>
+        ${tags ? `<div class="ci-tags">${tags}</div>` : ''}
+        ${content ? `<div class="ci-text">${content}</div>` : ''}
+        ${mediaHtml}
+        ${renderReviewSolution(f)}
+        <div class="ci-date">${f.date}${f.appVersion ? `<span style="margin-left:8px;opacity:.55;">${f.appVersion}</span>` : ''}</div>
+        <div class="ci-footer">
+            <div class="ci-like-btn${isLiked?' liked':''}" id="like-${f.id}" onclick="toggleLike('${f.id}',${f.likes||0})">
+                <svg viewBox="0 0 24 24" width="13" height="13"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+                支持&nbsp;<span id="like-count-${f.id}">${likeCount}</span>
+            </div>
+        </div>
+    </div>`;
+}
+
+function toggleMoreMenu(e, menuId) {
+    e.stopPropagation();
+    const menu = document.getElementById(menuId);
+    if (!menu) return;
+    const isOpen = menu.style.display !== 'none';
+    // 关闭所有已打开的菜单
+    document.querySelectorAll('.ci-more-menu').forEach(m => m.style.display = 'none');
+    if (!isOpen) menu.style.display = 'block';
+}
+function closeMoreMenu(menuId) {
+    const menu = document.getElementById(menuId);
+    if (menu) menu.style.display = 'none';
+}
+// 点击空白关闭所有更多菜单
+document.addEventListener('click', function() {
+    document.querySelectorAll('.ci-more-menu').forEach(m => m.style.display = 'none');
+});
+
+function previewMedia(url) {
+    // 简单的图片预览，实际可以做成全屏弹窗
+    window.open(url, '_blank');
+}
+
+function loadMore(side) {
+    pages[side]++;
+    refreshPanel(side);
+}
+
+function setView(mode, el, side) {
+    viewMode = mode;
+    forceSameConfigEmpty = false;
+    pages[side] = 1;
+    el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    refreshPanel(side);
+}
+
+function showAllReviewsFromEmpty() {
+    forceSameConfigEmpty = false;
+    viewMode = 'all';
+    pages.ls = 1;
+    document.querySelectorAll('#chipsLs .chip').forEach(chip => {
+        chip.classList.toggle('active', chip.textContent.trim() === '全部');
+    });
+    refreshPanel('ls');
+}
+
+// ============================================================
+//  面板开关
+// ============================================================
+function openCompatPanel() {
+    const isLs = document.getElementById('shell').classList.contains('ls');
+    if (isLs) {
+        refreshPanel('ls');
+        document.getElementById('compatPanelLs').classList.add('active');
+    } else {
+        refreshPanel('pt');
+        document.getElementById('compatPanelPt').classList.add('active');
+    }
+}
+
+function closeCompatPanel() {
+    document.getElementById('compatPanelLs').classList.remove('active');
+    document.getElementById('compatPanelPt').classList.remove('active');
+    viewMode = 'device';
+    pages.ls = 1; pages.pt = 1;
+    // reset chips
+    document.querySelectorAll('.compat-chips .chip').forEach((c,i) => c.classList.toggle('active', i===0));
+}
+
+function openCompatPage() {
+    const page = document.getElementById('compatPage');
+    if (!page) return;
+    page.style.display = 'flex';
+    requestAnimationFrame(() => page.classList.add('show'));
+    refreshPanel('ls');
+}
+
+function closeCompatPage() {
+    const page = document.getElementById('compatPage');
+    if (!page) return;
+    page.classList.remove('show');
+    setTimeout(() => { page.style.display = 'none'; }, 350);
+    viewMode = 'device';
+    pages.ls = 1;
+    document.querySelectorAll('#chipsLs .chip').forEach((c, i) => c.classList.toggle('active', i === 0));
+}
+
+// ============================================================
+//  反馈弹窗
+// ============================================================
+let fbStarVal = 0;
+let fbMediaFiles = [];
+let editingId = null;
+let selectedCompatType = '';
+let pendingSolutionId = '';
+let solutionSourceMode = 'public';
+let pendingReviewLinkId = '';
+
+const journeyState = {
+    stage: 'detail',
+    appliedSolutionId: '',
+    appliedSolutionName: '',
+    solutionSource: 'private',
+    playSessionId: '',
+    startedAt: 0
+};
+
+const REVIEW_DRAFT_KEY = 'gh_compat_review_v12_draft';
+const TYPE_BY_STAR = { 1: 'unplayable', 2: 'partial', 3: 'partial', 4: 'basic', 5: 'perfect' };
+const STAR_BY_TYPE = { unplayable: 1, partial: 3, basic: 4, perfect: 5 };
+const TYPE_LABELS = { unplayable: '不可玩', partial: '有部分问题', basic: '基本可玩', perfect: '完美兼容' };
+const INVITE_CONFIG = { globalDays: 7, unreviewedDays: 7, reviewUpdateDays: 30, maxPerGameGpu: 0 };
+const inviteDemoState = {
+    globalLastInviteAt: null,
+    byGameGpu: {
+        'gta5|Adreno 750': { lastInviteAt: null, lastReviewAt: null, exposures: 0 },
+        'hades2|Adreno 750': { lastInviteAt: null, lastReviewAt: null, exposures: 0 }
+    }
+};
+
+function execCmd(cmd) {
+    if (cmd === 'createLink') {
+        const url = prompt('请输入链接地址:', '');
+        if (url) document.execCommand(cmd, false, url);
+    } else {
+        document.execCommand(cmd, false, null);
+    }
+}
+
+function addMedia() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (fbMediaFiles.length >= 9) { showToast('最多上传9张图片'); return; }
+        fbMediaFiles.push({ type: 'image', name: file.name });
+        renderMediaList();
+    };
+    input.click();
+}
+
+function removeMedia(idx) {
+    fbMediaFiles.splice(idx, 1);
+    renderMediaList();
+}
+
+function renderMediaList() {
+    const list = document.getElementById('fbMediaList');
+    const items = fbMediaFiles.map((m, i) => `
+        <div class="fb-media-item media-wireframe">
+            <span class="media-wireframe-label">评价图片</span>
+            <div class="fb-media-remove" onclick="removeMedia(${i})">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+        </div>
+    `).join('');
+    const addBtn = fbMediaFiles.length < 9 ? `
+        <div class="fb-media-add" onclick="addMedia()">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </div>
+    ` : '';
+    list.innerHTML = items + addBtn;
+}
+
+function saveFeedbackDraft() {
+    const editor = document.getElementById('fbEditor');
+    localStorage.setItem(REVIEW_DRAFT_KEY, JSON.stringify({
+        stars: fbStarVal,
+        type: selectedCompatType,
+        text: editor ? editor.value : '',
+        media: fbMediaFiles,
+        solutionId: pendingSolutionId,
+        solutionSource: solutionSourceMode
+    }));
+}
+
+function restoreFeedbackDraft() {
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(REVIEW_DRAFT_KEY) || 'null'); } catch (error) { draft = null; }
+    fbStarVal = Number(draft?.stars) || 0;
+    selectedCompatType = draft?.type || TYPE_BY_STAR[fbStarVal] || '';
+    fbMediaFiles = Array.isArray(draft?.media) ? draft.media : [];
+    pendingSolutionId = draft?.solutionId || '';
+    if (draft?.solutionSource) solutionSourceMode = draft.solutionSource;
+    document.getElementById('fbEditor').value = draft?.text || '';
+    paintFbStars(fbStarVal);
+    renderCompatTypes();
+    renderMediaList();
+    renderFeedbackSolution();
+}
+
+function closeFeedbackModal(options = {}) {
+    if (options.preserveDraft !== false) saveFeedbackDraft();
+    document.getElementById('modalFeedback').classList.remove('show');
+}
+
+function openFeedbackModal(options = {}) {
+    const source = options.source === 'proactive' ? 'proactive' : 'manual';
+    const modal = document.getElementById('modalFeedback');
+    editingId = options.editingId || null;
+    modal.dataset.entrySource = source;
+    document.getElementById('feedbackModalTitle').textContent = source === 'proactive'
+        ? '这次游戏体验怎么样？'
+        : '兼容性评价';
+    if (!options.keepCurrentState) restoreFeedbackDraft();
+    else {
+        paintFbStars(fbStarVal);
+        renderCompatTypes();
+        renderMediaList();
+        renderFeedbackSolution();
+    }
+    if (options.actualSolutionId) {
+        solutionSourceMode = options.solutionSource === 'private' ? 'private' : 'public';
+        pendingSolutionId = '';
+        renderFeedbackSolution();
+    }
+    modal.classList.add('show');
+    if (source === 'proactive') recordInviteExposure(options.gameKey || 'gta5|Adreno 750');
+}
+
+function routeSessionResult(result, session = {}) {
+    closeFeedbackModal({ preserveDraft: true });
+    if (result !== 'normal') return;
+    openFeedbackModal({
+        source: 'proactive',
+        gameKey: 'gta5|Adreno 750',
+        playSessionId: session.playSessionId || journeyState.playSessionId,
+        actualSolutionId: session.solutionId || journeyState.appliedSolutionId,
+        solutionSource: journeyState.solutionSource
+    });
+}
+
+function setJourneyStage(stage) {
+    journeyState.stage = stage;
+    document.body.dataset.journeyStage = stage;
+    document.getElementById('launchLayer').hidden = stage !== 'launching';
+    document.getElementById('gameplayLayer').hidden = stage !== 'gameplay';
+}
+
+function startGame() {
+    if (!journeyState.appliedSolutionId) {
+        journeyState.appliedSolutionId = 'solution_private_01';
+        journeyState.appliedSolutionName = '我的个人稳定方案';
+        journeyState.solutionSource = 'private';
+    }
+    journeyState.playSessionId = 'play_' + Date.now();
+    journeyState.startedAt = Date.now();
+    setJourneyStage('launching');
+    window.setTimeout(() => setJourneyStage('gameplay'), 700);
+}
+
+function openExitGameConfirm() {
+    document.getElementById('exitGameConfirm').hidden = false;
+}
+
+function closeExitGameConfirm() {
+    document.getElementById('exitGameConfirm').hidden = true;
+}
+
+function confirmExitGame() {
+    closeExitGameConfirm();
+    setJourneyStage('detail');
+    setOrient('pt');
+    routeSessionResult('normal', {
+        playSessionId: journeyState.playSessionId,
+        solutionId: journeyState.appliedSolutionId
+    });
+}
+
+function recordInviteExposure(gameKey) {
+    const state = inviteDemoState.byGameGpu[gameKey];
+    if (!state) return;
+    const now = Date.now();
+    state.lastInviteAt = now;
+    state.exposures += 1;
+    inviteDemoState.globalLastInviteAt = now;
+    renderInviteDemoState();
+}
+
+function renderInviteDemoState(message = '') {
+    const a = inviteDemoState.byGameGpu['gta5|Adreno 750'];
+    const b = inviteDemoState.byGameGpu['hades2|Adreno 750'];
+    const base = '全平台 30 分钟门槛 · 全局间隔 ' + INVITE_CONFIG.globalDays + ' 天 · A 已曝光 ' + a.exposures + ' 次 · B 已曝光 ' + b.exposures + ' 次';
+    const target = document.getElementById('demoInviteState');
+    if (target) target.textContent = message ? base + '。' + message : base;
+}
+
+function closeFeedbackOnMask(e) {
+    if (e.target === document.getElementById('modalFeedback')) closeFeedbackModal();
+}
+
+function paintFbStars(val) {
+    document.getElementById('fbStarsWrap').dataset.value = String(val || 0);
+    document.querySelectorAll('#fbStarsWrap .fb-star-svg').forEach(s => {
+        s.setAttribute('fill', parseInt(s.dataset.val) <= val ? '#f5c518' : 'rgba(255,255,255,0.12)');
+    });
+}
+
+document.querySelectorAll('#fbStarsWrap .fb-star-svg').forEach(s => {
+    s.setAttribute('role', 'button');
+    s.setAttribute('tabindex', '0');
+    s.setAttribute('aria-label', s.dataset.val + '星');
+    s.addEventListener('click', () => setRating(parseInt(s.dataset.val)));
+    s.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') setRating(parseInt(s.dataset.val)); });
+    s.addEventListener('mouseover',() => paintFbStars(parseInt(s.dataset.val)));
+    s.addEventListener('mouseleave',() => paintFbStars(fbStarVal));
+});
+
+document.querySelectorAll('#fbTypeWrap [data-type]').forEach(button => {
+    button.addEventListener('click', () => setCompatType(button.dataset.type));
+});
+
+function setRating(value) {
+    fbStarVal = Number(value) || 0;
+    selectedCompatType = TYPE_BY_STAR[fbStarVal] || '';
+    if (fbStarVal < 3) {
+        pendingSolutionId = '';
+    }
+    paintFbStars(fbStarVal);
+    renderCompatTypes();
+    renderFeedbackSolution();
+    saveFeedbackDraft();
+}
+
+function setCompatType(type) {
+    selectedCompatType = type;
+    setRating(STAR_BY_TYPE[type] || 0);
+}
+
+function renderCompatTypes() {
+    document.querySelectorAll('#fbTypeWrap [data-type]').forEach(button => {
+        const active = button.dataset.type === selectedCompatType;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+    });
+}
+
+function renderFeedbackSolution() {
+    const section = document.getElementById('fbSolutionSection');
+    const content = document.getElementById('fbSolutionContent');
+    if (fbStarVal < 3) {
+        section.hidden = true;
+        content.innerHTML = '';
+        pendingSolutionId = '';
+        return;
+    }
+    section.hidden = false;
+    const isPublic = solutionSourceMode === 'public';
+    const published = pendingSolutionId === 'solution_private_01_published';
+    const checked = isPublic
+        ? pendingSolutionId === 'solution_public_01'
+        : pendingSolutionId === 'solution_private_draft_requested' || published;
+    const solutionName = isPublic ? 'Adreno 750 稳定方案' : '我的个人稳定方案';
+    content.innerHTML = `<label class="fb-solution-toggle">
+        <input id="linkCurrentSolutionCheckbox" type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCurrentSolutionLink(this.checked)">
+        <span class="fb-solution-copy">
+            <strong>关联本次使用的方案</strong>
+            <span class="fb-solution-name">${solutionName} · 本次使用</span>
+        </span>
+    </label>`;
+}
+
+function toggleCurrentSolutionLink(checked) {
+    if (!checked) pendingSolutionId = '';
+    else if (solutionSourceMode === 'public') pendingSolutionId = 'solution_public_01';
+    else if (pendingSolutionId !== 'solution_private_01_published') pendingSolutionId = 'solution_private_draft_requested';
+    saveFeedbackDraft();
+}
+
+function openCloudShareDraft() {
+    document.getElementById('cloudSharePage').hidden = false;
+}
+
+function cancelCloudShareDraft() {
+    document.getElementById('cloudSharePage').hidden = true;
+    const savedReviewId = pendingReviewLinkId;
+    pendingReviewLinkId = '';
+    pendingSolutionId = '';
+    if (savedReviewId) finishReviewSubmission(savedReviewId);
+}
+
+function confirmPublishAndLink() {
+    pendingSolutionId = 'solution_private_01_published';
+    solutionSourceMode = 'private';
+    document.getElementById('cloudSharePage').hidden = true;
+    if (pendingReviewLinkId) {
+        const list = getFeedbacks();
+        const idx = list.findIndex(item => item.id === pendingReviewLinkId);
+        if (idx !== -1) {
+            const solution = createPublishedSolution('solution_private_01_published');
+            list[idx] = { ...list[idx], solutionId: solution.id, solution, reviewState: 'low-sample' };
+            saveFeedbacks(list);
+            refreshEntryCard();
+            if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
+        }
+    }
+    const savedReviewId = pendingReviewLinkId;
+    pendingReviewLinkId = '';
+    if (savedReviewId) finishReviewSubmission(savedReviewId);
+    showToast('方案已发布并关联');
+}
+
+function createPublishedSolution(solutionId) {
+    const isPublic = solutionId === 'solution_public_01';
+    return {
+        id: solutionId,
+        name: isPublic ? 'Adreno 750 稳定方案' : '我的个人稳定方案',
+        source: isPublic ? '玩家公开方案' : '我的公开方案',
+        status: 'published',
+        samples: isPublic ? 38 : 1,
+        successRate: isPublic ? 92 : null,
+        lastVerifiedDays: 0
+    };
+}
+
+function finishReviewSubmission(savedReviewId) {
+    refreshEntryCard();
+    openCompatPage();
+    const mineChip = document.querySelector('#chipsLs [data-view="mine"]');
+    if (mineChip) setView('mine', mineChip, 'ls');
+    window.requestAnimationFrame(() => {
+        document.querySelector(`[data-feedback-id="${savedReviewId}"]`)?.scrollIntoView({ block: 'center' });
+    });
+}
+
+function submitFeedback() {
+    if (!fbStarVal) { showToast('请先选择兼容性评分'); return; }
+    const tags = selectedCompatType ? [TYPE_LABELS[selectedCompatType]] : [];
+    const text = document.getElementById('fbEditor').value.trim();
+    const list = getFeedbacks();
+    const wantsPrivatePublish = fbStarVal >= 3
+        && solutionSourceMode === 'private'
+        && pendingSolutionId === 'solution_private_draft_requested';
+    const linkedSolution = wantsPrivatePublish || fbStarVal < 3 ? '' : pendingSolutionId;
+    const solution = linkedSolution ? createPublishedSolution(linkedSolution) : null;
+    let savedReviewId = '';
+    if (editingId !== null) {
+        const idx = list.findIndex(x => x.id === editingId);
+        if (idx !== -1) {
+            list[idx] = { ...list[idx], stars: fbStarVal, tags, text, html: '', media: fbMediaFiles, compatType: selectedCompatType, solutionId: linkedSolution, solution, reviewState: solution ? (solution.samples < 10 ? 'low-sample' : 'valid') : (fbStarVal < 3 ? 'none' : 'unlinked') };
+            savedReviewId = list[idx].id;
+        }
+        saveFeedbacks(list);
+        localStorage.removeItem(REVIEW_DRAFT_KEY);
+        closeFeedbackModal({ preserveDraft: false });
+        refreshEntryCard();
+        if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
+        if (wantsPrivatePublish && savedReviewId) {
+            pendingReviewLinkId = savedReviewId;
+            openCloudShareDraft();
+            return;
+        }
+        showToast('评价已更新！');
+        return;
+    }
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const item = {
+        id: 'u_' + Date.now(), uid: MY_UID,
+        name: '我', avatar: AVATARS[0],
+        device: 'Pixel 9 Pro · Android 15',
+        gpu: 'Adreno 750',
+        memoryGB: 12,
+        stars: fbStarVal, tags, text, html: '', media: fbMediaFiles,
+        compatType: selectedCompatType, solutionId: linkedSolution, solution,
+        reviewState: solution ? (solution.samples < 10 ? 'low-sample' : 'valid') : (fbStarVal < 3 ? 'none' : 'unlinked'),
+        likes: 0, appVersion: 'v6.1.2'
+    };
+    item.date = dateStr;
+    savedReviewId = item.id;
+    list.unshift(item);
+    saveFeedbacks(list);
+    localStorage.removeItem(REVIEW_DRAFT_KEY);
+    closeFeedbackModal({ preserveDraft: false });
+    refreshEntryCard();
+    if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
+    if (wantsPrivatePublish) {
+        pendingReviewLinkId = savedReviewId;
+        openCloudShareDraft();
+        return;
+    }
+    finishReviewSubmission(savedReviewId);
+    showToast('评价提交成功，感谢你的反馈！');
+}
+
+// ============================================================
+//  我的评价 — 删除 / 编辑
+// ============================================================
+function deleteMyReview(id) {
+    if (!confirm('确定要删除这条评价吗？')) return;
+    if (!confirm('删除后无法恢复，确认删除？')) return;
+    const list = getFeedbacks().filter(x => x.id !== id);
+    saveFeedbacks(list);
+    refreshEntryCard();
+    if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
+    showToast('评价已删除');
+}
+
+function editMyReview(id) {
+    const item = getFeedbacks().find(x => x.id === id);
+    if (!item) return;
+    editingId = id;
+    fbStarVal = item.stars || 0;
+    selectedCompatType = item.compatType || TYPE_BY_STAR[fbStarVal] || '';
+    pendingSolutionId = item.solutionId || item.solution?.id || '';
+    solutionSourceMode = pendingSolutionId === 'solution_public_01' ? 'public' : 'private';
+    fbMediaFiles = item.media ? [...item.media] : [];
+    paintFbStars(fbStarVal);
+    document.getElementById('fbEditor').value = item.text || '';
+    renderMediaList();
+    renderCompatTypes();
+    renderFeedbackSolution();
+    openFeedbackModal({ source: 'manual', editingId: id, keepCurrentState: true });
+}
+
+// ============================================================
+//  举报弹窗
+// ============================================================
+function openReportModal(id, snippet) {
+    const reportedSet = getReportedSet();
+    if (reportedSet.has(id)) { showToast('您已举报过该评价'); return; }
+    document.getElementById('reportSnippet').textContent = snippet;
+    document.getElementById('reportNote').value = '';
+    document.querySelectorAll('.rr').forEach(t => t.classList.remove('active'));
+    document.getElementById('modalReport')._targetId = id;
+    document.getElementById('modalReport').classList.add('show');
+}
+function closeReportModal() { document.getElementById('modalReport').classList.remove('show'); }
+function closeReportOnMask(e) { if (e.target === document.getElementById('modalReport')) closeReportModal(); }
+function selectReason(el) { document.querySelectorAll('.rr').forEach(t => t.classList.remove('active')); el.classList.add('active'); }
+function submitReport() {
+    const modal = document.getElementById('modalReport');
+    const id = modal._targetId;
+    if (id) {
+        const s = getReportedSet();
+        s.add(id);
+        saveReportedSet(s);
+        const btn = document.querySelector(`#ci-${id} .ci-report-btn`);
+        if (btn) { btn.textContent = '已举报'; btn.classList.add('reported'); }
+    }
+    closeReportModal();
+    showToast('举报已提交，感谢反馈');
+}
+
+function toggleLike(id, baseLikes) {
+    const s = getLikedSet();
+    const isLiked = s.has(id);
+    if (isLiked) { s.delete(id); } else { s.add(id); }
+    saveLikedSet(s);
+    const el = document.getElementById(`like-${id}`);
+    const countEl = document.getElementById(`like-count-${id}`);
+    if (!el || !countEl) return;
+    const newLiked = !isLiked;
+    el.classList.toggle('liked', newLiked);
+    const newCount = baseLikes + (newLiked ? 1 : 0);
+    countEl.textContent = newCount;
+}
+
+// ============================================================
+//  Toast
+// ============================================================
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ============================================================
+//  横竖屏切换
+// ============================================================
+function setOrient(mode) {
+    const shell = document.getElementById('shell');
+    shell.className = 'shell ' + mode;
+    document.getElementById('phoneFrame').className = 'phone-frame ' + mode;
+    closeCompatPage();
+}
+
+// ============================================================
+//  视频控制
+// ============================================================
+const video = document.getElementById('gameHeroWireframe');
+const gallery = document.getElementById('gameGalleryWireframe');
+const playBtn = document.getElementById('playPauseBtn');
+const progressBar = document.getElementById('progressBar');
+let mediaPlaying = true;
+let mediaMuted = true;
+
+function switchMedia(type) {
+    if (type === 'video') {
+        video.classList.remove('hidden'); gallery.classList.add('hidden');
+        document.getElementById('tabVideo').classList.add('active');
+        document.getElementById('tabGallery').classList.remove('active');
+        mediaPlaying = true; updatePlayIcon(true);
+    } else {
+        video.classList.add('hidden'); gallery.classList.remove('hidden');
+        document.getElementById('tabVideo').classList.remove('active');
+        document.getElementById('tabGallery').classList.add('active');
+        mediaPlaying = false; updatePlayIcon(false);
+    }
+}
+
+function togglePlay() {
+    mediaPlaying = !mediaPlaying;
+    updatePlayIcon(mediaPlaying);
+}
+
+function updatePlayIcon(p) {
+    playBtn.className = p ? 'fas fa-pause play-pause-center' : 'fas fa-play play-pause-center';
+    playBtn.style.opacity = p ? '' : '1';
+}
+
+function seekVideo(e) {
+    const r = e.currentTarget.getBoundingClientRect();
+    progressBar.style.width = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)) + '%';
+}
+
+function toggleMute() {
+    mediaMuted = !mediaMuted;
+    document.getElementById('muteBtn').className = mediaMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+}
+
+// ============================================================
+//  菜单 & 分享
+// ============================================================
+function toggleMenu(event) {
+    event.stopPropagation();
+    const popup = document.getElementById('menuPopup');
+    const visible = popup.style.display === 'flex';
+    document.querySelectorAll('.menu-popup').forEach(p => p.style.display = 'none');
+    if (!visible) popup.style.display = 'flex';
+}
+function closeMenu() { document.getElementById('menuPopup').style.display = 'none'; }
+function handleMenuClick(action) { alert('执行操作：' + action); closeMenu(); }
+
+function openShareModal(event) {
+    if (event) event.stopPropagation();
+    closeMenu();
+    document.getElementById('shareOverlay').classList.add('show');
+}
+function closeShareModal(event) {
+    if (event) event.stopPropagation();
+    document.getElementById('shareOverlay').classList.remove('show');
+}
+function handleShare(platform) {
+    if (platform === '复制链接') {
+        const url = window.location.href;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(() => alert('链接已复制：' + url)).catch(() => fallbackCopy(url));
+        } else { fallbackCopy(url); }
+    } else { alert('正在跳转至：' + platform); }
+    closeShareModal();
+}
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); alert('链接已复制'); } catch(e) { alert('复制失败，请手动复制'); }
+    document.body.removeChild(ta);
+}
+
+// ============================================================
+//  方案详情与应用：复用现有能力的离线状态模拟
+// ============================================================
+let solutionApplicationMode = 'exact';
+let currentDetailSolution = null;
+let pendingAuxiliaryConfirmation = false;
+
+function findSolutionById(solutionId) {
+    for (const review of getFeedbacks()) {
+        if (review.solution?.id === solutionId) return review.solution;
+    }
+    return null;
+}
+
+function openSolutionDetail(solutionId) {
+    const solution = findSolutionById(solutionId);
+    if (!solution || solution.status !== 'published') return;
+    currentDetailSolution = solution;
+    pendingAuxiliaryConfirmation = false;
+    document.getElementById('solutionDetailName').textContent = solution.name;
+    document.getElementById('solutionConfidenceLine').textContent = solution.samples < 10
+        ? solution.samples + ' 次验证 · 样本较少 · 最近验证 ' + solution.lastVerifiedDays + ' 天前'
+        : '同配置 · 成功率 ' + solution.successRate + '% · ' + solution.samples + ' 次验证 · 最近验证 ' + solution.lastVerifiedDays + ' 天前';
+    document.getElementById('solutionDetailPage').hidden = false;
+    renderSolutionCompatibility();
+}
+
+function closeSolutionDetail() {
+    document.getElementById('solutionDetailPage').hidden = true;
+    currentDetailSolution = null;
+    pendingAuxiliaryConfirmation = false;
+}
+
+function renderSolutionCompatibility() {
+    const diff = document.getElementById('solutionCompatibilityDiff');
+    const result = document.getElementById('solutionApplyResult');
+    const button = document.getElementById('applySolutionButton');
+    if (!diff || !result || !button) return;
+    result.textContent = '';
+    pendingAuxiliaryConfirmation = false;
+    button.textContent = '应用';
+    button.disabled = solutionApplicationMode === 'hard';
+    if (solutionApplicationMode === 'exact') {
+        diff.innerHTML = '<div class="compat-check-row"><span>GPU</span><strong>Adreno 750 · 一致</strong></div><div class="compat-check-row"><span>运行架构</span><strong>ARM64 · 一致</strong></div><div class="compat-check-row"><span>配置结论</span><strong>同配置，可直接应用</strong></div>';
+    } else if (solutionApplicationMode === 'auxiliary') {
+        diff.innerHTML = '<div class="compat-check-row"><span>GPU / 架构</span><strong>一致</strong></div><div class="compat-check-row"><span>分辨率</span><strong>方案 1280×720 / 当前 1920×1080</strong></div><div class="compat-check-row"><span>配置结论</span><strong>辅助信息不同，确认后可应用</strong></div>';
+    } else {
+        diff.innerHTML = '<div class="compat-check-row"><span>GPU</span><strong>方案 Adreno 750 / 当前 Mali-G720</strong></div><div class="compat-check-row"><span>运行架构</span><strong>方案 ARM64 / 当前 x86_64</strong></div><div class="compat-check-row"><span>配置结论</span><strong>硬条件不兼容，禁止应用</strong></div>';
+        result.textContent = '当前配置与方案硬条件不一致，无法应用。';
+    }
+}
+
+function applyCurrentSolution() {
+    if (!currentDetailSolution || solutionApplicationMode === 'hard') return;
+    const result = document.getElementById('solutionApplyResult');
+    const button = document.getElementById('applySolutionButton');
+    if (solutionApplicationMode === 'auxiliary' && !pendingAuxiliaryConfirmation) {
+        pendingAuxiliaryConfirmation = true;
+        result.textContent = '检测到分辨率等辅助信息差异，请再次确认应用。';
+        button.textContent = '确认应用';
+        return;
+    }
+    const appliedSolution = { ...currentDetailSolution };
+    journeyState.appliedSolutionId = appliedSolution.id;
+    journeyState.appliedSolutionName = appliedSolution.name;
+    journeyState.solutionSource = 'public';
+    solutionSourceMode = 'public';
+    pendingSolutionId = '';
+    const applied = document.getElementById('currentAppliedSolution');
+    applied.textContent = '当前方案：' + appliedSolution.name;
+    applied.hidden = false;
+    closeSolutionDetail();
+    closeCompatPage();
+    setJourneyStage('detail');
+    showToast('方案已应用');
+}
+
+function copyCurrentSolution() {
+    if (!currentDetailSolution) return;
+    document.getElementById('solutionApplyResult').textContent = '已复制到“我的方案”，原方案不会被修改。';
+}
+
+function setSolutionSource(mode) {
+    solutionSourceMode = mode === 'public' ? 'public' : 'private';
+    pendingSolutionId = '';
+    journeyState.solutionSource = solutionSourceMode;
+    if (solutionSourceMode === 'public') {
+        journeyState.appliedSolutionId = 'solution_public_01';
+        journeyState.appliedSolutionName = 'Adreno 750 稳定方案';
+    } else {
+        journeyState.appliedSolutionId = 'solution_private_01';
+        journeyState.appliedSolutionName = '我的个人稳定方案';
+    }
+    renderFeedbackSolution();
+    saveFeedbackDraft();
+}
+
+function setApplicationMode(mode) {
+    solutionApplicationMode = mode;
+    if (!document.getElementById('solutionDetailPage').hidden) renderSolutionCompatibility();
+}
+
+function showSameConfigEmptyScenario() {
+    closeFeedbackModal({ preserveDraft: true });
+    forceSameConfigEmpty = true;
+    viewMode = 'device';
+    pages.ls = 1;
+    document.querySelectorAll('#chipsLs .chip').forEach(chip => chip.classList.toggle('active', chip.textContent.trim() === '同配置'));
+    openCompatPage();
+    refreshPanel('ls');
+}
+
+function simulateGlobalCooldown() {
+    const a = inviteDemoState.byGameGpu['gta5|Adreno 750'];
+    const b = inviteDemoState.byGameGpu['hades2|Adreno 750'];
+    a.exposures = 1;
+    a.lastInviteAt = Date.now();
+    b.exposures = 0;
+    inviteDemoState.globalLastInviteAt = a.lastInviteAt;
+    return JSON.parse(JSON.stringify({ config: INVITE_CONFIG, ...inviteDemoState }));
+}
+
+function resetJourney() {
+    Object.assign(journeyState, {
+        stage: 'detail',
+        appliedSolutionId: '',
+        appliedSolutionName: '',
+        solutionSource: 'private',
+        playSessionId: '',
+        startedAt: 0
+    });
+    const applied = document.getElementById('currentAppliedSolution');
+    applied.textContent = '';
+    applied.hidden = true;
+    closeExitGameConfirm();
+    setJourneyStage('detail');
+    setOrient('pt');
+}
+
+function bindCompatibilityV12Demo() {
+    setApplicationMode('exact');
+    setJourneyStage('detail');
+    setOrient('pt');
+    window.compatibilityDemo = Object.freeze({
+        getInviteState: () => JSON.parse(JSON.stringify(inviteDemoState)),
+        simulateGlobalCooldown,
+        setSolutionSource,
+        setApplicationMode,
+        showSameConfigEmpty: showSameConfigEmptyScenario,
+        resetJourney
+    });
+}
+
+// ============================================================
+//  初始化
+// ============================================================
+refreshEntryCard();
+bindCompatibilityV12Demo();
+</script>
+</body>
+</html>
