@@ -1,6 +1,6 @@
 # 盖世游戏渠道 Key 投放设计
 
-> 状态：待规格确认
+> 状态：已确认
 > 日期：2026-09-16
 > 适用产物：`13-开发者平台与渠道分销demo.html`
 > 替代：`2026-09-16-gamehub-channel-distribution-redesign-design.md` 中销售、收益、渠道回传和结算设计
