@@ -200,6 +200,28 @@ test('星级与兼容类型双向联动，1–2 星隐藏方案，3–5 星展�
     assert.equal(await page.locator('#fbTypeWrap [data-type="perfect"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('#fbSolutionSection').isVisible(), true);
 
+    const shareOrder = await page.evaluate(() => {
+      const body = document.querySelector('#modalFeedback .modal-body');
+      const remarkRow = document.getElementById('fbEditor')?.closest('.fb-row');
+      const media = document.getElementById('fbMediaList');
+      const share = document.getElementById('fbSolutionSection');
+      const footer = document.querySelector('#modalFeedback .modal-footer');
+      return {
+        shareIsLastBodyField: body?.lastElementChild === share,
+        followsRemark: Boolean(remarkRow?.compareDocumentPosition(share) & Node.DOCUMENT_POSITION_FOLLOWING),
+        followsMedia: Boolean(media?.compareDocumentPosition(share) & Node.DOCUMENT_POSITION_FOLLOWING),
+        precedesFooter: Boolean(share?.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING),
+      };
+    });
+    assert.deepEqual(shareOrder, {
+      shareIsLastBodyField: true,
+      followsRemark: true,
+      followsMedia: true,
+      precedesFooter: true,
+    }, '分享项必须位于补充说明和图片之后、固定提交栏之前');
+    assert.equal(await page.locator('#shareSessionCheckbox').isChecked(), false,
+      '分享项默认不得勾选');
+
     await page.click('#fbTypeWrap [data-type="partial"]');
     assert.equal(await page.locator('#fbStarsWrap').getAttribute('data-value'), '3');
     assert.equal(await page.locator('#fbSolutionSection').isVisible(), true);
@@ -398,17 +420,58 @@ test('点击方案名称进入现有方案详情并复用应用与复制能力',
     await page.click('[data-review-state="valid"] .review-solution-card');
     assert.equal(await page.locator('#solutionDetailPage').isVisible(), true);
     assert.equal(await page.locator('#solutionDetailPage .flow-title').innerText(), '方案详情');
-    assert.match(await page.locator('#solutionConfidenceLine').innerText(), /同配置.*成功率.*最近验证/);
-    await requireOne(page, '#solutionCompatibilityDiff', '应用前配置校验结果');
+    await requireOne(page, '#solutionDetailSchemeName', '方案名称');
+    await requireOne(page, '#solutionDetailGpu', 'GPU 标签');
+    await requireOne(page, '#solutionTrustSummary', '社区共同验证摘要');
+    await requireOne(page, '#solutionConfigGroups', '完整白名单配置分组');
+    assert.match(await page.locator('#solutionTrustSummary').innerText(), /社区共同验证.*成功率.*38 次验证.*最近验证/s);
+    assert.equal(await page.getByText(/分享者[:：]/).count(), 0, '公共方案不得显示个人分享者');
+    assert.ok(await page.locator('#solutionConfigGroups .solution-config-section').count() >= 3,
+      '完整详情至少展示通用、兼容性和一个扩展分组');
+    assert.ok(await page.locator('#solutionConfigGroups .solution-config-row').count() >= 10,
+      '完整详情不得退化为 GPU／架构摘要');
+    assert.equal(await page.getByText('同配置，可直接应用', { exact: true }).count(), 0,
+      '不得保留旧简化详情结论');
+    for (const text of ['环境变量', '启动参数', '启动文件路径（仅展示）', '兼容层', 'Dinput 函数库', 'DXVK 版本']) {
+      assert.equal(await page.getByText(text, { exact: true }).count(), 1, `完整详情缺少参数：${text}`);
+    }
+
+    await page.locator('#solutionDetailBody').evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    const geometry = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll('#solutionConfigGroups .solution-config-row')];
+      const lastRow = rows.at(-1)?.getBoundingClientRect();
+      const footer = document.getElementById('solutionDetailActions')?.getBoundingClientRect();
+      return { lastBottom: lastRow?.bottom ?? 0, footerTop: footer?.top ?? 0 };
+    });
+    assert.ok(geometry.lastBottom <= geometry.footerTop,
+      `最后一个参数被固定操作栏遮挡：${JSON.stringify(geometry)}`);
+
     await page.click('#applySolutionButton');
     assert.equal(await page.locator('#solutionDetailPage').isVisible(), false, '应用成功后返回详情，不自动启动');
     assert.match(await page.locator('#currentAppliedSolution').innerText(), /Adreno 750 稳定方案/);
     assert.equal(await page.locator('#gameplayLayer').isVisible(), false, '应用方案后不得自动启动游戏');
     await page.evaluate(() => window.openCompatPage());
     await page.click('[data-review-state="valid"] .review-solution-card');
-    await requireOne(page, '#copySolutionButton', '复用现有复制方案能力');
+    await page.click('#solutionDetailBack');
+    await page.click('[data-review-state="low-sample"] .review-solution-card');
+    assert.match(await page.locator('#solutionTrustSummary').innerText(), /社区共同验证.*样本较少/s);
+    assert.doesNotMatch(await page.locator('#solutionTrustSummary').innerText(), /成功率/);
+
     await page.click('#copySolutionButton');
-    assert.match(await page.locator('#solutionApplyResult').innerText(), /已复制到.*我的方案/);
+    assert.equal(await page.locator('#copySolutionDialog').isVisible(), true,
+      '复制必须先进入现有命名确认流程');
+    assert.equal(await page.evaluate(() => window.compatibilityDemo.getCopiedSolutions().length), 0,
+      '确认前不得创建个人副本');
+    await page.click('#confirmCopySolutionButton');
+    assert.equal(await page.evaluate(() => window.compatibilityDemo.getCopiedSolutions().length), 1);
+
+    await page.evaluate(() => window.compatibilityDemo.setSolutionDetailScenario('load-error'));
+    await page.evaluate(() => window.openSolutionDetail('community_cfg_adreno750_stable_v1'));
+    assert.match(await page.locator('#solutionDetailState').innerText(), /加载失败.*重新加载/s);
+    assert.equal(await page.locator('#applySolutionButton').isDisabled(), true);
+    assert.equal(await page.locator('#copySolutionButton').isDisabled(), true);
     await assertNoPageErrors(errors, '方案详情与应用');
   } finally {
     await page.close();
