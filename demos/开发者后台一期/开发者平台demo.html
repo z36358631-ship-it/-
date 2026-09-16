@@ -15303,7 +15303,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (restoredHandoff) window.name = '';
   } catch { /* window.name 不是本平台交接数据时忽略 */ }
   const contextualStoredSession = publisherAccountContext?.readSession(sessionStorage) || null;
-  const storedSession = restoredHandoff || contextualStoredSession || legacyStoredSession;
+  const candidateStoredSession = restoredHandoff || contextualStoredSession || legacyStoredSession;
+  const isLegacyFinanceDemoSession = String(candidateStoredSession?.accountKey || '') === 'demo:finance-primary';
+  if (isLegacyFinanceDemoSession) {
+    if (publisherAccountContext) publisherAccountContext.clearSession(sessionStorage);
+    else {
+      try { sessionStorage.removeItem(sessionStorageKey); } catch { /* 历史演示会话清理失败时仍按未登录处理 */ }
+    }
+  }
+  const storedSession = isLegacyFinanceDemoSession ? null : candidateStoredSession;
   const storedAccountKey = storedSession && typeof storedSession === 'object' ? String(storedSession.accountKey || '') : '';
   const storedAccountStates = readStorage(localStorage, accountStatesStorageKey, {});
   const activeStoredAccount = storedAccountKey && storedAccountStates && typeof storedAccountStates === 'object' ? storedAccountStates[storedAccountKey] : null;
