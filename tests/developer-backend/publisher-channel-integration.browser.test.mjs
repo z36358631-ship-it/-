@@ -77,7 +77,7 @@ test('渠道与供货列表覆盖渠道、API 和同步文件批次状态',async
   const page=await browser.newPage({viewport:{width:1440,height:1000}});
   await openGame(page);await openSection(page,'渠道与供货');
   let text=await page.locator('.publisher-channel').innerText();
-  for(const value of ['合作中','已暂停','已停止','风险暂停']) assert.match(text,new RegExp(value));
+  for(const value of ['合作中','待生效','已暂停','已结束','已停止','风险暂停']) assert.match(text,new RegExp(value));
   assert.doesNotMatch(text,/清算中/);
   for(const value of ['待生成凭证','正常','已暂停','密钥待重置','已停用']) assert.match(text,new RegExp(value));
   await page.getByRole('tab',{name:'文件批次',exact:true}).click();
@@ -161,8 +161,11 @@ test('文件渠道同步生成兑换码文件且不留下生成中状态',async(
   assert.match(csv,/^cdkey,sku_id,valid_until\r?\nGH26-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4},BASE-GLOBAL,/);
   assert.match(await row.innerText(),/已下载[\s\S]*查看下载记录/);
   await row.getByRole('button',{name:'查看下载记录',exact:true}).click();
-  assert.match(await page.getByRole('dialog',{name:'下载记录'}).innerText(),/12[\s\S]*当前开发者[\s\S]*1/);
-  await page.getByRole('button',{name:'关闭',exact:true}).click();
+  const drawer=page.getByRole('dialog',{name:'下载记录'});
+  assert.equal(await drawer.getAttribute('data-channel-drawer'),'download-record');
+  assert.match(await drawer.innerText(),/12[\s\S]*当前开发者[\s\S]*1/);
+  assert.doesNotMatch(await drawer.innerText(),/页面不保存或回显明文 Key/);
+  await page.getByRole('button',{name:'关闭抽屉',exact:true}).click();
   await page.getByRole('tab',{name:'文件批次',exact:true}).click();
   assert.equal(await page.getByText('生成中',{exact:true}).count(),0);
   assert.match(await page.locator('.publisher-channel-table--batches tbody').innerText(),/已下载/);
@@ -224,11 +227,105 @@ test('分销数据只展示平台可验证的 Key 数据',async()=>{
   await openGame(page);await openSection(page,'分销数据');
   for(const value of ['发放量','兑换量','未兑换量','兑换率']) await page.getByText(value,{exact:true}).first().waitFor();
   const table=page.locator('.publisher-channel-table--distribution');
-  for(const heading of ['渠道','销售项','商品名称','SKU','供货方式','发放量','兑换量','未兑换量','兑换率','最近兑换时间']) await table.getByRole('columnheader',{name:heading,exact:true}).waitFor();
+  for(const heading of ['渠道','销售项','SKU','供货方式','发放量','兑换量','未兑换量','兑换率']) await table.getByRole('columnheader',{name:heading,exact:true}).waitFor();
+  assert.equal(await table.getByRole('columnheader',{name:'商品名称',exact:true}).count(),0);
+  assert.equal(await table.getByRole('columnheader',{name:'最近兑换时间',exact:true}).count(),0);
   const fileRow=distributionRow(page,'ArcadeX 文件渠道');
   assert.match(await fileRow.innerText(),/下载兑换码文件[\s\S]*300[\s\S]*42[\s\S]*258[\s\S]*14\.0%/);
   const body=await page.locator('.publisher-channel').innerText();
   for(const removed of ['销量','退款','拒付','币种','销售额','销售净额','预估收益','应结算','正式账单','已打款','导入销售清单']) assert.doesNotMatch(body,new RegExp(removed));
+  await page.close();
+});
+
+test('分销数据默认近 30 天且按 Key 发放 cohort 汇总',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'分销数据');
+  assert.equal(await page.getByLabel('Key 发放开始日期').inputValue(),'2026-08-18');
+  assert.equal(await page.getByLabel('Key 发放结束日期').inputValue(),'2026-09-16');
+  const row=distributionRow(page,'NovaPlay Store').filter({hasText:'BASE-GLOBAL'});
+  assert.match(await row.innerText(),/1,400[\s\S]*1,100[\s\S]*300[\s\S]*78\.6%/);
+  await page.getByLabel('Key 发放开始日期').fill('2026-09-16');
+  await page.getByLabel('Key 发放结束日期').fill('2026-09-16');
+  await page.getByRole('button',{name:'查询',exact:true}).click();
+  assert.match(await distributionRow(page,'NovaPlay Store').filter({hasText:'BASE-GLOBAL'}).innerText(),/480[\s\S]*374[\s\S]*106[\s\S]*77\.9%/);
+  const stored=await page.evaluate(()=>localStorage.getItem('gamehub-developer-publisher-accounts-v2')||'');
+  assert.match(stored,/"periods":\[\{"issuedAt":"2026-08-25","issued":500,"redeemed":390\}/);
+  await page.close();
+});
+
+test('渠道、文件批次和分销数据按渠道与各自时间口径筛选',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'渠道与供货');
+  await page.getByLabel('渠道名称或编号').fill('CH-240902');
+  await page.getByRole('button',{name:'查询',exact:true}).click();
+  assert.match(await page.locator('.publisher-channel-table--channels tbody').innerText(),/ArcadeX 文件渠道/);
+  assert.doesNotMatch(await page.locator('.publisher-channel-table--channels tbody').innerText(),/NovaPlay Store/);
+  await page.getByRole('tab',{name:'文件批次',exact:true}).click();
+  await page.getByLabel('渠道名称或编号').fill('ArcadeX');
+  await page.getByLabel('创建开始日期').fill('2026-09-10');
+  await page.getByLabel('创建结束日期').fill('2026-09-12');
+  await page.getByRole('button',{name:'查询',exact:true}).click();
+  const batches=await page.locator('.publisher-channel-table--batches tbody').innerText();
+  assert.match(batches,/FB-20260912-0004/);
+  assert.match(batches,/FB-20260910-0003/);
+  assert.doesNotMatch(batches,/FB-20260908-0001/);
+  await openSection(page,'分销数据');
+  await page.getByLabel('渠道名称或编号').fill('NovaPlay');
+  await page.getByRole('button',{name:'查询',exact:true}).click();
+  const distribution=await page.locator('.publisher-channel-table--distribution tbody').innerText();
+  assert.match(distribution,/NovaPlay Store/);
+  assert.doesNotMatch(distribution,/ArcadeX/);
+  await page.close();
+});
+
+test('渠道生效期校验并阻止待生效渠道供货',async()=>{
+  const page=await browser.newPage({viewport:{width:1280,height:900}});
+  await openGame(page);await openSection(page,'渠道与供货');
+  await page.getByRole('button',{name:'创建渠道',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'创建渠道'});
+  await dialog.getByLabel('渠道名称').fill('未来渠道');
+  await dialog.getByLabel('供货方式').selectOption('file');
+  await dialog.getByLabel('生效开始时间').fill('2026-09-20T09:00');
+  await dialog.getByLabel('生效结束时间').fill('2026-09-19T09:00');
+  await dialog.getByRole('button',{name:'创建渠道',exact:true}).click();
+  assert.match(await dialog.innerText(),/结束时间必须晚于开始时间/);
+  await dialog.getByLabel('生效结束时间').fill('');
+  await dialog.getByRole('button',{name:'创建渠道',exact:true}).click();
+  const row=channelRow(page,'未来渠道');
+  assert.match(await row.innerText(),/待生效[\s\S]*2026-09-20 09:00[\s\S]*长期有效/);
+  assert.equal(await row.getByRole('button',{name:'创建文件',exact:true}).count(),0);
+  await page.close();
+});
+
+test('渠道生效时间筛选按区间相交命中',async()=>{
+  const page=await browser.newPage({viewport:{width:1280,height:900}});
+  await openGame(page);await openSection(page,'渠道与供货');
+  await page.getByLabel('生效开始日期').fill('2026-09-18');
+  await page.getByLabel('生效结束日期').fill('2026-09-22');
+  await page.getByRole('button',{name:'查询',exact:true}).click();
+  const rows=await page.locator('.publisher-channel-table--channels tbody').innerText();
+  assert.match(rows,/PixelMall 待接入/);
+  assert.match(rows,/NovaPlay Store/);
+  assert.doesNotMatch(rows,/旧版合作渠道/);
+  await page.close();
+});
+
+test('下载记录为右侧抽屉且文件单批上限为十万',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'渠道与供货');
+  const row=channelRow(page,'ArcadeX 文件渠道');
+  await row.getByRole('button',{name:'查看下载记录',exact:true}).click();
+  const drawer=page.getByRole('dialog',{name:'下载记录'});
+  assert.equal(await drawer.getAttribute('data-channel-drawer'),'download-record');
+  assert.match(await drawer.getAttribute('class'),/publisher-channel-drawer/);
+  assert.equal(await drawer.evaluate(node=>Math.round(node.getBoundingClientRect().right)),1440);
+  await page.getByRole('button',{name:'关闭抽屉',exact:true}).click();
+  await row.getByRole('button',{name:'创建文件',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'创建兑换码文件'});
+  assert.equal(await dialog.getByLabel('生成数量').getAttribute('max'),'100000');
+  await dialog.getByLabel('生成数量').fill('100001');
+  await dialog.getByRole('button',{name:'生成并下载',exact:true}).click();
+  assert.match(await dialog.innerText(),/单批最多生成 100,000 个/);
   await page.close();
 });
 
@@ -301,13 +398,21 @@ test('320、390、1280、1440 宽度无根节点溢出且列表在内容区滚�
   }
 });
 
-test('输出渠道分销重构八张视觉验收图',async()=>{
+test('输出渠道筛选、生效期和下载抽屉视觉验收图',async()=>{
   fs.mkdirSync(evidenceDir,{recursive:true});
   const supply=await browser.newPage({viewport:{width:1440,height:900}});
   await openGame(supply);await openSection(supply,'渠道与供货');
-  await supply.screenshot({path:path.join(evidenceDir,'channel-management-1440.png'),fullPage:true});
+  await supply.screenshot({path:path.join(evidenceDir,'channel-management-filter-1440.png'),fullPage:true});
   await supply.getByRole('tab',{name:'文件批次',exact:true}).click();
-  await supply.screenshot({path:path.join(evidenceDir,'channel-file-batches-1440.png'),fullPage:true});await supply.close();
+  await supply.screenshot({path:path.join(evidenceDir,'channel-file-filter-1440.png'),fullPage:true});
+  await supply.getByRole('tab',{name:'渠道管理',exact:true}).click();
+  await channelRow(supply,'ArcadeX 文件渠道').getByRole('button',{name:'查看下载记录',exact:true}).click();
+  await supply.screenshot({path:path.join(evidenceDir,'channel-download-drawer-1440.png'),fullPage:true});await supply.close();
+
+  const create=await browser.newPage({viewport:{width:390,height:900}});
+  await openGame(create);await openSection(create,'渠道与供货');
+  await create.getByRole('button',{name:'创建渠道',exact:true}).click();
+  await create.screenshot({path:path.join(evidenceDir,'channel-create-period-390.png'),fullPage:true});await create.close();
 
   const file=await browser.newPage({viewport:{width:390,height:900}});
   await openGame(file);await openSection(file,'渠道与供货');
@@ -342,7 +447,7 @@ test('输出渠道分销重构八张视觉验收图',async()=>{
   await help.getByRole('heading',{name:'三方责任与渠道结算边界',exact:true}).waitFor();
   await help.screenshot({path:path.join(evidenceDir,'channel-help-boundary-390.png'),fullPage:true});await help.close();
 
-  for(const name of ['channel-management-1440.png','channel-file-batches-1440.png','channel-create-file-390.png','channel-key-download-390.png','channel-stop-1280.png','channel-distribution-1440.png','channel-distribution-320.png','channel-help-boundary-390.png']) assert.ok(fs.statSync(path.join(evidenceDir,name)).size>10000,`${name} 应为有效截图`);
+  for(const name of ['channel-management-filter-1440.png','channel-file-filter-1440.png','channel-download-drawer-1440.png','channel-create-period-390.png','channel-create-file-390.png','channel-key-download-390.png','channel-stop-1280.png','channel-distribution-1440.png','channel-distribution-320.png','channel-help-boundary-390.png']) assert.ok(fs.statSync(path.join(evidenceDir,name)).size>10000,`${name} 应为有效截图`);
 });
 
 test('静态交付文件不含固定明文 Key、Secret 或外部嵌入',()=>{

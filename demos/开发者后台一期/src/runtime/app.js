@@ -1171,6 +1171,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         skuId:String(item?.skuId || ''),
         issued:safeMetric(item?.issued),
         redeemed:safeMetric(item?.redeemed),
+        periods:Array.isArray(item?.periods) ? item.periods.map(period => ({
+          issuedAt:String(period?.issuedAt || ''),
+          issued:safeMetric(period?.issued),
+          redeemed:safeMetric(period?.redeemed),
+        })) : [],
         lastDeliveredAt:String(item?.lastDeliveredAt || ''),
         lastRedeemedAt:String(item?.lastRedeemedAt || ''),
       })) : [],
@@ -1425,21 +1430,25 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return updatePublisherWorkspace({ channelDistribution:value, channelDialog:'' }, options);
   };
   const findChannel = (state, channelId) => (state.channels || []).find(item => item.id === channelId);
+  const channelCanSupply = channel => window.PublisherChannelDistribution?.canSupply(channel) === true;
   const upsertKeyMetric = (items = [], change = {}) => {
     const channelId = String(change.channelId || '');
     const skuId = String(change.skuId || '');
     const found = items.find(item => item.channelId === channelId && item.skuId === skuId);
+    const issuedAt = String(change.lastDeliveredAt || localIsoDate()).slice(0,10);
     if (!found) return [...items, {
       channelId,
       skuId,
       issued:Math.max(0, Number(change.issuedDelta || 0)),
       redeemed:0,
+      periods:[{ issuedAt, issued:Math.max(0,Number(change.issuedDelta || 0)), redeemed:0 }],
       lastDeliveredAt:String(change.lastDeliveredAt || ''),
       lastRedeemedAt:'',
     }];
     return items.map(item => item === found ? {
       ...item,
       issued:Math.max(0, Number(item.issued || 0) + Number(change.issuedDelta || 0)),
+      periods:[...(Array.isArray(item.periods) ? item.periods : []),{ issuedAt, issued:Math.max(0,Number(change.issuedDelta || 0)), redeemed:0 }],
       lastDeliveredAt:String(change.lastDeliveredAt || item.lastDeliveredAt || ''),
     } : item);
   };
@@ -1816,6 +1825,22 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         updateChannelDistribution(state => ({ ...state, supplyTab, dialog:'', dialogChannelId:'', dialogBatchId:'' }));
         return;
       }
+      if (route.id === 'P02-01' && ['channel-filter-submit','channel-filter-reset'].includes(action)) {
+        const scope = event.currentTarget.dataset.filterScope;
+        const key = { channels:'channelFilters', batches:'batchFilters', distribution:'distributionFilters' }[scope];
+        if (!key) return;
+        const defaults = scope === 'distribution'
+          ? { channelId:'', start:'2026-08-18', end:'2026-09-16' }
+          : { channelId:'', start:'', end:'' };
+        const form = root.querySelector(`[data-channel-filter-form="${scope}"]`);
+        const filters = action === 'channel-filter-reset' ? defaults : {
+          channelId:String(form?.querySelector('[data-channel-filter-keyword]')?.value || '').trim(),
+          start:String(form?.querySelector('[data-channel-filter-start]')?.value || ''),
+          end:String(form?.querySelector('[data-channel-filter-end]')?.value || ''),
+        };
+        updateChannelDistribution(state => ({ ...state, [key]:filters }));
+        return;
+      }
       if (route.id === 'P02-01' && action === 'channel-create-open') {
         if (publisherAccessForView().qualificationStatus !== 'approved') return;
         memory.channelTransientSecret = '';
@@ -1828,10 +1853,28 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const name = String(nameInput?.value || '').trim();
         const productId = root.querySelector('[data-channel-product]')?.value || 'BASE-GLOBAL';
         const delivery = root.querySelector('[data-channel-delivery]')?.value || 'api';
+        const effectiveStartInput = root.querySelector('[data-channel-effective-start]');
+        const effectiveEndInput = root.querySelector('[data-channel-effective-end]');
+        const effectiveStart = String(effectiveStartInput?.value || '');
+        const effectiveEnd = String(effectiveEndInput?.value || '');
+        const startError = root.querySelector('[data-channel-effective-start-error]');
+        const endError = root.querySelector('[data-channel-effective-end-error]');
         if (name.length < 1 || name.length > 50) {
           nameInput?.setAttribute('aria-invalid', 'true');
           if (nameError) nameError.textContent = memory.shell.language === 'en' ? 'Enter a channel name between 1 and 50 characters.' : '请输入 1—50 个字的渠道名称。';
           nameInput?.focus();
+          return;
+        }
+        if (!effectiveStart) {
+          effectiveStartInput?.setAttribute('aria-invalid','true');
+          if (startError) startError.textContent = memory.shell.language === 'en' ? 'Select an effective start time.' : '请选择生效开始时间。';
+          effectiveStartInput?.focus();
+          return;
+        }
+        if (effectiveEnd && new Date(effectiveEnd).getTime() <= new Date(effectiveStart).getTime()) {
+          effectiveEndInput?.setAttribute('aria-invalid','true');
+          if (endError) endError.textContent = memory.shell.language === 'en' ? 'The end time must be later than the start time.' : '结束时间必须晚于开始时间。';
+          effectiveEndInput?.focus();
           return;
         }
         const current = channelDistributionState();
@@ -1844,7 +1887,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const channel = {
           id:createChannelId(current.channels), name, delivery:delivery === 'file' ? 'file' : 'api', productIds:[productId],
           status:'active', credentialStatus:delivery === 'file' ? 'not_applicable' : 'pending', clientId:'', secretLast4:'',
-          lastDeliveredAt:'', createdAt:nowText(),
+          effectiveStart, effectiveEnd, lastDeliveredAt:'', createdAt:nowText(),
         };
         updateChannelDistribution({ ...current, activeChannelId:channel.id, dialog:'', dialogChannelId:'', channels:[...(current.channels || []), channel] });
         resultMessage(route.id, '渠道已创建', delivery === 'file' ? '可按实际需要创建兑换码文件。' : '请进入“管理接入”生成渠道级凭证。');
@@ -1914,7 +1957,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const retryBatch = (current.fileBatches || []).find(item => item.id === retryBatchId);
         const channelId = event.currentTarget.dataset.channelId || retryBatch?.channelId || current.activeChannelId;
         const channel = findChannel(current, channelId);
-        if (!channel || channel.delivery !== 'file' || channel.status !== 'active') return;
+        if (!channel || channel.delivery !== 'file' || !channelCanSupply(channel)) {
+          resultMessage(route.id, '当前不可创建文件', '请检查渠道生效时间和合作状态。', 'warning');
+          return;
+        }
         memory.channelTransientSecret = '';
         updateChannelDistribution({ ...current, activeChannelId:channelId, dialog:'file-create', dialogChannelId:channelId, dialogBatchId:retryBatchId });
         return;
@@ -1929,10 +1975,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const quantity = Number(quantityInput?.value || retryBatch?.quantity || 0);
         const skuId = root.querySelector('[data-channel-file-sku]')?.value || retryBatch?.skuId || channel?.productIds?.[0] || 'BASE-GLOBAL';
         const validUntil = root.querySelector('[data-channel-file-valid-until]')?.value || retryBatch?.validUntil || addCalendarDays(new Date(), 180);
-        if (!channel || channel.delivery !== 'file' || channel.status !== 'active') return;
-        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) {
+        if (!channel || channel.delivery !== 'file' || !channelCanSupply(channel)) return;
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100000) {
           quantityInput?.setAttribute('aria-invalid', 'true');
-          if (error) error.textContent = quantity > 10000 ? '当前单文件最多生成 10,000 个，请拆分文件' : '请输入大于 0 的整数。';
+          if (error) error.textContent = quantity > 100000 ? '单批最多生成 100,000 个。' : '请输入 1—100,000 的整数。';
           quantityInput?.focus();
           return;
         }
@@ -1950,7 +1996,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           const generated = await createKeyFile({ quantity, skuId, validUntil });
           const latest = channelDistributionState();
           const latestChannel = findChannel(latest, channelId);
-          if (latestChannel?.status !== 'active') {
+          if (!channelCanSupply(latestChannel)) {
             resultMessage(route.id, '文件生成已取消', '渠道已停止供货或该批次已取消，未下载或暴露任何 Key。', 'warning');
             return;
           }
@@ -1978,7 +2024,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         } catch (generationError) {
           const latest = channelDistributionState();
           const latestChannel = findChannel(latest, channelId);
-          if (latestChannel?.status !== 'active') return;
+          if (!channelCanSupply(latestChannel)) return;
           const failedAt = nowText();
           const failedBatch = {
             id:batchId, channelId, skuId, quantity, validUntil, status:'failed',

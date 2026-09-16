@@ -284,8 +284,8 @@
             "category": "发行与供给",
             "question": "渠道投放使用说明",
             "answer": "企业开发者可为外部渠道配置本体或 DLC，并通过 API 或兑换码文件交付 Key。",
-            "steps": ["创建渠道并选择销售项。", "选择一种供货方式；同一渠道不混用 API 和文件。", "在分销数据查看发放、兑换、未兑换和兑换率。"],
-            "details": ["仅企业开发者可创建渠道，创建后无需平台审批。", "渠道不设置地区、商业额度或授权计划。", "合作状态包括合作中、已暂停、已停止和风险暂停。"]
+            "steps": ["创建渠道，选择销售项、供货方式和生效时间。", "按渠道与生效时间筛选渠道，或按创建时间筛选文件批次。", "在分销数据查看发放、兑换、未兑换和兑换率。"],
+            "details": ["仅企业开发者可创建渠道，创建后无需平台审批。", "渠道不设地区、商业额度或授权计划。", "开始时间必填，结束时间可空；待生效和已结束渠道不能新供货。"]
           },
           {
             "id": "channel-api-integration",
@@ -309,7 +309,7 @@
             "question": "下载兑换码文件教程",
             "answer": "文件渠道按销售项、数量和有效期同步生成兑换码文件，成功后立即下载。",
             "steps": ["在渠道管理为文件渠道选择创建文件。", "填写销售项、数量和有效期。", "点击生成并下载，文件名包含渠道名和批次号。"],
-            "details": ["生成完成后立即触发下载，不保留待下载或生成中状态。", "触发下载后 Key 视为已交付；浏览器取消保存也不回库。", "生成或返回文件前失败会保留原参数和失败原因，可重新生成。"]
+            "details": ["单批可生成 1—100,000 个 Key，不设渠道累计额度。", "触发下载后 Key 视为已交付；浏览器取消保存也不回库。", "生成或返回文件前失败会保留原参数和失败原因，可重新生成。"]
           },
           {
             "id": "channel-key-metrics",
@@ -317,14 +317,14 @@
             "question": "Key 状态与兑换数据口径",
             "answer": "分销数据只展示平台可验证的发放和兑换结果，不推算渠道销量或收入。",
             "steps": ["发放量为 API 成功发码量加文件成功交付量。", "未兑换量为发放量减兑换量，不代表渠道库存。", "兑换率为兑换量除以发放量；发放量为零时显示“—”。"],
-            "details": ["渠道订单号仅用于 API 幂等和查询，不能作为销售凭证。", "文件下载量、Key 发放量和渠道实际销量是不同口径。", "盖世不采集渠道定价、收款或终端订单，因此不展示销售额和收益。"]
+            "details": ["默认查看近 30 天发放的 Key；兑换量取该批 Key 截至查询时的累计值。", "文件下载量、Key 发放量和渠道实际销量是不同口径。", "盖世不采集渠道定价、收款或终端订单，因此不展示销售额和收益。"]
           },
           {
             "id": "channel-file-records",
             "category": "发行与供给",
             "question": "文件批次和下载记录说明",
             "answer": "文件批次记录销售项、数量、有效期、结果、下载账号和时间；平台不在页面回显明文 Key。",
-            "steps": ["文件生成并触发下载后，Key 视为已交付，不回库也不重复分配。", "生成或返回文件前失败保留原参数，可重新生成。", "下载记录用于审计，不是结算表。"],
+            "steps": ["文件生成并触发下载后，Key 视为已交付，不回库也不重复分配。", "按渠道及创建时间筛选批次，在下载记录抽屉查看下载账号、时间和次数。", "下载记录用于审计，不是结算表。"],
             "details": ["批次状态只记录已下载、生成失败、已取消或已到期。", "平台仅保存不可逆 Key 指纹用于归属和兑换校验。", "文件遗失或泄露后不能再次显示原 Key，应停止渠道并联系 dev@xiaoji.com。"]
           },
           {
@@ -610,8 +610,8 @@
             "category": "Publishing & supply",
             "question": "Channel distribution guide",
             "answer": "Enterprise developers can assign base games or DLC to external channels and deliver Keys through an API or a downloadable file.",
-            "steps": ["Create a channel and select products.", "Choose one supply method; a channel cannot mix API and file delivery.", "Use Distribution data to review issued, redeemed, unredeemed, and redemption rate metrics."],
-            "details": ["Only enterprise developers can create channels, and no platform approval is required.", "Channels have no territory, commercial quota, or authorization-plan setting.", "Partnership states are Active, Paused, Stopped, and Risk paused."]
+            "steps": ["Create a channel and choose products, a supply method, and an effective period.", "Filter channels by name, ID, and effective period, or filter file batches by creation date.", "Use Distribution data to review issued, redeemed, unredeemed, and redemption rate metrics."],
+            "details": ["Only enterprise developers can create channels, and no platform approval is required.", "Channels have no territory, commercial quota, or authorization-plan setting.", "The start time is required and the end time is optional. Scheduled and ended channels cannot start new supply."]
           },
           {
             "id": "channel-api-integration",
@@ -635,7 +635,7 @@
             "question": "Download a Key file",
             "answer": "File channels synchronously generate a Key file for a selected product, quantity, and expiration date, then download it immediately.",
             "steps": ["Open Create file for a file channel.", "Choose the product, quantity, and expiration date.", "Select Generate and download; the file name contains the channel name and batch ID."],
-            "details": ["A completed file starts downloading immediately, with no Generating or Ready state retained.", "Keys are delivered once the download starts; cancelling the browser save does not return them to inventory.", "A failure before the file response retains its original parameters and failure reason for retry."]
+            "details": ["Each batch can contain 1–100,000 Keys and channels have no cumulative file quota.", "Keys are delivered once the download starts; cancelling the browser save does not return them to inventory.", "A failure before the file response retains its original parameters and failure reason for retry."]
           },
           {
             "id": "channel-key-metrics",
@@ -643,14 +643,14 @@
             "question": "Key status and redemption metrics",
             "answer": "Distribution data contains only verifiable issuance and redemption results. It does not estimate channel sales or revenue.",
             "steps": ["Issued equals successful API issuance plus successfully delivered file Keys.", "Unredeemed equals issued minus redeemed and does not represent channel inventory.", "Redemption rate equals redeemed divided by issued; show an em dash when issued is zero."],
-            "details": ["A channel order ID supports API idempotency and lookup; it is not proof of a sale.", "File downloads, issued Keys, and actual channel sales are separate metrics.", "GameHub does not collect channel pricing, payment, or end-customer orders, so it does not show sales or earnings."]
+            "details": ["The default view covers Keys issued in the latest 30 days; redeemed counts are cumulative for that issued cohort as of the query time.", "File downloads, issued Keys, and actual channel sales are separate metrics.", "GameHub does not collect channel pricing, payment, or end-customer orders, so it does not show sales or earnings."]
           },
           {
             "id": "channel-file-records",
             "category": "Publishing & supply",
             "question": "File batches and download records",
             "answer": "A file batch records product, quantity, expiration, result, downloading account, and time. Plaintext Keys are not displayed in the portal.",
-            "steps": ["Keys are delivered once the generated file starts downloading and cannot return to inventory.", "A failure before the file response keeps its original parameters for retry.", "A download record is an audit record, not a settlement statement."],
+            "steps": ["Keys are delivered once the generated file starts downloading and cannot return to inventory.", "Filter batches by channel and creation date, then open the download-record drawer for account, time, and count.", "A download record is an audit record, not a settlement statement."],
             "details": ["Batch states are Downloaded, Failed, Cancelled, or Expired.", "The platform stores only irreversible Key fingerprints for ownership and redemption checks.", "A lost or exposed file cannot reveal the original Keys again; stop the channel and contact dev@xiaoji.com."]
           },
           {
@@ -812,8 +812,8 @@
         "category": "发行与供给",
         "question": "渠道投放使用说明",
         "answer": "企业开发者可为外部渠道配置本体或 DLC，并通过 API 或兑换码文件交付 Key。",
-        "steps": ["创建渠道并选择销售项。", "选择一种供货方式；同一渠道不混用 API 和文件。", "在分销数据查看发放、兑换、未兑换和兑换率。"],
-        "details": ["仅企业开发者可创建渠道，创建后无需平台审批。", "渠道不设置地区、商业额度或授权计划。", "合作状态包括合作中、已暂停、已停止和风险暂停。"]
+        "steps": ["创建渠道，选择销售项、供货方式和生效时间。", "按渠道与生效时间筛选渠道，或按创建时间筛选文件批次。", "在分销数据查看发放、兑换、未兑换和兑换率。"],
+        "details": ["仅企业开发者可创建渠道，创建后无需平台审批。", "渠道不设地区、商业额度或授权计划。", "开始时间必填，结束时间可空；待生效和已结束渠道不能新供货。"]
       },
       {
         "id": "channel-api-integration",
@@ -837,7 +837,7 @@
         "question": "下载兑换码文件教程",
         "answer": "文件渠道按销售项、数量和有效期同步生成兑换码文件，成功后立即下载。",
         "steps": ["在渠道管理为文件渠道选择创建文件。", "填写销售项、数量和有效期。", "点击生成并下载，文件名包含渠道名和批次号。"],
-        "details": ["生成完成后立即触发下载，不保留待下载或生成中状态。", "触发下载后 Key 视为已交付；浏览器取消保存也不回库。", "生成或返回文件前失败会保留原参数和失败原因，可重新生成。"]
+        "details": ["单批可生成 1—100,000 个 Key，不设渠道累计额度。", "触发下载后 Key 视为已交付；浏览器取消保存也不回库。", "生成或返回文件前失败会保留原参数和失败原因，可重新生成。"]
       },
       {
         "id": "channel-key-metrics",
@@ -845,14 +845,14 @@
         "question": "Key 状态与兑换数据口径",
         "answer": "分销数据只展示平台可验证的发放和兑换结果，不推算渠道销量或收入。",
         "steps": ["发放量为 API 成功发码量加文件成功交付量。", "未兑换量为发放量减兑换量，不代表渠道库存。", "兑换率为兑换量除以发放量；发放量为零时显示“—”。"],
-        "details": ["渠道订单号仅用于 API 幂等和查询，不能作为销售凭证。", "文件下载量、Key 发放量和渠道实际销量是不同口径。", "盖世不采集渠道定价、收款或终端订单，因此不展示销售额和收益。"]
+        "details": ["默认查看近 30 天发放的 Key；兑换量取该批 Key 截至查询时的累计值。", "文件下载量、Key 发放量和渠道实际销量是不同口径。", "盖世不采集渠道定价、收款或终端订单，因此不展示销售额和收益。"]
       },
       {
         "id": "channel-file-records",
         "category": "发行与供给",
         "question": "文件批次和下载记录说明",
         "answer": "文件批次记录销售项、数量、有效期、结果、下载账号和时间；平台不在页面回显明文 Key。",
-        "steps": ["文件生成并触发下载后，Key 视为已交付，不回库也不重复分配。", "生成或返回文件前失败保留原参数，可重新生成。", "下载记录用于审计，不是结算表。"],
+        "steps": ["文件生成并触发下载后，Key 视为已交付，不回库也不重复分配。", "按渠道及创建时间筛选批次，在下载记录抽屉查看下载账号、时间和次数。", "下载记录用于审计，不是结算表。"],
         "details": ["批次状态只记录已下载、生成失败、已取消或已到期。", "平台仅保存不可逆 Key 指纹用于归属和兑换校验。", "文件遗失或泄露后不能再次显示原 Key，应停止渠道并联系 dev@xiaoji.com。"]
       },
       {
