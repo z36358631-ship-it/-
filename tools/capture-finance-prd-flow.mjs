@@ -76,6 +76,16 @@ const openOperations = async () => {
   await page.locator('[data-finance-operations]').waitFor();
 };
 
+if (process.argv.includes('--tier-only')) {
+  await openOperations();
+  await page.locator('[data-fo-action="open-tier-editor"]').click();
+  await page.getByRole('dialog',{ name:'配置阶梯分成' }).waitFor();
+  await capture('15-flow-09-tier-config.png');
+  await browser.close();
+  console.log('Captured 15-flow-09-tier-config.png');
+  process.exit(0);
+}
+
 await openDeveloper('P15-01');
 await capture('15-flow-01-entity-current.png');
 
@@ -109,7 +119,6 @@ await page.locator('[data-d15-settlement-row][data-item-type="game_sales_share"]
 await capture('15-flow-08-statement-confirmed.png');
 
 await openOperations();
-await page.locator('.fo-tabs [data-fo-tab="game"]').click();
 await page.locator('[data-fo-action="open-tier-editor"]').click();
 await page.getByRole('dialog',{ name:'配置阶梯分成' }).waitFor();
 await capture('15-flow-09-tier-config.png');

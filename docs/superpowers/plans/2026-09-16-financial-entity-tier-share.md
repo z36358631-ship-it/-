@@ -149,7 +149,7 @@ const normalizeDraftBounds = tiers => tiers.map((tier,index) => ({
 }));
 ```
 
-Adding splits the current no-limit tier and retains its rate on the new no-limit tier. Deleting keeps at least one tier, then normalizes `0`, adjacency, and no-limit boundaries.
+Adding inserts an empty finite tier before the current no-limit tier and retains the original no-limit rate. Only middle tiers can be deleted; deletion reconnects adjacent boundaries while preserving fixed `0` and no-limit boundaries.
 
 - [ ] **Step 7: Add responsive compact-grid styles**
 
