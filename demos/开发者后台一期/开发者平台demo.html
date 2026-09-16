@@ -13214,13 +13214,13 @@ window.__PUBLISHER_FINANCE_EMBEDDED__ = true;
 
   if (embedded) {
     window.PublisherFinance = {
-      routeIds:['P01-01','P15-01','P15-02'],
+      routeIds:['P15-01','P15-02'],
       createState:() => state,
       render:(_financeState, options = {}) => {
         state.route = options.routeId === 'P15-02' ? 'settlement' : 'entity';
         state.enterpriseCertificationStatus = options.access?.qualificationStatus || 'approved';
         state.demoScenario = state.enterpriseCertificationStatus === 'approved' ? 'exhaustive' : 'empty';
-        const canonicalRoute = options.routeId === 'P01-01' ? 'P01-01' : (state.route === 'entity' ? 'P15-01' : 'P15-02');
+        const canonicalRoute = state.route === 'entity' ? 'P15-01' : 'P15-02';
         return `<section class="publisher-finance" data-testid="developer-finance-demo" data-finance-route="${canonicalRoute}">${pageContent()}${auxiliaryOverlays()}</section>`;
       },
       bind:(_root, options = {}) => {
@@ -15067,7 +15067,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const isEnglish = language === 'en';
       const settlementActive = route.id === 'P15-02';
       const entityActive = !settlementActive;
-      return `<aside class="side-nav side-nav--finance" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">${isEnglish ? 'Games' : '游戏'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Developer navigation' : '开发者导航'}"><a class="nav-item" href="#/P02-01">${icon('game')}<span>${isEnglish ? 'Game management' : '游戏管理'}</span></a></nav><div class="nav-label">${isEnglish ? 'Finance' : '财务'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Finance navigation' : '财务导航'}"><a class="nav-item${entityActive ? ' is-active' : ''}" href="#/P01-01"${entityActive ? ' aria-current="page"' : ''}>${icon('vendor')}<span>${isEnglish ? 'Finance entity' : '财务主体'}</span></a><a class="nav-item${settlementActive ? ' is-active' : ''}" href="#/P15-02"${settlementActive ? ' aria-current="page"' : ''}>${icon('chart')}<span>${isEnglish ? 'Reconciliation & settlement' : '对账结算'}</span></a></nav><div class="nav-label">${isEnglish ? 'Company' : '厂商管理'}</div><nav class="nav-list"><button type="button" class="nav-item" data-portal-action="open-vendor-settings">${icon('vendor')}<span>${isEnglish ? 'Company settings' : '厂商设置'}</span></button></nav></aside>`;
+      return `<aside class="side-nav side-nav--finance" data-side-nav data-component="SideNav" data-variant="light"><div class="nav-label">${isEnglish ? 'Games' : '游戏'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Developer navigation' : '开发者导航'}"><a class="nav-item" href="#/P02-01">${icon('game')}<span>${isEnglish ? 'Game management' : '游戏管理'}</span></a></nav><div class="nav-label">${isEnglish ? 'Finance' : '财务'}</div><nav class="nav-list" aria-label="${isEnglish ? 'Finance navigation' : '财务导航'}"><a class="nav-item${entityActive ? ' is-active' : ''}" href="#/P15-01"${entityActive ? ' aria-current="page"' : ''}>${icon('vendor')}<span>${isEnglish ? 'Finance entity' : '财务主体'}</span></a><a class="nav-item${settlementActive ? ' is-active' : ''}" href="#/P15-02"${settlementActive ? ' aria-current="page"' : ''}>${icon('chart')}<span>${isEnglish ? 'Reconciliation & settlement' : '对账结算'}</span></a></nav><div class="nav-label">${isEnglish ? 'Company' : '厂商管理'}</div><nav class="nav-list"><button type="button" class="nav-item" data-portal-action="open-vendor-settings">${icon('vendor')}<span>${isEnglish ? 'Company settings' : '厂商设置'}</span></button></nav></aside>`;
     }
     if (role === 'operations' && route.moduleId === '01') {
       const items = [
@@ -15263,7 +15263,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const hasPublisherRoute = routes.some(route => route.id === 'P02-01');
   const financeRouteIds = new Set(window.PublisherFinance?.routeIds || []);
   const hasFinanceRoutes = routes.some(route => financeRouteIds.has(route.id));
-  const hasFinancePrimaryEntry = hasFinanceRoutes && financeRouteIds.has('P01-01');
   const publisherFixtureGameKeys = new Set(['draft', 'reviewing', 'existing', 'pioneer', 'prerelease', 'live', 'delisted']);
   const vendorSettingsRuntime = window.PublisherVendorSettings || null;
   const createVendorReviews = () => vendorSettingsRuntime?.createReviews?.() || {
@@ -15480,30 +15479,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       draft: cloneJson(managedContentDraft),
     },
   };
-  if (hasFinancePrimaryEntry && !memory.session.authenticated) {
-    memory.session = {
-      authenticated: true,
-      accountKey: memory.session.accountKey || 'demo:finance-primary',
-      vendorId: memory.session.vendorId || String(portalData.context?.vendorId || 'VENDOR-DEMO'),
-      activeGameId: memory.session.activeGameId || 'existing',
-      expiresAt: Math.max(Number(memory.session.expiresAt || 0), Date.now() + 8 * 60 * 60 * 1000),
-    };
-    if (!storedQualification) {
-      memory.qualification = {
-        ...memory.qualification,
-        status: 'approved',
-        revision: Math.max(1, Number(memory.qualification.revision || 0)),
-        submittedAt: memory.qualification.submittedAt || '2026-09-01 09:00',
-        reviewedAt: memory.qualification.reviewedAt || '2026-09-02 10:00',
-        reviewer: memory.qualification.reviewer || '平台运营 李然',
-      };
-    }
-    memory.registration = {
-      ...memory.registration,
-      accountTier: memory.qualification.status === 'approved' ? 'enterprise' : 'registered',
-      registeredAt: memory.registration.registeredAt || memory.qualification.submittedAt || '2026-09-01 09:00',
-    };
-  }
   if (restoredHandoff && memory.session.accountKey) {
     const accountStates = readStorage(localStorage, accountStatesStorageKey, {});
     const nextAccountStates = accountStates && typeof accountStates === 'object' ? accountStates : {};
@@ -17114,6 +17089,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const effectiveEnd = String(effectiveEndInput?.value || '');
         const startError = root.querySelector('[data-channel-effective-start-error]');
         const endError = root.querySelector('[data-channel-effective-end-error]');
+        const quantityInput = root.querySelector('[data-channel-first-batch-quantity]');
+        const quantityError = root.querySelector('[data-channel-first-batch-error]');
+        const quantity = Number(quantityInput?.value || 0);
         if (name.length < 1 || name.length > 50) {
           nameInput?.setAttribute('aria-invalid', 'true');
           if (nameError) nameError.textContent = memory.shell.language === 'en' ? 'Enter a channel name between 1 and 50 characters.' : '请输入 1—50 个字的渠道名称。';
@@ -17126,10 +17104,16 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           effectiveStartInput?.focus();
           return;
         }
-        if (effectiveEnd && new Date(effectiveEnd).getTime() <= new Date(effectiveStart).getTime()) {
+        if (effectiveEnd && new Date(effectiveEnd).getTime() < new Date(effectiveStart).getTime()) {
           effectiveEndInput?.setAttribute('aria-invalid','true');
-          if (endError) endError.textContent = memory.shell.language === 'en' ? 'The end time must be later than the start time.' : '结束时间必须晚于开始时间。';
+          if (endError) endError.textContent = memory.shell.language === 'en' ? 'The end date cannot be earlier than the start date.' : '结束日期不能早于开始日期。';
           effectiveEndInput?.focus();
+          return;
+        }
+        if (delivery === 'file' && (!Number.isInteger(quantity) || quantity < 1 || quantity > 100000)) {
+          quantityInput?.setAttribute('aria-invalid','true');
+          if (quantityError) quantityError.textContent = memory.shell.language === 'en' ? 'Enter an integer from 1 to 100,000.' : '请输入 1—100,000 的整数。';
+          quantityInput?.focus();
           return;
         }
         const current = channelDistributionState();
@@ -17144,8 +17128,46 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           status:'active', credentialStatus:delivery === 'file' ? 'not_applicable' : 'pending', clientId:'', secretLast4:'',
           effectiveStart, effectiveEnd, lastDeliveredAt:'', createdAt:nowText(),
         };
-        updateChannelDistribution({ ...current, activeChannelId:channel.id, dialog:'', dialogChannelId:'', channels:[...(current.channels || []), channel] });
-        resultMessage(route.id, '渠道已创建', delivery === 'file' ? '可按实际需要创建兑换码文件。' : '请进入“管理接入”生成渠道级凭证。');
+        if (delivery !== 'file') {
+          updateChannelDistribution({ ...current, activeChannelId:channel.id, dialog:'', dialogChannelId:'', channels:[...(current.channels || []), channel] });
+          resultMessage(route.id, '渠道已创建', '请进入“管理接入”生成渠道级凭证。');
+          return;
+        }
+        const createButton = event.currentTarget;
+        const originalButtonText = createButton.textContent;
+        const dateToken = localDateToken();
+        const batchId = `FB-${dateToken}-${String((current.fileBatches || []).length + 1).padStart(4,'0')}`;
+        const fileName = `盖世游戏兑换码_${safeFileNamePart(channel.name)}_${batchId}.csv`;
+        const validUntil = effectiveEnd ? effectiveEnd.slice(0,10) : addCalendarDays(new Date(effectiveStart),180);
+        createButton.disabled = true;
+        createButton.setAttribute('aria-busy','true');
+        createButton.textContent = memory.shell.language === 'en' ? 'Generating…' : '生成中…';
+        try {
+          const generated = await createKeyFile({ quantity, skuId:productId, validUntil });
+          downloadTextFile(fileName, generated.content, 'text/csv;charset=utf-8');
+          const downloadedAt = nowText();
+          const batch = { id:batchId, channelId:channel.id, skuId:productId, quantity, validUntil, status:'downloaded', createdAt:downloadedAt, downloadedAt };
+          const download = { id:`DL-${dateToken}-${String((current.downloads || []).length + 1).padStart(4,'0')}`, channelId:channel.id, batchId, skuId:productId, fileName, quantity, keyFingerprintDigest:generated.keyFingerprintDigest, fingerprintCount:generated.fingerprintCount, downloadedAt, downloadedBy:'当前开发者', downloadCount:1 };
+          const persisted = updateChannelDistribution({
+            ...current,
+            activeChannelId:channel.id,
+            dialog:'',
+            dialogChannelId:'',
+            channels:[...(current.channels || []), { ...channel, lastDeliveredAt:downloadedAt }],
+            fileBatches:[batch, ...(current.fileBatches || [])],
+            downloads:[...(current.downloads || []), download],
+            keyMetrics:upsertKeyMetric(current.keyMetrics, { channelId:channel.id, skuId:productId, issuedDelta:quantity, lastDeliveredAt:downloadedAt }),
+          });
+          resultMessage(route.id, '渠道已创建，首批文件已下载', persisted === false ? '浏览器未能保存下载记录，请联系平台处理。' : '平台保存批次指纹和下载记录，不保存明文兑换码。', persisted === false ? 'warning' : 'success');
+        } catch {
+          resultMessage(route.id, '创建失败', '兑换码文件未生成，渠道也未创建，请重试。', 'danger');
+        } finally {
+          if (createButton.isConnected) {
+            createButton.disabled = false;
+            createButton.removeAttribute('aria-busy');
+            createButton.textContent = originalButtonText;
+          }
+        }
         return;
       }
       if (route.id === 'P02-01' && (action === 'channel-api-access' || action === 'channel-api-generate')) {
@@ -17275,7 +17297,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
             channels:latest.channels.map(item => item.id === channelId ? { ...item, lastDeliveredAt:downloadedAt } : item),
             keyMetrics:upsertKeyMetric(latest.keyMetrics, { channelId, skuId, issuedDelta:quantity, lastDeliveredAt:downloadedAt }),
           });
-          resultMessage(route.id, '兑换码文件已下载', persisted === false ? '文件已交付，但浏览器未能保存审计记录；请联系平台处理。' : '平台仅保存批次指纹和下载记录，不回显明文。', persisted === false ? 'warning' : 'success');
+          resultMessage(route.id, '兑换码文件已下载', persisted === false ? '文件已生成，但浏览器未能保存下载记录；请联系平台处理。' : '平台仅保存批次指纹和下载记录，不回显明文。', persisted === false ? 'warning' : 'success');
         } catch (generationError) {
           const latest = channelDistributionState();
           const latestChannel = findChannel(latest, channelId);
@@ -18575,6 +18597,122 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (event.currentTarget.hasAttribute('data-primary-action') && destination) { navigate({ routeId: destination, state: 'default' }); return; }
       resultMessage(route.id, '操作已完成', '最新状态已保存。');
     }));
+    const channelDelivery = root.querySelector('[data-channel-delivery]');
+    const syncChannelDeliveryFields = () => {
+      const slot = root.querySelector('[data-channel-first-batch-slot]');
+      const submit = root.querySelector('[data-channel-create-submit]');
+      if (!slot || !submit) return;
+      const isFile = channelDelivery?.value === 'file';
+      slot.innerHTML = isFile
+        ? `<label><span>${memory.shell.language === 'en' ? 'Initial Key quantity' : '首批兑换码数量'}</span><input type="number" min="1" max="100000" step="1" value="100" aria-label="${memory.shell.language === 'en' ? 'Initial Key quantity' : '首批兑换码数量'}" data-channel-first-batch-quantity><small>${memory.shell.language === 'en' ? 'Enter 1–100,000.' : '单次可生成 1—100,000 个'}</small><em data-channel-first-batch-error></em></label>`
+        : '';
+      submit.textContent = isFile ? (memory.shell.language === 'en' ? 'Create and download' : '创建并下载') : (memory.shell.language === 'en' ? 'Create channel' : '创建渠道');
+    };
+    channelDelivery?.addEventListener('change', syncChannelDeliveryFields);
+    syncChannelDeliveryFields();
+
+    const channelRoot = root.querySelector('.publisher-channel');
+    const refreshChannelDatePicker = wrapper => {
+      const popover = wrapper?.querySelector('[data-channel-date-popover]');
+      const renderer = window.PublisherChannelDistribution?.renderDatePopover;
+      if (!popover || typeof renderer !== 'function') return;
+      popover.innerHTML = renderer({
+        language:memory.shell.language,
+        baseMonth:wrapper.dataset.baseMonth,
+        draftStart:wrapper.dataset.draftStart,
+        draftEnd:wrapper.dataset.draftEnd,
+        showPresets:wrapper.dataset.showPresets === 'true',
+        allowOpenEnd:wrapper.dataset.allowOpenEnd === 'true',
+        minDate:wrapper.dataset.minDate || '',
+      });
+    };
+    channelRoot?.addEventListener('click', event => {
+      const control = event.target.closest('[data-channel-date-action]');
+      if (!control || !channelRoot.contains(control)) return;
+      const wrapper = control.closest('[data-channel-date-range]');
+      const popover = wrapper?.querySelector('[data-channel-date-popover]');
+      if (!wrapper || !popover) return;
+      event.preventDefault();
+      const action = control.dataset.channelDateAction;
+      const hiddenInputs = wrapper.querySelectorAll('input[type="hidden"]');
+      const startInput = hiddenInputs[0];
+      const endInput = hiddenInputs[1];
+      const normalize = value => String(value || '').slice(0,10);
+      if (action === 'open') {
+        channelRoot.querySelectorAll('[data-channel-date-popover]').forEach(node => { if (node !== popover) node.hidden = true; });
+        wrapper.dataset.draftStart = normalize(startInput?.value);
+        wrapper.dataset.draftEnd = normalize(endInput?.value);
+        wrapper.dataset.dateSelection = 'start';
+        wrapper.dataset.baseMonth = (wrapper.dataset.draftStart || '2026-09-16').slice(0,7);
+        refreshChannelDatePicker(wrapper);
+        popover.hidden = false;
+        return;
+      }
+      if (action === 'cancel') {
+        popover.hidden = true;
+        return;
+      }
+      if (action === 'previous-month' || action === 'next-month') {
+        const [year,month] = String(wrapper.dataset.baseMonth || '2026-09').split('-').map(Number);
+        const target = new Date(year,month - 1 + (action === 'next-month' ? 1 : -1),1);
+        wrapper.dataset.baseMonth = `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2,'0')}`;
+        refreshChannelDatePicker(wrapper);
+        return;
+      }
+      if (action === 'preset') {
+        wrapper.dataset.draftStart = control.dataset.rangeStart || '';
+        wrapper.dataset.draftEnd = control.dataset.rangeEnd || '';
+        wrapper.dataset.dateSelection = 'start';
+        wrapper.dataset.baseMonth = (wrapper.dataset.draftStart || '2026-09-16').slice(0,7);
+        refreshChannelDatePicker(wrapper);
+        return;
+      }
+      if (action === 'custom') return;
+      if (action === 'long-term') {
+        wrapper.dataset.draftEnd = '';
+        wrapper.dataset.dateSelection = 'start';
+        refreshChannelDatePicker(wrapper);
+        return;
+      }
+      if (action === 'day') {
+        const date = control.dataset.date || '';
+        if (!date) return;
+        if (wrapper.dataset.dateSelection !== 'end' || !wrapper.dataset.draftStart) {
+          wrapper.dataset.draftStart = date;
+          wrapper.dataset.draftEnd = '';
+          wrapper.dataset.dateSelection = 'end';
+        } else if (date < wrapper.dataset.draftStart) {
+          wrapper.dataset.draftEnd = wrapper.dataset.draftStart;
+          wrapper.dataset.draftStart = date;
+          wrapper.dataset.dateSelection = 'start';
+        } else {
+          wrapper.dataset.draftEnd = date;
+          wrapper.dataset.dateSelection = 'start';
+        }
+        refreshChannelDatePicker(wrapper);
+        return;
+      }
+      if (action === 'apply') {
+        const start = wrapper.dataset.draftStart || '';
+        const end = wrapper.dataset.draftEnd || '';
+        const effective = wrapper.dataset.dateMode === 'effective';
+        if (effective && !start) return;
+        if (startInput) startInput.value = effective && start ? `${start}T00:00` : start;
+        if (endInput) endInput.value = effective && end ? `${end}T23:59` : end;
+        const display = wrapper.querySelector('[data-channel-date-display]');
+        if (display) display.textContent = start
+          ? `${start}${end ? ` — ${end}` : wrapper.dataset.allowOpenEnd === 'true' ? ` — ${memory.shell.language === 'en' ? 'No end date' : '长期有效'}` : ''}`
+          : (memory.shell.language === 'en' ? 'All time' : '全部时间');
+        startInput?.removeAttribute('aria-invalid');
+        endInput?.removeAttribute('aria-invalid');
+        const startError = root.querySelector('[data-channel-effective-start-error]');
+        const endError = root.querySelector('[data-channel-effective-end-error]');
+        if (startError) startError.textContent = '';
+        if (endError) endError.textContent = '';
+        popover.hidden = true;
+      }
+    });
+
     root.querySelector('[data-channel-stop-ack]')?.addEventListener('change', event => {
       const confirm = root.querySelector('[data-portal-action="channel-stop-confirm"]');
       if (!confirm) return;
