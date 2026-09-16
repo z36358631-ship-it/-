@@ -334,29 +334,206 @@ test('公共方案按复合键去重、会话幂等并随评价生命周期撤�
       .filter((item) => item.configHash === 'cfg_test_dedup_v1'));
     assert.equal(matches.length, 0, '最后一条有效关联删除后应移除无验证的公共方案');
 
-    await page.evaluate(() => window.compatibilityDemo.setSessionSnapshot({
-      configHash: 'cfg_composite_collision_v1',
-      engineVersion: 'demo-engine-v1',
-      playSessionId: 'composite_session_1',
-    }));
-    await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
-    await page.click('#fbStarsWrap [data-val="5"]');
-    await page.check('#shareSessionCheckbox');
-    await page.click('#modalFeedback .btn-submit');
-    await page.evaluate(() => window.compatibilityDemo.setSessionSnapshot({
-      engineVersion: 'demo-engine-v2',
-      playSessionId: 'composite_session_2',
-    }));
-    await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
-    await page.click('#fbStarsWrap [data-val="5"]');
-    await page.check('#shareSessionCheckbox');
-    await page.click('#modalFeedback .btn-submit');
+    const collisionDimensions = [
+      { gpuModel: 'Adreno 750', schemaVersion: '1', playSessionId: 'composite_session_gpu_adreno' },
+      { gpuModel: 'Mali-G720', schemaVersion: '1', playSessionId: 'composite_session_gpu_mali' },
+      { gpuModel: 'Adreno 750', schemaVersion: '2', playSessionId: 'composite_session_schema_v2' },
+    ];
+    for (const dimensions of collisionDimensions) {
+      await page.evaluate((snapshot) => window.compatibilityDemo.setSessionSnapshot({
+        gameId: 'gta5',
+        platform: 'android',
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-collision-v1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_composite_collision_v1',
+        ...snapshot,
+      }), dimensions);
+      await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
+      await page.click('#fbStarsWrap [data-val="5"]');
+      await page.check('#shareSessionCheckbox');
+      await page.click('#modalFeedback .btn-submit');
+    }
     const collisions = await page.evaluate(() => window.compatibilityDemo.getCommunityProfiles()
       .filter((item) => item.configHash === 'cfg_composite_collision_v1'));
-    assert.equal(collisions.length, 2, '不同引擎版本不得因 config_hash 相同而串池');
-    assert.notEqual(collisions[0].engineVersion, collisions[1].engineVersion);
+    assert.equal(collisions.length, 3, '不同 GPU 或 schema 不得因其他去重维度相同而串池');
+    assert.ok(collisions.every((item) => item.gameId === 'gta5'
+      && item.platform === 'android'
+      && item.engineVersion === 'demo-engine-collision-v1'
+      && item.configHash === 'cfg_composite_collision_v1'),
+    '碰撞用例的 game/platform/engine/hash 必须保持相同');
+    assert.equal(new Set(collisions.map((item) => item.gpuModel)).size, 2);
+    assert.equal(new Set(collisions.map((item) => item.schemaVersion)).size, 2);
+    assert.equal(new Set(collisions.map((item) => item.id)).size, 3,
+      'solutionId 必须包含 GPU 与 schema 等全部去重维度');
     assert.equal(await page.locator('#cloudSharePage').count(), 0);
     await assertNoPageErrors(errors, '公共方案池精确去重');
+  } finally {
+    await page.close();
+  }
+});
+
+for (const invalidConfig of [
+  { label: '缺少', value: null },
+  { label: '清空', value: [] },
+]) {
+  test(`成功会话${invalidConfig.label} configGroups 时只提交评价且不关联公共方案`, async () => {
+    const { page, errors } = await openDemo(cDemo, 'C 端', { width: 1280, height: 900 });
+    try {
+      const configHash = invalidConfig.label === '缺少'
+        ? 'cfg_missing_groups_contract_v1'
+        : 'cfg_empty_groups_contract_v1';
+      const reviewText = `${invalidConfig.label} configGroups 仍可提交评价`;
+      await page.evaluate(({ hash, groups }) => window.compatibilityDemo.setSessionSnapshot({
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-invalid-config-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: hash,
+        profileName: '配置正文异常方案',
+        durationSeconds: 1122,
+        playSessionId: `session_${hash}`,
+        configGroups: groups,
+      }), { hash: configHash, groups: invalidConfig.value });
+      await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
+      await page.click('#fbStarsWrap [data-val="5"]');
+      await page.fill('#fbEditor', reviewText);
+      await page.evaluate(() => window.toggleSessionShare(true));
+      await page.click('#modalFeedback .btn-submit');
+
+      const result = await page.evaluate(({ hash, text }) => ({
+        profiles: window.compatibilityDemo.getCommunityProfiles()
+          .filter((item) => item.configHash === hash),
+        review: window.getFeedbacks().find((item) => item.uid === 'me_demo_user' && item.text === text),
+      }), { hash: configHash, text: reviewText });
+      assert.ok(result.review, '配置正文异常不得阻断评价本身提交');
+      assert.equal(result.profiles.length, 0,
+        '配置正文异常时不得用默认配置兜底创建公共方案');
+      assert.equal(result.review.solutionId || '', '',
+        '配置正文异常的评价不得关联公共方案');
+      await assertNoPageErrors(errors, `${invalidConfig.label} configGroups 的评价降级提交`);
+    } finally {
+      await page.close();
+    }
+  });
+}
+
+test('应用非默认 GPU 与引擎方案后，下一次会话保留全部去重维度', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端', { width: 1280, height: 900 });
+  try {
+    const expectedDimensions = {
+      gameId: 'gta5',
+      platform: 'android',
+      gpuModel: 'Mali-G720 MC12',
+      runtimeArchitecture: 'arm64',
+      engineVersion: 'demo-engine-preserve-v9',
+      schemaVersion: '1',
+      canonicalizerVersion: '9',
+      configHash: 'cfg_preserve_dimensions_v1',
+    };
+    await page.evaluate((dimensions) => window.compatibilityDemo.setSessionSnapshot({
+      ...dimensions,
+      profileName: 'Mali 完整维度方案',
+      durationSeconds: 1122,
+      playSessionId: 'session_preserve_dimensions_v1',
+    }), expectedDimensions);
+    await page.evaluate(() => window.openFeedbackModal({ source: 'manual' }));
+    await page.click('#fbStarsWrap [data-val="5"]');
+    await page.check('#shareSessionCheckbox');
+    await page.click('#modalFeedback .btn-submit');
+    const createdSolution = await page.evaluate((configHash) => window.compatibilityDemo.getCommunityProfiles()
+      .find((item) => item.configHash === configHash), expectedDimensions.configHash);
+    assert.ok(createdSolution?.id, '必须先创建可打开的非默认公共方案');
+
+    await page.evaluate((solutionId) => window.openSolutionDetail(solutionId), createdSolution.id);
+    assert.equal(await page.locator('#solutionDetailPage').isVisible(), true);
+    await page.click('#applySolutionButton');
+    await page.click('#startGameButton');
+    await page.waitForFunction(() => document.body.dataset.journeyStage === 'gameplay');
+    assert.equal(await page.evaluate(() => typeof window.compatibilityDemo.getSessionSnapshot), 'function',
+      '未实现契约：缺少可验证下一次会话配置的 getSessionSnapshot API');
+    const nextSessionDimensions = await page.evaluate(() => {
+      const snapshot = window.compatibilityDemo.getSessionSnapshot();
+      return Object.fromEntries([
+        'gameId',
+        'platform',
+        'gpuModel',
+        'runtimeArchitecture',
+        'engineVersion',
+        'schemaVersion',
+        'canonicalizerVersion',
+        'configHash',
+      ].map((key) => [key, snapshot[key]]));
+    });
+    assert.deepEqual(nextSessionDimensions, expectedDimensions,
+      '应用公共方案后启动的会话不得回落到默认 GPU／引擎维度');
+    await assertNoPageErrors(errors, '应用方案后的会话维度传递');
+  } finally {
+    await page.close();
+  }
+});
+
+test('独立方案详情存储在初始化时包含种子方案正文', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    const seedDetailCount = await page.evaluate(() => {
+      window.compatibilityDemo.getCommunityProfiles();
+      const raw = localStorage.getItem('gh_community_solution_details_v1');
+      if (!raw) return 0;
+      const details = JSON.parse(raw);
+      const seedId = 'community_cfg_adreno750_stable_v1';
+      if (Array.isArray(details)) {
+        return details.filter((item) => item?.solutionId === seedId || item?.id === seedId).length;
+      }
+      if (!details || typeof details !== 'object') return 0;
+      if (details[seedId]) return 1;
+      return Object.values(details)
+        .filter((item) => item?.solutionId === seedId || item?.id === seedId).length;
+    });
+    assert.ok(seedDetailCount >= 1,
+      '本地详情存储 gh_community_solution_details_v1 必须至少包含种子方案正文');
+    await assertNoPageErrors(errors, '种子方案详情存储初始化');
+  } finally {
+    await page.close();
+  }
+});
+
+test('详情记录缺失时不得用列表元数据兜底拼装配置', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await page.evaluate(() => {
+      window.compatibilityDemo.getCommunityProfiles();
+      const storageKey = 'gh_community_solution_details_v1';
+      const seedId = 'community_cfg_adreno750_stable_v1';
+      let details;
+      try {
+        details = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      } catch (error) {
+        details = {};
+      }
+      if (Array.isArray(details)) {
+        details = details.filter((item) => item?.solutionId !== seedId && item?.id !== seedId);
+      } else if (details && typeof details === 'object') {
+        delete details[seedId];
+        for (const [key, item] of Object.entries(details)) {
+          if (item?.solutionId === seedId || item?.id === seedId) delete details[key];
+        }
+      } else {
+        details = {};
+      }
+      localStorage.setItem(storageKey, JSON.stringify(details));
+      window.openSolutionDetail(seedId);
+    });
+    assert.match(await page.locator('#solutionDetailState').innerText(), /配置异常.*无法使用/s,
+      '详情记录缺失时必须显示配置异常');
+    assert.equal(await page.locator('#applySolutionButton').isDisabled(), true);
+    assert.equal(await page.locator('#copySolutionButton').isDisabled(), true);
+    assert.equal(await page.locator('#solutionConfigGroups .solution-config-row').count(), 0,
+      '详情记录缺失时不得从列表元数据生成配置项');
+    await assertNoPageErrors(errors, '详情记录缺失的降级状态');
   } finally {
     await page.close();
   }
