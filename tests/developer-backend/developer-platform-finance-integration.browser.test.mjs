@@ -77,6 +77,22 @@ test('新开发者首次进入保持未登录状态，财务路由回落登录�
   assert.equal(await page.locator('[data-testid="developer-finance-demo"]').count(),0);
   assert.equal(await page.locator('.side-nav').count(),0);
 
+  await page.evaluate(() => {
+    sessionStorage.setItem('gamehub-developer-session-v2',JSON.stringify({
+      version:2,
+      authenticated:true,
+      accountKey:'demo:finance-primary',
+      vendorId:'VENDOR-DEMO',
+      activeGameId:'existing',
+      qualificationStatus:'approved',
+      expiresAt:Date.now() + 8 * 60 * 60 * 1000,
+    }));
+  });
+  await page.reload({ waitUntil:'load' });
+  await page.locator('[data-public-landing]').waitFor();
+  assert.equal(new URL(page.url()).hash,'#/P01-01');
+  assert.equal(await page.locator('[data-testid="developer-finance-demo"]').count(),0);
+
   await page.goto(url('/P15-01'),{ waitUntil:'load' });
   await page.waitForFunction(() => location.hash === '#/P01-01');
   await page.locator('[data-public-landing]').waitFor();
