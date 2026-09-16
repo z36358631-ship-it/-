@@ -97,7 +97,15 @@ async function captureCConnectedJourney() {
 
     await domClick(page, '[data-review-state="valid"] .review-solution-card', '有效方案卡');
     await requireOne(page, '#solutionDetailPage:not([hidden])', '可见方案详情页');
-    await requireOne(page, '#solutionConfidenceLine', '方案可信度信息');
+    await requireOne(page, '#solutionDetailSchemeName', '完整方案名称');
+    await requireOne(page, '#solutionDetailGpu', '方案 GPU 标签');
+    await requireOne(page, '#solutionTrustSummary', '社区共同验证信息');
+    if (await page.locator('#solutionConfigGroups .solution-config-section').count() < 3) {
+      throw new Error('未实现契约：方案详情未展示完整参数分组');
+    }
+    if (await page.getByText(/分享者[:：]/).count() > 0) {
+      throw new Error('未实现契约：公共方案详情仍展示个人分享者');
+    }
     await shot(page, '03-c-solution-detail-390x844.png');
 
     await domClick(page, '#applySolutionButton', '应用方案');
