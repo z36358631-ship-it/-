@@ -553,13 +553,13 @@
 
   if (embedded) {
     window.PublisherFinance = {
-      routeIds:['P15-01','P15-02'],
+      routeIds:['P01-01','P15-01','P15-02'],
       createState:() => state,
       render:(_financeState, options = {}) => {
-        state.route = options.routeId === 'P15-01' ? 'entity' : 'settlement';
+        state.route = options.routeId === 'P15-02' ? 'settlement' : 'entity';
         state.enterpriseCertificationStatus = options.access?.qualificationStatus || 'approved';
         state.demoScenario = state.enterpriseCertificationStatus === 'approved' ? 'exhaustive' : 'empty';
-        const canonicalRoute = state.route === 'entity' ? 'P15-01' : 'P15-02';
+        const canonicalRoute = options.routeId === 'P01-01' ? 'P01-01' : (state.route === 'entity' ? 'P15-01' : 'P15-02');
         return `<section class="publisher-finance" data-testid="developer-finance-demo" data-finance-route="${canonicalRoute}">${pageContent()}${auxiliaryOverlays()}</section>`;
       },
       bind:(_root, options = {}) => {

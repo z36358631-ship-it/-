@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
 const root = process.cwd();
 const demoDir = path.join(root,'demos','开发者后台一期');
-const demo = path.join(demoDir,'开发者平台财务整合demo.html');
+const demo = path.join(demoDir,'开发者平台demo.html');
 const chrome = [process.env.CHROME_PATH,'C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files/Microsoft/Edge/Application/msedge.exe']
   .find(file => file && fs.existsSync(file));
 let browser;
@@ -34,13 +34,13 @@ async function seedAccount() {
 async function open(route = '/P15-01') {
   await seedAccount();
   await page.goto(url(route),{ waitUntil:'load' });
-  if (route.startsWith('/P15-')) await page.locator('[data-testid="developer-finance-demo"]').waitFor();
+  if (route === '/P01-01' || route.startsWith('/P15-')) await page.locator('[data-testid="developer-finance-demo"]').waitFor();
   else await page.locator('[data-publisher-workspace]').waitFor();
 }
 
 before(() => {
   assert.ok(chrome,'Chrome or Edge not found');
-  execFileSync(process.execPath,[path.join(demoDir,'build.mjs'),'--module=02','--variant=finance-integrated'],{ stdio:'pipe' });
+  execFileSync(process.execPath,[path.join(demoDir,'build.mjs'),'--module=02'],{ stdio:'pipe' });
 });
 before(async () => { browser = await chromium.launch({ headless:true,executablePath:chrome,args:['--allow-file-access-from-files','--disable-background-networking'] }); });
 beforeEach(async () => { page = await browser.newPage({ viewport:{ width:1440,height:900 } }); });
@@ -48,7 +48,9 @@ afterEach(async () => { await page?.close(); page = null; });
 after(async () => { await browser?.close(); });
 
 test('财务整合版复用平台壳且财务侧栏保持白底浅灰选中',async () => {
-  await open('/P15-01');
+  await open('/P01-01');
+  assert.equal(new URL(page.url()).hash,'#/P01-01');
+  assert.equal(await page.getByRole('heading',{ level:1,name:'财务主体' }).count(),1);
   assert.equal(await page.locator('.top-bar').count(),1);
   assert.equal(await page.locator('.side-nav').count(),1);
   assert.deepEqual(await page.locator('.side-nav .nav-item').allTextContents(),['游戏管理','财务主体','对账结算','厂商设置']);
@@ -217,7 +219,7 @@ test('旧财务次级路由安全回落到对账结算',async () => {
   assert.doesNotMatch(await page.locator('.context-bar').innerText(),/对账流水/);
   assert.doesNotMatch(await page.locator('.page-header').innerText(),/对账流水/);
   assert.doesNotMatch(await page.locator('[data-testid="developer-finance-demo"]').innerText(),/第三方支付商|交易流水/);
-  assert.deepEqual(await page.evaluate(() => window.PublisherFinance.routeIds),['P15-01','P15-02']);
+  assert.deepEqual(await page.evaluate(() => window.PublisherFinance.routeIds),['P01-01','P15-01','P15-02']);
   assert.equal(await page.evaluate(() => JSON.parse(document.getElementById('portal-routes').textContent).some(route => route.id === 'P15-03')),false);
 });
 
@@ -226,7 +228,7 @@ test('财务整合版离开对账页后清空批量选择',async () => {
   await page.locator('[data-d15-settlement-row][data-status="pending"] input[type="checkbox"]').first().check();
   assert.equal(await page.getByRole('button',{ name:'批量确认' }).getAttribute('aria-disabled'),null);
   await page.locator('.side-nav').getByText('财务主体',{ exact:true }).click();
-  await page.waitForFunction(() => location.hash === '#/P15-01');
+  await page.waitForFunction(() => location.hash === '#/P01-01');
   await page.locator('.side-nav').getByText('对账结算',{ exact:true }).click();
   await page.waitForFunction(() => location.hash === '#/P15-02');
   assert.equal(await page.locator('[data-d15-select-statement]:checked').count(),0);

@@ -12,8 +12,8 @@ const modules = readJson('modules.json');
 const requestedModuleId = process.argv.find(argument => argument.startsWith('--module='))?.split('=')[1];
 const requestedVariant = process.argv.find(argument => argument.startsWith('--variant='))?.split('=')[1] || '';
 const financeIntegrated = requestedModuleId === '02' && requestedVariant === 'finance-integrated';
-const financeRoutes = financeIntegrated ? readJson('finance-routes.json') : [];
-const financePages = financeIntegrated ? readJson('finance-pages.json') : {};
+const financeRoutes = readJson('finance-routes.json');
+const financePages = readJson('finance-pages.json');
 const publisherModuleIds = new Set(['01', '02']);
 const fixtureLoads = requestedModuleId && publisherModuleIds.has(requestedModuleId)
   ? ['01', '02'].map(moduleId => loadLatestPrdFixture({ repoRoot, demoDir, moduleId }))
@@ -103,26 +103,22 @@ const publicFixtureFor = pageRoutes => ({
     return [route.id, publicPage];
   })),
 });
-const publisherStyles = [
-  ...publisherStyleFiles.map(file => read('styles', file).trim()),
-  ...(financeIntegrated ? [read('styles', 'publisher-finance.css').trim(), read('demo15', 'styles.css').trim()] : []),
+const publisherStyles = publisherStyleFiles.map(file => read('styles', file).trim()).join('\n\n');
+const publisherRuntime = publisherRuntimeFiles.map(file => read('runtime', file).trim()).join('\n\n');
+const financeStyles = [read('styles', 'publisher-finance.css').trim(), read('demo15', 'styles.css').trim()].join('\n\n');
+const financeRuntime = [
+  read('finance-ledger', 'model.js').trim(),
+  read('finance-statements', 'model.js').trim(),
+  `window.__PUBLISHER_FINANCE_EMBEDDED__ = true;\n${read('demo15', 'app.js').trim()}`,
 ].join('\n\n');
-const publisherRuntime = [
-  ...publisherRuntimeFiles.map(file => read('runtime', file).trim()),
-  ...(financeIntegrated ? [
-    read('finance-ledger', 'model.js').trim(),
-    read('finance-statements', 'model.js').trim(),
-    `window.__PUBLISHER_FINANCE_EMBEDDED__ = true;\n${read('demo15', 'app.js').trim()}`,
-  ] : []),
-].join('\n\n');
-const documentHtml = ({ title, module, pageRoutes }) => `<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}${publisherModuleIds.has(module.id) ? `\n\n${publisherStyles}` : ''}</style></head><body>
+const documentHtml = ({ title, module, pageRoutes, includeFinance = false }) => `<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>${css}${publisherModuleIds.has(module.id) ? `\n\n${publisherStyles}${includeFinance ? `\n\n${financeStyles}` : ''}` : ''}</style></head><body>
 <div id="app"></div>
 <textarea id="portal-module" hidden aria-hidden="true">${escapeJson(module)}</textarea>
 <textarea id="portal-modules" hidden aria-hidden="true">${escapeJson(modules)}</textarea>
 <textarea id="portal-routes" hidden aria-hidden="true">${escapeJson(pageRoutes)}</textarea>
 <textarea id="portal-data" hidden aria-hidden="true">${escapeJson(publicFixtureFor(pageRoutes))}</textarea>
-<script>${publisherModuleIds.has(module.id) ? `${publisherRuntime}\n\n` : ''}${runtime}</script></body></html>
+<script>${publisherModuleIds.has(module.id) ? `${publisherRuntime}${includeFinance ? `\n\n${financeRuntime}` : ''}\n\n` : ''}${runtime}</script></body></html>
 `;
 
 const targetModules = requestedModuleId ? modules.filter(module => module.id === requestedModuleId) : modules;
@@ -133,8 +129,10 @@ const routesForModule = module => module.routeIds
 
 let aliasCount = 0;
 for (const module of targetModules) {
-  const moduleRoutes = financeIntegrated ? [...routesForModule(module), ...financeRoutes] : routesForModule(module);
-  const html = documentHtml({ title: `${module.name}｜盖世游戏`, module, pageRoutes: moduleRoutes });
+  const includeFinance = module.id === '02';
+  const baseModuleRoutes = routesForModule(module);
+  const moduleRoutes = includeFinance ? [...baseModuleRoutes, ...financeRoutes] : baseModuleRoutes;
+  const html = documentHtml({ title: `${module.name}｜盖世游戏`, module, pageRoutes: moduleRoutes, includeFinance });
   const outputName = financeIntegrated ? '开发者平台财务整合demo.html' : module.output;
   fs.writeFileSync(path.join(demoDir, outputName), html, 'utf8');
   if (financeIntegrated) {
@@ -142,11 +140,12 @@ for (const module of targetModules) {
     continue;
   }
   for (const alias of module.aliases || []) {
-    fs.writeFileSync(path.join(demoDir, alias), html, 'utf8');
+    const aliasHtml = documentHtml({ title: `${module.name}｜盖世游戏`, module, pageRoutes: baseModuleRoutes, includeFinance: false });
+    fs.writeFileSync(path.join(demoDir, alias), aliasHtml, 'utf8');
     aliasCount += 1;
   }
 }
 
 process.stdout.write(`Latest PRD contract verified: ${prdContract.sourceFiles.length} documents, ${prdContract.countText} PRD page units; ${routes.length} demo routes (${prdContract.routeCountText}), version ${prdContract.version}.\n`);
-const builtRouteCount = targetModules.reduce((count, module) => count + routesForModule(module).length + (financeIntegrated ? financeRoutes.length : 0), 0);
+const builtRouteCount = targetModules.reduce((count, module) => count + routesForModule(module).length + (module.id === '02' ? financeRoutes.length : 0), 0);
 process.stdout.write(`Built ${targetModules.length} public-facing self-contained HTML files with ${builtRouteCount} routes; emitted ${aliasCount} compatibility alias${aliasCount === 1 ? '' : 'es'}.\n`);
