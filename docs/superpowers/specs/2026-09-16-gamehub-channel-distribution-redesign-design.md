@@ -1,6 +1,6 @@
 # 盖世游戏渠道分销重构设计
 
-> 状态：已确认
+> 状态：已被 `2026-09-16-gamehub-channel-key-infrastructure-design.md` 替代
 > 日期：2026-09-16
 > 适用产物：`13-开发者平台与渠道分销demo.html`
 > 替代：`2026-09-16-gamehub-channel-dual-delivery-design.md` 中“API 按批次分配和人工补量”的设计
