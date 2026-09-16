@@ -15263,6 +15263,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const hasPublisherRoute = routes.some(route => route.id === 'P02-01');
   const financeRouteIds = new Set(window.PublisherFinance?.routeIds || []);
   const hasFinanceRoutes = routes.some(route => financeRouteIds.has(route.id));
+  const hasFinancePrimaryEntry = hasFinanceRoutes && financeRouteIds.has('P01-01');
   const publisherFixtureGameKeys = new Set(['draft', 'reviewing', 'existing', 'pioneer', 'prerelease', 'live', 'delisted']);
   const vendorSettingsRuntime = window.PublisherVendorSettings || null;
   const createVendorReviews = () => vendorSettingsRuntime?.createReviews?.() || {
@@ -15479,6 +15480,30 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       draft: cloneJson(managedContentDraft),
     },
   };
+  if (hasFinancePrimaryEntry && !memory.session.authenticated) {
+    memory.session = {
+      authenticated: true,
+      accountKey: memory.session.accountKey || 'demo:finance-primary',
+      vendorId: memory.session.vendorId || String(portalData.context?.vendorId || 'VENDOR-DEMO'),
+      activeGameId: memory.session.activeGameId || 'existing',
+      expiresAt: Math.max(Number(memory.session.expiresAt || 0), Date.now() + 8 * 60 * 60 * 1000),
+    };
+    if (!storedQualification) {
+      memory.qualification = {
+        ...memory.qualification,
+        status: 'approved',
+        revision: Math.max(1, Number(memory.qualification.revision || 0)),
+        submittedAt: memory.qualification.submittedAt || '2026-09-01 09:00',
+        reviewedAt: memory.qualification.reviewedAt || '2026-09-02 10:00',
+        reviewer: memory.qualification.reviewer || '平台运营 李然',
+      };
+    }
+    memory.registration = {
+      ...memory.registration,
+      accountTier: memory.qualification.status === 'approved' ? 'enterprise' : 'registered',
+      registeredAt: memory.registration.registeredAt || memory.qualification.submittedAt || '2026-09-01 09:00',
+    };
+  }
   if (restoredHandoff && memory.session.accountKey) {
     const accountStates = readStorage(localStorage, accountStatesStorageKey, {});
     const nextAccountStates = accountStates && typeof accountStates === 'object' ? accountStates : {};

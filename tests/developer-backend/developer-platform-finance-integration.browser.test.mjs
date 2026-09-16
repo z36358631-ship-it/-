@@ -67,6 +67,31 @@ test('财务整合版复用平台壳且财务侧栏保持白底浅灰选中',asy
   assert.notEqual(colors.background,'rgb(31, 58, 104)');
 });
 
+test('财务主体主入口在无登录存储时仍可使用左侧导航',async () => {
+  await page.goto(url('/P01-01'),{ waitUntil:'load' });
+  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
+  await page.reload({ waitUntil:'load' });
+  await page.locator('[data-testid="developer-finance-demo"]').waitFor();
+
+  await page.locator('.side-nav').getByText('对账结算',{ exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P15-02');
+  await page.getByRole('heading',{ level:1,name:'对账结算' }).waitFor();
+
+  await page.locator('.side-nav').getByText('财务主体',{ exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P01-01');
+  await page.getByRole('heading',{ level:1,name:'财务主体' }).waitFor();
+
+  await page.getByRole('button',{ name:'厂商设置',exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P02-01');
+  await page.locator('[data-publisher-page="vendor"]').waitFor();
+
+  await page.goto(url('/P01-01'),{ waitUntil:'load' });
+  await page.locator('[data-testid="developer-finance-demo"]').waitFor();
+  await page.locator('.side-nav').getByText('游戏管理',{ exact:true }).click();
+  await page.waitForFunction(() => location.hash === '#/P02-01');
+  await page.locator('[data-publisher-workspace]').waitFor();
+});
+
 test('厂商设置移除财务主体页签且旧保存值回退有效页签',async () => {
   await open('/P02-01');
   await page.locator('[data-portal-action="publisher-sidebar-view"][data-publisher-view="vendor"]').click();
