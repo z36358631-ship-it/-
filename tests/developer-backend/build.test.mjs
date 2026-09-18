@@ -21,7 +21,7 @@ test('构建前验证本次开发者与运营模块契约一致', () => {
     stdio:'pipe',
     encoding:'utf8',
   }));
-  for (const output of outputs) assert.match(output, /Latest PRD contract verified: 2 documents, 10\/6 PRD page units; 37 demo routes \(10\/6\), version 2026-09-07-v2\.5\./);
+  for (const output of outputs) assert.match(output, /Latest PRD contract verified: 2 documents, 10\/4 PRD page units; 32 demo routes \(10\/1\), version 2026-09-18-key-only\./);
   assert.match(outputs[0], /Built 1 public-facing self-contained HTML files with 3 routes;/);
   assert.match(outputs[1], /Built 1 public-facing self-contained HTML files with 5 routes;/);
 });
@@ -35,7 +35,7 @@ test('开发者平台与运营后台可分别构建独立入口', () => {
     stdio: 'pipe',
     encoding: 'utf8',
   });
-  for (const output of [p01Output, p02Output]) assert.match(output, /Latest PRD contract verified: 2 documents, 10\/6 PRD page units;/);
+  for (const output of [p01Output, p02Output]) assert.match(output, /Latest PRD contract verified: 2 documents, 10\/4 PRD page units;/);
   assert.match(p01Output, /Built 1 public-facing self-contained HTML files with 3 routes;/);
   assert.match(p02Output, /Built 1 public-facing self-contained HTML files with 5 routes;/);
   assert.match(p01Output, /emitted 0 compatibility aliases\./);
@@ -65,7 +65,7 @@ test('开发者平台默认构建以 P01-01 展示财务主体', () => {
   const html = fs.readFileSync(path.join(demoDir, '开发者平台demo.html'), 'utf8');
   assert.match(output, /with 5 routes;/);
   for (const routeId of ['P15-01','P15-02']) assert.ok(html.includes(`\"id\":\"${routeId}\"`), routeId);
-  assert.match(html, /routeIds:\['P01-01','P15-01','P15-02'\]/);
+  assert.match(html, /routeIds:\['P15-01','P15-02'\]/);
   assert.match(html, /window\.__PUBLISHER_FINANCE_EMBEDDED__ = true/);
 });
 

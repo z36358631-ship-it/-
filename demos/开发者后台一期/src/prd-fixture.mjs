@@ -101,7 +101,7 @@ export function loadLatestPrdFixture({ repoRoot, demoDir, moduleId }) {
   const map = readJson(path.join(srcDir, 'prd-page-map.json'));
   const base = readJson(path.join(srcDir, 'fixtures.json'));
   assertEqual(map.sourceOfTruth, 'latest-prd', 'source of truth');
-  assertEqual(allRoutes.length, 37, 'route count');
+  assertEqual(allRoutes.length, 32, 'route count');
 
   const pages = {};
   const counts = {};

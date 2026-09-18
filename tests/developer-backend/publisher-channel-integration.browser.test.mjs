@@ -7,7 +7,7 @@ import {createRequire} from 'node:module';
 import {execFileSync} from 'node:child_process';
 
 const {chromium}=createRequire(import.meta.url)('playwright-core');
-const demoFile=path.resolve('demos/开发者后台一期/13-开发者平台与渠道分销demo.html');
+const demoFile=path.resolve(process.env.PUBLISHER_CHANNEL_DEMO || 'demos/开发者后台一期/13-开发者平台与渠道分销demo.html');
 const fixturesFile=path.resolve('demos/开发者后台一期/src/fixtures.json');
 const chrome=[process.env.CHROME_PATH,'C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(file=>file&&fs.existsSync(file));
 const demoUrl=route=>{const url=pathToFileURL(demoFile);url.hash=route;return url.href;};
@@ -56,7 +56,10 @@ const expectConfirmDialog=async(page,title)=>{
 
 before(async()=>{
   assert.ok(chrome,'Chrome or Edge not found');
-  execFileSync(process.execPath,[path.resolve('demos/开发者后台一期/build-developer-channel.mjs')],{stdio:'pipe'});
+  const buildArgs=path.basename(demoFile)==='开发者平台demo.html'
+    ? [path.resolve('demos/开发者后台一期/build.mjs'),'--module=02']
+    : [path.resolve('demos/开发者后台一期/build-developer-channel.mjs')];
+  execFileSync(process.execPath,buildArgs,{stdio:'pipe'});
   browser=await chromium.launch({headless:true,executablePath:chrome,args:['--allow-file-access-from-files','--disable-background-networking']});
 });
 
@@ -84,8 +87,27 @@ test('渠道与供给采用渠道管理和批次管理两层模型',async()=>{
   for(const value of ['渠道名称','合作时间','状态','备注','更新时间','操作']) assert.match(headers,new RegExp(value));
   assert.doesNotMatch(headers,/销售项|供给方式|API 凭证|数量/);
   const body=await page.locator('.publisher-channel').innerText();
-  assert.doesNotMatch(body,/授权计划|计划额度|剩余额度|提交申请|审核中|风险暂停|密钥待重置/);
+  assert.doesNotMatch(body,/授权计划|计划额度|剩余额度|提交申请|审核中|风险暂停|密钥待重置|外部\s*Key|双账本/);
   assert.equal(new URL(page.url()).hash,'#/P02-01');
+  await page.close();
+});
+
+test('仅填写日期的结束日按当天 23:59:59 生效',async()=>{
+  const page=await browser.newPage({viewport:{width:1280,height:900}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  const result=await page.evaluate(()=>{
+    const api=window.PublisherChannelDistribution;
+    const channel={id:'CH-END-DATE',enabled:true,deleted:false,effectiveStart:'2026-09-01',effectiveEnd:'2026-09-16'};
+    const batch={id:'BT-END-DATE',enabled:true,deleted:false,delivery:'file',supplyState:'pending',effectiveStart:'2026-09-01',effectiveEnd:'2026-09-16'};
+    return {
+      channelSameDay:api.effectiveChannelStatus(channel,'2026-09-16T15:00'),
+      channelNextDay:api.effectiveChannelStatus(channel,'2026-09-17T00:00'),
+      batchSameDay:api.batchHasEnded(batch,'2026-09-16T15:00'),
+      batchNextDay:api.batchHasEnded(batch,'2026-09-17T00:00'),
+      overlapsSameDay:api.rangeOverlaps('2026-09-01','2026-09-16','2026-09-16','2026-09-16'),
+    };
+  });
+  assert.deepEqual(result,{channelSameDay:'active',channelNextDay:'ended',batchSameDay:false,batchNextDay:true,overlapsSameDay:true});
   await page.close();
 });
 
@@ -602,6 +624,16 @@ test('320、390、1280、1440 宽度无根节点溢出且列表在内容区滚�
   for(const width of [320,390,1280,1440]){
     const page=await browser.newPage({viewport:{width,height:900}});
     await openGame(page);await openSection(page,'渠道与供给');
+    if(width<=390){
+      const mobileGeometry=await page.evaluate(()=>{
+        const nav=document.querySelector('.publisher-game-nav').getBoundingClientRect();
+        const active=document.querySelector('.publisher-game-nav__tab.is-active').getBoundingClientRect();
+        const fab=document.querySelector('.developer-demo-state-fab').getBoundingClientRect();
+        return {navLeft:nav.left,navRight:nav.right,activeLeft:active.left,activeRight:active.right,fabWidth:fab.width,paddingBottom:parseFloat(getComputedStyle(document.querySelector('.publisher-channel')).paddingBottom)};
+      });
+      assert.ok(mobileGeometry.activeLeft>=mobileGeometry.navLeft&&mobileGeometry.activeRight<=mobileGeometry.navRight,`${width}px 当前功能 Tab 被裁切`);
+      assert.ok(mobileGeometry.fabWidth<=40&&mobileGeometry.paddingBottom>=72,`${width}px Demo 浮标缺少内容安全区`);
+    }
     for(const tab of ['渠道管理','批次管理']){
       await page.getByRole('tab',{name:tab,exact:true}).click();
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth),false,`${width}px ${tab} 根节点溢出`);

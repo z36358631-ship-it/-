@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>渠道分销流程</title>
+  <style>
+    :root {
+      --canvas-width: 2400px;
+      --canvas-height: 1350px;
+      --page-bg: #f3f7fa;
+      --card-bg: #ffffff;
+      --border: #dce5eb;
+      --text: #132b3f;
+      --accent: #16a8b5;
+      --shadow: 0 12px 30px rgba(26, 55, 76, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: var(--canvas-width);
+      height: var(--canvas-height);
+      margin: 0;
+      overflow: hidden;
+      background: var(--page-bg);
+      font-family: "Microsoft YaHei UI", "PingFang SC", "Segoe UI", sans-serif;
+    }
+
+    .flow {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 30px 40px;
+    }
+
+    .grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(3, 720px);
+      grid-template-rows: repeat(2, 550px);
+      column-gap: 80px;
+      row-gap: 190px;
+    }
+
+    .card {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--card-bg);
+      box-shadow: var(--shadow);
+    }
+
+    .card__title {
+      display: flex;
+      align-items: center;
+      height: 74px;
+      padding: 0 24px;
+      color: var(--text);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .card__index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 42px;
+      margin-right: 14px;
+      padding: 0 10px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .card__image-wrap {
+      height: 476px;
+      padding: 0 18px 18px;
+    }
+
+    .card__image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 1px solid #e7edf1;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #ffffff;
+    }
+
+    .connector {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 2400px;
+      height: 1350px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="flow" aria-label="渠道分销流程">
+    <section class="grid">
+      <article class="card">
+        <header class="card__title"><span class="card__index">01</span>进入游戏控制台</header>
+        <div class="card__image-wrap"><img class="card__image" src="01-game-console-entry.png" alt="进入游戏控制台页面"></div>
+      </article>
+      <article class="card">
+        <header class="card__title"><span class="card__index">02</span>创建并管理渠道</header>
+        <div class="card__image-wrap"><img class="card__image" src="02-channel-list.png" alt="渠道管理页面"></div>
+      </article>
+      <article class="card">
+        <header class="card__title"><span class="card__index">03</span>创建供给批次</header>
+        <div class="card__image-wrap"><img class="card__image" src="05-create-batch.png" alt="创建供给批次页面"></div>
+      </article>
+      <article class="card">
+        <header class="card__title"><span class="card__index">04</span>下载文件或接口取码</header>
+        <div class="card__image-wrap"><img class="card__image" src="04-batch-list.png" alt="批次管理页面"></div>
+      </article>
+      <article class="card">
+        <header class="card__title"><span class="card__index">05</span>API 批次追加数量</header>
+        <div class="card__image-wrap"><img class="card__image" src="06-api-topup.png" alt="API 批次追加数量页面"></div>
+      </article>
+      <article class="card">
+        <header class="card__title"><span class="card__index">06</span>查看分销数据</header>
+        <div class="card__image-wrap"><img class="card__image" src="07-distribution-data.png" alt="分销数据页面"></div>
+      </article>
+    </section>
+
+    <svg class="connector" viewBox="0 0 2400 1350" aria-hidden="true">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a8b5"></path>
+        </marker>
+      </defs>
+      <path d="M 760 305 L 820 305" fill="none" stroke="#16a8b5" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)"></path>
+      <path d="M 1560 305 L 1620 305" fill="none" stroke="#16a8b5" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)"></path>
+      <path d="M 2320 580 L 2320 675 L 400 675 L 400 750" fill="none" stroke="#16a8b5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"></path>
+      <path d="M 760 1045 L 820 1045" fill="none" stroke="#16a8b5" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)"></path>
+      <path d="M 1560 1045 L 1620 1045" fill="none" stroke="#16a8b5" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)"></path>
+    </svg>
+  </main>
+</body>
+</html>

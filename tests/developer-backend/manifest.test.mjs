@@ -6,16 +6,16 @@ import path from 'node:path';
 const root = process.cwd();
 const readJson = relative => JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
 
-test('37 个 PRD 页面路由唯一且模块数量为 10/6/13/8', () => {
+test('32 个 PRD 页面路由唯一且模块数量为 10/1/13/8', () => {
   const routes = readJson('demos/开发者后台一期/src/routes.json');
-  assert.equal(routes.length, 37);
-  assert.equal(new Set(routes.map(item => item.id)).size, 37);
+  assert.equal(routes.length, 32);
+  assert.equal(new Set(routes.map(item => item.id)).size, 32);
   assert.deepEqual(
     Object.fromEntries(['01', '02', '03', '04'].map(moduleId => [
       moduleId,
       routes.filter(item => item.moduleId === moduleId).length,
     ])),
-    { '01': 10, '02': 6, '03': 13, '04': 8 },
+    { '01': 10, '02': 1, '03': 13, '04': 8 },
   );
 });
 
@@ -58,6 +58,6 @@ test('开发者平台与运营后台声明隔离路由且旧开发者文件保�
   assert.equal(module02.standalone, true);
   assert.deepEqual(modules.map(module => routeIdsFor(module).length), [3, 3, 13, 8]);
   assert.equal(modules.reduce((count, module) => count + routeIdsFor(module).length, 0), 27);
-  assert.equal(routes.find(route => route.id === 'P02-01').title, '游戏创建、版本发布与资质管理页');
+  assert.equal(routes.find(route => route.id === 'P02-01').title, '开发者平台');
   assert.equal(routes.some(route => route.id === 'P04-09'), false);
 });

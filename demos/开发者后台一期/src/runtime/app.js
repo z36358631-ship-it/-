@@ -1216,10 +1216,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     scroller.scrollLeft = previousLeft;
     const active = scroller.querySelector('.is-active');
     if (!active || scroller.scrollWidth <= scroller.clientWidth) return;
-    const scrollerBox = scroller.getBoundingClientRect();
-    const activeBox = active.getBoundingClientRect();
-    if (activeBox.left < scrollerBox.left) scroller.scrollLeft -= scrollerBox.left - activeBox.left;
-    else if (activeBox.right > scrollerBox.right) scroller.scrollLeft += activeBox.right - scrollerBox.right;
+    scroller.scrollLeft = Math.max(0, active.offsetLeft - 12);
   };
   const updatePublisherWorkspace = (patch, { preserveScroll = false } = {}) => {
     const routeId = 'P02-01';
@@ -3408,15 +3405,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       if (action === 'cdkey-jump-tab') {
         setCdkeyTab(route.id, Number(event.currentTarget.dataset.cdkeyTargetTab));
         root.querySelector('.workspace')?.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      if (action === 'view-supply-exception') {
-        if (route.id === 'P02-01') {
-          resultMessage(route.id, '外部 Key 库存低于阈值', '该类 Key 只能由供应商或运营受控入库，平台不生成、不替换。', 'warning');
-          return;
-        }
-        const target = routes.find(item => item.id === 'P02-02');
-        if (target) navigate({ routeId: target.id, state: 'default' });
         return;
       }
       if (action === 'view-key-batch') {

@@ -143,9 +143,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const timestamp = new Date(normalized).getTime();
     return Number.isFinite(timestamp) ? timestamp : null;
   };
+  const endDateValue = value => {
+    const raw = String(value || '').trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(raw)
+      ? dateValue(`${raw}T23:59:59.999`)
+      : dateValue(raw);
+  };
   const rangeOverlaps = (itemStart, itemEnd, filterStart, filterEnd) => {
     const start = dateValue(itemStart) ?? Number.NEGATIVE_INFINITY;
-    const end = dateValue(itemEnd) ?? Number.POSITIVE_INFINITY;
+    const end = endDateValue(itemEnd) ?? Number.POSITIVE_INFINITY;
     const queryStart = dateValue(filterStart) ?? Number.NEGATIVE_INFINITY;
     const queryEnd = filterEnd ? dateValue(`${filterEnd}T23:59:59`) : Number.POSITIVE_INFINITY;
     return start <= queryEnd && end >= queryStart;
@@ -155,10 +161,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (!channel.enabled) return 'disabled';
     const current = dateValue(now);
     if (channel.effectiveStart && current < dateValue(channel.effectiveStart)) return 'scheduled';
-    if (channel.effectiveEnd && current >= dateValue(channel.effectiveEnd)) return 'ended';
+    if (channel.effectiveEnd && current > endDateValue(channel.effectiveEnd)) return 'ended';
     return 'active';
   };
-  const batchHasEnded = (batch, now = DEMO_NOW) => Boolean(batch?.effectiveEnd && dateValue(now) >= dateValue(batch.effectiveEnd));
+  const batchHasEnded = (batch, now = DEMO_NOW) => Boolean(batch?.effectiveEnd && dateValue(now) > endDateValue(batch.effectiveEnd));
   const effectiveBatchStatus = (batch, channel, now = DEMO_NOW) => {
     if (!batch || batch.deleted) return 'deleted';
     if (!batch.enabled) return 'disabled';
