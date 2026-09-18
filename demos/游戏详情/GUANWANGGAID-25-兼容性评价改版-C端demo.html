@@ -662,13 +662,14 @@
 
         /* ---- Toast ---- */
         #toast {
-            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px);
+            position: fixed; bottom: var(--toast-bottom, 80px); left: 50%; transform: translateX(-50%);
             background: rgba(30,30,40,0.96); color: #fff; padding: 10px 20px;
             border-radius: 20px; font-size: 13px; font-weight: 600;
-            opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 9999;
+            max-width: calc(100vw - 32px); white-space: nowrap;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 9999;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
-        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.show { opacity: 1; }
 
         /* ===== GUANWANGGAID-25 v1.2：仅任务专属 Demo 使用 ===== */
         [hidden] { display: none !important; }
@@ -2583,6 +2584,14 @@ function toggleLike(id, baseLikes) {
 // ============================================================
 function showToast(msg) {
     const t = document.getElementById('toast');
+    const detailPage = document.getElementById('solutionDetailPage');
+    const detailActions = document.getElementById('solutionDetailActions');
+    let bottomOffset = 80;
+    if (detailPage && !detailPage.hidden && detailActions) {
+        const actionsRect = detailActions.getBoundingClientRect();
+        bottomOffset = Math.max(bottomOffset, window.innerHeight - actionsRect.top + 12);
+    }
+    t.style.setProperty('--toast-bottom', `${bottomOffset}px`);
     t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2400);
 }
@@ -3031,7 +3040,7 @@ function confirmCopyCurrentSolution() {
     });
     localStorage.setItem(COPIED_SOLUTIONS_KEY, JSON.stringify(copies));
     closeCopySolutionDialog();
-    showToast('已复制到“我的方案”');
+    showToast('复制成功，正在前往“启动方案”');
 }
 
 function setApplicationMode(mode) {

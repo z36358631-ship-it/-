@@ -1369,6 +1369,21 @@ test('点击方案名称进入现有方案详情并复用应用与复制能力',
       '确认前不得创建个人副本');
     await page.click('#confirmCopySolutionButton');
     assert.equal(await page.evaluate(() => window.compatibilityDemo.getCopiedSolutions().length), 1);
+    assert.equal(await page.locator('#copySolutionDialog').isVisible(), false,
+      '确认复制后必须关闭命名弹窗');
+    assert.equal(await page.locator('#toast').innerText(), '复制成功，正在前往“启动方案”',
+      'Demo 必须用 Toast 占位表达确认复制后跳转启动方案页');
+    assert.equal(await page.locator('#toast').evaluate((element) => element.classList.contains('show')), true,
+      '跳转占位 Toast 必须处于可见状态');
+    assert.equal(await page.locator('#toast').evaluate((element) => getComputedStyle(element).whiteSpace), 'nowrap',
+      '跳转占位 Toast 在手机宽度下不得断成多行');
+    const toastGeometry = await page.evaluate(() => {
+      const toast = document.getElementById('toast').getBoundingClientRect();
+      const actions = document.getElementById('solutionDetailActions').getBoundingClientRect();
+      return { toastBottom: toast.bottom, actionsTop: actions.top };
+    });
+    assert.ok(toastGeometry.toastBottom <= toastGeometry.actionsTop - 8,
+      `跳转占位 Toast 应与底部操作栏保持至少 8px 间距：${JSON.stringify(toastGeometry)}`);
 
     await page.evaluate(() => window.compatibilityDemo.setSolutionDetailScenario('load-error'));
     await page.evaluate(() => window.openSolutionDetail('community_cfg_adreno750_stable_v1'));
