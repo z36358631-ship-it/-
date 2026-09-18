@@ -1988,10 +1988,21 @@ function refreshPanel(side) {
     // 筛选
     let filtered = list;
     if (viewMode === 'device') filtered = forceSameConfigEmpty ? [] : list.filter(f => f.gpu === CURRENT_GPU);
-    else if (viewMode === 'support') filtered = list.filter(f => f.tags && f.tags.includes('完美兼容'));
+    else if (viewMode === 'support') {
+        const likedSet = getLikedSet();
+        filtered = list
+            .map((feedback, originalIndex) => ({ feedback, originalIndex }))
+            .sort((left, right) => Number(Boolean(right.feedback.official)) - Number(Boolean(left.feedback.official))
+                || ((Number(right.feedback.likes) || 0) + (likedSet.has(right.feedback.id) ? 1 : 0))
+                    - ((Number(left.feedback.likes) || 0) + (likedSet.has(left.feedback.id) ? 1 : 0))
+                || left.originalIndex - right.originalIndex)
+            .map(({ feedback }) => feedback);
+    }
     else if (viewMode === 'mine') filtered = list.filter(f => f.uid === MY_UID);
     // 官方置顶
-    filtered = [...filtered.filter(f => f.official), ...filtered.filter(f => !f.official)];
+    if (viewMode !== 'support') {
+        filtered = [...filtered.filter(f => f.official), ...filtered.filter(f => !f.official)];
+    }
 
     const shown = filtered.slice(0, pages[side] * PAGE);
     const listEl = document.getElementById(side === 'ls' ? 'listLs' : 'listPt');

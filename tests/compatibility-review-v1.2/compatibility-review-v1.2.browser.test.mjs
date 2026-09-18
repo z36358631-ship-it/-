@@ -515,6 +515,50 @@ test('客态 G-01～G-07 自然混排且仅有效同归属快照展示入口', a
   }
 });
 
+test('支持最多只按支持数排序且不改变评价与方案入口显隐', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  const readRenderedReviews = () => page.locator('#listLs [data-feedback-id]').evaluateAll((items) => items.map((item) => ({
+    id: item.dataset.feedbackId,
+    supportCount: Number(item.querySelector('[id^="like-count-"]')?.textContent || 0),
+    official: item.querySelector('.ci-name')?.textContent.includes('官方置顶') || false,
+    solutionEntries: item.querySelectorAll('.review-solution-card').length,
+  })));
+  try {
+    await showEveryReview(page);
+    const before = await readRenderedReviews();
+    assert.equal(before.length, 9, '全部筛选应展示所有未隐藏评价');
+
+    await page.click('#chipsLs [data-view="support"]');
+    await loadEveryReview(page);
+    const after = await readRenderedReviews();
+
+    assert.deepEqual(
+      after.map((item) => item.id).sort(),
+      before.map((item) => item.id).sort(),
+      '支持最多不得过滤任何可见评价',
+    );
+    assert.ok(after.some((item) => item.id === 's6'), '支持最多必须保留 2 星评价');
+    assert.ok(after.some((item) => item.id === 's4'), '支持最多必须保留 3 星评价');
+    assert.equal(await page.locator('[data-feedback-id="s10"]').count(), 0, '后台隐藏评价仍不得进入列表');
+
+    const expectedOrder = before
+      .map((item, originalIndex) => ({ ...item, originalIndex }))
+      .sort((left, right) => Number(right.official) - Number(left.official)
+        || right.supportCount - left.supportCount
+        || left.originalIndex - right.originalIndex)
+      .map((item) => item.id);
+    assert.deepEqual(after.map((item) => item.id), expectedOrder, '官方置顶后其余评价应按支持数降序且稳定排序');
+
+    const entranceState = (items) => items
+      .map(({ id, solutionEntries }) => ({ id, solutionEntries }))
+      .sort((left, right) => left.id.localeCompare(right.id));
+    assert.deepEqual(entranceState(after), entranceState(before), 'G-01～G-07 方案入口显隐不得随排序改变');
+    assertNoPageErrors(errors, '支持最多排序');
+  } finally {
+    await page.close();
+  }
+});
+
 test('旧缓存升级后补齐客态种子且保留非种子评价与快照', async () => {
   const { page, errors } = await openDemo(cDemo, 'C 端');
   try {
