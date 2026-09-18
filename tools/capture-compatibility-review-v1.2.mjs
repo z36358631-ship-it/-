@@ -45,6 +45,16 @@ async function openDemo(file, label, viewport) {
   await page.goto(pathToFileURL(file).href, { waitUntil: 'load' });
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'load' });
+  await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation: none !important;
+        caret-color: transparent !important;
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    `,
+  });
   await page.evaluate(async () => {
     await document.fonts.ready;
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
