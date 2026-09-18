@@ -6,7 +6,7 @@
 |---|---|
 | 任务编号 | LOCAL-20260825 |
 | 需求名称 | 兼容性查询机型筛选与分享码 |
-| 当前阶段 | PRD V1.5 待推送 |
+| 当前阶段 | PRD V1.5 已发布 |
 | 最后更新时间 | 2026-09-18 |
 
 ## 问题与证据
@@ -64,12 +64,12 @@
 | 截图 | `test-results/compatibility-platform-aware-h5-2026-08-26-final2/` | 已同步 | 9 张当前 Demo 截图 |
 | 公开预览 | 无 | 未执行 | 本轮未授权部署 |
 | Git 发布 | `codex/compatibility-app-prd-v14-20260918` | 已发布 | App 页面图与 Demo 提交 `b90f930df51569f589723e9550b2eec8b891f0ba` |
-| Git 发布 V1.5 | `codex/compatibility-query-entry-v15-20260918` | 待推送 | Demo 与图片提交 `17360946c95789104af8c591625e341678771e4e` |
+| Git 发布 V1.5 | `codex/compatibility-query-entry-v15-20260918` | 已发布 | Demo 与图片 `17360946c95789104af8c591625e341678771e4e`；PRD `0ff262d838943175f8e702c0f93f1ed9cec60877` |
 | PRD | `prd/最终文档/【Prd】《盖世游戏》兼容性查询与启动配置分享码需求/【Prd】《盖世游戏》兼容性查询与启动配置分享码需求.md` | V1.4，仅 App | 质量与图片校验通过 |
 | 产品流程图 | `public/prd/compatibility-query-app-v14/00-product-flow-app.png` | 已发布 | 1920×1080；固定提交 `b90f930df51569f589723e9550b2eec8b891f0ba` |
 | App 页面图 | `public/prd/compatibility-query-app-v14/` | 已发布 | 手机竖屏、掌机横屏共 6 张；固定提交 `b90f930df51569f589723e9550b2eec8b891f0ba` |
-| 入口流程图 | `public/prd/compatibility-query-app-v15/00-product-flow-app-entry.png` | 已提交，待推送 | 固定提交 `17360946c95789104af8c591625e341678771e4e` |
-| App 入口图 | `public/prd/compatibility-query-app-v15/` | 已提交，待推送 | 横竖屏共 4 张；固定提交 `17360946c95789104af8c591625e341678771e4e` |
+| 入口流程图 | `public/prd/compatibility-query-app-v15/00-product-flow-app-entry.png` | 已发布 | 固定提交 `17360946c95789104af8c591625e341678771e4e` |
+| App 入口图 | `public/prd/compatibility-query-app-v15/` | 已发布 | 横竖屏共 4 张；固定提交 `17360946c95789104af8c591625e341678771e4e` |
 | 入口旅程测试 | `test-results/compatibility-query-entry-v15/interaction-test-result.json` | 已通过 | 双入口、预选、返回、横竖屏、无溢出、无外部请求 |
 
 ## 修改与验证
@@ -85,7 +85,7 @@
 | 2026-08-27 | 精简 PRD | 删除重复子功能表和技术复述，压缩背景、方案及页面文案，保留实现与测试所需规则 | PRD、状态卡 | 质量校验通过 |
 | 2026-08-27 | 收窄范围并补流程图 | 移除 Mac 内容；将查询、查看、复制三步合为一张图 | PRD、流程图、状态卡 | 5/5 张图片远程校验通过 |
 | 2026-09-18 | 仅保留 App 并更新页面图 | 删除网页和桌面规则；更新手机竖屏、掌机横屏设计；移除页面及候选项 Android 标识 | Demo、PRD、流程图、页面图、状态卡 | Playwright、PRD 质量校验通过；7 张图片公网可用 |
-| 2026-09-18 | 增加兼容性查询双入口 | 在 PC 游戏页增加全局入口，在游戏详情复用引擎信息区；补当前机型、`game_id` 预选和来源返回 | Demo、PRD、流程图、页面图、测试、状态卡 | Demo 静态校验通过；四条入口旅程与横竖屏截图通过；PRD 质量校验通过 |
+| 2026-09-18 | 增加兼容性查询双入口 | 在 PC 游戏页增加全局入口，在游戏详情复用引擎信息区；补当前机型、`game_id` 预选和来源返回 | Demo、PRD、流程图、页面图、测试、状态卡 | Demo 静态校验、四条入口旅程、横竖屏截图及 PRD 质量校验通过；10/10 张图片公网可用 |
 
 ## 待确认与风险
 
