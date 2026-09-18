@@ -92,19 +92,23 @@ async function captureCConnectedJourney() {
     await shot(page, '01-c-game-detail-wireframe-390x844.png');
 
     await domClick(page, '#openCompatibilityReviews', '兼容性评价入口');
-    await requireOne(page, '[data-review-state="valid"] .review-solution-card', '有效方案评价卡');
+    await requireOne(page, '[data-feedback-id="s1"] .review-solution-card', '有效快照评价卡');
     await shot(page, '02-c-review-list-390x844.png');
 
-    await domClick(page, '[data-review-state="valid"] .review-solution-card', '有效方案卡');
+    await domClick(page, '[data-feedback-id="s1"] .review-solution-card', '有效快照卡');
     await requireOne(page, '#solutionDetailPage:not([hidden])', '可见方案详情页');
     await requireOne(page, '#solutionDetailSchemeName', '完整方案名称');
     await requireOne(page, '#solutionDetailGpu', '方案 GPU 标签');
-    await requireOne(page, '#solutionTrustSummary', '社区共同验证信息');
+    await requireOne(page, '#solutionShareSummary', '当前评价人与本次游玩时长');
     if (await page.locator('#solutionConfigGroups .solution-config-section').count() < 3) {
       throw new Error('未实现契约：方案详情未展示完整参数分组');
     }
-    if (await page.getByText(/分享者[:：]/).count() > 0) {
-      throw new Error('未实现契约：公共方案详情仍展示个人分享者');
+    const detailText = await page.locator('#solutionDetailPage').innerText();
+    if (!/本次启动方案/.test(detailText) || !/Pixel用户_洛圣都 · 本次游玩 18分42秒/.test(detailText)) {
+      throw new Error('未实现契约：快照详情未展示固定标题、当前评价人与当次游玩时长');
+    }
+    if (/社区共同验证|成功率|次验证|最近验证|样本较少/.test(detailText)) {
+      throw new Error('未实现契约：快照详情仍展示多人聚合信息');
     }
     await shot(page, '03-c-solution-detail-390x844.png');
 
@@ -112,7 +116,7 @@ async function captureCConnectedJourney() {
     if (await page.locator('#solutionDetailPage').isVisible()) {
       throw new Error('未实现契约：应用方案后未返回游戏详情');
     }
-    if (!/Adreno 750 稳定方案/.test(await page.locator('#currentAppliedSolution').innerText())) {
+    if (!/本次启动方案/.test(await page.locator('#currentAppliedSolution').innerText())) {
       throw new Error('未实现契约：游戏详情未展示当前已应用方案');
     }
     if (await page.locator('#gameplayLayer').isVisible()) {
@@ -149,8 +153,9 @@ async function captureCConnectedJourney() {
     await page.waitForFunction(() => document.getElementById('compatPage')?.classList.contains('show'));
     await requireOne(page, '[data-owner="me"]', '提交后的我的评价');
     const mine = await page.evaluate(() => window.getFeedbacks().find((item) => item.uid === 'me_demo_user'));
-    if (mine?.solutionId !== 'community_cfg_adreno750_stable_v1') {
-      throw new Error('未实现契约：我的评价未关联社区共同验证方案');
+    const snapshots = await page.evaluate(() => window.compatibilityDemo.getReviewSnapshots());
+    if (!mine?.reviewSnapshotId || snapshots[mine.reviewSnapshotId]?.reviewId !== mine.id) {
+      throw new Error('未实现契约：我的评价未关联独立配置快照');
     }
     await page.waitForFunction(() => !document.getElementById('toast')?.classList.contains('show'));
     await page.waitForTimeout(420);
@@ -164,16 +169,16 @@ async function captureCConnectedJourney() {
 async function captureBLinkedFilter() {
   const { page, errors } = await openDemo(bDemo, 'B 端', { width: 1440, height: 900 });
   try {
-    await requireOne(page, '#dom-fb-solution-linked', '是否关联方案筛选');
-    await requireOne(page, '#dom-fb-solution-status', '方案状态筛选');
+    await requireOne(page, '#dom-fb-solution-linked', '是否关联快照筛选');
+    await requireOne(page, '#dom-fb-solution-status', '快照状态筛选');
     await page.selectOption('#dom-fb-solution-linked', 'linked');
-    await page.selectOption('#dom-fb-solution-status', 'published');
+    await page.selectOption('#dom-fb-solution-status', 'available');
     await domClick(page, '#dom-query-feedbacks', '国内评价查询');
     const rows = page.locator('#dom-fb-tbody tr[data-feedback-id]');
-    if (await rows.count() === 0) throw new Error('未实现契约：B 端有效关联方案筛选无演示数据');
-    await rows.first().locator('[data-action="view-solution"]').click();
+    if (await rows.count() === 0) throw new Error('未实现契约：B 端有效关联快照筛选无演示数据');
+    await rows.first().locator('[data-action="view-snapshot"]').click();
     if (await page.locator('#compat-solution-detail-drawer').getAttribute('aria-hidden') !== 'false') {
-      throw new Error('未实现契约：B 端关联方案预览未打开');
+      throw new Error('未实现契约：B 端关联快照预览未打开');
     }
     await shot(page, '10-b-linked-filter-solution-drawer-1440x900.png');
     assertNoPageErrors(errors, 'B 端筛选与方案预览截图');

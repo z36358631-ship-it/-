@@ -877,7 +877,7 @@
 
         .table-actions { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
 
-        /* GUANWANGGAID-25：评价与运行方案关联（B 端只读管理） */
+        /* GUANWANGGAID-25：评价与当次配置快照关联（B 端只读管理） */
         .compat-solution-cell {
             min-width: 170px;
             line-height: 1.45;
@@ -901,9 +901,9 @@
             font-size: 12px;
             white-space: nowrap;
         }
-        .compat-solution-badge.published { color:#389e0d; background:#f6ffed; border-color:#b7eb8f; }
-        .compat-solution-badge.pending { color:#d48806; background:#fffbe6; border-color:#ffe58f; }
-        .compat-solution-badge.unavailable { color:#cf1322; background:#fff1f0; border-color:#ffa39e; }
+        .compat-solution-badge.available { color:#389e0d; background:#f6ffed; border-color:#b7eb8f; }
+        .compat-solution-badge.deprecated { color:#d48806; background:#fffbe6; border-color:#ffe58f; }
+        .compat-solution-badge.invalid { color:#cf1322; background:#fff1f0; border-color:#ffa39e; }
         .compat-solution-badge.unlinked { color:#8c8c8c; background:#fafafa; border-color:#d9d9d9; }
         .compat-admin-drawer {
             position: fixed;
@@ -973,6 +973,43 @@
             line-height: 1.6;
         }
         .compat-lifecycle-note.warning { border-color:#ffe58f; background:#fffbe6; color:#ad6800; }
+        .compat-snapshot-config-title {
+            margin: 20px 0 10px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .compat-snapshot-config-group {
+            margin-top: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+        .compat-snapshot-config-group:first-child { margin-top: 0; }
+        .compat-snapshot-config-group-title {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            background: #fafafa;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .compat-snapshot-config-row {
+            display: grid;
+            grid-template-columns: 160px minmax(0, 1fr);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .compat-snapshot-config-row:last-child { border-bottom: 0; }
+        .compat-snapshot-config-label,
+        .compat-snapshot-config-value { padding: 10px 12px; }
+        .compat-snapshot-config-label { color: var(--text-secondary); }
+        .compat-snapshot-config-value { color: var(--text-primary); word-break: break-word; }
+        .compat-snapshot-config-empty {
+            padding: 20px;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
         .compat-export-field-list {
             margin: 12px 0 0;
             padding: 12px 14px;
@@ -2965,20 +3002,20 @@
                                 </div>
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">方案关联:</span>
+                                <span class="filter-label">快照关联:</span>
                                 <select id="dom-fb-solution-linked" class="filter-select">
                                     <option value="all">全部关联状态</option>
-                                    <option value="linked">已关联方案</option>
-                                    <option value="unlinked">未关联方案</option>
+                                    <option value="linked">已关联快照</option>
+                                    <option value="unlinked">未关联快照</option>
                                 </select>
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">方案状态:</span>
+                                <span class="filter-label">快照状态:</span>
                                 <select id="dom-fb-solution-status" class="filter-select">
-                                    <option value="all">全部方案状态</option>
-                                    <option value="published">有效</option>
-                                    <option value="pending">审核中</option>
-                                    <option value="unavailable">不可用</option>
+                                    <option value="all">全部快照状态</option>
+                                    <option value="available">有效</option>
+                                    <option value="deprecated">已废弃</option>
+                                    <option value="invalid">无效</option>
                                 </select>
                             </div>
                             <div style="flex:1"></div>
@@ -3006,7 +3043,7 @@
                                     <th>星级</th>
                                     <th>标签</th>
                                     <th>反馈内容</th>
-                                    <th>关联方案</th>
+                                    <th>关联快照</th>
                                     <th>支持</th>
                                     <th>状态</th>
                                     <th>时间</th>
@@ -3198,20 +3235,20 @@
                                 </div>
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">方案关联:</span>
+                                <span class="filter-label">快照关联:</span>
                                 <select id="ovs-fb-solution-linked" class="filter-select">
                                     <option value="all">全部关联状态</option>
-                                    <option value="linked">已关联方案</option>
-                                    <option value="unlinked">未关联方案</option>
+                                    <option value="linked">已关联快照</option>
+                                    <option value="unlinked">未关联快照</option>
                                 </select>
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">方案状态:</span>
+                                <span class="filter-label">快照状态:</span>
                                 <select id="ovs-fb-solution-status" class="filter-select">
-                                    <option value="all">全部方案状态</option>
-                                    <option value="published">有效</option>
-                                    <option value="pending">审核中</option>
-                                    <option value="unavailable">不可用</option>
+                                    <option value="all">全部快照状态</option>
+                                    <option value="available">有效</option>
+                                    <option value="deprecated">已废弃</option>
+                                    <option value="invalid">无效</option>
                                 </select>
                             </div>
                             <div style="flex:1"></div>
@@ -3239,7 +3276,7 @@
                                     <th>星级</th>
                                     <th>标签</th>
                                     <th>反馈内容</th>
-                                    <th>关联方案</th>
+                                    <th>关联快照</th>
                                     <th>支持</th>
                                     <th>状态</th>
                                     <th>时间</th>
@@ -4088,7 +4125,7 @@
             </header>
             <div class="compat-admin-drawer-body">
                 <div class="compat-detail-list" id="compat-review-detail-fields"></div>
-                <div class="compat-lifecycle-note" id="compat-review-lifecycle-note">评价内容与关联方案分别管理。</div>
+                <div class="compat-lifecycle-note" id="compat-review-lifecycle-note">评价与关联快照按审核规则保留追溯。</div>
             </div>
         </section>
     </div>
@@ -4096,12 +4133,14 @@
     <div class="compat-admin-drawer" id="compat-solution-detail-drawer" aria-hidden="true" onclick="window.closeCompatSolutionDetail(event)">
         <section class="compat-admin-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="compat-solution-detail-title" onclick="event.stopPropagation()">
             <header class="compat-admin-drawer-head">
-                <div class="compat-admin-drawer-title" id="compat-solution-detail-title">关联方案预览</div>
-                <button class="compat-admin-drawer-close" type="button" aria-label="关闭方案预览" onclick="window.closeCompatSolutionDetail()">×</button>
+                <div class="compat-admin-drawer-title" id="compat-solution-detail-title">关联快照预览</div>
+                <button class="compat-admin-drawer-close" type="button" aria-label="关闭快照预览" onclick="window.closeCompatSolutionDetail()">×</button>
             </header>
             <div class="compat-admin-drawer-body">
                 <div class="compat-detail-list" id="compat-solution-detail-fields"></div>
-                <div class="compat-lifecycle-note" id="compat-solution-detail-status">评价和方案分别管理，任一方状态变化不会自动修改另一方。</div>
+                <div class="compat-snapshot-config-title">当次完整配置（只读）</div>
+                <div id="compat-solution-config-groups"></div>
+                <div class="compat-lifecycle-note" id="compat-solution-detail-status">快照仅供查看和追溯，不在评价后台编辑。</div>
             </div>
         </section>
     </div>
@@ -4116,11 +4155,11 @@
                 <button class="order-modal-close" type="button" aria-label="关闭导出预览" onclick="window.closeCompatExportPreview()">×</button>
             </div>
             <div class="order-modal-body">
-                <div style="color:var(--text-secondary);font-size:13px;line-height:1.7;">导出沿用现有评价 CSV，仅增加以下方案关联字段；“操作”列不会导出。</div>
-                <div class="compat-export-field-list">solution_id, solution_name, solution_status, solution_source, solution_linked_at</div>
+                <div style="color:var(--text-secondary);font-size:13px;line-height:1.7;">导出沿用现有评价 CSV，仅增加以下快照关联字段；“操作”列不会导出。</div>
+                <div class="compat-export-field-list">review_snapshot_id, snapshot_status, duration_seconds, snapshot_shared_at</div>
                 <div style="margin-top:16px;max-height:260px;overflow:auto;border:1px solid var(--border-color);border-radius:6px;">
                     <table class="data-table" style="margin:0;min-width:620px;">
-                        <thead><tr><th>评价 ID</th><th>游戏</th><th>方案名称</th><th>方案状态</th></tr></thead>
+                        <thead><tr><th>评价 ID</th><th>游戏</th><th>快照 ID</th><th>快照状态</th></tr></thead>
                         <tbody id="compat-export-preview-body"></tbody>
                     </table>
                 </div>
@@ -7515,23 +7554,84 @@
     const domFbSelected = new Set();
     const ovsFbSelected = new Set();
 
+    function createCompatSnapshotConfigGroups(overrides = {}) {
+        return [
+            {
+                key: 'general',
+                label: '通用',
+                items: [
+                    { key: 'env', label: '环境变量', displayValue: overrides.env || '未配置' },
+                    { key: 'args', label: '启动参数', displayValue: overrides.args || '-dx11' },
+                    { key: 'exe_path', label: '启动文件路径（仅展示）', displayValue: overrides.exePath || '未配置' }
+                ]
+            },
+            {
+                key: 'compatibility',
+                label: '兼容性',
+                items: [
+                    { key: 'wine_ver', label: '兼容层', displayValue: overrides.wine || 'proton10.0-arm64x-2' },
+                    { key: 'dinput', label: 'Dinput 函数库', displayValue: overrides.dinput || '优先原装' },
+                    { key: 'skip_video', label: '跳过音视频解码', displayValue: overrides.skipVideo || '禁用' },
+                    { key: 'surface', label: '表面格式', displayValue: overrides.surface || 'R8G8B8A8' },
+                    { key: 'audio_drv', label: '音频驱动', displayValue: overrides.audio || 'PulseAudio' },
+                    { key: 'dxvk', label: 'DXVK 版本', displayValue: overrides.dxvk || '2.3（异步编译）' },
+                    { key: 'vkd3d', label: 'VKD3D 版本', displayValue: overrides.vkd3d || '2.11.1' },
+                    { key: 'cpu_trans', label: 'CPU 转译器', displayValue: overrides.cpuTranslator || 'FEX-Emu' },
+                    { key: 'cpu_core', label: 'CPU 核心限制', displayValue: overrides.cpuCore || '不限制' },
+                    { key: 'vram', label: '显存限制', displayValue: overrides.vram || '4096 MB' }
+                ]
+            },
+            {
+                key: 'dependencies',
+                label: '组件依赖',
+                items: [
+                    { key: 'cjkfonts', label: 'CJK 字体组件', displayValue: overrides.cjkFonts || '已启用' }
+                ]
+            },
+            {
+                key: 'steam',
+                label: 'Steam',
+                items: [
+                    { key: 'steam_input_exp', label: 'Steam Input（实验性）', displayValue: overrides.steamInput || '已启用' }
+                ]
+            }
+        ];
+    }
+
     // SEED mock数据（带uid/phone/appVersion/pinned）
     (function injectCompatSeedData() {
         // 强制用新格式数据覆盖（清除旧格式缓存）
         localStorage.removeItem(COMPAT_FEEDBACK_KEY);
         const now = Date.now();
         const seeds = [
-            { id:'cf1', uid:'UID_10001', name:'Pixel用户_洛圣都', phone:'13988888888', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'Pixel 9 Pro · Android 15', appVersion:'v6.1.0', stars:5, tags:['完美兼容'], content:'画面超级流畅，手柄支持完美。', supportCount:24, hidden:false, pinned:true, createdAt: new Date(now - 864e5*1).toISOString(), solution:{ id:'solution_public_01', name:'Adreno 750 稳定方案', source:'玩家公开方案', status:'published', linkedAt:'2026-09-12 14:32', version:'v3.2' } },
-            { id:'cf2', uid:'UID_10002', name:'三星玩家_富兰克林', phone:'13800000000', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'Samsung Galaxy S25 Ultra · Android 15', appVersion:'v6.1.0', stars:4, tags:['完美兼容','偶尔卡顿'], content:'整体很好，偶有轻微音效延迟。', supportCount:17, hidden:false, pinned:false, createdAt: new Date(now - 864e5*2).toISOString(), solution:{ id:'solution_private_02', name:'Galaxy S25 低延迟方案', source:'玩家公开方案', status:'unavailable', unavailableReason:'private', linkedAt:'2026-09-11 09:18', version:'v1.7' } },
-            { id:'cf3', uid:'UID_10003', name:'小米用户_迈克尔', phone:'13566667777', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', device:'Xiaomi 15 Pro · Android 15', appVersion:'v6.0.5', stars:5, tags:['完美兼容','操作流畅'], content:'秒玩功能直接起飞，体验和本地基本一致。', supportCount:31, hidden:false, pinned:false, createdAt: new Date(now - 864e5*3).toISOString(), solution:{ id:'solution_offline_03', name:'Xiaomi 15 高画质方案', source:'玩家公开方案', status:'unavailable', unavailableReason:'offline', linkedAt:'2026-09-10 20:06', version:'v2.1' } },
-            { id:'cf4', uid:'UID_10004', name:'OnePlus_Trevor', phone:'13812345678', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', device:'OnePlus 13 · Android 15', appVersion:'v6.0.5', stars:3, tags:['有部分问题'], content:'网络波动时会明显卡顿，手柄偶尔失灵。', supportCount:8, hidden:false, pinned:false, createdAt: new Date(now - 864e5*4).toISOString(), solution:{ id:'solution_pending_04', name:'OnePlus 13 平衡方案', source:'个人方案发布', status:'pending', linkedAt:'2026-09-09 16:44', version:'v1.0' } },
-            { id:'cf5', uid:'UID_10005', name:'OPPO用户_警察', phone:'13611112222', gameId:'elden', gameName:'艾尔登法环', clientType:'mobile', device:'OPPO Find X8 Pro · Android 15', appVersion:'v6.0.3', stars:4, tags:['基本可玩'], content:'剧情向玩家强烈推荐，省了100G存储空间。', supportCount:12, hidden:true, pinned:false, createdAt: new Date(now - 864e5*5).toISOString(), solution:{ id:'solution_public_05', name:'Dimensity 9400 稳定方案', source:'官方方案', status:'published', linkedAt:'2026-09-08 11:25', version:'v4.0' } },
-            { id:'cf6', uid:'UID_10006', name:'华为用户_特雷弗', phone:'13733334444', gameId:'elden', gameName:'艾尔登法环', clientType:'mac', device:'MacBook Pro M3', appVersion:'v6.0.2', stars:2, tags:['有部分问题','不可玩'], content:'GTA在线模式进服务器时容易闪退。', supportCount:5, hidden:false, pinned:false, createdAt: new Date(now - 864e5*6).toISOString(), solution:null },
-            { id:'cf7', uid:'UID_10007', name:'vivo用户_零点', phone:'13900001111', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'vivo X200 Ultra · Android 15', appVersion:'v6.0.2', stars:1, tags:['不可玩'], content:'一进多人模式就掉线，完全没法玩，希望尽快修复。', supportCount:3, hidden:false, pinned:false, createdAt: new Date(now - 864e5*7).toISOString(), solution:null },
-            { id:'cf8', uid:'UID_10008', name:'iQOO玩家_暴走', phone:'13700002222', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'iQOO 13 · Android 15', appVersion:'v6.1.0', stars:5, tags:['完美兼容','操作流畅'], content:'云游戏延迟极低，比想象中流畅太多了！', supportCount:42, hidden:false, pinned:false, createdAt: new Date(now - 864e5*8).toISOString(), solution:{ id:'solution_public_08', name:'iQOO 13 低延迟方案', source:'玩家公开方案', status:'published', linkedAt:'2026-09-07 18:02', version:'v2.4' } },
-            { id:'cf9', uid:'UID_10009', name:'iPhone玩家_阿飞', phone:'13600003333', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', device:'iPhone 16 Pro Max · iOS 18', appVersion:'v6.1.0', stars:5, tags:['完美兼容'], content:'夜翼城的光线渲染太震撼了，手机上也能体验到。', supportCount:28, hidden:false, pinned:true, createdAt: new Date(now - 864e5*9).toISOString(), solution:{ id:'solution_public_09', name:'iOS 18 默认推荐方案', source:'官方方案', status:'published', linkedAt:'2026-09-06 13:15', version:'v5.3' } },
-            { id:'cf10', uid:'UID_10010', name:'Redmi用户_路西法', phone:'13500004444', gameId:'elden', gameName:'艾尔登法环', clientType:'mobile', device:'Redmi K80 Pro · Android 15', appVersion:'v6.0.5', stars:3, tags:['有部分问题','基本可玩'], content:'打Boss时偶尔帧率骤降，建议降低画质设置。', supportCount:9, hidden:true, pinned:false, createdAt: new Date(now - 864e5*10).toISOString(), solution:{ id:'solution_deleted_10', name:'Redmi K80 均衡方案', source:'玩家公开方案', status:'unavailable', unavailableReason:'deleted', linkedAt:'2026-09-05 10:40', version:'v1.2' } },
+            { id:'cf1', uid:'UID_10001', name:'Pixel用户_洛圣都', phone:'13988888888', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'Pixel 9 Pro · Android 15', appVersion:'v6.1.0', stars:5, tags:['完美兼容'], content:'画面超级流畅，手柄支持完美。', supportCount:24, hidden:false, pinned:true, createdAt:new Date(now-864e5).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf1', reviewId:'cf1', solutionName:'本次启动方案', status:'available', durationSeconds:1122, sharedAt:'2026-09-12 14:32' } },
+            { id:'cf2', uid:'UID_10002', name:'三星玩家_富兰克林', phone:'13800000000', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'Samsung Galaxy S25 Ultra · Android 15', appVersion:'v6.1.0', stars:4, tags:['完美兼容'], content:'整体很好，偶有轻微音效延迟。', supportCount:17, hidden:false, pinned:false, createdAt:new Date(now-864e5*2).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf2', reviewId:'cf2', solutionName:'本次启动方案', status:'deprecated', durationSeconds:965, sharedAt:'2026-09-11 09:18' } },
+            { id:'cf3', uid:'UID_10003', name:'小米用户_迈克尔', phone:'13566667777', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', device:'Xiaomi 15 Pro · Android 15', appVersion:'v6.0.5', stars:5, tags:['完美兼容','操作流畅'], content:'启动顺畅，画面和手柄体验稳定。', supportCount:31, hidden:false, pinned:false, createdAt:new Date(now-864e5*3).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf3', reviewId:'cf3', solutionName:'本次启动方案', status:'invalid', durationSeconds:1380, sharedAt:'2026-09-10 20:06' } },
+            { id:'cf4', uid:'UID_10004', name:'OnePlus_Trevor', phone:'13812345678', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', device:'OnePlus 13 · Android 15', appVersion:'v6.0.5', stars:3, tags:['基本可玩'], content:'网络波动时会明显卡顿，手柄偶尔失灵。', supportCount:8, hidden:false, pinned:false, createdAt:new Date(now-864e5*4).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf4', reviewId:'cf4', solutionName:'本次启动方案', status:'available', durationSeconds:754, sharedAt:'2026-09-09 16:44' } },
+            { id:'cf5', uid:'UID_10005', name:'OPPO用户_警察', phone:'13611112222', gameId:'elden', gameName:'艾尔登法环', clientType:'mobile', device:'OPPO Find X8 Pro · Android 15', appVersion:'v6.0.3', stars:4, tags:['完美兼容'], content:'剧情向玩家强烈推荐，整体运行稳定。', supportCount:12, hidden:true, pinned:false, createdAt:new Date(now-864e5*5).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf5', reviewId:'cf5', solutionName:'本次启动方案', status:'available', durationSeconds:1842, sharedAt:'2026-09-08 11:25' } },
+            { id:'cf6', uid:'UID_10006', name:'华为用户_特雷弗', phone:'13733334444', gameId:'elden', gameName:'艾尔登法环', clientType:'mac', device:'MacBook Pro M3', appVersion:'v6.0.2', stars:2, tags:['有部分问题'], content:'在线模式进服务器时容易闪退。', supportCount:5, hidden:false, pinned:false, createdAt:new Date(now-864e5*6).toISOString(), snapshot:null },
+            { id:'cf7', uid:'UID_10007', name:'vivo用户_零点', phone:'13900001111', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'vivo X200 Ultra · Android 15', appVersion:'v6.0.2', stars:1, tags:['不可玩'], content:'一进多人模式就掉线，完全没法玩。', supportCount:3, hidden:false, pinned:false, createdAt:new Date(now-864e5*7).toISOString(), snapshot:null },
+            { id:'cf8', uid:'UID_10008', name:'iQOO玩家_暴走', phone:'13700002222', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'iQOO 13 · Android 15', appVersion:'v6.1.0', stars:5, tags:['完美兼容','操作流畅'], content:'延迟很低，比想象中流畅。', supportCount:42, hidden:false, pinned:false, createdAt:new Date(now-864e5*8).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf8', reviewId:'cf8', solutionName:'本次启动方案', status:'available', durationSeconds:2240, sharedAt:'2026-09-07 18:02' } },
+            { id:'cf9', uid:'UID_10009', name:'iPhone玩家_阿飞', phone:'13600003333', gameId:'cyberpunk', gameName:'赛博朋克2077', clientType:'mobile', device:'iPhone 16 Pro Max · iOS 18', appVersion:'v6.1.0', stars:5, tags:['完美兼容'], content:'夜之城的光线渲染很震撼。', supportCount:28, hidden:false, pinned:true, createdAt:new Date(now-864e5*9).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf9', reviewId:'cf9', solutionName:'本次启动方案', status:'available', durationSeconds:1788, sharedAt:'2026-09-06 13:15' } },
+            { id:'cf10', uid:'UID_10010', name:'Redmi用户_路西法', phone:'13500004444', gameId:'elden', gameName:'艾尔登法环', clientType:'mobile', device:'Redmi K80 Pro · Android 15', appVersion:'v6.0.5', stars:3, tags:['基本可玩'], content:'打 Boss 时偶尔帧率骤降。', supportCount:9, hidden:true, pinned:false, createdAt:new Date(now-864e5*10).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf10', reviewId:'cf10', solutionName:'本次启动方案', status:'invalid', durationSeconds:602, sharedAt:'2026-09-05 10:40' } },
         ];
+        const snapshotConfigOverrides = {
+            cf2: { dxvk:'2.2', vram:'6144 MB' },
+            cf3: { args:'-vulkan', wine:'wine-ge-8-26', vram:'6144 MB' },
+            cf4: { dxvk:'2.1', steamInput:'禁用' },
+            cf5: { surface:'B8G8R8A8', cpuCore:'8 核' },
+            cf8: { args:'-dx12', vkd3d:'2.12' },
+            cf9: { wine:'proton9.0-arm64x-4', audio:'ALSA' },
+            cf10: { dxvk:'2.0', cpuCore:'6 核', vram:'3072 MB' }
+        };
+        seeds.forEach(item => {
+            if (!item.snapshot) return;
+            item.snapshot = {
+                ...item.snapshot,
+                schemaVersion: '1',
+                configGroups: createCompatSnapshotConfigGroups(snapshotConfigOverrides[item.id] || {})
+            };
+        });
         setCompatFeedbacks(seeds);
     })();
 
@@ -7617,10 +7717,10 @@
                 if (isLive && !isHidden && f.hidden)  return false;
                 if (isHidden && !isLive && !f.hidden) return false;
             }
-            if (filters.solutionLinked === 'linked' && !f.solution) return false;
-            if (filters.solutionLinked === 'unlinked' && f.solution) return false;
+            if (filters.solutionLinked === 'linked' && !f.snapshot) return false;
+            if (filters.solutionLinked === 'unlinked' && f.snapshot) return false;
             if (filters.solutionStatus !== 'all') {
-                if (!f.solution || f.solution.status !== filters.solutionStatus) return false;
+                if (!f.snapshot || f.snapshot.status !== filters.solutionStatus) return false;
             }
             if (filters.q) {
                 const hay = ((f.gameName||'') + ' ' + (f.content||'') + ' ' + (f.text||'')).toLowerCase();
@@ -7633,31 +7733,29 @@
         });
     }
 
-    function getCompatSolutionStatusLabel(solution) {
-        if (!solution) return '无关联';
-        if (solution.status === 'published') return '有效';
-        if (solution.status === 'pending') return '审核中';
-        if (solution.unavailableReason === 'offline') return '已下架';
-        if (solution.unavailableReason === 'deleted') return '已删除';
-        if (solution.unavailableReason === 'private') return '已转私密';
-        return '不可用';
+    function getCompatSolutionStatusLabel(snapshot) {
+        if (!snapshot) return '无关联';
+        if (snapshot.status === 'available') return '有效';
+        if (snapshot.status === 'deprecated') return '已废弃';
+        if (snapshot.status === 'invalid') return '无效';
+        return '无效';
     }
 
-    function getCompatSolutionBadge(solution, includeDataAttr = true) {
-        const statusClass = solution ? solution.status : 'unlinked';
-        const dataAttr = includeDataAttr ? ` data-solution-status="${statusClass}"` : '';
-        return `<span class="compat-solution-badge ${statusClass}"${dataAttr}>${escapeHtml(getCompatSolutionStatusLabel(solution))}</span>`;
+    function getCompatSolutionBadge(snapshot, includeDataAttr = true) {
+        const statusClass = snapshot ? snapshot.status : 'unlinked';
+        const dataAttr = includeDataAttr ? ` data-snapshot-status="${statusClass}"` : '';
+        return `<span class="compat-solution-badge ${statusClass}"${dataAttr}>${escapeHtml(getCompatSolutionStatusLabel(snapshot))}</span>`;
     }
 
     function getCompatSolutionCell(feedback) {
-        const solution = feedback.solution;
-        if (!solution) {
-            return `<div class="compat-solution-cell">${getCompatSolutionBadge(null)}<div class="compat-solution-meta" style="margin-top:4px;">该评价未关联运行方案</div></div>`;
+        const snapshot = feedback.snapshot;
+        if (!snapshot) {
+            return `<div class="compat-solution-cell">${getCompatSolutionBadge(null)}<div class="compat-solution-meta" style="margin-top:4px;">该评价未分享配置快照</div></div>`;
         }
         return `<div class="compat-solution-cell">
-            <div class="compat-solution-name">${escapeHtml(solution.name || '-')}</div>
-            <div style="margin-bottom:4px;">${getCompatSolutionBadge(solution)}</div>
-            <div class="compat-solution-meta">${escapeHtml(solution.id || '-')} · ${escapeHtml(solution.source || '-')}</div>
+            <div class="compat-solution-name">本次启动方案</div>
+            <div style="margin-bottom:4px;">${getCompatSolutionBadge(snapshot)}</div>
+            <div class="compat-solution-meta">${escapeHtml(snapshot.reviewSnapshotId || '-')} · 本次游玩 ${Math.floor(Number(snapshot.durationSeconds || 0) / 60)}分${String(Number(snapshot.durationSeconds || 0) % 60).padStart(2,'0')}秒</div>
         </div>`;
     }
 
@@ -7714,8 +7812,8 @@
             const pinOp = f.pinned
                 ? `<a class="action-link" onclick="window.toggleCompatPin('${f.id}')">取消置顶</a>`
                 : `<a class="action-link" onclick="window.toggleCompatPin('${f.id}')">置顶</a>`;
-            const solutionOp = f.solution
-                ? `<a class="action-link" data-action="view-solution" onclick="window.openCompatSolutionDetail('${f.id}')">查看方案</a>`
+            const solutionOp = f.snapshot
+                ? `<a class="action-link" data-action="view-snapshot" onclick="window.openCompatSolutionDetail('${f.id}')">查看快照</a>`
                 : '';
             const createdAt = f.createdAt ? timeAgo(f.createdAt) : (f.date || '-');
             const userName = f.name || f.uid || '-';
@@ -7854,6 +7952,32 @@
         `).join('');
     }
 
+    function renderCompatSnapshotConfigGroups(groups) {
+        if (!Array.isArray(groups) || groups.length === 0) {
+            return '<div class="compat-snapshot-config-empty">快照配置正文缺失</div>';
+        }
+        return groups.map(group => {
+            const items = Array.isArray(group?.items) ? group.items : [];
+            const rows = items.length ? items.map(item => `
+                <div class="compat-snapshot-config-row" data-config-key="${escapeHtml(item?.key || '')}">
+                    <div class="compat-snapshot-config-label">${escapeHtml(item?.label || item?.key || '-')}</div>
+                    <div class="compat-snapshot-config-value">${escapeHtml(item?.displayValue || '-')}</div>
+                </div>
+            `).join('') : `
+                <div class="compat-snapshot-config-row">
+                    <div class="compat-snapshot-config-label">配置项</div>
+                    <div class="compat-snapshot-config-value">无</div>
+                </div>
+            `;
+            return `
+                <section class="compat-snapshot-config-group" data-config-group="${escapeHtml(group?.key || '')}">
+                    <div class="compat-snapshot-config-group-title">${escapeHtml(group?.label || group?.key || '未命名分组')}</div>
+                    ${rows}
+                </section>
+            `;
+        }).join('');
+    }
+
     window.openCompatReviewDetail = function(feedbackId) {
         const feedback = findCompatFeedbackById(feedbackId);
         const drawer = document.getElementById('compat-review-detail-drawer');
@@ -7868,14 +7992,20 @@
             ['评分与类型', `${clampInt(feedback.stars,1,5)} 星 · ${escapeHtml((feedback.tags || []).join('、') || '-')}`],
             ['反馈内容', escapeHtml(feedback.content || feedback.text || '（未填写）')],
             ['评价状态', feedback.deleted ? '已删除' : (feedback.hidden ? '已隐藏' : '显示中')],
-            ['关联方案', feedback.solution ? `${escapeHtml(feedback.solution.name || '-')} · ${escapeHtml(getCompatSolutionStatusLabel(feedback.solution))}` : '无关联'],
+            ['关联快照', feedback.snapshot
+                ? `${escapeHtml(feedback.snapshot.reviewSnapshotId || '-')} · ${escapeHtml(getCompatSolutionStatusLabel(feedback.snapshot))}`
+                : '无关联'],
             ['提交时间', escapeHtml(feedback.createdAt || '-')]
         ]);
-        const solutionState = feedback.solution ? getCompatSolutionStatusLabel(feedback.solution) : '无关联方案';
-        note.classList.toggle('warning', !!(feedback.solution && feedback.solution.status === 'unavailable'));
-        note.textContent = feedback.solution && feedback.solution.status === 'unavailable'
-            ? `方案${solutionState}，评价仍保留；处理评价不会修改方案状态。`
-            : '评价内容与关联方案分别管理；隐藏、恢复、置顶或删除评价都不会修改方案状态。';
+        const snapshotState = feedback.snapshot ? getCompatSolutionStatusLabel(feedback.snapshot) : '无关联快照';
+        note.classList.toggle('warning', Boolean(feedback.snapshot && feedback.snapshot.status !== 'available'));
+        note.textContent = feedback.hidden && feedback.snapshot
+            ? `评价已隐藏，C 端停止展示快照入口；后台保留${snapshotState}快照用于追溯。`
+            : feedback.snapshot?.status === 'available'
+                ? '评价显示中，关联快照仅供查看和追溯。'
+                : feedback.snapshot
+                    ? `快照${snapshotState}，评价仍然保留。`
+                    : '该评价没有分享配置快照。';
         drawer.classList.add('active');
         drawer.setAttribute('aria-hidden', 'false');
     };
@@ -7889,33 +8019,36 @@
     };
 
     function getCompatSolutionLifecycleCopy(feedback) {
-        if (!feedback || !feedback.solution) return '该评价未关联运行方案。';
-        const solution = feedback.solution;
-        if (feedback.deleted && solution.status === 'published') return '评价已删除，方案仍然有效';
-        if (feedback.hidden && solution.status === 'published') return '评价已隐藏，方案仍然有效';
-        if (solution.status === 'pending') return '方案仍在审核中，评价保持原状态';
-        if (solution.status === 'unavailable') return `方案${getCompatSolutionStatusLabel(solution)}，评价仍然保留`;
-        return '评价显示中，方案仍然有效；双方生命周期相互独立';
+        if (!feedback) return '未找到评价。';
+        if (feedback.deleted) return '评价已删除，关联快照已同步删除';
+        if (!feedback.snapshot) return '该评价未关联配置快照。';
+        const snapshot = feedback.snapshot;
+        if (feedback.hidden) return '评价已隐藏，C 端停止展示快照入口；后台保留追溯';
+        if (snapshot.status === 'deprecated') return '快照已废弃，评价仍然保留';
+        if (snapshot.status === 'invalid') return '快照无效，评价仍然保留';
+        return '评价显示中，关联快照仅供查看和追溯';
     }
 
     window.openCompatSolutionDetail = function(feedbackId) {
         const feedback = findCompatFeedbackById(feedbackId);
         const drawer = document.getElementById('compat-solution-detail-drawer');
         const fields = document.getElementById('compat-solution-detail-fields');
+        const configGroups = document.getElementById('compat-solution-config-groups');
         const status = document.getElementById('compat-solution-detail-status');
-        if (!feedback || !feedback.solution || !drawer || !fields || !status) return;
-        const solution = feedback.solution;
+        if (!feedback || !feedback.snapshot || !drawer || !fields || !configGroups || !status) return;
+        const snapshot = feedback.snapshot;
         window._activeCompatSolutionFeedbackId = feedbackId;
+        const durationSeconds = Math.max(0, Number(snapshot.durationSeconds || 0));
         fields.innerHTML = compatDetailRows([
-            ['方案 ID', escapeHtml(solution.id || '-')],
-            ['方案名称', escapeHtml(solution.name || '-')],
-            ['方案来源', escapeHtml(solution.source || '-')],
-            ['方案版本', escapeHtml(solution.version || '-')],
-            ['方案状态', getCompatSolutionBadge(solution, false)],
-            ['关联时间', escapeHtml(solution.linkedAt || '-')],
+            ['快照 ID', escapeHtml(snapshot.reviewSnapshotId || '-')],
+            ['标题', '本次启动方案'],
+            ['快照状态', getCompatSolutionBadge(snapshot, false)],
+            ['本次游玩时长', `${Math.floor(durationSeconds / 60)}分${String(durationSeconds % 60).padStart(2,'0')}秒`],
+            ['分享时间', escapeHtml(snapshot.sharedAt || '-')],
             ['关联评价', `${escapeHtml(feedback.id || '-')} · ${feedback.deleted ? '已删除' : (feedback.hidden ? '已隐藏' : '显示中')}`]
         ]);
-        status.classList.toggle('warning', solution.status !== 'published');
+        configGroups.innerHTML = renderCompatSnapshotConfigGroups(snapshot.configGroups);
+        status.classList.toggle('warning', snapshot.status !== 'available' || feedback.hidden || feedback.deleted);
         status.textContent = getCompatSolutionLifecycleCopy(feedback);
         drawer.classList.add('active');
         drawer.setAttribute('aria-hidden', 'false');
@@ -7941,16 +8074,21 @@
         const feedbacks = getCompatFeedbacks();
         const item = feedbacks.find(f => f && f.id === feedbackId);
         if (!item || item.deleted) return;
-        const solutionText = item.solution ? `\n\n关联方案「${item.solution.name}」不会被删除或下架。` : '';
-        if (!window.confirm(`确定删除这条评价吗？${solutionText}`)) return;
+        const snapshotText = item.snapshot
+            ? '\n\n关联快照将同步删除，且无法恢复。'
+            : '';
+        if (!window.confirm(`确定删除这条评价吗？${snapshotText}`)) return;
+        item.snapshot = null;
         item.deleted = true;
         item.deletedAt = new Date().toISOString();
         setCompatFeedbacks(feedbacks);
         getCompatFbSelectedSet(region || 'domestic').delete(feedbackId);
+        if (window._activeCompatSolutionFeedbackId === feedbackId) {
+            window.closeCompatSolutionDetail();
+        }
         renderCompatFbTable('domestic');
         renderCompatFbTable('overseas');
         window.refreshCompatReportAdmin && window.refreshCompatReportAdmin();
-        if (item.solution) window.openCompatSolutionDetail(feedbackId);
     };
 
     let compatExportRows = [];
@@ -7979,8 +8117,8 @@
             <tr>
                 <td>${escapeHtml(item.id || '-')}</td>
                 <td>${escapeHtml(item.gameName || item.gameId || '-')}</td>
-                <td>${escapeHtml(item.solution?.name || '无关联')}</td>
-                <td>${escapeHtml(getCompatSolutionStatusLabel(item.solution))}</td>
+                <td>${escapeHtml(item.snapshot?.reviewSnapshotId || '无关联')}</td>
+                <td>${escapeHtml(getCompatSolutionStatusLabel(item.snapshot))}</td>
             </tr>
         `).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:24px;">暂无可导出记录</td></tr>';
         confirm.disabled = compatExportRows.length === 0;
@@ -8002,7 +8140,7 @@
 
     window.confirmCompatExport = function() {
         if (!compatExportRows.length) return;
-        const headers = ['评价ID','游戏名称','用户UID','设备','客户端版本','星级','标签','反馈内容','支持数','评价状态','创建时间','solution_id','solution_name','solution_status','solution_source','solution_linked_at'];
+        const headers = ['评价ID','游戏名称','用户UID','设备','客户端版本','星级','标签','反馈内容','支持数','评价状态','创建时间','review_snapshot_id','snapshot_status','duration_seconds','snapshot_shared_at'];
         const body = compatExportRows.map(item => [
             item.id,
             item.gameName || item.gameId,
@@ -8015,11 +8153,10 @@
             item.supportCount || item.likes || 0,
             item.hidden ? '已隐藏' : '显示中',
             item.createdAt,
-            item.solution?.id || '',
-            item.solution?.name || '',
-            getCompatSolutionStatusLabel(item.solution),
-            item.solution?.source || '',
-            item.solution?.linkedAt || ''
+            item.snapshot?.reviewSnapshotId || '',
+            item.snapshot?.status || '',
+            item.snapshot?.durationSeconds ?? '',
+            item.snapshot?.sharedAt || ''
         ].map(compatCsvCell).join(',')).join('\r\n');
         const csv = '\ufeff' + headers.map(compatCsvCell).join(',') + '\r\n' + body;
         const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });

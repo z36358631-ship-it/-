@@ -1242,7 +1242,7 @@
     <section id="solutionDetailPage" class="solution-detail-page" hidden aria-label="启动方案详情">
         <header class="solution-detail-header">
             <button id="solutionDetailBack" class="flow-back" type="button" aria-label="返回评价列表" onclick="closeSolutionDetail()">‹</button>
-            <div class="flow-title">方案详情</div>
+            <div class="flow-title">本次启动方案</div>
             <button id="refreshSolutionDetail" class="solution-refresh" type="button" aria-label="刷新方案详情" onclick="reloadSolutionDetail()">↻</button>
         </header>
         <div id="solutionDetailBody" class="solution-detail-body">
@@ -1250,7 +1250,7 @@
             <div id="solutionDetailContent">
                 <h2 id="solutionDetailSchemeName"></h2>
                 <div id="solutionDetailGpu" class="solution-gpu-tag"></div>
-                <div id="solutionTrustSummary" class="solution-trust-summary"></div>
+                <div id="solutionShareSummary" class="solution-trust-summary"></div>
                 <div id="solutionConfigGroups"></div>
             </div>
         </div>
@@ -1330,9 +1330,10 @@
                     </div>
                 </div>
                 <div class="fb-row" style="margin-bottom:0;">
-                    <div class="fb-lbl">补充说明</div>
+                    <div class="fb-lbl" id="feedbackNoteLabel">补充说明（选填）</div>
                     <div>
                         <textarea class="fb-textarea" id="fbEditor" placeholder="详细描述遇到的问题或体验（选填，最多200字）" maxlength="200" style="height:80px;"></textarea>
+                        <div id="feedbackImageLimit" style="margin:10px 0 6px;color:var(--muted);font-size:11px;">最多上传9张图片</div>
                         <div class="fb-media-upload" id="fbMediaList"></div>
                     </div>
                 </div>
@@ -1407,8 +1408,8 @@
 const LS_KEY = 'gh_compat_feedbacks_gta5_v12';
 const LS_REPORTED = 'gh_compat_reported_gta5_v12';
 const LS_LIKED = 'gh_compat_liked_gta5_v12';
-const COMMUNITY_PROFILES_KEY = 'gh_community_profiles_v1';
-const COMMUNITY_PROFILE_DIMENSIONS = Object.freeze({
+const REVIEW_SNAPSHOTS_KEY = 'gh_review_snapshots_v1';
+const REVIEW_SNAPSHOT_DIMENSIONS = Object.freeze({
     gameId: 'gta5',
     platform: 'android',
     gpuModel: 'Adreno 750',
@@ -1417,8 +1418,6 @@ const COMMUNITY_PROFILE_DIMENSIONS = Object.freeze({
     schemaVersion: '1',
     canonicalizerVersion: '1'
 });
-
-const COMMUNITY_SOLUTION_DETAILS_KEY = 'gh_community_solution_details_v1';
 
 function createSeedSolutionConfigGroups() {
     return [
@@ -1468,38 +1467,77 @@ function cloneSolutionConfigGroups(groups) {
     return Array.isArray(groups) ? JSON.parse(JSON.stringify(groups)) : [];
 }
 
-const SEED_SOLUTION_DETAIL_RECORDS = Object.freeze({
-    community_cfg_adreno750_stable_v1: Object.freeze({
-        solutionId: 'community_cfg_adreno750_stable_v1',
-        solutionName: 'Adreno 750 稳定方案',
-        status: 'published',
+const SEED_REVIEW_SNAPSHOTS = Object.freeze({
+    review_snapshot_s1: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s1',
+        reviewId: 's1',
+        solutionName: '本次启动方案',
+        status: 'available',
         gameId: 'gta5',
         platform: 'android',
         gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
         runtimeArchitecture: 'arm64',
         engineVersion: 'demo-engine-v1',
         schemaVersion: '1',
         canonicalizerVersion: '1',
         configHash: 'cfg_adreno750_stable_v1',
-        trustSummary: { verificationCount: 38, successRate: 92, lastVerifiedDays: 3, sampleSufficient: true },
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'Pixel用户_洛圣都',
+        playSessionId: 'seed_session_s1',
+        durationSeconds: 1122,
+        sharedAt: '2025-04-28T10:30:00.000Z',
         configGroups: createSeedSolutionConfigGroups(),
         actions: { canApply: true, applyDisabledReason: '', canCopy: true, copyDisabledReason: '' }
     }),
-    community_cfg_galaxy_audio_v1: Object.freeze({
-        solutionId: 'community_cfg_galaxy_audio_v1',
-        solutionName: 'Galaxy 音频兼容方案',
-        status: 'published',
+    review_snapshot_s2: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s2',
+        reviewId: 's2',
+        solutionName: '本次启动方案',
+        status: 'available',
         gameId: 'gta5',
         platform: 'android',
         gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
         runtimeArchitecture: 'arm64',
         engineVersion: 'demo-engine-v1',
         schemaVersion: '1',
         canonicalizerVersion: '1',
         configHash: 'cfg_galaxy_audio_v1',
-        trustSummary: { verificationCount: 8, successRate: null, lastVerifiedDays: 6, sampleSufficient: false },
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: '三星玩家_富兰克林',
+        playSessionId: 'seed_session_s2',
+        durationSeconds: 965,
+        sharedAt: '2025-04-25T09:18:00.000Z',
         configGroups: createSeedSolutionConfigGroups(),
         actions: { canApply: true, applyDisabledReason: '', canCopy: true, copyDisabledReason: '' }
+    }),
+    review_snapshot_s4: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s4',
+        reviewId: 's4',
+        solutionName: '本次启动方案',
+        status: 'deprecated',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_legacy_graphics_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'OnePlus_Trevor',
+        playSessionId: 'seed_session_s4',
+        durationSeconds: 863,
+        sharedAt: '2025-04-20T16:44:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: {
+            canApply: false,
+            applyDisabledReason: '方案已不可用',
+            canCopy: false,
+            copyDisabledReason: '方案已不可用'
+        }
     })
 });
 
@@ -1517,12 +1555,12 @@ const MY_UID = 'me_demo_user';
 const AVATARS = Array(7).fill('');
 
 const SEEDS = [
-    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', solution:{id:'community_cfg_adreno750_stable_v1',name:'Adreno 750 稳定方案',source:'社区共同验证',status:'published',configHash:'cfg_adreno750_stable_v1',samples:38,validationCount:38,totalDurationSeconds:186420,successRate:92,lastVerifiedDays:3} },
-    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['完美兼容'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'low-sample', solution:{id:'community_cfg_galaxy_audio_v1',name:'Galaxy 音频兼容方案',source:'社区共同验证',status:'published',configHash:'cfg_galaxy_audio_v1',samples:8,validationCount:8,totalDurationSeconds:26580,successRate:null,lastVerifiedDays:6} },
+    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', reviewSnapshotId:'review_snapshot_s1', durationSeconds:1122 },
+    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['完美兼容'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'valid', reviewSnapshotId:'review_snapshot_s2', durationSeconds:965 },
     { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.0.5', stars:5, tags:['完美兼容'], text:'启动过程很顺畅，进入游戏后画面稳定，手柄操作也没有异常。', date:'2025-04-22', likes:31 },
-    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.5', stars:3, tags:['基本可玩'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8, reviewState:'unavailable', solution:{id:'community_cfg_legacy_graphics_v1',name:'旧版图形修复方案',source:'社区共同验证',status:'unavailable',configHash:'cfg_legacy_graphics_v1',samples:21,validationCount:21,totalDurationSeconds:48220,successRate:76,lastVerifiedDays:18} },
+    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.5', stars:3, tags:['基本可玩'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8, reviewState:'unavailable', reviewSnapshotId:'review_snapshot_s4', durationSeconds:863 },
     { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.0.3', stars:4, tags:['完美兼容'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', html:'剧情向玩家<b>强烈推荐</b>，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
-    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro · HarmonyOS 5', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.2', stars:2, tags:['有部分问题'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5, reviewState:'none', solution:null },
+    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro · HarmonyOS 5', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.2', stars:2, tags:['有部分问题'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5, reviewState:'none', reviewSnapshotId:'' },
     { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', html:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！<u>强烈推荐</u>。', date:'2025-04-12', likes:43 },
 ];
 
@@ -1539,15 +1577,6 @@ function saveFeedbacks(list) {
     localStorage.setItem(LS_KEY, JSON.stringify(list));
 }
 
-function withCommunityDimensions(profile) {
-    return { ...COMMUNITY_PROFILE_DIMENSIONS, ...profile };
-}
-
-function toCommunityProfileMetadata(profile) {
-    const { configGroups, actions, trustSummary, ...metadata } = profile || {};
-    return withCommunityDimensions(metadata);
-}
-
 const SOLUTION_CONFIG_WHITELIST = Object.freeze({
     general: Object.freeze(['env', 'args', 'exe_path']),
     compatibility: Object.freeze([
@@ -1557,6 +1586,31 @@ const SOLUTION_CONFIG_WHITELIST = Object.freeze({
     dependencies: Object.freeze(['cjkfonts']),
     steam: Object.freeze(['steam_input_exp'])
 });
+const SOLUTION_CONFIG_LIMITS = Object.freeze({
+    maxBytes: 8192,
+    groupLabel: 32,
+    itemLabel: 48,
+    description: 160,
+    displayValue: 512
+});
+
+function containsLocalAbsolutePath(value) {
+    const text = String(value || '');
+    return /file:\/\//i.test(text)
+        || /(?:^|[\s"'=])(?:[a-z]:[\\/]|\\\\)/i.test(text)
+        || /(?:^|[\s"'=])\/(?:Users|home|var|tmp|private|storage|sdcard|mnt|data)\//i.test(text);
+}
+
+function isBoundedSnapshotText(value, maxLength, allowEmpty = false) {
+    if (typeof value !== 'string') return false;
+    const normalized = value.trim();
+    if (!allowEmpty && !normalized) return false;
+    return value.length <= maxLength && !containsLocalAbsolutePath(value);
+}
+
+function getUtf8ByteLength(value) {
+    return new TextEncoder().encode(String(value || '')).length;
+}
 
 function normalizeSolutionConfigGroups(groups) {
     if (!Array.isArray(groups) || groups.length === 0) return null;
@@ -1567,7 +1621,7 @@ function normalizeSolutionConfigGroups(groups) {
         const groupKey = typeof group.key === 'string' ? group.key : '';
         const allowedItems = SOLUTION_CONFIG_WHITELIST[groupKey];
         if (!groupKey || !allowedItems || seenGroups.has(groupKey)) return null;
-        if (typeof group.label !== 'string' || !group.label.trim()) return null;
+        if (!isBoundedSnapshotText(group.label, SOLUTION_CONFIG_LIMITS.groupLabel)) return null;
         if (!Array.isArray(group.items) || group.items.length === 0) return null;
         seenGroups.add(groupKey);
         const allowedItemSet = new Set(allowedItems);
@@ -1577,267 +1631,128 @@ function normalizeSolutionConfigGroups(groups) {
             if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
             const itemKey = typeof item.key === 'string' ? item.key : '';
             if (!itemKey || !allowedItemSet.has(itemKey) || seenItems.has(itemKey)) return null;
-            if (typeof item.label !== 'string' || !item.label.trim()) return null;
-            if (typeof item.description !== 'string') return null;
+            if (!isBoundedSnapshotText(item.label, SOLUTION_CONFIG_LIMITS.itemLabel)) return null;
+            if (!isBoundedSnapshotText(item.description, SOLUTION_CONFIG_LIMITS.description, true)) return null;
             if (!['text', 'boolean', 'number'].includes(item.valueType)) return null;
             if (item.displayValue === undefined || item.displayValue === null) return null;
+            const displayValue = String(item.displayValue);
+            if (!isBoundedSnapshotText(displayValue, SOLUTION_CONFIG_LIMITS.displayValue, true)) return null;
             seenItems.add(itemKey);
             normalizedItems.push({
                 key: itemKey,
                 label: item.label,
                 description: item.description,
                 valueType: item.valueType,
-                displayValue: String(item.displayValue)
+                displayValue
             });
         }
         normalizedGroups.push({ key: groupKey, label: group.label, items: normalizedItems });
     }
+    if (getUtf8ByteLength(JSON.stringify(normalizedGroups)) > SOLUTION_CONFIG_LIMITS.maxBytes) return null;
     return normalizedGroups;
 }
 
-function hasValidSolutionConfigGroups(groups) {
-    return Boolean(normalizeSolutionConfigGroups(groups));
-}
-
-function cloneSolutionDetailRecord(record) {
+function cloneReviewSnapshot(record) {
     return record ? JSON.parse(JSON.stringify(record)) : null;
 }
 
-function getCommunitySolutionDetails() {
-    const raw = localStorage.getItem(COMMUNITY_SOLUTION_DETAILS_KEY);
+function getReviewSnapshots() {
+    const raw = localStorage.getItem(REVIEW_SNAPSHOTS_KEY);
     if (raw === null) {
-        const seeds = Object.fromEntries(Object.entries(SEED_SOLUTION_DETAIL_RECORDS)
-            .map(([solutionId, record]) => [solutionId, cloneSolutionDetailRecord(record)]));
-        localStorage.setItem(COMMUNITY_SOLUTION_DETAILS_KEY, JSON.stringify(seeds));
+        const seeds = Object.fromEntries(Object.entries(SEED_REVIEW_SNAPSHOTS)
+            .map(([reviewSnapshotId, record]) => [reviewSnapshotId, cloneReviewSnapshot(record)]));
+        localStorage.setItem(REVIEW_SNAPSHOTS_KEY, JSON.stringify(seeds));
         return seeds;
     }
     try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-            return Object.fromEntries(parsed
-                .filter(record => record?.solutionId || record?.id)
-                .map(record => [record.solutionId || record.id, cloneSolutionDetailRecord(record)]));
-        }
-        if (parsed && typeof parsed === 'object') return parsed;
+        if (parsed && !Array.isArray(parsed) && typeof parsed === 'object') return parsed;
     } catch (error) {}
     return {};
 }
 
-function saveCommunitySolutionDetails(details) {
-    localStorage.setItem(COMMUNITY_SOLUTION_DETAILS_KEY, JSON.stringify(details || {}));
+function saveReviewSnapshots(snapshots) {
+    localStorage.setItem(REVIEW_SNAPSHOTS_KEY, JSON.stringify(snapshots || {}));
 }
 
-function findSolutionDetailRecord(solutionId) {
-    const record = getCommunitySolutionDetails()[solutionId];
-    return cloneSolutionDetailRecord(record || null);
+function findReviewSnapshot(reviewSnapshotId) {
+    if (!reviewSnapshotId) return null;
+    return cloneReviewSnapshot(getReviewSnapshots()[reviewSnapshotId] || null);
 }
 
-function saveSolutionDetailRecord(record) {
-    const configGroups = normalizeSolutionConfigGroups(record?.configGroups);
-    if (!record?.solutionId || !configGroups) return false;
-    const details = getCommunitySolutionDetails();
-    details[record.solutionId] = cloneSolutionDetailRecord({ ...record, configGroups });
-    saveCommunitySolutionDetails(details);
+function createReviewSnapshotId(reviewId) {
+    return 'review_snapshot_' + encodeURIComponent(String(reviewId));
+}
+
+function buildReviewSnapshot(reviewId, source) {
+    if (!reviewId || !source?.configHash || !source?.playSessionId) return null;
+    const configGroups = normalizeSolutionConfigGroups(source.configGroups);
+    if (!configGroups) return null;
+    const reviewSnapshotId = createReviewSnapshotId(reviewId);
+    const dimensions = { ...REVIEW_SNAPSHOT_DIMENSIONS, ...source };
+    const gpuModel = String(dimensions.gpuModel || '');
+    return {
+        reviewSnapshotId,
+        reviewId,
+        solutionName: '本次启动方案',
+        status: 'available',
+        gameId: String(dimensions.gameId || ''),
+        platform: String(dimensions.platform || ''),
+        gpuModel,
+        gpu: {
+            id: gpuModel ? gpuModel.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '',
+            displayName: gpuModel
+        },
+        runtimeArchitecture: String(dimensions.runtimeArchitecture || ''),
+        engineVersion: String(dimensions.engineVersion || ''),
+        schemaVersion: String(dimensions.schemaVersion || ''),
+        canonicalizerVersion: String(dimensions.canonicalizerVersion || ''),
+        configHash: String(dimensions.configHash),
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: String(source.reviewAuthorDisplayName || '我'),
+        playSessionId: String(source.playSessionId),
+        durationSeconds: Math.max(0, Number(source.durationSeconds || 0)),
+        sharedAt: new Date().toISOString(),
+        configGroups,
+        actions: {
+            canApply: true,
+            applyDisabledReason: '',
+            canCopy: true,
+            copyDisabledReason: ''
+        }
+    };
+}
+
+function persistReviewSnapshot(snapshot) {
+    if (!snapshot?.reviewSnapshotId || !snapshot?.reviewId) return false;
+    const snapshots = getReviewSnapshots();
+    if (snapshots[snapshot.reviewSnapshotId]) return false;
+    snapshots[snapshot.reviewSnapshotId] = cloneReviewSnapshot(snapshot);
+    saveReviewSnapshots(snapshots);
     return true;
 }
 
-function removeSolutionDetailRecord(solutionId) {
-    if (!solutionId) return;
-    const details = getCommunitySolutionDetails();
-    if (!details[solutionId]) return;
-    delete details[solutionId];
-    saveCommunitySolutionDetails(details);
+function createReviewSnapshot(reviewId, source) {
+    const snapshots = getReviewSnapshots();
+    const existing = Object.values(snapshots).find(item => item?.reviewId === reviewId);
+    if (existing) return cloneReviewSnapshot(existing);
+    const snapshot = buildReviewSnapshot(reviewId, source);
+    if (!snapshot || !persistReviewSnapshot(snapshot)) return null;
+    return snapshot;
 }
 
-function getCommunityProfileKey(profile) {
-    const normalized = withCommunityDimensions(profile || {});
-    return JSON.stringify([
-        normalized.gameId,
-        normalized.platform,
-        normalized.gpuModel,
-        normalized.runtimeArchitecture,
-        normalized.engineVersion,
-        normalized.schemaVersion,
-        normalized.canonicalizerVersion,
-        normalized.configHash
-    ].map(value => String(value ?? '')));
+function deleteReviewSnapshot(reviewSnapshotId, reviewId) {
+    if (!reviewSnapshotId || !reviewId) return false;
+    const snapshots = getReviewSnapshots();
+    const snapshot = snapshots[reviewSnapshotId];
+    if (!snapshot || snapshot.reviewId !== reviewId) return false;
+    delete snapshots[reviewSnapshotId];
+    saveReviewSnapshots(snapshots);
+    return true;
 }
 
-function createCommunitySolutionId(profile) {
-    const normalized = withCommunityDimensions(profile || {});
-    const dimensions = [
-        normalized.gameId,
-        normalized.platform,
-        normalized.gpuModel,
-        normalized.runtimeArchitecture,
-        normalized.engineVersion,
-        normalized.schemaVersion,
-        normalized.canonicalizerVersion,
-        normalized.configHash
-    ];
-    const encodedSegments = dimensions.map(value => encodeURIComponent(String(value ?? ''))
-        .replace(/[!'()*]/g, character => '%' + character.charCodeAt(0).toString(16).toUpperCase()));
-    return 'community_' + encodedSegments.map(segment => segment.length + ':' + segment).join('');
-}
-
-function getCommunityProfiles() {
-    getCommunitySolutionDetails();
-    try {
-        const raw = localStorage.getItem(COMMUNITY_PROFILES_KEY);
-        if (raw) {
-            const profiles = JSON.parse(raw).map(toCommunityProfileMetadata);
-            localStorage.setItem(COMMUNITY_PROFILES_KEY, JSON.stringify(profiles));
-            return profiles;
-        }
-    } catch (error) {}
-    const profiles = SEEDS
-        .map(item => item.solution)
-        .filter(solution => solution?.status === 'published')
-        .filter((solution, index, list) => list.findIndex(item => item.id === solution.id) === index)
-        .map(solution => toCommunityProfileMetadata({
-            ...solution,
-            validationSessionIds: [...(solution.validationSessionIds || [])],
-            validationRecords: [...(solution.validationRecords || [])]
-        }));
-    localStorage.setItem(COMMUNITY_PROFILES_KEY, JSON.stringify(profiles));
-    return profiles;
-}
-
-function saveCommunityProfiles(profiles) {
-    localStorage.setItem(COMMUNITY_PROFILES_KEY, JSON.stringify(profiles.map(toCommunityProfileMetadata)));
-}
-
-function resolveReviewSolution(review) {
-    const solutionId = review?.solutionId || review?.solution?.id || '';
-    if (solutionId) {
-        const communityProfile = getCommunityProfiles().find(item => item.id === solutionId);
-        if (communityProfile) return communityProfile;
-    }
-    return review?.solution || null;
-}
-
-function upsertCommunityProfile(snapshot, reviewId) {
-    if (!snapshot?.configHash || !snapshot?.playSessionId || !reviewId) return null;
-    const storedConfigGroups = normalizeSolutionConfigGroups(snapshot.configGroups);
-    if (!storedConfigGroups) return null;
-    const normalizedSnapshot = withCommunityDimensions(snapshot);
-    const profileKey = getCommunityProfileKey(normalizedSnapshot);
-    const profiles = getCommunityProfiles();
-    const existingIndex = profiles.findIndex(item => getCommunityProfileKey(item) === profileKey);
-    const current = existingIndex >= 0 ? { ...profiles[existingIndex] } : {
-        gameId: normalizedSnapshot.gameId,
-        platform: normalizedSnapshot.platform,
-        gpuModel: normalizedSnapshot.gpuModel,
-        runtimeArchitecture: normalizedSnapshot.runtimeArchitecture,
-        engineVersion: normalizedSnapshot.engineVersion,
-        schemaVersion: normalizedSnapshot.schemaVersion,
-        canonicalizerVersion: normalizedSnapshot.canonicalizerVersion,
-        id: createCommunitySolutionId(normalizedSnapshot),
-        name: normalizedSnapshot.profileName || '社区稳定方案',
-        source: '社区共同验证',
-        status: 'published',
-        configHash: normalizedSnapshot.configHash,
-        validationCount: 0,
-        totalDurationSeconds: 0,
-        validationSessionIds: [],
-        validationRecords: [],
-        samples: 0,
-        successRate: null,
-        lastVerifiedDays: 0
-    };
-    const records = Array.isArray(current.validationRecords)
-        ? current.validationRecords.map(record => ({ ...record, reviewIds: [...(record.reviewIds || [])] }))
-        : [];
-    const sessionId = String(normalizedSnapshot.playSessionId);
-    let record = records.find(item => item.playSessionId === sessionId);
-    if (!record) {
-        record = {
-            playSessionId: sessionId,
-            durationSeconds: Number(normalizedSnapshot.durationSeconds || 0),
-            reviewIds: [reviewId]
-        };
-        records.push(record);
-        current.validationCount = Number(current.validationCount ?? current.samples ?? 0) + 1;
-        current.totalDurationSeconds = Number(current.totalDurationSeconds || 0) + record.durationSeconds;
-    } else if (!record.reviewIds.includes(reviewId)) {
-        record.reviewIds.push(reviewId);
-    }
-    current.validationRecords = records;
-    current.validationSessionIds = records.map(item => item.playSessionId);
-    current.samples = current.validationCount;
-    current.successRate = current.validationCount >= 10 ? 92 : null;
-    current.lastVerifiedDays = 0;
-    const existingDetailRecord = findSolutionDetailRecord(current.id);
-    const serverActions = existingDetailRecord?.actions
-        ? cloneSolutionDetailRecord(existingDetailRecord.actions)
-        : getSolutionActionsForRecord({ status: current.status });
-    const detailRecord = {
-        solutionId: current.id,
-        solutionName: current.name,
-        status: current.status,
-        gameId: normalizedSnapshot.gameId,
-        platform: normalizedSnapshot.platform,
-        gpuModel: normalizedSnapshot.gpuModel,
-        runtimeArchitecture: normalizedSnapshot.runtimeArchitecture,
-        engineVersion: normalizedSnapshot.engineVersion,
-        schemaVersion: normalizedSnapshot.schemaVersion,
-        canonicalizerVersion: normalizedSnapshot.canonicalizerVersion,
-        configHash: normalizedSnapshot.configHash,
-        trustSummary: {
-            verificationCount: current.validationCount,
-            successRate: current.successRate,
-            lastVerifiedDays: current.lastVerifiedDays,
-            sampleSufficient: current.validationCount >= 10
-        },
-        configGroups: storedConfigGroups,
-        actions: serverActions
-    };
-    if (!saveSolutionDetailRecord(detailRecord)) return null;
-    if (existingIndex >= 0) profiles[existingIndex] = current;
-    else profiles.push(current);
-    saveCommunityProfiles(profiles);
-    return current;
-}
-
-function removeCommunityContribution(solutionId, playSessionId, reviewId) {
-    if (!solutionId || !playSessionId || !reviewId) return;
-    const profiles = getCommunityProfiles();
-    const profileIndex = profiles.findIndex(item => item.id === solutionId);
-    if (profileIndex < 0) return;
-    const current = { ...profiles[profileIndex] };
-    const records = Array.isArray(current.validationRecords)
-        ? current.validationRecords.map(record => ({ ...record, reviewIds: [...(record.reviewIds || [])] }))
-        : [];
-    const recordIndex = records.findIndex(record => record.playSessionId === playSessionId);
-    if (recordIndex < 0) return;
-    const record = records[recordIndex];
-    record.reviewIds = record.reviewIds.filter(id => id !== reviewId);
-    if (record.reviewIds.length === 0) {
-        records.splice(recordIndex, 1);
-        current.validationCount = Math.max(0, Number(current.validationCount ?? current.samples ?? 0) - 1);
-        current.totalDurationSeconds = Math.max(0, Number(current.totalDurationSeconds || 0) - Number(record.durationSeconds || 0));
-    }
-    current.validationRecords = records;
-    current.validationSessionIds = records.map(item => item.playSessionId);
-    current.samples = current.validationCount;
-    current.successRate = current.validationCount >= 10 ? 92 : null;
-    if (current.validationCount === 0) {
-        profiles.splice(profileIndex, 1);
-        removeSolutionDetailRecord(solutionId);
-    } else {
-        profiles[profileIndex] = current;
-        const detailRecord = findSolutionDetailRecord(solutionId);
-        if (detailRecord) {
-            detailRecord.trustSummary = {
-                verificationCount: current.validationCount,
-                successRate: current.successRate,
-                lastVerifiedDays: current.lastVerifiedDays,
-                sampleSufficient: current.validationCount >= 10
-            };
-            saveSolutionDetailRecord(detailRecord);
-        }
-    }
-    saveCommunityProfiles(profiles);
+function resolveReviewSnapshot(review) {
+    return review?.reviewSnapshotId ? findReviewSnapshot(review.reviewSnapshotId) : null;
 }
 
 // ============================================================
@@ -1959,14 +1874,17 @@ function refreshPanel(side) {
     }
 }
 
+function formatDuration(seconds) {
+    const totalSeconds = Math.max(0, Math.floor(Number(seconds || 0)));
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainder = String(totalSeconds % 60).padStart(2, '0');
+    return minutes + '分' + remainder + '秒';
+}
+
 function renderReviewSolution(review) {
-    const solution = resolveReviewSolution(review);
-    if (review.stars < 3 || !solution) return '';
-    if (solution.status !== 'published') return '';
-    const stats = solution.samples < 10
-        ? solution.samples + ' 次验证 · 样本较少 · 最近验证 ' + solution.lastVerifiedDays + ' 天前'
-        : '同配置 · 成功率 ' + solution.successRate + '% · ' + solution.samples + ' 次验证 · 最近验证 ' + solution.lastVerifiedDays + ' 天前';
-    return '<button class="review-solution-card" type="button" aria-label="打开方案 ' + solution.name + '" onclick="openSolutionDetail(\'' + solution.id + '\')"><span class="review-solution-heading"><strong>' + solution.name + '</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">' + stats + '</span></button>';
+    const snapshot = resolveReviewSnapshot(review);
+    if (review.stars < 3 || !snapshot || snapshot.status !== 'available') return '';
+    return '<button class="review-solution-card" type="button" aria-label="打开本次启动方案" onclick="openSolutionDetail(\'' + snapshot.reviewSnapshotId + '\')"><span class="review-solution-heading"><strong>本次启动方案</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
 }
 
 function renderItem(f) {
@@ -2143,7 +2061,7 @@ const journeyState = {
     playSessionId: '',
     startedAt: 0,
     sessionSnapshot: {
-        ...COMMUNITY_PROFILE_DIMENSIONS,
+        ...REVIEW_SNAPSHOT_DIMENSIONS,
         configHash: 'cfg_local_default_v1',
         profileName: '本次启动方案',
         durationSeconds: 1122,
@@ -2389,9 +2307,13 @@ function renderCompatTypes() {
 function renderFeedbackSolution() {
     const section = document.getElementById('fbSolutionSection');
     const content = document.getElementById('fbSolutionContent');
-    const canShare = fbStarVal >= 3
-        && Boolean(journeyState.sessionSnapshot?.configHash)
+    const existingReview = editingId === null
+        ? null
+        : getFeedbacks().find(item => item.id === editingId);
+    const hasExistingSnapshot = Boolean(existingReview?.reviewSnapshotId && findReviewSnapshot(existingReview.reviewSnapshotId));
+    const hasCurrentSession = Boolean(journeyState.sessionSnapshot?.configHash)
         && Boolean(journeyState.sessionSnapshot?.playSessionId);
+    const canShare = fbStarVal >= 3 && (hasExistingSnapshot || hasCurrentSession);
     if (!canShare) {
         section.hidden = true;
         content.innerHTML = '';
@@ -2429,77 +2351,105 @@ function submitFeedback() {
     const list = getFeedbacks();
     const existingIndex = editingId === null ? -1 : list.findIndex(item => item.id === editingId);
     const existingReview = existingIndex >= 0 ? list[existingIndex] : null;
-    const existingSolution = existingReview ? resolveReviewSolution(existingReview) : null;
-    const savedReviewId = existingReview?.id || ('u_' + Date.now());
-    const wantsShare = fbStarVal >= 3 && shareSessionRequested;
-    const keepsExistingContribution = Boolean(
-        wantsShare
-        && existingSolution?.status === 'published'
-        && existingReview?.sharedPlaySessionId === journeyState.sessionSnapshot.playSessionId
-        && getCommunityProfileKey(existingSolution) === getCommunityProfileKey(journeyState.sessionSnapshot)
-    );
-    if (existingReview?.solutionId && !keepsExistingContribution) {
-        removeCommunityContribution(existingReview.solutionId, existingReview.sharedPlaySessionId, existingReview.id);
-    }
-    let solution = null;
-    if (wantsShare) {
-        if (keepsExistingContribution) {
-            solution = existingSolution;
-        } else {
-            solution = upsertCommunityProfile(journeyState.sessionSnapshot, savedReviewId);
-        }
-    }
-    const linkedSolution = solution?.id || '';
-    const linkedPlaySessionId = solution
-        ? (keepsExistingContribution ? existingReview.sharedPlaySessionId : journeyState.sessionSnapshot.playSessionId)
-        : '';
-    const reviewState = solution
-        ? (Number(solution.validationCount ?? solution.samples ?? 0) < 10 ? 'low-sample' : 'valid')
-        : (fbStarVal < 3 ? 'none' : 'unlinked');
-    if (editingId !== null) {
-        if (existingIndex !== -1) {
-            list[existingIndex] = {
-                ...list[existingIndex],
-                stars: fbStarVal,
-                tags,
-                text,
-                html: '',
-                media: fbMediaFiles,
-                compatType: selectedCompatType,
-                solutionId: linkedSolution,
-                solution: null,
-                reviewState,
-                sharedPlaySessionId: linkedPlaySessionId
-            };
-        }
-        saveFeedbacks(list);
-        localStorage.removeItem(REVIEW_DRAFT_KEY);
-        closeFeedbackModal({ preserveDraft: false });
-        finishReviewSubmission(savedReviewId);
-        showToast('评价已更新！');
+    if (editingId !== null && !existingReview) {
+        showToast('评价不存在或已删除');
         return;
     }
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    const item = {
-        id: savedReviewId, uid: MY_UID,
-        name: '我', avatar: AVATARS[0],
-        device: 'Pixel 9 Pro · Android 15',
-        gpu: 'Adreno 750',
-        memoryGB: 12,
-        stars: fbStarVal, tags, text, html: '', media: fbMediaFiles,
-        compatType: selectedCompatType, solutionId: linkedSolution,
-        reviewState,
-        sharedPlaySessionId: linkedPlaySessionId,
-        likes: 0, appVersion: 'v6.1.2'
+    const savedReviewId = existingReview?.id || ('u_' + Date.now());
+    const wantsShare = fbStarVal >= 3 && shareSessionRequested;
+    const existingSnapshot = existingReview?.reviewSnapshotId
+        ? findReviewSnapshot(existingReview.reviewSnapshotId)
+        : null;
+    let snapshot = wantsShare ? existingSnapshot : null;
+    const pendingSnapshot = wantsShare && !snapshot
+        ? buildReviewSnapshot(savedReviewId, {
+            ...journeyState.sessionSnapshot,
+            reviewAuthorDisplayName: existingReview?.name || '我'
+        })
+        : null;
+    const reviewSnapshotId = snapshot?.reviewSnapshotId || '';
+    const reviewState = snapshot
+        ? (snapshot.status === 'available' ? 'valid' : 'unavailable')
+        : (fbStarVal < 3 ? 'none' : 'unlinked');
+    const reviewChanges = {
+        stars: fbStarVal,
+        tags,
+        text,
+        html: '',
+        media: fbMediaFiles,
+        compatType: selectedCompatType,
+        reviewSnapshotId,
+        durationSeconds: snapshot?.durationSeconds || 0,
+        reviewState
     };
-    item.date = dateStr;
-    list.unshift(item);
-    saveFeedbacks(list);
+    if (existingReview) {
+        list[existingIndex] = { ...existingReview, ...reviewChanges };
+    } else {
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        list.unshift({
+            id: savedReviewId,
+            uid: MY_UID,
+            name: '我',
+            avatar: AVATARS[0],
+            device: 'Pixel 9 Pro · Android 15',
+            gpu: 'Adreno 750',
+            memoryGB: 12,
+            ...reviewChanges,
+            likes: 0,
+            appVersion: 'v6.1.2',
+            date: dateStr
+        });
+    }
+
+    try {
+        saveFeedbacks(list);
+    } catch (error) {
+        showToast('评价保存失败，请稍后重试');
+        return;
+    }
+
+    if (existingSnapshot && !wantsShare) {
+        try {
+            if (!deleteReviewSnapshot(existingSnapshot.reviewSnapshotId, existingReview.id)) {
+                throw new Error('snapshot-delete-rejected');
+            }
+        } catch (error) {
+            try { saveFeedbacks(getFeedbacks().map(item => item.id === existingReview.id ? existingReview : item)); } catch (rollbackError) {}
+            showToast('暂时无法取消分享，请稍后重试');
+            return;
+        }
+    }
+
+    let shareFailed = wantsShare && !snapshot && !pendingSnapshot;
+    if (pendingSnapshot) {
+        try {
+            if (!persistReviewSnapshot(pendingSnapshot)) throw new Error('snapshot-save-rejected');
+            const linkedList = getFeedbacks();
+            const linkedIndex = linkedList.findIndex(item => item.id === savedReviewId);
+            if (linkedIndex < 0) throw new Error('review-link-missing');
+            linkedList[linkedIndex] = {
+                ...linkedList[linkedIndex],
+                reviewSnapshotId: pendingSnapshot.reviewSnapshotId,
+                durationSeconds: pendingSnapshot.durationSeconds,
+                reviewState: 'valid'
+            };
+            saveFeedbacks(linkedList);
+            snapshot = pendingSnapshot;
+        } catch (error) {
+            try { deleteReviewSnapshot(pendingSnapshot.reviewSnapshotId, savedReviewId); } catch (rollbackError) {}
+            shareFailed = true;
+        }
+    }
+
     localStorage.removeItem(REVIEW_DRAFT_KEY);
     closeFeedbackModal({ preserveDraft: false });
     finishReviewSubmission(savedReviewId);
-    showToast('评价提交成功，感谢你的反馈！');
+    if (shareFailed) {
+        showToast(existingReview ? '评价已更新，方案分享失败' : '评价已提交，方案分享失败');
+    } else {
+        showToast(existingReview ? '评价已更新！' : '评价提交成功，感谢你的反馈！');
+    }
 }
 
 // ============================================================
@@ -2510,11 +2460,24 @@ function deleteMyReview(id) {
     if (!confirm('删除后无法恢复，确认删除？')) return;
     const feedbacks = getFeedbacks();
     const removed = feedbacks.find(item => item.id === id);
-    if (removed?.solutionId) {
-        removeCommunityContribution(removed.solutionId, removed.sharedPlaySessionId, removed.id);
-    }
     const list = feedbacks.filter(x => x.id !== id);
-    saveFeedbacks(list);
+    try {
+        saveFeedbacks(list);
+    } catch (error) {
+        showToast('评价删除失败，请稍后重试');
+        return;
+    }
+    if (removed?.reviewSnapshotId) {
+        try {
+            if (!deleteReviewSnapshot(removed.reviewSnapshotId, removed.id)) {
+                throw new Error('snapshot-delete-rejected');
+            }
+        } catch (error) {
+            try { saveFeedbacks(feedbacks); } catch (rollbackError) {}
+            showToast('评价删除失败，请稍后重试');
+            return;
+        }
+    }
     refreshEntryCard();
     if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
     showToast('评价已删除');
@@ -2526,7 +2489,7 @@ function editMyReview(id) {
     editingId = id;
     fbStarVal = item.stars || 0;
     selectedCompatType = TYPE_BY_STAR[fbStarVal] || '';
-    shareSessionRequested = Boolean(item.solutionId || item.solution?.id);
+    shareSessionRequested = Boolean(item.reviewSnapshotId);
     fbMediaFiles = item.media ? [...item.media] : [];
     paintFbStars(fbStarVal);
     document.getElementById('fbEditor').value = item.text || '';
@@ -2701,11 +2664,12 @@ let pendingAuxiliaryConfirmation = false;
 const COPIED_SOLUTIONS_KEY = 'gh_copied_solutions_v1';
 const SUPPORTED_SOLUTION_SCHEMA_VERSIONS = new Set(['1']);
 
-function findSolutionById(solutionId) {
-    return getCommunityProfiles().find(item => item.id === solutionId) || null;
+function findSolutionById(reviewSnapshotId) {
+    return findReviewSnapshot(reviewSnapshotId);
 }
 
 const SOLUTION_IDENTITY_FIELDS = Object.freeze([
+    'reviewId',
     'gameId',
     'platform',
     'gpuModel',
@@ -2716,34 +2680,33 @@ const SOLUTION_IDENTITY_FIELDS = Object.freeze([
     'configHash'
 ]);
 
-function isSolutionDetailRecordConsistent(requestedSolutionId, metadata, record) {
-    if (!requestedSolutionId || !metadata || !record) return false;
-    if (metadata.id !== requestedSolutionId || record.solutionId !== requestedSolutionId) return false;
+function isSolutionDetailRecordConsistent(requestedReviewSnapshotId, metadata, record) {
+    if (!requestedReviewSnapshotId || !metadata || !record) return false;
+    if (metadata.reviewSnapshotId !== requestedReviewSnapshotId
+        || record.reviewSnapshotId !== requestedReviewSnapshotId) return false;
     return SOLUTION_IDENTITY_FIELDS.every(field => String(metadata[field] ?? '') === String(record[field] ?? ''));
 }
 
-function loadSolutionDetailSources(solutionId) {
-    const metadata = findSolutionById(solutionId);
-    if (!metadata) return { metadata: null, record: null };
-    const record = findSolutionDetailRecord(solutionId);
+function loadSolutionDetailSources(reviewSnapshotId) {
+    const record = findSolutionById(reviewSnapshotId);
     return {
-        metadata,
-        record: isSolutionDetailRecordConsistent(solutionId, metadata, record) ? record : null
+        metadata: cloneReviewSnapshot(record),
+        record: record?.reviewSnapshotId === reviewSnapshotId ? cloneReviewSnapshot(record) : null
     };
 }
 
 function getSolutionActionsForRecord(record) {
-    const unavailable = !record || record.status !== 'published';
+    const unavailable = !record || record.status !== 'available';
     return {
         canApply: !unavailable,
-        applyDisabledReason: '',
+        applyDisabledReason: unavailable ? '方案已不可用' : '',
         canCopy: !unavailable,
-        copyDisabledReason: ''
+        copyDisabledReason: unavailable ? '方案已不可用' : ''
     };
 }
 
 function getEffectiveSolutionActions(record) {
-    const serverActions = record?.actions || {};
+    const serverActions = record?.actions || getSolutionActionsForRecord(record);
     const deviceActions = {
         canApply: solutionApplicationMode !== 'hard',
         applyDisabledReason: solutionApplicationMode === 'hard'
@@ -2757,11 +2720,11 @@ function getEffectiveSolutionActions(record) {
     return {
         canApply: serverCanApply && deviceActions.canApply,
         applyDisabledReason: !serverCanApply
-            ? String(serverActions.applyDisabledReason || '')
+            ? String(serverActions.applyDisabledReason || '方案已不可用')
             : String(deviceActions.applyDisabledReason || ''),
         canCopy: serverCanCopy && deviceActions.canCopy,
         copyDisabledReason: !serverCanCopy
-            ? String(serverActions.copyDisabledReason || '')
+            ? String(serverActions.copyDisabledReason || '方案已不可用')
             : String(deviceActions.copyDisabledReason || '')
     };
 }
@@ -2772,8 +2735,8 @@ function getCurrentSolutionDetailActions() {
         || detailPage.hidden
         || solutionDetailScenario !== 'ready'
         || !currentDetailSolutionId
-        || currentDetailSolution?.status !== 'published'
-        || currentDetailRecord?.status !== 'published'
+        || currentDetailSolution?.status !== 'available'
+        || currentDetailRecord?.status !== 'available'
         || !isSolutionDetailRecordConsistent(currentDetailSolutionId, currentDetailSolution, currentDetailRecord)) {
         return { canApply: false, applyDisabledReason: '', canCopy: false, copyDisabledReason: '' };
     }
@@ -2781,39 +2744,30 @@ function getCurrentSolutionDetailActions() {
 }
 
 function buildSolutionDetailViewModel(record) {
-    if (!record || record.status !== 'published') return null;
+    if (!record || record.status !== 'available') return null;
     if (!SUPPORTED_SOLUTION_SCHEMA_VERSIONS.has(String(record.schemaVersion || ''))) {
         throw new Error('方案字段版本无法解析');
     }
     const configGroups = normalizeSolutionConfigGroups(record.configGroups);
     if (!configGroups) throw new Error('方案配置正文缺失或包含非白名单字段');
-
-    const trustSummary = record.trustSummary || {};
-    const verificationCount = Number(trustSummary.verificationCount || 0);
-    const numericSuccessRate = trustSummary.successRate === null || trustSummary.successRate === undefined
-        ? null
-        : Number(trustSummary.successRate);
-    const sampleSufficient = Boolean(trustSummary.sampleSufficient) && verificationCount >= 10;
     const actions = getEffectiveSolutionActions(record);
     return {
-        solutionId: record.solutionId,
-        solutionName: record.solutionName,
-        status: 'available',
+        reviewSnapshotId: record.reviewSnapshotId,
+        reviewId: record.reviewId,
+        solutionName: '本次启动方案',
+        status: record.status,
         gameId: record.gameId,
         platform: record.platform,
-        gpu: { displayName: record.gpuModel || '' },
+        gpu: { displayName: record.gpu?.displayName || record.gpuModel || '' },
         runtimeArchitecture: record.runtimeArchitecture,
         engineVersion: record.engineVersion,
         schemaVersion: record.schemaVersion,
         canonicalizerVersion: record.canonicalizerVersion,
         configHash: record.configHash,
-        sourceType: 'community',
-        trustSummary: {
-            verificationCount,
-            successRate: sampleSufficient && Number.isFinite(numericSuccessRate) ? numericSuccessRate : null,
-            lastVerifiedDays: Number(trustSummary.lastVerifiedDays || 0),
-            sampleSufficient
-        },
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: String(record.reviewAuthorDisplayName || ''),
+        playSessionId: record.playSessionId,
+        durationSeconds: Number(record.durationSeconds || 0),
         configGroups,
         actions: {
             canApply: Boolean(actions.canApply),
@@ -2830,17 +2784,9 @@ function escapeSolutionText(value) {
     })[character]);
 }
 
-function renderSolutionTrust(summary) {
-    const verificationCount = Number(summary.verificationCount || 0);
-    const sample = summary.sampleSufficient && Number.isFinite(summary.successRate)
-        ? '成功率 ' + summary.successRate + '% · ' + verificationCount + ' 次验证'
-        : summary.sampleSufficient
-            ? verificationCount + ' 次验证'
-            : verificationCount + ' 次验证 · 样本较少';
-    const lastVerified = Number.isFinite(summary.lastVerifiedDays)
-        ? '最近验证 ' + summary.lastVerifiedDays + ' 天前'
-        : '最近验证时间未知';
-    return '社区共同验证 · ' + sample + ' · ' + lastVerified;
+function renderSolutionShareSummary(viewModel) {
+    const author = viewModel.reviewAuthorDisplayName || '匿名玩家';
+    return author + ' · 本次游玩 ' + formatDuration(viewModel.durationSeconds);
 }
 
 function renderSolutionConfigGroups(groups) {
@@ -2909,7 +2855,7 @@ function renderSolutionDetailState(scenario = solutionDetailScenario) {
     if (scenario === 'loading') return showState('正在加载方案详情');
     if (scenario === 'load-error') return showState('加载失败，请重新加载', true);
     if (scenario === 'invalid'
-        || (currentDetailSolution && currentDetailSolution.status !== 'published')
+        || (currentDetailSolution && currentDetailSolution.status !== 'available')
         || (!currentDetailSolution && !currentDetailRecord)) {
         return showState('方案已不可用');
     }
@@ -2931,14 +2877,14 @@ function renderSolutionDetailState(scenario = solutionDetailScenario) {
     const gpu = document.getElementById('solutionDetailGpu');
     gpu.textContent = viewModel.gpu.displayName ? 'GPU：' + viewModel.gpu.displayName : '';
     gpu.hidden = !viewModel.gpu.displayName;
-    document.getElementById('solutionTrustSummary').textContent = renderSolutionTrust(viewModel.trustSummary);
+    document.getElementById('solutionShareSummary').textContent = renderSolutionShareSummary(viewModel);
     document.getElementById('solutionConfigGroups').innerHTML = renderSolutionConfigGroups(viewModel.configGroups);
     setSolutionDetailActions(viewModel.actions);
 }
 
-function openSolutionDetail(solutionId) {
-    currentDetailSolutionId = solutionId;
-    const sources = loadSolutionDetailSources(solutionId);
+function openSolutionDetail(reviewSnapshotId) {
+    currentDetailSolutionId = reviewSnapshotId;
+    const sources = loadSolutionDetailSources(reviewSnapshotId);
     currentDetailSolution = sources.metadata;
     currentDetailRecord = sources.record;
     pendingAuxiliaryConfirmation = false;
@@ -2979,8 +2925,8 @@ function applyCurrentSolution() {
         button.textContent = '确认应用';
         return;
     }
-    const appliedSolution = cloneSolutionDetailRecord(currentDetailRecord);
-    journeyState.appliedSolutionId = appliedSolution.solutionId;
+    const appliedSolution = cloneReviewSnapshot(currentDetailRecord);
+    journeyState.appliedSolutionId = appliedSolution.reviewSnapshotId;
     journeyState.appliedSolutionName = appliedSolution.solutionName;
     journeyState.appliedConfigHash = appliedSolution.configHash;
     journeyState.appliedSolutionRecord = appliedSolution;
@@ -3033,7 +2979,7 @@ function confirmCopyCurrentSolution() {
     const copies = getCopiedSolutions();
     copies.push({
         id: 'copy_' + Date.now(),
-        sourceSolutionId: currentDetailRecord.solutionId,
+        sourceReviewSnapshotId: currentDetailRecord.reviewSnapshotId,
         name,
         configGroups: cloneSolutionConfigGroups(currentDetailRecord.configGroups),
         cloudShared: false
@@ -3079,7 +3025,7 @@ function resetJourney() {
         playSessionId: '',
         startedAt: 0,
         sessionSnapshot: {
-            ...COMMUNITY_PROFILE_DIMENSIONS,
+            ...REVIEW_SNAPSHOT_DIMENSIONS,
             configHash: 'cfg_local_default_v1',
             profileName: '本次启动方案',
             durationSeconds: 1122,
@@ -3101,7 +3047,9 @@ function bindCompatibilityV12Demo() {
     setOrient('pt');
     window.compatibilityDemo = Object.freeze({
         getInviteState: () => JSON.parse(JSON.stringify(inviteDemoState)),
-        getCommunityProfiles: () => JSON.parse(JSON.stringify(getCommunityProfiles())),
+        getReviewSnapshots: () => JSON.parse(JSON.stringify(getReviewSnapshots())),
+        createReviewSnapshotForTest: (reviewId, snapshot) => cloneReviewSnapshot(createReviewSnapshot(reviewId, snapshot)),
+        deleteReviewSnapshot,
         getCopiedSolutions: () => JSON.parse(JSON.stringify(getCopiedSolutions())),
         getSessionSnapshot: () => JSON.parse(JSON.stringify(journeyState.sessionSnapshot)),
         setSessionSnapshot: snapshot => {
