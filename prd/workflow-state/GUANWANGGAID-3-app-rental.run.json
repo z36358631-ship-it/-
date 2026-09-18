@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "runId": "ccc6c17f-0204-4dba-b317-b94f73a28333",
+  "requirementId": "GUANWANGGAID-3",
+  "revision": 17,
+  "status": "passed",
+  "createdAt": "2026-09-18T08:18:54.9746815Z",
+  "updatedAt": "2026-09-18T09:08:24.6311384Z",
+  "cardPath": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\prd\\workflow-state\\GUANWANGGAID-3-app-rental.md",
+  "cardHash": "018C53E8856B29AF84C8205FE9BE82F2F9D33D199114020F36C063B09F7DA24D",
+  "contract": {
+    "goal": "完成 APP 租号 Demo、截图和 PRD 的会员游戏入口、发现列表权益状态、游戏库有效期和全线框化收敛",
+    "inScope": [
+      "APP安卓C端竖屏和掌机横屏Demo",
+      "排行榜与玩游戏PC游戏列表",
+      "游戏库会员游戏/PC游戏/复古游戏顶层结构",
+      "游戏库权益卡有效期",
+      "PRD截图和APP主PRD"
+    ],
+    "outOfScope": [
+      "Mac端改动",
+      "热门游戏时租",
+      "独立会员游戏库页",
+      "列表内启动下载购买",
+      "远程推送"
+    ],
+    "inputs": [
+      "用户本会话确认",
+      "APP V6.1.1 screen-12/16/18/38/41/42",
+      "现有APP租号Demo",
+      "2026-09-18设计规格与实施计划"
+    ],
+    "deliverables": [
+      "APP租号Demo普通版和标注版",
+      "APP租号关键页横竖屏截图",
+      "APP租号主PRD",
+      "机器验证报告"
+    ],
+    "changes": [
+      "游戏库顶层会员游戏/PC游戏/复古游戏",
+      "发现列表三类个人权益状态",
+      "游戏库权益有效期",
+      "Demo图片全部线框化",
+      "统一会员入口至同一会员Tab"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "type": "requirement-resolution",
+      "required": true,
+      "dependsOn": [],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [
+        "prd\\workflow-state\\GUANWANGGAID-3-app-rental.md"
+      ],
+      "evidence": [
+        "任务编号GUANWANGGAID-3与当前APP租号状态卡唯一对应"
+      ],
+      "validation": "唯一需求和边界已定位",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S2",
+      "type": "fact-recovery",
+      "required": true,
+      "dependsOn": [
+        "S1"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\prd\\workflow-state\\GUANWANGGAID-3-app-rental.md",
+          "sha256": "018C53E8856B29AF84C8205FE9BE82F2F9D33D199114020F36C063B09F7DA24D"
+        }
+      ],
+      "outputs": [
+        "prd\\workflow-state\\GUANWANGGAID-3-app-rental.md"
+      ],
+      "evidence": [
+        "用户本会话确认与历史状态卡已恢复"
+      ],
+      "validation": "当前有效事实、历史改动与约束已恢复",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S3",
+      "type": "change-compilation",
+      "required": true,
+      "dependsOn": [
+        "S2"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\docs\\superpowers\\specs\\2026-09-18-app-member-library-entry-design.md",
+          "sha256": "EC489E74B2AF537ADEB5C8761DE644261D507AE39E6A745C331E4B270CB71475"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\docs\\superpowers\\plans\\2026-09-18-app-member-library-entry.md",
+          "sha256": "3E744E38071B17CE7FFE3435047E53B58E03B880EB69FB3FF2C48D3BFE8AA64D"
+        }
+      ],
+      "outputs": [
+        "docs\\superpowers\\specs\\2026-09-18-app-member-library-entry-design.md",
+        "docs\\superpowers\\plans\\2026-09-18-app-member-library-entry.md"
+      ],
+      "evidence": [
+        "D-001至D-007均已由用户确认"
+      ],
+      "validation": "变更集已收敛为可执行规格与计划",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S4",
+      "type": "page-baseline",
+      "required": true,
+      "dependsOn": [
+        "S3"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\.agents\\skills\\gamehub-app-ui\\assets\\screen-catalog.json",
+          "sha256": "FE3FF0ED22A1FC8CBCCEDF0BB0DC3EF9471497E8A89A72DE76B73B5DC74EA468"
+        }
+      ],
+      "outputs": [
+        "docs\\superpowers\\specs\\2026-09-18-app-member-library-entry-design.md"
+      ],
+      "evidence": [
+        "竖屏基准screen-12、screen-16、screen-18；横屏基准screen-38、screen-41、screen-42；Shell C-SHELL-P/C-SHELL-L；组件C-TAB/D-GAME-CARD"
+      ],
+      "validation": "横竖屏页面基线与组件映射已通过",
+      "error": null,
+      "reviewer": "主代理"
+    },
+    {
+      "id": "S5",
+      "type": "artifact-execution",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S4"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\docs\\superpowers\\specs\\2026-09-18-app-member-library-entry-design.md",
+          "sha256": "EC489E74B2AF537ADEB5C8761DE644261D507AE39E6A745C331E4B270CB71475"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\docs\\superpowers\\plans\\2026-09-18-app-member-library-entry.md",
+          "sha256": "3E744E38071B17CE7FFE3435047E53B58E03B880EB69FB3FF2C48D3BFE8AA64D"
+        }
+      ],
+      "outputs": [
+        "demos\\APP租号功能\\盖世游戏APP租号功能demo.html",
+        "demos\\APP租号功能\\盖世游戏APP租号功能-标注版.html",
+        "prd\\【盖世游戏APP】游戏租号需求\\【Prd】《盖世游戏APP》游戏租号需求.md",
+        "public\\prd\\app-rental"
+      ],
+      "evidence": [
+        "普通版与标注版同源构建；36张主截图、售后进度、售后类型与消息中心图片已生成"
+      ],
+      "validation": "Demo、截图与PRD产物已完成",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S6",
+      "type": "machine-validation",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\demos\\APP租号功能\\盖世游戏APP租号功能demo.html",
+          "sha256": "884DD0B163C8A348E359D48E08EC3D68A7E7606459745FAFECE57CC10DF0E2E0"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\tools\\verify-app-rental-demo.mjs",
+          "sha256": "2B385EB311B892B9089C4B325C3BCD432B8962A1471A0009B01AE2AC92C1DADE"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\tools\\capture-app-rental-prd-screenshots.mjs",
+          "sha256": "EA36A19F9C0ECF76F8CF1FB542B193DCFF2D12ECC043861C9519B333A6853E0E"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\prd\\【盖世游戏APP】游戏租号需求\\【Prd】《盖世游戏APP》游戏租号需求.md",
+          "sha256": "671DA7CD79A55652BC7766E42026C8208919F445BB7FA440176A27EDFE9DCF2A"
+        }
+      ],
+      "outputs": [
+        "test-results\\app-rental-verification\\contract-results.json",
+        "test-results\\app-rental-capture\\capture-results.json"
+      ],
+      "evidence": [
+        "构建成功",
+        "REFACTOR_GATES 33/33 PASS",
+        "FULL_PAGE_MATRIX 36/36 PASS",
+        "APP_LIBRARY_CONVERGENCE 63/63 PASS",
+        "ADMIN_DUAL_CLIENT 27/27 PASS",
+        "CAPTURE 36/36 PASS",
+        "SUPPLEMENTAL_CAPTURE 10/10 PASS",
+        "to-prd 0 error"
+      ],
+      "validation": "机器验证全部通过",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S7",
+      "type": "professional-review",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\public\\prd\\app-rental\\09-play-portrait.png",
+          "sha256": "37792E1F82434BC9CE00B59E2382B3953BC69E26E7E4E9636BBED53B6A1AD971"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\public\\prd\\app-rental\\09-play-landscape.png",
+          "sha256": "39C3966EC43201A71262AD195AC2341D43CE1A5C5516D38872E144FC7949349A"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\public\\prd\\app-rental\\11-ranking-portrait.png",
+          "sha256": "6045A5391EBBC925541FCA5397393CAAEA3480F49DAF67FA03F556B3431AB51E"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\public\\prd\\app-rental\\11-ranking-landscape.png",
+          "sha256": "6717C1DD682D28B973E1B399A7736A1511F3698E85450E5F42DFE62A278B31F7"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\public\\prd\\app-rental\\12-library-portrait.png",
+          "sha256": "A9907E5BC8AB16F328E010F930C569212E1C31DA94B44B93EE7F2EBA10FE0634"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\public\\prd\\app-rental\\12-library-landscape.png",
+          "sha256": "046CDB5CDA58800766476290C95E9DEB699BB91798A9AAF457B3C9CED9754B73"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\public\\prd\\app-rental\\15-member-library-portrait.png",
+          "sha256": "D6E03C9A1788536D695049A1858471B5463742E98084138141F80A1580D37167"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\public\\prd\\app-rental\\15-member-library-landscape.png",
+          "sha256": "DB5353BEA5B942EDA626FB7B4E9899EF1409D877A76E6C98A0301F7B8EDC81AC"
+        }
+      ],
+      "outputs": [
+        "public\\prd\\app-rental"
+      ],
+      "evidence": [
+        "09玩游戏横竖屏：三种发现状态可识别且无列表操作按钮",
+        "11排行榜横竖屏：卡片与两行状态无溢出",
+        "12游戏库横竖屏：三Tab顺序、两列权益卡与剩余有效期位置正确",
+        "15会员游戏横竖屏：顶部统一有效期、卡片无云存档标签且未强制拉满"
+      ],
+      "validation": "关键页面专业审查通过",
+      "error": null,
+      "reviewer": "主代理人工审图"
+    },
+    {
+      "id": "S8",
+      "type": "consistency-delivery",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\prd\\workflow-state\\GUANWANGGAID-3-app-rental.md",
+          "sha256": "EB3E841B847333B821316DA2BB98CD353C864D6E2B01214CFF3C9F38DBF1B647"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\demos\\APP租号功能\\盖世游戏APP租号功能demo.html",
+          "sha256": "884DD0B163C8A348E359D48E08EC3D68A7E7606459745FAFECE57CC10DF0E2E0"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\prd\\【盖世游戏APP】游戏租号需求\\【Prd】《盖世游戏APP》游戏租号需求.md",
+          "sha256": "671DA7CD79A55652BC7766E42026C8208919F445BB7FA440176A27EDFE9DCF2A"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\test-results\\app-rental-verification\\contract-results.json",
+          "sha256": "AA25A4FE1A469BCBC1F035A62434DBA59ED5455BF1581416DFF40EF1DF0DD283"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.codex-tmp\\app-rental-prd-flow-v31\\test-results\\app-rental-capture\\capture-results.json",
+          "sha256": "7A1C677D4E96DD2FE4CFDC08F91DBA16B73AF4C435F987B50717EAB9E1F8B483"
+        }
+      ],
+      "outputs": [
+        "prd\\workflow-state\\GUANWANGGAID-3-app-rental.md",
+        "demos\\APP租号功能\\盖世游戏APP租号功能demo.html",
+        "prd\\【盖世游戏APP】游戏租号需求\\【Prd】《盖世游戏APP》游戏租号需求.md",
+        "public\\prd\\app-rental"
+      ],
+      "evidence": [
+        "Demo、截图、PRD和状态卡业务口径一致",
+        "未执行git push，远程资源状态已明确标记"
+      ],
+      "validation": "本地一致性交付完成",
+      "error": null,
+      "reviewer": null
+    }
+  ]
+}

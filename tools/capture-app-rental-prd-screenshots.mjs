@@ -35,7 +35,7 @@ const PAGE_CONTRACTS = Object.freeze({
   detail: Object.freeze({ screen: 'detail', baselineSource: 'app-v611' }),
   checkout: Object.freeze({ screen: 'checkout', baselineSource: 'mac-rental' }),
   membership: Object.freeze({ screen: 'membership', baselineSource: 'mac-rental' }),
-  'member-library': Object.freeze({ screen: 'member-library', baselineSource: 'mac-rental' }),
+  'member-library': Object.freeze({ screen: 'library', baselineSource: 'app-v611' }),
   orders: Object.freeze({ screen: 'orders', baselineSource: 'mac-rental' }),
   'order-detail': Object.freeze({ screen: 'order-detail', baselineSource: 'mac-rental' }),
   'steam-login': Object.freeze({ screen: 'steam-login', baselineSource: 'mac-rental' }),
@@ -312,10 +312,13 @@ async function setShotState(page, shot) {
       orientation: snapshot?.orientation ?? demo.snapshot().orientation,
       screen: snapshot?.screen ?? demo.snapshot().screen,
       playTab: snapshot?.playTab ?? demo.snapshot().playTab,
+      libraryTab: snapshot?.libraryTab ?? demo.snapshot().libraryTab,
     };
   }, shot);
   assert(!result.apiMissing, `${shot.name} requires window.__appRentalDemo.openCaptureState(pageId)`);
   if (shot.pageId === 'play') assert.equal(result.playTab, 'pc', `${shot.name} must open the PC game tab`);
+  if (shot.pageId === 'library') assert.equal(result.libraryTab, 'pc', `${shot.name} must open the PC game library tab`);
+  if (shot.pageId === 'member-library') assert.equal(result.libraryTab, 'member', `${shot.name} must open the unified member game library tab`);
   if (shot.pageId === 'orders') await page.locator('[data-action="toggle-order-search"]').click();
 }
 
@@ -325,19 +328,20 @@ async function verifyShotState(page, shot) {
   assert.equal(state.orientation, shot.orientation, `${shot.name} orientation mismatch`);
   assert.equal(state.screen, contract.screen, `${shot.name} screen mismatch`);
 
-  const pageMarker = await page.evaluate((pageId) => {
+  const pageMarker = await page.evaluate(({ pageId, renderedPageId }) => {
     const rootNode = document.querySelector('#appRentalDemo');
-    const markerNode = rootNode?.dataset.pageId === pageId
+    const expectedPageId = renderedPageId || pageId;
+    const markerNode = rootNode?.dataset.pageId === expectedPageId
       ? rootNode
-      : rootNode?.querySelector(`[data-page-id="${pageId}"]`);
+      : rootNode?.querySelector(`[data-page-id="${expectedPageId}"]`);
     return {
       pageId: markerNode?.dataset.pageId || rootNode?.dataset.pageId || null,
       baselineSource: markerNode?.dataset.baselineSource || rootNode?.dataset.baselineSource || null,
       stub: Boolean(rootNode?.querySelector('.stub-panel, .landscape-stub')),
       placeholderCopy: /当前入口已连通|后续补齐|功能页面/.test(rootNode?.innerText || ''),
     };
-  }, shot.pageId);
-  assert.equal(pageMarker.pageId, shot.pageId, `${shot.name} data-page-id mismatch`);
+  }, { pageId: shot.pageId, renderedPageId: contract.renderedPageId });
+  assert.equal(pageMarker.pageId, contract.renderedPageId || shot.pageId, `${shot.name} data-page-id mismatch`);
   assert.equal(pageMarker.baselineSource, contract.baselineSource, `${shot.name} baseline source mismatch`);
   assert.equal(pageMarker.stub, false, `${shot.name} still renders a stub page`);
   assert.equal(pageMarker.placeholderCopy, false, `${shot.name} contains placeholder copy`);
@@ -378,6 +382,91 @@ async function verifyShotState(page, shot) {
     assert.equal(home.miniDemands.length, 4, `${shot.name} home mini rental demand count mismatch`);
     assert(home.miniDemands.every((text) => text === '在租99+'), `${shot.name} home mini rental demand mismatch`);
     assert(home.clickable, `${shot.name} contains a non-clickable home game card`);
+  }
+
+  if (['play', 'ranking'].includes(shot.pageId)) {
+    const expectedDiscoveryStates = {
+      'first-rental': ['¥1.9 首租', '99+ 在租'],
+      rented: ['已租号', '99+ 在租'],
+      playable: ['可畅玩', '99+ 在租'],
+    };
+    const discoveryList = await page.evaluate((expectedStates) => {
+      const cards = [...document.querySelectorAll('[data-discovery-game-card]')];
+      const states = cards.map((card) => {
+        const stateNode = card.querySelector('[data-discovery-rental-state]');
+        return {
+          value: stateNode?.dataset.discoveryRentalState || '',
+          lines: (stateNode?.innerText || '').split(/\n+/).map((line) => line.trim()).filter(Boolean),
+          nestedActions: [...card.querySelectorAll('button, [role="button"], [data-action]')].filter((node) => node !== card).length,
+          forbiddenActionCopy: /登录游戏|下载游戏|启动游戏|租号开玩|立即购买/.test(card.innerText),
+          clickable: card.matches('button, a, [role="button"], [data-action]'),
+        };
+      });
+      return {
+        states,
+        stateSet: [...new Set(states.map(({ value }) => value))].sort(),
+        labelsMatch: states.every(({ value, lines }) => JSON.stringify(lines) === JSON.stringify(expectedStates[value] || [])),
+      };
+    }, expectedDiscoveryStates);
+    assert(discoveryList.states.length >= 3, `${shot.name} must show at least three discovery game cards`);
+    assert.deepEqual(discoveryList.stateSet, Object.keys(expectedDiscoveryStates).sort(), `${shot.name} discovery states mismatch`);
+    assert(discoveryList.labelsMatch, `${shot.name} discovery two-line copy mismatch: ${JSON.stringify(discoveryList.states)}`);
+    assert(discoveryList.states.every(({ nestedActions, forbiddenActionCopy, clickable }) => nestedActions === 0 && !forbiddenActionCopy && clickable), `${shot.name} discovery cards must be whole-card detail entries without inline actions`);
+  }
+
+  if (shot.pageId === 'library') {
+    const library = await page.evaluate(() => {
+      const tabs = [...document.querySelectorAll('[data-library-top-tab]')];
+      const cards = [...document.querySelectorAll('[data-library-entitlement-card]')];
+      return {
+        libraryTab: window.__appRentalDemo.snapshot().libraryTab,
+        tabs: tabs.map((node) => [node.dataset.value, node.textContent.trim()]),
+        selected: tabs.find((node) => node.getAttribute('aria-selected') === 'true' || node.classList.contains('active'))?.dataset.value || '',
+        singleLine: new Set(tabs.map((node) => Math.round(node.getBoundingClientRect().top))).size === 1
+          && tabs.every((node) => node.scrollHeight <= node.clientHeight + 1)
+          && (!tabs[0]?.parentElement || tabs[0].parentElement.scrollWidth <= tabs[0].parentElement.clientWidth + 1),
+        cards: cards.map((node) => ({
+          type: node.dataset.libraryEntitlementCard,
+          text: node.innerText,
+          validity: node.querySelector('.library-validity')?.textContent.trim() || '',
+          validityCount: node.querySelectorAll('.library-validity').length,
+          nestedActions: node.querySelectorAll('button, [role="button"], [data-action]').length,
+        })),
+      };
+    });
+    assert.equal(library.libraryTab, 'pc', `${shot.name} must capture PC game tab`);
+    assert.deepEqual(library.tabs, [['member', '会员游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']], `${shot.name} top-level game library tabs mismatch`);
+    assert(library.selected === 'pc' && library.singleLine, `${shot.name} PC top tab must be selected and remain on one line`);
+    const trial = library.cards.find(({ type }) => type === 'trial');
+    const permanent = library.cards.find(({ type }) => type === 'permanent');
+    assert(trial?.text.includes('标准版 · 已租号') && /^剩余(?:\d+天\d+小时|\d+小时\d+分)$/.test(trial.validity) && trial.validityCount === 1, `${shot.name} trial entitlement card mismatch`);
+    assert(permanent?.text.includes('标准版 · 单游戏永久') && permanent.validityCount === 0 && !permanent.text.includes('剩余'), `${shot.name} permanent entitlement card mismatch`);
+    assert(library.cards.every(({ nestedActions }) => nestedActions === 0), `${shot.name} library entitlement cards must not contain inline actions`);
+  }
+
+  if (shot.pageId === 'member-library') {
+    const memberLibrary = await page.evaluate(() => {
+      const cards = [...document.querySelectorAll('.member-game-card')];
+      return {
+        screen: window.__appRentalDemo.snapshot().screen,
+        libraryTab: window.__appRentalDemo.snapshot().libraryTab,
+        tabs: [...document.querySelectorAll('[data-library-top-tab]')].map((node) => [node.dataset.value, node.textContent.trim()]),
+        memberSelected: document.querySelector('[data-library-top-tab][data-value="member"]')?.getAttribute('aria-selected') === 'true'
+          || document.querySelector('[data-library-top-tab][data-value="member"]')?.classList.contains('active'),
+        cardCount: cards.length,
+        versions: cards.map((node) => node.querySelector('.member-game-version')?.textContent.trim() || ''),
+        entitlementCount: document.querySelectorAll('.member-game-card[data-library-entitlement-card], .member-game-card .library-validity').length,
+        nestedActions: cards.reduce((count, node) => count + node.querySelectorAll('button, [role="button"], [data-action]').length, 0),
+        legacyLayoutCount: document.querySelectorAll('.portrait-member-library, .landscape-member-library').length,
+        memberSearchCount: document.querySelectorAll('[data-member-library-search-input]').length,
+        nonMemberToolCount: document.querySelectorAll('.library-pc-sources, .library-tools, .landscape-tools').length,
+      };
+    });
+    assert(memberLibrary.screen === 'library' && memberLibrary.libraryTab === 'member' && memberLibrary.memberSelected, `${shot.name} must capture unified member game tab`);
+    assert.deepEqual(memberLibrary.tabs, [['member', '会员游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']], `${shot.name} top-level game library tabs mismatch`);
+    assert(memberLibrary.cardCount >= 6 && memberLibrary.versions.every((text) => text === '标准版'), `${shot.name} member game cards mismatch`);
+    assert(memberLibrary.entitlementCount === 0 && memberLibrary.nestedActions === 0 && memberLibrary.legacyLayoutCount === 0, `${shot.name} member game cards contain entitlement/action data or still use legacy page`);
+    assert(memberLibrary.memberSearchCount === 1 && memberLibrary.nonMemberToolCount === 0, `${shot.name} member game tab must expose search only without PC import/filter tools`);
   }
 
   if (shot.pageId === 'search') {
@@ -527,9 +616,9 @@ async function verifyShotState(page, shot) {
   }
 
   if (shot.pageId === 'after-sales') {
-    const afterSalesLabels = await page.locator('[data-after-sales-type]').allTextContents();
-    assert.deepEqual(afterSalesLabels.map((value) => value.trim()), ['启动失败', 'Steam登录失败', '账号异常/频繁掉线', '其他问题'], `${shot.name} after-sales types mismatch`);
-    assert(!(await device.innerText()).includes('3天无理由'), `${shot.name} exposes 3-day no-reason as an after-sales type`);
+    assert.deepEqual(await page.locator('[data-after-sales-request]').allInnerTexts(), ['申请退款', '申请换号'], `${shot.name} after-sales requests mismatch`);
+    assert.deepEqual(await page.locator('[data-after-sales-reason]').allInnerTexts(), ['3天无理由', '无法登录', '无法启动', '账号异常', '其他问题'], `${shot.name} refund reasons mismatch`);
+    assert.equal(await page.locator('[data-after-sales-request="refund"].selected').count(), 1, `${shot.name} refund request must be selected`);
   }
 
   if (shot.pageId === 'orders') {
@@ -571,6 +660,18 @@ async function verifyShotState(page, shot) {
 
   const visible = await device.innerText();
   const publicState = JSON.stringify(state);
+  const forbiddenVisibleStates = ['正在分配账号', '正在获取登录凭据', '正在自动登录', '内部账号准备状态'];
+  for (const copy of forbiddenVisibleStates) {
+    assert(!visible.includes(copy), `${shot.name} exposes forbidden account-process copy: ${copy}`);
+  }
+  const visibleMedia = await page.evaluate(() => ({
+    images: [...document.images].filter((node) => node.getClientRects().length > 0).length,
+    wireframes: [...document.querySelectorAll('[data-wireframe-media]')].filter((node) => node.getClientRects().length > 0).length,
+  }));
+  assert.equal(visibleMedia.images, 0, `${shot.name} still renders bitmap/image content`);
+  if (['home', 'detail', 'checkout', 'membership', 'play', 'community', 'ranking', 'library', 'profile', 'search', 'member-library', 'order-detail', 'membership-success'].includes(shot.pageId)) {
+    assert(visibleMedia.wireframes > 0, `${shot.name} has no visible wireframe media`);
+  }
   for (const secret of KNOWN_SECRETS) {
     assert(!visible.includes(secret), `${shot.name} exposes sensitive value ${secret}`);
   }
@@ -747,17 +848,18 @@ async function captureAfterSalesProgressEvidence(browser) {
       }, { targetOrientation: orientation });
       await page.locator('.order-list-card[data-status="active"]').click();
       await page.getByRole('button', { name: '申请售后', exact: true }).click();
-      await page.locator('[data-after-sales-type="launch"]').click();
+      await page.locator('[data-after-sales-reason="launch"]').click();
       await page.locator('#after-sales-description').fill('游戏启动后持续闪退，需要协助排查。');
       await page.evaluate(() => window.__appRentalDemo.submitAfterSales());
       await page.locator('[data-order-card-action="after-sales-detail"]').click();
+      await page.waitForSelector('[aria-label="售后进度"]', { state: 'attached' });
       await waitForAssets(page);
       const evidence = await page.evaluate(() => {
         const dialog = document.querySelector('[aria-label="售后进度"]');
         const steps = [...document.querySelectorAll('.after-sales-progress-dialog .refund-progress-timeline span')];
         return {
           dialogVisible: Boolean(dialog),
-          processing: dialog?.textContent.includes('售后处理中') || false,
+          processing: /(?:售后|退款|换号)处理中/.test(dialog?.textContent || ''),
           steps: steps.map((node) => ({ text: node.textContent.trim(), className: node.className })),
           withdraw: dialog?.querySelector('[data-action="withdraw-after-sales"]')?.textContent.trim() || '',
           text: dialog?.innerText || '',

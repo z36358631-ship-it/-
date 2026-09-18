@@ -28,7 +28,7 @@ const FULL_PAGE_MATRIX = Object.freeze([
   { pageId: 'detail', screen: 'detail', baselineSource: 'app-v611' },
   { pageId: 'checkout', screen: 'checkout', baselineSource: 'mac-rental' },
   { pageId: 'membership', screen: 'membership', baselineSource: 'mac-rental' },
-  { pageId: 'member-library', screen: 'member-library', baselineSource: 'mac-rental' },
+  { pageId: 'member-library', screen: 'library', baselineSource: 'app-v611' },
   { pageId: 'orders', screen: 'orders', baselineSource: 'mac-rental' },
   { pageId: 'order-detail', screen: 'order-detail', baselineSource: 'mac-rental' },
   { pageId: 'steam-login', screen: 'steam-login', baselineSource: 'mac-rental' },
@@ -101,7 +101,7 @@ async function main() {
     ['搜索真实 Tab 状态', templateSource.includes('SEARCH_TABS') && templateSource.includes('data-search-tab')],
     ['会员三项权益介绍', templateSource.includes('renderMembershipValue') && templateSource.includes('MEMBERSHIP_BENEFITS') && templateSource.includes('会员库内畅玩') && templateSource.includes('游戏持续更新') && templateSource.includes('个人云存档同步') && !templateSource.includes('PC引擎与手柄适配')],
     ['首页 Banner 首租与在租信息', templateSource.includes('hero-rental-price') && templateSource.includes("id: 'trial'") && templateSource.includes("durationLabel: '2小时'") && templateSource.includes('price: 1.9') && templateSource.includes('hero-rental-demand') && templateSource.includes('99+ 在租')],
-    ['售后四项且无无理由原因', !templateSource.includes("['refund', '3天无理由']")],
+    ['售后区分退款与换号', templateSource.includes('AFTER_SALES_REQUEST_TYPES') && templateSource.includes('AFTER_SALES_REASONS') && templateSource.includes("['no-reason', '3天无理由']")],
   ];
   const failedThirdReviewSourceChecks = thirdReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
   assert(failedThirdReviewSourceChecks.length === 0, `THIRD_REVIEW 源码契约未通过：${failedThirdReviewSourceChecks.join('、')}`);
@@ -118,7 +118,7 @@ async function main() {
     ['订单搜索折叠展开', templateSource.includes('toggle-order-search') && templateSource.includes('order-search-trigger')],
     ['订单动作唯一映射', templateSource.includes('ORDER_ACTIONS_BY_STATUS') && templateSource.includes('getOrderActions') && !templateSource.includes('renderActiveOrderActions')],
     ['租赁时长天小时格式', templateSource.includes('formatRentalDuration')],
-    ['标注缩放不污染图片裁切', templateSource.includes('const frameWidth = image.parentElement.clientWidth') && templateSource.includes('const frameHeight = image.parentElement.clientHeight')],
+    ['APP内容媒体统一线框化', templateSource.includes('data-wireframe-media') && !/<img\b[^>]*data-real-asset/i.test(templateSource)],
   ];
   const failedFinalReviewSourceChecks = finalReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
   const sixthReviewSourceChecks = [
@@ -146,9 +146,9 @@ async function main() {
   const failedEighthReviewSourceChecks = eighthReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
   const playPcRentalSourceChecks = [
     ['PC游戏统一目录', templateSource.includes('PLAY_PC_GAMES')],
-    ['复用统一租号摘要', templateSource.includes('renderPlayRentalSummary') && templateSource.includes('getDiscoveryDisplay(gameId)')],
+    ['发现列表三态契约', templateSource.includes('data-discovery-game-card') && templateSource.includes('data-discovery-rental-state') && templateSource.includes('first-rental') && templateSource.includes('rented') && templateSource.includes('playable')],
     ['仅PC游戏展示', templateSource.includes("state.playTab === 'pc'")],
-    ['独立操作热区', templateSource.includes('data-action="play-card-action"')],
+    ['列表无独立操作热区', !templateSource.includes('data-action="play-card-action"')],
     ['截图默认PC游戏', templateSource.includes("state.playTab = 'pc'")],
   ];
   const failedPlayPcRentalSourceChecks = playPcRentalSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
@@ -159,7 +159,13 @@ async function main() {
       && !/(?:<script[^>]+src|<link[^>]+href|(?:src|href)=["']https?:|url\(["']?https?:)/i.test(annotationSource),
     '标注版不得使用 iframe 或外链资源',
   );
-  assertAnnotation(annotationSource.includes('data:image/') && !/\{\{[^}]+\}\}/.test(annotationSource), '标注版必须内嵌真实 Data URL 素材且不得保留占位符');
+  assertAnnotation(
+    annotationSource.includes('data-wireframe-media')
+      && !/<img\b[^>]*data-real-asset/i.test(annotationSource)
+      && !/data:image\/(?:jpeg|png|webp);base64,/i.test(annotationSource)
+      && !/\{\{[^}]+\}\}/.test(annotationSource),
+    '标注版必须使用本地线框媒体、移除真实位图且不得保留占位符',
+  );
   const browser = await chromium.launch({ executablePath: chromePath, headless: true });
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
@@ -517,22 +523,18 @@ async function main() {
       const portraitStates = await page.evaluate(() => ({
         playTab: window.__appRentalDemo.snapshot().playTab,
         screen: window.__appRentalDemo.snapshot().screen,
-        types: [...document.querySelectorAll('[data-play-rental-summary]')].map((node) => node.dataset.playRentalSummary).sort(),
-        texts: [...document.querySelectorAll('[data-play-rental-summary]')].map((node) => node.textContent.trim()),
+        types: [...document.querySelectorAll('[data-discovery-rental-state]')].map((node) => node.dataset.discoveryRentalState).sort(),
+        texts: [...document.querySelectorAll('[data-discovery-rental-state]')].map((node) => node.innerText.split(/\n+/).map((line) => line.trim()).filter(Boolean)),
         playText: document.querySelector('#appRentalDemo')?.innerText || '',
-        witcherSummaries: document.querySelectorAll('[data-play-game-id="witcher-3"] [data-play-rental-summary]').length,
-        witcherCards: document.querySelectorAll('[data-play-game-id="witcher-3"]').length,
-        actionCount: document.querySelectorAll('[data-play-game-id] [data-action="play-card-action"]').length,
+        cardCount: document.querySelectorAll('[data-discovery-game-card]').length,
+        nestedActionCount: [...document.querySelectorAll('[data-discovery-game-card]')]
+          .reduce((count, card) => count + card.querySelectorAll('button, [role="button"], [data-action]').length, 0),
       }));
       assert(portraitStates.screen === 'play' && portraitStates.playTab === 'pc', `PC游戏截图态错误：${JSON.stringify(portraitStates)}`);
-      assert(JSON.stringify(portraitStates.types) === JSON.stringify(['playable', 'rental-price', 'rented']), `竖屏四类摘要错误：${JSON.stringify(portraitStates)}`);
-      assert(portraitStates.texts.some((text) => text.includes('已租号')) && portraitStates.texts.some((text) => text.includes('可畅玩')) && portraitStates.texts.some((text) => text.includes('¥168.0 · 租号')), `竖屏摘要文案错误：${JSON.stringify(portraitStates.texts)}`);
-      assert(!portraitStates.playText.includes('剩余') && !portraitStates.playText.includes('账号分配'), `PC游戏卡暴露了禁用信息：${portraitStates.playText}`);
-      assert(portraitStates.witcherCards === 1 && portraitStates.witcherSummaries === 0 && portraitStates.actionCount === 4, `无摘要卡片或操作区错误：${JSON.stringify(portraitStates)}`);
-
-      await page.locator('[data-play-game-id="hogwarts"] [data-action="play-card-action"]').click();
-      const afterAction = await page.evaluate(() => window.__appRentalDemo.snapshot());
-      assert(afterAction.screen === 'play' && afterAction.toast === '下载操作已触发', `下载操作误进详情：${JSON.stringify(afterAction)}`);
+      assert(JSON.stringify([...new Set(portraitStates.types)].sort()) === JSON.stringify(['first-rental', 'playable', 'rented']), `竖屏三类列表状态错误：${JSON.stringify(portraitStates)}`);
+      assert(portraitStates.texts.some((lines) => JSON.stringify(lines) === JSON.stringify(['¥1.9 首租', '99+ 在租'])) && portraitStates.texts.some((lines) => JSON.stringify(lines) === JSON.stringify(['已租号', '99+ 在租'])) && portraitStates.texts.some((lines) => JSON.stringify(lines) === JSON.stringify(['可畅玩', '99+ 在租'])), `竖屏三态两行文案错误：${JSON.stringify(portraitStates.texts)}`);
+      assert(!portraitStates.playText.includes('剩余') && !portraitStates.playText.includes('账号分配') && !/(登录游戏|下载游戏|启动游戏|租号开玩|立即购买)/.test(portraitStates.playText), `PC游戏发现卡暴露了禁用信息或操作：${portraitStates.playText}`);
+      assert(portraitStates.cardCount === 4 && portraitStates.nestedActionCount === 0, `PC游戏卡数量或独立操作热区错误：${JSON.stringify(portraitStates)}`);
 
       const scrollBefore = await page.evaluate(() => {
         const testStyle = document.createElement('style');
@@ -544,7 +546,7 @@ async function main() {
         return region.scrollTop;
       });
       assert(scrollBefore > 0, `PC游戏竖屏列表不可滚动：${scrollBefore}`);
-      await page.locator('[data-play-game-id="hogwarts"] .play-game-copy').click();
+      await page.locator('[data-discovery-game-card][data-game-id="hogwarts"]').click();
       assert((await page.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'detail', '点击PC游戏卡非操作区未进入详情');
       await page.locator('[data-action="task-back"]').click();
       await page.waitForFunction(() => (document.querySelector('.device.portrait .portrait-content')?.scrollTop || 0) > 0);
@@ -554,16 +556,9 @@ async function main() {
       }));
       assert(restored.snapshot.screen === 'play' && restored.snapshot.playTab === 'pc' && restored.scrollTop > 0, `返回未恢复PC Tab或列表位置：${JSON.stringify(restored)}`);
 
-      await page.evaluate(() => window.__appRentalDemo.setDiscoveryContext('hogwarts', { priceResolved: false }));
-      const degraded = await page.evaluate(() => ({
-        card: document.querySelectorAll('[data-play-game-id="hogwarts"]').length,
-        action: document.querySelectorAll('[data-play-game-id="hogwarts"] [data-action="play-card-action"]').length,
-        summary: document.querySelectorAll('[data-play-game-id="hogwarts"] [data-play-rental-summary]').length,
-      }));
-      assert(degraded.card === 1 && degraded.action === 1 && degraded.summary === 0, `价格失败未只收起摘要：${JSON.stringify(degraded)}`);
       for (const value of ['cloud', 'retro']) {
         await page.locator(`[data-group="playTab"][data-value="${value}"]`).click();
-        assert((await page.locator('[data-play-rental-summary]').count()) === 0, `${value} Tab 错误展示PC租号摘要`);
+        assert((await page.locator('[data-discovery-rental-state]').count()) === 0, `${value} Tab 错误展示PC租号状态`);
       }
 
       await page.evaluate(() => {
@@ -573,24 +568,21 @@ async function main() {
       const landscapeGeometry = await page.evaluate(() => {
         const inside = (child, parent) => child.left >= parent.left - 1 && child.top >= parent.top - 1 && child.right <= parent.right + 1 && child.bottom <= parent.bottom + 1;
         const device = document.querySelector('.device.landscape').getBoundingClientRect();
-        const cards = [...document.querySelectorAll('.landscape-play [data-play-game-id]')];
+        const cards = [...document.querySelectorAll('.landscape-play [data-discovery-game-card]')];
         return cards.map((card) => {
           const cardRect = card.getBoundingClientRect();
-          const actionRect = card.querySelector('[data-action="play-card-action"]')?.getBoundingClientRect();
-          const summaryRect = card.querySelector('[data-play-rental-summary]')?.getBoundingClientRect();
+          const summaryRect = card.querySelector('[data-discovery-rental-state]')?.getBoundingClientRect();
           const nameRect = card.querySelector('.play-game-copy > strong')?.getBoundingClientRect();
           return {
             cardInsideDevice: inside(cardRect, device),
-            actionInsideCard: Boolean(actionRect && inside(actionRect, cardRect)),
-            actionWidth: actionRect?.width || 0,
-            actionHeight: actionRect?.height || 0,
             summaryInsideCard: !summaryRect || inside(summaryRect, cardRect),
             nameSummarySeparated: !summaryRect || !nameRect || nameRect.bottom <= summaryRect.top + 1,
+            nestedActionCount: card.querySelectorAll('button, [role="button"], [data-action]').length,
           };
         });
       });
-      assert(landscapeGeometry.length === 4 && landscapeGeometry.every((item) => item.cardInsideDevice && item.actionInsideCard && item.actionWidth >= 44 && item.actionHeight >= 44 && item.summaryInsideCard && item.nameSummarySeparated), `横屏卡片越界、热区不足或文字重叠：${JSON.stringify(landscapeGeometry)}`);
-      process.stdout.write('PLAY_PC_RENTAL 22/22 PASS\n');
+      assert(landscapeGeometry.length === 4 && landscapeGeometry.every((item) => item.cardInsideDevice && item.summaryInsideCard && item.nameSummarySeparated && item.nestedActionCount === 0), `横屏卡片越界、文字重叠或仍有独立操作：${JSON.stringify(landscapeGeometry)}`);
+      process.stdout.write('PLAY_PC_RENTAL 14/14 PASS\n');
     });
 
     await runRefactorGate('CDKEY_VISUAL_CONVERGENCE', async () => {
@@ -1784,9 +1776,10 @@ async function main() {
             api.setOrientation(nextOrientation);
             api.openCaptureState(expected.pageId);
             const rootNode = document.querySelector('#appRentalDemo');
-            const markerNode = rootNode?.dataset.pageId === expected.pageId
+            const renderedPageId = expected.renderedPageId || expected.pageId;
+            const markerNode = rootNode?.dataset.pageId === renderedPageId
               ? rootNode
-              : rootNode?.querySelector(`[data-page-id="${expected.pageId}"]`);
+              : rootNode?.querySelector(`[data-page-id="${renderedPageId}"]`);
             const device = rootNode?.querySelector('.device') || document.querySelector('.device');
             const box = device?.getBoundingClientRect();
             const snapshot = api.snapshot();
@@ -1809,7 +1802,7 @@ async function main() {
           const passed = !result.apiMissing
             && result.actualOrientation === orientation
             && result.actualScreen === contractItem.screen
-            && result.actualPageId === contractItem.pageId
+            && result.actualPageId === (contractItem.renderedPageId || contractItem.pageId)
             && result.actualBaselineSource === contractItem.baselineSource
             && result.width === expectedDimensions.width
             && result.height === expectedDimensions.height
@@ -1822,6 +1815,259 @@ async function main() {
       }
       assert(failures.length === 0, `18页横竖屏契约未完成：${JSON.stringify(failures)}`);
       process.stdout.write('FULL_PAGE_MATRIX 36/36 PASS\n');
+    });
+
+    await runRefactorGate('APP_LIBRARY_CONVERGENCE', async () => {
+      const forbiddenVisibleStates = ['正在分配账号', '正在获取登录凭据', '正在自动登录', '内部账号准备状态'];
+      const expectedTopTabs = [
+        ['member', '会员游戏'],
+        ['pc', 'PC游戏'],
+        ['retro', '复古游戏'],
+      ];
+      const expectedDiscoveryStates = {
+        'first-rental': ['¥1.9 首租', '99+ 在租'],
+        rented: ['已租号', '99+ 在租'],
+        playable: ['可畅玩', '99+ 在租'],
+      };
+      let checks = 0;
+      const check = (condition, message) => {
+        assert(condition, message);
+        checks += 1;
+      };
+
+      for (const orientation of ['portrait', 'landscape']) {
+        await reloadDemo();
+        const pcLibrary = await page.evaluate(({ nextOrientation, forbiddenCopies }) => {
+          const api = window.__appRentalDemo;
+          api.setOrientation(nextOrientation);
+          const opened = api.openCaptureState('library');
+          const tabs = [...document.querySelectorAll('[data-library-top-tab]')];
+          const entitlementCards = [...document.querySelectorAll('[data-library-entitlement-card]')];
+          return {
+            screen: opened.screen,
+            libraryTab: opened.libraryTab,
+            tabs: tabs.map((node) => [node.dataset.value, node.textContent.trim()]),
+            selected: tabs.find((node) => node.getAttribute('aria-selected') === 'true' || node.classList.contains('active'))?.dataset.value || '',
+            singleLine: new Set(tabs.map((node) => Math.round(node.getBoundingClientRect().top))).size === 1
+              && tabs.every((node) => node.scrollHeight <= node.clientHeight + 1)
+              && (!tabs[0]?.parentElement || tabs[0].parentElement.scrollWidth <= tabs[0].parentElement.clientWidth + 1),
+            entitlementCards: entitlementCards.map((node) => ({
+              type: node.dataset.libraryEntitlementCard,
+              gameId: node.dataset.gameId,
+              text: node.innerText,
+              validityCount: node.querySelectorAll('.library-validity').length,
+              validityText: node.querySelector('.library-validity')?.textContent.trim() || '',
+              nestedActions: node.querySelectorAll('button, [role="button"], [data-action]').length,
+            })),
+            pcSources: [...document.querySelectorAll('[data-action="set-pc-library-source"]')].map((node) => node.textContent.trim()),
+            forbiddenVisible: forbiddenCopies.filter((copy) => document.querySelector('#appRentalDemo')?.innerText.includes(copy)),
+            visibleImages: [...document.images].filter((node) => node.getClientRects().length > 0).length,
+            visibleWireframes: [...document.querySelectorAll('[data-wireframe-media]')].filter((node) => node.getClientRects().length > 0).length,
+          };
+        }, { nextOrientation: orientation, forbiddenCopies: forbiddenVisibleStates });
+        check(pcLibrary.screen === 'library' && pcLibrary.libraryTab === 'pc', `${orientation} 游戏库截图态未默认进入PC游戏：${JSON.stringify(pcLibrary)}`);
+        check(JSON.stringify(pcLibrary.tabs) === JSON.stringify(expectedTopTabs) && pcLibrary.selected === 'pc' && pcLibrary.singleLine, `${orientation} 游戏库顶层Tab顺序、选中态或单行布局错误：${JSON.stringify(pcLibrary.tabs)}`);
+        check(pcLibrary.entitlementCards.length >= 2 && new Set(pcLibrary.entitlementCards.map(({ type }) => type)).size === 2, `${orientation} 游戏库未同时穷举首次体验与单游戏永久权益卡：${JSON.stringify(pcLibrary.entitlementCards)}`);
+        const trialCard = pcLibrary.entitlementCards.find(({ type }) => type === 'trial');
+        const permanentCard = pcLibrary.entitlementCards.find(({ type }) => type === 'permanent');
+        check(
+          trialCard?.gameId
+            && trialCard.text.includes('标准版 · 已租号')
+            && /^剩余(?:\d+天\d+小时|\d+小时\d+分)$/.test(trialCard.validityText)
+            && trialCard.text.indexOf('标准版 · 已租号') < trialCard.text.indexOf(trialCard.validityText)
+            && trialCard.validityCount === 1,
+          `${orientation} 首次体验卡的版本／权益／有效期层级错误：${JSON.stringify(trialCard)}`,
+        );
+        check(
+          permanentCard?.gameId
+            && permanentCard.text.includes('标准版 · 单游戏永久')
+            && permanentCard.validityCount === 0
+            && !permanentCard.text.includes('剩余'),
+          `${orientation} 单游戏永久卡错误显示倒计时或缺少权益：${JSON.stringify(permanentCard)}`,
+        );
+        check(pcLibrary.entitlementCards.every(({ nestedActions }) => nestedActions === 0), `${orientation} 游戏库权益卡仍含登录、下载或启动等独立按钮：${JSON.stringify(pcLibrary.entitlementCards)}`);
+        check(JSON.stringify(pcLibrary.pcSources) === JSON.stringify(['Steam', 'Epic', '导入游戏']), `${orientation} PC游戏内部来源入口不完整：${JSON.stringify(pcLibrary.pcSources)}`);
+        check(pcLibrary.forbiddenVisible.length === 0, `${orientation} 游戏库暴露后台账号过程：${pcLibrary.forbiddenVisible.join('、')}`);
+        check(pcLibrary.visibleImages === 0 && pcLibrary.visibleWireframes > 0, `${orientation} 游戏库未完整线框化：${JSON.stringify({ images: pcLibrary.visibleImages, wireframes: pcLibrary.visibleWireframes })}`);
+
+        const memberLibrary = await page.evaluate((forbiddenCopies) => {
+          const api = window.__appRentalDemo;
+          api.openMemberLibrary({ remember: true });
+          const opened = api.snapshot();
+          const cards = [...document.querySelectorAll('.member-game-card')];
+          return {
+            screen: opened.screen,
+            libraryTab: opened.libraryTab,
+            selected: document.querySelector('[data-library-top-tab][data-value="member"]')?.getAttribute('aria-selected') === 'true'
+              || document.querySelector('[data-library-top-tab][data-value="member"]')?.classList.contains('active'),
+            legacyLayoutCount: document.querySelectorAll('.portrait-member-library, .landscape-member-library').length,
+            cardCount: cards.length,
+            columns: new Set(cards.slice(0, Math.min(4, cards.length)).map((node) => Math.round(node.getBoundingClientRect().left))).size,
+            entitlementCardCount: document.querySelectorAll('.member-game-card[data-library-entitlement-card], .member-game-card .library-validity').length,
+            actionCount: cards.reduce((count, node) => count + node.querySelectorAll('button, [role="button"], [data-action]').length, 0),
+            versionTexts: cards.map((node) => node.querySelector('.member-game-version')?.textContent.trim() || ''),
+            memberSearchCount: document.querySelectorAll('[data-member-library-search-input]').length,
+            nonMemberToolCount: document.querySelectorAll('.library-pc-sources, .library-tools, .landscape-tools').length,
+            forbiddenVisible: forbiddenCopies.filter((copy) => document.querySelector('#appRentalDemo')?.innerText.includes(copy)),
+          };
+        }, forbiddenVisibleStates);
+        check(memberLibrary.screen === 'library' && memberLibrary.libraryTab === 'member' && memberLibrary.selected, `${orientation} 会员入口未收敛到游戏库会员Tab：${JSON.stringify(memberLibrary)}`);
+        check(memberLibrary.legacyLayoutCount === 0, `${orientation} 仍渲染独立会员游戏库页面`);
+        check(memberLibrary.cardCount >= 6 && memberLibrary.columns >= 2, `${orientation} 会员游戏Tab卡片数量或布局不足：${JSON.stringify(memberLibrary)}`);
+        check(memberLibrary.entitlementCardCount === 0 && memberLibrary.actionCount === 0 && memberLibrary.versionTexts.every((text) => text === '标准版'), `${orientation} 会员游戏卡混入权益、有效期或直接操作：${JSON.stringify(memberLibrary)}`);
+        check(memberLibrary.memberSearchCount === 1 && memberLibrary.nonMemberToolCount === 0, `${orientation} 会员游戏Tab未保持仅搜索，仍混入PC导入／筛选工具：${JSON.stringify(memberLibrary)}`);
+        check(memberLibrary.forbiddenVisible.length === 0, `${orientation} 会员游戏Tab暴露后台账号过程：${memberLibrary.forbiddenVisible.join('、')}`);
+
+        const compatibilityRoute = await page.evaluate(() => {
+          window.__appRentalDemo.navigate('member-library');
+          const snapshot = window.__appRentalDemo.snapshot();
+          return { screen: snapshot.screen, libraryTab: snapshot.libraryTab };
+        });
+        check(compatibilityRoute.screen === 'library' && compatibilityRoute.libraryTab === 'member', `${orientation} 旧会员库入口未兼容重定向：${JSON.stringify(compatibilityRoute)}`);
+
+        for (const entryState of ['membership', 'membership-success', 'play']) {
+          const entryResult = await page.evaluate((pageId) => {
+            const api = window.__appRentalDemo;
+            api.openCaptureState(pageId);
+            const entry = document.querySelector('[data-action="open-member-library"], [data-screen="member-library"]');
+            entry?.click();
+            const snapshot = api.snapshot();
+            return {
+              found: Boolean(entry),
+              screen: snapshot.screen,
+              libraryTab: snapshot.libraryTab,
+            };
+          }, entryState);
+          check(entryResult.found && entryResult.screen === 'library' && entryResult.libraryTab === 'member', `${orientation} ${entryState}入口未进入统一会员Tab：${JSON.stringify(entryResult)}`);
+        }
+
+        for (const surface of ['play', 'ranking']) {
+          await page.evaluate((pageId) => window.__appRentalDemo.openCaptureState(pageId), surface);
+          const discovery = await page.evaluate(({ expectedStates, forbiddenCopies }) => {
+            const cards = [...document.querySelectorAll('[data-discovery-game-card]')];
+            const states = cards.map((node) => {
+              const stateNode = node.querySelector('[data-discovery-rental-state]');
+              return {
+                value: stateNode?.dataset.discoveryRentalState || '',
+                lines: (stateNode?.innerText || '').split(/\n+/).map((line) => line.trim()).filter(Boolean),
+                nestedActions: [...node.querySelectorAll('button, [role="button"], [data-action]')].filter((child) => child !== node).length,
+              };
+            });
+            return {
+              cardCount: cards.length,
+              states,
+              stateSet: [...new Set(states.map(({ value }) => value))].sort(),
+              labelsMatch: states.every(({ value, lines }) => JSON.stringify(lines) === JSON.stringify(expectedStates[value] || [])),
+              allCardsClickable: cards.every((node) => node.matches('button, a, [role="button"], [data-action]')),
+              forbiddenActions: cards.filter((node) => /登录游戏|下载游戏|启动游戏|租号开玩|立即购买/.test(node.innerText)).length,
+              forbiddenVisible: forbiddenCopies.filter((copy) => document.querySelector('#appRentalDemo')?.innerText.includes(copy)),
+            };
+          }, { expectedStates: expectedDiscoveryStates, forbiddenCopies: forbiddenVisibleStates });
+          check(discovery.cardCount >= 3 && JSON.stringify(discovery.stateSet) === JSON.stringify(Object.keys(expectedDiscoveryStates).sort()), `${orientation} ${surface} 未穷举三种发现列表状态：${JSON.stringify(discovery)}`);
+          check(discovery.labelsMatch, `${orientation} ${surface} 三态两行文案错误：${JSON.stringify(discovery.states)}`);
+          check(discovery.states.every(({ nestedActions }) => nestedActions === 0) && discovery.forbiddenActions === 0 && discovery.allCardsClickable, `${orientation} ${surface} 列表仍含独立操作或无法整卡点击：${JSON.stringify(discovery)}`);
+          check(discovery.forbiddenVisible.length === 0, `${orientation} ${surface} 暴露后台账号过程：${discovery.forbiddenVisible.join('、')}`);
+
+          const beforeClick = await page.evaluate(() => {
+            const snapshot = window.__appRentalDemo.snapshot();
+            return {
+              order: snapshot.order,
+              rentalUsage: snapshot.rentalUsage,
+              accountAllocationCount: snapshot.accountAllocationCount,
+            };
+          });
+          await page.locator('[data-discovery-game-card]').first().click();
+          const afterClick = await page.evaluate(() => {
+            const snapshot = window.__appRentalDemo.snapshot();
+            return {
+              screen: snapshot.screen,
+              order: snapshot.order,
+              rentalUsage: snapshot.rentalUsage,
+              accountAllocationCount: snapshot.accountAllocationCount,
+            };
+          });
+          check(
+            afterClick.screen === 'detail'
+              && JSON.stringify(afterClick.order) === JSON.stringify(beforeClick.order)
+              && JSON.stringify(afterClick.rentalUsage) === JSON.stringify(beforeClick.rentalUsage)
+              && afterClick.accountAllocationCount === beforeClick.accountAllocationCount,
+            `${orientation} ${surface} 整卡点击未仅进入详情或产生了交易／账号副作用：${JSON.stringify({ beforeClick, afterClick })}`,
+          );
+        }
+      }
+
+      await reloadDemo();
+      const defaultPc = await page.evaluate(() => {
+        window.__appRentalDemo.navigate('library');
+        const snapshot = window.__appRentalDemo.snapshot();
+        return { screen: snapshot.screen, libraryTab: snapshot.libraryTab };
+      });
+      check(defaultPc.screen === 'library' && defaultPc.libraryTab === 'pc', `未开会员用户首次进入游戏库未默认PC游戏：${JSON.stringify(defaultPc)}`);
+
+      await reloadDemo();
+      const defaultMember = await page.evaluate(() => {
+        window.__appRentalDemo.setMembershipStatus('weekly-active');
+        window.__appRentalDemo.navigate('library');
+        const snapshot = window.__appRentalDemo.snapshot();
+        return { screen: snapshot.screen, libraryTab: snapshot.libraryTab };
+      });
+      check(defaultMember.screen === 'library' && defaultMember.libraryTab === 'member', `有效会员首次进入游戏库未默认会员游戏：${JSON.stringify(defaultMember)}`);
+
+      const rememberedTab = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        api.setLibraryTab('retro', { remember: true });
+        api.navigate('home');
+        api.navigate('library');
+        api.setOrientation('landscape');
+        api.setOrientation('portrait');
+        const snapshot = api.snapshot();
+        return { screen: snapshot.screen, libraryTab: snapshot.libraryTab };
+      });
+      check(rememberedTab.screen === 'library' && rememberedTab.libraryTab === 'retro', `用户主动选择的游戏库Tab未在返回和旋转后保留：${JSON.stringify(rememberedTab)}`);
+
+      await page.evaluate(() => {
+        window.__appRentalDemo.openMemberLibrary({ remember: true });
+        const input = document.querySelector('[data-member-library-search-input]');
+        input.value = 'Spiritfarer';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      await page.waitForTimeout(220);
+      const memberSearchRetention = await page.evaluate(() => {
+        const api = window.__appRentalDemo;
+        api.setOrientation('landscape');
+        api.setOrientation('portrait');
+        const snapshot = api.snapshot();
+        return {
+          screen: snapshot.screen,
+          libraryTab: snapshot.libraryTab,
+          query: snapshot.memberLibrarySearch,
+          input: document.querySelector('[data-member-library-search-input]')?.value || '',
+          resultNames: [...document.querySelectorAll('.member-game-card > strong')].map((node) => node.textContent.trim()),
+        };
+      });
+      check(
+        memberSearchRetention.screen === 'library'
+          && memberSearchRetention.libraryTab === 'member'
+          && memberSearchRetention.query === 'Spiritfarer'
+          && memberSearchRetention.input === 'Spiritfarer'
+          && JSON.stringify(memberSearchRetention.resultNames) === JSON.stringify(['Spiritfarer']),
+        `会员游戏搜索词或结果未在旋转后保留：${JSON.stringify(memberSearchRetention)}`,
+      );
+
+      const durationFormats = await page.evaluate(() => {
+        const format = window.__appRentalDemo.formatLibraryRemaining;
+        if (typeof format !== 'function') return null;
+        const now = 1_800_000_000_000;
+        return {
+          within24h: format(now + 102 * 60_000, now),
+          beyond24h: format(now + 26 * 60 * 60_000, now),
+        };
+      });
+      check(
+        durationFormats?.within24h === '剩余1小时42分' && durationFormats?.beyond24h === '剩余1天2小时',
+        `游戏库有效期小时／天小时格式错误：${JSON.stringify(durationFormats)}`,
+      );
+      process.stdout.write(`APP_LIBRARY_CONVERGENCE ${checks}/${checks} PASS\n`);
     });
 
     await runRefactorGate('ORDER_CENTER_V2', async () => {
@@ -1918,6 +2164,7 @@ async function main() {
       }));
 
       await page.locator('[data-action="toggle-order-search"]').click();
+      await page.waitForFunction(() => document.activeElement?.matches('[data-order-search-input]'));
       const expandedSearch = await page.evaluate(() => ({
         open: Boolean(document.querySelector('[data-order-search]')),
         aria: document.querySelector('[data-order-search-input]')?.getAttribute('aria-label') || '',
@@ -2057,15 +2304,9 @@ async function main() {
             gameName: checkout?.gameName,
             hasShadowBlade: text.includes('影之刃零'),
             hasEldenRing: text.includes('艾尔登法环'),
-            coverSource: document.querySelector('.checkout-cover img')?.dataset.sourceScreen,
-            coverCrop: document.querySelector('.checkout-cover img')
-              ? [
-                  document.querySelector('.checkout-cover img').dataset.cropX,
-                  document.querySelector('.checkout-cover img').dataset.cropY,
-                  document.querySelector('.checkout-cover img').dataset.cropWidth,
-                  document.querySelector('.checkout-cover img').dataset.cropHeight,
-                ].join(',')
-              : null,
+            coverLabel: document.querySelector('.checkout-cover[data-wireframe-media], .checkout-cover [data-wireframe-media]')?.getAttribute('aria-label') || '',
+            wireframeCount: document.querySelectorAll('.checkout-cover[data-wireframe-media], .checkout-cover [data-wireframe-media]').length,
+            imageCount: document.querySelectorAll('.checkout-cover img').length,
           };
         };
         window.__appRentalDemo.setScenario('not-member-library');
@@ -2081,11 +2322,15 @@ async function main() {
       });
       assert(
         checkoutContexts.first.gameId === 'elden-ring'
-          && checkoutContexts.first.coverSource === 'home'
-          && checkoutContexts.first.coverCrop === '67,1658,492,235'
+          && checkoutContexts.first.coverLabel === '艾尔登法环 游戏封面'
+          && checkoutContexts.first.wireframeCount === 1
+          && checkoutContexts.first.imageCount === 0
           && checkoutContexts.second.selectedGameId === 'shadow-blade-zero'
           && checkoutContexts.second.gameId === 'shadow-blade-zero'
           && checkoutContexts.second.gameName === '影之刃零'
+          && checkoutContexts.second.coverLabel === '影之刃零 游戏封面'
+          && checkoutContexts.second.wireframeCount === 1
+          && checkoutContexts.second.imageCount === 0
           && checkoutContexts.second.hasShadowBlade
           && !checkoutContexts.second.hasEldenRing,
         `跨游戏结算串单：${JSON.stringify(checkoutContexts)}`,
@@ -2233,7 +2478,7 @@ async function main() {
 
     await runRefactorGate('ROTATION_SCROLL_REGISTRY', async () => {
       const results = [];
-      for (const [screen, requestedTop] of [['play', 35], ['library', 145], ['membership', 108], ['member-library', 180]]) {
+      for (const [screen, requestedTop] of [['play', 35], ['library', 145], ['membership', 108]]) {
         await reloadDemo();
         const before = await page.evaluate(({ screen, requestedTop }) => {
           window.__appRentalDemo.setOrientation('portrait');
@@ -2248,7 +2493,7 @@ async function main() {
         await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         const after = await page.evaluate(() => {
           const candidates = [...document.querySelectorAll(
-            '[data-scroll-region="primary"], .landscape-membership-body, .landscape-member-library-layout, .device.landscape .landscape-content, .device.landscape .task-scroll-region',
+            '[data-scroll-region="primary"], .landscape-membership-body, .device.landscape .landscape-content, .device.landscape .task-scroll-region',
           )];
           const region = candidates.find((node) => node.scrollHeight > node.clientHeight) || candidates[0];
           return region ? { top: region.scrollTop, max: Math.max(0, region.scrollHeight - region.clientHeight) } : { top: 0, max: 0 };
@@ -2426,8 +2671,13 @@ async function main() {
         unifiedPage.on('pageerror', (error) => unifiedIssues.push(`pageerror: ${error.message}`));
         try {
           await unifiedPage.goto(new URL(macAdminLink, pathToFileURL(annotationPath).href).href, { waitUntil: 'domcontentloaded' });
+          const linkedAdminPages = await unifiedPage.locator('.admin-nav[data-mode="admin"][data-page]').evaluateAll((nodes) => nodes.map((node) => node.dataset.page));
+          assert(
+            JSON.stringify(linkedAdminPages) === JSON.stringify(['products', 'accounts', 'admin-orders', 'stats']),
+            `Mac 后台可用页面集合异常：${JSON.stringify(linkedAdminPages)}`,
+          );
           const unifiedStates = [];
-          for (const pageId of ADMIN_PAGE_MATRIX) {
+          for (const pageId of linkedAdminPages) {
             await unifiedPage.locator(`.admin-nav[data-mode="admin"][data-page="${pageId}"]`).click();
             const tabs = unifiedPage.locator('[data-admin-client-tab]');
             const tabCount = await tabs.count();
@@ -2435,29 +2685,18 @@ async function main() {
             unifiedStates.push({ pageId, tabCount, activeClient });
           }
           assert(
-            unifiedStates.every(({ pageId, tabCount, activeClient }) => tabCount === (pageId === 'audit' ? 0 : 2)
-              && activeClient === (pageId === 'audit' ? 'all' : 'android')),
-            `统一后台默认端别或 Tab 数错误：${JSON.stringify(unifiedStates)}`,
+            unifiedStates.every(({ pageId, tabCount, activeClient }) => linkedAdminPages.includes(pageId)
+              && tabCount === 0
+              && activeClient === 'all'),
+            `Mac 原后台链接未保持原页面或错误注入端别 Tab：${JSON.stringify(unifiedStates)}`,
           );
 
-          for (const pageId of ADMIN_DUAL_CLIENT_PAGES) {
-            await unifiedPage.locator(`.admin-nav[data-mode="admin"][data-page="${pageId}"]`).click();
-            await unifiedPage.locator('[data-admin-client-tab="mac"]').click();
-            assert(
-              await unifiedPage.locator('[data-admin-client-tab="mac"].active').count() === 1,
-              `统一后台 ${pageId} 无法切换到 Mac`,
-            );
-          }
           await unifiedPage.locator('.admin-nav[data-mode="admin"][data-page="products"]').click();
-          assert(
-            await unifiedPage.locator('[data-admin-client-tab="mac"].active').count() === 1,
-            '统一后台未保持商品管理页的端别选择',
-          );
           await unifiedPage.locator('[data-action="toggle-product"]').first().click();
           const unifiedProductControls = await unifiedPage.evaluate(() => ({
-            query: document.querySelectorAll('[data-input="product-query"]').length,
-            create: document.querySelectorAll('[data-action="new-product"]').length,
-            edit: document.querySelectorAll('[data-action="edit-supplier-price"]').length,
+            query: document.querySelectorAll('.admin-toolbar input.a-input[placeholder*="搜索"]').length,
+            create: document.querySelectorAll('.admin-header [data-action="copy-product"]').length,
+            edit: document.querySelectorAll('[data-action="toggle-product"]').length,
             offline: document.querySelectorAll('[data-action="single-product-offline"]').length,
             text: document.querySelector('#demoCanvas')?.innerText.slice(0, 500) || '',
           }));
@@ -2518,16 +2757,19 @@ async function main() {
     process.stdout.write('PORTRAIT 4/4 PASS\n');
 
     const builtHtml = fs.readFileSync(htmlPath, 'utf8');
-    const inlineImageCount = (builtHtml.match(/data:image\/(?:jpeg|png|webp);base64,/g) || []).length;
-    assert(inlineImageCount >= 5, `真实内联素材不足：${inlineImageCount}/5`);
+    const inlineRasterCount = (builtHtml.match(/data:image\/(?:jpeg|png|webp);base64,/g) || []).length;
+    const htmlImageCount = (builtHtml.match(/<img\b/gi) || []).length;
+    const remoteImageDependencyCount = (builtHtml.match(/(?:src|url\()["']?https?:[^\s"')]+/gi) || []).length;
+    assert(inlineRasterCount === 0 && htmlImageCount === 0 && remoteImageDependencyCount === 0, `Demo仍含位图或远程图片依赖：${JSON.stringify({ inlineRasterCount, htmlImageCount, remoteImageDependencyCount })}`);
     for (const screen of ['home', 'play', 'library', 'profile']) {
       await page.evaluate((value) => window.__appRentalDemo.navigate(value), screen);
-      await page.waitForFunction(() => [...document.querySelectorAll('img[data-real-asset="true"]')]
-        .some((node) => node.complete && node.naturalWidth > 0 && node.getClientRects().length > 0));
-      const visibleAssets = await page.locator('img[data-real-asset="true"]:visible').count();
-      assert(visibleAssets >= 1, `${screen} 缺少可见真实素材`);
+      const media = await page.evaluate(() => ({
+        wireframes: [...document.querySelectorAll('[data-wireframe-media]')].filter((node) => node.getClientRects().length > 0).length,
+        images: [...document.images].filter((node) => node.getClientRects().length > 0).length,
+      }));
+      assert(media.wireframes >= 1 && media.images === 0, `${screen} 未完整使用线框媒体：${JSON.stringify(media)}`);
     }
-    process.stdout.write('MATERIALS 5/5 PASS\n');
+    process.stdout.write('WIREFRAME_MEDIA 7/7 PASS\n');
 
     await page.evaluate(() => {
       window.__appRentalDemo.setOrientation('landscape');
@@ -2538,12 +2780,12 @@ async function main() {
       const contentRect = document.querySelector('.landscape-content')?.getBoundingClientRect();
       const metrics = cards.map((node) => {
         const rect = node.getBoundingClientRect();
-        const image = node.querySelector('img[data-real-asset="true"]');
+        const wireframe = node.querySelector('[data-wireframe-media]');
         return {
           top: Math.round(rect.top),
           left: Math.round(rect.left),
           visible: rect.top < contentRect.bottom && rect.bottom > contentRect.top,
-          real: Boolean(image?.complete && image.naturalWidth > 0),
+          wireframe: Boolean(wireframe),
         };
       });
       const firstTop = Math.min(...metrics.map(({ top }) => top));
@@ -2559,7 +2801,7 @@ async function main() {
         rows: new Set(metrics.map(({ top }) => top)).size,
         firstRowColumns: new Set(firstRow.map(({ left }) => left)).size,
         secondRowVisible: secondRow.some(({ visible }) => visible),
-        secondRowReal: secondRow.some(({ visible, real }) => visible && real),
+        secondRowWireframe: secondRow.some(({ visible, wireframe }) => visible && wireframe),
       };
     });
     assert(Math.round(landscape.frame?.width ?? 0) === 874, '横屏宽度不是874');
@@ -2567,31 +2809,30 @@ async function main() {
     assert(landscape.hasSideNav, '横屏缺少 APP 左侧导航');
     assert(!landscape.hasBottomNav, '横屏不得出现底部导航');
     assert(landscape.nav.join('|') === '游戏库|玩游戏|探索|社区|排行榜|我的', '横屏导航顺序错误');
-    assert(landscape.cards >= 6, '横屏游戏墙密度不足');
-    assert(landscape.rows >= 2, '横屏游戏墙必须露出第二行');
-    assert(landscape.tabs.join('|') === 'PC游戏|Steam游戏|Epic游戏|复古游戏', '横屏平台Tab不完整');
-    assert(landscape.firstRowColumns === 5, '横屏游戏墙首行不是5列');
-    assert(landscape.secondRowVisible, '横屏游戏墙第二行未进入可视区');
-    assert(landscape.secondRowReal, '横屏游戏墙第二行缺少已加载真实封面');
+    assert(landscape.cards === 2, '横屏PC权益卡应只展示本轮穷举的首次体验与单游戏永久两张卡');
+    assert(landscape.rows === 1, '横屏PC权益卡不应为凑满页面强制拉出第二行');
+    assert(landscape.tabs.join('|') === '会员游戏|PC游戏|复古游戏', '横屏游戏库顶层Tab不完整或会员游戏未置首');
+    assert(landscape.firstRowColumns === 2, '横屏PC权益卡首行不是2张自然宽度卡片');
+    assert(!landscape.secondRowVisible && !landscape.secondRowWireframe, '横屏PC权益卡不应出现为凑齐而增加的第二行');
 
     const libraryBeforeTab = await page.locator('.landscape-library .game-card strong').allTextContents();
-    await page.locator('.landscape-platform-tabs [data-value="epic"]').click();
+    await page.locator('[data-library-top-tab][data-value="member"]').click();
     const libraryAfterTab = await page.locator('.landscape-library .game-card strong').allTextContents();
-    assert(JSON.stringify(libraryBeforeTab) !== JSON.stringify(libraryAfterTab), '横屏平台Tab未切换游戏内容');
+    assert(JSON.stringify(libraryBeforeTab) !== JSON.stringify(libraryAfterTab), '横屏会员游戏Tab未切换游戏内容');
 
-    const proportionalImages = await page.evaluate(() => [...document.querySelectorAll('.landscape-library img[data-real-asset="true"]')].map((node) => {
+    const proportionalWireframes = await page.evaluate(() => [...document.querySelectorAll('.landscape-library [data-wireframe-media]')].map((node) => {
       const rect = node.getBoundingClientRect();
+      const parentRect = node.parentElement?.getBoundingClientRect();
       return {
-        objectFit: getComputedStyle(node).objectFit,
-        renderedRatio: rect.width / rect.height,
-        naturalRatio: node.naturalWidth / node.naturalHeight,
+        width: rect.width,
+        height: rect.height,
+        contained: Boolean(parentRect && rect.left >= parentRect.left - 1 && rect.right <= parentRect.right + 1 && rect.top >= parentRect.top - 1 && rect.bottom <= parentRect.bottom + 1),
       };
     }));
     assert(
-      proportionalImages.length >= 6
-        && proportionalImages.every(({ objectFit, renderedRatio, naturalRatio }) => objectFit === 'cover'
-          && Math.abs(renderedRatio / naturalRatio - 1) <= 0.01),
-      '真实素材存在非等比拉伸',
+      proportionalWireframes.length >= 6
+        && proportionalWireframes.every(({ width, height, contained }) => width > 0 && height > 0 && contained),
+      '横屏线框媒体尺寸无效或溢出容器',
     );
 
     await page.evaluate(() => window.__appRentalDemo.navigate('play'));
@@ -2627,13 +2868,14 @@ async function main() {
       landscapePages[screen] = await page.evaluate((value) => ({
         layout: Boolean(document.querySelector(`.landscape-${value}`)),
         primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
-        realAssets: [...document.querySelectorAll('img[data-real-asset="true"]')]
-          .filter((node) => node.complete && node.naturalWidth > 0 && node.getClientRects().length > 0).length,
+        wireframes: [...document.querySelectorAll('[data-wireframe-media]')]
+          .filter((node) => node.getClientRects().length > 0).length,
+        visibleImages: [...document.images].filter((node) => node.getClientRects().length > 0).length,
       }), screen);
       assert(landscapePages[screen].layout, `${screen} 缺少独立横屏DOM`);
     }
     assert(Object.values(landscapePages).every(({ primaryCount }) => primaryCount <= 1), '横屏页面主操作超过1个');
-    assert(Object.values(landscapePages).every(({ realAssets }) => realAssets >= 1), '横屏页面缺少真实素材');
+    assert(Object.values(landscapePages).every(({ wireframes, visibleImages }) => wireframes >= 1 && visibleImages === 0), '横屏页面未完整使用线框媒体');
     const touchTargets = await page.evaluate(() => [
       ...document.querySelectorAll('.landscape-top-nav nav button'),
       document.querySelector('.landscape-outline-button'),
@@ -2646,7 +2888,7 @@ async function main() {
       window.__appRentalDemo.navigate('play');
       document.querySelector('[data-group="playTab"][data-value="pc"]')?.click();
       window.__appRentalDemo.navigate('library');
-      document.querySelector('[data-group="libraryTab"][data-value="epic"]')?.click();
+      window.__appRentalDemo.setLibraryTab('retro');
       window.__appRentalDemo.setScenario('active-member');
       window.__appRentalDemo.navigate('profile');
       window.__appRentalDemo.setOrientation('landscape');
@@ -2656,7 +2898,7 @@ async function main() {
       rotationState.screen === 'profile'
         && rotationState.scenario === 'active-member'
         && rotationState.playTab === 'pc'
-        && rotationState.libraryTab === 'epic',
+        && rotationState.libraryTab === 'retro',
       '横竖屏切换丢失共享状态',
     );
     await page.locator('.landscape-profile [data-screen="orders"]').click();
@@ -2722,7 +2964,7 @@ async function main() {
       const footer = document.querySelector('.portrait-fixed-footer')?.getBoundingClientRect();
       return {
         layout: Boolean(document.querySelector('.portrait-detail[data-layout="portrait-detail"]')),
-        hero: Boolean(document.querySelector('.portrait-detail-hero img[data-real-asset="true"]')),
+        hero: Boolean(document.querySelector('.portrait-detail-hero [data-wireframe-media]')),
         primaryCount: document.querySelectorAll('[data-primary-action="true"]').length,
         footerPinned: Boolean(frame && footer && Math.abs(frame.bottom - footer.bottom) <= 14),
         lightActions: [...document.querySelectorAll('.portrait-detail-actions .detail-action-light')].map((node) => {
@@ -2734,7 +2976,7 @@ async function main() {
       };
     });
     assert(portraitDetail.layout, '竖屏详情缺少独立布局');
-    assert(portraitDetail.hero, '竖屏详情缺少真实主视觉');
+    assert(portraitDetail.hero, '竖屏详情缺少线框主视觉');
     assert(portraitDetail.primaryCount === 1 && portraitDetail.footerPinned, '竖屏详情主按钮未固定或不唯一');
     assert(portraitDetail.lightActions.length === 2 && portraitDetail.lightActions.every(({ background, border, direction, iconAboveLabel }) => background === 'rgba(0, 0, 0, 0)' && border === '0px' && direction === 'column' && iconAboveLabel), `更多/秒玩必须为无背景的上图标下文字：${JSON.stringify(portraitDetail.lightActions)}`);
 
@@ -2972,31 +3214,35 @@ async function main() {
       '游戏订单与会员订单相互覆盖',
     );
 
-    await page.evaluate(() => window.__appRentalDemo.navigate('member-library'));
+    await page.evaluate(() => window.__appRentalDemo.openMemberLibrary({ remember: true }));
     const portraitMemberLibrary = await page.evaluate(() => {
-      const cards = [...document.querySelectorAll('.portrait-member-library .member-game-card')];
+      const cards = [...document.querySelectorAll('.device.portrait .member-game-card')];
       return {
+        screen: window.__appRentalDemo.snapshot().screen,
+        libraryTab: window.__appRentalDemo.snapshot().libraryTab,
         cards: cards.length,
         columns: new Set(cards.slice(0, 2).map((node) => Math.round(node.getBoundingClientRect().left))).size,
       };
     });
-    assert(portraitMemberLibrary.cards >= 6 && portraitMemberLibrary.columns === 2, '竖屏会员游戏库不是两列');
-    await page.locator('.portrait-member-library .member-game-card').first().click();
+    assert(portraitMemberLibrary.screen === 'library' && portraitMemberLibrary.libraryTab === 'member' && portraitMemberLibrary.cards >= 6 && portraitMemberLibrary.columns === 2, '竖屏统一会员游戏Tab不是两列或状态错误');
+    await page.locator('.device.portrait .member-game-card').first().click();
     assert((await page.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'detail', '会员游戏卡无法进入详情');
 
     await page.evaluate(() => {
-      window.__appRentalDemo.navigate('member-library');
+      window.__appRentalDemo.openMemberLibrary({ remember: true });
       window.__appRentalDemo.setOrientation('landscape');
     });
     const landscapeMemberLibrary = await page.evaluate(() => {
-      const cards = [...document.querySelectorAll('.landscape-member-library .member-game-card')];
+      const cards = [...document.querySelectorAll('.device.landscape .member-game-card')];
       const firstTop = Math.min(...cards.map((node) => Math.round(node.getBoundingClientRect().top)));
       return {
+        screen: window.__appRentalDemo.snapshot().screen,
+        libraryTab: window.__appRentalDemo.snapshot().libraryTab,
         columns: cards.filter((node) => Math.round(node.getBoundingClientRect().top) === firstTop).length,
         faq: document.querySelectorAll('.member-faq-item').length,
       };
     });
-    assert(landscapeMemberLibrary.columns >= 4 && landscapeMemberLibrary.faq === 0, '横屏会员游戏库不是多列布局或仍显示常见问题');
+    assert(landscapeMemberLibrary.screen === 'library' && landscapeMemberLibrary.libraryTab === 'member' && landscapeMemberLibrary.columns >= 4 && landscapeMemberLibrary.faq === 0, '横屏统一会员游戏Tab不是多列布局或仍显示常见问题');
     process.stdout.write('MEMBERSHIP 10/10 PASS\n');
 
     await page.evaluate(() => window.__appRentalDemo.navigate('membership'));
@@ -3151,7 +3397,7 @@ async function main() {
     process.stdout.write('CHECKOUT_REVIEW 8/8 PASS\n');
 
     await page.evaluate(() => window.__appRentalDemo.navigate('membership'));
-    const landscapeLibraryEntryHeight = await page.locator('.landscape-membership .membership-preview [data-screen="member-library"]').evaluate((node) => node.getBoundingClientRect().height);
+    const landscapeLibraryEntryHeight = await page.locator('.landscape-membership .membership-preview [data-action="open-member-library"], .landscape-membership .membership-preview [data-screen="member-library"]').first().evaluate((node) => node.getBoundingClientRect().height);
     assert(landscapeLibraryEntryHeight >= 44, '横屏会员中心会员游戏库入口小于44px');
     process.stdout.write('MEMBERSHIP_ENTRY 1/1 PASS\n');
 
@@ -3763,19 +4009,14 @@ async function main() {
     assertTouchTargets(await readTouchTargets('.device-link'), '连接设备');
     process.stdout.write('TOUCH_TARGETS 6/6 PASS\n');
 
-    const sourceAssetNames = [
-      'portrait-home.jpg',
-      'portrait-play.jpg',
-      'portrait-library.jpg',
-      'portrait-profile.jpg',
-      'landscape-library.jpg',
-      'landscape-steam-library.jpg',
-      'landscape-play.jpg',
-    ];
-    const sourceAssetDir = path.join(root, 'demos', 'APP租号功能', 'assets', 'source');
-    assert(sourceAssetNames.every((name) => fs.existsSync(path.join(sourceAssetDir, name))), '独立构建缺少仓库内7张源 JPG');
     const buildSource = fs.readFileSync(path.join(root, 'tools', 'build-app-rental-demo.mjs'), 'utf8');
-    assert(buildSource.includes("'assets', 'source'") && !buildSource.includes("'APP核心优化'"), '构建脚本仍依赖工作区外部参考图路径');
+    assert(
+      !/\.(?:jpe?g|png|webp)["']/i.test(buildSource)
+        && !buildSource.includes("'assets', 'source'")
+        && !buildSource.includes("'APP核心优化'"),
+      '构建脚本仍依赖本地或工作区外部位图素材',
+    );
+    assert(buildSource.includes('data-wireframe-media'), '构建脚本未校验线框媒体契约');
     process.stdout.write('BUILD_SOURCE 2/2 PASS\n');
 
     await page.reload({ waitUntil: 'domcontentloaded' });
@@ -4005,25 +4246,26 @@ async function main() {
     await page.getByRole('button', { name: '申请售后', exact: true }).click();
     const portraitAfterSales = await page.evaluate(() => ({
       layout: document.querySelector('[data-layout="portrait-after-sales"]')?.dataset.layout,
-      types: document.querySelectorAll('[data-after-sales-type]').length,
-      typeLabels: [...document.querySelectorAll('[data-after-sales-type]')].map((node) => node.textContent.trim()),
+      requestTypes: [...document.querySelectorAll('[data-after-sales-request]')].map((node) => node.textContent.trim()),
+      reasons: [...document.querySelectorAll('[data-after-sales-reason]')].map((node) => node.textContent.trim()),
+      selectedRequest: document.querySelector('[data-after-sales-request].selected')?.dataset.afterSalesRequest,
       screen: window.__appRentalDemo.snapshot().screen,
     }));
-    assert(portraitAfterSales.layout === 'portrait-after-sales' && portraitAfterSales.types === 4 && portraitAfterSales.screen === 'after-sales', '竖屏售后独立页或4类问题不完整');
-    assert(
-      JSON.stringify(portraitAfterSales.typeLabels) === JSON.stringify(['启动失败', 'Steam登录失败', '账号异常/频繁掉线', '其他问题']),
-      '售后四类问题名称或顺序不符合最终口径',
-    );
+    assert(portraitAfterSales.layout === 'portrait-after-sales' && portraitAfterSales.screen === 'after-sales', '竖屏售后独立页不完整');
+    assert(JSON.stringify(portraitAfterSales.requestTypes) === JSON.stringify(['申请退款', '申请换号']), '售后诉求必须区分退款与换号');
+    assert(JSON.stringify(portraitAfterSales.reasons) === JSON.stringify(['3天无理由', '无法登录', '无法启动', '账号异常', '其他问题']), '退款原因名称或顺序不符合最终口径');
+    assert(portraitAfterSales.selectedRequest === 'refund', '售后默认必须选中申请退款');
+    await page.locator('[data-after-sales-reason="launch"]').click();
     assert((await page.evaluate(() => window.__appRentalDemo.submitAfterSales())) === null, '售后描述必填校验失效');
-    await page.locator('[data-after-sales-type="launch"]').click();
     await page.locator('#after-sales-description').fill('游戏启动后持续闪退，需要协助排查。');
     await page.evaluate(() => window.__appRentalDemo.setOrientation('landscape'));
     const landscapeAfterSales = await page.evaluate(() => ({
       layout: document.querySelector('[data-layout="landscape-after-sales"]')?.dataset.layout,
-      type: window.__appRentalDemo.snapshot().afterSalesDraft.type,
+      requestType: window.__appRentalDemo.snapshot().afterSalesDraft.requestType,
+      reason: window.__appRentalDemo.snapshot().afterSalesDraft.reason,
       description: document.querySelector('#after-sales-description')?.value,
     }));
-    assert(landscapeAfterSales.layout === 'landscape-after-sales' && landscapeAfterSales.type === 'launch' && landscapeAfterSales.description.includes('持续闪退'), '旋转后售后右侧面板或草稿丢失');
+    assert(landscapeAfterSales.layout === 'landscape-after-sales' && landscapeAfterSales.requestType === 'refund' && landscapeAfterSales.reason === 'launch' && landscapeAfterSales.description.includes('持续闪退'), '旋转后售后右侧面板或草稿丢失');
     const afterSalesSubmit = await page.evaluate(() => {
       const first = window.__appRentalDemo.submitAfterSales();
       const second = window.__appRentalDemo.submitAfterSales();
@@ -4044,7 +4286,7 @@ async function main() {
       steps: [...document.querySelectorAll('.after-sales-progress-dialog .refund-progress-timeline span')].map((node) => ({ text: node.textContent.trim(), className: node.className })),
       withdraw: document.querySelector('[aria-label="售后进度"] [data-action="withdraw-after-sales"]')?.textContent.trim() || '',
     }));
-    assert(afterSalesProgress.dialog.includes('售后处理中') && afterSalesProgress.steps.length === 3 && afterSalesProgress.steps[0].className.includes('done') && afterSalesProgress.steps[1].className.includes('current') && afterSalesProgress.withdraw === '撤销售后', `售后详情未弹出售后进度或状态不完整：${JSON.stringify(afterSalesProgress)}`);
+    assert(afterSalesProgress.dialog.includes('退款处理中') && afterSalesProgress.steps.length === 3 && afterSalesProgress.steps[0].className.includes('done') && afterSalesProgress.steps[1].className.includes('current') && afterSalesProgress.withdraw === '撤销售后', `售后详情未弹出退款进度或状态不完整：${JSON.stringify(afterSalesProgress)}`);
     await page.waitForTimeout(2000);
     await page.locator('.device').screenshot({ path: path.join(root, 'public', 'prd', 'app-rental', '19-after-sales-progress-landscape.png'), animations: 'disabled' });
     await page.evaluate(() => window.__appRentalDemo.setOrientation('portrait'));
@@ -4059,6 +4301,8 @@ async function main() {
     assert(afterSalesWithdraw.screen === 'order-detail' && afterSalesWithdraw.ticket === null && afterSalesWithdraw.action === '申请售后' && afterSalesWithdraw.toast === '售后申请已撤销', `撤销售后后未恢复申请入口：${JSON.stringify(afterSalesWithdraw)}`);
     await page.evaluate(() => {
       window.__appRentalDemo.openAfterSales();
+      window.__appRentalDemo.setAfterSalesRequestType('replacement');
+      window.__appRentalDemo.setAfterSalesReason('account');
       window.__appRentalDemo.setAfterSalesDescription('再次提交售后用于换号回归');
       window.__appRentalDemo.submitAfterSales();
       window.__appRentalDemo.openAfterSales();
@@ -4179,9 +4423,14 @@ async function main() {
     checkLayout((await page.locator('.landscape-membership .membership-plan-card').count()) === 3, '横屏会员套餐必须完整显示周卡、月卡、季卡三张卡');
     const membershipPreviewBadgeCount = await page.locator('.landscape-membership .membership-preview .cloud-save-badge').count();
     checkLayout(membershipPreviewBadgeCount === 0, `横屏会员中心仍显示云存档标签：${membershipPreviewBadgeCount}`);
-    await page.evaluate(() => window.__appRentalDemo.navigate('member-library'));
-    const memberLibraryBadgeCount = await page.locator('.landscape-member-library .cloud-save-badge').count();
-    checkLayout(memberLibraryBadgeCount === 0, `横屏会员游戏库仍显示云存档标签：${memberLibraryBadgeCount}`);
+    await page.evaluate(() => window.__appRentalDemo.openMemberLibrary({ remember: true }));
+    const memberLibraryLayout = await page.evaluate(() => ({
+      screen: window.__appRentalDemo.snapshot().screen,
+      libraryTab: window.__appRentalDemo.snapshot().libraryTab,
+      badgeCount: document.querySelectorAll('.device.landscape .member-game-card .cloud-save-badge').length,
+      legacyLayoutCount: document.querySelectorAll('.landscape-member-library').length,
+    }));
+    checkLayout(memberLibraryLayout.screen === 'library' && memberLibraryLayout.libraryTab === 'member' && memberLibraryLayout.badgeCount === 0 && memberLibraryLayout.legacyLayoutCount === 0, `横屏会员游戏未收敛到统一Tab或仍显示云存档标签：${JSON.stringify(memberLibraryLayout)}`);
     await page.evaluate(() => {
       window.__appRentalDemo.setScenario('active-rental');
       window.__appRentalDemo.navigate('orders');
@@ -4400,13 +4649,13 @@ async function main() {
       window.__appRentalDemo.selectOrder('APP-20260803004');
       window.__appRentalDemo.openAfterSales();
       return {
-        count: document.querySelectorAll('[data-after-sales-type]').length,
-        labels: [...document.querySelectorAll('[data-after-sales-type]')].map((node) => node.textContent.trim()),
-        refundType: Boolean(document.querySelector('[data-after-sales-type="refund"]')),
-        orderBenefit: document.querySelector('#appRentalDemo')?.textContent.includes('3天无理由') || false,
+        requestCount: document.querySelectorAll('[data-after-sales-request]').length,
+        reasonCount: document.querySelectorAll('[data-after-sales-reason]').length,
+        labels: [...document.querySelectorAll('[data-after-sales-reason]')].map((node) => node.textContent.trim()),
+        noReasonDisabled: Boolean(document.querySelector('[data-after-sales-reason="no-reason"]:disabled')),
       };
     });
-    checkReviewFix(afterSalesReasonBoundary.count === 4 && !afterSalesReasonBoundary.refundType && !afterSalesReasonBoundary.labels.includes('3天无理由'), `售后问题类型仍混入3天无理由：${JSON.stringify(afterSalesReasonBoundary)}`);
+    checkReviewFix(afterSalesReasonBoundary.requestCount === 2 && afterSalesReasonBoundary.reasonCount === 5 && afterSalesReasonBoundary.labels.includes('3天无理由') && afterSalesReasonBoundary.noReasonDisabled, `售后诉求、原因或无理由资格边界错误：${JSON.stringify(afterSalesReasonBoundary)}`);
     process.stdout.write(`REVIEW_FIXES ${reviewFixChecks}/${reviewFixChecks} PASS\n`);
 
     const annotationPage = await browser.newPage({ viewport: { width: 1680, height: 980 } });
@@ -4445,8 +4694,8 @@ async function main() {
         exception: document.querySelectorAll('.anno-badge--exception').length,
       };
     });
-    assertAnnotation(annotationMatrix.total === 33 && annotationMatrix.complete, `标注矩阵数量或六字段不完整：${JSON.stringify(annotationMatrix)}`);
-    assertAnnotation(annotationMatrix.interaction === 17 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
+    assertAnnotation(annotationMatrix.total === 35 && annotationMatrix.complete, `标注矩阵数量或六字段不完整：${JSON.stringify(annotationMatrix)}`);
+    assertAnnotation(annotationMatrix.interaction === 19 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
     const annotationStateText = await annotationPage.locator('#panel-state').innerText();
     assertAnnotation(!/(?:gh_rental_2607|G@meHub#8291|48291|guardCode|\btoken\b)/i.test(annotationStateText), '数据与状态 Tab 不得展示账号、密码、校验值或令牌字段');
     assertAnnotation(
@@ -4466,8 +4715,8 @@ async function main() {
       '标注版未明确订单中心三 Tab、当前页搜索、无类型标签或 CDKEY 范围',
     );
     assertAnnotation(
-      annotationStateText.includes('任务页不显示全局导航')
-        && /旋转后保留|方向切换不丢|旋转不重复展示/.test(annotationStateText),
+      /任务页(?:不显示|保持无)全局导航/.test(annotationSource)
+        && /旋转后保留|方向切换不丢|旋转不重复展示/.test(annotationSource),
       '标注版未明确任务页壳层或旋转连续性规则',
     );
 
@@ -4538,7 +4787,8 @@ async function main() {
 
     await annotationPage.locator('[data-flow-group="after-sales"]').click();
     await annotationPage.waitForFunction(() => window.__appRentalDemo.snapshot().screen === 'after-sales');
-    await annotationPage.locator('[data-after-sales-type="launch"]').click();
+    await annotationPage.locator('[data-after-sales-request="replacement"]').click();
+    await annotationPage.locator('[data-after-sales-reason="launch"]').click();
     await annotationPage.locator('#after-sales-description').fill('标注版售后链路验证');
     await annotationPage.locator('[data-action="submit-after-sales"]').click();
     const annotatedAfterSales = await annotationPage.evaluate(() => ({
@@ -4546,7 +4796,7 @@ async function main() {
       type: window.__appRentalDemo.snapshot().afterSalesOrder?.type,
       refundProgress: document.querySelectorAll('.refund-progress').length,
     }));
-    assertAnnotation(Boolean(annotatedAfterSales.id) && annotatedAfterSales.type === 'launch' && annotatedAfterSales.refundProgress === 0, '标注版四类售后提交不可用或错误显示退款进度');
+    assertAnnotation(Boolean(annotatedAfterSales.id) && annotatedAfterSales.type === 'launch' && annotatedAfterSales.refundProgress === 0, '标注版退款／换号两级售后提交不可用或错误显示退款进度');
 
     await annotationPage.locator('[data-flow-group="recovery"]').click();
     await annotationPage.waitForFunction(() => Boolean(document.querySelector('[data-action="retry-inventory"]')));
@@ -4577,27 +4827,20 @@ async function main() {
       };
     });
 
-    const readHeroCropAlignment = () => annotationPage.evaluate(() => {
-      const image = document.querySelector('.hero-card img[data-real-asset="true"], .landscape-home-hero img[data-real-asset="true"]');
-      const frame = image?.parentElement;
-      if (!image || !frame) return null;
-      const sourceWidth = Number(image.dataset.sourceWidth);
-      const sourceHeight = Number(image.dataset.sourceHeight);
-      const cropCenterX = Number(image.dataset.cropX) + Number(image.dataset.cropWidth) / 2;
-      const cropCenterY = Number(image.dataset.cropY) + Number(image.dataset.cropHeight) / 2;
-      const imageWidth = Number.parseFloat(image.style.width);
-      const imageHeight = Number.parseFloat(image.style.height);
-      const imageLeft = Number.parseFloat(image.style.left);
-      const imageTop = Number.parseFloat(image.style.top);
-      const mappedCenterX = imageLeft + cropCenterX * (imageWidth / sourceWidth);
-      const mappedCenterY = imageTop + cropCenterY * (imageHeight / sourceHeight);
+    const readHeroWireframeAlignment = () => annotationPage.evaluate(() => {
+      const media = document.querySelector('.hero-card [data-wireframe-media], .landscape-home-hero [data-wireframe-media]');
+      const frame = media?.parentElement;
+      if (!media || !frame) return null;
+      const mediaRect = media.getBoundingClientRect();
+      const frameRect = frame.getBoundingClientRect();
       return {
         frameWidth: frame.clientWidth,
         frameHeight: frame.clientHeight,
-        visualFrameWidth: frame.getBoundingClientRect().width,
-        visualFrameHeight: frame.getBoundingClientRect().height,
-        centerErrorX: Math.abs(mappedCenterX - frame.clientWidth / 2),
-        centerErrorY: Math.abs(mappedCenterY - frame.clientHeight / 2),
+        visualFrameWidth: frameRect.width,
+        visualFrameHeight: frameRect.height,
+        centerErrorX: Math.abs((mediaRect.left + mediaRect.right) / 2 - (frameRect.left + frameRect.right) / 2),
+        centerErrorY: Math.abs((mediaRect.top + mediaRect.bottom) / 2 - (frameRect.top + frameRect.bottom) / 2),
+        contained: mediaRect.left >= frameRect.left - 1 && mediaRect.right <= frameRect.right + 1 && mediaRect.top >= frameRect.top - 1 && mediaRect.bottom <= frameRect.bottom + 1,
       };
     });
 
@@ -4608,12 +4851,13 @@ async function main() {
     const compactPortrait = await readResponsiveMetrics();
     assertAnnotation(compactPortrait.scale < 1 && compactPortrait.inside && compactPortrait.stageX <= 0 && compactPortrait.stageY <= 0, `1280×800 竖屏设备未完整缩放进舞台：${JSON.stringify(compactPortrait)}`);
     await annotationPage.evaluate(() => window.__appRentalDemo.navigate('home'));
-    const compactPortraitCrop = await readHeroCropAlignment();
+    const compactPortraitCrop = await readHeroWireframeAlignment();
     assertAnnotation(
       compactPortraitCrop
         && compactPortraitCrop.centerErrorX <= 1
-        && compactPortraitCrop.centerErrorY <= 1,
-      `标注版缩放后竖屏探索图裁切坐标错乱：${JSON.stringify(compactPortraitCrop)}`,
+        && compactPortraitCrop.centerErrorY <= 1
+        && compactPortraitCrop.contained,
+      `标注版缩放后竖屏探索线框图位置错乱：${JSON.stringify(compactPortraitCrop)}`,
     );
     await annotationPage.locator('.hero-card[data-game-id="shadow-blade-zero"]').click();
     await annotationPage.waitForFunction(() => window.__appRentalDemo.snapshot().screen === 'detail');
@@ -4624,12 +4868,13 @@ async function main() {
     const compactLandscape = await readResponsiveMetrics();
     assertAnnotation(compactLandscape.scale < 1 && compactLandscape.inside && compactLandscape.stageX <= 0 && compactLandscape.stageY <= 0, `1280×800 横屏设备未完整缩放进舞台：${JSON.stringify(compactLandscape)}`);
     await annotationPage.evaluate(() => window.__appRentalDemo.navigate('home'));
-    const compactLandscapeCrop = await readHeroCropAlignment();
+    const compactLandscapeCrop = await readHeroWireframeAlignment();
     assertAnnotation(
       compactLandscapeCrop
         && compactLandscapeCrop.centerErrorX <= 1
-        && compactLandscapeCrop.centerErrorY <= 1,
-      `标注版缩放后横屏探索图裁切坐标错乱：${JSON.stringify(compactLandscapeCrop)}`,
+        && compactLandscapeCrop.centerErrorY <= 1
+        && compactLandscapeCrop.contained,
+      `标注版缩放后横屏探索线框图位置错乱：${JSON.stringify(compactLandscapeCrop)}`,
     );
     const compactOpenScale = compactLandscape.scale;
     await annotationPage.locator('#collapseAnnotations').click();
