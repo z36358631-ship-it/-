@@ -1526,6 +1526,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
   const formValue = selector => String(root.querySelector(selector)?.value || '').trim();
+  const checkedValue = selector => String(root.querySelector(`${selector}:checked`)?.value || '').trim();
   const setFormError = (inputSelector, errorSelector, message = '') => {
     const input = root.querySelector(inputSelector);
     const error = root.querySelector(errorSelector);
@@ -1540,7 +1541,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     name:formValue('[data-channel-name]'),
     effectiveStart:formValue('[data-channel-effective-start]'),
     effectiveEnd:formValue('[data-channel-effective-end]'),
-    enabled:formValue('[data-channel-enabled]') !== 'false',
+    enabled:checkedValue('[data-channel-enabled]') === 'true',
     note:formValue('[data-channel-note]').slice(0, 200),
   });
   const readBatchForm = fallback => {
@@ -1554,7 +1555,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       validUntil:delivery === 'file' ? (formValue('[data-channel-batch-valid-until]') || fallback?.validUntil || '') : '',
       effectiveStart:formValue('[data-channel-batch-effective-start]') || fallback?.effectiveStart || '',
       effectiveEnd:formValue('[data-channel-batch-effective-end]'),
-      enabled:formValue('[data-channel-batch-enabled]') !== 'false',
+      enabled:checkedValue('[data-channel-batch-enabled]') === 'true',
       note:formValue('[data-channel-batch-note]').slice(0, 200),
     };
   };
@@ -3622,24 +3623,21 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const slot = root.querySelector('[data-channel-batch-file-fields]');
       if (!slot || !batchDelivery) return;
       const isFile = batchDelivery.value === 'file';
-      const current = channelDistributionState();
-      const batch = findBatch(current, current.dialogBatchId);
-      const locked = root.querySelector('[data-channel-batch-form]')?.dataset.batchCoreLocked === 'true' || batchCoreLocked(batch || {});
       slot.hidden = !isFile;
       if (!isFile) {
-        slot.innerHTML = '';
         setFormError('[data-channel-batch-quantity]', '[data-channel-batch-quantity-error]');
         setFormError('[data-channel-batch-valid-until]', '[data-channel-batch-valid-until-error]');
-        return;
       }
-      const quantity = Number(batch?.quantity || 100);
-      const validUntil = String(batch?.validUntil || addCalendarDays(new Date(), 180)).slice(0, 10);
-      slot.innerHTML = `<label><span>${memory.shell.language === 'en' ? 'Key quantity' : 'Key 数量'}</span><input type="number" min="1" max="100000" step="1" value="${quantity}" ${locked ? 'disabled' : ''} aria-label="${memory.shell.language === 'en' ? 'Key quantity' : 'Key 数量'}" data-channel-batch-quantity><small>${memory.shell.language === 'en' ? '1–100,000 per batch' : '单批 1—100,000 个'}</small><em data-channel-batch-quantity-error></em></label><label><span>${memory.shell.language === 'en' ? 'Key expiry date' : 'Key 有效期'}</span><input type="date" value="${c.escapeHtml(validUntil)}" ${locked ? 'disabled' : ''} aria-label="${memory.shell.language === 'en' ? 'Key expiry date' : 'Key 有效期'}" data-channel-batch-valid-until><em data-channel-batch-valid-until-error></em></label>`;
     };
     batchDelivery?.addEventListener('change', syncBatchDeliveryFields);
     syncBatchDeliveryFields();
 
     const channelRoot = root.querySelector('.publisher-channel');
+    const closeChannelDatePickers = except => {
+      channelRoot?.querySelectorAll('[data-channel-date-popover]').forEach(node => {
+        if (node !== except) node.hidden = true;
+      });
+    };
     const refreshChannelDatePicker = wrapper => {
       const popover = wrapper?.querySelector('[data-channel-date-popover]');
       const renderer = window.PublisherChannelDistribution?.renderDatePopover;
@@ -3656,7 +3654,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     };
     channelRoot?.addEventListener('click', event => {
       const control = event.target.closest('[data-channel-date-action]');
-      if (!control || !channelRoot.contains(control)) return;
+      if (!control || !channelRoot.contains(control)) {
+        if (!event.target.closest('[data-channel-date-popover]')) closeChannelDatePickers();
+        return;
+      }
       const wrapper = control.closest('[data-channel-date-range]');
       const popover = wrapper?.querySelector('[data-channel-date-popover]');
       if (!wrapper || !popover) return;
@@ -3667,7 +3668,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       const endInput = hiddenInputs[1];
       const normalize = value => String(value || '').slice(0,10);
       if (action === 'open') {
-        channelRoot.querySelectorAll('[data-channel-date-popover]').forEach(node => { if (node !== popover) node.hidden = true; });
+        closeChannelDatePickers(popover);
         wrapper.dataset.draftStart = normalize(startInput?.value);
         wrapper.dataset.draftEnd = normalize(endInput?.value);
         wrapper.dataset.dateSelection = 'start';
@@ -3743,6 +3744,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         if (endError) endError.textContent = '';
         popover.hidden = true;
       }
+    });
+    channelRoot?.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      closeChannelDatePickers();
     });
 
     root.querySelector('[data-help-search-input]')?.addEventListener('keydown', event => {

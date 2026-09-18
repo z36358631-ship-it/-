@@ -125,6 +125,65 @@ test('对象创建、编辑和查看使用右侧抽屉，危险操作使用居�
   await page.close();
 });
 
+test('创建表单默认停用、状态平铺且字段不重叠',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  await page.getByRole('button',{name:'创建渠道',exact:true}).click();
+  let drawer=page.getByRole('dialog',{name:'创建渠道',exact:true});
+  await drawer.evaluate(node=>Promise.all(node.getAnimations().map(animation=>animation.finished)));
+  assert.equal(await drawer.getByRole('radio',{name:'停用',exact:true}).isChecked(),true);
+  const channelState=await drawer.getByText('状态',{exact:true}).locator('..').boundingBox();
+  const channelNote=await drawer.getByLabel('备注').locator('..').boundingBox();
+  assert.equal(Math.round(channelState.width),Math.round(channelNote.width));
+  await drawer.getByRole('button',{name:'取消',exact:true}).click();
+
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
+  await page.getByRole('button',{name:'创建批次',exact:true}).click();
+  drawer=page.getByRole('dialog',{name:'创建批次',exact:true});
+  await drawer.evaluate(node=>Promise.all(node.getAnimations().map(animation=>animation.finished)));
+  assert.equal(await drawer.getByRole('radio',{name:'停用',exact:true}).isChecked(),true);
+  const quantity=await drawer.getByLabel('Key 数量').boundingBox();
+  const expiry=await drawer.getByLabel('Key 有效期').boundingBox();
+  const separated=quantity.y+quantity.height<=expiry.y||expiry.y+expiry.height<=quantity.y||quantity.x+quantity.width<=expiry.x||expiry.x+expiry.width<=quantity.x;
+  assert.ok(separated,JSON.stringify({quantity,expiry}));
+  await page.close();
+});
+
+test('日期浮层点外和 Escape 均按取消处理',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  await page.getByRole('button',{name:'创建渠道',exact:true}).click();
+  const drawer=page.getByRole('dialog',{name:'创建渠道',exact:true});
+  const field=drawer.getByRole('button',{name:'合作时间',exact:true});
+  const picker=drawer.getByRole('dialog',{name:'选择合作时间'});
+  const before=await field.innerText();
+  await field.click();
+  await picker.getByRole('button',{name:'2026-09-20',exact:true}).click();
+  await page.getByRole('heading',{name:'创建渠道',exact:true}).click();
+  assert.equal(await picker.isHidden(),true);
+  assert.equal(await field.innerText(),before);
+  await field.click();
+  await picker.press('Escape');
+  assert.equal(await picker.isHidden(),true);
+  assert.equal(await field.innerText(),before);
+  await page.close();
+});
+
+test('页面移除使用说明入口且三类筛选使用稳定内容宽度',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  assert.equal(await page.getByRole('button',{name:'使用说明',exact:true}).count(),0);
+  const channelWidths=await page.locator('.publisher-channel-filters.is-channels .publisher-channel-filter').evaluateAll(nodes=>nodes.map(node=>Math.round(node.getBoundingClientRect().width)));
+  assert.ok(channelWidths[0]<=320&&channelWidths[1]<=340&&channelWidths[2]<=180);
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
+  const batchWidth=await page.getByLabel('供给方式').locator('..').evaluate(node=>Math.round(node.getBoundingClientRect().width));
+  assert.ok(batchWidth<=180);
+  await openSection(page,'分销数据');
+  const dataWidth=await page.getByLabel('Key 发放时间').locator('..').evaluate(node=>Math.round(node.getBoundingClientRect().width));
+  assert.ok(dataWidth<=340);
+  await page.close();
+});
+
 test('渠道支持查看、新增、编辑、停用、启用和软删除',async()=>{
   const page=await browser.newPage({viewport:{width:1440,height:1000}});
   await openGame(page);await openSection(page,'渠道与供给');
@@ -132,6 +191,7 @@ test('渠道支持查看、新增、编辑、停用、启用和软删除',async(
   const create=page.getByRole('dialog',{name:'创建渠道'});
   await create.getByLabel('渠道名称').fill('测试合作渠道');
   await create.getByLabel('备注').fill('线下合作');
+  await create.getByRole('radio',{name:'启用',exact:true}).check();
   assert.equal(await create.getByLabel('供给方式').count(),0);
   assert.equal(await create.getByLabel('销售项').count(),0);
   assert.equal(await create.getByLabel(/数量/).count(),0);
@@ -211,6 +271,7 @@ test('文件批次先创建再下载且单批最多十万',async()=>{
   await dialog.getByLabel('所属渠道').selectOption('CH-240902');
   await dialog.getByLabel('销售项').selectOption('BASE-GLOBAL');
   await dialog.getByLabel('供给方式').selectOption('file');
+  await dialog.getByRole('radio',{name:'启用',exact:true}).check();
   const quantity=dialog.getByLabel('Key 数量');
   assert.equal(await quantity.getAttribute('max'),'100000');
   await quantity.fill('100001');
@@ -248,7 +309,8 @@ test('API 批次无数量或额度并按批次管理接入',async()=>{
   await dialog.getByLabel('所属渠道').selectOption('CH-240902');
   await dialog.getByLabel('销售项').selectOption('BASE-GLOBAL');
   await dialog.getByLabel('供给方式').selectOption('api');
-  assert.equal(await dialog.getByLabel('Key 数量').count(),0);
+  await dialog.getByRole('radio',{name:'启用',exact:true}).check();
+  assert.equal(await dialog.getByLabel('Key 数量').isHidden(),true);
   assert.doesNotMatch(await dialog.innerText(),/额度|补量/);
   await dialog.getByRole('button',{name:'创建',exact:true}).click();
   const row=batchRow(page,'ArcadeX API 接入批次');
@@ -268,6 +330,7 @@ test('API 批次无数量或额度并按批次管理接入',async()=>{
   await dialog.getByLabel('所属渠道').selectOption('CH-240902');
   await dialog.getByLabel('销售项').selectOption('BASE-GLOBAL');
   await dialog.getByLabel('供给方式').selectOption('api');
+  await dialog.getByRole('radio',{name:'启用',exact:true}).check();
   await dialog.getByRole('button',{name:'创建',exact:true}).click();
   assert.match(await dialog.innerText(),/同一渠道和销售项已有启用中的 API 批次/);
   assert.equal(await batchRow(page,'ArcadeX 重复 API 批次').count(),0);
