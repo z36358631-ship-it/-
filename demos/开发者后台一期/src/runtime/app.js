@@ -1468,6 +1468,16 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (batch.effectiveEnd && new Date(batch.effectiveEnd).getTime() < now) return false;
     return true;
   };
+  const apiBatchRemaining = batch => {
+    const external = window.PublisherChannelDistribution?.apiRemaining;
+    if (typeof external === 'function') return external(batch || {});
+    return Math.max(0,Number(batch?.quantity || 0) - Number(batch?.apiStats?.succeeded || 0));
+  };
+  const apiBatchHasEnded = batch => {
+    const external = window.PublisherChannelDistribution?.batchHasEnded;
+    if (typeof external === 'function') return external(batch || {});
+    return Boolean(batch?.effectiveEnd && new Date(batch.effectiveEnd).getTime() <= Date.now());
+  };
   const batchCoreLocked = batch => {
     const external = window.PublisherChannelDistribution?.batchCoreLocked;
     if (typeof external === 'function') return external(batch || {}) === true;
@@ -1551,7 +1561,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       channelId:formValue('[data-channel-batch-channel]') || fallback?.channelId || '',
       skuId:formValue('[data-channel-batch-sku]') || fallback?.skuId || '',
       delivery,
-      quantity:delivery === 'file' ? Number(formValue('[data-channel-batch-quantity]') || fallback?.quantity || 0) : null,
+      quantity:Number(formValue('[data-channel-batch-quantity]') || fallback?.quantity || 0),
       validUntil:delivery === 'file' ? (formValue('[data-channel-batch-valid-until]') || fallback?.validUntil || '') : '',
       effectiveStart:formValue('[data-channel-batch-effective-start]') || fallback?.effectiveStart || '',
       effectiveEnd:formValue('[data-channel-batch-effective-end]'),
@@ -1587,7 +1597,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (!['file', 'api'].includes(value.delivery)) return setFormError('[data-channel-batch-delivery]', '[data-channel-batch-delivery-error]', '请选择供给方式。');
     if (!value.effectiveStart) return setFormError('[data-channel-batch-effective-start]', '[data-channel-batch-effective-start-error]', '请选择生效开始时间。');
     if (!dateRangeIsValid(value.effectiveStart, value.effectiveEnd)) return setFormError('[data-channel-batch-effective-end]', '[data-channel-batch-effective-end-error]', '结束时间不能早于开始时间。');
-    if (value.delivery === 'file' && (!Number.isInteger(value.quantity) || value.quantity < 1 || value.quantity > 100000)) {
+    if (!Number.isInteger(value.quantity) || value.quantity < 1 || value.quantity > 100000) {
       return setFormError('[data-channel-batch-quantity]', '[data-channel-batch-quantity-error]', '请输入 1—100,000 的整数。');
     }
     if (value.delivery === 'file' && !value.validUntil) return setFormError('[data-channel-batch-valid-until]', '[data-channel-batch-valid-until-error]', '请选择 Key 有效期。');
@@ -2141,8 +2151,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           supplyState:value.delivery === 'file' ? 'pending' : 'pending_credentials',
           clientId:'',
           secretLast4:'',
-          apiStats:value.delivery === 'api' ? { succeeded:0, failed:0 } : undefined,
+          apiStats:value.delivery === 'api' ? { requests:0, succeeded:0, failed:0 } : undefined,
           apiCalls:value.delivery === 'api' ? [] : undefined,
+          quantityAdditions:value.delivery === 'api' ? [] : undefined,
           createdAt,
           updatedAt:createdAt,
         };
@@ -2182,8 +2193,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
             supplyState:value.delivery === 'file' ? 'pending' : 'pending_credentials',
             clientId:'',
             secretLast4:'',
-            apiStats:value.delivery === 'api' ? { succeeded:0, failed:0 } : undefined,
+            apiStats:value.delivery === 'api' ? { requests:0, succeeded:0, failed:0 } : undefined,
             apiCalls:value.delivery === 'api' ? [] : undefined,
+            quantityAdditions:value.delivery === 'api' ? [] : undefined,
           } : {}),
         };
         const next = patchBatch(current, batchId, patch);
@@ -2306,6 +2318,32 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         }
         return;
       }
+      if (route.id === 'P02-01' && action === 'batch-api-topup-open') {
+        const current = channelDistributionState();
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch || batch.deleted || batch.delivery !== 'api' || apiBatchHasEnded(batch)) return;
+        updateChannelDistribution({ ...current, activeChannelId:batch.channelId, dialog:'api-topup', dialogTargetType:'batch', dialogChannelId:batch.channelId, dialogBatchId:batchId });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'batch-api-topup-submit') {
+        const current = channelDistributionState();
+        const batchId = current.dialogBatchId || event.currentTarget.dataset.batchId;
+        const batch = findBatch(current, batchId);
+        if (!batch || batch.deleted || batch.delivery !== 'api' || apiBatchHasEnded(batch)) return;
+        const delta = Number(formValue('[data-channel-api-topup-quantity]'));
+        if (!Number.isInteger(delta) || delta < 1 || delta > 100000) {
+          setFormError('[data-channel-api-topup-quantity]', '[data-channel-api-topup-error]', '请输入 1—100,000 的整数。');
+          return;
+        }
+        const next = patchBatch(current, batchId, {
+          quantity:Number(batch.quantity || 0) + delta,
+          quantityAdditions:[...(batch.quantityAdditions || []),{ quantity:delta, createdAt:nowText(), createdBy:'当前开发者' }],
+        });
+        updateChannelDistribution({ ...next, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' });
+        resultMessage(route.id, '数量已追加', `本次追加 ${delta.toLocaleString()} 个；接口地址与凭证不变。`);
+        return;
+      }
       if (route.id === 'P02-01' && ['batch-api-access', 'batch-api-generate'].includes(action)) {
         const current = channelDistributionState();
         const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
@@ -2371,7 +2409,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
         const batch = findBatch(current, batchId);
         const channel = findChannel(current, batch?.channelId);
-        if (!batch?.clientId || batch.delivery !== 'api' || !batchCanSupply(batch, channel)) {
+        if (!batch?.clientId || batch.delivery !== 'api') {
+          resultMessage(route.id, '接口取码失败', '请检查渠道、批次和 API 凭证状态。', 'warning');
+          return;
+        }
+        if (apiBatchRemaining(batch) <= 0) {
+          resultMessage(route.id, '接口取码失败', '当前批次数量已用完，请先追加数量。', 'warning');
+          return;
+        }
+        if (!batchCanSupply(batch, channel)) {
           resultMessage(route.id, '接口取码失败', '请检查渠道、批次和 API 凭证状态。', 'warning');
           return;
         }
@@ -2380,7 +2426,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const next = patchBatch(current, batchId, {
           supplyState:'active',
           lastSuppliedAt:suppliedAt,
-          apiStats:{ ...(batch.apiStats || {}), succeeded:Number(batch.apiStats?.succeeded || 0) + 1 },
+          lastUsedAt:suppliedAt,
+          apiStats:{ ...(batch.apiStats || {}), requests:Number(batch.apiStats?.requests || 0) + 1, succeeded:Number(batch.apiStats?.succeeded || 0) + 1 },
           apiCalls:[{ requestId, status:'succeeded', suppliedAt }, ...(batch.apiCalls || [])],
         });
         updateChannelDistribution({
@@ -3620,12 +3667,20 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }));
     const batchDelivery = root.querySelector('[data-channel-batch-delivery]');
     const syncBatchDeliveryFields = () => {
-      const slot = root.querySelector('[data-channel-batch-file-fields]');
+      const slot = root.querySelector('[data-channel-batch-inventory-fields]');
       if (!slot || !batchDelivery) return;
       const isFile = batchDelivery.value === 'file';
-      slot.hidden = !isFile;
+      const label = slot.querySelector('[data-channel-batch-quantity-label]');
+      const input = slot.querySelector('[data-channel-batch-quantity]');
+      const help = slot.querySelector('[data-channel-batch-quantity-help]');
+      const validUntil = slot.querySelector('[data-channel-batch-valid-until-field]');
+      const isEnglish = memory.shell.language === 'en';
+      const quantityLabel = isFile ? (isEnglish ? 'Key quantity' : 'Key 数量') : (isEnglish ? 'Initial available quantity' : '初始可取数量');
+      if (label) label.textContent = quantityLabel;
+      input?.setAttribute('aria-label', quantityLabel);
+      if (help) help.textContent = isFile ? (isEnglish ? '1–100,000 Keys per batch' : '单批 1～100,000 个') : (isEnglish ? '1–100,000 initially; more can be added later' : '单次 1～100,000；后续可在原批次追加');
+      if (validUntil) validUntil.hidden = !isFile;
       if (!isFile) {
-        setFormError('[data-channel-batch-quantity]', '[data-channel-batch-quantity-error]');
         setFormError('[data-channel-batch-valid-until]', '[data-channel-batch-valid-until-error]');
       }
     };

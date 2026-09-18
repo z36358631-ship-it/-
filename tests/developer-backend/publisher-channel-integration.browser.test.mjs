@@ -257,7 +257,7 @@ test('批次管理统一展示文件和 API 批次且不含平台处置状态',a
   const body=await page.locator('.publisher-channel-table--batches tbody').innerText();
   for(const value of ['ArcadeX 九月文件批次','ArcadeX 十月预备批次','NovaPlay 本体 API','下载兑换码文件','接口取码']) assert.match(body,new RegExp(value));
   for(const removed of ['风险暂停','密钥待重置','平台处理','查看异常','已取消']) assert.doesNotMatch(body,new RegExp(removed));
-  assert.match(await batchRow(page,'NovaPlay 本体 API').innerText(),/接口取码[\s\S]*—/);
+  assert.match(await batchRow(page,'NovaPlay 本体 API').innerText(),/接口取码[\s\S]*98,600\s*\/\s*100,000/);
   await page.close();
 });
 
@@ -299,41 +299,121 @@ test('文件批次先创建再下载且单批最多十万',async()=>{
   await page.close();
 });
 
-test('API 批次无数量或额度并按批次管理接入',async()=>{
+test('API 批次支持十万上限和原批次追加数量',async()=>{
   const page=await browser.newPage({viewport:{width:1440,height:1000}});
   await openGame(page);await openSection(page,'渠道与供给');
   await page.getByRole('tab',{name:'批次管理',exact:true}).click();
   await page.getByRole('button',{name:'创建批次',exact:true}).click();
-  let dialog=page.getByRole('dialog',{name:'创建批次'});
-  await dialog.getByLabel('批次名称').fill('ArcadeX API 接入批次');
+  const dialog=page.getByRole('dialog',{name:'创建批次'});
+  await dialog.getByLabel('批次名称').fill('ArcadeX API 数量批次');
   await dialog.getByLabel('所属渠道').selectOption('CH-240902');
   await dialog.getByLabel('销售项').selectOption('BASE-GLOBAL');
   await dialog.getByLabel('供给方式').selectOption('api');
-  await dialog.getByRole('radio',{name:'启用',exact:true}).check();
-  assert.equal(await dialog.getByLabel('Key 数量').isHidden(),true);
-  assert.doesNotMatch(await dialog.innerText(),/额度|补量/);
+  const initial=dialog.getByLabel('初始可取数量');
+  assert.equal(await initial.getAttribute('max'),'100000');
+  await initial.fill('100001');
   await dialog.getByRole('button',{name:'创建',exact:true}).click();
-  const row=batchRow(page,'ArcadeX API 接入批次');
+  assert.match(await dialog.innerText(),/1[^\n]*100,000/);
+  await initial.fill('100000');
+  await dialog.getByRole('button',{name:'创建',exact:true}).click();
+
+  const row=batchRow(page,'ArcadeX API 数量批次');
   await row.waitFor();
-  assert.match(await row.innerText(),/接口取码[\s\S]*—/);
+  assert.match(await row.innerText(),/100,000\s*\/\s*100,000/);
+  await row.getByRole('button',{name:'追加数量',exact:true}).click();
+  const topup=page.getByRole('dialog',{name:'追加数量',exact:true});
+  await expectDrawer(page,'追加数量');
+  assert.match(await topup.innerText(),/当前剩余[^\n]*100,000/);
+  await topup.getByLabel('本次追加数量').fill('100001');
+  await topup.getByRole('button',{name:'确认追加',exact:true}).click();
+  assert.match(await topup.innerText(),/1[^\n]*100,000/);
+  await topup.getByLabel('本次追加数量').fill('25000');
+  await topup.getByRole('button',{name:'确认追加',exact:true}).click();
+  assert.match(await row.innerText(),/125,000\s*\/\s*125,000/);
+  await row.getByRole('button',{name:'追加数量',exact:true}).click();
+  assert.match(await page.getByRole('dialog',{name:'追加数量',exact:true}).innerText(),/追加记录[\s\S]*25,000[\s\S]*当前开发者/);
+  await page.close();
+});
+
+test('API 追加不改变接口凭证且旧数据不产生虚构库存',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
+  const row=batchRow(page,'NovaPlay 本体 API');
   await row.getByRole('button',{name:'管理接入',exact:true}).click();
-  const access=page.getByRole('dialog',{name:'API 接入信息'});
-  const accessText=await access.innerText();
-  for(const value of ['批次','渠道','SKU','client_id']) assert.match(accessText,new RegExp(value,'i'));
-  assert.match(accessText,/BT-\d{8}-\d{4}[\s\S]*CH-\d{6}/);
-  assert.match(accessText,/接口文档|接入教程/);
-  assert.doesNotMatch(accessText,/数量|额度|剩余|补量/);
-  await access.getByRole('button',{name:'关闭',exact:true}).click();
+  const before=await page.getByRole('dialog',{name:'API 接入信息'}).innerText();
+  await page.getByRole('button',{name:'关闭',exact:true}).click();
+  await row.getByRole('button',{name:'追加数量',exact:true}).click();
+  await page.getByLabel('本次追加数量').fill('10000');
+  await page.getByRole('button',{name:'确认追加',exact:true}).click();
+  await row.getByRole('button',{name:'管理接入',exact:true}).click();
+  const after=await page.getByRole('dialog',{name:'API 接入信息'}).innerText();
+  assert.match(before,/client_id\s*cli_np_base_202609/i);
+  assert.match(after,/client_id\s*cli_np_base_202609/i);
+  assert.equal(after,before,'追加不应改变接口地址、凭证或调用统计');
+  assert.match(await publisherStateText(page),/"quantityAdditions"/);
+  await page.close();
+});
+
+test('旧 API 批次缺少数量时以已成功取码量迁移',async()=>{
+  const page=await browser.newPage({viewport:{width:1280,height:800}});
+  await page.goto(demoUrl('/P02-01'),{waitUntil:'load'});
+  const migrated=await page.evaluate(()=>{
+    const state=window.PublisherChannelDistribution.createState({
+      batches:[{
+        id:'BT-LEGACY',name:'旧接口批次',channelId:'CH-240901',skuId:'BASE-GLOBAL',
+        delivery:'api',clientId:'cli_legacy',apiStats:{requests:7,succeeded:5,failed:2},
+      }],
+    });
+    const batch=state.batches[0];
+    const channel=state.channels.find(item=>item.id===batch.channelId);
+    return {batch,status:window.PublisherChannelDistribution.effectiveBatchStatus(batch,channel)};
+  });
+  assert.equal(migrated.batch.quantity,5);
+  assert.equal(migrated.batch.apiStats.succeeded,5);
+  assert.equal(migrated.status,'exhausted');
+  await page.close();
+});
+
+test('API 成功取码同时扣减库存并更新请求量',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
+  const row=batchRow(page,'NovaPlay 本体 API');
+  assert.match(await row.innerText(),/98,600\s*\/\s*100,000/);
+  await row.getByRole('button',{name:'管理接入',exact:true}).click();
+  await page.getByRole('dialog',{name:'API 接入信息'}).getByRole('button',{name:'模拟取码',exact:true}).click();
+  assert.match(await row.innerText(),/98,599\s*\/\s*100,000/);
+  const state=await publisherStateText(page);
+  assert.match(state,/"requests":1603/);
+  assert.match(state,/"succeeded":1401/);
+  await page.close();
+});
+
+test('API 数量用完后阻止继续取码',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
   await page.getByRole('button',{name:'创建批次',exact:true}).click();
-  dialog=page.getByRole('dialog',{name:'创建批次'});
-  await dialog.getByLabel('批次名称').fill('ArcadeX 重复 API 批次');
-  await dialog.getByLabel('所属渠道').selectOption('CH-240902');
-  await dialog.getByLabel('销售项').selectOption('BASE-GLOBAL');
-  await dialog.getByLabel('供给方式').selectOption('api');
-  await dialog.getByRole('radio',{name:'启用',exact:true}).check();
-  await dialog.getByRole('button',{name:'创建',exact:true}).click();
-  assert.match(await dialog.innerText(),/同一渠道和销售项已有启用中的 API 批次/);
-  assert.equal(await batchRow(page,'ArcadeX 重复 API 批次').count(),0);
+  const create=page.getByRole('dialog',{name:'创建批次'});
+  await create.getByLabel('批次名称').fill('ArcadeX API 单次取码');
+  await create.getByLabel('所属渠道').selectOption('CH-240902');
+  await create.getByLabel('销售项').selectOption('BASE-GLOBAL');
+  await create.getByLabel('供给方式').selectOption('api');
+  await create.getByLabel('初始可取数量').fill('1');
+  await create.getByRole('radio',{name:'启用',exact:true}).check();
+  await create.getByRole('button',{name:'创建',exact:true}).click();
+  const row=batchRow(page,'ArcadeX API 单次取码');
+  await row.getByRole('button',{name:'管理接入',exact:true}).click();
+  let access=page.getByRole('dialog',{name:'API 接入信息'});
+  await access.getByRole('button',{name:'生成接入凭证',exact:true}).click();
+  access=page.getByRole('dialog',{name:'API 接入信息'});
+  await access.getByRole('button',{name:'模拟取码',exact:true}).click();
+  assert.match(await row.innerText(),/0\s*\/\s*1[\s\S]*已用完/);
+  access=page.getByRole('dialog',{name:'API 接入信息'});
+  await access.getByRole('button',{name:'模拟取码',exact:true}).click();
+  assert.match(await page.locator('.result-strip').innerText(),/数量已用完/);
+  assert.match(await access.innerText(),/请求量\s*1[\s\S]*成功量\s*1/);
   await page.close();
 });
 
