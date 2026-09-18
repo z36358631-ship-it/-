@@ -6,7 +6,7 @@
 |---|---|
 | 任务编号 | GUANWANGGAID-25 |
 | 需求名称 | 兼容性评价改版 v1.2 |
-| 当前阶段 | C 端客态自然混排与验证证据已完成，待用户验收 |
+| 当前阶段 | 最终 PRD、Demo 与全链路验证已完成，待用户验收 |
 | 最后更新时间 | 2026-09-18 |
 
 ## 问题与证据
@@ -33,6 +33,7 @@
 | 2 | 当前 C 端 Demo | `demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html` | 原页面与交互基线 | 已同步 |
 | 2 | 当前 B 端 Demo | `demos/后台管理/GUANWANGGAID-25-兼容性评价改版-B端demo.html` | 评价关联数据基线 | 已同步 |
 | 2 | 设计规格 | `docs/superpowers/specs/2026-09-16-gamehub-compatibility-review-v1.2-design.md` | 当前有效业务口径 | 已同步 |
+| 2 | 本轮文案与 PRD 规格 | `docs/superpowers/specs/2026-09-18-gamehub-compatibility-review-copy-prd-design.md` | “本次启动配置”展示名、PRD 与交付边界 | 已同步 |
 
 ## 已确认决策
 
@@ -47,6 +48,7 @@
 | D-007 | 删除评价同步删除一对一快照；隐藏评价仅停止 C 端入口，B 端仍可只读追溯 | 一对一生命周期与审核追溯要求 | 2026-09-18 | 无 |
 | D-008 | 评价先持久化再上传或删除快照；快照限制为白名单、8KB、字段长度受限且拒绝本地绝对路径 | 防止孤儿快照、悬挂引用、隐私与存储风险 | 2026-09-18 | 无 |
 | D-009 | 其他玩家评价在现有列表自然混排；只有 3～5 星、快照可用且快照 ID 与评价归属完全匹配时展示方案入口；未分享、不可用、错绑及 1～2 星仅展示评价，后台隐藏评价不进入 C 端 | 用户确认采用方案 A，且只做客态、不增加状态标签或异常详情页 | 2026-09-18 | 无 |
+| D-010 | 评价绑定的单次配置快照统一显示“本次启动配置”；正式“启动方案”实体与应用／复制流程保持原名；内部字段和历史数据不迁移 | 用户确认方案 A | 2026-09-18 | 替代 D-004、补充 D-009 的展示文案 |
 
 ## 产物登记
 
@@ -57,12 +59,17 @@
 | 实施计划 | `docs/superpowers/plans/2026-09-18-gamehub-review-snapshot.md` | 已同步 | TDD、独立快照、C/B 端与截图验证步骤已覆盖 |
 | 客态设计规格 | `docs/superpowers/specs/2026-09-18-gamehub-compatibility-review-guest-states-design.md` | 已同步 | Git `a64fd37c6`；G-01～G-07 与自然混排口径 |
 | 客态实施计划 | `docs/superpowers/plans/2026-09-18-gamehub-compatibility-review-guest-states.md` | 已同步 | Git `e9f5aec91`；旧缓存迁移、安全复验与交付步骤已覆盖 |
-| C 端 Demo | `demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html` | 已同步 | 独立不可变快照、应用／复制、异常态、完整旅程与客态 G-01～G-07 均已覆盖 |
-| B 端 Demo | `demos/后台管理/GUANWANGGAID-25-兼容性评价改版-B端demo.html` | 已同步 | 关联筛选、完整配置只读追溯、隐藏保留与删除级联已覆盖 |
-| 浏览器契约 | `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs` | 已同步 | `node --test`：37/37 通过 |
-| 视觉证据 | `test-results/compatibility-review-v1.2/` | 已同步 | 11 张当前截图；新增 390×844 客态混排图原尺寸复验 PASS |
-| 截图脚本 | `tools/capture-compatibility-review-v1.2.mjs` | 已同步 | 11/11 截图成功 |
-| Git | 当前分支 | 已提交 | 客态实现提交 `e9f5aec91`（`feat: add guest compatibility review states`） |
+| 本轮文案与 PRD 规格 | `docs/superpowers/specs/2026-09-18-gamehub-compatibility-review-copy-prd-design.md` | 已同步 | Git `5580aed34`；展示名、兼容边界和交付口径 |
+| 本轮实施计划 | `docs/superpowers/plans/2026-09-18-gamehub-compatibility-review-copy-prd.md` | 已同步 | Git `9c5a867b6`；Demo、截图、公共资产、PRD 与收尾步骤 |
+| C 端 Demo | `demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html` | 已同步 | 快照固定显示“本次启动配置”；正式启动方案语义保留；“支持最多”只排序且稳定次序完整 |
+| B 端 Demo | `demos/后台管理/GUANWANGGAID-25-兼容性评价改版-B端demo.html` | 已同步 | 列表、预览与种子快照统一显示“本次启动配置”；内部字段和导出字段不改 |
+| 浏览器契约 | `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs` | 已同步 | `node --test`：39/39 通过；覆盖旧标题兼容、复制命名与支持最多排序 |
+| 视觉证据 | `test-results/compatibility-review-v1.2/` | 已同步 | 11/11 截图成功；连续两轮 SHA-256 一致；03、04、05、08、09、10、11 原尺寸复验 PASS |
+| 截图脚本 | `tools/capture-compatibility-review-v1.2.mjs` | 已同步 | Git `bde2fec6d`；截图时临时冻结动效，连续旅程不受影响 |
+| PRD 公共图片 | `public/prd/compatibility-review-v1.2/` | 已同步 | Git `fc91db7846a5f4867500a9d99263904fccbee176`；8 张页面图与 1 张横向流程图，9/9 公网验证通过 |
+| 当前最终 PRD | `prd/【PRD】《盖世游戏》兼容性评价改版V1.2需求.md` | 已同步 | Git `a78335b9c`；质量校验 0 错误／0 警告，9/9 图片固定 SHA 公网验证通过 |
+| 旧 PRD | `prd/ai生成/APP兼容性评价改版需求.md` | 历史资料，无需修改 | 不作为当前实现依据 |
+| Git | 当前分支 | 已提交 | Demo／契约 `0535a96dc`、`53397a8ee`、`e73831dcb`、`e5113839a`；视觉 `bf59926ff`、`ce1efcae6`、`bde2fec6d`；资产 `fc91db784`；PRD `1978ab1a6`、`5612476d7`、`a78335b9c` |
 
 ## 修改与验证
 
@@ -73,10 +80,15 @@
 | 2026-09-18 | 后台需追溯当次实际配置，评价删除不能继续保留对应快照 | B 端抽屉增加完整配置只读展示；删除评价同步删除快照 | B 端 Demo、测试、截图 | 浏览器契约与 1440×900 人工审图通过 |
 | 2026-09-18 | 评审发现编辑、失败补偿和隐私边界缺口 | 保留历史快照；评价先落库；新增 8KB、字段长度和绝对路径限制 | C 端 Demo、测试 | 开发工程师最终复核 PASS；产品与交互评审无本期未关闭阻断项 |
 | 2026-09-18 | 仅补客态，采用自然混排并穷举其他玩家方案入口状态 | C 端补齐 G-01～G-07；入口实时校验评分、状态、快照内部 ID 与评价归属，点击时重新校验；隐藏评价从统计和列表过滤；旧缓存通过幂等双仓迁移补齐客态并保留非种子数据 | C 端 Demo、浏览器契约、截图、状态卡；B 端无需修改 | 37/37 浏览器契约通过；11/11 截图成功；客态原尺寸人工审图 PASS；B 端 SHA-256 保持 `FBA0F28AEEE349425C7BD1BDB44FE409A707F14E45F6020871AB14BBE21E9CC7` |
+| 2026-09-18 | 评价绑定快照改名为“本次启动配置”，正式“启动方案”实体不改 | C/B Demo 使用固定展示常量；旧 `solutionName`、复制副本默认名、ARIA、后台预览和新建快照统一新名称；内部字段与历史数据不迁移 | C/B Demo、浏览器契约、截图 | 39/39 浏览器契约通过；规格与代码质量两阶段复核 PASS |
+| 2026-09-18 | PRD 评审要求补齐列表、编辑态、白名单、并发和后台失败恢复 | 补“支持最多”稳定排序和续载；区分新增／编辑分享默认态；明确 4 组 15 项白名单、8KB UTF-8、同评价并发首个成功胜出及 B 端导出恢复 | C 端 Demo、浏览器契约、最终 PRD | 产品语义与研发测试可执行性复核均 PASS；质量校验 0 错误／0 警告 |
+| 2026-09-18 | 输出当前唯一现行 PRD 并固定公开图片 | 生成 8 张页面图和 1 张横向流程图；PRD 使用固定资产提交 `fc91db7846a5f4867500a9d99263904fccbee176`；旧 PRD 标记为历史资料 | 公共图片、最终 PRD、状态卡 | 9/9 图片 HTTP 200 且 MIME 正确；飞书真实转存未验证 |
+| 2026-09-18 | 最终回归发现动效导致截图二进制不稳定 | 截图时临时冻结动画、过渡和光标，截图后立即恢复；连续旅程与 09“我的评价”保持正确 | 截图脚本、11 张证据、公共图片 | 连续两轮 11 张 SHA-256 完全一致；原尺寸审图 PASS |
 
 ## 待确认与风险
 
 - 必须确认：无。
 - 默认建议：快照只在用户显式勾选后上传，其他用户点击时按需下载。
 - 已知风险：每条评价独立保存快照仍会增加存储成本；当前 Demo 已覆盖白名单、8KB 上限和删除生命周期，真实服务端仍需按同一契约实现与监控。
+- 远程风险：PRD 9 张图片仅完成公网 HTTP 与 MIME 验证，飞书真实转存未验证。
 - 范围外建议：退出游戏保存提示与 390px 筛选项排版可在后续独立优化；本轮未改，避免偏离已确认快照改版范围。
