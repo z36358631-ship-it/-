@@ -223,7 +223,15 @@ test('星级与兼容类型双向联动，1–2 星隐藏方案，3–5 星展�
       '分享项默认不得勾选');
 
     await page.click('#fbTypeWrap [data-type="partial"]');
-    assert.equal(await page.locator('#fbStarsWrap').getAttribute('data-value'), '3');
+    assert.equal(await page.locator('#fbStarsWrap').getAttribute('data-value'), '2');
+    assert.equal(await page.locator('#fbSolutionSection').isVisible(), false);
+
+    await page.click('#fbStarsWrap [data-val="3"]');
+    assert.equal(await page.locator('#fbTypeWrap [data-type="basic"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('#fbSolutionSection').isVisible(), true);
+
+    await page.click('#fbStarsWrap [data-val="4"]');
+    assert.equal(await page.locator('#fbTypeWrap [data-type="perfect"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('#fbSolutionSection').isVisible(), true);
 
     await page.click('#fbStarsWrap [data-val="1"]');
@@ -233,7 +241,76 @@ test('星级与兼容类型双向联动，1–2 星隐藏方案，3–5 星展�
     await page.click('#fbStarsWrap [data-val="2"]');
     assert.equal(await page.locator('#fbTypeWrap [data-type="partial"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('#fbSolutionSection').isVisible(), false);
+
+    const seedRatingTags = await page.evaluate(() => window.getFeedbacks()
+      .filter((review) => ['s1', 's2', 's3', 's4', 's5', 's6', 's7'].includes(review.id))
+      .map((review) => [review.stars, review.tags?.[0]]));
+    assert.deepEqual(seedRatingTags, [
+      [5, '完美兼容'],
+      [4, '完美兼容'],
+      [5, '完美兼容'],
+      [3, '基本可玩'],
+      [4, '完美兼容'],
+      [2, '有部分问题'],
+      [5, '完美兼容'],
+    ], '种子评价的星级与兼容类型标签必须使用同一映射口径');
     await assertNoPageErrors(errors, '评分与类型联动');
+  } finally {
+    await page.close();
+  }
+});
+
+test('旧草稿与旧评价编辑时按星级迁移到最新兼容类型', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端', { width: 1280, height: 900 });
+  try {
+    await page.evaluate(() => {
+      localStorage.setItem('gh_compat_review_v12_draft', JSON.stringify({
+        stars: 4,
+        type: 'basic',
+        text: '旧草稿',
+        media: [],
+        shareSessionRequested: false,
+      }));
+      window.openFeedbackModal({ source: 'manual' });
+    });
+    assert.equal(await page.locator('#fbStarsWrap').getAttribute('data-value'), '4');
+    assert.equal(await page.locator('#fbTypeWrap [data-type="perfect"]').getAttribute('aria-pressed'), 'true',
+      '旧 4 星草稿必须迁移为完美兼容');
+
+    await page.evaluate(() => {
+      window.closeFeedbackModal({ preserveDraft: false });
+      const reviews = window.getFeedbacks();
+      reviews.unshift({
+        id: 'legacy-rating-3',
+        uid: 'legacy-user',
+        name: '旧评价用户',
+        device: 'Pixel 9 Pro · Android 15',
+        gpu: 'Adreno 750',
+        memoryGB: 12,
+        appVersion: 'v6.1.0',
+        stars: 3,
+        tags: ['有部分问题'],
+        compatType: 'partial',
+        text: '旧评价',
+        media: [],
+        likes: 0,
+        date: '2026-09-18',
+      });
+      window.saveFeedbacks(reviews);
+      window.editMyReview('legacy-rating-3');
+    });
+    assert.equal(await page.locator('#fbStarsWrap').getAttribute('data-value'), '3');
+    assert.equal(await page.locator('#fbTypeWrap [data-type="basic"]').getAttribute('aria-pressed'), 'true',
+      '旧 3 星评价必须迁移为基本可玩');
+
+    await page.evaluate(() => window.submitFeedback());
+    const migrated = await page.evaluate(() => {
+      const review = window.getFeedbacks().find((item) => item.id === 'legacy-rating-3');
+      return { compatType: review?.compatType, tags: review?.tags };
+    });
+    assert.deepEqual(migrated, { compatType: 'basic', tags: ['基本可玩'] },
+      '迁移后的旧评价提交时必须写入最新类型和标签');
+    await assertNoPageErrors(errors, '旧评分映射迁移');
   } finally {
     await page.close();
   }
