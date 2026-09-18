@@ -41,6 +41,18 @@ const channelRow=(page,name)=>page.locator('.publisher-channel-table--channels t
 const batchRow=(page,name)=>page.locator('.publisher-channel-table--batches tbody tr').filter({hasText:name});
 const distributionRow=(page,name)=>page.locator('.publisher-channel-table--distribution tbody tr').filter({hasText:name});
 const publisherStateText=page=>page.evaluate(()=>localStorage.getItem('gamehub-developer-publisher-accounts-v2')||'');
+const expectDrawer=async(page,title)=>{
+  const surface=page.getByRole('dialog',{name:title,exact:true});
+  await surface.waitFor();
+  assert.match(await surface.getAttribute('class'),/(?:^|\s)publisher-channel-drawer(?:\s|$)/,`${title} 应使用右侧抽屉`);
+  assert.equal(await page.locator('.publisher-channel-dialog').count(),0,`${title} 不应使用居中弹窗`);
+};
+const expectConfirmDialog=async(page,title)=>{
+  const surface=page.getByRole('dialog',{name:title,exact:true});
+  await surface.waitFor();
+  assert.match(await surface.getAttribute('class'),/(?:^|\s)publisher-channel-dialog(?:\s|$)/,`${title} 应使用居中确认弹窗`);
+  assert.equal(await page.locator('.publisher-channel-drawer').count(),0,`${title} 不应使用右侧抽屉`);
+};
 
 before(async()=>{
   assert.ok(chrome,'Chrome or Edge not found');
@@ -74,6 +86,42 @@ test('渠道与供给采用渠道管理和批次管理两层模型',async()=>{
   const body=await page.locator('.publisher-channel').innerText();
   assert.doesNotMatch(body,/授权计划|计划额度|剩余额度|提交申请|审核中|风险暂停|密钥待重置/);
   assert.equal(new URL(page.url()).hash,'#/P02-01');
+  await page.close();
+});
+
+test('对象创建、编辑和查看使用右侧抽屉，危险操作使用居中确认弹窗',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  await page.getByRole('button',{name:'创建渠道',exact:true}).click();
+  await expectDrawer(page,'创建渠道');
+  await page.getByRole('button',{name:'取消',exact:true}).click();
+  const channel=channelRow(page,'NovaPlay Store');
+  await channel.getByRole('button',{name:'查看',exact:true}).click();
+  await expectDrawer(page,'渠道详情');
+  await page.getByRole('button',{name:'关闭',exact:true}).click();
+  await channel.getByRole('button',{name:'编辑',exact:true}).click();
+  await expectDrawer(page,'编辑渠道');
+  await page.getByRole('button',{name:'取消',exact:true}).click();
+  await channel.getByRole('button',{name:'停用',exact:true}).click();
+  await expectConfirmDialog(page,'停用渠道');
+  await page.getByRole('button',{name:'取消',exact:true}).click();
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
+  await page.getByRole('button',{name:'创建批次',exact:true}).click();
+  await expectDrawer(page,'创建批次');
+  await page.getByRole('button',{name:'取消',exact:true}).click();
+  const fileBatch=batchRow(page,'ArcadeX 九月文件批次');
+  await fileBatch.getByRole('button',{name:'查看',exact:true}).click();
+  await expectDrawer(page,'批次详情');
+  await page.getByRole('button',{name:'关闭',exact:true}).click();
+  await fileBatch.getByRole('button',{name:'编辑',exact:true}).click();
+  await expectDrawer(page,'编辑批次');
+  await page.getByRole('button',{name:'取消',exact:true}).click();
+  await fileBatch.getByRole('button',{name:'下载记录',exact:true}).click();
+  await expectDrawer(page,'下载记录');
+  await page.getByRole('button',{name:'关闭抽屉',exact:true}).click();
+  await batchRow(page,'NovaPlay 本体 API').getByRole('button',{name:'管理接入',exact:true}).click();
+  await expectDrawer(page,'API 接入信息');
+  await page.getByRole('button',{name:'关闭',exact:true}).click();
   await page.close();
 });
 
@@ -235,9 +283,10 @@ test('API Secret 仅显示一次且静态状态不保存明文',async()=>{
   let dialog=page.getByRole('dialog',{name:'API 接入信息'});
   assert.match(await dialog.innerText(),/client_id[\s\S]*client_secret/i);
   await dialog.getByRole('button',{name:'轮换 Secret',exact:true}).click();
+  await expectConfirmDialog(page,'确认轮换 Secret');
   await page.getByRole('dialog',{name:'确认轮换 Secret'}).getByRole('button',{name:'确认轮换',exact:true}).click();
   dialog=page.getByRole('dialog',{name:'API 接入信息'});
-  await dialog.waitFor();
+  await expectDrawer(page,'API 接入信息');
   const firstView=await dialog.innerText();
   assert.match(firstView,/(?:Secret|client_secret) 仅显示一次/i);
   assert.match(firstView,/ghs_[A-Za-z0-9_-]{20,}/);

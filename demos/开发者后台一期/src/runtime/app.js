@@ -2240,6 +2240,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         resultMessage(route.id, '批次已删除', supplied ? '已保留历史 Key、下载、兑换和审计记录。' : '未发生供给，该批次已删除。', 'warning');
         return;
       }
+      if (route.id === 'P02-01' && action === 'batch-download-record') {
+        const current = channelDistributionState();
+        const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
+        const batch = findBatch(current, batchId);
+        if (!batch || batch.deleted || batch.delivery !== 'file' || batch.supplyState !== 'downloaded') return;
+        updateChannelDistribution({ ...current, activeChannelId:batch.channelId, dialog:'batch-download-record', dialogTargetType:'batch', dialogChannelId:batch.channelId, dialogBatchId:batchId });
+        return;
+      }
       if (route.id === 'P02-01' && action === 'batch-download') {
         const current = channelDistributionState();
         const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
