@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const demoDir = path.dirname(fileURLToPath(import.meta.url));
 const sourceFile = path.join(demoDir, '发行平台运营后台demo.html');
-const outputFile = path.join(demoDir, '发行平台运营后台财务整合demo.html');
+const legacyOutputFile = path.join(demoDir, '发行平台运营后台财务整合demo.html');
 const modelFile = path.join(demoDir, 'src', 'demo16', 'model.js');
 const appFile = path.join(demoDir, 'src', 'demo16', 'app.js');
 const styleFile = path.join(demoDir, 'src', 'demo16', 'styles.css');
@@ -22,6 +22,20 @@ const replaceJsonTextarea = (html, id, update) => {
 };
 
 let html = read(sourceFile);
+
+const replaceMarkedBlock = (source, startMarker, endMarker, content, beforeMarker) => {
+  const start = source.indexOf(startMarker);
+  const end = source.indexOf(endMarker);
+  let clean = source;
+  if (start >= 0 && end > start) {
+    const before = source.slice(0, start).replace(/[ \t]*(?:\r?\n)+$/, '\n');
+    const after = source.slice(end + endMarker.length).replace(/^(?:[ \t]*\r?\n)+/, '');
+    clean = `${before}${after}`;
+  }
+  const insertAt = clean.lastIndexOf(beforeMarker);
+  if (insertAt < 0) throw new Error(`未找到注入位置 ${beforeMarker}`);
+  return `${clean.slice(0, insertAt)}${startMarker}\n${content}\n${endMarker}\n${clean.slice(insertAt)}`;
+};
 
 html = replaceJsonTextarea(html, 'portal-routes', routes => {
   if (!routes.some(route => route.id === 'P16-01')) {
@@ -41,16 +55,28 @@ html = replaceJsonTextarea(html, 'portal-data', data => {
 });
 
 const styles = read(styleFile);
-if (!html.includes('/* 运营后台财务结算：沿用发行平台后台浅色框架 */')) {
-  html = html.replace('</head>', `<style>\n${styles}\n</style></head>`);
-}
+html = replaceMarkedBlock(
+  html,
+  '<!-- finance-operations-style:start -->',
+  '<!-- finance-operations-style:end -->',
+  `<style>\n${styles}\n</style>`,
+  '</head>',
+);
 
 const applicationMarker = '(function startApplication(namespace) {';
 const markerIndex = html.lastIndexOf(applicationMarker);
 if (markerIndex < 0) throw new Error('未找到主应用启动位置');
 
 const injectedScript = `${read(ledgerFile)}\n\n${read(statementsFile)}\n\n${read(modelFile)}\n\n${read(appFile)}\n\n`;
-html = `${html.slice(0, markerIndex)}${injectedScript}${html.slice(markerIndex)}`;
+html = replaceMarkedBlock(
+  html,
+  '/* finance-operations-runtime:start */',
+  '/* finance-operations-runtime:end */',
+  injectedScript,
+  applicationMarker,
+);
 
-fs.writeFileSync(outputFile, html, 'utf8');
-console.log(`已生成：${outputFile}`);
+fs.writeFileSync(sourceFile, html, 'utf8');
+fs.writeFileSync(legacyOutputFile, html, 'utf8');
+console.log(`已更新主运营后台：${sourceFile}`);
+console.log(`已同步兼容入口：${legacyOutputFile}`);

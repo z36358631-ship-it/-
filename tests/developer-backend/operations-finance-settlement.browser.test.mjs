@@ -11,13 +11,13 @@ const { chromium } = require('playwright-core');
 const root = process.cwd();
 const demoDir = path.join(root,'demos','开发者后台一期');
 const baseDemo = path.join(demoDir,'发行平台运营后台demo.html');
-const outputDemo = path.join(demoDir,'发行平台运营后台财务整合demo.html');
+const outputDemo = baseDemo;
+const legacyDemo = path.join(demoDir,'发行平台运营后台财务整合demo.html');
 const buildScript = path.join(demoDir,'build-finance-operations.mjs');
 const chrome = [process.env.CHROME_PATH,'C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files/Microsoft/Edge/Application/msedge.exe']
   .find(file => file && fs.existsSync(file));
 let browser;
 let page;
-let baseBefore;
 
 const url = hash => { const target = pathToFileURL(outputDemo); target.hash = hash; target.searchParams.set('testRun',`${Date.now()}-${Math.random()}`); return target.href; };
 const open = async () => { await page.goto(url('/P16-01'),{ waitUntil:'load' }); await page.locator('[data-finance-operations]').waitFor(); };
@@ -28,7 +28,6 @@ const nextMonth = value => {
 
 before(() => {
   assert.ok(chrome,'Chrome or Edge not found');
-  baseBefore = fs.readFileSync(baseDemo);
   execFileSync(process.execPath,[buildScript],{ stdio:'pipe' });
 });
 before(async () => { browser = await chromium.launch({ headless:true,executablePath:chrome,args:['--allow-file-access-from-files','--disable-background-networking'] }); });
@@ -36,8 +35,8 @@ beforeEach(async () => { page = await browser.newPage({ viewport:{ width:1440,he
 afterEach(async () => { await page?.close(); page = null; });
 after(async () => { await browser?.close(); });
 
-test('运营财务独立生成，保留面包屑和主体汇总、游戏明细两个场景',async () => {
-  assert.deepEqual(fs.readFileSync(baseDemo),baseBefore);
+test('主运营后台合并财务能力，并同步保留兼容入口',async () => {
+  assert.deepEqual(fs.readFileSync(legacyDemo),fs.readFileSync(baseDemo));
   const html = fs.readFileSync(outputDemo,'utf8');
   assert.match(html,/P16-01/);
   assert.doesNotMatch(html,/<iframe|<script[^>]+src=|<link[^>]+stylesheet/i);
@@ -45,6 +44,12 @@ test('运营财务独立生成，保留面包屑和主体汇总、游戏明细�
   assert.match((await page.locator('[data-fo-breadcrumb]').innerText()).replace(/\s+/g,' '),/发行平台后台 \/ 财务结算/);
   assert.deepEqual(await page.getByRole('tab').allTextContents(),['主体汇总','游戏明细']);
   assert.equal(await page.getByRole('tab',{ name:'主体汇总' }).getAttribute('aria-selected'),'true');
+  await page.locator('a[href="#/P01-08"]').click();
+  await page.waitForFunction(() => location.hash.startsWith('#/P01-08'));
+  assert.equal(await page.locator('a[href="#/P01-08"]').getAttribute('aria-current'),'page');
+  await page.locator('a[href="#/P16-01"]').click();
+  await page.locator('[data-finance-operations]').waitFor();
+  assert.equal(await page.locator('a[href="#/P16-01"]').getAttribute('aria-current'),'page');
   assert.equal(await page.locator('[data-fo-filter="billingMonth"]').inputValue(),'2026-08');
   assert.deepEqual(await page.locator('[data-testid="entity-summary-table"] thead th').allTextContents(),[
     '','账单月份','开发者','财务主体','主体版本','账户版本','游戏及 DLC 销售金额','CDKEY 销售金额','用户实付','平台实收','支付费',
