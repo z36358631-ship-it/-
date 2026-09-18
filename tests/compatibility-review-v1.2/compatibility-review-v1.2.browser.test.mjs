@@ -81,6 +81,22 @@ async function submitSharedReview(page, { stars = 5, text = '本次游玩流畅�
   });
 }
 
+async function loadEveryReview(page) {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    if (!(await page.locator('#loadMoreLs').isVisible())) return;
+    await page.click('#loadMoreLs');
+  }
+  if (await page.locator('#loadMoreLs').isVisible()) {
+    assert.fail('加载全部评价超过 10 次，疑似分页未收敛');
+  }
+}
+
+async function showEveryReview(page) {
+  await page.click('#openCompatibilityReviews');
+  await page.click('#chipsLs [data-view="all"]');
+  await loadEveryReview(page);
+}
+
 test('C 端保留真实产品入口、线框媒体与精简评价弹窗', async () => {
   const { page, errors, requests } = await openDemo(cDemo, 'C 端', { width: 1280, height: 900 });
   try {
@@ -413,6 +429,273 @@ test('编辑评价文字保留原快照，降为 2 星删除快照', async () =>
     assert.equal(downgraded.review.reviewSnapshotId, '');
     assert.equal(downgraded.snapshot, null);
     assertNoPageErrors(errors, '评价编辑和降星生命周期');
+  } finally {
+    await page.close();
+  }
+});
+
+test('客态 G-01～G-07 自然混排且仅有效同归属快照展示入口', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await showEveryReview(page);
+    assert.equal(await page.locator('#ovCountLs').innerText(), '9 条玩家评价', '后台隐藏评价不得进入统计数量');
+    assert.equal(await page.locator('#ovScoreLs').innerText(), '4.1', '后台隐藏评价不得进入评分统计');
+    const expectations = new Map([
+      ['s1', 1], // G-01：有效且归属匹配
+      ['s3', 0], // G-02：未分享
+      ['s4', 0], // G-03：deprecated
+      ['s8', 0], // G-04：invalid
+      ['s6', 0], // G-05：1～2 星仍残留快照引用
+      ['s9', 0], // G-06：快照归属不匹配
+    ]);
+
+    for (const [reviewId, expectedCards] of expectations) {
+      const review = page.locator(`[data-feedback-id="${reviewId}"]`);
+      assert.equal(await review.count(), 1, `${reviewId} 应作为其他玩家评价出现`);
+      assert.equal(
+        await review.locator('button.review-solution-card').count(),
+        expectedCards,
+        `${reviewId} 的方案入口数量不符合客态规则`,
+      );
+    }
+
+    assert.equal(await page.locator('[data-feedback-id="s10"]').count(), 0, '后台隐藏评价不得进入 C 端 DOM');
+    assert.match(
+      await page.locator('[data-feedback-id="s6"]').innerText(),
+      /Huawei Mate 70 Pro · HarmonyOS 5[\s\S]*GPU：Adreno 750[\s\S]*有部分问题[\s\S]*容易闪退/,
+      '2 星问题评价必须保留设备、兼容类型和问题描述',
+    );
+
+    const validCard = page.locator('[data-feedback-id="s1"] .review-solution-card');
+    assert.equal(await validCard.evaluate((element) => element.tabIndex >= 0), true);
+    assert.match(await validCard.innerText(), /本次启动方案[\s\S]*本次游玩 18分42秒/);
+    await validCard.click();
+    assert.equal(await page.locator('#solutionDetailPage').isVisible(), true);
+    assert.match(await page.locator('#solutionShareSummary').innerText(), /Pixel用户_洛圣都 · 本次游玩 18分42秒/);
+    assertNoPageErrors(errors, '客态 G-01～G-07');
+  } finally {
+    await page.close();
+  }
+});
+
+test('旧缓存升级后补齐客态种子且保留非种子评价与快照', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await page.evaluate(() => {
+      const oldFeedbacks = window.getFeedbacks()
+        .filter((review) => /^s[1-7]$/.test(review.id))
+        .map((review) => review.id === 's6'
+          ? { ...review, reviewSnapshotId: '', durationSeconds: undefined }
+          : review);
+      oldFeedbacks.splice(2, 0, {
+        id: 'legacy-user-review-a', uid: 'legacy-user-a', name: '旧缓存用户A', avatar: '',
+        device: 'Pixel 8 Pro · Android 14', gpu: 'Adreno 750', memoryGB: 12,
+        appVersion: 'v6.0.2', stars: 5, tags: ['完美兼容'], text: '旧缓存评价A应被保留。',
+        date: '2025-04-23', likes: 1, hidden: true, reviewState: 'valid',
+        reviewSnapshotId: 'review_snapshot_legacy_user', durationSeconds: 600,
+      });
+      oldFeedbacks.splice(6, 0, {
+        id: 'legacy-user-review-b', uid: 'legacy-user-b', name: '旧缓存用户B', avatar: '',
+        device: 'Pixel 8 · Android 14', gpu: 'Adreno 750', memoryGB: 8,
+        appVersion: 'v6.0.2', stars: 3, tags: ['基本可玩'], text: '旧缓存评价B应被保留。',
+        date: '2025-04-17', likes: 0, hidden: true, reviewState: 'none', reviewSnapshotId: '',
+      });
+
+      const currentSnapshots = window.compatibilityDemo.getReviewSnapshots();
+      const oldSnapshots = Object.fromEntries(
+        ['review_snapshot_s1', 'review_snapshot_s2', 'review_snapshot_s4']
+          .map((id) => [id, currentSnapshots[id]]),
+      );
+      oldSnapshots.review_snapshot_legacy_user = {
+        ...currentSnapshots.review_snapshot_s1,
+        reviewSnapshotId: 'review_snapshot_legacy_user',
+        reviewId: 'legacy-user-review-a',
+        reviewAuthorDisplayName: '旧缓存用户A',
+      };
+
+      localStorage.setItem('gh_compat_feedbacks_gta5_v12', JSON.stringify(oldFeedbacks));
+      localStorage.setItem('gh_review_snapshots_v1', JSON.stringify(oldSnapshots));
+      localStorage.removeItem('gh_compat_seed_revision_gta5_v12');
+    });
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForTimeout(420);
+    await showEveryReview(page);
+
+    assert.equal(await page.locator('#ovCountLs').innerText(), '9 条玩家评价');
+    assert.equal(await page.locator('#ovScoreLs').innerText(), '4.1');
+    assert.equal(await page.locator('[data-feedback-id="s8"]').count(), 1);
+    assert.equal(await page.locator('[data-feedback-id="s9"]').count(), 1);
+    assert.equal(await page.locator('[data-feedback-id="s10"]').count(), 0);
+    assert.equal(await page.locator('[data-feedback-id="s6"] .review-solution-card').count(), 0);
+
+    const migrated = await page.evaluate(() => {
+      const reviews = window.getFeedbacks();
+      const snapshots = window.compatibilityDemo.getReviewSnapshots();
+      return {
+        legacyReviewA: reviews.find((review) => review.id === 'legacy-user-review-a') || null,
+        legacyReviewB: reviews.find((review) => review.id === 'legacy-user-review-b') || null,
+        legacyOrder: [
+          reviews.findIndex((review) => review.id === 'legacy-user-review-a'),
+          reviews.findIndex((review) => review.id === 'legacy-user-review-b'),
+        ],
+        legacySnapshot: snapshots.review_snapshot_legacy_user || null,
+        migratedSeedSnapshotIds: ['review_snapshot_s6', 'review_snapshot_s8', 'review_snapshot_s9']
+          .filter((reviewSnapshotId) => Boolean(snapshots[reviewSnapshotId])),
+        revision: localStorage.getItem('gh_compat_seed_revision_gta5_v12'),
+        feedbackCache: localStorage.getItem('gh_compat_feedbacks_gta5_v12'),
+        snapshotCache: localStorage.getItem('gh_review_snapshots_v1'),
+      };
+    });
+    assert.equal(migrated.legacyReviewA?.text, '旧缓存评价A应被保留。');
+    assert.equal(migrated.legacyReviewB?.text, '旧缓存评价B应被保留。');
+    assert.ok(migrated.legacyOrder[0] < migrated.legacyOrder[1], '非种子评价的相对顺序不得改变');
+    assert.equal(migrated.legacySnapshot?.reviewId, 'legacy-user-review-a');
+    assert.deepEqual(
+      migrated.migratedSeedSnapshotIds,
+      ['review_snapshot_s6', 'review_snapshot_s8', 'review_snapshot_s9'],
+      '旧快照仓必须补齐本次客态种子快照',
+    );
+    assert.equal(migrated.revision, 'guest-states-v1');
+
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForTimeout(420);
+    const rerun = await page.evaluate(() => ({
+      feedbackCache: localStorage.getItem('gh_compat_feedbacks_gta5_v12'),
+      snapshotCache: localStorage.getItem('gh_review_snapshots_v1'),
+    }));
+    assert.equal(rerun.feedbackCache, migrated.feedbackCache, '评价迁移必须幂等');
+    assert.equal(rerun.snapshotCache, migrated.snapshotCache, '快照迁移必须幂等');
+    assertNoPageErrors(errors, '旧缓存种子迁移');
+  } finally {
+    await page.close();
+  }
+});
+
+test('评价列表每次渲染都校验快照 reviewId 归属', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await showEveryReview(page);
+    assert.equal(await page.locator('[data-feedback-id="s1"] .review-solution-card').count(), 1);
+    await page.evaluate(() => {
+      const storageKey = 'gh_review_snapshots_v1';
+      const snapshots = window.compatibilityDemo.getReviewSnapshots();
+      snapshots.review_snapshot_s1.reviewId = 'foreign-review';
+      localStorage.setItem(storageKey, JSON.stringify(snapshots));
+      window.refreshPanel('ls');
+    });
+    assert.equal(await page.locator('[data-feedback-id="s1"] .review-solution-card').count(), 0);
+    assert.equal(await page.locator('[data-feedback-id="s1"] button[aria-label="打开本次启动方案"]').count(), 0);
+    assertNoPageErrors(errors, '快照归属实时校验');
+  } finally {
+    await page.close();
+  }
+});
+
+test('方案入口拒绝快照内部 ID 与评价引用不一致', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await showEveryReview(page);
+    assert.equal(await page.locator('[data-feedback-id="s1"] .review-solution-card').count(), 1);
+    await page.evaluate(() => {
+      const storageKey = 'gh_review_snapshots_v1';
+      const snapshots = window.compatibilityDemo.getReviewSnapshots();
+      snapshots.review_snapshot_s1 = {
+        ...snapshots.review_snapshot_s1,
+        reviewId: 's1',
+        reviewSnapshotId: 'review_snapshot_s2',
+      };
+      localStorage.setItem(storageKey, JSON.stringify(snapshots));
+      window.refreshPanel('ls');
+    });
+    assert.equal(
+      await page.locator('[data-feedback-id="s1"] .review-solution-card').count(),
+      0,
+      '快照内部 ID 与评价引用不一致时不得展示入口',
+    );
+    assertNoPageErrors(errors, '快照内部 ID 校验');
+  } finally {
+    await page.close();
+  }
+});
+
+test('恶意快照 ID 不进入可执行字符串且点击安全', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await showEveryReview(page);
+    await page.evaluate(() => {
+      const feedbackKey = 'gh_compat_feedbacks_gta5_v12';
+      const snapshotKey = 'gh_review_snapshots_v1';
+      const maliciousSnapshotId = "review_snapshot_attack');document.body.dataset.solutionInjected='yes';void('";
+      const reviews = window.getFeedbacks().map((review) => review.id === 's1'
+        ? { ...review, reviewSnapshotId: maliciousSnapshotId }
+        : review);
+      const snapshots = window.compatibilityDemo.getReviewSnapshots();
+      const source = snapshots.review_snapshot_s1;
+      delete snapshots.review_snapshot_s1;
+      snapshots[maliciousSnapshotId] = {
+        ...source,
+        reviewId: 's1',
+        reviewSnapshotId: maliciousSnapshotId,
+      };
+      localStorage.setItem(feedbackKey, JSON.stringify(reviews));
+      localStorage.setItem(snapshotKey, JSON.stringify(snapshots));
+      window.refreshPanel('ls');
+    });
+
+    const card = page.locator('[data-feedback-id="s1"] .review-solution-card');
+    assert.equal(await card.count(), 1, '一致的动态快照 ID 仍应展示入口');
+    await card.click();
+    assert.equal(await page.evaluate(() => document.body.dataset.solutionInjected || ''), '');
+    assert.equal(await page.locator('#solutionDetailPage').isVisible(), true, '恶意字符必须作为普通 ID 安全打开详情');
+    assertNoPageErrors(errors, '恶意快照 ID 安全点击');
+  } finally {
+    await page.close();
+  }
+});
+
+test('已渲染方案入口点击时重新校验当前快照', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await showEveryReview(page);
+    const card = page.locator('[data-feedback-id="s1"] .review-solution-card');
+    assert.equal(await card.count(), 1);
+    assert.equal(await page.locator('#toast').innerText(), '');
+    await page.evaluate(() => {
+      const snapshotKey = 'gh_review_snapshots_v1';
+      const snapshots = window.compatibilityDemo.getReviewSnapshots();
+      snapshots.review_snapshot_s1 = {
+        ...snapshots.review_snapshot_s1,
+        reviewId: 'foreign-review',
+        reviewAuthorDisplayName: '被篡改的作者',
+      };
+      localStorage.setItem(snapshotKey, JSON.stringify(snapshots));
+    });
+
+    await card.click();
+    assert.equal(await page.locator('#solutionDetailPage').isVisible(), false, '点击时校验失败不得打开方案详情');
+    assert.equal(await page.locator('#applySolutionButton').isVisible(), false, '校验失败时应用操作必须不可达');
+    assert.equal(await page.locator('[data-feedback-id="s1"] .review-solution-card').count(), 0, '失效入口应静默刷新移除');
+    assert.equal(await page.locator('#toast').innerText(), '', '静默拒绝不得新增 Toast');
+    assertNoPageErrors(errors, '点击时快照重校验');
+  } finally {
+    await page.close();
+  }
+});
+
+test('客态进入全部与同配置但不会混入我的筛选', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await page.click('#openCompatibilityReviews');
+    assert.ok(await page.locator('#listLs [data-owner="other"]').count() > 0, '同配置应包含其他玩家');
+    assert.equal(await page.locator('[data-feedback-id="s5"]').count(), 0, 'Dimensity 9400 不属于当前同 GPU');
+
+    await page.click('#chipsLs [data-view="all"]');
+    await loadEveryReview(page);
+    assert.equal(await page.locator('[data-feedback-id="s5"]').count(), 1, '全部应包含其他 GPU 评价');
+
+    await page.click('#chipsLs [data-view="mine"]');
+    assert.equal(await page.locator('#listLs [data-owner="other"]').count(), 0, '我的筛选不得混入客态');
+    assertNoPageErrors(errors, '客态筛选纯净度');
   } finally {
     await page.close();
   }

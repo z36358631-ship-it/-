@@ -1409,6 +1409,8 @@ const LS_KEY = 'gh_compat_feedbacks_gta5_v12';
 const LS_REPORTED = 'gh_compat_reported_gta5_v12';
 const LS_LIKED = 'gh_compat_liked_gta5_v12';
 const REVIEW_SNAPSHOTS_KEY = 'gh_review_snapshots_v1';
+const SEED_DATA_REVISION_KEY = 'gh_compat_seed_revision_gta5_v12';
+const SEED_DATA_REVISION = 'guest-states-v1';
 const REVIEW_SNAPSHOT_DIMENSIONS = Object.freeze({
     gameId: 'gta5',
     platform: 'android',
@@ -1505,7 +1507,7 @@ const SEED_REVIEW_SNAPSHOTS = Object.freeze({
         canonicalizerVersion: '1',
         configHash: 'cfg_galaxy_audio_v1',
         sourceType: 'review_snapshot',
-        reviewAuthorDisplayName: '三星玩家_富兰克林',
+        reviewAuthorDisplayName: 'Galaxy用户_富兰克林',
         playSessionId: 'seed_session_s2',
         durationSeconds: 965,
         sharedAt: '2025-04-25T09:18:00.000Z',
@@ -1538,6 +1540,72 @@ const SEED_REVIEW_SNAPSHOTS = Object.freeze({
             canCopy: false,
             copyDisabledReason: '方案已不可用'
         }
+    }),
+    review_snapshot_s6: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s6',
+        reviewId: 's6',
+        solutionName: '本次启动方案',
+        status: 'available',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_low_star_residual_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: '华为用户_特雷弗',
+        playSessionId: 'seed_session_s6',
+        durationSeconds: 731,
+        sharedAt: '2025-04-15T11:20:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: { canApply: true, applyDisabledReason: '', canCopy: true, copyDisabledReason: '' }
+    }),
+    review_snapshot_s8: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s8',
+        reviewId: 's8',
+        solutionName: '本次启动方案',
+        status: 'invalid',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_invalid_guest_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'ROG玩家_老崔',
+        playSessionId: 'seed_session_s8',
+        durationSeconds: 1286,
+        sharedAt: '2025-04-10T08:15:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: { canApply: false, applyDisabledReason: '方案已不可用', canCopy: false, copyDisabledReason: '方案已不可用' }
+    }),
+    review_snapshot_s9: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s9',
+        reviewId: 'foreign-review',
+        solutionName: '本次启动方案',
+        status: 'available',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_foreign_owner_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'iQOO玩家_尼克',
+        playSessionId: 'seed_session_s9',
+        durationSeconds: 1540,
+        sharedAt: '2025-04-08T13:40:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: { canApply: true, applyDisabledReason: '', canCopy: true, copyDisabledReason: '' }
     })
 });
 
@@ -1556,21 +1624,86 @@ const AVATARS = Array(7).fill('');
 
 const SEEDS = [
     { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', reviewSnapshotId:'review_snapshot_s1', durationSeconds:1122 },
-    { id:'s2', uid:'u2', name:'三星玩家_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['完美兼容'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'valid', reviewSnapshotId:'review_snapshot_s2', durationSeconds:965 },
+    { id:'s2', uid:'u2', name:'Galaxy用户_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['完美兼容'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'valid', reviewSnapshotId:'review_snapshot_s2', durationSeconds:965 },
     { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.0.5', stars:5, tags:['完美兼容'], text:'启动过程很顺畅，进入游戏后画面稳定，手柄操作也没有异常。', date:'2025-04-22', likes:31 },
     { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.5', stars:3, tags:['基本可玩'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8, reviewState:'unavailable', reviewSnapshotId:'review_snapshot_s4', durationSeconds:863 },
     { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.0.3', stars:4, tags:['完美兼容'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', html:'剧情向玩家<b>强烈推荐</b>，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
-    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro · HarmonyOS 5', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.2', stars:2, tags:['有部分问题'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5, reviewState:'none', reviewSnapshotId:'' },
+    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro · HarmonyOS 5', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.2', stars:2, tags:['有部分问题'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5, reviewState:'none', reviewSnapshotId:'review_snapshot_s6', durationSeconds:731 },
     { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', html:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！<u>强烈推荐</u>。', date:'2025-04-12', likes:43 },
+    { id:'s8', uid:'u8', name:'ROG玩家_老崔', avatar:'', device:'ROG Phone 9 · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['完美兼容'], text:'画面和操作都很稳定，连续游玩没有明显掉帧。', date:'2025-04-10', likes:9, reviewState:'unavailable', reviewSnapshotId:'review_snapshot_s8', durationSeconds:1286 },
+    { id:'s9', uid:'u9', name:'iQOO玩家_尼克', avatar:'', device:'iQOO 13 · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'启动和游玩体验正常，手柄按键映射准确。', date:'2025-04-08', likes:14, reviewState:'valid', reviewSnapshotId:'review_snapshot_s9', durationSeconds:1540 },
+    { id:'s10', uid:'u10', name:'已隐藏玩家', avatar:'', device:'RedMagic 10 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'这条评价已被后台隐藏，不应出现在 C 端。', date:'2025-04-06', likes:2, hidden:true }
 ];
 
+function cloneSeedValue(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
+function migrateSeedDataIfNeeded() {
+    if (localStorage.getItem(SEED_DATA_REVISION_KEY) === SEED_DATA_REVISION) return;
+
+    let storedFeedbacks = [];
+    let storedSnapshots = {};
+    try {
+        const parsedFeedbacks = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+        if (Array.isArray(parsedFeedbacks)) storedFeedbacks = parsedFeedbacks;
+    } catch(e) {}
+    try {
+        const parsedSnapshots = JSON.parse(localStorage.getItem(REVIEW_SNAPSHOTS_KEY) || '{}');
+        if (parsedSnapshots && !Array.isArray(parsedSnapshots) && typeof parsedSnapshots === 'object') {
+            storedSnapshots = parsedSnapshots;
+        }
+    } catch(e) {}
+
+    const seedFeedbacksById = new Map(SEEDS.map(review => [review.id, review]));
+    const migratedFeedbacks = [];
+    const migratedSeedIds = new Set();
+    storedFeedbacks.forEach(review => {
+        const seed = review && seedFeedbacksById.get(review.id);
+        if (!seed) {
+            migratedFeedbacks.push(review);
+            return;
+        }
+        if (migratedSeedIds.has(seed.id)) return;
+        migratedFeedbacks.push(cloneSeedValue(seed));
+        migratedSeedIds.add(seed.id);
+    });
+    SEEDS.forEach(seed => {
+        if (migratedSeedIds.has(seed.id)) return;
+        migratedFeedbacks.push(cloneSeedValue(seed));
+        migratedSeedIds.add(seed.id);
+    });
+
+    const migratedSnapshots = {};
+    Object.entries(storedSnapshots).forEach(([reviewSnapshotId, snapshot]) => {
+        migratedSnapshots[reviewSnapshotId] = cloneSeedValue(
+            SEED_REVIEW_SNAPSHOTS[reviewSnapshotId] || snapshot
+        );
+    });
+    Object.entries(SEED_REVIEW_SNAPSHOTS).forEach(([reviewSnapshotId, snapshot]) => {
+        if (Object.prototype.hasOwnProperty.call(migratedSnapshots, reviewSnapshotId)) return;
+        migratedSnapshots[reviewSnapshotId] = cloneSeedValue(snapshot);
+    });
+
+    try {
+        localStorage.setItem(LS_KEY, JSON.stringify(migratedFeedbacks));
+        localStorage.setItem(REVIEW_SNAPSHOTS_KEY, JSON.stringify(migratedSnapshots));
+        localStorage.setItem(SEED_DATA_REVISION_KEY, SEED_DATA_REVISION);
+    } catch(e) {}
+}
+
 function getFeedbacks() {
+    migrateSeedDataIfNeeded();
     try {
         const raw = localStorage.getItem(LS_KEY);
         if (raw) return JSON.parse(raw);
     } catch(e) {}
     localStorage.setItem(LS_KEY, JSON.stringify(SEEDS));
     return [...SEEDS];
+}
+
+function getVisibleFeedbacks() {
+    return getFeedbacks().filter(review => review && review.hidden !== true && review.deleted !== true);
 }
 
 function saveFeedbacks(list) {
@@ -1657,6 +1790,7 @@ function cloneReviewSnapshot(record) {
 }
 
 function getReviewSnapshots() {
+    migrateSeedDataIfNeeded();
     const raw = localStorage.getItem(REVIEW_SNAPSHOTS_KEY);
     if (raw === null) {
         const seeds = Object.fromEntries(Object.entries(SEED_REVIEW_SNAPSHOTS)
@@ -1783,7 +1917,7 @@ function compatSubText(avg) {
 }
 
 function refreshEntryCard() {
-    const list = getFeedbacks();
+    const list = getVisibleFeedbacks();
     const s = calcStats(list);
     // 竖版入口卡
     const hasData = document.getElementById('entryHasData');
@@ -1830,7 +1964,7 @@ const PAGE = 5;
 const pages = { ls: 1, pt: 1 };
 
 function refreshPanel(side) {
-    const list = getFeedbacks();
+    const list = getVisibleFeedbacks();
     const s = calcStats(list);
 
     // 概览
@@ -1881,10 +2015,44 @@ function formatDuration(seconds) {
     return minutes + '分' + remainder + '秒';
 }
 
+function canRenderReviewSolution(review, snapshot) {
+    return Number(review?.stars || 0) >= 3
+        && Boolean(snapshot)
+        && snapshot.status === 'available'
+        && snapshot.reviewId === review.id
+        && snapshot.reviewSnapshotId === review.reviewSnapshotId;
+}
+
 function renderReviewSolution(review) {
     const snapshot = resolveReviewSnapshot(review);
-    if (review.stars < 3 || !snapshot || snapshot.status !== 'available') return '';
-    return '<button class="review-solution-card" type="button" aria-label="打开本次启动方案" onclick="openSolutionDetail(\'' + snapshot.reviewSnapshotId + '\')"><span class="review-solution-heading"><strong>本次启动方案</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
+    if (!canRenderReviewSolution(review, snapshot)) return '';
+    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开本次启动方案"><span class="review-solution-heading"><strong>本次启动方案</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
+}
+
+function handleReviewSolutionAction(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('button[data-action="open-review-solution"]');
+    if (!button) return;
+    const item = button.closest('.compat-item');
+    const list = button.closest('#listLs, #listPt');
+    const reviewId = item?.dataset.feedbackId || '';
+    const review = getVisibleFeedbacks().find(candidate => candidate.id === reviewId);
+    const snapshot = resolveReviewSnapshot(review);
+    if (!canRenderReviewSolution(review, snapshot)) {
+        if (list) refreshPanel(list.id === 'listPt' ? 'pt' : 'ls');
+        return;
+    }
+    openSolutionDetail(snapshot.reviewSnapshotId);
+}
+
+function bindReviewSolutionActions() {
+    ['listLs', 'listPt'].forEach(listId => {
+        const list = document.getElementById(listId);
+        if (!list || list.dataset.reviewSolutionBound === 'true') return;
+        list.addEventListener('click', handleReviewSolutionAction);
+        list.dataset.reviewSolutionBound = 'true';
+    });
 }
 
 function renderItem(f) {
@@ -3045,6 +3213,7 @@ function bindCompatibilityV12Demo() {
     setApplicationMode('exact');
     setJourneyStage('detail');
     setOrient('pt');
+    bindReviewSolutionActions();
     window.compatibilityDemo = Object.freeze({
         getInviteState: () => JSON.parse(JSON.stringify(inviteDemoState)),
         getReviewSnapshots: () => JSON.parse(JSON.stringify(getReviewSnapshots())),

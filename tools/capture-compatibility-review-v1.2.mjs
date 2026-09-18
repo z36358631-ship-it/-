@@ -166,6 +166,47 @@ async function captureCConnectedJourney() {
   }
 }
 
+async function captureGuestReviewStates() {
+  const { page, errors } = await openDemo(cDemo, 'C 端', { width: 390, height: 844 });
+  try {
+    await domClick(page, '#openCompatibilityReviews', '兼容性评价入口');
+    await domClick(page, '#chipsLs [data-view="all"]', '全部评价筛选');
+    await requireOne(page, '[data-feedback-id="s1"] .review-solution-card', '客态有效方案入口');
+    await requireOne(page, '[data-feedback-id="s3"]', '客态未分享普通评价');
+    if (await page.locator('[data-feedback-id="s3"] .review-solution-card').count() !== 0) {
+      throw new Error('未实现契约：未分享评价错误展示方案入口');
+    }
+    const visibleListText = await page.locator('#listLs').innerText();
+    if (/未分享|方案失效|方案无效|归属不一致/.test(visibleListText)) {
+      throw new Error('未实现契约：客态列表暴露技术状态说明');
+    }
+    await page.locator('[data-feedback-id="s3"]').evaluate((element) => {
+      element.scrollIntoView({ block: 'end' });
+    });
+    await page.waitForTimeout(420);
+    const screenshotEvidence = await page.evaluate(() => {
+      const viewportHeight = window.innerHeight;
+      const isVisible = (selector) => {
+        const element = document.querySelector(selector);
+        if (!element) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.bottom > 0 && rect.top < viewportHeight;
+      };
+      return {
+        validSolution: isVisible('[data-feedback-id="s2"] .review-solution-card'),
+        ordinaryReview: isVisible('[data-feedback-id="s3"]'),
+      };
+    });
+    if (!screenshotEvidence.validSolution || !screenshotEvidence.ordinaryReview) {
+      throw new Error('未实现契约：客态截图未同屏展示有效方案评价与无方案普通评价');
+    }
+    await shot(page, '11-c-guest-review-states-390x844.png');
+    assertNoPageErrors(errors, 'C 端客态自然混排截图');
+  } finally {
+    await page.close();
+  }
+}
+
 async function captureBLinkedFilter() {
   const { page, errors } = await openDemo(bDemo, 'B 端', { width: 1440, height: 900 });
   try {
@@ -190,7 +231,8 @@ async function captureBLinkedFilter() {
 try {
   await captureCConnectedJourney();
   await captureBLinkedFilter();
-  if (captured.length !== 10) throw new Error(`截图数量错误：预期 10，实际 ${captured.length}`);
+  await captureGuestReviewStates();
+  if (captured.length !== 11) throw new Error(`截图数量错误：预期 11，实际 ${captured.length}`);
 } finally {
   await browser.close();
 }

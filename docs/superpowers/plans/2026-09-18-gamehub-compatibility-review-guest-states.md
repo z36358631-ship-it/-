@@ -4,7 +4,7 @@
 
 **Goal:** 在现有 C 端兼容性评价列表中自然混排其他玩家实例，完整覆盖 G-01～G-07，并保证只有“3～5 星＋有效快照＋评价归属匹配”的记录展示可进入方案详情的入口。
 
-**Architecture:** 保持现有单文件 HTML 与一对一快照仓不变，只扩充 C 端种子数据并在渲染时实时校验星级、快照状态和 `reviewId` 归属；隐藏评价在统计与列表渲染前统一过滤。Playwright 契约直接验证 DOM 不存在、筛选纯净和入口到详情的一对一链路，截图脚本补充一张 390×844 客态自然混排证据。
+**Architecture:** 保持现有单文件 HTML 与一对一快照仓不变，只扩充 C 端种子数据并在渲染时实时校验星级、快照状态和 `reviewId` 归属；隐藏评价在统计与列表渲染前统一过滤。一次性 seed revision 迁移负责为旧缓存补齐静态客态和快照，同时原位保留非种子用户数据；Playwright 契约直接验证 DOM 不存在、筛选纯净、旧缓存升级和入口到详情的一对一链路，截图脚本补充一张 390×844 客态自然混排证据。
 
 **Tech Stack:** 单文件 HTML/CSS/原生 JavaScript、Node.js `node:test`、Playwright Core、本地 Chrome/Edge、PowerShell、Git、GameHub 产品工作流脚本、`taskctl`
 
@@ -12,8 +12,8 @@
 
 ## 文件结构与职责
 
-- `demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html`：补齐其他玩家评价与快照种子、统一过滤后台隐藏评价、实时判断方案入口是否可展示。
-- `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs`：新增 G-01～G-07、实时归属校验及“全部／同配置／我的”筛选契约，并保留现有编辑、降星、删除和完整旅程回归。
+- `demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html`：补齐其他玩家评价与快照种子、迁移旧缓存、统一过滤后台隐藏评价、实时判断方案入口是否可展示。
+- `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs`：新增 G-01～G-07、旧缓存幂等迁移、实时归属校验及“全部／同配置／我的”筛选契约，并保留现有编辑、降星、删除和完整旅程回归。
 - `tools/capture-compatibility-review-v1.2.mjs`：新增一张 390×844 客态自然混排截图及截图前置断言。
 - `test-results/compatibility-review-v1.2/11-c-guest-review-states-390x844.png`：记录其他玩家有效方案与普通评价自然混排的当前视觉证据。
 - `prd/workflow-state/GUANWANGGAID-25-compatibility-review-v1-2.md`：登记 D-009、产物、测试数量、截图数量和本轮边界。
@@ -293,6 +293,104 @@ Expected: S4 为 `passed`，S5 成为可执行步骤。
 
 保留原 `s1～s5/s7` 的文案、设备、排序和快照引用不变。
 
+- [ ] **Step 3A: 为旧缓存增加一次性双仓迁移**
+
+在存储 key 区增加：
+
+```js
+const SEED_DATA_REVISION_KEY = 'gh_compat_seed_revision_gta5_v12';
+const SEED_DATA_REVISION = 'guest-states-v1';
+```
+
+在 `SEEDS` 后增加，并分别在 `getFeedbacks()` 与 `getReviewSnapshots()` 的第一行调用 `migrateSeedDataIfNeeded()`：
+
+```js
+function cloneSeedValue(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
+function migrateSeedDataIfNeeded() {
+    if (localStorage.getItem(SEED_DATA_REVISION_KEY) === SEED_DATA_REVISION) return;
+
+    let storedFeedbacks = [];
+    let storedSnapshots = {};
+    try {
+        const parsedFeedbacks = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+        if (Array.isArray(parsedFeedbacks)) storedFeedbacks = parsedFeedbacks;
+    } catch(e) {}
+    try {
+        const parsedSnapshots = JSON.parse(localStorage.getItem(REVIEW_SNAPSHOTS_KEY) || '{}');
+        if (parsedSnapshots && !Array.isArray(parsedSnapshots) && typeof parsedSnapshots === 'object') {
+            storedSnapshots = parsedSnapshots;
+        }
+    } catch(e) {}
+
+    const seedFeedbacksById = new Map(SEEDS.map(review => [review.id, review]));
+    const migratedFeedbacks = [];
+    const migratedSeedIds = new Set();
+    storedFeedbacks.forEach(review => {
+        const seed = review && seedFeedbacksById.get(review.id);
+        if (!seed) {
+            migratedFeedbacks.push(review);
+            return;
+        }
+        if (migratedSeedIds.has(seed.id)) return;
+        migratedFeedbacks.push(cloneSeedValue(seed));
+        migratedSeedIds.add(seed.id);
+    });
+    SEEDS.forEach(seed => {
+        if (migratedSeedIds.has(seed.id)) return;
+        migratedFeedbacks.push(cloneSeedValue(seed));
+        migratedSeedIds.add(seed.id);
+    });
+
+    const migratedSnapshots = {};
+    Object.entries(storedSnapshots).forEach(([reviewSnapshotId, snapshot]) => {
+        migratedSnapshots[reviewSnapshotId] = cloneSeedValue(
+            SEED_REVIEW_SNAPSHOTS[reviewSnapshotId] || snapshot
+        );
+    });
+    Object.entries(SEED_REVIEW_SNAPSHOTS).forEach(([reviewSnapshotId, snapshot]) => {
+        if (Object.prototype.hasOwnProperty.call(migratedSnapshots, reviewSnapshotId)) return;
+        migratedSnapshots[reviewSnapshotId] = cloneSeedValue(snapshot);
+    });
+
+    try {
+        localStorage.setItem(LS_KEY, JSON.stringify(migratedFeedbacks));
+        localStorage.setItem(REVIEW_SNAPSHOTS_KEY, JSON.stringify(migratedSnapshots));
+        localStorage.setItem(SEED_DATA_REVISION_KEY, SEED_DATA_REVISION);
+    } catch(e) {}
+}
+```
+
+迁移同时读写评价仓和快照仓，因此无调用顺序依赖；revision 只在双仓写入成功后记录。已有静态种子按 ID 原位更新，缺失种子追加，非种子评价和快照保留，二次调用不再改写缓存。
+
+- [ ] **Step 3B: 添加旧缓存升级与幂等回归契约**
+
+新增用例必须先构造仅含 `s1～s7`、旧快照和两条非种子评价的缓存，移除 revision 后 reload；断言：
+
+```js
+assert.equal(await page.locator('#ovCountLs').innerText(), '9 条玩家评价');
+assert.equal(await page.locator('#ovScoreLs').innerText(), '4.1');
+assert.equal(await page.locator('[data-feedback-id="s8"]').count(), 1);
+assert.equal(await page.locator('[data-feedback-id="s9"]').count(), 1);
+assert.equal(await page.locator('[data-feedback-id="s10"]').count(), 0);
+assert.equal(await page.locator('[data-feedback-id="s6"] .review-solution-card').count(), 0);
+assert.equal(migrated.legacyReviewA?.text, '旧缓存评价A应被保留。');
+assert.equal(migrated.legacyReviewB?.text, '旧缓存评价B应被保留。');
+assert.ok(migrated.legacyOrder[0] < migrated.legacyOrder[1], '非种子评价的相对顺序不得改变');
+assert.equal(migrated.legacySnapshot?.reviewId, 'legacy-user-review-a');
+assert.deepEqual(
+  migrated.migratedSeedSnapshotIds,
+  ['review_snapshot_s6', 'review_snapshot_s8', 'review_snapshot_s9'],
+);
+assert.equal(migrated.revision, 'guest-states-v1');
+assert.equal(rerun.feedbackCache, migrated.feedbackCache, '评价迁移必须幂等');
+assert.equal(rerun.snapshotCache, migrated.snapshotCache, '快照迁移必须幂等');
+```
+
+Expected: 修复前因 reload 后仍为 7 条而失败；修复后客态与迁移契约 4/4 通过，全量测试由 33 条增至 34 条。
+
 - [ ] **Step 4: 统一过滤后台隐藏与已删除评价**
 
 在 `getFeedbacks` 后增加：
@@ -311,7 +409,7 @@ const list = getVisibleFeedbacks();
 
 这样 G-07 同时从评分统计、数量、分布条和列表 DOM 中消失；编辑、删除等按 ID 访问原始数据的函数继续使用 `getFeedbacks()`。
 
-- [ ] **Step 5: 把方案入口显隐收敛为实时四条件校验**
+- [ ] **Step 5: 把方案入口显隐和点击收敛为实时完整校验**
 
 将 `renderReviewSolution` 改为：
 
@@ -320,27 +418,64 @@ function canRenderReviewSolution(review, snapshot) {
     return Number(review?.stars || 0) >= 3
         && Boolean(snapshot)
         && snapshot.status === 'available'
-        && snapshot.reviewId === review.id;
+        && snapshot.reviewId === review.id
+        && snapshot.reviewSnapshotId === review.reviewSnapshotId;
 }
 
 function renderReviewSolution(review) {
     const snapshot = resolveReviewSnapshot(review);
     if (!canRenderReviewSolution(review, snapshot)) return '';
-    return '<button class="review-solution-card" type="button" aria-label="打开本次启动方案" onclick="openSolutionDetail(\'' + snapshot.reviewSnapshotId + '\')"><span class="review-solution-heading"><strong>本次启动方案</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
+    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开本次启动方案"><span class="review-solution-heading"><strong>本次启动方案</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
+}
+
+function handleReviewSolutionAction(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('button[data-action="open-review-solution"]');
+    if (!button) return;
+    const item = button.closest('.compat-item');
+    const list = button.closest('#listLs, #listPt');
+    const reviewId = item?.dataset.feedbackId || '';
+    const review = getVisibleFeedbacks().find(candidate => candidate.id === reviewId);
+    const snapshot = resolveReviewSnapshot(review);
+    if (!canRenderReviewSolution(review, snapshot)) {
+        if (list) refreshPanel(list.id === 'listPt' ? 'pt' : 'ls');
+        return;
+    }
+    openSolutionDetail(snapshot.reviewSnapshotId);
+}
+
+function bindReviewSolutionActions() {
+    ['listLs', 'listPt'].forEach(listId => {
+        const list = document.getElementById(listId);
+        if (!list || list.dataset.reviewSolutionBound === 'true') return;
+        list.addEventListener('click', handleReviewSolutionAction);
+        list.dataset.reviewSolutionBound = 'true';
+    });
 }
 ```
 
-`reviewState` 继续只作为评价卡数据属性存在，不参与方案入口权限判断；条件不满足时返回空字符串，因此不会生成占位高度、热区、按钮焦点或无障碍名称。
+在 `bindCompatibilityV12Demo()` 中调用 `bindReviewSolutionActions()`。`reviewState` 继续只作为评价卡数据属性存在，不参与方案入口权限判断；按钮不拼接动态 ID 或内联脚本，点击时重新读取并复验当前评价与快照，校验失败只静默刷新当前列表，不新增 Toast。
+
+- [ ] **Step 5A: 固化错绑、注入与陈旧缓存安全契约**
+
+新增三个失败后转绿的用例，测试名分别为：
+
+- `方案入口拒绝快照内部 ID 与评价引用不一致`
+- `恶意快照 ID 不进入可执行字符串且点击安全`
+- `已渲染方案入口点击时重新校验当前快照`
+
+三个用例分别断言：内部 `reviewSnapshotId` 不一致时入口不生成；恶意 ID 不产生 `onclick` 或脚本副作用；按钮渲染后快照归属被替换时，点击不打开详情、不应用、不新增 Toast，并静默刷新移除入口。
 
 - [ ] **Step 6: 运行新增契约并确认通过**
 
 Run:
 
 ```powershell
-node --test --test-name-pattern="客态 G-01|快照 reviewId|客态进入全部" tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs
+node --test --test-name-pattern="客态 G-01|快照 reviewId|客态进入全部|方案入口拒绝|恶意快照 ID|已渲染方案入口" tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs
 ```
 
-Expected: 3/3 通过，无 `pageerror`；G-01 进入现有完整方案详情，G-02～G-06 无方案按钮，G-07 不进入 DOM。
+Expected: 客态、筛选和安全契约全部通过，无 `pageerror`；G-01 进入现有完整方案详情，G-02～G-06 无方案按钮，G-07 不进入 DOM；动态快照 ID 不进入可执行字符串。
 
 - [ ] **Step 7: 运行 C 端关键回归**
 
@@ -466,7 +601,7 @@ node --test tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.te
 git diff --check -- 'demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html' 'tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs' 'tools/capture-compatibility-review-v1.2.mjs' 'prd/workflow-state/GUANWANGGAID-25-compatibility-review-v1-2.md'
 ```
 
-Expected: `node --check` 通过；浏览器契约 33/33 通过；`git diff --check` 无错误。
+Expected: `node --check` 通过；浏览器契约 37/37 通过；`git diff --check` 无错误。
 
 - [ ] **Step 2: 执行禁止项、筛选与离线静态检查**
 
@@ -482,7 +617,7 @@ Expected: 第一条只允许测试种子正文“这条评价已被后台隐藏�
 
 - [ ] **Step 3: 按产品、交互、开发三个视角完成 S7 快速评审**
 
-评审证据统一指向当前 C 端 Demo、33/33 测试日志和 `11-c-guest-review-states-390x844.png`：
+评审证据统一指向当前 C 端 Demo、37/37 测试日志和 `11-c-guest-review-states-390x844.png`：
 
 - 产品：G-01～G-07、全部／同配置／我的、进入现有方案详情链路完整，未扩展异常详情页。
 - 交互：只有有效且归属匹配的快照出现可聚焦按钮；隐藏态无留白、热区、焦点和技术说明。
@@ -503,14 +638,14 @@ Expected: 三个视角均无“必须修”问题；若发现问题，修复后�
 ```markdown
 | 客态设计规格 | `docs/superpowers/specs/2026-09-18-gamehub-compatibility-review-guest-states-design.md` | 已同步 | 用户确认自然混排与 G-01～G-07 |
 | 客态实施计划 | `docs/superpowers/plans/2026-09-18-gamehub-compatibility-review-guest-states.md` | 已同步 | TDD、C 端显隐、筛选、截图与回写步骤已覆盖 |
-| 浏览器契约 | `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs` | 已同步 | `node --test`：33/33 通过 |
+| 浏览器契约 | `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs` | 已同步 | `node --test`：37/37 通过 |
 | 视觉证据 | `test-results/compatibility-review-v1.2/` | 已同步 | 11 张当前截图；新增 390×844 客态自然混排图人工审图通过 |
 ```
 
 在“修改与验证”新增：
 
 ```markdown
-| 2026-09-18 | 仅补客态，采用自然混排并穷举其他玩家方案入口状态 | C 端补齐 G-01～G-07，实时校验星级、快照状态与评价归属；隐藏评价从统计和列表过滤 | C 端 Demo、浏览器契约、截图、状态卡 | 33/33 浏览器契约通过；11/11 截图成功；客态原尺寸人工审图通过；B 端无需修改 |
+| 2026-09-18 | 仅补客态，采用自然混排并穷举其他玩家方案入口状态 | C 端补齐 G-01～G-07，实时校验星级、快照状态、内部 ID 与评价归属；点击时重新校验并移除动态内联脚本；隐藏评价从统计和列表过滤；旧缓存通过幂等迁移补齐客态并保留非种子数据 | C 端 Demo、浏览器契约、截图、状态卡 | 37/37 浏览器契约通过；11/11 截图成功；客态原尺寸人工审图通过；B 端无需修改 |
 ```
 
 - [ ] **Step 5: 完成 S5～S8 工作流回写**
@@ -539,7 +674,7 @@ $revision = (Get-Content -Raw -LiteralPath $runPath | ConvertFrom-Json).revision
   'C:\Users\z3635\官网改动\tools\capture-compatibility-review-v1.2.mjs'
 ) -ExpectedRevision $revision
 $revision = (Get-Content -Raw -LiteralPath $runPath | ConvertFrom-Json).revision
-& $workflowScript -Action pass -RunPath $runPath -StepId S6 -Outputs @('33/33 浏览器契约通过','11/11 截图成功','静态检查通过') -Evidence @('node --test 日志','截图脚本日志','git diff --check') -Message '机器验证通过。' -ExpectedRevision $revision
+& $workflowScript -Action pass -RunPath $runPath -StepId S6 -Outputs @('37/37 浏览器契约通过','11/11 截图成功','静态检查通过') -Evidence @('node --test 日志','截图脚本日志','git diff --check') -Message '机器验证通过。' -ExpectedRevision $revision
 
 $revision = (Get-Content -Raw -LiteralPath $runPath | ConvertFrom-Json).revision
 & $workflowScript -Action start-step -RunPath $runPath -StepId S7 -InputPaths @(
@@ -575,7 +710,7 @@ Run:
 
 ```powershell
 taskctl issue get GUANWANGGAID-25 --json
-taskctl comment add GUANWANGGAID-25 --body "已补齐 C 端客态自然混排：覆盖 G-01～G-07，方案入口实时校验 3～5 星、available 与 reviewId 归属；我的筛选保持纯净，B 端未改。机器验证 33/33 通过，截图 11/11 成功，新增 11-c-guest-review-states-390x844.png 已完成原尺寸审图。已知边界：未新增方案详情异常演示页，仍待用户最终验收。" --json
+taskctl comment add GUANWANGGAID-25 --body "已补齐 C 端客态自然混排：覆盖 G-01～G-07，方案入口实时校验 3～5 星、available、快照内部 ID 与 reviewId 归属，点击时再次校验且无动态内联脚本；旧缓存幂等迁移保留非种子数据；我的筛选保持纯净，B 端未改。机器验证 37/37 通过，截图 11/11 成功，新增 11-c-guest-review-states-390x844.png 已完成原尺寸审图。已知边界：未新增方案详情异常演示页，仍待用户最终验收。" --json
 $issue = taskctl issue get GUANWANGGAID-25 --json | ConvertFrom-Json
 if ($issue.task.status -ne 'in_review') {
   taskctl issue move GUANWANGGAID-25 --status in_review --if-version $issue.task.version --json
@@ -586,8 +721,8 @@ Expected: 任务板存在本轮变更、验证和风险评论，最终状态为 
 
 ## 自检结论
 
-- 规格覆盖：Task 1～2 对应 G-01～G-07；Task 1 同时覆盖全部／同配置／我的；Task 3 覆盖新增 390×844 客态截图；Task 4 覆盖现有编辑、降星、删除、布局、全量测试、视觉评审和状态回写。
-- 字段一致：全链路统一使用 `reviewSnapshotId`、`reviewId`、`status`、`durationSeconds`、`hidden`；方案入口只接受 `stars >= 3 && snapshot && status === 'available' && snapshot.reviewId === review.id`。
+- 规格覆盖：Task 1～2 对应 G-01～G-07、旧缓存幂等迁移以及全部／同配置／我的；Task 3 覆盖新增 390×844 客态截图；Task 4 覆盖现有编辑、降星、删除、布局、全量测试、视觉评审和状态回写。
+- 字段一致：全链路统一使用 `reviewSnapshotId`、`reviewId`、`status`、`durationSeconds`、`hidden`；方案入口只接受 `stars >= 3 && snapshot && status === 'available' && snapshot.reviewId === review.id && snapshot.reviewSnapshotId === review.reviewSnapshotId`，点击时复用同一 guard。
 - DOM 边界：G-02～G-06 返回空字符串，不生成 `.review-solution-card`；G-07 在统计和渲染前过滤；“我的”仅按 `uid === MY_UID` 展示。
 - 范围一致：不修改 B 端、启动失败、30 分钟门槛、邀评频控、星级口径、个人云方案、成功率、验证次数、多人聚合或详情异常演示页。
 - 提交边界：三个提交只包含本任务明确列出的文件；`.superpowers/` 与其他工作区改动始终排除。
