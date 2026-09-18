@@ -3112,7 +3112,7 @@ function copyCurrentSolution() {
     if (!getCurrentSolutionDetailActions().canCopy) return;
     const dialog = document.getElementById('copySolutionDialog');
     const input = document.getElementById('copySolutionName');
-    input.value = currentDetailRecord.solutionName + ' - 副本';
+    input.value = REVIEW_SNAPSHOT_DISPLAY_NAME + ' - 副本';
     dialog.hidden = false;
     dialog.classList.add('show');
     window.requestAnimationFrame(() => {
@@ -3144,7 +3144,7 @@ function confirmCopyCurrentSolution() {
         || !dialog.classList.contains('show')
         || !getCurrentSolutionDetailActions().canCopy) return;
     const input = document.getElementById('copySolutionName');
-    const name = input.value.trim() || currentDetailRecord.solutionName + ' - 副本';
+    const name = input.value.trim() || REVIEW_SNAPSHOT_DISPLAY_NAME + ' - 副本';
     const copies = getCopiedSolutions();
     copies.push({
         id: 'copy_' + Date.now(),

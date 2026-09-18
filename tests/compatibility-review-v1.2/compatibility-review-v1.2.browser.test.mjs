@@ -232,6 +232,8 @@ test('旧快照仍显示本次启动配置且正式启动方案实体不改名',
     assert.match(await page.locator('#applySolutionButton').innerText(), /应用/);
 
     await page.click('#copySolutionButton');
+    assert.equal(await page.locator('#copySolutionName').inputValue(), '本次启动配置 - 副本');
+    assert.doesNotMatch(await page.locator('#copySolutionName').inputValue(), /本次启动方案/);
     await page.click('#confirmCopySolutionButton');
     await page.waitForFunction(() => document.getElementById('toast')?.classList.contains('show'));
     assert.match(await page.locator('#toast').innerText(), /正在前往“启动方案”/);
