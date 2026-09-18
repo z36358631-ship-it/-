@@ -104,7 +104,7 @@ async function captureCConnectedJourney() {
       throw new Error('未实现契约：方案详情未展示完整参数分组');
     }
     const detailText = await page.locator('#solutionDetailPage').innerText();
-    if (!/本次启动方案/.test(detailText) || !/Pixel用户_洛圣都 · 本次游玩 18分42秒/.test(detailText)) {
+    if (!/本次启动配置/.test(detailText) || !/Pixel用户_洛圣都 · 本次游玩 18分42秒/.test(detailText)) {
       throw new Error('未实现契约：快照详情未展示固定标题、当前评价人与当次游玩时长');
     }
     if (/社区共同验证|成功率|次验证|最近验证|样本较少/.test(detailText)) {
@@ -116,8 +116,8 @@ async function captureCConnectedJourney() {
     if (await page.locator('#solutionDetailPage').isVisible()) {
       throw new Error('未实现契约：应用方案后未返回游戏详情');
     }
-    if (!/本次启动方案/.test(await page.locator('#currentAppliedSolution').innerText())) {
-      throw new Error('未实现契约：游戏详情未展示当前已应用方案');
+    if (!/本次启动配置/.test(await page.locator('#currentAppliedSolution').innerText())) {
+      throw new Error('未实现契约：游戏详情未展示当前已应用配置');
     }
     if (await page.locator('#gameplayLayer').isVisible()) {
       throw new Error('未实现契约：应用方案后不应自动启动游戏');
