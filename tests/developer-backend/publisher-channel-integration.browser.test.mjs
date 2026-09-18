@@ -570,16 +570,16 @@ test('分销数据默认近 30 天并按渠道和 Key 发放时间筛选',async(
 test('帮助中心包含渠道与批次、文件下载和 API 接入说明',async()=>{
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   await openGame(page);await openSection(page,'渠道与供给');
-  await page.getByRole('button',{name:'使用说明',exact:true}).click();
+  await page.getByRole('button',{name:'帮助中心',exact:true}).click();
   const nav=await page.locator('.help-library__nav').innerText();
   for(const title of ['渠道与批次使用说明','接口取码接入指南','API 鉴权、发码、查询和错误码','下载兑换码文件教程','Key 状态与兑换数据口径','启停、删除与已发 Key 处理','三方责任与渠道结算边界']) assert.match(nav,new RegExp(title));
-  await page.getByPlaceholder('搜索帮助文章').fill('幂等');
+  await page.getByPlaceholder('搜索帮助文章').fill('追加数量');
   await page.getByRole('button',{name:'搜索',exact:true}).click();
-  await page.getByRole('heading',{name:'API 鉴权、发码、查询和错误码',exact:true}).waitFor();
-  await page.locator('[data-help-result-topic="channel-api-reference"]').click();
-  const articleText=await page.locator('[data-help-article="channel-api-reference"]:not([hidden])').innerText();
-  for(const value of ['POST /openapi/v1/cdkeys/allocate','GET /openapi/v1/cdkeys/orders/ORDER-20260916-001','INVALID_CREDENTIAL','IDEMPOTENCY_CONFLICT','CHANNEL_DISABLED','BATCH_DISABLED','RATE_LIMITED']) assert.match(articleText,new RegExp(value));
-  assert.doesNotMatch(articleText,/RISK_RESTRICTED/);
+  await page.getByRole('heading',{name:'接口取码接入指南',exact:true}).waitFor();
+  await page.locator('[data-help-result-topic="channel-api-integration"]').click();
+  const articleText=await page.locator('[data-help-article="channel-api-integration"]:not([hidden])').innerText();
+  assert.match(articleText,/单次[\s\S]*100,000/);
+  assert.match(articleText,/追加数量不改变接口地址[\s\S]*client_id[\s\S]*Secret/);
   await page.close();
 });
 

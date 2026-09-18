@@ -284,16 +284,16 @@
             "category": "发行与供给",
             "question": "渠道与批次使用说明",
             "answer": "企业开发者先创建合作渠道，再按渠道和销售项创建文件或 API 供给批次。",
-            "steps": ["创建渠道并设置合作时间。", "在批次管理选择渠道、销售项、供给方式和生效时间。", "启用批次后下载兑换码文件或完成 API 接入。"],
-            "details": ["渠道和批次都支持编辑、启用、停用和删除。", "渠道不设地区、商业额度或授权计划。", "渠道或批次未生效、已停用、已结束或已删除时不能新供给。"]
+            "steps": ["创建渠道并设置合作时间。", "在批次管理选择渠道、销售项、供给方式、生效时间和数量。", "文件批次可直接下载；API 批次启用并生效后，渠道方按接口取码。"],
+            "details": ["渠道和批次均支持编辑、启用、停用和删除。", "文件和 API 批次都有数量；API 可在原批次追加。", "渠道不设地区、商业额度或授权计划。"]
           },
           {
             "id": "channel-api-integration",
             "category": "发行与供给",
             "question": "接口取码接入指南",
             "answer": "API 批次绑定一个渠道和一个销售项，渠道方按订单请求 Key，平台负责幂等、发码和结果查询。",
-            "steps": ["创建 API 批次并生成 client_id 和一次性 Secret。", "将帮助中心接口文档和批次接入信息交给渠道方。", "渠道用同一订单号重试；超时后先查询原订单。"],
-            "details": ["API 批次不填写数量，也没有固定额度或补量操作。", "凭证属于 API 批次；同一渠道和销售项只能有一个启用中的 API 批次。", "Secret 仅在生成或轮换时显示一次，旧 Secret 立即失效。"]
+            "steps": ["创建 API 批次，设置 1—100,000 的初始可取数量，并生成 client_id 和一次性 Secret。", "将帮助中心接口文档和批次接入信息交给渠道方。", "渠道用同一订单号重试；超时后先查询原订单。", "剩余数量不足时，在原批次追加数量。"],
+            "details": ["初始数量和单次追加数量均为 1—100,000，累计数量不限。", "追加数量不改变接口地址、client_id、Secret、启停状态和生效时间。", "同一渠道和销售项只能有一个启用中的 API 批次。", "Secret 仅在生成或轮换时显示一次，旧 Secret 立即失效。"]
           },
           {
             "id": "channel-api-reference",
@@ -309,7 +309,7 @@
             "question": "下载兑换码文件教程",
             "answer": "先创建文件批次，再从批次列表生成并下载兑换码文件。",
             "steps": ["在批次管理选择渠道、销售项和“下载兑换码文件”。", "填写批次名称、数量、Key 有效期和生效时间后创建。", "在批次列表点击“下载文件”，文件名包含渠道名和批次号。"],
-            "details": ["单批可生成 1—100,000 个 Key，不设渠道累计额度。", "首次下载成功后不能再次下载同一批 Key；文件丢失时须新建批次。", "生成失败且浏览器未收到完整文件时，可在原批次重试。"]
+            "details": ["单批可生成 1—100,000 个 Key，不设渠道累计额度。", "待生效、未启用、已停用或已结束的文件批次仍可首次生成下载；已删除的不可下载。", "首次下载成功后不能重下同一批 Key；平台仅保留下载记录，不保存明文文件或 Key。", "文件丢失时须新建批次；生成失败且浏览器未收到完整文件时，可在原批次重试。"]
           },
           {
             "id": "channel-key-metrics",
@@ -324,15 +324,15 @@
             "category": "发行与供给",
             "question": "批次状态与下载记录",
             "answer": "批次记录渠道、销售项、供给方式、生效时间和供给结果；平台不在页面回显明文 Key。",
-            "steps": ["待下载的文件批次可执行一次下载。", "API 批次在启用且生效后可按接口取码。", "下载记录保留账号、时间、数量和 Key 指纹，用于审计。"],
-            "details": ["渠道和批次均启用且处于有效期内时才允许新供给。", "已供给批次的渠道、销售项、供给方式和数量不可修改。", "已发 Key 不因渠道或批次停用、删除而回收。"]
+            "steps": ["未下载且未删除的文件批次可执行一次下载。", "API 批次在渠道和批次均启用、处于有效期且有剩余数量时可按接口取码。", "下载记录保留账号、时间、数量和 Key 指纹，用于审计。"],
+            "details": ["文件批次的启停和生效时间不限制首次下载，删除后不可下载。", "已供给批次的渠道、销售项、供给方式和数量不可修改。", "已发 Key 不因渠道或批次停用、删除而回收。"]
           },
           {
             "id": "channel-stop-delivery",
             "category": "发行与供给",
             "question": "启停、删除与已发 Key 处理",
-            "answer": "停用或删除渠道、批次会停止后续供给，但历史记录和已发 Key 继续保留。",
-            "steps": ["停用渠道会阻止其全部批次新供给，再次启用后恢复符合条件的批次。", "停用批次只阻止该批次新供给。", "删除采用历史可追溯规则，已供给记录不会被清除。"],
+            "answer": "停用会阻止 API 新取码，但不阻止文件批次首次生成下载；历史记录和已发 Key 继续保留。",
+            "steps": ["停用渠道会阻止其 API 批次新取码，再次启用后恢复符合条件的 API 批次。", "停用 API 批次只阻止该批次新取码。", "待生效、未启用、已停用或已结束的文件批次仍可首次下载；删除后不可下载。"],
             "details": ["未供给批次可直接删除；已供给批次软删除。", "渠道删除后不可直接恢复，需要继续合作时重新创建。", "已发 Key 仍按原有效期兑换。"]
           },
           {
@@ -610,16 +610,16 @@
             "category": "Publishing & supply",
             "question": "Channels and batches guide",
             "answer": "Enterprise developers create a partner channel first, then create file or API supply batches for a channel and product.",
-            "steps": ["Create a channel and set its cooperation period.", "In Batch management, choose the channel, product, supply method, and effective period.", "Enable the batch, then download a Key file or complete API integration."],
-            "details": ["Channels and batches can be edited, enabled, disabled, and deleted.", "Channels have no territory, commercial quota, or authorization-plan setting.", "A channel or batch cannot supply new Keys while scheduled, disabled, ended, or deleted."]
+            "steps": ["Create a channel and set its cooperation period.", "In Batch management, choose the channel, product, supply method, effective period, and quantity.", "Download a file batch directly. For an API batch, enable it and wait until it becomes effective before the channel requests Keys."],
+            "details": ["Channels and batches can be edited, enabled, disabled, and deleted.", "Both file and API batches have quantities, and an API batch can be replenished in place.", "Channels have no territory, commercial quota, or authorization-plan setting."]
           },
           {
             "id": "channel-api-integration",
             "category": "Publishing & supply",
             "question": "Key API integration guide",
             "answer": "An API batch binds one channel and one product. The channel requests a Key by order, and the platform provides idempotent issuance and lookup.",
-            "steps": ["Create an API batch and generate a client_id and one-time Secret.", "Share the Help Center API article and batch access information with the channel.", "Retry with the same order ID and query the original order after a timeout."],
-            "details": ["API batches have no quantity, fixed quota, or replenishment action.", "Credentials belong to an API batch. A channel and SKU can have only one enabled API batch.", "The Secret appears only when created or rotated, and the old Secret becomes invalid immediately."]
+            "steps": ["Create an API batch with an initial available quantity of 1–100,000, then generate a client_id and one-time Secret.", "Share the Help Center API article and batch access information with the channel.", "Retry with the same order ID and query the original order after a timeout.", "Add quantity to the original batch whenever its remaining quantity is insufficient."],
+            "details": ["The initial quantity and each addition must be 1–100,000; cumulative quantity has no limit.", "Adding quantity does not change the endpoint, client_id, Secret, enabled state, or effective period.", "A channel and SKU can have only one enabled API batch.", "The Secret appears only when created or rotated, and the old Secret becomes invalid immediately."]
           },
           {
             "id": "channel-api-reference",
@@ -635,7 +635,7 @@
             "question": "Download a Key file",
             "answer": "Create a file batch first, then generate and download its Key file from the batch list.",
             "steps": ["In Batch management, choose a channel, product, and Download Key file.", "Enter the batch name, quantity, Key expiration, and effective period.", "Select Download file in the batch list; the file name contains the channel name and batch ID."],
-            "details": ["Each batch can contain 1–100,000 Keys and channels have no cumulative file quota.", "The same Keys cannot be downloaded again after the first successful download; create a new batch if the file is lost.", "If generation fails before the browser receives the complete file, retry from the original batch."]
+            "details": ["Each batch can contain 1–100,000 Keys and channels have no cumulative file quota.", "A scheduled, disabled, or ended file batch can still be generated and downloaded once; a deleted batch cannot be downloaded.", "After the first successful download, the same Keys cannot be downloaded again. The platform retains only the download record, not the plaintext file or Keys.", "Create a new batch if the file is lost. If generation fails before the browser receives the complete file, retry from the original batch."]
           },
           {
             "id": "channel-key-metrics",
@@ -650,15 +650,15 @@
             "category": "Publishing & supply",
             "question": "Batch status and download records",
             "answer": "A batch records its channel, product, supply method, effective period, and supply result. Plaintext Keys are not displayed in the portal.",
-            "steps": ["A pending file batch supports one download.", "An enabled and effective API batch can supply Keys through the API.", "Download records retain the account, time, quantity, and Key fingerprints for audit."],
-            "details": ["Both the channel and batch must be enabled and effective before new supply.", "Channel, product, supply method, and quantity cannot change after supply.", "Issued Keys are not recalled when a channel or batch is disabled or deleted."]
+            "steps": ["A file batch that has not been downloaded or deleted supports one download.", "An API batch can supply Keys when its channel and batch are enabled, effective, and have remaining quantity.", "Download records retain the account, time, quantity, and Key fingerprints for audit."],
+            "details": ["A file batch's enabled state and effective period do not restrict its first download; deletion does.", "Channel, product, supply method, and quantity cannot change after supply.", "Issued Keys are not recalled when a channel or batch is disabled or deleted."]
           },
           {
             "id": "channel-stop-delivery",
             "category": "Publishing & supply",
             "question": "Enable, disable, delete, and issued Keys",
-            "answer": "Disabling or deleting a channel or batch stops future supply while retaining history and issued Keys.",
-            "steps": ["Disabling a channel blocks all of its batches; re-enabling restores batches that still qualify.", "Disabling a batch blocks only that batch.", "Deletion preserves traceable history for supplied records."],
+            "answer": "Disabling blocks new API issuance but does not block the first file-batch download. History and issued Keys remain available.",
+            "steps": ["Disabling a channel blocks new issuance from its API batches; re-enabling restores API batches that still qualify.", "Disabling an API batch blocks only that batch from new issuance.", "A scheduled, disabled, or ended file batch can still be downloaded once; a deleted batch cannot be downloaded."],
             "details": ["An unsupplied batch can be removed; a supplied batch is soft-deleted.", "A deleted channel cannot be restored; create a new channel to resume cooperation.", "Issued Keys remain redeemable until their original expiration date."]
           },
           {
@@ -812,16 +812,16 @@
         "category": "发行与供给",
         "question": "渠道与批次使用说明",
         "answer": "企业开发者先创建合作渠道，再按渠道和销售项创建文件或 API 供给批次。",
-        "steps": ["创建渠道并设置合作时间。", "在批次管理选择渠道、销售项、供给方式和生效时间。", "启用批次后下载兑换码文件或完成 API 接入。"],
-        "details": ["渠道和批次都支持编辑、启用、停用和删除。", "渠道不设地区、商业额度或授权计划。", "渠道或批次未生效、已停用、已结束或已删除时不能新供给。"]
+        "steps": ["创建渠道并设置合作时间。", "在批次管理选择渠道、销售项、供给方式、生效时间和数量。", "文件批次可直接下载；API 批次启用并生效后，渠道方按接口取码。"],
+        "details": ["渠道和批次均支持编辑、启用、停用和删除。", "文件和 API 批次都有数量；API 可在原批次追加。", "渠道不设地区、商业额度或授权计划。"]
       },
       {
         "id": "channel-api-integration",
         "category": "发行与供给",
         "question": "接口取码接入指南",
         "answer": "API 批次绑定一个渠道和一个销售项，渠道方按订单请求 Key，平台负责幂等、发码和结果查询。",
-        "steps": ["创建 API 批次并生成 client_id 和一次性 Secret。", "将帮助中心接口文档和批次接入信息交给渠道方。", "渠道用同一订单号重试；超时后先查询原订单。"],
-        "details": ["API 批次不填写数量，也没有固定额度或补量操作。", "凭证属于 API 批次；同一渠道和销售项只能有一个启用中的 API 批次。", "Secret 仅在生成或轮换时显示一次，旧 Secret 立即失效。"]
+        "steps": ["创建 API 批次，设置 1—100,000 的初始可取数量，并生成 client_id 和一次性 Secret。", "将帮助中心接口文档和批次接入信息交给渠道方。", "渠道用同一订单号重试；超时后先查询原订单。", "剩余数量不足时，在原批次追加数量。"],
+        "details": ["初始数量和单次追加数量均为 1—100,000，累计数量不限。", "追加数量不改变接口地址、client_id、Secret、启停状态和生效时间。", "同一渠道和销售项只能有一个启用中的 API 批次。", "Secret 仅在生成或轮换时显示一次，旧 Secret 立即失效。"]
       },
       {
         "id": "channel-api-reference",
@@ -837,7 +837,7 @@
         "question": "下载兑换码文件教程",
         "answer": "先创建文件批次，再从批次列表生成并下载兑换码文件。",
         "steps": ["在批次管理选择渠道、销售项和“下载兑换码文件”。", "填写批次名称、数量、Key 有效期和生效时间后创建。", "在批次列表点击“下载文件”，文件名包含渠道名和批次号。"],
-        "details": ["单批可生成 1—100,000 个 Key，不设渠道累计额度。", "首次下载成功后不能再次下载同一批 Key；文件丢失时须新建批次。", "生成失败且浏览器未收到完整文件时，可在原批次重试。"]
+        "details": ["单批可生成 1—100,000 个 Key，不设渠道累计额度。", "待生效、未启用、已停用或已结束的文件批次仍可首次生成下载；已删除的不可下载。", "首次下载成功后不能重下同一批 Key；平台仅保留下载记录，不保存明文文件或 Key。", "文件丢失时须新建批次；生成失败且浏览器未收到完整文件时，可在原批次重试。"]
       },
       {
         "id": "channel-key-metrics",
@@ -852,15 +852,15 @@
         "category": "发行与供给",
         "question": "批次状态与下载记录",
         "answer": "批次记录渠道、销售项、供给方式、生效时间和供给结果；平台不在页面回显明文 Key。",
-        "steps": ["待下载的文件批次可执行一次下载。", "API 批次在启用且生效后可按接口取码。", "下载记录保留账号、时间、数量和 Key 指纹，用于审计。"],
-        "details": ["渠道和批次均启用且处于有效期内时才允许新供给。", "已供给批次的渠道、销售项、供给方式和数量不可修改。", "已发 Key 不因渠道或批次停用、删除而回收。"]
+        "steps": ["未下载且未删除的文件批次可执行一次下载。", "API 批次在渠道和批次均启用、处于有效期且有剩余数量时可按接口取码。", "下载记录保留账号、时间、数量和 Key 指纹，用于审计。"],
+        "details": ["文件批次的启停和生效时间不限制首次下载，删除后不可下载。", "已供给批次的渠道、销售项、供给方式和数量不可修改。", "已发 Key 不因渠道或批次停用、删除而回收。"]
       },
       {
         "id": "channel-stop-delivery",
         "category": "发行与供给",
         "question": "启停、删除与已发 Key 处理",
-        "answer": "停用或删除渠道、批次会停止后续供给，但历史记录和已发 Key 继续保留。",
-        "steps": ["停用渠道会阻止其全部批次新供给，再次启用后恢复符合条件的批次。", "停用批次只阻止该批次新供给。", "删除采用历史可追溯规则，已供给记录不会被清除。"],
+        "answer": "停用会阻止 API 新取码，但不阻止文件批次首次生成下载；历史记录和已发 Key 继续保留。",
+        "steps": ["停用渠道会阻止其 API 批次新取码，再次启用后恢复符合条件的 API 批次。", "停用 API 批次只阻止该批次新取码。", "待生效、未启用、已停用或已结束的文件批次仍可首次下载；删除后不可下载。"],
         "details": ["未供给批次可直接删除；已供给批次软删除。", "渠道删除后不可直接恢复，需要继续合作时重新创建。", "已发 Key 仍按原有效期兑换。"]
       },
       {
