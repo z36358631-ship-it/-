@@ -6,7 +6,7 @@
 |---|---|
 | 任务编号 | GUANWANGGAID-25 |
 | 需求名称 | 兼容性评价改版 v1.2 |
-| 当前阶段 | C/B 端 Demo 与验证证据已完成，待用户验收 |
+| 当前阶段 | C 端客态自然混排与验证证据已完成，待用户验收 |
 | 最后更新时间 | 2026-09-18 |
 
 ## 问题与证据
@@ -46,6 +46,7 @@
 | D-006 | 1～2 星不展示分享入口；3～5 星且存在成功会话时可分享；编辑已有共享评价时保留历史快照 | 用户确认与编辑连续性要求 | 2026-09-18 | 无 |
 | D-007 | 删除评价同步删除一对一快照；隐藏评价仅停止 C 端入口，B 端仍可只读追溯 | 一对一生命周期与审核追溯要求 | 2026-09-18 | 无 |
 | D-008 | 评价先持久化再上传或删除快照；快照限制为白名单、8KB、字段长度受限且拒绝本地绝对路径 | 防止孤儿快照、悬挂引用、隐私与存储风险 | 2026-09-18 | 无 |
+| D-009 | 其他玩家评价在现有列表自然混排；只有 3～5 星、快照可用且快照 ID 与评价归属完全匹配时展示方案入口；未分享、不可用、错绑及 1～2 星仅展示评价，后台隐藏评价不进入 C 端 | 用户确认采用方案 A，且只做客态、不增加状态标签或异常详情页 | 2026-09-18 | 无 |
 
 ## 产物登记
 
@@ -54,12 +55,14 @@
 | 状态卡 | 本文件 | 已同步 | 文件存在 |
 | 设计规格 | `docs/superpowers/specs/2026-09-16-gamehub-compatibility-review-v1.2-design.md` | 已同步 | Git `28ca0b264` |
 | 实施计划 | `docs/superpowers/plans/2026-09-18-gamehub-review-snapshot.md` | 已同步 | TDD、独立快照、C/B 端与截图验证步骤已覆盖 |
-| C 端 Demo | `demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html` | 已同步 | 独立不可变快照、应用／复制、异常态、失败补偿与完整旅程均已覆盖 |
+| 客态设计规格 | `docs/superpowers/specs/2026-09-18-gamehub-compatibility-review-guest-states-design.md` | 已同步 | Git `a64fd37c6`；G-01～G-07 与自然混排口径 |
+| 客态实施计划 | `docs/superpowers/plans/2026-09-18-gamehub-compatibility-review-guest-states.md` | 已同步 | Git `e9f5aec91`；旧缓存迁移、安全复验与交付步骤已覆盖 |
+| C 端 Demo | `demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html` | 已同步 | 独立不可变快照、应用／复制、异常态、完整旅程与客态 G-01～G-07 均已覆盖 |
 | B 端 Demo | `demos/后台管理/GUANWANGGAID-25-兼容性评价改版-B端demo.html` | 已同步 | 关联筛选、完整配置只读追溯、隐藏保留与删除级联已覆盖 |
-| 浏览器契约 | `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs` | 已同步 | `node --test`：30/30 通过 |
-| 视觉证据 | `test-results/compatibility-review-v1.2/` | 已同步 | 10 张当前截图；390×844、844×390 与 1440×900 人工审图通过 |
-| 截图脚本 | `tools/capture-compatibility-review-v1.2.mjs` | 已同步 | 10/10 截图成功 |
-| Git | 当前分支 | 已提交 | 功能提交 `95ab3b80c`（`feat: deliver immutable review snapshots`） |
+| 浏览器契约 | `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs` | 已同步 | `node --test`：37/37 通过 |
+| 视觉证据 | `test-results/compatibility-review-v1.2/` | 已同步 | 11 张当前截图；新增 390×844 客态混排图原尺寸复验 PASS |
+| 截图脚本 | `tools/capture-compatibility-review-v1.2.mjs` | 已同步 | 11/11 截图成功 |
+| Git | 当前分支 | 已提交 | 客态实现提交 `e9f5aec91`（`feat: add guest compatibility review states`） |
 
 ## 修改与验证
 
@@ -69,6 +72,7 @@
 | 2026-09-18 | 本地方案分享后供他人跨设备查看和应用，但不创建个人云方案 | C 端改为评价绑定的独立不可变云端快照；复制仅创建个人本地副本并 Toast 占位跳转 | C 端 Demo、测试 | 30/30 回归通过 |
 | 2026-09-18 | 后台需追溯当次实际配置，评价删除不能继续保留对应快照 | B 端抽屉增加完整配置只读展示；删除评价同步删除快照 | B 端 Demo、测试、截图 | 浏览器契约与 1440×900 人工审图通过 |
 | 2026-09-18 | 评审发现编辑、失败补偿和隐私边界缺口 | 保留历史快照；评价先落库；新增 8KB、字段长度和绝对路径限制 | C 端 Demo、测试 | 开发工程师最终复核 PASS；产品与交互评审无本期未关闭阻断项 |
+| 2026-09-18 | 仅补客态，采用自然混排并穷举其他玩家方案入口状态 | C 端补齐 G-01～G-07；入口实时校验评分、状态、快照内部 ID 与评价归属，点击时重新校验；隐藏评价从统计和列表过滤；旧缓存通过幂等双仓迁移补齐客态并保留非种子数据 | C 端 Demo、浏览器契约、截图、状态卡；B 端无需修改 | 37/37 浏览器契约通过；11/11 截图成功；客态原尺寸人工审图 PASS；B 端 SHA-256 保持 `FBA0F28AEEE349425C7BD1BDB44FE409A707F14E45F6020871AB14BBE21E9CC7` |
 
 ## 待确认与风险
 
