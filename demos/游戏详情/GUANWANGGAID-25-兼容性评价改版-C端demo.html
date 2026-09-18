@@ -1991,11 +1991,12 @@ function refreshPanel(side) {
     else if (viewMode === 'support') {
         const likedSet = getLikedSet();
         filtered = list
-            .map((feedback, originalIndex) => ({ feedback, originalIndex }))
+            .map(feedback => ({ feedback }))
             .sort((left, right) => Number(Boolean(right.feedback.official)) - Number(Boolean(left.feedback.official))
                 || ((Number(right.feedback.likes) || 0) + (likedSet.has(right.feedback.id) ? 1 : 0))
                     - ((Number(left.feedback.likes) || 0) + (likedSet.has(left.feedback.id) ? 1 : 0))
-                || left.originalIndex - right.originalIndex)
+                || String(right.feedback.date || '').localeCompare(String(left.feedback.date || ''))
+                || String(right.feedback.id || '').localeCompare(String(left.feedback.id || '')))
             .map(({ feedback }) => feedback);
     }
     else if (viewMode === 'mine') filtered = list.filter(f => f.uid === MY_UID);

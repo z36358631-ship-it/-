@@ -520,11 +520,22 @@ test('支持最多只按支持数排序且不改变评价与方案入口显隐',
   const readRenderedReviews = () => page.locator('#listLs [data-feedback-id]').evaluateAll((items) => items.map((item) => ({
     id: item.dataset.feedbackId,
     supportCount: Number(item.querySelector('[id^="like-count-"]')?.textContent || 0),
+    createdAt: item.querySelector('.ci-date')?.firstChild?.textContent.trim() || '',
     official: item.querySelector('.ci-name')?.textContent.includes('官方置顶') || false,
     solutionEntries: item.querySelectorAll('.review-solution-card').length,
   })));
   try {
     await showEveryReview(page);
+    await page.evaluate(() => {
+      const feedbacks = window.getFeedbacks().map((review) => {
+        if (review.id === 's4') return { ...review, likes: 20, date: '2025-04-21' };
+        if (review.id === 's2' || review.id === 's3') return { ...review, likes: 20, date: '2025-04-20' };
+        return review;
+      });
+      localStorage.setItem('gh_compat_feedbacks_gta5_v12', JSON.stringify(feedbacks));
+      window.refreshPanel('ls');
+    });
+    await loadEveryReview(page);
     const before = await readRenderedReviews();
     assert.equal(before.length, 9, '全部筛选应展示所有未隐藏评价');
 
@@ -542,12 +553,17 @@ test('支持最多只按支持数排序且不改变评价与方案入口显隐',
     assert.equal(await page.locator('[data-feedback-id="s10"]').count(), 0, '后台隐藏评价仍不得进入列表');
 
     const expectedOrder = before
-      .map((item, originalIndex) => ({ ...item, originalIndex }))
       .sort((left, right) => Number(right.official) - Number(left.official)
         || right.supportCount - left.supportCount
-        || left.originalIndex - right.originalIndex)
+        || right.createdAt.localeCompare(left.createdAt)
+        || right.id.localeCompare(left.id))
       .map((item) => item.id);
-    assert.deepEqual(after.map((item) => item.id), expectedOrder, '官方置顶后其余评价应按支持数降序且稳定排序');
+    assert.deepEqual(after.map((item) => item.id), expectedOrder, '官方置顶后应按支持数、创建时间、评价 ID 依次倒序');
+    assert.deepEqual(
+      after.filter((item) => ['s2', 's3', 's4'].includes(item.id)).map((item) => item.id),
+      ['s4', 's3', 's2'],
+      '同支持数时先按创建时间倒序，同时间再按评价 ID 倒序',
+    );
 
     const entranceState = (items) => items
       .map(({ id, solutionEntries }) => ({ id, solutionEntries }))
