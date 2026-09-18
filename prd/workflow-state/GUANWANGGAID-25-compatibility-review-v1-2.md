@@ -59,6 +59,7 @@
 | 浏览器契约 | `tests/compatibility-review-v1.2/compatibility-review-v1.2.browser.test.mjs` | 已同步 | `node --test`：30/30 通过 |
 | 视觉证据 | `test-results/compatibility-review-v1.2/` | 已同步 | 10 张当前截图；390×844、844×390 与 1440×900 人工审图通过 |
 | 截图脚本 | `tools/capture-compatibility-review-v1.2.mjs` | 已同步 | 10/10 截图成功 |
+| Git | 当前分支 | 已提交 | 功能提交 `95ab3b80c`（`feat: deliver immutable review snapshots`） |
 
 ## 修改与验证
 
