@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1420" viewBox="0 0 2000 1420">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#15171b"/>
+      <stop offset="1" stop-color="#090a0c"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#202329"/>
+      <stop offset="1" stop-color="#101216"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000" flood-opacity=".42"/>
+    </filter>
+    <style>
+      .t{font-family:"Microsoft YaHei","PingFang SC",sans-serif;fill:#f4f5f7}
+      .muted{fill:#8d939d}
+      .line{stroke:#41464f;stroke-width:2;fill:none}
+      .wire{fill:#242830;stroke:#41464f;stroke-width:2}
+      .yellow{fill:#ffc928}
+      .yellowText{fill:#ffc928}
+      .entry{fill:#2b2817;stroke:#ffc928;stroke-width:3}
+      .label{fill:#191b20;stroke:#343841;stroke-width:2}
+    </style>
+  </defs>
+
+  <rect width="2000" height="1420" fill="url(#bg)"/>
+
+  <text class="t" x="76" y="78" font-size="40" font-weight="700">兼容性查询｜APP 入口线框</text>
+  <text class="t muted" x="76" y="120" font-size="22">双入口进入同一 H5：全局查询从「玩游戏 → PC游戏」进入，单游戏查询从详情页进入</text>
+  <rect x="1588" y="54" width="330" height="66" rx="33" class="entry"/>
+  <circle cx="1630" cy="87" r="10" class="yellow"/>
+  <text class="t" x="1654" y="96" font-size="22" font-weight="700">黄色区域＝新增入口</text>
+
+  <!-- 竖屏：全局入口 -->
+  <g transform="translate(76 178)" filter="url(#shadow)">
+    <rect width="382" height="786" rx="44" fill="#060708" stroke="#3e434c" stroke-width="3"/>
+    <rect x="12" y="12" width="358" height="762" rx="34" fill="url(#screen)"/>
+    <text class="t muted" x="28" y="44" font-size="14">14:39</text>
+    <circle cx="332" cy="37" r="5" fill="#8d939d"/>
+    <rect x="28" y="68" width="276" height="48" rx="24" class="wire"/>
+    <circle cx="52" cy="92" r="9" class="line"/>
+    <path d="M59 99l9 9" class="line"/>
+    <text class="t muted" x="80" y="99" font-size="15">搜索游戏</text>
+    <rect x="318" y="74" width="32" height="32" rx="8" class="wire"/>
+    <text class="t muted" x="328" y="96" font-size="18">▧</text>
+
+    <text class="t muted" x="30" y="156" font-size="18">云游戏</text>
+    <text class="t" x="126" y="156" font-size="18" font-weight="700">PC游戏</text>
+    <text class="t muted" x="226" y="156" font-size="18">复古游戏</text>
+    <rect x="143" y="168" width="36" height="4" rx="2" class="yellow"/>
+
+    <rect x="26" y="196" width="330" height="100" rx="18" class="entry"/>
+    <rect x="44" y="218" width="54" height="54" rx="14" fill="#ffc928"/>
+    <circle cx="69" cy="242" r="12" fill="none" stroke="#121315" stroke-width="3"/>
+    <path d="M78 251l10 10" stroke="#121315" stroke-width="3" stroke-linecap="round"/>
+    <text class="t" x="116" y="238" font-size="19" font-weight="700">兼容性查询</text>
+    <text class="t muted" x="116" y="268" font-size="13">查游戏在不同机型上的运行表现</text>
+    <text class="t yellowText" x="330" y="256" font-size="24">›</text>
+
+    <text class="t" x="28" y="342" font-size="19" font-weight="700">最近常玩</text>
+    <rect x="28" y="366" width="102" height="128" rx="14" class="wire"/>
+    <rect x="144" y="366" width="102" height="128" rx="14" class="wire"/>
+    <rect x="260" y="366" width="96" height="128" rx="14" class="wire"/>
+    <text class="t" x="28" y="548" font-size="19" font-weight="700">热门推荐</text>
+    <rect x="28" y="572" width="328" height="66" rx="14" class="wire"/>
+    <rect x="40" y="584" width="42" height="42" rx="8" fill="#3a3f48"/>
+    <line x1="98" y1="596" x2="244" y2="596" stroke="#555c67" stroke-width="8" stroke-linecap="round"/>
+    <line x1="98" y1="619" x2="210" y2="619" stroke="#3f454e" stroke-width="7" stroke-linecap="round"/>
+    <rect x="28" y="652" width="328" height="66" rx="14" class="wire"/>
+    <rect x="40" y="664" width="42" height="42" rx="8" fill="#3a3f48"/>
+    <line x1="98" y1="676" x2="226" y2="676" stroke="#555c67" stroke-width="8" stroke-linecap="round"/>
+    <line x1="98" y1="699" x2="196" y2="699" stroke="#3f454e" stroke-width="7" stroke-linecap="round"/>
+    <rect x="12" y="716" width="358" height="58" rx="26" fill="#22252b" stroke="#40454e" stroke-width="2"/>
+    <text class="t muted" x="45" y="750" font-size="15">首页</text>
+    <text class="t" x="111" y="750" font-size="15" font-weight="700">玩游戏</text>
+    <text class="t muted" x="197" y="750" font-size="15">排行</text>
+    <text class="t muted" x="267" y="750" font-size="15">游戏库</text>
+    <text class="t muted" x="332" y="750" font-size="15">我的</text>
+  </g>
+  <rect x="76" y="988" width="382" height="54" rx="27" class="label"/>
+  <text class="t" x="114" y="1023" font-size="20" font-weight="700">① 竖屏｜PC 游戏首屏工具卡</text>
+
+  <!-- 竖屏：详情入口 -->
+  <g transform="translate(504 178)" filter="url(#shadow)">
+    <rect width="382" height="786" rx="44" fill="#060708" stroke="#3e434c" stroke-width="3"/>
+    <rect x="12" y="12" width="358" height="762" rx="34" fill="url(#screen)"/>
+    <text class="t muted" x="28" y="44" font-size="14">14:39</text>
+    <text class="t" x="29" y="88" font-size="28">‹</text>
+    <rect x="62" y="54" width="280" height="205" rx="18" fill="#31363f" stroke="#454b55" stroke-width="2"/>
+    <path d="M78 229L156 147l56 49 54-68 60 101" fill="none" stroke="#5a626f" stroke-width="8"/>
+    <text class="t" x="28" y="310" font-size="24" font-weight="700">杀戮尖塔 2</text>
+    <text class="t muted" x="28" y="341" font-size="14">卡牌 · 策略 · 冒险</text>
+    <rect x="27" y="371" width="330" height="178" rx="20" class="entry"/>
+    <text class="t" x="48" y="408" font-size="19" font-weight="700">PC 游戏引擎</text>
+    <line x1="48" y1="427" x2="336" y2="427" stroke="#5b552c" stroke-width="2"/>
+    <text class="t muted" x="48" y="460" font-size="13">兼容性</text>
+    <text class="t" x="48" y="491" font-size="23" font-weight="700">完美兼容</text>
+    <text class="t muted" x="48" y="520" font-size="13">平均帧率 46</text>
+    <rect x="210" y="460" width="126" height="56" rx="18" fill="#ffc928"/>
+    <text x="230" y="495" font-family="Microsoft YaHei,PingFang SC,sans-serif" fill="#151515" font-size="16" font-weight="700">查看兼容记录</text>
+    <text class="t" x="28" y="600" font-size="19" font-weight="700">游戏介绍</text>
+    <line x1="28" y1="630" x2="344" y2="630" stroke="#4a505b" stroke-width="9" stroke-linecap="round"/>
+    <line x1="28" y1="656" x2="314" y2="656" stroke="#3a4049" stroke-width="9" stroke-linecap="round"/>
+    <line x1="28" y1="682" x2="336" y2="682" stroke="#3a4049" stroke-width="9" stroke-linecap="round"/>
+    <rect x="28" y="716" width="328" height="44" rx="15" class="wire"/>
+    <text class="t" x="148" y="744" font-size="15">启动游戏</text>
+  </g>
+  <rect x="504" y="988" width="382" height="54" rx="27" class="label"/>
+  <text class="t" x="535" y="1023" font-size="20" font-weight="700">② 竖屏｜详情页引擎信息区</text>
+
+  <!-- 横屏：全局入口 -->
+  <g transform="translate(938 178)" filter="url(#shadow)">
+    <rect width="984" height="384" rx="38" fill="#060708" stroke="#3e434c" stroke-width="3"/>
+    <rect x="12" y="12" width="960" height="360" rx="28" fill="url(#screen)"/>
+    <rect x="32" y="30" width="920" height="48" rx="18" fill="#1c1f24"/>
+    <text class="t muted" x="58" y="61" font-size="16">首页</text>
+    <text class="t" x="134" y="61" font-size="17" font-weight="700">玩游戏</text>
+    <text class="t muted" x="226" y="61" font-size="16">排行榜</text>
+    <text class="t muted" x="318" y="61" font-size="16">游戏库</text>
+    <text class="t muted" x="874" y="61" font-size="14">14:39　◉</text>
+    <text class="t muted" x="40" y="117" font-size="18">云游戏</text>
+    <text class="t" x="132" y="117" font-size="18" font-weight="700">PC游戏</text>
+    <text class="t muted" x="226" y="117" font-size="18">复古游戏</text>
+    <rect x="134" y="130" width="54" height="4" rx="2" class="yellow"/>
+
+    <rect x="40" y="155" width="330" height="142" rx="20" class="entry"/>
+    <rect x="60" y="179" width="58" height="58" rx="14" class="yellow"/>
+    <circle cx="86" cy="205" r="13" fill="none" stroke="#121315" stroke-width="3"/>
+    <path d="M96 215l10 10" stroke="#121315" stroke-width="3" stroke-linecap="round"/>
+    <text class="t" x="140" y="199" font-size="21" font-weight="700">兼容性查询</text>
+    <text class="t muted" x="140" y="232" font-size="14">查游戏在不同机型上的运行表现</text>
+    <text class="t yellowText" x="330" y="244" font-size="27">›</text>
+    <text class="t yellowText" x="60" y="275" font-size="13">PC 游戏首屏固定工具位</text>
+
+    <text class="t" x="405" y="172" font-size="18" font-weight="700">最近常玩</text>
+    <rect x="405" y="191" width="154" height="106" rx="16" class="wire"/>
+    <rect x="574" y="191" width="154" height="106" rx="16" class="wire"/>
+    <rect x="743" y="191" width="154" height="106" rx="16" class="wire"/>
+    <rect x="40" y="319" width="857" height="2" fill="#383d46"/>
+    <text class="t muted" x="40" y="348" font-size="13">LB / RB 切换频道　　方向键移动　　A 确认</text>
+  </g>
+  <rect x="938" y="584" width="984" height="54" rx="27" class="label"/>
+  <text class="t" x="976" y="619" font-size="20" font-weight="700">③ 掌机横屏｜PC 游戏首屏左侧工具卡</text>
+
+  <!-- 横屏：详情入口 -->
+  <g transform="translate(938 684)" filter="url(#shadow)">
+    <rect width="984" height="384" rx="38" fill="#060708" stroke="#3e434c" stroke-width="3"/>
+    <rect x="12" y="12" width="960" height="360" rx="28" fill="#15181d"/>
+    <rect x="12" y="12" width="960" height="360" rx="28" fill="#262a31"/>
+    <path d="M480 12h492v360H480z" fill="#343943"/>
+    <path d="M540 340L690 160l76 78 92-122 114 154v102H540z" fill="#454b56"/>
+    <rect x="12" y="12" width="960" height="360" rx="28" fill="url(#screen)" opacity=".62"/>
+    <text class="t" x="40" y="60" font-size="28">‹</text>
+    <text class="t" x="62" y="144" font-size="29" font-weight="700">杀戮尖塔 2</text>
+    <text class="t muted" x="62" y="178" font-size="15">卡牌 · 策略 · 冒险</text>
+    <rect x="62" y="209" width="128" height="50" rx="17" class="wire"/>
+    <text class="t" x="92" y="241" font-size="16">启动游戏</text>
+    <rect x="204" y="209" width="66" height="50" rx="17" class="wire"/>
+    <text class="t" x="225" y="241" font-size="20">•••</text>
+
+    <rect x="54" y="286" width="286" height="66" rx="18" class="entry"/>
+    <text class="t muted" x="76" y="315" font-size="13">兼容性</text>
+    <text class="t" x="76" y="338" font-size="18" font-weight="700">完美兼容 · 平均帧率 46</text>
+    <text class="t yellowText" x="310" y="329" font-size="25">›</text>
+    <rect x="354" y="286" width="170" height="66" rx="18" class="wire"/>
+    <text class="t muted" x="376" y="315" font-size="13">云存档</text>
+    <text class="t" x="376" y="338" font-size="16">暂无</text>
+    <rect x="538" y="286" width="170" height="66" rx="18" class="wire"/>
+    <text class="t muted" x="560" y="315" font-size="13">游戏时长</text>
+    <text class="t" x="560" y="338" font-size="16">12.6 小时</text>
+    <rect x="722" y="286" width="196" height="66" rx="18" class="wire"/>
+    <text class="t muted" x="744" y="315" font-size="13">玩家评分</text>
+    <text class="t" x="744" y="338" font-size="16">8.7 特别好评</text>
+  </g>
+  <rect x="938" y="1090" width="984" height="54" rx="27" class="label"/>
+  <text class="t" x="976" y="1125" font-size="20" font-weight="700">④ 掌机横屏｜详情页底部兼容性信息块</text>
+
+  <!-- 统一跳转规则 -->
+  <rect x="76" y="1190" width="1846" height="166" rx="28" fill="#17191e" stroke="#343943" stroke-width="2"/>
+  <text class="t" x="108" y="1235" font-size="21" font-weight="700">点击后进入同一兼容性查询 H5</text>
+  <rect x="108" y="1260" width="470" height="58" rx="18" class="wire"/>
+  <text class="t" x="134" y="1297" font-size="17" font-weight="700">全局入口</text>
+  <text class="t muted" x="234" y="1297" font-size="16">进入查询首页，不预选游戏</text>
+  <path d="M594 1289h96" stroke="#ffc928" stroke-width="4" stroke-linecap="round"/>
+  <path d="M678 1278l16 11-16 11" fill="none" stroke="#ffc928" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="716" y="1260" width="470" height="58" rx="18" class="wire"/>
+  <text class="t" x="742" y="1297" font-size="17" font-weight="700">详情入口</text>
+  <text class="t muted" x="842" y="1297" font-size="16">带入当前 game_id，直达该游戏</text>
+  <path d="M1202 1289h96" stroke="#ffc928" stroke-width="4" stroke-linecap="round"/>
+  <path d="M1286 1278l16 11-16 11" fill="none" stroke="#ffc928" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="1324" y="1260" width="566" height="58" rx="18" class="entry"/>
+  <text class="t" x="1350" y="1297" font-size="17" font-weight="700">默认当前手机型号，可切换其他机型</text>
+</svg>
