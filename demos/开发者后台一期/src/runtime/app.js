@@ -1468,6 +1468,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (batch.effectiveEnd && new Date(batch.effectiveEnd).getTime() < now) return false;
     return true;
   };
+  const batchCanDownloadFile = batch => {
+    const external = window.PublisherChannelDistribution?.canDownloadFileBatch;
+    if (typeof external === 'function') return external(batch) === true;
+    return Boolean(batch && !batch.deleted && batch.delivery === 'file' && batch.supplyState === 'pending');
+  };
   const apiBatchRemaining = batch => {
     const external = window.PublisherChannelDistribution?.apiRemaining;
     if (typeof external === 'function') return external(batch || {});
@@ -2265,12 +2270,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const current = channelDistributionState();
         const batchId = event.currentTarget.dataset.batchId || current.dialogBatchId;
         const batch = findBatch(current, batchId);
-        const channel = findChannel(current, batch?.channelId);
-        if (!batch || batch.delivery !== 'file' || batch.supplyState !== 'pending') return;
-        if (!batchCanSupply(batch, channel)) {
-          resultMessage(route.id, '当前不可下载', '请检查渠道、批次状态和生效时间。', 'warning');
-          return;
-        }
+        if (!batchCanDownloadFile(batch)) return;
         const downloadButton = event.currentTarget;
         const originalText = downloadButton.textContent;
         downloadButton.disabled = true;
@@ -2281,11 +2281,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           const latest = channelDistributionState();
           const latestBatch = findBatch(latest, batchId);
           const latestChannel = findChannel(latest, latestBatch?.channelId);
-          if (!latestBatch || latestBatch.supplyState !== 'pending' || !batchCanSupply(latestBatch, latestChannel)) {
-            resultMessage(route.id, '下载已停止', '生成期间状态已变更，未下载任何 Key。', 'warning');
+          if (!batchCanDownloadFile(latestBatch)) {
+            resultMessage(route.id, '下载已停止', '生成期间批次已被删除或已完成下载。', 'warning');
             return;
           }
-          const fileName = `盖世游戏兑换码_${safeFileNamePart(latestChannel.name)}_${latestBatch.id}.csv`;
+          const fileName = `盖世游戏兑换码_${safeFileNamePart(latestChannel?.name || latestBatch.channelId)}_${latestBatch.id}.csv`;
           downloadTextFile(fileName, generated.content, 'text/csv;charset=utf-8');
           const downloadedAt = nowText();
           updateChannelDistribution({

@@ -174,6 +174,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
   const canSupply = channel => effectiveChannelStatus(channel) === 'active';
   const canSupplyBatch = (batch, channel) => ['active','pending_access'].includes(effectiveBatchStatus(batch,channel));
+  const canDownloadFileBatch = batch => Boolean(batch && !batch.deleted && batch.delivery === 'file' && batch.supplyState === 'pending');
   const batchCoreLocked = batch => Boolean(batch && (batch.delivery === 'file' ? batch.supplyState === 'downloaded' || batch.downloadedAt : Number(batch.apiStats?.requests || 0) > 0 || batch.lastSuppliedAt));
   const formatDateTime = value => String(value || '').replace('T',' ').slice(0,16) || '—';
   const keywordMatches = (item, keyword, fields = ['name','id']) => !keyword || fields.map(key => item?.[key] || '').join(' ').toLocaleLowerCase().includes(String(keyword).toLocaleLowerCase());
@@ -359,7 +360,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   );
   const renderBatchActions = (language, batch, channel) => {
     const state = effectiveBatchStatus(batch,channel);
-    const supplyAction = batch.delivery === 'api' ? actionLink(tx(language,'管理接入','Manage access'),'batch-api-access',{batchId:batch.id}) : batch.supplyState === 'downloaded' ? actionLink(tx(language,'下载记录','Download record'),'batch-download-record',{batchId:batch.id}) : actionLink(tx(language,'下载文件','Download file'),'batch-download',{batchId:batch.id,disabled:!canSupplyBatch(batch,channel)});
+    const supplyAction = batch.delivery === 'api' ? actionLink(tx(language,'管理接入','Manage access'),'batch-api-access',{batchId:batch.id}) : batch.supplyState === 'downloaded' ? actionLink(tx(language,'下载记录','Download record'),'batch-download-record',{batchId:batch.id}) : actionLink(tx(language,'下载文件','Download file'),'batch-download',{batchId:batch.id,disabled:!canDownloadFileBatch(batch)});
     const topupAction = batch.delivery === 'api' && !batchHasEnded(batch) ? actionLink(tx(language,'追加数量','Add quantity'),'batch-api-topup-open',{batchId:batch.id}) : '';
     return actionGroup(
       actionLink(tx(language,'查看','View'),'batch-view',{batchId:batch.id}),
@@ -437,6 +438,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="publisher-channel" data-publisher-channel="${e(section)}">${(renderers[section] || renderSupply)({ language, state:distribution, transientSecret:runtimeSecret })}</section>`;
   };
 
-  window.PublisherChannelDistribution = { fixture, createState, render, renderDatePopover, effectiveChannelStatus, effectiveBatchStatus, rangeOverlaps, canSupply, canSupplyBatch, batchCoreLocked, apiRemaining, batchHasEnded };
+  window.PublisherChannelDistribution = { fixture, createState, render, renderDatePopover, effectiveChannelStatus, effectiveBatchStatus, rangeOverlaps, canSupply, canSupplyBatch, canDownloadFileBatch, batchCoreLocked, apiRemaining, batchHasEnded };
   namespace.publisherChannelDistribution = window.PublisherChannelDistribution;
 })(window.GameHubDeveloperPortal);

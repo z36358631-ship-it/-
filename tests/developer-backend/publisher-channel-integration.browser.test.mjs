@@ -476,7 +476,7 @@ test('待供给批次可编辑、停用、启用和硬删除',async()=>{
   await edited.getByRole('button',{name:'停用',exact:true}).click();
   await page.getByRole('dialog',{name:'停用批次'}).getByRole('button',{name:'确认停用',exact:true}).click();
   assert.match(await edited.innerText(),/已停用/);
-  assert.equal(await edited.getByRole('button',{name:'下载文件',exact:true}).isDisabled(),true);
+  assert.equal(await edited.getByRole('button',{name:'下载文件',exact:true}).isEnabled(),true);
   await edited.getByRole('button',{name:'启用',exact:true}).click();
   assert.doesNotMatch(await edited.innerText(),/已停用/);
   await edited.getByRole('button',{name:'删除',exact:true}).click();
@@ -486,25 +486,31 @@ test('待供给批次可编辑、停用、启用和硬删除',async()=>{
   await page.close();
 });
 
-test('渠道停用会阻止所属批次新供给，重新启用后恢复可供给批次',async()=>{
-  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+test('未启用、待生效和渠道停用的文件批次仍可首次下载',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:1000},acceptDownloads:true});
   await openGame(page);await openSection(page,'渠道与供给');
   await page.getByRole('tab',{name:'批次管理',exact:true}).click();
-  await batchRow(page,'ArcadeX 停用批次').getByRole('button',{name:'启用',exact:true}).click();
-  await batchRow(page,'ArcadeX 停用批次').getByRole('button',{name:'下载文件',exact:true}).waitFor();
+  assert.equal(await batchRow(page,'ArcadeX 十月预备批次').getByRole('button',{name:'下载文件',exact:true}).isEnabled(),true);
+  assert.equal(await batchRow(page,'ArcadeX 停用批次').getByRole('button',{name:'下载文件',exact:true}).isEnabled(),true);
   await page.getByRole('tab',{name:'渠道管理',exact:true}).click();
   const channel=channelRow(page,'ArcadeX 文件渠道');
   await channel.getByRole('button',{name:'停用',exact:true}).click();
   await page.getByRole('dialog',{name:'停用渠道'}).getByRole('button',{name:'确认停用',exact:true}).click();
   await page.getByRole('tab',{name:'批次管理',exact:true}).click();
   const pending=batchRow(page,'ArcadeX 停用批次');
-  assert.match(await pending.innerText(),/受渠道限制/);
-  assert.equal(await pending.getByRole('button',{name:'下载文件',exact:true}).isDisabled(),true);
+  assert.equal(await pending.getByRole('button',{name:'下载文件',exact:true}).isEnabled(),true);
+  const [download]=await Promise.all([
+    page.waitForEvent('download'),
+    pending.getByRole('button',{name:'下载文件',exact:true}).click(),
+  ]);
+  assert.match(download.suggestedFilename(),/ArcadeX文件渠道/);
+  assert.equal(await pending.getByRole('button',{name:'下载文件',exact:true}).count(),0);
+  assert.equal(await pending.getByRole('button',{name:'下载记录',exact:true}).count(),1);
   await page.getByRole('tab',{name:'渠道管理',exact:true}).click();
   await channelRow(page,'ArcadeX 文件渠道').getByRole('button',{name:'启用',exact:true}).click();
   await page.getByRole('tab',{name:'批次管理',exact:true}).click();
   assert.doesNotMatch(await batchRow(page,'ArcadeX 停用批次').innerText(),/受渠道限制/);
-  await batchRow(page,'ArcadeX 停用批次').getByRole('button',{name:'下载文件',exact:true}).waitFor();
+  await batchRow(page,'ArcadeX 停用批次').getByRole('button',{name:'下载记录',exact:true}).waitFor();
   await page.close();
 });
 
