@@ -157,17 +157,20 @@ test('查看并应用他人快照后，可启动、横屏退出并分享本次�
   try {
     await page.click('#openCompatibilityReviews');
     const card = page.locator('[data-review-state="valid"] .review-solution-card').first();
-    assert.match(await card.innerText(), /本次启动方案/);
+    assert.match(await card.innerText(), /本次启动配置/);
+    assert.doesNotMatch(await card.innerText(), /本次启动方案/);
     assert.match(await card.innerText(), /本次游玩 18分42秒/);
     assert.doesNotMatch(await card.innerText(), /成功率|次验证|最近验证|样本较少|社区共同验证/);
     await card.click();
+    assert.equal(await page.locator('#solutionDetailPage').getAttribute('aria-label'), '本次启动配置详情');
+    assert.equal(await page.locator('#solutionDetailSchemeName').innerText(), '本次启动配置');
     const detailText = await page.locator('#solutionDetailPage').innerText();
     assert.match(detailText, /Pixel用户_洛圣都 · 本次游玩 18分42秒/);
     assert.doesNotMatch(detailText, /成功率|次验证|最近验证|样本较少|社区共同验证/);
     assert.ok(await page.locator('#solutionConfigGroups .solution-config-section').count() >= 3);
     await page.click('#applySolutionButton');
     assert.equal(await page.locator('#solutionDetailPage').isVisible(), false);
-    assert.match(await page.locator('#currentAppliedSolution').innerText(), /本次启动方案/);
+    assert.match(await page.locator('#currentAppliedSolution').innerText(), /本次启动配置/);
     assert.equal(await page.locator('#gameplayLayer').isVisible(), false, '应用后不得自动启动');
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -195,12 +198,44 @@ test('查看并应用他人快照后，可启动、横屏退出并分享本次�
     assert.ok(result.review.reviewSnapshotId);
     assert.notEqual(result.review.reviewSnapshotId, 'review_snapshot_s1');
     assert.equal(result.snapshot.reviewId, result.review.id);
-    assert.equal(result.snapshot.solutionName, '本次启动方案');
+    assert.equal(result.snapshot.solutionName, '本次启动配置');
     assert.equal(result.snapshot.durationSeconds, 1122);
     assert.equal(result.snapshot.sourceType, 'review_snapshot');
     assert.equal(result.snapshot.configHash, 'cfg_adreno750_stable_v1');
-    assert.match(await page.locator('[data-owner="me"] .review-solution-card').innerText(), /本次启动方案[\s\S]*本次游玩 18分42秒/);
+    assert.match(await page.locator('[data-owner="me"] .review-solution-card').innerText(), /本次启动配置[\s\S]*本次游玩 18分42秒/);
     assertNoPageErrors(errors, 'C 端连续旅程');
+  } finally {
+    await page.close();
+  }
+});
+
+test('旧快照仍显示本次启动配置且正式启动方案实体不改名', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await showEveryReview(page);
+    await page.evaluate(() => {
+      const key = 'gh_review_snapshots_v1';
+      const snapshots = window.compatibilityDemo.getReviewSnapshots();
+      snapshots.review_snapshot_s1.solutionName = '本次启动方案';
+      localStorage.setItem(key, JSON.stringify(snapshots));
+      window.refreshPanel('ls');
+    });
+
+    const card = page.locator('[data-feedback-id="s1"] .review-solution-card');
+    assert.match(await card.innerText(), /本次启动配置/);
+    assert.doesNotMatch(await card.innerText(), /本次启动方案/);
+    assert.equal(await card.getAttribute('aria-label'), '打开本次启动配置');
+
+    await card.click();
+    assert.equal(await page.locator('#solutionDetailSchemeName').innerText(), '本次启动配置');
+    assert.match(await page.locator('#copySolutionButton').innerText(), /复制/);
+    assert.match(await page.locator('#applySolutionButton').innerText(), /应用/);
+
+    await page.click('#copySolutionButton');
+    await page.click('#confirmCopySolutionButton');
+    await page.waitForFunction(() => document.getElementById('toast')?.classList.contains('show'));
+    assert.match(await page.locator('#toast').innerText(), /正在前往“启动方案”/);
+    assertNoPageErrors(errors, '单次配置文案兼容');
   } finally {
     await page.close();
   }
@@ -468,7 +503,7 @@ test('客态 G-01～G-07 自然混排且仅有效同归属快照展示入口', a
 
     const validCard = page.locator('[data-feedback-id="s1"] .review-solution-card');
     assert.equal(await validCard.evaluate((element) => element.tabIndex >= 0), true);
-    assert.match(await validCard.innerText(), /本次启动方案[\s\S]*本次游玩 18分42秒/);
+    assert.match(await validCard.innerText(), /本次启动配置[\s\S]*本次游玩 18分42秒/);
     await validCard.click();
     assert.equal(await page.locator('#solutionDetailPage').isVisible(), true);
     assert.match(await page.locator('#solutionShareSummary').innerText(), /Pixel用户_洛圣都 · 本次游玩 18分42秒/);
@@ -584,7 +619,7 @@ test('评价列表每次渲染都校验快照 reviewId 归属', async () => {
       window.refreshPanel('ls');
     });
     assert.equal(await page.locator('[data-feedback-id="s1"] .review-solution-card').count(), 0);
-    assert.equal(await page.locator('[data-feedback-id="s1"] button[aria-label="打开本次启动方案"]').count(), 0);
+    assert.equal(await page.locator('[data-feedback-id="s1"] button[aria-label="打开本次启动配置"]').count(), 0);
     assertNoPageErrors(errors, '快照归属实时校验');
   } finally {
     await page.close();
@@ -875,7 +910,8 @@ test('B 端可按快照状态筛选，评价隐藏后保留只读追溯', async 
     const feedbackId = await first.getAttribute('data-feedback-id');
     await first.locator('[data-action="view-snapshot"]').click();
     assert.match(await page.locator('#compat-solution-detail-title').innerText(), /关联快照/);
-    assert.match(await page.locator('#compat-solution-detail-fields').innerText(), /本次启动方案/);
+    assert.match(await page.locator('#compat-solution-detail-fields').innerText(), /本次启动配置/);
+    assert.doesNotMatch(await page.locator('#compat-solution-detail-fields').innerText(), /本次启动方案/);
     const configGroups = page.locator('#compat-solution-config-groups');
     assert.equal(await configGroups.locator('.compat-snapshot-config-group').count(), 4);
     assert.ok(await configGroups.locator('.compat-snapshot-config-row').count() >= 15);

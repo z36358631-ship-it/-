@@ -1239,10 +1239,10 @@
     </div>
 
     <!-- 复用现有启动方案详情的完整只读结构 -->
-    <section id="solutionDetailPage" class="solution-detail-page" hidden aria-label="启动方案详情">
+    <section id="solutionDetailPage" class="solution-detail-page" hidden aria-label="本次启动配置详情">
         <header class="solution-detail-header">
             <button id="solutionDetailBack" class="flow-back" type="button" aria-label="返回评价列表" onclick="closeSolutionDetail()">‹</button>
-            <div class="flow-title">本次启动方案</div>
+            <div class="flow-title">本次启动配置</div>
             <button id="refreshSolutionDetail" class="solution-refresh" type="button" aria-label="刷新方案详情" onclick="reloadSolutionDetail()">↻</button>
         </header>
         <div id="solutionDetailBody" class="solution-detail-body">
@@ -1409,6 +1409,7 @@ const LS_KEY = 'gh_compat_feedbacks_gta5_v12';
 const LS_REPORTED = 'gh_compat_reported_gta5_v12';
 const LS_LIKED = 'gh_compat_liked_gta5_v12';
 const REVIEW_SNAPSHOTS_KEY = 'gh_review_snapshots_v1';
+const REVIEW_SNAPSHOT_DISPLAY_NAME = '本次启动配置';
 const SEED_DATA_REVISION_KEY = 'gh_compat_seed_revision_gta5_v12';
 const SEED_DATA_REVISION = 'guest-states-v1';
 const REVIEW_SNAPSHOT_DIMENSIONS = Object.freeze({
@@ -1473,7 +1474,7 @@ const SEED_REVIEW_SNAPSHOTS = Object.freeze({
     review_snapshot_s1: Object.freeze({
         reviewSnapshotId: 'review_snapshot_s1',
         reviewId: 's1',
-        solutionName: '本次启动方案',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
         status: 'available',
         gameId: 'gta5',
         platform: 'android',
@@ -1495,7 +1496,7 @@ const SEED_REVIEW_SNAPSHOTS = Object.freeze({
     review_snapshot_s2: Object.freeze({
         reviewSnapshotId: 'review_snapshot_s2',
         reviewId: 's2',
-        solutionName: '本次启动方案',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
         status: 'available',
         gameId: 'gta5',
         platform: 'android',
@@ -1517,7 +1518,7 @@ const SEED_REVIEW_SNAPSHOTS = Object.freeze({
     review_snapshot_s4: Object.freeze({
         reviewSnapshotId: 'review_snapshot_s4',
         reviewId: 's4',
-        solutionName: '本次启动方案',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
         status: 'deprecated',
         gameId: 'gta5',
         platform: 'android',
@@ -1544,7 +1545,7 @@ const SEED_REVIEW_SNAPSHOTS = Object.freeze({
     review_snapshot_s6: Object.freeze({
         reviewSnapshotId: 'review_snapshot_s6',
         reviewId: 's6',
-        solutionName: '本次启动方案',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
         status: 'available',
         gameId: 'gta5',
         platform: 'android',
@@ -1566,7 +1567,7 @@ const SEED_REVIEW_SNAPSHOTS = Object.freeze({
     review_snapshot_s8: Object.freeze({
         reviewSnapshotId: 'review_snapshot_s8',
         reviewId: 's8',
-        solutionName: '本次启动方案',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
         status: 'invalid',
         gameId: 'gta5',
         platform: 'android',
@@ -1588,7 +1589,7 @@ const SEED_REVIEW_SNAPSHOTS = Object.freeze({
     review_snapshot_s9: Object.freeze({
         reviewSnapshotId: 'review_snapshot_s9',
         reviewId: 'foreign-review',
-        solutionName: '本次启动方案',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
         status: 'available',
         gameId: 'gta5',
         platform: 'android',
@@ -1828,7 +1829,7 @@ function buildReviewSnapshot(reviewId, source) {
     return {
         reviewSnapshotId,
         reviewId,
-        solutionName: '本次启动方案',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
         status: 'available',
         gameId: String(dimensions.gameId || ''),
         platform: String(dimensions.platform || ''),
@@ -2026,7 +2027,7 @@ function canRenderReviewSolution(review, snapshot) {
 function renderReviewSolution(review) {
     const snapshot = resolveReviewSnapshot(review);
     if (!canRenderReviewSolution(review, snapshot)) return '';
-    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开本次启动方案"><span class="review-solution-heading"><strong>本次启动方案</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
+    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开' + REVIEW_SNAPSHOT_DISPLAY_NAME + '"><span class="review-solution-heading"><strong>' + REVIEW_SNAPSHOT_DISPLAY_NAME + '</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
 }
 
 function handleReviewSolutionAction(event) {
@@ -2922,7 +2923,7 @@ function buildSolutionDetailViewModel(record) {
     return {
         reviewSnapshotId: record.reviewSnapshotId,
         reviewId: record.reviewId,
-        solutionName: '本次启动方案',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
         status: record.status,
         gameId: record.gameId,
         platform: record.platform,
@@ -3095,11 +3096,11 @@ function applyCurrentSolution() {
     }
     const appliedSolution = cloneReviewSnapshot(currentDetailRecord);
     journeyState.appliedSolutionId = appliedSolution.reviewSnapshotId;
-    journeyState.appliedSolutionName = appliedSolution.solutionName;
+    journeyState.appliedSolutionName = REVIEW_SNAPSHOT_DISPLAY_NAME;
     journeyState.appliedConfigHash = appliedSolution.configHash;
     journeyState.appliedSolutionRecord = appliedSolution;
     const applied = document.getElementById('currentAppliedSolution');
-    applied.textContent = '当前方案：' + appliedSolution.solutionName;
+    applied.textContent = '当前方案：' + REVIEW_SNAPSHOT_DISPLAY_NAME;
     applied.hidden = false;
     closeSolutionDetail();
     closeCompatPage();
