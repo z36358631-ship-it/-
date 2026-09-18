@@ -1892,6 +1892,8 @@ async function main() {
 
         const memberLibrary = await page.evaluate((forbiddenCopies) => {
           const api = window.__appRentalDemo;
+          const now = Date.now();
+          api.setMembershipEntitlement({ planId: 'weekly', startsAt: now, expiresAt: now + (7 * 24 * 60 * 60 * 1000) });
           api.openMemberLibrary({ remember: true });
           const opened = api.snapshot();
           const cards = [...document.querySelectorAll('.member-game-card')];
@@ -1908,6 +1910,9 @@ async function main() {
             versionTexts: cards.map((node) => node.querySelector('.member-game-version')?.textContent.trim() || ''),
             memberSearchCount: document.querySelectorAll('[data-member-library-search-input]').length,
             nonMemberToolCount: document.querySelectorAll('.library-pc-sources, .library-tools, .landscape-tools').length,
+            renewalCount: document.querySelectorAll('[data-member-renewal]').length,
+            renewalLabel: document.querySelector('[data-member-renewal]')?.textContent.trim() || '',
+            renewalTarget: document.querySelector('[data-member-renewal]')?.dataset.screen || '',
             forbiddenVisible: forbiddenCopies.filter((copy) => document.querySelector('#appRentalDemo')?.innerText.includes(copy)),
           };
         }, forbiddenVisibleStates);
@@ -1916,7 +1921,14 @@ async function main() {
         check(memberLibrary.cardCount >= 6 && memberLibrary.columns >= 2, `${orientation} 会员游戏Tab卡片数量或布局不足：${JSON.stringify(memberLibrary)}`);
         check(memberLibrary.entitlementCardCount === 0 && memberLibrary.actionCount === 0 && memberLibrary.versionTexts.every((text) => text === '标准版'), `${orientation} 会员游戏卡混入权益、有效期或直接操作：${JSON.stringify(memberLibrary)}`);
         check(memberLibrary.memberSearchCount === 1 && memberLibrary.nonMemberToolCount === 0, `${orientation} 会员游戏Tab未保持仅搜索，仍混入PC导入／筛选工具：${JSON.stringify(memberLibrary)}`);
+        check(memberLibrary.renewalCount === 1 && memberLibrary.renewalLabel === '续费' && memberLibrary.renewalTarget === 'membership', `${orientation} 会员有效期右侧缺少续费入口或目标错误：${JSON.stringify(memberLibrary)}`);
         check(memberLibrary.forbiddenVisible.length === 0, `${orientation} 会员游戏Tab暴露后台账号过程：${memberLibrary.forbiddenVisible.join('、')}`);
+
+        const renewalRoute = await page.evaluate(() => {
+          document.querySelector('[data-member-renewal]')?.click();
+          return window.__appRentalDemo.snapshot().screen;
+        });
+        check(renewalRoute === 'membership', `${orientation} 续费入口未跳转会员中心：${renewalRoute}`);
 
         const compatibilityRoute = await page.evaluate(() => {
           window.__appRentalDemo.navigate('member-library');

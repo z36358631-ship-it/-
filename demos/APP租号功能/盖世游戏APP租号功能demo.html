@@ -382,6 +382,8 @@
     .member-library-status { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; padding: 10px 12px; border: 1px solid rgb(255 210 92 / 18%); border-radius: 14px; background: rgb(255 204 67 / 7%); }
     .member-library-status strong { font-size: 12px; }
     .member-library-status span { color: #efc467; font-size: 10px; }
+    .member-library-status-actions { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 8px; }
+    .member-library-renewal { min-width: 44px; min-height: 32px; padding: 0 8px; border: 0; border-left: 1px solid rgb(255 210 92 / 24%); background: transparent; color: #ffd56f; cursor: pointer; font-size: 11px; font-weight: 700; }
 
     .profile-tools { display: flex; justify-content: flex-end; gap: 5px; margin-bottom: 21px; }
     .icon-button { display: grid; width: 44px; height: 44px; place-items: center; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
@@ -4779,7 +4781,11 @@
 
     function renderMemberLibraryStatus() {
       const validity = formatMembershipValidity();
-      return `<div class="member-library-status"><strong>${hasActiveMembership() ? '会员权益生效中' : '会员未开通'}</strong><span>${validity || '开通后可畅玩会员游戏'}</span></div>`;
+      const active = hasActiveMembership();
+      const action = active
+        ? `<span class="member-library-status-actions"><span>${validity}</span><button class="member-library-renewal" type="button" data-action="navigate" data-screen="membership" data-member-renewal>续费</button></span>`
+        : '<span>开通后可畅玩会员游戏</span>';
+      return `<div class="member-library-status"><strong>${active ? '会员权益生效中' : '会员未开通'}</strong>${action}</div>`;
     }
 
     function renderMemberLibrarySection() {
