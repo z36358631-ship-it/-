@@ -45,16 +45,6 @@ async function openDemo(file, label, viewport) {
   await page.goto(pathToFileURL(file).href, { waitUntil: 'load' });
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'load' });
-  await page.addStyleTag({
-    content: `
-      *, *::before, *::after {
-        animation: none !important;
-        caret-color: transparent !important;
-        scroll-behavior: auto !important;
-        transition: none !important;
-      }
-    `,
-  });
   await page.evaluate(async () => {
     await document.fonts.ready;
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -82,7 +72,22 @@ async function domClick(page, selector, contract) {
 
 async function shot(page, filename, { fullPage = true } = {}) {
   const output = path.join(outDir, filename);
-  await page.screenshot({ path: output, fullPage });
+  const frozenMotionStyle = await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation: none !important;
+        caret-color: transparent !important;
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    `,
+  });
+  try {
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    await page.screenshot({ path: output, fullPage });
+  } finally {
+    await frozenMotionStyle.evaluate((style) => style.remove());
+  }
   if (!fs.existsSync(output) || fs.statSync(output).size === 0) {
     throw new Error(`截图未生成：${output}`);
   }
