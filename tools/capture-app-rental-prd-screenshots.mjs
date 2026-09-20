@@ -460,9 +460,12 @@ async function verifyShotState(page, shot) {
         legacyLayoutCount: document.querySelectorAll('.portrait-member-library, .landscape-member-library').length,
         memberSearchCount: document.querySelectorAll('[data-member-library-search-input]').length,
         nonMemberToolCount: document.querySelectorAll('.library-pc-sources, .library-tools, .landscape-tools').length,
-        renewalCount: document.querySelectorAll('[data-member-renewal]').length,
-        renewalLabel: document.querySelector('[data-member-renewal]')?.textContent.trim() || '',
-        renewalTarget: document.querySelector('[data-member-renewal]')?.dataset.screen || '',
+        statusEntryCount: document.querySelectorAll('[data-member-status-entry]').length,
+        statusEntryText: document.querySelector('[data-member-status-entry]')?.innerText.replace(/\s+/g, ' ').trim() || '',
+        statusEntryTarget: document.querySelector('[data-member-status-entry]')?.dataset.screen || '',
+        statusEntryState: document.querySelector('[data-member-status-entry]')?.dataset.memberStatus || '',
+        statusEntryTag: document.querySelector('[data-member-status-entry]')?.tagName || '',
+        statusEntryNestedActions: document.querySelector('[data-member-status-entry]')?.querySelectorAll('button, [role="button"], [data-action]').length ?? -1,
       };
     });
     assert(memberLibrary.screen === 'library' && memberLibrary.libraryTab === 'member' && memberLibrary.memberSelected, `${shot.name} must capture unified member game tab`);
@@ -470,7 +473,15 @@ async function verifyShotState(page, shot) {
     assert(memberLibrary.cardCount >= 6 && memberLibrary.versions.every((text) => text === '标准版'), `${shot.name} member game cards mismatch`);
     assert(memberLibrary.entitlementCount === 0 && memberLibrary.nestedActions === 0 && memberLibrary.legacyLayoutCount === 0, `${shot.name} member game cards contain entitlement/action data or still use legacy page`);
     assert(memberLibrary.memberSearchCount === 1 && memberLibrary.nonMemberToolCount === 0, `${shot.name} member game tab must expose search only without PC import/filter tools`);
-    assert(memberLibrary.renewalCount === 1 && memberLibrary.renewalLabel === '续费' && memberLibrary.renewalTarget === 'membership', `${shot.name} member renewal entry is missing or routes incorrectly`);
+    assert(
+      memberLibrary.statusEntryCount === 1
+        && memberLibrary.statusEntryTag === 'BUTTON'
+        && memberLibrary.statusEntryTarget === 'membership'
+        && memberLibrary.statusEntryState === 'active'
+        && /^会员权益生效中 有效期至 \d{4}\.\d{2}\.\d{2} 续费 ›$/.test(memberLibrary.statusEntryText)
+        && memberLibrary.statusEntryNestedActions === 0,
+      `${shot.name} member status bar is not a single active membership-center entry`,
+    );
   }
 
   if (shot.pageId === 'search') {

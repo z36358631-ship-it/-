@@ -1910,9 +1910,12 @@ async function main() {
             versionTexts: cards.map((node) => node.querySelector('.member-game-version')?.textContent.trim() || ''),
             memberSearchCount: document.querySelectorAll('[data-member-library-search-input]').length,
             nonMemberToolCount: document.querySelectorAll('.library-pc-sources, .library-tools, .landscape-tools').length,
-            renewalCount: document.querySelectorAll('[data-member-renewal]').length,
-            renewalLabel: document.querySelector('[data-member-renewal]')?.textContent.trim() || '',
-            renewalTarget: document.querySelector('[data-member-renewal]')?.dataset.screen || '',
+            statusEntryCount: document.querySelectorAll('[data-member-status-entry]').length,
+            statusEntryText: document.querySelector('[data-member-status-entry]')?.innerText.replace(/\s+/g, ' ').trim() || '',
+            statusEntryTarget: document.querySelector('[data-member-status-entry]')?.dataset.screen || '',
+            statusEntryState: document.querySelector('[data-member-status-entry]')?.dataset.memberStatus || '',
+            statusEntryTag: document.querySelector('[data-member-status-entry]')?.tagName || '',
+            statusEntryNestedActions: document.querySelector('[data-member-status-entry]')?.querySelectorAll('button, [role="button"], [data-action]').length ?? -1,
             forbiddenVisible: forbiddenCopies.filter((copy) => document.querySelector('#appRentalDemo')?.innerText.includes(copy)),
           };
         }, forbiddenVisibleStates);
@@ -1921,14 +1924,58 @@ async function main() {
         check(memberLibrary.cardCount >= 6 && memberLibrary.columns >= 2, `${orientation} 会员游戏Tab卡片数量或布局不足：${JSON.stringify(memberLibrary)}`);
         check(memberLibrary.entitlementCardCount === 0 && memberLibrary.actionCount === 0 && memberLibrary.versionTexts.every((text) => text === '标准版'), `${orientation} 会员游戏卡混入权益、有效期或直接操作：${JSON.stringify(memberLibrary)}`);
         check(memberLibrary.memberSearchCount === 1 && memberLibrary.nonMemberToolCount === 0, `${orientation} 会员游戏Tab未保持仅搜索，仍混入PC导入／筛选工具：${JSON.stringify(memberLibrary)}`);
-        check(memberLibrary.renewalCount === 1 && memberLibrary.renewalLabel === '续费' && memberLibrary.renewalTarget === 'membership', `${orientation} 会员有效期右侧缺少续费入口或目标错误：${JSON.stringify(memberLibrary)}`);
+        check(
+          memberLibrary.statusEntryCount === 1
+            && memberLibrary.statusEntryTag === 'BUTTON'
+            && memberLibrary.statusEntryTarget === 'membership'
+            && memberLibrary.statusEntryState === 'active'
+            && memberLibrary.statusEntryText.includes('会员权益生效中')
+            && /^会员权益生效中 有效期至 \d{4}\.\d{2}\.\d{2} 续费 ›$/.test(memberLibrary.statusEntryText)
+            && memberLibrary.statusEntryNestedActions === 0,
+          `${orientation} 已开通会员状态条未整条收敛为单一会员中心入口：${JSON.stringify(memberLibrary)}`,
+        );
         check(memberLibrary.forbiddenVisible.length === 0, `${orientation} 会员游戏Tab暴露后台账号过程：${memberLibrary.forbiddenVisible.join('、')}`);
 
-        const renewalRoute = await page.evaluate(() => {
-          document.querySelector('[data-member-renewal]')?.click();
+        const activeStatusRoute = await page.evaluate(() => {
+          document.querySelector('[data-member-status-entry]')?.click();
           return window.__appRentalDemo.snapshot().screen;
         });
-        check(renewalRoute === 'membership', `${orientation} 续费入口未跳转会员中心：${renewalRoute}`);
+        check(activeStatusRoute === 'membership', `${orientation} 已开通会员状态条未整条跳转会员中心：${activeStatusRoute}`);
+
+        await reloadDemo();
+        const inactiveMemberStatus = await page.evaluate((nextOrientation) => {
+          const api = window.__appRentalDemo;
+          api.setOrientation(nextOrientation);
+          api.setMembershipEntitlement({});
+          api.openMemberLibrary({ remember: true });
+          const entry = document.querySelector('[data-member-status-entry]');
+          return {
+            screen: api.snapshot().screen,
+            libraryTab: api.snapshot().libraryTab,
+            count: document.querySelectorAll('[data-member-status-entry]').length,
+            text: entry?.innerText.replace(/\s+/g, ' ').trim() || '',
+            target: entry?.dataset.screen || '',
+            state: entry?.dataset.memberStatus || '',
+            tag: entry?.tagName || '',
+            nestedActions: entry?.querySelectorAll('button, [role="button"], [data-action]').length ?? -1,
+          };
+        }, orientation);
+        check(
+          inactiveMemberStatus.screen === 'library'
+            && inactiveMemberStatus.libraryTab === 'member'
+            && inactiveMemberStatus.count === 1
+            && inactiveMemberStatus.tag === 'BUTTON'
+            && inactiveMemberStatus.target === 'membership'
+            && inactiveMemberStatus.state === 'inactive'
+            && inactiveMemberStatus.text === '会员未开通 开通后可畅玩会员游戏 去开通 ›'
+            && inactiveMemberStatus.nestedActions === 0,
+          `${orientation} 未开通会员状态条未整条收敛为单一会员中心入口：${JSON.stringify(inactiveMemberStatus)}`,
+        );
+        const inactiveStatusRoute = await page.evaluate(() => {
+          document.querySelector('[data-member-status-entry]')?.click();
+          return window.__appRentalDemo.snapshot().screen;
+        });
+        check(inactiveStatusRoute === 'membership', `${orientation} 未开通会员状态条未整条跳转会员中心：${inactiveStatusRoute}`);
 
         const compatibilityRoute = await page.evaluate(() => {
           window.__appRentalDemo.navigate('member-library');
