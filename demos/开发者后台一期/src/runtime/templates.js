@@ -255,6 +255,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
 
   const publisherGameConsoleSections = [
     ['release-workspace', '版本发布', 'publish', '游戏资料 商品与 SKU 发行设置'],
+    ['package-builds', '构建管理', 'build', 'PC 包体 Build 构建'],
+    ['price-packages', '付费下载设置', 'key', '商品 SKU Package 价格'],
+    ['price-dlc', 'DLC 商品设置', 'game', 'DLC 商品 内容介绍'],
     ['versions', '发布记录', 'chart', '版本记录 审核记录 提交记录 版本快照'],
     ['qualifications', '资质认证', 'file', '权属证明 发行授权 国内发行资质'],
   ];
@@ -462,9 +465,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     <span class="publisher-game-card__content"><span class="publisher-game-card__heading"><span><strong>${e(name)}</strong><small>${e(systems)}</small></span>${c.statusTag(status, status === '需修改' ? 'warning' : status === '草稿' ? 'info' : 'success')}</span><span class="publisher-game-card__ids"><span>Game ID&nbsp; ${e(gameId)}</span><span>APPID&nbsp; ${e(appId)}</span></span><span class="publisher-game-card__progress"><i class="is-done"></i><i class="${status === '草稿' ? '' : 'is-done'}"></i><i class="${status === '需修改' ? 'is-warning' : ''}"></i><i></i></span><span class="publisher-game-card__footer"><span>当前阶段：${e(stage)}</span><time>${e(updatedAt)}</time></span></span>
   </button>`;
 
-  const renderPublisherGames = (state, rawAccess) => {
+  const renderPublisherGames = (state, rawAccess, demoState = {}) => {
     const access = publisherAccessFor(rawAccess);
-    const games = getPublisherGames(state);
+    const games = demoState.publisherScenario === 'empty' ? [] : getPublisherGames(state);
     const query = String(state.gameSearch || '').trim().toLowerCase();
     const statusFilter = state.gameStatusFilter || 'all';
     const visibleGames = games.filter(game => (!query || [game.name, game.gameId, game.appId, game.status, game.reviewStatus, game.stage].some(value => String(value).toLowerCase().includes(query))) && (statusFilter === 'all' || game.statusKey === statusFilter));
@@ -481,9 +484,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderPublisherData = (state, language = 'zh', rawAccess, game = null) => {
-    if (window.PublisherDataDashboard) return window.PublisherDataDashboard.render(state.dataDashboard || (state.dataDashboard = window.PublisherDataDashboard.createState()), language, { access:publisherAccessFor(rawAccess), game });
-    const games = getPublisherGames(state);
+  const renderPublisherData = (state, language = 'zh', rawAccess, game = null, demoState = {}) => {
+    if (window.PublisherDataDashboard && demoState.publisherScenario !== 'empty') return window.PublisherDataDashboard.render(state.dataDashboard || (state.dataDashboard = window.PublisherDataDashboard.createState()), language, { access:publisherAccessFor(rawAccess), game });
+    const games = demoState.publisherScenario === 'empty' ? [] : getPublisherGames(state);
     const hasExistingGame = games.some(game => game.gameKey === 'existing');
     const pendingGames = games.filter(game => ['审核中', '需修改'].includes(game.reviewStatus));
     const totalBuilds = games.reduce((sum, game) => sum + Number(game.builds || 0), 0);
@@ -500,10 +503,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     </section>`;
   };
 
-  const renderPublisherVendorSettings = (language = 'zh', rawAccess, qualification = {}, registration = {}) => {
+  const renderPublisherVendorSettings = (language = 'zh', rawAccess, qualification = {}, registration = {}, demoState = {}) => {
     const access = publisherAccessFor(rawAccess);
     const isEnglish = language === 'en';
-    if (window.PublisherVendorSettings) return window.PublisherVendorSettings.render({ language, access, qualification, registration });
+    if (window.PublisherVendorSettings) {
+      const empty = demoState.publisherScenario === 'empty';
+      const previewQualification = empty ? { ...qualification, form:{} } : qualification;
+      const previewRegistration = empty ? {
+        ...registration,
+        vendorReviews:Object.fromEntries(['subject', 'profile'].map(key => [key, { status:'idle', applicationId:'', pendingData:null, effectiveData:{}, submittedData:null, changedFields:[], submittedAt:'', reviewedAt:'', rejectReason:'' }])),
+      } : registration;
+      return window.PublisherVendorSettings.render({ language, access, qualification:previewQualification, registration:previewRegistration });
+    }
     if (access.canManageVendor) return `<section class="publisher-vendor-settings" data-publisher-page="vendor"><header class="publisher-vendor-title"><h1>${isEnglish ? 'Company settings' : '厂商设置'}</h1></header><div class="publisher-empty-state publisher-vendor-placeholder">${icon('warning')}<strong>${isEnglish ? 'Company settings failed to load' : '厂商设置加载失败'}</strong></div></section>`;
     const status = access.qualificationStatus;
     const suspended = access.isPublisherReadOnly;
@@ -718,7 +729,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selectedKey = state.selectedGame || 'existing';
     const game = getPublisherGame(state, selectedKey) || getPublisherGame(state, 'existing') || getPublisherGames(state)[0];
     if (!game) return '';
-    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '经营数据': 'Analytics', '渠道与供给': 'Channels & supply', '分销数据': 'Distribution data', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
+    const label = value => language === 'en' ? ({ '版本发布': 'Version release', '构建管理': 'Build management', '付费下载设置': 'Paid download settings', 'DLC 商品设置': 'DLC product settings', '发布记录': 'Version records', '游戏资料': 'Game details', '商品与 SKU': 'Products & SKU', '发行设置': 'Release settings', '资质认证': 'Qualifications', '经营数据': 'Analytics', '渠道与供给': 'Channels & supply', '分销数据': 'Distribution data', '游戏管理': 'Game management', '草稿': 'Draft', '审核中': 'In review', '需修改': 'Changes required', '已上线': 'Live', '已下架': 'Delisted', '先锋测试': 'Early testing', '预发布': 'Pre-release' }[value] || value) : value;
     const profileComponent = window.PublisherGameProfile;
     let publicationDraft;
     if (profileComponent) {
@@ -732,11 +743,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const allowed = availableSections.map(([id]) => id);
     const gameSection = allowed.includes(state.gameSection) ? state.gameSection : 'release-workspace';
     const channelSections = new Set(publisherChannelConsoleSections.map(([id]) => id));
-    const detail = channelSections.has(gameSection) && window.PublisherChannelDistribution
+    const sourceSections = new Set(['package-builds', 'price-packages', 'price-dlc']);
+    const detail = sourceSections.has(gameSection) && profileComponent?.renderSourceSection
+      ? profileComponent.renderSourceSection(gameSection, game, language, { publisherScenario:demoState.publisherScenario })
+      : channelSections.has(gameSection) && window.PublisherChannelDistribution
       ? window.PublisherChannelDistribution.render({ section:gameSection, language, state, game, access, demoState, transientSecret })
       : gameSection === 'analytics'
-        ? renderPublisherData(state, language, access, game)
-        : profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '' }) : renderPublisherReleaseProfile(game);
+        ? renderPublisherData(state, language, access, game, demoState)
+        : profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '', publisherScenario:demoState.publisherScenario }) : renderPublisherReleaseProfile(game);
     const currentSectionLabel = availableSections.find(([id]) => id === gameSection)?.[1] || '版本发布';
     const functionSearch = state.gameFunctionSearch || '';
     const normalizedSearch = String(functionSearch).trim().toLocaleLowerCase();
@@ -756,7 +770,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const activeSidebar = view === 'vendor' ? 'vendor' : 'games';
     const content = view === 'game'
       ? renderPublisherGameConsole(page, workspaceState, language, access, demoState, transientSecret)
-      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings(language, access, qualification, registration) : renderPublisherGames(workspaceState, access)}</div></main></div>`;
+      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings(language, access, qualification, registration, demoState) : renderPublisherGames(workspaceState, access, demoState)}</div></main></div>`;
     return `${storageNotice}<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="${view}">${content}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
   };
 

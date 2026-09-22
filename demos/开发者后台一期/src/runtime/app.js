@@ -235,7 +235,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     registration: restoredRegistration,
     qualification: restoredQualification,
     qualificationPreview: null,
-    demoPreview: { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' },
+    demoPreview: { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded', publisherScenario: 'exhaustive' },
     channelTransientSecret: '',
     finance: hasFinanceRoutes ? window.PublisherFinance.createState() : null,
     managedContent,
@@ -311,7 +311,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const selectedGame = publisherFixtureGameKeys.has(requestedGame)
       ? requestedGame
       : (createdGames.find(game => game?.gameKey === requestedGame || game?.gameId === requestedGame)?.gameKey || '');
-    const allowedSections = new Set(['release-workspace', 'versions', 'qualifications', 'analytics', 'channel-supply', 'channel-revenue']);
+    const allowedSections = new Set(['release-workspace', 'versions', 'qualifications', 'package-builds', 'price-packages', 'price-dlc', 'analytics', 'channel-supply', 'channel-revenue']);
     const requestedSection = restoredHandoff?.targetTab || restoredPublisherWorkspace.gameSection;
     const legacySupplySections = new Set(['channel-overview', 'channel-batches', 'channel-data']);
     const normalizedRequestedSection = legacySupplySections.has(requestedSection)
@@ -528,7 +528,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       : { accountTier: 'unselected', registeredAt: '', consoleTab: 'games', vendorSettingsTab:'subject', vendorReviews:createVendorReviews() };
     memory.qualificationPreview = null;
-    memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' };
+    memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded', publisherScenario: 'exhaustive' };
     delete memory.result['P01-03'];
     memory.session.expiresAt = Date.now() + 8 * 60 * 60 * 1000;
     persistPublisherSession();
@@ -604,7 +604,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         vendorReviews: normalizeVendorReviews(storedAccountRegistration?.vendorReviews),
       };
       memory.qualificationPreview = null;
-      memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' };
+      memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded', publisherScenario: 'exhaustive' };
     }
     if (accountChanged || activeGameChanged) {
       loadPublisherWorkspaceForSession();
@@ -1959,7 +1959,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'game-console-section') {
         const requested = event.currentTarget.dataset.gameSection || 'release-workspace';
-        const allowed = ['release-workspace', 'versions', 'qualifications', 'analytics', 'channel-supply', 'channel-revenue'];
+        const allowed = ['release-workspace', 'versions', 'qualifications', 'package-builds', 'price-packages', 'price-dlc', 'analytics', 'channel-supply', 'channel-revenue'];
         if (!allowed.includes(requested)) return;
         if (requested === 'analytics' && !publisherAccessForView().canViewPublisherData) return;
         memory.channelTransientSecret = '';
@@ -2619,7 +2619,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         window.name = '';
         memory.shell.helpOpen = false;
         memory.qualificationPreview = null;
-        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' };
+        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded', publisherScenario: 'exhaustive' };
         navigate({ routeId: 'P01-01', state: 'default' });
         return;
       }
@@ -3009,7 +3009,17 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           memory.registration = { ...memory.registration, vendorReviews:cloneJson(memory.demoPreview.vendorReviewsSnapshot) };
         }
         memory.qualificationPreview = null;
-        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded' };
+        memory.demoPreview = { open: false, releaseStatus: '', channelBatchOutcome: 'downloaded', publisherScenario: 'exhaustive' };
+        delete memory.result[route.id];
+        clearPreviewQuery();
+        render();
+        requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
+        return;
+      }
+      if (action === 'demo-publisher-scenario') {
+        const nextScenario = event.currentTarget.dataset.demoPublisherScenario || '';
+        if (!['exhaustive', 'empty'].includes(nextScenario)) return;
+        memory.demoPreview = { ...memory.demoPreview, open:false, publisherScenario:nextScenario };
         delete memory.result[route.id];
         clearPreviewQuery();
         render();
@@ -3988,24 +3998,39 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const channelMode = route.id === 'P02-01' && String(memory.page['P02-01']?.gameSection || '').startsWith('channel-');
     const financeMode = financeRouteIds.has(route.id);
     const channelBatchOutcome = memory.demoPreview.channelBatchOutcome || 'downloaded';
+    const publisherScenario = memory.demoPreview.publisherScenario === 'empty' ? 'empty' : 'exhaustive';
+    const publisherMode = route.id === 'P02-01';
+    const publisherWorkspace = memory.page['P02-01'] || {};
+    const publisherContext = !publisherMode
+      ? ''
+      : publisherWorkspace.workspaceView === 'game'
+        ? (publisherWorkspace.gameSection || 'release-workspace')
+        : (publisherWorkspace.workspaceView || 'games');
+    const publisherScenarioActive = publisherScenario === 'empty';
     const demoState = {
       open: memory.demoPreview.open,
       qualificationStatus: qualificationForView.status || 'unsubmitted',
       releaseStatus: memory.demoPreview.releaseStatus,
+      publisherMode,
+      publisherScenario,
+      publisherContext,
       channelMode,
       channelBatchOutcome,
       channelCredentialSecret: memory.channelTransientSecret || '',
-      active: financeMode
+      active: publisherScenarioActive || (financeMode
         ? Boolean(memory.qualificationPreview)
         : channelMode
         ? Boolean(channelBatchOutcome !== 'downloaded')
-        : Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus),
+        : Boolean(memory.qualificationPreview || memory.demoPreview.releaseStatus)),
       financeMode,
       financeScenario: memory.finance?.demoScenario || 'exhaustive',
     };
+    const financeAccess = financeMode && publisherScenario === 'empty'
+      ? { ...access, qualificationStatus:'pending' }
+      : access;
     document.documentElement.lang = memory.shell.language === 'en' && role === 'developer' ? 'en' : 'zh-CN';
     const content = financeRouteIds.has(route.id) && window.PublisherFinance
-      ? window.PublisherFinance.render(memory.finance, { routeId:route.id, language:memory.shell.language, access })
+      ? window.PublisherFinance.render(memory.finance, { routeId:route.id, language:memory.shell.language, access:financeAccess })
       : namespace.templates.render({ route, page, state, editorMode, qualification: qualificationForView, language: memory.shell.language, managedContent: memory.managedContent, contentEditor: memory.contentEditor, operationsReview: memory.operationsReview, registration: registrationForView, authenticated: memory.session.authenticated, workspaceState: memory.page[route.id] || {}, access, demoState, transientSecret:memory.channelTransientSecret || '' });
     memory.qualificationReviewController?.destroy?.();
     memory.qualificationReviewController = null;

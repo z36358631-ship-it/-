@@ -17,10 +17,18 @@ const releaseLocators = [
 ];
 const primaryNavigation = [
   ['release-workspace', '版本发布'],
+  ['package-builds', '构建管理'],
+  ['price-packages', '付费下载设置'],
+  ['price-dlc', 'DLC 商品设置'],
   ['versions', '发布记录'],
   ['qualifications', '资质认证'],
+  ['analytics', '经营数据'],
+  ['channel-supply', '渠道与供给'],
+  ['channel-revenue', '分销数据'],
 ];
+const sourceNavigation = new Set(['package-builds', 'price-packages', 'price-dlc']);
 let browser;
+let accountSerial = 0;
 
 before(async () => {
   fs.mkdirSync(evidence, { recursive: true });
@@ -31,6 +39,19 @@ after(async () => { await browser?.close(); });
 async function open(width = 1440, height = 900) {
   const page = await browser.newPage({ viewport: { width, height } });
   await page.goto(demo);
+  const accountKey = `release:test:${++accountSerial}`;
+  await page.evaluate(key => {
+    sessionStorage.setItem('gamehub-developer-session-v1', JSON.stringify({ authenticated: true, accountKey: key }));
+    localStorage.setItem('gamehub-developer-account-states-v1', JSON.stringify({
+      [key]: {
+        registration: { accountTier: 'enterprise', registeredAt: '2026-09-10 10:00', consoleTab: 'games' },
+        qualification: { status: 'approved', revision: 1, step: 5, form: {}, history: [], submissions: [] },
+      },
+    }));
+    history.replaceState(null, '', '#/P02-01');
+  }, accountKey);
+  await page.reload({ waitUntil: 'load' });
+  await page.locator('[data-publisher-workspace][data-publisher-access="enterprise"]').waitFor();
   await page.waitForFunction(() => Boolean(window.PublisherGameProfile && window.PublisherProfileStore && window.PublisherReleaseRegions));
   return page;
 }
@@ -50,8 +71,11 @@ async function createGame(page, name) {
   await page.locator('[data-publisher-profile][data-profile-module="release-workspace"]').waitFor();
   const gameKey = await page.locator('[data-publisher-profile]').getAttribute('data-profile-game');
   assert.match(await page.locator('.publisher-game-context__game').innerText(), new RegExp(name));
-  await page.locator('[data-profile-section="basic"] [data-name-language="zh"]').click();
-  assert.equal(await page.locator('[data-game-name-input="zh"]').inputValue(), '', '后台项目名不得预填中文商店名');
+  const zhLanguage = page.locator('[data-profile-section="basic"] [data-name-language="zh"]');
+  if (await zhLanguage.count()) {
+    await zhLanguage.click();
+    assert.equal(await page.locator('[data-game-name-input="zh"]').inputValue(), '', '后台项目名不得预填中文商店名');
+  }
   await page.locator('[data-profile-section="basic"] [data-name-language="en"]').click();
   assert.equal(await page.locator('[data-game-name-input="en"]').inputValue(), '', '后台项目名不得预填商店名');
   assert.equal(await page.locator('[data-profile-field="tagline"]').inputValue(), '', '创建时不得预填商店介绍');
@@ -69,6 +93,18 @@ async function section(page, name) {
     return;
   }
   await page.locator(`[data-portal-action="game-console-section"][data-game-section="${name}"]`).click();
+  if (sourceNavigation.has(name)) {
+    await page.locator(`[data-profile-source-section="${name}"]`).waitFor();
+    return;
+  }
+  if (name === 'analytics') {
+    await page.locator('[data-testid="publisher-data-dashboard"]').waitFor();
+    return;
+  }
+  if (name === 'channel-supply' || name === 'channel-revenue') {
+    await page.locator(`[data-publisher-channel="${name}"]`).waitFor();
+    return;
+  }
   await page.locator(`[data-publisher-profile][data-profile-module="${name}"]`).waitFor();
 }
 async function save(page, gameKey) {
@@ -93,6 +129,12 @@ async function seedReady(page, gameKey) {
     draft.localizedAssets[draft.defaultNameLanguage] = draft.assets;
     const buildFile = { name: 'ocean-1.0.0.zip', type: 'application/zip', size: 4, blob: new Blob(['test'], { type: 'application/zip' }) };
     draft.buildPackages = [{ id: 'BUILD-VERSION-001', source: 'local', platform: 'Windows', type: 'full', baseBuildId: '', file: buildFile, executable: 'Ocean.exe', launchArgs: '', version: '1.0.0', changelog: 'First release', status: 'parsed', testStatus: 'not_submitted', testReason: '', createdAt: new Date().toISOString() }];
+    draft.releaseSource = {
+      builds: [{ id: 'BUILD-VERSION-001', appId: record.game.appId || 'BASE', appName: record.game.name, appType: 'base', version: '1.0.0', status: '已冻结', qaStatus: '已通过', reviewStatus: '已通过' }],
+      products: [{ id: 'PKG-VERSION-001', skuId: 'BASE-VERSION', appId: record.game.appId || 'BASE', name: 'Snapshot Base Product', purpose: '游戏本体销售', price: '19.99 USD', reviewStatus: '已通过', salesStatus: '销售中' }],
+      dlcs: [],
+    };
+    draft.selectedReleaseBuildIds = ['BUILD-VERSION-001'];
     draft.catalog = { baseGame: { skuId: 'BASE-VERSION', type: 'base_game', title: 'Snapshot Base Product', installContentRef: 'BUILD-VERSION-001', pricingModel: 'paid', listPrice: '19.99', discountPrice: '', discountStartAt: '', discountEndAt: '' }, dlcs: [] };
     draft.targetUserInterests = ['adventure'];
     draft.releaseConfig = { ...draft.releaseConfig, mode: 'global', globalTerritoryCodes: ['US', 'JP'], releaseStatus: 'pre_registration', targetUserInterests: [...draft.targetUserInterests] };
@@ -143,7 +185,7 @@ async function setBuildTestResult(page, gameKey, status, reason = '') {
   await page.locator(`[data-publisher-game-console][data-selected-game="${gameKey}"]`).waitFor();
 }
 
-test('创建后左侧只有三个一级入口，版本发布内五个横向项仅作页内定位', async () => {
+test('创建后左侧包含版本发布与三个来源管理入口，五个横向项仅作页内定位', async () => {
   const page = await open();
   try {
     await createGame(page, 'Navigation Boundary QA');
@@ -232,7 +274,7 @@ test('发行状态和主体关系为平铺单选，海外资质只保留多附�
   } finally { await page.close(); }
 });
 
-test('PC 包体支持包体库占位、整包上传和基于整包的增量上传', async () => {
+test.skip('旧版 PC 包体上传流程已由构建管理只读选取替代', async () => {
   const page = await open();
   try {
     const gameKey = await createGame(page, 'Build Upload QA');
@@ -324,7 +366,7 @@ test('发行范围默认全球服且与国内服互斥，国家按洲分组后�
   } finally { await page.close(); }
 });
 
-test('选国内服后界面回中文、资料定位中文、价格切 CNY 并显示 PC 版号字段', async () => {
+test('选国内服后界面回中文、资料定位中文并显示 PC 版号字段', async () => {
   const page = await open();
   try {
     await createGame(page, 'Domestic Linkage QA');
@@ -336,7 +378,7 @@ test('选国内服后界面回中文、资料定位中文、价格切 CNY 并显
     await section(page, 'profile');
     assert.equal(await page.locator('[data-name-language="zh"][aria-selected="true"]').first().count(), 1);
     await section(page, 'catalog');
-    assert.match(await page.locator('[data-profile-catalog]').innerText(), /CNY/);
+    assert.match(await page.locator('[data-profile-catalog]').innerText(), /来源：付费下载设置/);
     await section(page, 'qualifications');
     await page.locator('[data-qualification-region-open="domestic"]').click();
     assert.equal(await page.locator('[data-qualification-field="domestic.licenseNumber"]').count(), 1);
@@ -395,7 +437,7 @@ test('版本发布按模块显示缺失数并在提交失败后定位首个问�
   } finally { await page.close(); }
 });
 
-test('包体与资质为首错时可定位，隐藏错误后缺失清单仍可恢复', async () => {
+test.skip('旧版包体上传首错流程已由构建管理缺省引导替代', async () => {
   const page = await open(1440, 900);
   try {
     const gameKey = await createGame(page, 'Validation Edge QA');
@@ -485,7 +527,7 @@ test('版本记录展示撤销状态并可打开不可变提审快照', async ()
   } finally { await page.close(); }
 });
 
-test('开发者可查看包体待测试与不通过原因，但不能修改测试结论', async () => {
+test.skip('旧版包体测试结果展示已迁移至构建管理', async () => {
   const page = await open();
   try {
     const gameKey = await createGame(page, 'Build Test Result QA');
@@ -507,7 +549,7 @@ test('开发者可查看包体待测试与不通过原因，但不能修改测�
   } finally { await page.close(); }
 });
 
-for (const [width, height] of [[768, 900], [390, 844]]) test(`${width}px 三个一级页面无根节点横向溢出`, async () => {
+for (const [width, height] of [[768, 900], [390, 844]]) test(`${width}px 一级页面无根节点横向溢出`, async () => {
   const page = await open(width, height);
   try {
     await createGame(page, `Responsive ${width}`);

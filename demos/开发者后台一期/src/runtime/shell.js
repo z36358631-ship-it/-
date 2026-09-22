@@ -118,25 +118,34 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const renderDeveloperDemoStateSwitcher = ({ module, role, redacted, isLogin, language, demoState = {} }) => {
     if (module?.standalone !== true || role !== 'developer' || redacted || isLogin) return '';
     const isEnglish = language === 'en';
+    const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
+    const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
+    if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
+    const radioOption = ([value, zh, en], action, attribute, current) => `<button type="button" role="radio" aria-checked="${current === value}" class="${current === value ? 'is-active' : ''}" data-portal-action="${action}" ${attribute}="${value}">${isEnglish ? en : zh}</button>`;
+    const publisherScenario = demoState.publisherScenario === 'empty' ? 'empty' : 'exhaustive';
+    const publisherScenarioOptions = [
+      ['exhaustive', '穷举态', 'Exhaustive'],
+      ['empty', '缺省态', 'Empty'],
+    ];
+    const scenarioGroup = demoState.publisherMode || demoState.financeMode
+      ? `<section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Page data' : '页面数据'}</strong><small>${isEnglish ? 'Preview complete data or the true empty state' : '预览完整数据或真实缺省状态'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Page data state' : '页面数据状态'}">${publisherScenarioOptions.map(item => radioOption(item, 'demo-publisher-scenario', 'data-demo-publisher-scenario', publisherScenario)).join('')}</div></section>`
+      : '';
+    const footer = `<footer><span>${demoState.active ? (isEnglish ? 'Preview is active' : '当前已启用预览状态') : (isEnglish ? 'Showing saved account state' : '当前为已保存账号状态')}</span><button type="button" data-portal-action="demo-state-reset"${demoState.active ? '' : ' disabled'}>${isEnglish ? 'Restore saved state' : '恢复已保存状态'}</button></footer>`;
+    const panel = (groups, title = isEnglish ? 'Page-state preview' : '页面状态预览', hint = isEnglish ? 'Demo only. Refresh to restore saved data.' : '仅影响当前演示，刷新后恢复已保存状态') => `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${title}</strong><small>${hint}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header>${groups}${footer}</aside></section>`;
     if (demoState.channelMode) {
-      const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
-      const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
-      if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
       const batchOptions = [['downloaded','已下载','Downloaded'],['cancelled','已取消','Cancelled'],['expired','已到期','Expired'],['failed','生成失败','Generation failed']];
-      const option = ([value, zh, en], kind, current) => `<button type="button" role="radio" aria-checked="${current === value}" class="${current === value ? 'is-active' : ''}" data-portal-action="demo-${kind}" data-demo-${kind}="${value}">${isEnglish ? en : zh}</button>`;
-      return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'File batch status' : '文件批次状态'}</strong><small>${isEnglish ? 'Preview the states that can appear in the batch list.' : '仅用于预览批次列表中的状态'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'File batch status' : '文件批次状态'}">${batchOptions.map(item => option(item,'channel-batch-outcome',demoState.channelBatchOutcome || 'downloaded')).join('')}</div></section><footer><span>${demoState.active ? (isEnglish ? 'Preview is active' : '当前已启用预览状态') : (isEnglish ? 'Showing the default result' : '当前为默认结果')}</span><button type="button" data-portal-action="demo-state-reset"${demoState.active ? '' : ' disabled'}>${isEnglish ? 'Restore default' : '恢复默认'}</button></footer></aside></section>`;
+      const batchGroup = `<section class="developer-demo-state-group"><div><strong>${isEnglish ? 'File batch status' : '文件批次状态'}</strong><small>${isEnglish ? 'Preview the states that can appear in the batch list' : '预览批次列表中可出现的状态'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'File batch status' : '文件批次状态'}">${batchOptions.map(item => radioOption(item, 'demo-channel-batch-outcome', 'data-demo-channel-batch-outcome', demoState.channelBatchOutcome || 'downloaded')).join('')}</div></section>`;
+      return panel(`${scenarioGroup}${batchGroup}`);
     }
     if (demoState.financeMode) {
-      const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
-      const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
-      if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
       const statuses = [
         ['approved','认证通过','Approved'],
         ['pending','审核中','In review'],
         ['rejected','认证未通过','Not approved'],
         ['delisted','已下架','Delisted'],
       ];
-      return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Company verification' : '企业认证状态'}</strong><small>${isEnglish ? 'The finance pages follow the verification result.' : '财务主体与对账结算随认证结果联动。'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Company verification status' : '企业认证状态'}">${statuses.map(([value, zh, en]) => `<button type="button" role="radio" aria-checked="${demoState.qualificationStatus === value}" class="${demoState.qualificationStatus === value ? 'is-active' : ''}" data-portal-action="demo-finance-qualification-status" data-demo-finance-qualification-status="${value}">${isEnglish ? en : zh}</button>`).join('')}</div></section><footer><span>${demoState.qualificationStatus === 'approved' ? (isEnglish ? 'Finance data is available' : '认证通过：展示完整数据') : (isEnglish ? 'Finance pages show the empty state' : '非通过状态：展示缺省态')}</span></footer></aside></section>`;
+      const qualificationGroup = `<section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Company verification' : '企业认证'}</strong><small>${isEnglish ? 'Finance pages follow the verification result' : '财务主体与对账结算随认证结果联动'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Company verification status' : '企业认证状态'}">${statuses.map(item => radioOption(item, 'demo-finance-qualification-status', 'data-demo-finance-qualification-status', demoState.qualificationStatus)).join('')}</div></section>`;
+      return panel(`${scenarioGroup}${qualificationGroup}`);
     }
     const qualificationStatus = demoState.qualificationStatus || 'unsubmitted';
     const releaseStatus = demoState.releaseStatus || '';
@@ -156,11 +165,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ['live', '已上线', 'Live'],
       ['delisted', '已下架', 'Delisted'],
     ];
-    const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
-    const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
-    if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
     const option = ([value, zh, en], kind, current) => `<button type="button" role="radio" aria-checked="${current === value}" class="${current === value ? 'is-active' : ''}" data-portal-action="demo-${kind}-status" data-demo-${kind}-status="${value}">${isEnglish ? en : zh}</button>`;
-    return `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${isEnglish ? 'Page-state preview' : '页面状态预览'}</strong><small>${isEnglish ? 'Demo only. Refresh to restore saved data.' : '仅影响当前演示，刷新后恢复已保存状态'}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header><section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Company verification' : '企业认证'}</strong><small>${isEnglish ? 'Controls publisher access and analytics visibility' : '联动发行权限与经营数据入口'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Company verification status' : '企业认证状态'}">${qualificationOptions.map(item => option(item, 'qualification', qualificationStatus)).join('')}</div></section><section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Game release application' : '游戏发布申请'}</strong><small>${isEnglish ? 'Opens the selected status in version records' : '选择后进入发布记录查看对应状态'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Game release status' : '游戏发布申请状态'}">${releaseOptions.map(item => option(item, 'release', releaseStatus)).join('')}</div></section><footer><span>${demoState.active ? (isEnglish ? 'Preview is active' : '当前已启用预览状态') : (isEnglish ? 'Showing saved account state' : '当前为已保存账号状态')}</span><button type="button" data-portal-action="demo-state-reset"${demoState.active ? '' : ' disabled'}>${isEnglish ? 'Restore saved state' : '恢复已保存状态'}</button></footer></aside></section>`;
+    const qualificationGroup = `<section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Company verification' : '企业认证'}</strong><small>${isEnglish ? 'Controls publisher access and analytics visibility' : '联动发行权限与经营数据入口'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Company verification status' : '企业认证状态'}">${qualificationOptions.map(item => option(item, 'qualification', qualificationStatus)).join('')}</div></section>`;
+    const releaseGroup = `<section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Game release application' : '游戏发布申请'}</strong><small>${isEnglish ? 'Opens the selected status in version records' : '选择后进入发布记录查看对应状态'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Game release status' : '游戏发布申请状态'}">${releaseOptions.map(item => option(item, 'release', releaseStatus)).join('')}</div></section>`;
+    if (demoState.publisherMode) {
+      const contextGroups = demoState.publisherContext === 'versions'
+        ? releaseGroup
+        : demoState.publisherContext === 'qualifications'
+          ? qualificationGroup
+          : '';
+      return panel(`${scenarioGroup}${contextGroups}`);
+    }
+    return panel(`${qualificationGroup}${releaseGroup}`);
   };
 
   const renderSideNav = ({ routes, route, role, editorMode = 'edit', registration, qualification, language = 'zh' }) => {

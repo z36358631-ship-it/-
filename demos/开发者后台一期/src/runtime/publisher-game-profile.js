@@ -59,7 +59,7 @@
   const get = (obj, key) => resolvedKey(obj, key).split('.').reduce((value, part) => value?.[part], obj);
   const set = (obj, key, value) => { const parts = resolvedKey(obj, key).split('.'); const last = parts.pop(); let cursor = obj; parts.forEach(part => { cursor = cursor[part] ||= {}; }); cursor[last] = value; };
   const id = key => `profile-${key.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
-  const sectionOf = key => key.startsWith('buildPackages') ? 'builds' : key.startsWith('catalog.') || key.startsWith('pricing.') ? 'pricing' : key.startsWith('releaseConfig.') || key.startsWith('publication.') || ['releaseRegions', 'releaseTerritories', 'releaseStatus', 'targetUserInterests'].includes(key) ? 'publication' : key.startsWith('assets.') || key.startsWith('localizedAssets.') ? (key.endsWith('.icon') ? 'basic' : 'assets') : key.startsWith('qualificationFiles.') || key.startsWith('qualifications.') || key.startsWith('compliance.') || key === 'licenseNumber' ? 'qualification' : key.startsWith('requirements.') || ['website', 'playerGroupName', 'playerGroupNumber'].includes(key) ? 'settings' : ['genres', 'platforms'].includes(key) ? 'classification' : ['relationship', 'developerName', 'developerWords', 'developerWordsZh'].includes(key) || key.endsWith('.developerWords') ? 'developer' : 'basic';
+  const sectionOf = key => key.startsWith('buildPackages') || key.startsWith('selectedReleaseBuildIds') ? 'builds' : key.startsWith('catalog.') || key.startsWith('pricing.') ? 'pricing' : key.startsWith('releaseConfig.') || key.startsWith('publication.') || ['releaseRegions', 'releaseTerritories', 'releaseStatus', 'targetUserInterests'].includes(key) ? 'publication' : key.startsWith('assets.') || key.startsWith('localizedAssets.') ? (key.endsWith('.icon') ? 'basic' : 'assets') : key.startsWith('qualificationFiles.') || key.startsWith('qualifications.') || key.startsWith('compliance.') || key === 'licenseNumber' ? 'qualification' : key.startsWith('requirements.') || key.startsWith('windowsRequirements.') || key.startsWith('controller') || ['website', 'playerGroupName', 'playerGroupNumber'].includes(key) ? 'settings' : ['genres', 'platforms'].includes(key) ? 'classification' : ['relationship', 'developerName', 'developerWords', 'developerWordsZh'].includes(key) || key.endsWith('.developerWords') ? 'developer' : 'basic';
   const moduleOf = key => ({ builds: 'builds', pricing: 'catalog', publication: 'release', qualification: 'qualification' }[sectionOf(key)] || 'profile');
   const releaseModules = ['profile', 'builds', 'catalog', 'release', 'qualification'];
   const releaseModuleOf = key => {
@@ -75,7 +75,13 @@
       const label = code.length === 2 ? window.PublisherReleaseRegions.territoryLabel(code, lang) : code;
       return lang === 'en' ? `${label} list price` : `${label}售价`;
     }
-    return key === 'buildPackages.readyFull' ? t(lang, 'readyFull') : key === 'pricing.model' ? t(lang, 'pricingModel') : key === 'qualifications.mainland' ? t(lang, 'mainlandScan') : key.startsWith('gameNames.') ? `${lang === 'en' ? 'Game name' : '游戏名称'} · ${window.PublisherGameNames.label(key.split('.')[1], lang)}` : key.startsWith('requirements.') ? `${key.slice(13)} · ${t(lang, 'requirements')}` : t(lang, key.split('.').pop() === 'scheduledAt' ? 'scheduleTime' : key.split('.').pop());
+    const requirementLabels = { os: ['操作系统', 'Operating system'], cpu: ['处理器', 'Processor'], memory: ['内存', 'Memory'], gpu: ['显卡', 'Graphics'], directx: ['DirectX 版本', 'DirectX version'], network: ['网络', 'Network'], storage: ['存储空间', 'Storage'] };
+    if (key === 'selectedReleaseBuildIds' || key === 'buildPackages.readyFull') return t(lang, 'readyFull');
+    if (key.startsWith('windowsRequirements.')) {
+      const fieldName = key.split('.').pop();
+      return requirementLabels[fieldName]?.[lang === 'en' ? 1 : 0] || fieldName;
+    }
+    return key === 'pricing.model' ? t(lang, 'pricingModel') : key === 'qualifications.mainland' ? t(lang, 'mainlandScan') : key.startsWith('gameNames.') ? `${lang === 'en' ? 'Game name' : '游戏名称'} · ${window.PublisherGameNames.label(key.split('.')[1], lang)}` : key.startsWith('requirements.') ? `${key.slice(13)} · ${t(lang, 'requirements')}` : t(lang, key.split('.').pop() === 'scheduledAt' ? 'scheduleTime' : key.split('.').pop());
   };
   const lock = draft => draft.reviewStatus === 'reviewing' || draft.saving || draft.submitting || draft.withdrawing;
   const accessFor = value => value && typeof value === 'object' ? value : {
@@ -111,6 +117,75 @@
   const contentKeys = language => language === 'zh' ? ['gameNameZh', 'taglineZh', 'descriptionZh'] : ['gameNameEn', 'tagline', 'description'];
   const displayName = draft => String(draft.gameNames?.[draft.defaultNameLanguage] || draft.gameName || (draft.releaseRegions?.includes('domestic') ? draft.gameNameZh || draft.gameNameEn : draft.gameNameEn || draft.gameNameZh) || '').trim();
   const stateFor = draft => { let state = runtime.get(draft); if (!state) { state = { root: null, urls: new Map(), uploads: new Map(), uploadSequence: 0, focus: null, observer: null, versionRequest: 0, versionPage: 1, versionViewer: { status: 'list', submissionId: '', record: null }, demoReleaseState: { open: false, active: false, status: 'reviewing' }, overridePicker: { open: false, skuIndex: -1, search: '', selected: [] } }; runtime.set(draft, state); } return state; };
+  const controllerOptions = [
+    ['xbox', 'Xbox 控制器', 'Xbox controller'],
+    ['playstation', 'PlayStation 控制器', 'PlayStation controller'],
+    ['generic', '通用控制器', 'Generic controller'],
+  ];
+  const windowsRequirementPresets = {
+    independent: {
+      minimum: { requires64Bit: true, os: 'Windows 10', cpu: 'Intel Core i5-4430 / AMD FX-6300', memory: '8', memoryUnit: 'GB', gpu: 'NVIDIA GeForce GTX 960 2GB / AMD Radeon R7 370 2GB', directx: '11', network: '宽带互联网连接', storage: '40', storageUnit: 'GB', soundCard: '兼容 DirectX 的声卡', notes: '' },
+      recommended: { requires64Bit: true, os: 'Windows 10', cpu: 'Intel Core i5-6600K / AMD Ryzen 5 1600', memory: '16', memoryUnit: 'GB', gpu: 'NVIDIA GeForce GTX 1060 3GB / AMD Radeon RX 580 4GB', directx: '11', network: '宽带互联网连接', storage: '50', storageUnit: 'GB', soundCard: '兼容 DirectX 的声卡', notes: '' },
+    },
+    cross_platform: {
+      minimum: { requires64Bit: true, os: 'Windows 10', cpu: 'Intel Core i5-8400 / AMD Ryzen 5 2600', memory: '8', memoryUnit: 'GB', gpu: 'NVIDIA GeForce GTX 1060 / AMD Radeon RX 580', directx: '11', network: '宽带互联网连接', storage: '50', storageUnit: 'GB', soundCard: '兼容 DirectX 的声卡', notes: '支持跨端进度同步' },
+      recommended: { requires64Bit: true, os: 'Windows 11', cpu: 'Intel Core i7-9700 / AMD Ryzen 7 3700X', memory: '16', memoryUnit: 'GB', gpu: 'NVIDIA GeForce RTX 2060 / AMD Radeon RX 6600', directx: '12', network: '宽带互联网连接', storage: '50', storageUnit: 'GB', soundCard: '兼容 DirectX 的声卡', notes: '推荐使用 SSD' },
+    },
+    aaa: {
+      minimum: { requires64Bit: true, os: 'Windows 10', cpu: 'Intel Core i7-9700K / AMD Ryzen 7 3700X', memory: '16', memoryUnit: 'GB', gpu: 'NVIDIA GeForce RTX 2070 / AMD Radeon RX 6700 XT', directx: '12', network: '宽带互联网连接', storage: '100', storageUnit: 'GB', soundCard: '兼容 DirectX 的声卡', notes: '需要 SSD' },
+      recommended: { requires64Bit: true, os: 'Windows 11', cpu: 'Intel Core i7-12700K / AMD Ryzen 7 7700X', memory: '32', memoryUnit: 'GB', gpu: 'NVIDIA GeForce RTX 4070 / AMD Radeon RX 7800 XT', directx: '12', network: '宽带互联网连接', storage: '120', storageUnit: 'GB', soundCard: '兼容 DirectX 的声卡', notes: '推荐 NVMe SSD' },
+    },
+  };
+  const emptyWindowsRequirement = () => ({ requires64Bit: true, os: '', cpu: '', memory: '', memoryUnit: 'GB', gpu: '', directx: '', network: '', storage: '', storageUnit: 'GB', soundCard: '', notes: '' });
+  const normalizeWindowsRequirements = value => {
+    const preset = ['independent', 'cross_platform', 'aaa', 'custom'].includes(value?.preset) ? value.preset : 'independent';
+    const fallback = windowsRequirementPresets.independent;
+    return {
+      preset,
+      minimum: { ...emptyWindowsRequirement(), ...fallback.minimum, ...(value?.minimum || {}) },
+      recommended: { ...emptyWindowsRequirement(), ...fallback.recommended, ...(value?.recommended || {}) },
+    };
+  };
+  const releaseFixture = game => {
+    const baseAppId = game.appId || 'APP-7F3A9C';
+    return {
+      builds: [
+        { id: 'BUILD-7F3A9C-007', appId: baseAppId, appName: game.name || '星海远征', appType: 'base', version: '1.5.0', status: '已冻结', qaStatus: '已通过', reviewStatus: '已通过' },
+        { id: 'BUILD-7F3A9C-004', appId: baseAppId, appName: game.name || '星海远征', appType: 'base', version: '1.4.0', status: '已冻结', qaStatus: '已通过', reviewStatus: '已通过' },
+        { id: 'BUILD-7F3A9C-DLC01-006', appId: 'DLC-7F3A9C-01', appName: '深空回响', appType: 'dlc', version: '1.1.0', status: '已冻结', qaStatus: '待测试', reviewStatus: '待提包' },
+        { id: 'BUILD-7F3A9C-DLC02-002', appId: 'DLC-7F3A9C-02', appName: '机械黎明', appType: 'dlc', version: '1.0.0', status: '已冻结', qaStatus: '已通过', reviewStatus: '已通过' },
+      ],
+      products: [
+        { id: 'PKG-7F3A9C-STORE', skuId: 'SKU-BASE-001', appId: baseAppId, name: `${game.name || '星海远征'}标准版`, purpose: '游戏本体销售', price: '19.99 USD', reviewStatus: '已通过', salesStatus: '销售中' },
+        { id: 'PKG-7F3A9C-DLC01', skuId: 'SKU-DLC-001', appId: 'DLC-7F3A9C-01', name: '深空回响 DLC', purpose: 'DLC销售', price: '8.99 USD', reviewStatus: '已通过', salesStatus: '销售中' },
+        { id: 'PKG-7F3A9C-DLC02', skuId: 'SKU-DLC-002', appId: 'DLC-7F3A9C-02', name: '机械黎明 DLC', purpose: 'DLC销售', price: '6.99 USD', reviewStatus: '已通过', salesStatus: '待上架' },
+      ],
+      dlcs: [
+        { appId: 'DLC-7F3A9C-01', name: '深空回响', sellingPoint: '深入失落星区，揭开远征队未公开的故事。', description: '新增独立剧情、三片探索区域、两名可招募角色，以及与游戏本体进度联动的装备奖励。', imageName: 'dlc-deep-space-echo.jpg', reviewStatus: '已通过', listingStatus: '已上架' },
+        { appId: 'DLC-7F3A9C-02', name: '机械黎明', sellingPoint: '迎战失控机械军团，解锁高难度协作挑战。', description: '包含机械都市区域、首领挑战、主题装备和新的协作任务线，需拥有游戏本体后使用。', imageName: 'dlc-machine-dawn.jpg', reviewStatus: '已通过', listingStatus: '待上架' },
+      ],
+    };
+  };
+  const normalizeReleaseSource = (game, draft, value) => {
+    if (value && ['builds', 'products', 'dlcs'].every(key => Array.isArray(value[key]))) return structuredClone(value);
+    const legacyBuilds = window.PublisherGameBuilds.createPackages(draft.buildPackages || []).map((build, index) => ({
+      id: build.id,
+      appId: game.appId || 'BASE',
+      appName: game.name || draft.gameNameZh || draft.gameNameEn || '游戏本体',
+      appType: 'base',
+      version: build.version,
+      status: build.status === 'parsed' ? '已冻结' : build.status,
+      qaStatus: ({ not_submitted: '待提审', pending: '待测试', testing: '测试中', passed: '已通过', failed: '测试不通过' })[build.testStatus] || '待提审',
+      reviewStatus: build.testStatus === 'passed' ? '已通过' : '待提包',
+      order: index,
+    }));
+    if (legacyBuilds.length) {
+      const products = skuList(draft).map((sku, index) => ({ id: sku.skuId || `SKU-${index + 1}`, skuId: sku.skuId || `SKU-${index + 1}`, appId: game.appId || 'BASE', name: sku.title, purpose: index ? 'DLC销售' : '游戏本体销售', price: sku.pricingModel === 'paid' ? String(sku.listPrice || '—') : '免费', reviewStatus: '草稿', salesStatus: '未上架' }));
+      return { builds: legacyBuilds, products, dlcs: [] };
+    }
+    return game.gameKey === 'existing' ? releaseFixture(game) : { builds: [], products: [], dlcs: [] };
+  };
+  const releaseBuildSelectable = build => build?.status === '已冻结' && build?.qaStatus === '已通过' && build?.reviewStatus === '已通过';
   function urlFor(draft, file) {
     if (!validFile(file)) return '';
     const state = stateFor(draft);
@@ -295,6 +370,18 @@
       baseGame: normalizeSku(normalized.catalog?.baseGame || (draft.pricing ? { pricingModel: draft.pricing.model, listPrice: draft.releaseRegions.includes('domestic') && !draft.releaseRegions.includes('global') ? draft.pricing.domesticPrice : draft.pricing.globalPrice } : null), 'base_game'),
       dlcs: (normalized.catalog?.dlcs || []).map((item, index) => normalizeSku(item, 'dlc', index)),
     };
+    draft.releaseSource = normalizeReleaseSource(game, draft, normalized.releaseSource || old.releaseSource);
+    const availableBuilds = new Map(draft.releaseSource.builds.map(build => [build.id, build]));
+    const requestedBuildIds = Array.isArray(normalized.selectedReleaseBuildIds || old.selectedReleaseBuildIds) ? (normalized.selectedReleaseBuildIds || old.selectedReleaseBuildIds) : [];
+    const selectedByApp = new Map();
+    (requestedBuildIds.length ? requestedBuildIds : draft.releaseSource.builds.filter(releaseBuildSelectable).map(build => build.id)).forEach(buildId => {
+      const build = availableBuilds.get(buildId);
+      if (build && releaseBuildSelectable(build) && !selectedByApp.has(build.appId)) selectedByApp.set(build.appId, build.id);
+    });
+    draft.selectedReleaseBuildIds = [...selectedByApp.values()];
+    draft.controllerTypes = [...new Set((normalized.controllerTypes || old.controllerTypes || ['xbox']).filter(value => controllerOptions.some(([key]) => key === value)))];
+    draft.controllerOther = String(normalized.controllerOther ?? old.controllerOther ?? '');
+    draft.windowsRequirements = normalizeWindowsRequirements(normalized.windowsRequirements || old.windowsRequirements);
     draft.releaseConfig = structuredClone(normalized.releaseConfig || { mode: draft.releaseRegions.includes('domestic') && !draft.releaseRegions.includes('global') ? 'domestic' : 'global', globalTerritoryCodes: draft.releaseTerritories.filter(item => item.code !== 'CN').map(item => item.code), releaseStatus: draft.releaseStatus, effectiveMode: draft.publication.mode, scheduledAt: draft.publication.scheduledAt });
     draft.releaseConfig.mode = draft.releaseConfig.mode === 'domestic' ? 'domestic' : 'global';
     draft.releaseConfig.targetUserInterests = [...draft.targetUserInterests];
@@ -335,24 +422,14 @@
       ...(draft.relationship === 'publisher' ? [['developerName', Boolean(String(draft.developerName).trim()), 'required']] : []),
       ['assets.landscape', draft.assets.landscape.some(file => validImage(file) && ratio16(file)), 'landscapeRequired'],
       ['assets.screenshots', draft.assets.screenshots.filter(validImage).length >= 3, 'screenshotsRequired'],
-      ['buildPackages.readyFull', window.PublisherGameBuilds.hasParsedFullBuild(draft), 'buildRequired'],
+      ['selectedReleaseBuildIds', draft.selectedReleaseBuildIds.length > 0, 'buildRequired'],
       ['qualifications.activeVersion', Boolean(window.PublisherGameQualifications.approvedVersionFor(draft.qualifications, window.PublisherGameQualifications.contextFor(draft))) || Object.keys(window.PublisherGameQualifications.validateApplication(draft.qualifications?.draft || {}, window.PublisherGameQualifications.contextFor(draft))).length === 0, 'documentRequired'],
       ...(draft.publication.mode === 'scheduled' ? [['publication.scheduledAt', validSchedule(draft), 'futureRequired']] : []),
     ];
-    skuList(draft).forEach((sku, index) => {
-      const key = index ? `catalog.dlcs.${index - 1}` : 'catalog.baseGame';
-      result.push([`${key}.title`, Boolean(String(sku.title || '').trim()), 'required']);
-      result.push([`${key}.installContentRef`, window.PublisherGameBuilds.parsedFullBuilds(draft).some(build => build.id === sku.installContentRef), 'required']);
-      result.push([`${key}.pricingModel`, ['free', 'paid'].includes(sku.pricingModel), 'pricingModelRequired']);
-      if (sku.pricingModel === 'paid') {
-        const pricingStrategy = pricingStrategyFor(sku, draft);
-        if (mode === 'global') result.push([`${key}.pricingStrategy`, ['uniform', 'regional'].includes(sku.pricingStrategy), 'pricingStrategyRequired']);
-        result.push([`${key}.listPrice`, validPrice(sku.listPrice), 'priceRequired']);
-        if (pricingStrategy === 'regional') {
-          activeOverrideZonesFor(sku, draft).forEach(zone => result.push([`${key}.regionalPrices.${zone.code}.listPrice`, validPrice(sku.regionalPrices?.[zone.code]?.listPrice), 'priceRequired']));
-        }
-        if (skuDiscountConfigured(sku, draft)) result.push([`${key}.discount`, validDiscount(sku, draft, draft.reviewStatus === 'reviewing'), 'discountInvalid']);
-      }
+    ['minimum', 'recommended'].forEach(level => {
+      ['os', 'cpu', 'memory', 'gpu', 'directx', 'network', 'storage'].forEach(fieldName => {
+        result.push([`windowsRequirements.${level}.${fieldName}`, Boolean(String(draft.windowsRequirements?.[level]?.[fieldName] || '').trim()), 'required']);
+      });
     });
     return result;
   }
@@ -447,6 +524,78 @@
       ? (isEnglish ? 'Each SKU links to a build and uses a CNY unified price.' : '基础游戏与每个 DLC 独立关联包体，并设置 CNY 统一价。')
       : (isEnglish ? 'Each SKU links to a build and can use one unified price or a base price with territory overrides.' : '基础游戏与每个 DLC 独立关联包体，可设置统一价，或设置基准价与少量地区例外价。');
     return `<section class="pgp-catalog" data-profile-catalog><header class="pgp-module-intro"><div><h3>${isEnglish ? 'Products & SKU' : '商品与 SKU'}</h3><p>${esc(catalogHint)}</p></div><button type="button" class="pgp-button" data-sku-add${readonly ? ' disabled' : ''}>${isEnglish ? 'Add DLC' : '新增 DLC'}</button></header><div class="pgp-sku-list">${skuList(draft).map(renderSku).join('')}</div></section>`;
+  }
+  const scenarioReleaseSource = (draft, publisherScenario, game = {}) => publisherScenario === 'empty'
+    ? { builds: [], products: [], dlcs: [] }
+    : publisherScenario === 'exhaustive'
+      ? releaseFixture(game)
+      : draft.releaseSource;
+  const selectedReleaseBuildIdsFor = (draft, source) => {
+    const availableIds = new Set(source.builds.map(build => build.id));
+    const selected = (draft.selectedReleaseBuildIds || []).filter(buildId => availableIds.has(buildId));
+    if (selected.length) return selected;
+    const selectedApps = new Set();
+    return source.builds.filter(build => {
+      if (!releaseBuildSelectable(build) || selectedApps.has(build.appId)) return false;
+      selectedApps.add(build.appId);
+      return true;
+    }).map(build => build.id);
+  };
+  const sourceEmpty = (lang, titleZh, titleEn, bodyZh, bodyEn, target, buttonZh, buttonEn) => `<div class="pgp-source-empty" data-release-source-empty="${esc(target)}"><span aria-hidden="true">◇</span><strong>${lang === 'en' ? titleEn : titleZh}</strong><p>${lang === 'en' ? bodyEn : bodyZh}</p><button type="button" class="pgp-button pgp-button--primary" data-release-source-jump="${esc(target)}">${lang === 'en' ? buttonEn : buttonZh}</button></div>`;
+  const sourceStatus = value => `<span class="pgp-source-status${/通过|销售中|上架/.test(value) ? ' is-success' : /退回|不通过|下架/.test(value) ? ' is-danger' : ''}">${esc(value || '—')}</span>`;
+  function renderReleaseBuilds(draft, lang, readonly, source) {
+    const selected = new Set(selectedReleaseBuildIdsFor(draft, source));
+    const rows = source.builds.map(build => {
+      const selectable = releaseBuildSelectable(build);
+      return `<label class="pgp-build-choice${selected.has(build.id) ? ' is-selected' : ''}${selectable ? '' : ' is-disabled'}" data-release-build-row="${esc(build.id)}" data-release-build-app="${esc(build.appId)}"><input type="checkbox" data-release-build-select="${esc(build.id)}" data-release-build-app="${esc(build.appId)}"${selected.has(build.id) ? ' checked' : ''}${readonly || !selectable ? ' disabled' : ''}><span class="pgp-build-choice__check" aria-hidden="true">✓</span><span class="pgp-build-choice__identity"><small>${build.appType === 'dlc' ? 'DLC APP' : 'BASE APP'} · ${esc(build.appId)}</small><strong>${esc(build.appName)}</strong><em>${esc(build.id)}</em>${selectable ? '' : `<b>${lang === 'en' ? 'Available after build, QA and package review pass' : '构建、QA 与提包审核均通过后可选'}</b>`}</span><span><small>${lang === 'en' ? 'Version' : '版本号'}</small><strong>${esc(build.version)}</strong></span><span><small>${lang === 'en' ? 'Build status' : '构建状态'}</small>${sourceStatus(build.status)}</span><span><small>${lang === 'en' ? 'QA status' : 'QA 状态'}</small>${sourceStatus(build.qaStatus)}</span><span><small>${lang === 'en' ? 'Package review' : '提包状态'}</small>${sourceStatus(build.reviewStatus)}</span></label>`;
+    }).join('');
+    return `<section class="pgp-release-source" data-profile-builds data-release-build-source><header class="pgp-module-intro"><div><h3>${lang === 'en' ? 'PC builds' : 'PC 游戏包'}</h3><p>${lang === 'en' ? 'Select existing builds from Build management. You can select builds for multiple apps, but only one build per App ID.' : '回显构建管理中的已有 Build。可跨 App 多选，同一 App ID 只能选择一个 Build。'}</p></div><span class="pgp-source-readonly">${lang === 'en' ? 'Source: Build management' : '来源：构建管理'}</span></header>${source.builds.length ? `<div class="pgp-build-choice-list">${rows}</div>${errorHTML(draft, lang, 'selectedReleaseBuildIds')}` : sourceEmpty(lang, '暂无可用 PC 游戏包', 'No PC builds available', '请先在构建管理中创建并完成 Build，再返回版本发布选择。', 'Create and complete a build in Build management, then return here to select it.', 'package-builds', '前往构建管理', 'Open Build management')}</section>`;
+  }
+  function renderReleaseCatalog(draft, lang, source) {
+    const selectedIds = new Set(selectedReleaseBuildIdsFor(draft, source));
+    const selectedBuilds = source.builds.filter(build => selectedIds.has(build.id));
+    const selectedApps = new Set(selectedBuilds.map(build => build.appId));
+    const products = source.products.filter(product => selectedApps.has(product.appId));
+    const dlcs = source.dlcs.filter(dlc => selectedApps.has(dlc.appId));
+    const productRows = products.map(product => `<article class="pgp-linked-product" data-release-product="${esc(product.id)}" data-release-product-app="${esc(product.appId)}"><header><div><small>${esc(product.purpose)}</small><strong>${esc(product.name)}</strong><span>${esc(product.id)} · ${esc(product.skuId)}</span></div>${sourceStatus(product.salesStatus)}</header><dl><div><dt>App ID</dt><dd>${esc(product.appId)}</dd></div><div><dt>${lang === 'en' ? 'Price' : '售价'}</dt><dd>${esc(product.price)}</dd></div><div><dt>${lang === 'en' ? 'Review' : '审核状态'}</dt><dd>${esc(product.reviewStatus)}</dd></div></dl></article>`).join('');
+    const dlcRows = dlcs.map(dlc => `<article class="pgp-linked-dlc" data-release-dlc="${esc(dlc.appId)}"><div class="pgp-linked-dlc__image"><span>16:9</span><small>${esc(dlc.imageName || '未上传')}</small></div><div><header><div><small>DLC · ${esc(dlc.appId)}</small><strong>${esc(dlc.name)}</strong></div>${sourceStatus(dlc.listingStatus)}</header><h5>${esc(dlc.sellingPoint)}</h5><p>${esc(dlc.description)}</p><footer>${lang === 'en' ? 'Content review' : '资料审核'}：${esc(dlc.reviewStatus)}</footer></div></article>`).join('');
+    const hasSelectedBuild = selectedBuilds.length > 0;
+    const productBody = !source.products.length
+      ? sourceEmpty(lang, '暂无商品与 SKU', 'No products or SKUs', '请先在付费下载设置中创建商品与 SKU。', 'Create products and SKUs in Paid download settings first.', 'price-packages', '前往付费下载设置', 'Open Paid download settings')
+      : !hasSelectedBuild ? `<p class="pgp-source-selection-hint">${lang === 'en' ? 'Select a PC build above to display linked products and SKUs.' : '请先在上方选择 PC 游戏包，系统将按 App ID 回显关联商品与 SKU。'}</p>`
+      : products.length ? `<div class="pgp-linked-product-list">${productRows}</div>` : `<p class="pgp-source-selection-hint">${lang === 'en' ? 'The selected App ID has no linked product.' : '所选 App ID 暂无关联商品。'}</p>`;
+    const dlcBody = !source.dlcs.length
+      ? sourceEmpty(lang, '暂无 DLC 商品', 'No DLC products', '请先在 DLC 商品设置中创建内容与介绍。', 'Create DLC content and descriptions in DLC product settings first.', 'price-dlc', '前往 DLC 商品设置', 'Open DLC product settings')
+      : !selectedBuilds.some(build => build.appType === 'dlc') ? `<p class="pgp-source-selection-hint">${lang === 'en' ? 'Select a DLC build above to display its product description.' : '选择 DLC App 的 Build 后，将在此回显对应 DLC 商品介绍。'}</p>`
+      : dlcs.length ? `<div class="pgp-linked-dlc-list">${dlcRows}</div>` : `<p class="pgp-source-selection-hint">${lang === 'en' ? 'The selected DLC App ID has no linked DLC product.' : '所选 DLC App ID 暂无关联 DLC 商品。'}</p>`;
+    return `<section class="pgp-release-source pgp-release-catalog" data-profile-catalog><header class="pgp-module-intro"><div><h3>${lang === 'en' ? 'Products & SKU' : '商品与 SKU'}</h3><p>${lang === 'en' ? 'Read-only data linked by the App IDs of selected builds.' : '按已选 Build 的 App ID 联动回显，商品、价格和状态均只读。'}</p></div><span class="pgp-source-readonly">${lang === 'en' ? 'Source: Paid download settings' : '来源：付费下载设置'}</span></header>${productBody}<section class="pgp-linked-dlc-section"><header><h4>${lang === 'en' ? 'DLC products' : 'DLC 商品内容'}</h4><span>${lang === 'en' ? 'Source: DLC product settings' : '来源：DLC 商品设置'}</span></header>${dlcBody}</section></section>`;
+  }
+  function renderCompatibility(draft, lang, readonly) {
+    const level = (key, labelZh, labelEn) => {
+      const values = draft.windowsRequirements[key];
+      const textField = (name, labelZh, labelEn, wide = false) => `<label class="pgp-requirement-field${wide ? ' is-wide' : ''}"><span>${lang === 'en' ? labelEn : labelZh}</span><input type="text" value="${esc(values[name])}" data-windows-requirement="${key}.${name}"${readonly ? ' disabled' : ''}>${errorHTML(draft, lang, `windowsRequirements.${key}.${name}`)}</label>`;
+      const amountField = (name, unitName, labelZh, labelEn) => `<label class="pgp-requirement-field"><span>${lang === 'en' ? labelEn : labelZh}</span><span class="pgp-requirement-amount"><input type="number" min="0" value="${esc(values[name])}" data-windows-requirement="${key}.${name}"${readonly ? ' disabled' : ''}><select data-windows-requirement="${key}.${unitName}"${readonly ? ' disabled' : ''}>${['MB', 'GB', 'TB'].map(unit => `<option${values[unitName] === unit ? ' selected' : ''}>${unit}</option>`).join('')}</select></span>${errorHTML(draft, lang, `windowsRequirements.${key}.${name}`)}</label>`;
+      return `<section class="pgp-requirement-column" data-windows-requirement-level="${key}"><header><h4>${lang === 'en' ? labelEn : labelZh}</h4><label><input type="checkbox" data-windows-requirement="${key}.requires64Bit"${values.requires64Bit ? ' checked' : ''}${readonly ? ' disabled' : ''}>${lang === 'en' ? 'Requires a 64-bit processor and operating system' : '需要 64 位处理器和操作系统'}</label></header><div class="pgp-requirement-grid">${textField('os', '操作系统', 'Operating system')}${textField('cpu', '处理器', 'Processor')}${amountField('memory', 'memoryUnit', '内存', 'Memory')}${textField('gpu', '显卡', 'Graphics')}${textField('directx', 'DirectX 版本', 'DirectX version')}${textField('network', '网络', 'Network')}${amountField('storage', 'storageUnit', '存储空间', 'Storage')}${textField('soundCard', '声卡', 'Sound card')}${textField('notes', '备注', 'Notes', true)}</div></section>`;
+    };
+    const presetLabels = { independent: ['独立', 'Indie'], cross_platform: ['跨端', 'Cross-platform'], aaa: ['3A', 'AAA'], custom: ['自定义', 'Custom'] };
+    return `<section class="pgp-card pgp-compatibility" data-release-compatibility><header><div><h3>${lang === 'en' ? 'Controller & system requirements' : '控制器与系统需求'}</h3><p>${lang === 'en' ? 'Declare supported controller types and Windows minimum/recommended requirements.' : '填写支持的控制器类型，以及 Windows 最低配置与推荐配置。'}</p></div></header><div class="pgp-card-body"><fieldset class="pgp-controller-types"><legend>${lang === 'en' ? 'Supported controllers' : '支持的控制器'}</legend><div>${controllerOptions.map(([value, zh, en]) => `<label><input type="checkbox" value="${value}" data-controller-type${draft.controllerTypes.includes(value) ? ' checked' : ''}${readonly ? ' disabled' : ''}><span>${lang === 'en' ? en : zh}</span></label>`).join('')}</div><label class="pgp-controller-other"><span>${lang === 'en' ? 'Other controller' : '其他控制器'}</span><input type="text" value="${esc(draft.controllerOther)}" data-controller-other placeholder="${lang === 'en' ? 'Enter a controller type' : '填写控制器类型'}"${readonly ? ' disabled' : ''}></label></fieldset><section class="pgp-windows-requirements"><header><div><h4>Windows ${lang === 'en' ? 'requirements' : '配置'}</h4><p>${lang === 'en' ? 'Presets populate both columns and remain editable.' : '预设会同时填充最低与推荐配置，填写后仍可调整。'}</p></div><div class="pgp-requirement-presets">${Object.entries(presetLabels).map(([value, labels]) => `<button type="button" data-requirement-preset="${value}" class="${draft.windowsRequirements.preset === value ? 'is-active' : ''}"${readonly ? ' disabled' : ''}>${labels[lang === 'en' ? 1 : 0]}</button>`).join('')}</div></header><div class="pgp-requirement-columns">${level('minimum', '最低配置', 'Minimum')}${level('recommended', '推荐配置', 'Recommended')}</div></section></div></section>`;
+  }
+  function renderSourceSection(section, game = {}, language = 'zh', options = {}) {
+    const lang = language === 'en' ? 'en' : 'zh';
+    const source = options.publisherScenario === 'empty'
+      ? { builds: [], products: [], dlcs: [] }
+      : options.publisherScenario === 'exhaustive'
+        ? releaseFixture(game)
+        : normalizeReleaseSource(game, {}, game.releaseSource || {});
+    const heading = { 'package-builds': ['构建管理', 'Build management'], 'price-packages': ['付费下载设置', 'Paid download settings'], 'price-dlc': ['DLC 商品设置', 'DLC product settings'] }[section];
+    if (!heading) return '';
+    const rows = section === 'package-builds'
+      ? source.builds.map(item => `<tr><td>${esc(item.id)}</td><td>${esc(item.appId)}</td><td>${esc(item.version)}</td><td>${sourceStatus(item.status)}</td><td>${sourceStatus(item.qaStatus)}</td></tr>`).join('')
+      : section === 'price-packages'
+        ? source.products.map(item => `<tr><td>${esc(item.name)}</td><td>${esc(item.id)}</td><td>${esc(item.skuId)}</td><td>${esc(item.appId)}</td><td>${esc(item.price)}</td><td>${sourceStatus(item.salesStatus)}</td></tr>`).join('')
+        : source.dlcs.map(item => `<tr><td>${esc(item.name)}</td><td>${esc(item.appId)}</td><td>${esc(item.sellingPoint)}</td><td>${esc(item.description)}</td><td>${sourceStatus(item.listingStatus)}</td></tr>`).join('');
+    const headers = section === 'package-builds' ? ['Build ID', 'App ID', lang === 'en' ? 'Version' : '版本', lang === 'en' ? 'Status' : '状态', 'QA'] : section === 'price-packages' ? [lang === 'en' ? 'Product' : '商品', 'Package ID', 'SKU ID', 'App ID', lang === 'en' ? 'Price' : '价格', lang === 'en' ? 'Sales' : '销售状态'] : ['DLC', 'App ID', lang === 'en' ? 'Selling point' : '内容卖点', lang === 'en' ? 'Description' : '内容介绍', lang === 'en' ? 'Listing' : '上架状态'];
+    return `<section class="pgp-source-management" data-profile-source-section="${esc(section)}"><header><h2>${heading[lang === 'en' ? 1 : 0]}</h2><p>${lang === 'en' ? 'This list is the data source used by Version release.' : '此列表是版本发布页的同源数据。'}</p></header>${rows ? `<div class="pgp-source-table"><table><thead><tr>${headers.map(item => `<th>${esc(item)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="pgp-source-empty"><strong>${lang === 'en' ? 'No records' : '暂无记录'}</strong></div>`}</section>`;
   }
   function renderQualifications(draft, lang, options = {}) {
     const helper = window.PublisherGameQualifications;
@@ -804,14 +953,17 @@
     const qualification = renderQualifications(draft, lang, { access });
     const activeQualification = draft.qualifications?.activeVersion;
     const qualificationReference = `<section class="pgp-qualification-reference" data-release-qualification-reference><div><h3>${lang === 'en' ? 'Qualification version' : '资质版本'}</h3><p>${activeQualification ? `${lang === 'en' ? 'Current reference' : '当前引用'} ${esc(activeQualification.id || activeQualification.versionId)}` : (lang === 'en' ? 'No approved qualification version is available yet.' : '尚无已生效资质版本，提交发布审核前需先完成资质认证。')}</p></div><button type="button" class="pgp-button" data-profile-section-link="qualifications">${lang === 'en' ? 'Open qualifications' : '前往资质认证'}</button></section>`;
-    const builds = window.PublisherGameBuilds.render(draft, lang, { readonly });
+    const releaseSource = scenarioReleaseSource(draft, options.publisherScenario, options.game || {});
+    const builds = renderReleaseBuilds(draft, lang, readonly, releaseSource);
+    const releaseCatalog = renderReleaseCatalog(draft, lang, releaseSource);
+    const compatibility = renderCompatibility(draft, lang, readonly);
     const targetInterests = `<fieldset class="pgp-check-group pgp-target-interests pgp-wide" data-profile-field-wrap="targetUserInterests"><legend>${esc(t(lang, 'targetUserInterests'))} ${required}</legend><p class="pgp-hint">${esc(t(lang, 'targetUserInterestsHint'))}</p><div class="pgp-checks">${targetInterestOptions.map(([value, zh, en]) => `<label><input type="checkbox" value="${value}" data-profile-array="targetUserInterests"${draft.targetUserInterests.includes(value) ? ' checked' : ''}${readonly ? ' disabled' : ''}><span>${esc(lang === 'en' ? en : zh)}</span></label>`).join('')}</div>${errorHTML(draft, lang, 'targetUserInterests')}</fieldset>`;
     const publication = `${regionField}${targetInterests}${choiceGroup(draft, lang, 'releaseStatus', releaseStates, { readonly })}<p class="pgp-hint">${esc(t(lang, 'releaseStatusHint'))}</p><div class="pgp-release-timing"><h4>${esc(t(lang, 'effectiveTime'))}</h4><div class="pgp-checks">${['immediate', 'scheduled'].map(mode => `<label><input type="radio" name="profile-publication" data-profile-publication value="${mode}"${draft.publication.mode === mode ? ' checked' : ''}>${esc(t(lang, mode))}</label>`).join('')}</div>${draft.publication.mode === 'scheduled' ? `${field(draft, lang, 'publication.scheduledAt', { isRequired: true, hint: t(lang, 'scheduleHint') })}<p class="pgp-hint" data-profile-timezone>${esc(t(lang, 'timeZone', { zone: Intl.DateTimeFormat().resolvedOptions().timeZone }))}</p>` : ''}</div>`;
     const savedText = draft.saving ? t(lang, 'saving') : draft.dirty ? t(lang, 'unsaved') : draft.savedAt ? t(lang, 'saved') : t(lang, 'neverSaved');
     const submissionTime = draft.submittedAt || draft.savedAt;
     const reviewResult = draft.reviewResult;
     const reviewHTML = reviewResult ? `<aside class="pgp-review-result${draft.reviewStatus === 'rejected' ? ' is-rejected' : ''}" data-profile-review-result><strong>${esc(t(lang, draft.reviewStatus === 'rejected' ? 'rejectedNotice' : 'approved'))}</strong>${draft.reviewStatus === 'rejected' ? `<p><b>${esc(t(lang, 'reviewReason'))}：</b><span data-profile-review-reason>${esc(reviewResult.reason)}</span></p>` : ''}<div><span>${esc(t(lang, 'reviewer'))}：${esc(reviewResult.reviewer || '—')}</span><span>${esc(t(lang, 'reviewedAt'))}：${esc(reviewResult.reviewedAt ? new Date(reviewResult.reviewedAt).toLocaleString(lang === 'en' ? 'en-GB' : 'zh-CN', { hour12: false }) : '—')}</span></div></aside>` : '';
-    const profileBody = `${card(draft, lang, 'basic', basic)}${card(draft, lang, 'classification', classification)}${card(draft, lang, 'developer', developer)}${card(draft, lang, 'assets', window.PublisherGameNames.render(draft, lang, { readonly, hideInput: true, idPrefix: 'profile-assets', title: lang === 'en' ? 'Store detail languages' : '商店资料语言' }) + `<p class="pgp-hint">${esc(t(lang, 'assetLocaleHint'))}</p>` + renderAssets(draft, lang))}${card(draft, lang, 'settings', settings)}`;
+    const profileBody = `${card(draft, lang, 'basic', basic)}${card(draft, lang, 'classification', classification)}${card(draft, lang, 'developer', developer)}${card(draft, lang, 'assets', window.PublisherGameNames.render(draft, lang, { readonly, hideInput: true, idPrefix: 'profile-assets', title: lang === 'en' ? 'Store detail languages' : '商店资料语言' }) + `<p class="pgp-hint">${esc(t(lang, 'assetLocaleHint'))}</p>` + renderAssets(draft, lang))}${card(draft, lang, 'settings', settings)}${compatibility}`;
     const releaseAnchor = ['profile', 'builds', 'catalog', 'release', 'qualification'].includes(draft.ui.releaseAnchor) ? draft.ui.releaseAnchor : 'profile';
     let releaseLocator = releaseWorkspace ? `<nav class="pgp-release-locator" aria-label="${lang === 'en' ? 'Version release sections' : '版本发布页内定位'}">${[['profile', '游戏资料', 'Game details'], ['builds', 'PC 包体', 'PC builds'], ['catalog', '商品与 SKU', 'Products & SKU'], ['release', '发行设置', 'Release settings'], ['qualification', '资质认证', 'Qualifications']].map(([id, zh, en]) => {
       const label = lang === 'en' ? en : zh;
@@ -819,8 +971,8 @@
       const accessibilityLabel = count ? (lang === 'en' ? `${label}, ${count} missing` : `${label}，缺失 ${count} 项`) : label;
       return `<button type="button" class="${releaseAnchor === id ? 'is-active' : ''}" data-release-locator="${id}" data-release-label="${esc(label)}" aria-label="${esc(accessibilityLabel)}" aria-current="${releaseAnchor === id ? 'location' : 'false'}"><span>${esc(label)}</span><b class="pgp-release-locator__count" data-release-missing-count${count ? '' : ' hidden'}>${count || ''}</b></button>`;
     }).join('')}</nav>` : '';
-    const releaseWorkspaceBody = `<div class="pgp-release-workspace"><section class="pgp-release-block" data-release-anchor="profile">${profileBody}</section><section class="pgp-release-block" data-release-anchor="builds">${builds}</section><section class="pgp-release-block" data-release-anchor="catalog">${renderPricing(draft, lang)}</section><section class="pgp-release-block" data-release-anchor="release">${card(draft, lang, 'publication', publication)}</section><section class="pgp-release-block" data-release-anchor="qualification">${qualificationReference}</section></div>`;
-    const moduleBody = releaseWorkspace ? releaseWorkspaceBody : activeModule === 'profile' ? profileBody : activeModule === 'catalog' ? renderPricing(draft, lang) : activeModule === 'release' ? card(draft, lang, 'publication', publication) : activeModule === 'qualifications' ? `<section class="pgp-qualification-workspace">${qualification}</section>` : renderVersions(draft, lang, options.game || {}, access, options.demoReleaseStatus || '');
+    const releaseWorkspaceBody = `<div class="pgp-release-workspace"><section class="pgp-release-block" data-release-anchor="profile">${profileBody}</section><section class="pgp-release-block" data-release-anchor="builds">${builds}</section><section class="pgp-release-block" data-release-anchor="catalog">${releaseCatalog}</section><section class="pgp-release-block" data-release-anchor="release">${card(draft, lang, 'publication', publication)}</section><section class="pgp-release-block" data-release-anchor="qualification">${qualificationReference}</section></div>`;
+    const moduleBody = releaseWorkspace ? releaseWorkspaceBody : activeModule === 'profile' ? profileBody : activeModule === 'catalog' ? releaseCatalog : activeModule === 'release' ? card(draft, lang, 'publication', publication) : activeModule === 'qualifications' ? `<section class="pgp-qualification-workspace">${qualification}</section>` : renderVersions(draft, lang, options.game || {}, access, options.demoReleaseStatus || '');
     const moduleTitle = lang === 'en' ? ({ 'release-workspace': 'Version release', profile: 'Game details', catalog: 'Products & SKU', release: 'Release settings', qualifications: 'Qualifications', versions: 'Version records' }[activeModule]) : ({ 'release-workspace': '版本发布', profile: '游戏资料', catalog: '商品与 SKU', release: '发行设置', qualifications: '资质认证', versions: '发布记录' }[activeModule]);
     const releaseActions = releaseWorkspace ? draft.reviewStatus === 'reviewing'
       ? `<div class="pgp-release-actions"><button type="button" class="pgp-button" data-profile-withdraw${draft.withdrawing || !access.canSubmitRelease ? ' disabled' : ''}>${esc(t(lang, draft.withdrawing ? 'withdrawing' : 'withdraw'))}</button></div>`
@@ -1080,6 +1232,50 @@
         });
       }
     }
+    root.querySelectorAll('[data-release-build-select]').forEach(input => input.addEventListener('change', () => {
+      if (editingLocked() || input.disabled) return;
+      const buildId = input.dataset.releaseBuildSelect;
+      const appId = input.dataset.releaseBuildApp;
+      const checkedInputs = Array.from(root.querySelectorAll('[data-release-build-select]:checked'));
+      draft.selectedReleaseBuildIds = checkedInputs
+        .filter(candidate => candidate === input || candidate.dataset.releaseBuildApp !== appId)
+        .map(candidate => candidate.dataset.releaseBuildSelect);
+      if (!input.checked) draft.selectedReleaseBuildIds = draft.selectedReleaseBuildIds.filter(id => id !== buildId);
+      changed('selectedReleaseBuildIds');
+      repaint(null, `[data-release-build-row="${CSS.escape(buildId)}"]`);
+    }));
+    root.querySelectorAll('[data-release-source-jump]').forEach(button => button.addEventListener('click', () => {
+      const section = button.dataset.releaseSourceJump;
+      const target = root.closest('[data-publisher-game-console]')?.querySelector(`.publisher-game-nav__tab[data-game-section="${CSS.escape(section)}"]`)
+        || document.querySelector(`.publisher-game-nav__tab[data-game-section="${CSS.escape(section)}"]`);
+      target?.click();
+    }));
+    root.querySelectorAll('[data-controller-type]').forEach(input => input.addEventListener('change', () => {
+      if (editingLocked()) return;
+      draft.controllerTypes = Array.from(root.querySelectorAll('[data-controller-type]:checked')).map(control => control.value);
+      changed('controllerTypes');
+    }));
+    root.querySelector('[data-controller-other]')?.addEventListener('input', event => {
+      if (editingLocked()) return;
+      draft.controllerOther = event.currentTarget.value;
+      changed('controllerOther');
+    });
+    root.querySelectorAll('[data-windows-requirement]').forEach(control => control.addEventListener(control.type === 'text' || control.type === 'number' ? 'input' : 'change', () => {
+      if (editingLocked()) return;
+      const [level, fieldName] = control.dataset.windowsRequirement.split('.');
+      draft.windowsRequirements[level][fieldName] = control.type === 'checkbox' ? control.checked : control.value;
+      draft.windowsRequirements.preset = 'custom';
+      root.querySelectorAll('[data-requirement-preset]').forEach(button => button.classList.toggle('is-active', button.dataset.requirementPreset === 'custom'));
+      changed(`windowsRequirements.${level}.${fieldName}`);
+    }));
+    root.querySelectorAll('[data-requirement-preset]').forEach(button => button.addEventListener('click', () => {
+      if (editingLocked() || button.disabled) return;
+      const preset = button.dataset.requirementPreset;
+      if (preset === 'custom') draft.windowsRequirements.preset = 'custom';
+      else draft.windowsRequirements = normalizeWindowsRequirements({ preset, ...structuredClone(windowsRequirementPresets[preset]) });
+      changed('windowsRequirements');
+      repaint(null, '[data-release-compatibility]');
+    }));
     window.PublisherGameBuilds.bind(root, { draft, readonly: editingLocked(), onChanged: changed, repaint: anchor => repaint(null, anchor) });
     function focusField(key) {
       if (['gameNameZh', 'taglineZh', 'descriptionZh', 'developerWordsZh'].includes(key)) draft.currentNameLanguage = draft.ui.contentLanguage = 'zh';
@@ -1602,9 +1798,9 @@
           ? root.querySelector(`[data-profile-field="${discountKey}.discountStartAt"]`)
           : root.querySelector(`[data-profile-field="${discountKey}.discountEndAt"]`);
       })() : null;
-      const target = (nameCode && root.querySelector(`[data-profile-section="basic"] [data-game-name-input="${nameCode}"]`)) || (focus === 'pricing.model' && root.querySelector('[data-profile-pricing-model]')) || (focus === 'qualifications.activeVersion' && (qualificationTargetFor(qualificationFocus) || root.querySelector('[data-qualification-editor], [data-qualification-cards]'))) || (focus === 'buildPackages.readyFull' && root.querySelector('[data-build-local-open]')) || (focus === 'compliance.antiAddictionAcknowledged' && root.querySelector('[data-profile-compliance-ack]')) || discountTarget || root.querySelector(`[data-profile-field="${focus}"], [data-profile-upload="${focus}"], [data-profile-array="${focus}"]`) || root.querySelector(`[data-profile-section="${sectionOf(focus)}"]`);
+      const target = (nameCode && root.querySelector(`[data-profile-section="basic"] [data-game-name-input="${nameCode}"]`)) || (focus === 'pricing.model' && root.querySelector('[data-profile-pricing-model]')) || (focus === 'qualifications.activeVersion' && (qualificationTargetFor(qualificationFocus) || root.querySelector('[data-qualification-editor], [data-qualification-cards]'))) || (focus === 'selectedReleaseBuildIds' && root.querySelector('[data-release-build-select]:not(:disabled), [data-release-source-jump="package-builds"]')) || (focus === 'compliance.antiAddictionAcknowledged' && root.querySelector('[data-profile-compliance-ack]')) || discountTarget || root.querySelector(`[data-profile-field="${focus}"], [data-profile-upload="${focus}"], [data-profile-array="${focus}"]`) || root.querySelector(`[data-profile-section="${sectionOf(focus)}"]`);
       focusTarget(target);
     } else if (scrollSnapshot) restoreScroll(scrollSnapshot);
   }
-  window.PublisherGameProfile = { createDraft, render, bind, validate, completion, displayName, submissionSnapshot };
+  window.PublisherGameProfile = { createDraft, render, bind, validate, completion, displayName, submissionSnapshot, renderSourceSection };
 })();
