@@ -12,7 +12,7 @@ const adminOutputDir = path.join(root, 'public', 'prd', 'app-rental-admin');
 const evidenceDir = path.join(root, 'test-results', 'app-rental-capture');
 const stagingDir = path.join(evidenceDir, 'staging');
 const reportPath = path.join(evidenceDir, 'capture-results.json');
-const landscapeReviewDir = path.join(root, 'test-results', 'app-rental-landscape-review');
+const landscapeReviewDir = path.join(evidenceDir, 'landscape-review');
 const chromePath = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
@@ -35,7 +35,7 @@ const PAGE_CONTRACTS = Object.freeze({
   detail: Object.freeze({ screen: 'detail', baselineSource: 'app-v611' }),
   checkout: Object.freeze({ screen: 'checkout', baselineSource: 'mac-rental' }),
   membership: Object.freeze({ screen: 'membership', baselineSource: 'mac-rental' }),
-  'member-library': Object.freeze({ screen: 'library', baselineSource: 'app-v611' }),
+  'member-library': Object.freeze({ screen: 'member-library', baselineSource: 'mac-rental' }),
   orders: Object.freeze({ screen: 'orders', baselineSource: 'mac-rental' }),
   'order-detail': Object.freeze({ screen: 'order-detail', baselineSource: 'mac-rental' }),
   'steam-login': Object.freeze({ screen: 'steam-login', baselineSource: 'mac-rental' }),
@@ -318,7 +318,7 @@ async function setShotState(page, shot) {
   assert(!result.apiMissing, `${shot.name} requires window.__appRentalDemo.openCaptureState(pageId)`);
   if (shot.pageId === 'play') assert.equal(result.playTab, 'pc', `${shot.name} must open the PC game tab`);
   if (shot.pageId === 'library') assert.equal(result.libraryTab, 'pc', `${shot.name} must open the PC game library tab`);
-  if (shot.pageId === 'member-library') assert.equal(result.libraryTab, 'member', `${shot.name} must open the unified member game library tab`);
+  if (shot.pageId === 'member-library') assert.equal(result.screen, 'member-library', `${shot.name} must open the secondary member game library page`);
   if (shot.pageId === 'orders') await page.locator('[data-action="toggle-order-search"]').click();
 }
 
@@ -435,8 +435,9 @@ async function verifyShotState(page, shot) {
       };
     });
     assert.equal(library.libraryTab, 'pc', `${shot.name} must capture PC game tab`);
-    assert.deepEqual(library.tabs, [['member', '会员游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']], `${shot.name} top-level game library tabs mismatch`);
+    assert.deepEqual(library.tabs, [['pc', 'PC游戏'], ['retro', '复古游戏']], `${shot.name} top-level game library tabs mismatch`);
     assert(library.selected === 'pc' && library.singleLine, `${shot.name} PC top tab must be selected and remain on one line`);
+    assert.equal(await page.locator('#appRentalDemo [data-screen="member-library"]').filter({ hasText: '会员游戏' }).count(), 1, `${shot.name} requires a member game entry beside Steam`);
     const trial = library.cards.find(({ type }) => type === 'trial');
     const permanent = library.cards.find(({ type }) => type === 'permanent');
     assert(trial?.text.includes('标准版 · 已租号') && /^剩余(?:\d+天\d+小时|\d+小时\d+分)$/.test(trial.validity) && trial.validityCount === 1, `${shot.name} trial entitlement card mismatch`);
@@ -468,10 +469,10 @@ async function verifyShotState(page, shot) {
         statusEntryNestedActions: document.querySelector('[data-member-status-entry]')?.querySelectorAll('button, [role="button"], [data-action]').length ?? -1,
       };
     });
-    assert(memberLibrary.screen === 'library' && memberLibrary.libraryTab === 'member' && memberLibrary.memberSelected, `${shot.name} must capture unified member game tab`);
-    assert.deepEqual(memberLibrary.tabs, [['member', '会员游戏'], ['pc', 'PC游戏'], ['retro', '复古游戏']], `${shot.name} top-level game library tabs mismatch`);
+    assert.equal(memberLibrary.screen, 'member-library', `${shot.name} must capture a secondary member library page`);
+    assert.equal(memberLibrary.tabs.length, 0, `${shot.name} must not expose core game-library tabs`);
     assert(memberLibrary.cardCount >= 6 && memberLibrary.versions.every((text) => text === '标准版'), `${shot.name} member game cards mismatch`);
-    assert(memberLibrary.entitlementCount === 0 && memberLibrary.nestedActions === 0 && memberLibrary.legacyLayoutCount === 0, `${shot.name} member game cards contain entitlement/action data or still use legacy page`);
+    assert(memberLibrary.entitlementCount === 0 && memberLibrary.nestedActions === 0 && memberLibrary.legacyLayoutCount === 1, `${shot.name} member game cards or secondary page layout mismatch`);
     assert(memberLibrary.memberSearchCount === 1 && memberLibrary.nonMemberToolCount === 0, `${shot.name} member game tab must expose search only without PC import/filter tools`);
     assert(
       memberLibrary.statusEntryCount === 1
@@ -680,12 +681,17 @@ async function verifyShotState(page, shot) {
     assert(!visible.includes(copy), `${shot.name} exposes forbidden account-process copy: ${copy}`);
   }
   const visibleMedia = await page.evaluate(() => ({
-    images: [...document.images].filter((node) => node.getClientRects().length > 0).length,
+    images: [...document.images].filter((node) => node.getClientRects().length > 0).map((node) => ({ asset: node.dataset.memberEntryMedia || '', loaded: node.complete && node.naturalWidth > 0, alt: node.alt })),
     wireframes: [...document.querySelectorAll('[data-wireframe-media]')].filter((node) => node.getClientRects().length > 0).length,
   }));
-  assert.equal(visibleMedia.images, 0, `${shot.name} still renders bitmap/image content`);
+  if (['library', 'play'].includes(shot.pageId)) {
+    assert(visibleMedia.images.every(({ loaded }) => loaded), `${shot.name} reference image failed to load`);
+    assert(visibleMedia.images.every(({ asset }) => ['memberEntryLibraryReference', 'memberEntryPcReference'].includes(asset)), `${shot.name} contains an unregistered reference image`);
+  } else {
+    assert.equal(visibleMedia.images.length, 0, `${shot.name} unexpectedly changed non-entry wireframe media to bitmap content`);
+  }
   if (['home', 'detail', 'checkout', 'membership', 'play', 'community', 'ranking', 'library', 'profile', 'search', 'member-library', 'order-detail', 'membership-success'].includes(shot.pageId)) {
-    assert(visibleMedia.wireframes > 0, `${shot.name} has no visible wireframe media`);
+    assert(visibleMedia.wireframes > 0 || visibleMedia.images.length > 0, `${shot.name} has no visible reference or wireframe media`);
   }
   for (const secret of KNOWN_SECRETS) {
     assert(!visible.includes(secret), `${shot.name} exposes sensitive value ${secret}`);
@@ -951,6 +957,115 @@ async function captureAdminScreenshots(browser) {
   }
 }
 
+async function scrollEntryIntoView(page, selector) {
+  const evidence = await page.locator(selector).evaluate((element) => {
+    let region = element.parentElement;
+    while (region && !(region.scrollHeight > region.clientHeight + 1
+      && ['auto', 'scroll'].includes(getComputedStyle(region).overflowY))) region = region.parentElement;
+    if (region) {
+      const scale = region.getBoundingClientRect().height / region.offsetHeight || 1;
+      region.scrollTop += (element.getBoundingClientRect().top - region.getBoundingClientRect().top) / scale - 12;
+    }
+    return { region: region?.className || '', scrollTop: region?.scrollTop || 0 };
+  });
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  return evidence;
+}
+
+async function captureCurrentSupplementalScreenshots(browser) {
+  const supplementalShots = [
+    { name: '20-after-sales-refund-portrait.png', pageId: 'after-sales', orientation: 'portrait', requestType: 'refund' },
+    { name: '21-after-sales-replacement-portrait.png', pageId: 'after-sales', orientation: 'portrait', requestType: 'replacement' },
+    { name: '22-rental-notifications-portrait.png', pageId: 'notifications', orientation: 'portrait' },
+    { name: '23-home-pc-portrait.png', pageId: 'home', orientation: 'portrait', homeChannel: 'pc' },
+    { name: '24-membership-library-preview-portrait.png', pageId: 'membership', orientation: 'portrait', scrollSelector: '.membership-preview' },
+    { name: '24-membership-library-preview-landscape.png', pageId: 'membership', orientation: 'landscape', scrollSelector: '.membership-preview' },
+  ];
+  const results = [];
+  for (const shot of supplementalShots) {
+    await withFreshPage(browser, shot.name, async (page) => {
+      await page.evaluate(({ pageId, orientation, requestType }) => {
+        const demo = window.__appRentalDemo;
+        demo.setOrientation(orientation);
+        demo.openCaptureState(pageId);
+        if (requestType) demo.setAfterSalesRequestType(requestType);
+      }, shot);
+      if (shot.homeChannel) await page.locator('[data-group="homeChannel"][data-value="pc"]').click();
+      await waitForAssets(page);
+      const scroll = shot.scrollSelector ? await scrollEntryIntoView(page, shot.scrollSelector) : null;
+      const media = await page.locator('#appRentalDemo img').evaluateAll((images) => images.map((image) => ({
+        asset: image.dataset.memberEntryMedia || '', loaded: image.complete && image.naturalWidth > 0,
+      })));
+      assert(media.every(({ asset, loaded }) => loaded && ['memberEntryLibraryReference', 'memberEntryPcReference'].includes(asset)), `${shot.name} contains an unloaded or unregistered reference image`);
+      const visible = await page.locator('.device').innerText();
+      for (const secret of KNOWN_SECRETS) assert(!visible.includes(secret), `${shot.name} exposes a sensitive fixture`);
+      assert(!CDKEY_VALUE_PATTERN.test(visible), `${shot.name} exposes a CDKEY-shaped value`);
+      if (shot.requestType) {
+        assert.equal(await page.locator(`[data-after-sales-request="${shot.requestType}"].selected`).count(), 1, `${shot.name} after-sales request selection mismatch`);
+        assert(visible.includes(shot.requestType === 'refund' ? '提交退款申请' : '提交换号申请'), `${shot.name} after-sales submit label mismatch`);
+      }
+      if (shot.pageId === 'notifications') {
+        assert((await page.locator('[data-notification-type]').count()) >= 3, `${shot.name} must show rental notifications`);
+        assert(visible.includes('消息中心') && visible.includes('订单与售后'), `${shot.name} notification context is missing`);
+      }
+      if (shot.homeChannel || shot.scrollSelector) {
+        const entries = page.locator('#appRentalDemo [data-screen="member-library"]');
+        assert((await entries.filter({ hasText: '会员游戏库' }).count()) >= 1, `${shot.name} member-library heading entry missing`);
+        assert((await entries.filter({ hasText: '查看全部' }).count()) >= 1, `${shot.name} view-all entry missing`);
+        const entryVisibility = await entries.filter({ hasText: '查看全部' }).first().evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          const device = element.closest('.device').getBoundingClientRect();
+          return rect.top >= device.top && rect.bottom <= device.bottom;
+        });
+        assert(entryVisibility, `${shot.name} member library entry is outside the viewport`);
+      }
+      const outputPath = path.join(outputDir, shot.name);
+      await page.locator('.device').screenshot({ path: outputPath, animations: 'disabled' });
+      const png = verifyPng(outputPath, shot);
+      results.push({ ...shot, status: 'pass', ...png, scroll, media, outputPath: path.relative(root, outputPath) });
+      process.stdout.write(`CURRENT_CAPTURED ${shot.name} ${png.bytes} bytes\n`);
+    });
+  }
+  return results;
+}
+
+async function captureReleaseSettings(browser) {
+  const sourcePath = process.env.APP_RENTAL_RELEASE_SOURCE
+    ? path.resolve(process.env.APP_RENTAL_RELEASE_SOURCE)
+    : path.join(root, 'Mac端demo', 'mac端租号功能', 'Mac端租号功能-标注版.html');
+  assert(fs.existsSync(sourcePath), `外放设置来源不存在：${sourcePath}`);
+  assert(fs.readFileSync(sourcePath, 'utf8').includes('function openRentalReleaseSettings'), '当前 Mac Demo 尚无外放设置，请用 APP_RENTAL_RELEASE_SOURCE 指定已有真实外放页面');
+  const outputPath = path.join(root, 'public', 'prd', 'mac-rental', 'b08-rental-release-settings.png');
+  const page = await browser.newPage({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 1 });
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+  try {
+    await page.goto(`${pathToFileURL(sourcePath).href}?mode=admin&page=products`, { waitUntil: 'load' });
+    await page.waitForFunction(() => typeof renderApp === 'function' && typeof openRentalReleaseSettings === 'function');
+    await page.evaluate(() => {
+      state.mode = 'admin';
+      state.page = 'products';
+      state.panelOpen = false;
+      state.badgeVisible = false;
+      renderApp();
+      openRentalReleaseSettings();
+    });
+    await page.locator('.release-settings-form').waitFor({ state: 'visible' });
+    await page.evaluate(() => document.fonts.ready.then(() => true));
+    const text = await page.locator('.release-settings-form').innerText();
+    for (const label of ['租号外放设置', '中国大陆', '美国', '其他海外', '灰度比例', '保存设置']) assert(text.includes(label), `外放设置缺少${label}`);
+    for (const secret of KNOWN_SECRETS) assert(!text.includes(secret), '外放设置出现敏感信息');
+    assertNoPageErrors(errors, 'release-settings');
+    await page.screenshot({ path: outputPath, animations: 'disabled' });
+    const png = verifyFixedPng(outputPath, { width: 1600, height: 1000 });
+    process.stdout.write(`RELEASE_CAPTURED ${path.basename(outputPath)} ${png.bytes} bytes\n`);
+    return { name: path.basename(outputPath), pageId: 'rental-release-settings', sourcePath, status: 'pass', ...png, outputPath: path.relative(root, outputPath) };
+  } finally {
+    await page.close();
+  }
+}
+
 function appendAdditionalEvidence(additionalEvidence) {
   const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
   writeCaptureReport({
@@ -964,14 +1079,22 @@ function appendAdditionalEvidence(additionalEvidence) {
 
 const browser = await chromium.launch({ executablePath: chromePath, headless: true });
 try {
-  await runPreflight(browser);
-  await captureShots(browser);
-  const additionalEvidence = [
-    await captureLandscapeLoginInfoEvidence(browser),
-    ...await captureAfterSalesProgressEvidence(browser),
-    ...await captureAdminScreenshots(browser),
-  ];
-  appendAdditionalEvidence(additionalEvidence);
+  if (!process.argv.includes('--supplemental-only')) {
+    await runPreflight(browser);
+    await captureShots(browser);
+  }
+  const additionalEvidence = [];
+  for (const capture of [
+    captureLandscapeLoginInfoEvidence,
+    captureAfterSalesProgressEvidence,
+    captureAdminScreenshots,
+    captureCurrentSupplementalScreenshots,
+    captureReleaseSettings,
+  ]) {
+    const captured = await capture(browser);
+    additionalEvidence.push(...(Array.isArray(captured) ? captured : [captured]));
+    appendAdditionalEvidence(additionalEvidence);
+  }
   process.stdout.write(`SUPPLEMENTAL_CAPTURE ${additionalEvidence.length}/${additionalEvidence.length} PASS\n`);
 } finally {
   await browser.close();

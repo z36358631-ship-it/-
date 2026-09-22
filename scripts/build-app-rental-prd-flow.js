@@ -13,11 +13,12 @@ const steps = [
   { num: '05', title: '权益生效', detail: '支付成功后计时或发放权益', image: '17-payment-success-portrait.png' },
   { num: '06', title: '登录与启动', detail: '登录成功进入详情下载或启动', image: '06-steam-login-portrait.png' },
   { num: '07', title: '订单管理／续租／售后（按需）', detail: '查看有效期、续租与售后进度', image: '05-orders-portrait.png' },
+  { num: '入口', title: '会员游戏库 → 02游戏详情', detail: '来自游戏库、PC游戏或会员中心', image: '15-member-library-portrait.png' },
 ];
 
 const layout = Object.freeze({
   columns: 4,
-  rows: [4, 3],
+  rows: [4, 4],
   width: 2560,
   height: 2280,
   marginX: 70,
@@ -119,7 +120,7 @@ function backgroundSvg() {
       </defs>
       <rect width="100%" height="100%" fill="#f3f7fa"/>
       <text x="80" y="70" fill="#17324a" font-family="Microsoft YaHei, sans-serif" font-size="46" font-weight="700">APP 租号首期主流程</text>
-      <text x="80" y="116" fill="#6a7f92" font-family="Microsoft YaHei, sans-serif" font-size="24">首次体验、单游戏永久与会员的发现、购买、履约和订单管理</text>
+      <text x="80" y="116" fill="#6a7f92" font-family="Microsoft YaHei, sans-serif" font-size="24">01—07 为租号主流程；右下展示三处会员入口，选择游戏后进入 02 游戏详情</text>
       ${horizontalArrows}
       <path d="${returnPath}" fill="none" stroke="#18a8b8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
       <rect x="70" y="2165" width="2420" height="82" rx="20" fill="#e7f4f7" stroke="#c9e6eb" stroke-width="2"/>

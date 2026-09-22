@@ -12,6 +12,21 @@ const macRentalAdminHref = '../../Mac端demo/mac端租号功能/Mac端租号功�
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const verificationEvidencePath = path.join(root, 'test-results', 'app-rental-verification', 'contract-results.json');
 
+const REGISTERED_MEMBER_MEDIA = Object.freeze([
+  '2026-09-21-portrait-library-user.png',
+  '2026-09-21-portrait-pc-user.png',
+]);
+
+function hasOnlyRegisteredMemberMedia(source) {
+  const expected = new Set(REGISTERED_MEMBER_MEDIA.map((name) => `data:image/png;base64,${fs.readFileSync(path.join(root, 'demos', 'APP租号功能', 'assets', 'reference', name)).toString('base64')}`));
+  const embedded = source.match(/data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+/g) || [];
+  const imageComponents = source.match(/<img\b[^>]*>/g) || [];
+  return new Set(embedded).size === expected.size
+    && embedded.every((url) => expected.has(url))
+    && imageComponents.length === 1
+    && imageComponents.every((tag) => tag.includes('data-member-entry-media="${assetKey}"'));
+}
+
 const EXPECTED_DEVICE_DIMENSIONS = Object.freeze({
   portrait: Object.freeze({ width: 390, height: 844 }),
   landscape: Object.freeze({ width: 874, height: 402 }),
@@ -28,7 +43,7 @@ const FULL_PAGE_MATRIX = Object.freeze([
   { pageId: 'detail', screen: 'detail', baselineSource: 'app-v611' },
   { pageId: 'checkout', screen: 'checkout', baselineSource: 'mac-rental' },
   { pageId: 'membership', screen: 'membership', baselineSource: 'mac-rental' },
-  { pageId: 'member-library', screen: 'library', baselineSource: 'app-v611' },
+  { pageId: 'member-library', screen: 'member-library', baselineSource: 'mac-rental' },
   { pageId: 'orders', screen: 'orders', baselineSource: 'mac-rental' },
   { pageId: 'order-detail', screen: 'order-detail', baselineSource: 'mac-rental' },
   { pageId: 'steam-login', screen: 'steam-login', baselineSource: 'mac-rental' },
@@ -118,7 +133,7 @@ async function main() {
     ['订单搜索折叠展开', templateSource.includes('toggle-order-search') && templateSource.includes('order-search-trigger')],
     ['订单动作唯一映射', templateSource.includes('ORDER_ACTIONS_BY_STATUS') && templateSource.includes('getOrderActions') && !templateSource.includes('renderActiveOrderActions')],
     ['租赁时长天小时格式', templateSource.includes('formatRentalDuration')],
-    ['APP内容媒体统一线框化', templateSource.includes('data-wireframe-media') && !/<img\b[^>]*data-real-asset/i.test(templateSource)],
+    ['原媒体保持线框，本轮局部媒体单独登记', templateSource.includes('data-wireframe-media') && !/<img\b[^>]*data-real-asset/i.test(templateSource)],
   ];
   const failedFinalReviewSourceChecks = finalReviewSourceChecks.filter(([, passed]) => !passed).map(([name]) => name);
   const sixthReviewSourceChecks = [
@@ -162,9 +177,9 @@ async function main() {
   assertAnnotation(
     annotationSource.includes('data-wireframe-media')
       && !/<img\b[^>]*data-real-asset/i.test(annotationSource)
-      && !/data:image\/(?:jpeg|png|webp);base64,/i.test(annotationSource)
+      && hasOnlyRegisteredMemberMedia(annotationSource)
       && !/\{\{[^}]+\}\}/.test(annotationSource),
-    '标注版必须使用本地线框媒体、移除真实位图且不得保留占位符',
+    '标注版除本轮两个登记来源外必须保持线框媒体，不得保留占位符',
   );
   const browser = await chromium.launch({ executablePath: chromePath, headless: true });
   try {
@@ -557,7 +572,7 @@ async function main() {
       assert(restored.snapshot.screen === 'play' && restored.snapshot.playTab === 'pc' && restored.scrollTop > 0, `返回未恢复PC Tab或列表位置：${JSON.stringify(restored)}`);
 
       for (const value of ['cloud', 'retro']) {
-        await page.locator(`[data-group="playTab"][data-value="${value}"]`).click();
+        await page.locator(`[data-group="playTab"][data-value="${value}"], [data-screen="play"][data-channel="${value}"]`).first().click();
         assert((await page.locator('[data-discovery-rental-state]').count()) === 0, `${value} Tab 错误展示PC租号状态`);
       }
 
@@ -1820,7 +1835,6 @@ async function main() {
     await runRefactorGate('APP_LIBRARY_CONVERGENCE', async () => {
       const forbiddenVisibleStates = ['正在分配账号', '正在获取登录凭据', '正在自动登录', '内部账号准备状态'];
       const expectedTopTabs = [
-        ['member', '会员游戏'],
         ['pc', 'PC游戏'],
         ['retro', '复古游戏'],
       ];
@@ -1862,6 +1876,7 @@ async function main() {
             pcSources: [...document.querySelectorAll('[data-action="set-pc-library-source"]')].map((node) => node.textContent.trim()),
             forbiddenVisible: forbiddenCopies.filter((copy) => document.querySelector('#appRentalDemo')?.innerText.includes(copy)),
             visibleImages: [...document.images].filter((node) => node.getClientRects().length > 0).length,
+            unregisteredImages: [...document.images].filter((node) => node.getClientRects().length > 0 && (!['memberEntryLibraryReference', 'memberEntryPcReference'].includes(node.dataset.memberEntryMedia) || !node.src.startsWith('data:image/png;base64,'))).length,
             visibleWireframes: [...document.querySelectorAll('[data-wireframe-media]')].filter((node) => node.getClientRects().length > 0).length,
           };
         }, { nextOrientation: orientation, forbiddenCopies: forbiddenVisibleStates });
@@ -1888,7 +1903,7 @@ async function main() {
         check(pcLibrary.entitlementCards.every(({ nestedActions }) => nestedActions === 0), `${orientation} 游戏库权益卡仍含登录、下载或启动等独立按钮：${JSON.stringify(pcLibrary.entitlementCards)}`);
         check(JSON.stringify(pcLibrary.pcSources) === JSON.stringify(['Steam', 'Epic', '导入游戏']), `${orientation} PC游戏内部来源入口不完整：${JSON.stringify(pcLibrary.pcSources)}`);
         check(pcLibrary.forbiddenVisible.length === 0, `${orientation} 游戏库暴露后台账号过程：${pcLibrary.forbiddenVisible.join('、')}`);
-        check(pcLibrary.visibleImages === 0 && pcLibrary.visibleWireframes > 0, `${orientation} 游戏库未完整线框化：${JSON.stringify({ images: pcLibrary.visibleImages, wireframes: pcLibrary.visibleWireframes })}`);
+        check(pcLibrary.visibleImages === (orientation === 'portrait' ? 3 : 0) && pcLibrary.unregisteredImages === 0 && pcLibrary.visibleWireframes > 0, `${orientation} 游戏库出现非登记媒体或丢失原线框权益卡：${JSON.stringify({ images: pcLibrary.visibleImages, wireframes: pcLibrary.visibleWireframes })}`);
 
         const memberLibrary = await page.evaluate((forbiddenCopies) => {
           const api = window.__appRentalDemo;
@@ -1900,8 +1915,7 @@ async function main() {
           return {
             screen: opened.screen,
             libraryTab: opened.libraryTab,
-            selected: document.querySelector('[data-library-top-tab][data-value="member"]')?.getAttribute('aria-selected') === 'true'
-              || document.querySelector('[data-library-top-tab][data-value="member"]')?.classList.contains('active'),
+            childShell: Boolean(document.querySelector('.device[data-shell="task"] [data-action="task-back"]')) && document.querySelectorAll('.portrait-nav, .landscape-side-nav').length === 0,
             legacyLayoutCount: document.querySelectorAll('.portrait-member-library, .landscape-member-library').length,
             cardCount: cards.length,
             columns: new Set(cards.slice(0, Math.min(4, cards.length)).map((node) => Math.round(node.getBoundingClientRect().left))).size,
@@ -1919,11 +1933,11 @@ async function main() {
             forbiddenVisible: forbiddenCopies.filter((copy) => document.querySelector('#appRentalDemo')?.innerText.includes(copy)),
           };
         }, forbiddenVisibleStates);
-        check(memberLibrary.screen === 'library' && memberLibrary.libraryTab === 'member' && memberLibrary.selected, `${orientation} 会员入口未收敛到游戏库会员Tab：${JSON.stringify(memberLibrary)}`);
-        check(memberLibrary.legacyLayoutCount === 0, `${orientation} 仍渲染独立会员游戏库页面`);
-        check(memberLibrary.cardCount >= 6 && memberLibrary.columns >= 2, `${orientation} 会员游戏Tab卡片数量或布局不足：${JSON.stringify(memberLibrary)}`);
+        check(memberLibrary.screen === 'member-library' && memberLibrary.childShell, `${orientation} 会员入口未进入二级游戏库：${JSON.stringify(memberLibrary)}`);
+        check(memberLibrary.legacyLayoutCount === 1, `${orientation} 会员游戏库缺少独立二级页面结构`);
+        check(memberLibrary.cardCount >= 6 && memberLibrary.columns >= 2, `${orientation} 会员游戏库子页卡片数量或布局不足：${JSON.stringify(memberLibrary)}`);
         check(memberLibrary.entitlementCardCount === 0 && memberLibrary.actionCount === 0 && memberLibrary.versionTexts.every((text) => text === '标准版'), `${orientation} 会员游戏卡混入权益、有效期或直接操作：${JSON.stringify(memberLibrary)}`);
-        check(memberLibrary.memberSearchCount === 1 && memberLibrary.nonMemberToolCount === 0, `${orientation} 会员游戏Tab未保持仅搜索，仍混入PC导入／筛选工具：${JSON.stringify(memberLibrary)}`);
+        check(memberLibrary.memberSearchCount === 1 && memberLibrary.nonMemberToolCount === 0, `${orientation} 会员游戏库子页未保持仅搜索，仍混入PC导入／筛选工具：${JSON.stringify(memberLibrary)}`);
         check(
           memberLibrary.statusEntryCount === 1
             && memberLibrary.statusEntryTag === 'BUTTON'
@@ -1934,7 +1948,7 @@ async function main() {
             && memberLibrary.statusEntryNestedActions === 0,
           `${orientation} 已开通会员状态条未整条收敛为单一会员中心入口：${JSON.stringify(memberLibrary)}`,
         );
-        check(memberLibrary.forbiddenVisible.length === 0, `${orientation} 会员游戏Tab暴露后台账号过程：${memberLibrary.forbiddenVisible.join('、')}`);
+        check(memberLibrary.forbiddenVisible.length === 0, `${orientation} 会员游戏库子页暴露后台账号过程：${memberLibrary.forbiddenVisible.join('、')}`);
 
         const activeStatusRoute = await page.evaluate(() => {
           document.querySelector('[data-member-status-entry]')?.click();
@@ -1961,8 +1975,7 @@ async function main() {
           };
         }, orientation);
         check(
-          inactiveMemberStatus.screen === 'library'
-            && inactiveMemberStatus.libraryTab === 'member'
+          inactiveMemberStatus.screen === 'member-library'
             && inactiveMemberStatus.count === 1
             && inactiveMemberStatus.tag === 'BUTTON'
             && inactiveMemberStatus.target === 'membership'
@@ -1982,7 +1995,7 @@ async function main() {
           const snapshot = window.__appRentalDemo.snapshot();
           return { screen: snapshot.screen, libraryTab: snapshot.libraryTab };
         });
-        check(compatibilityRoute.screen === 'library' && compatibilityRoute.libraryTab === 'member', `${orientation} 旧会员库入口未兼容重定向：${JSON.stringify(compatibilityRoute)}`);
+        check(compatibilityRoute.screen === 'member-library', `${orientation} 会员库入口未进入二级页：${JSON.stringify(compatibilityRoute)}`);
 
         for (const entryState of ['membership', 'membership-success', 'play']) {
           const entryResult = await page.evaluate((pageId) => {
@@ -1997,7 +2010,7 @@ async function main() {
               libraryTab: snapshot.libraryTab,
             };
           }, entryState);
-          check(entryResult.found && entryResult.screen === 'library' && entryResult.libraryTab === 'member', `${orientation} ${entryState}入口未进入统一会员Tab：${JSON.stringify(entryResult)}`);
+          check(entryResult.found && entryResult.screen === 'member-library', `${orientation} ${entryState}入口未进入统一会员游戏库子页：${JSON.stringify(entryResult)}`);
         }
 
         for (const surface of ['play', 'ranking']) {
@@ -2070,7 +2083,7 @@ async function main() {
         const snapshot = window.__appRentalDemo.snapshot();
         return { screen: snapshot.screen, libraryTab: snapshot.libraryTab };
       });
-      check(defaultMember.screen === 'library' && defaultMember.libraryTab === 'member', `有效会员首次进入游戏库未默认会员游戏：${JSON.stringify(defaultMember)}`);
+      check(defaultMember.screen === 'library' && defaultMember.libraryTab === 'pc', `有效会员首次进入游戏库未保留PC游戏默认页：${JSON.stringify(defaultMember)}`);
 
       const rememberedTab = await page.evaluate(() => {
         const api = window.__appRentalDemo;
@@ -2105,8 +2118,7 @@ async function main() {
         };
       });
       check(
-        memberSearchRetention.screen === 'library'
-          && memberSearchRetention.libraryTab === 'member'
+        memberSearchRetention.screen === 'member-library'
           && memberSearchRetention.query === 'Spiritfarer'
           && memberSearchRetention.input === 'Spiritfarer'
           && JSON.stringify(memberSearchRetention.resultNames) === JSON.stringify(['Spiritfarer']),
@@ -2811,7 +2823,7 @@ async function main() {
     }));
     assert(Math.round(portrait.frame?.width ?? 0) === 390, '竖屏宽度不是390');
     assert(Math.round(portrait.frame?.height ?? 0) === 844, '竖屏高度不是844');
-    assert(portrait.nav.join('|') === '首页|玩游戏|排行榜|游戏库|我的', '竖屏导航不一致');
+    assert(portrait.nav.join('|') === '首页|社区|排行榜|游戏库|我的', '竖屏导航未匹配用户本轮截图');
     assert(portrait.primaryCount === 0, '首页不得存在独立主操作，游戏卡应整卡进入详情');
     process.stdout.write('PORTRAIT 4/4 PASS\n');
 
@@ -2819,14 +2831,15 @@ async function main() {
     const inlineRasterCount = (builtHtml.match(/data:image\/(?:jpeg|png|webp);base64,/g) || []).length;
     const htmlImageCount = (builtHtml.match(/<img\b/gi) || []).length;
     const remoteImageDependencyCount = (builtHtml.match(/(?:src|url\()["']?https?:[^\s"')]+/gi) || []).length;
-    assert(inlineRasterCount === 0 && htmlImageCount === 0 && remoteImageDependencyCount === 0, `Demo仍含位图或远程图片依赖：${JSON.stringify({ inlineRasterCount, htmlImageCount, remoteImageDependencyCount })}`);
+    assert(inlineRasterCount === 2 && htmlImageCount === 1 && remoteImageDependencyCount === 0 && hasOnlyRegisteredMemberMedia(builtHtml), `Demo媒体未严格限定本轮两个登记来源或包含远程依赖：${JSON.stringify({ inlineRasterCount, htmlImageCount, remoteImageDependencyCount })}`);
     for (const screen of ['home', 'play', 'library', 'profile']) {
       await page.evaluate((value) => window.__appRentalDemo.navigate(value), screen);
       const media = await page.evaluate(() => ({
         wireframes: [...document.querySelectorAll('[data-wireframe-media]')].filter((node) => node.getClientRects().length > 0).length,
         images: [...document.images].filter((node) => node.getClientRects().length > 0).length,
+        unregisteredImages: [...document.images].filter((node) => node.getClientRects().length > 0 && (!['memberEntryLibraryReference', 'memberEntryPcReference'].includes(node.dataset.memberEntryMedia) || !node.src.startsWith('data:image/png;base64,'))).length,
       }));
-      assert(media.wireframes >= 1 && media.images === 0, `${screen} 未完整使用线框媒体：${JSON.stringify(media)}`);
+      assert(media.wireframes >= 1 && media.unregisteredImages === 0, `${screen} 丢失原线框媒体或出现非登记图片：${JSON.stringify(media)}`);
     }
     process.stdout.write('WIREFRAME_MEDIA 7/7 PASS\n');
 
@@ -2870,16 +2883,16 @@ async function main() {
     assert(landscape.nav.join('|') === '游戏库|玩游戏|探索|社区|排行榜|我的', '横屏导航顺序错误');
     assert(landscape.cards === 2, '横屏PC权益卡应只展示本轮穷举的首次体验与单游戏永久两张卡');
     assert(landscape.rows === 1, '横屏PC权益卡不应为凑满页面强制拉出第二行');
-    assert(landscape.tabs.join('|') === '会员游戏|PC游戏|复古游戏', '横屏游戏库顶层Tab不完整或会员游戏未置首');
+    assert(landscape.tabs.join('|') === 'PC游戏|复古游戏', '横屏游戏库顶层Tab应保留PC与复古，会员通过子页入口进入');
     assert(landscape.firstRowColumns === 2, '横屏PC权益卡首行不是2张自然宽度卡片');
     assert(!landscape.secondRowVisible && !landscape.secondRowWireframe, '横屏PC权益卡不应出现为凑齐而增加的第二行');
 
     const libraryBeforeTab = await page.locator('.landscape-library .game-card strong').allTextContents();
-    await page.locator('[data-library-top-tab][data-value="member"]').click();
-    const libraryAfterTab = await page.locator('.landscape-library .game-card strong').allTextContents();
-    assert(JSON.stringify(libraryBeforeTab) !== JSON.stringify(libraryAfterTab), '横屏会员游戏Tab未切换游戏内容');
+    await page.locator('.library-member-shortcut').click();
+    const libraryAfterTab = await page.locator('.landscape-member-library .member-game-card strong').allTextContents();
+    assert(JSON.stringify(libraryBeforeTab) !== JSON.stringify(libraryAfterTab), '横屏会员游戏库子页未切换游戏内容');
 
-    const proportionalWireframes = await page.evaluate(() => [...document.querySelectorAll('.landscape-library [data-wireframe-media]')].map((node) => {
+    const proportionalWireframes = await page.evaluate(() => [...document.querySelectorAll('.landscape-member-library [data-wireframe-media]')].map((node) => {
       const rect = node.getBoundingClientRect();
       const parentRect = node.parentElement?.getBoundingClientRect();
       return {
@@ -3283,7 +3296,7 @@ async function main() {
         columns: new Set(cards.slice(0, 2).map((node) => Math.round(node.getBoundingClientRect().left))).size,
       };
     });
-    assert(portraitMemberLibrary.screen === 'library' && portraitMemberLibrary.libraryTab === 'member' && portraitMemberLibrary.cards >= 6 && portraitMemberLibrary.columns === 2, '竖屏统一会员游戏Tab不是两列或状态错误');
+    assert(portraitMemberLibrary.screen === 'member-library' && portraitMemberLibrary.cards >= 6 && portraitMemberLibrary.columns === 2, '竖屏统一会员游戏库子页不是两列或状态错误');
     await page.locator('.device.portrait .member-game-card').first().click();
     assert((await page.evaluate(() => window.__appRentalDemo.snapshot().screen)) === 'detail', '会员游戏卡无法进入详情');
 
@@ -3301,7 +3314,7 @@ async function main() {
         faq: document.querySelectorAll('.member-faq-item').length,
       };
     });
-    assert(landscapeMemberLibrary.screen === 'library' && landscapeMemberLibrary.libraryTab === 'member' && landscapeMemberLibrary.columns >= 4 && landscapeMemberLibrary.faq === 0, '横屏统一会员游戏Tab不是多列布局或仍显示常见问题');
+    assert(landscapeMemberLibrary.screen === 'member-library' && landscapeMemberLibrary.columns >= 4 && landscapeMemberLibrary.faq === 0, '横屏统一会员游戏库子页不是多列布局或仍显示常见问题');
     process.stdout.write('MEMBERSHIP 10/10 PASS\n');
 
     await page.evaluate(() => window.__appRentalDemo.navigate('membership'));
@@ -4070,10 +4083,12 @@ async function main() {
 
     const buildSource = fs.readFileSync(path.join(root, 'tools', 'build-app-rental-demo.mjs'), 'utf8');
     assert(
-      !/\.(?:jpe?g|png|webp)["']/i.test(buildSource)
+      REGISTERED_MEMBER_MEDIA.every((name) => buildSource.includes(name))
+        && (buildSource.match(/2026-09-21-portrait-(?:library|pc)-user\.png/g) || []).length === 2
+        && buildSource.includes('memberEntryAssets')
         && !buildSource.includes("'assets', 'source'")
         && !buildSource.includes("'APP核心优化'"),
-      '构建脚本仍依赖本地或工作区外部位图素材',
+      '构建脚本媒体白名单必须仅包含本轮两个登记来源，不得引用旧素材或工作区外部资源',
     );
     assert(buildSource.includes('data-wireframe-media'), '构建脚本未校验线框媒体契约');
     process.stdout.write('BUILD_SOURCE 2/2 PASS\n');
@@ -4489,7 +4504,7 @@ async function main() {
       badgeCount: document.querySelectorAll('.device.landscape .member-game-card .cloud-save-badge').length,
       legacyLayoutCount: document.querySelectorAll('.landscape-member-library').length,
     }));
-    checkLayout(memberLibraryLayout.screen === 'library' && memberLibraryLayout.libraryTab === 'member' && memberLibraryLayout.badgeCount === 0 && memberLibraryLayout.legacyLayoutCount === 0, `横屏会员游戏未收敛到统一Tab或仍显示云存档标签：${JSON.stringify(memberLibraryLayout)}`);
+    checkLayout(memberLibraryLayout.screen === 'member-library' && memberLibraryLayout.badgeCount === 0 && memberLibraryLayout.legacyLayoutCount === 1, `横屏会员游戏未收敛到统一子页或仍显示云存档标签：${JSON.stringify(memberLibraryLayout)}`);
     await page.evaluate(() => {
       window.__appRentalDemo.setScenario('active-rental');
       window.__appRentalDemo.navigate('orders');
@@ -4753,8 +4768,8 @@ async function main() {
         exception: document.querySelectorAll('.anno-badge--exception').length,
       };
     });
-    assertAnnotation(annotationMatrix.total === 35 && annotationMatrix.complete, `标注矩阵数量或六字段不完整：${JSON.stringify(annotationMatrix)}`);
-    assertAnnotation(annotationMatrix.interaction === 19 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
+    assertAnnotation(annotationMatrix.total === 36 && annotationMatrix.complete, `标注矩阵数量或六字段不完整：${JSON.stringify(annotationMatrix)}`);
+    assertAnnotation(annotationMatrix.interaction === 20 && annotationMatrix.global === 8 && annotationMatrix.exception === 8, `数字/G/E 三类标注数量错误：${JSON.stringify(annotationMatrix)}`);
     const annotationStateText = await annotationPage.locator('#panel-state').innerText();
     assertAnnotation(!/(?:gh_rental_2607|G@meHub#8291|48291|guardCode|\btoken\b)/i.test(annotationStateText), '数据与状态 Tab 不得展示账号、密码、校验值或令牌字段');
     assertAnnotation(

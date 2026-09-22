@@ -6,6 +6,12 @@ const templatePath = path.join(root, 'demos', 'APP租号功能', '盖世游戏AP
 const outputPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能demo.html');
 const annotationPath = path.join(root, 'demos', 'APP租号功能', '盖世游戏APP租号功能-标注版.html');
 const adminFragmentPath = path.join(root, 'demos', 'APP租号功能', 'app-rental-admin.fragment.html');
+// Only this request's two registered screenshots may supply local cropped media.
+// Every existing product media component continues to use wireframeMedia.
+const memberEntryAssets = Object.freeze({
+  MEMBER_ENTRY_LIBRARY_REFERENCE: path.join(root, 'demos', 'APP租号功能', 'assets', 'reference', '2026-09-21-portrait-library-user.png'),
+  MEMBER_ENTRY_PC_REFERENCE: path.join(root, 'demos', 'APP租号功能', 'assets', 'reference', '2026-09-21-portrait-pc-user.png'),
+});
 
 function writeTextWithRetry(filePath, content) {
   let lastError;
@@ -23,8 +29,17 @@ function writeTextWithRetry(filePath, content) {
 }
 
 let html = fs.readFileSync(templatePath, 'utf8');
-if (/\{\{[A-Z0-9_]+\}\}/.test(html)) throw new Error('模板不得依赖位图占位符');
-if (/<img\b/i.test(html) || /data:image\/(?:png|jpe?g|webp)/i.test(html)) throw new Error('模板仍包含位图资源');
+if (/data:image\/(?:png|jpe?g|webp)/i.test(html)) throw new Error('模板不得直接内嵌未登记位图');
+const imageTemplates = html.match(/<img\b[^>]*>/g) || [];
+if (imageTemplates.length !== 1 || !imageTemplates[0].includes('data-member-entry-media="${assetKey}"') || !imageTemplates[0].includes('src="${ENTRY_MEDIA[assetKey]}"')) throw new Error('模板包含未登记图片组件');
+for (const [key, assetPath] of Object.entries(memberEntryAssets)) {
+  const placeholder = `{{${key}}}`;
+  if (!html.includes(placeholder)) throw new Error(`缺少本轮素材占位符：${key}`);
+  const bytes = fs.readFileSync(assetPath);
+  if (bytes.length > 650_000) throw new Error(`本轮素材超出大小限制：${key}`);
+  html = html.replaceAll(placeholder, `data:image/png;base64,${bytes.toString('base64')}`);
+}
+if (/\{\{[A-Z0-9_]+\}\}/.test(html)) throw new Error('模板包含未登记素材占位符');
 if (/(?:src|href)=["']https?:|url\(["']?https?:/i.test(html)) throw new Error('模板仍包含外部媒体依赖');
 writeTextWithRetry(outputPath, html);
 process.stdout.write(`BUILD ${path.relative(root, outputPath)} ${Buffer.byteLength(html)} bytes\n`);
@@ -320,16 +335,18 @@ if (fs.existsSync(annotationPath)) {
       `$1${discoveryStateNote}\n`,
     );
   }
-  if (!annotation.includes("id: '2B'")) {
-    annotation = annotation.replace(
-      /(\s*\{ id: '2A', type: 'interaction', group: 'discovery',[^\n]+\n)/,
-      `$1      { id: '2B', type: 'interaction', group: 'discovery', title: '游戏库三级入口', portraitSelector: '[data-library-top-tab]', landscapeSelector: '[data-library-top-tab]', trigger: '进入游戏库或从会员中心、会员支付成功、玩游戏快捷入口进入。', portrait: '顶层固定“会员游戏｜PC游戏｜复古游戏”；PC游戏内部再切 Steam、Epic、导入游戏。', landscape: '复用同一状态和顺序，卡片按内容宽度排列，不拉满整行。', feedback: '有效会员首次默认会员游戏，未开会员默认PC游戏；用户主动切换后记忆选择。', dependency: '会员相关快捷入口统一落到游戏库的会员Tab，不再维护独立会员游戏库页。', exception: '会员Tab仅保留库内搜索，不显示PC来源或导入工具。' },\n      { id: '2C', type: 'interaction', group: 'discovery', title: '游戏库权益与有效期', portraitSelector: '[data-library-entitlement-card]', landscapeSelector: '[data-library-entitlement-card]', trigger: '查看PC游戏库中的租号权益。', portrait: '卡片依次显示线框封面、游戏名、版本与权益；首次体验再显示剩余有效期，永久权益不显示倒计时。', landscape: '信息层级相同，横屏独立控制卡宽。', feedback: '整卡进入详情；会员游戏卡只显示名称和灰色版本，会员有效期在顶部统一展示。', dependency: '≤24小时显示“剩余X小时X分”，超过24小时显示“剩余X天X小时”。', exception: '所有媒体使用本地线框图，无位图、外链或云存档标签。' },\n`,
-    );
+  const memberEntryAnnotationNotes = [
+  "{ id: '2B', type: 'interaction', group: 'discovery', title: '游戏库会员游戏入口', portraitSelector: '.library-platform-entries', landscapeSelector: '.library-member-shortcut', trigger: '游戏库PC游戏点击Steam左侧会员游戏。', portrait: '顶部保留PC游戏和复古游戏，来源行依次会员游戏、Steam、Epic、导入游戏。', landscape: '会员游戏入口位于Steam左侧，沿用横屏来源按钮。', feedback: '进入真正的二级会员游戏库页，返回恢复游戏库与原来源。', dependency: '共用member-library路由及会员状态、搜索、卡片，不再使用顶层会员Tab。', exception: 'Steam、Epic、导入及租号权益列表仍保留原交互。' },",
+  "{ id: '2C', type: 'interaction', group: 'discovery', title: '游戏库权益与有效期', portraitSelector: '[data-library-entitlement-card]', landscapeSelector: '[data-library-entitlement-card]', trigger: '查看PC游戏库中的租号权益。', portrait: '哈迪斯2原页面下方保留租号游戏区，显示版本、权益和首次体验剩余有效期。', landscape: '原权益网格保留，不把新增入口替换为业务卡片。', feedback: '租号游戏整卡进入详情；永久权益不显示倒计时。', dependency: '会员库顶部仍显示会员状态、有效期及开通或续费按钮。', exception: '仅本轮登记截图局部使用内嵌媒体，已有其他媒体继续使用线框。' },",
+  "{ id: '8', type: 'interaction', group: 'membership', title: '会员游戏预览与统一入口', portraitSelector: '.membership-preview', landscapeSelector: '.membership-preview', trigger: '点击会员游戏库标题或查看全部。', portrait: '标题与查看全部均进入二级会员游戏库，预览卡仍显示名称和灰色标准版。', landscape: '前4款按横屏密度展示，标题和查看全部复用相同子页。', feedback: '返回会员中心时恢复滚动位置；游戏卡仍进入对应详情。', dependency: '子页保留搜索、会员有效期、去开通及续费入口。', exception: '不生成顶层会员Tab，不改变会员套餐与购买规则。' },",
+  "{ id: '8A', type: 'interaction', group: 'membership', title: '首页PC会员游戏库', portraitSelector: '[data-member-library-entry=\"pc-channel\"]', landscapeSelector: '.landscape-pc-member-entry', trigger: '进入首页PC游戏，点击会员游戏库标题或查看全部。', portrait: '热门推荐下增加会员游戏库及双卡预览，后续免费游戏与发现三态列表保留。', landscape: 'PC频道加入会员游戏库和查看全部，保留发现卡三态及整卡详情。', feedback: '进入统一二级member-library页，返回恢复首页PC频道和原滚动位置。', dependency: 'homeChannel与来源滚动由页面状态及路由上下文保存。', exception: '会员卡点击仍进入对应游戏详情，不新增付款或登录步骤。' },"
+];
+  for (const note of memberEntryAnnotationNotes) {
+    const id = note.match(/id: '([^']+)'/)[1];
+    const pattern = new RegExp("\\{ id: '" + id + "', type: 'interaction', group: '[^']+',[^\\n]+");
+    if (pattern.test(annotation)) annotation = annotation.replace(pattern, note);
+    else annotation = annotation.replace(/(const ANNOTATIONS = Object\.freeze\(\[)/, '$1\n      ' + note);
   }
-  annotation = annotation.replace(
-    /\{ id: '8', type: 'interaction', group: 'membership',[^\n]+/,
-    "{ id: '8', type: 'interaction', group: 'membership', title: '会员游戏预览与统一入口', portraitSelector: '.membership-preview', landscapeSelector: '.membership-preview', trigger: '点击会员游戏卡或“查看更多”。', portrait: '预览卡只显示游戏名称和灰色“标准版”副标题。', landscape: '前4款按横屏密度展示；查看更多进入游戏库的会员游戏Tab。', feedback: '游戏卡进入详情；查看更多、会员支付成功和玩游戏快捷入口落到同一会员Tab。', dependency: '会员有效期在会员Tab顶部统一展示，卡片不重复显示。', exception: '不保留独立会员游戏库页，不显示支持云存档标签。' },",
-  );
   const requiredAdminSignatures = [
     'APP（安卓端）客户端',
     '后台只读预览',
