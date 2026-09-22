@@ -977,18 +977,25 @@ async function captureCurrentSupplementalScreenshots(browser) {
     { name: '20-after-sales-refund-portrait.png', pageId: 'after-sales', orientation: 'portrait', requestType: 'refund' },
     { name: '21-after-sales-replacement-portrait.png', pageId: 'after-sales', orientation: 'portrait', requestType: 'replacement' },
     { name: '22-rental-notifications-portrait.png', pageId: 'notifications', orientation: 'portrait' },
+    { name: '22-rental-notifications-landscape.png', pageId: 'notifications', orientation: 'landscape' },
     { name: '23-home-pc-portrait.png', pageId: 'home', orientation: 'portrait', homeChannel: 'pc' },
     { name: '24-membership-library-preview-portrait.png', pageId: 'membership', orientation: 'portrait', scrollSelector: '.membership-preview' },
     { name: '24-membership-library-preview-landscape.png', pageId: 'membership', orientation: 'landscape', scrollSelector: '.membership-preview' },
+    { name: '25-refund-risk-portrait.png', pageId: 'detail', orientation: 'portrait', purchaseMode: 'repeat' },
+    { name: '25-refund-risk-landscape.png', pageId: 'detail', orientation: 'landscape', purchaseMode: 'repeat' },
   ];
   const results = [];
   for (const shot of supplementalShots) {
     await withFreshPage(browser, shot.name, async (page) => {
-      await page.evaluate(({ pageId, orientation, requestType }) => {
+      await page.evaluate(({ pageId, orientation, requestType, purchaseMode }) => {
         const demo = window.__appRentalDemo;
         demo.setOrientation(orientation);
         demo.openCaptureState(pageId);
         if (requestType) demo.setAfterSalesRequestType(requestType);
+        if (purchaseMode) {
+          demo.setDemoPurchaseMode(purchaseMode);
+          demo.requestRentalCheckout();
+        }
       }, shot);
       if (shot.homeChannel) await page.locator('[data-group="homeChannel"][data-value="pc"]').click();
       await waitForAssets(page);
@@ -1006,7 +1013,12 @@ async function captureCurrentSupplementalScreenshots(browser) {
       }
       if (shot.pageId === 'notifications') {
         assert((await page.locator('[data-notification-type]').count()) >= 3, `${shot.name} must show rental notifications`);
-        assert(visible.includes('消息中心') && visible.includes('订单与售后'), `${shot.name} notification context is missing`);
+        assert(visible.includes('系统消息') && visible.includes('订单与售后') && visible.includes('系统管理员'), `${shot.name} notification context is missing`);
+      }
+      if (shot.purchaseMode) {
+        const snapshot = await page.evaluate(() => window.__appRentalDemo.snapshot());
+        assert(snapshot.riskReminderOpen && snapshot.screen === 'detail' && !snapshot.order, `${shot.name} must remind before order creation`);
+        assert(visible.includes('再次购买可能无法享受3天无理由退款') && visible.includes('确认并继续') && visible.includes('暂不购买'), `${shot.name} risk actions missing`);
       }
       if (shot.homeChannel || shot.scrollSelector) {
         const entries = page.locator('#appRentalDemo [data-screen="member-library"]');

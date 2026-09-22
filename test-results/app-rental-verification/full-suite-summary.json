@@ -1,8 +1,21 @@
 {
-  "generatedAt": "2026-09-22T03:06:02.792Z",
+  "generatedAt": "2026-09-22T10:24:24.856Z",
   "command": "node tools/verify-app-rental-demo.mjs",
   "exitCode": 0,
   "status": "passed",
+  "finalBuild": true,
+  "artifacts": [
+    {
+      "file": "demos/APP租号功能/盖世游戏APP租号功能demo.html",
+      "bytes": 1612960,
+      "sha256": "38968e2b329c65982ab15b0df448799653d1ab6bc7c2397b006078ca7e8cda83"
+    },
+    {
+      "file": "demos/APP租号功能/盖世游戏APP租号功能-标注版.html",
+      "bytes": 1701550,
+      "sha256": "94a2017baa7616f0528e6fde40d17e97091634ed1d67f381d57d2216321923e9"
+    }
+  ],
   "contractEvidence": "contract-results.json",
   "checks": {
     "refactorGates": "33/33",
@@ -18,5 +31,7 @@
     "reviewFixes": "12/12",
     "annotation": "38/38"
   },
-  "scope": "仅迁移本轮变化的会员二级路由、登记图片白名单、首页频道入口与标注数量断言；保留会员状态条、售后、消息、发现三态、时效及安全检查。"
+  "preservedRegression": "保留换号无库存提示、原绑定保留、重试及下次启动生效断言；售后补丁后完整通过。",
+  "demoStatesEvidence": "../app-rental-demo-states/demo-state-verification.json",
+  "demoStatesResult": "6/6 cases, 114 assertions, 0 runtime errors; subsequent build changed only local after-sales compatibility."
 }

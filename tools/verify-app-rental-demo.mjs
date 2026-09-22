@@ -1531,7 +1531,8 @@ async function main() {
           && result.blockedSnapshot.pendingRentalIntent?.gameId === 'shadow-blade-zero'
           && result.reminderText.includes('退款权益提醒')
           && result.reminderActions.includes('暂不购买')
-          && result.reminderActions.includes('确认继续'),
+          && result.reminderActions.includes('确认并继续')
+          && result.reminderActions.includes('×'),
         `退款风险提醒弹窗或下单前状态错误：${JSON.stringify(result)}`,
       );
       assert(

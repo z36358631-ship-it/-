@@ -1,0 +1,424 @@
+{
+  "generatedAt": "2026-09-22T10:22:56.315Z",
+  "checks": [
+    {
+      "name": "demo-portrait: 个人中心真实通知入口",
+      "status": "pass",
+      "health": {
+        "unloadedImages": [],
+        "overflow": [
+          {
+            "className": "portrait-content portrait-content--plain",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "demo-portrait: replacement-approved → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803001",
+      "afterSalesStatus": "approved-pending-launch"
+    },
+    {
+      "name": "demo-portrait: refund-accepted → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803004",
+      "afterSalesStatus": "submitted"
+    },
+    {
+      "name": "demo-portrait: refund-arrived → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803006",
+      "afterSalesStatus": "refunded"
+    },
+    {
+      "name": "demo-portrait: expiry-15m → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803001",
+      "afterSalesStatus": null
+    },
+    {
+      "name": "demo-portrait: order-expired → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803005",
+      "afterSalesStatus": null
+    },
+    {
+      "name": "demo-portrait: replacement-rejected → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-NOTICE-20260922002",
+      "afterSalesStatus": "rejected"
+    },
+    {
+      "name": "demo-portrait: refund-reviewed → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-NOTICE-20260922003",
+      "afterSalesStatus": "channel-processing"
+    },
+    {
+      "name": "demo-portrait: 全部读后入口红点消失",
+      "status": "pass"
+    },
+    {
+      "name": "demo-landscape: 个人中心真实通知入口",
+      "status": "pass",
+      "health": {
+        "unloadedImages": [],
+        "overflow": [
+          {
+            "className": "landscape-content",
+            "delta": 0
+          },
+          {
+            "className": "notification-layout",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "demo-landscape: replacement-approved → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803001",
+      "afterSalesStatus": "approved-pending-launch"
+    },
+    {
+      "name": "demo-landscape: refund-accepted → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803004",
+      "afterSalesStatus": "submitted"
+    },
+    {
+      "name": "demo-landscape: refund-arrived → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803006",
+      "afterSalesStatus": "refunded"
+    },
+    {
+      "name": "demo-landscape: expiry-15m → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803001",
+      "afterSalesStatus": null
+    },
+    {
+      "name": "demo-landscape: order-expired → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803005",
+      "afterSalesStatus": null
+    },
+    {
+      "name": "demo-landscape: replacement-rejected → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-NOTICE-20260922002",
+      "afterSalesStatus": "rejected"
+    },
+    {
+      "name": "demo-landscape: refund-reviewed → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-NOTICE-20260922003",
+      "afterSalesStatus": "channel-processing"
+    },
+    {
+      "name": "demo-landscape: 全部读后入口红点消失",
+      "status": "pass"
+    },
+    {
+      "name": "demo: 售后互斥、撤销重申、换号生效同步",
+      "status": "pass"
+    },
+    {
+      "name": "demo: 事件/渠道幂等与敏感字段白名单",
+      "status": "pass",
+      "dynamicMessages": 2,
+      "deliveryRecords": 6
+    },
+    {
+      "name": "demo: 15分钟阈值与到期自然触发且不重复",
+      "status": "pass",
+      "events": [
+        "order-expired",
+        "expiry-15m"
+      ]
+    },
+    {
+      "name": "demo: 已读及售后按订单隔离",
+      "status": "pass"
+    },
+    {
+      "name": "annotation-portrait: 个人中心真实通知入口",
+      "status": "pass",
+      "health": {
+        "unloadedImages": [],
+        "overflow": [
+          {
+            "className": "portrait-content portrait-content--plain",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "annotation-portrait: replacement-approved → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803001",
+      "afterSalesStatus": "approved-pending-launch"
+    },
+    {
+      "name": "annotation-portrait: refund-accepted → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803004",
+      "afterSalesStatus": "submitted"
+    },
+    {
+      "name": "annotation-portrait: refund-arrived → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803006",
+      "afterSalesStatus": "refunded"
+    },
+    {
+      "name": "annotation-portrait: expiry-15m → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803001",
+      "afterSalesStatus": null
+    },
+    {
+      "name": "annotation-portrait: order-expired → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803005",
+      "afterSalesStatus": null
+    },
+    {
+      "name": "annotation-portrait: replacement-rejected → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-NOTICE-20260922002",
+      "afterSalesStatus": "rejected"
+    },
+    {
+      "name": "annotation-portrait: refund-reviewed → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-NOTICE-20260922003",
+      "afterSalesStatus": "channel-processing"
+    },
+    {
+      "name": "annotation-portrait: 全部读后入口红点消失",
+      "status": "pass"
+    },
+    {
+      "name": "annotation-landscape: 个人中心真实通知入口",
+      "status": "pass",
+      "health": {
+        "unloadedImages": [],
+        "overflow": [
+          {
+            "className": "landscape-content",
+            "delta": 0
+          },
+          {
+            "className": "notification-layout",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card unread",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          },
+          {
+            "className": "notification-card ",
+            "delta": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "annotation-landscape: replacement-approved → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803001",
+      "afterSalesStatus": "approved-pending-launch"
+    },
+    {
+      "name": "annotation-landscape: refund-accepted → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803004",
+      "afterSalesStatus": "submitted"
+    },
+    {
+      "name": "annotation-landscape: refund-arrived → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803006",
+      "afterSalesStatus": "refunded"
+    },
+    {
+      "name": "annotation-landscape: expiry-15m → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803001",
+      "afterSalesStatus": null
+    },
+    {
+      "name": "annotation-landscape: order-expired → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-20260803005",
+      "afterSalesStatus": null
+    },
+    {
+      "name": "annotation-landscape: replacement-rejected → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-NOTICE-20260922002",
+      "afterSalesStatus": "rejected"
+    },
+    {
+      "name": "annotation-landscape: refund-reviewed → 对应订单 → 售后",
+      "status": "pass",
+      "orderId": "APP-NOTICE-20260922003",
+      "afterSalesStatus": "channel-processing"
+    },
+    {
+      "name": "annotation-landscape: 全部读后入口红点消失",
+      "status": "pass"
+    },
+    {
+      "name": "annotation: 售后互斥、撤销重申、换号生效同步",
+      "status": "pass"
+    },
+    {
+      "name": "annotation: 事件/渠道幂等与敏感字段白名单",
+      "status": "pass",
+      "dynamicMessages": 2,
+      "deliveryRecords": 6
+    },
+    {
+      "name": "annotation: 15分钟阈值与到期自然触发且不重复",
+      "status": "pass",
+      "events": [
+        "order-expired",
+        "expiry-15m"
+      ]
+    },
+    {
+      "name": "annotation: 已读及售后按订单隔离",
+      "status": "pass"
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\z3635\\.codex\\worktrees\\app-rental-member-library-publish\\官网改动\\test-results\\app-rental-notifications\\demo-portrait-system-messages.png",
+    "C:\\Users\\z3635\\.codex\\worktrees\\app-rental-member-library-publish\\官网改动\\test-results\\app-rental-notifications\\demo-portrait-replacement-approved-after-sales.png",
+    "C:\\Users\\z3635\\.codex\\worktrees\\app-rental-member-library-publish\\官网改动\\test-results\\app-rental-notifications\\demo-portrait-replacement-rejected-after-sales.png",
+    "C:\\Users\\z3635\\.codex\\worktrees\\app-rental-member-library-publish\\官网改动\\test-results\\app-rental-notifications\\demo-portrait-refund-reviewed-after-sales.png",
+    "C:\\Users\\z3635\\.codex\\worktrees\\app-rental-member-library-publish\\官网改动\\test-results\\app-rental-notifications\\demo-landscape-system-messages.png",
+    "C:\\Users\\z3635\\.codex\\worktrees\\app-rental-member-library-publish\\官网改动\\test-results\\app-rental-notifications\\annotation-portrait-system-messages.png",
+    "C:\\Users\\z3635\\.codex\\worktrees\\app-rental-member-library-publish\\官网改动\\test-results\\app-rental-notifications\\annotation-landscape-system-messages.png"
+  ],
+  "consoleErrors": [],
+  "requests": [],
+  "summary": {
+    "total": 44,
+    "passed": 44,
+    "failed": 0,
+    "errors": 0,
+    "externalRequests": 0
+  },
+  "status": "pass"
+}

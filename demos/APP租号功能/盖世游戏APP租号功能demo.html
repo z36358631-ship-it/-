@@ -1228,7 +1228,7 @@
     .notification-list { display: grid; gap: 9px; }
     .notification-card { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 11px; padding: 13px; border: 1px solid rgb(255 255 255 / 8%); border-radius: 15px; background: rgb(24 25 30 / 88%); }
     button.notification-card { width: 100%; text-align: left; cursor: pointer; }
-    .notification-card.unread::after { position: absolute; top: 14px; right: 14px; width: 7px; height: 7px; border-radius: 50%; background: #40a7f4; content: ''; box-shadow: 0 0 0 4px rgb(64 167 244 / 10%); }
+    .notification-card.unread::after { position: absolute; top: 14px; right: 14px; width: 7px; height: 7px; border-radius: 50%; background: #ff403f; content: ''; box-shadow: 0 0 0 4px rgb(255 64 63 / 10%); }
     .notification-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 12px; background: rgb(49 143 226 / 15%); color: #8ed0ff; font-size: 13px; font-weight: 700; }
     .notification-card[data-tone="refund"] .notification-icon { background: rgb(77 191 133 / 14%); color: #8ce0b3; }
     .notification-card[data-tone="expiry"] .notification-icon { background: rgb(255 188 65 / 13%); color: #ffd178; }
@@ -1236,7 +1236,16 @@
     .notification-copy strong { display: block; color: #f4f5f7; font-size: 13px; }
     .notification-copy p { margin: 5px 0 8px; color: #a7abb3; font-size: 11px; line-height: 17px; }
     .notification-copy time { color: #6f737c; font-size: 10px; }
-    .landscape-notifications .notification-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 14px; min-height: 0; padding: 14px 18px 18px; }
+    .system-message-item { min-width: 0; }
+    .system-message-time { display: block; margin: 8px 0 14px; color: #737680; font-size: 10px; text-align: center; }
+    .system-message-sender { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; color: #bfc2c9; font-size: 11px; }
+    .system-message-avatar { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; background: #2b303a; color: #e5e8ef; font-size: 12px; }
+    .system-message-item .notification-card { width: 100%; }
+    .notification-copy .notification-link { display: block; color: #8abbe0; font-size: 10px; }
+    .profile-notification-entry { border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+    button[data-screen="notifications"] { position: relative; }
+    button[data-screen="notifications"].has-unread::after { position: absolute; top: 3px; right: 0; width: 6px; height: 6px; border-radius: 50%; background: #ff403f; content: ''; }
+    .landscape-notifications .notification-layout { display: flex; min-height: 0; flex-direction: column; gap: 8px; padding: 10px 18px 18px; overflow-y: auto; }
     .landscape-notifications .notification-list { grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
     .landscape-notifications .notification-card { min-height: 112px; }
 
@@ -1917,6 +1926,22 @@
     .landscape-order-detail-dock { position: absolute; right: 16px; bottom: 12px; left: 16px; z-index: 5; padding: 9px 12px; border: 1px solid rgb(255 255 255 / 9%); border-radius: 14px; background: rgb(20 21 25 / 94%); box-shadow: 0 12px 30px rgb(0 0 0 / 28%); }
     .landscape-order-detail-dock .order-actions-set button { min-height: 44px; padding: 0 14px; font-size: 9px; }
 
+    .demo-state-control { position: fixed; z-index: 110; right: 20px; bottom: 20px; width: min(280px, calc(100vw - 24px)); display: grid; justify-items: end; gap: 10px; font-size: 13px; }
+    .demo-state-trigger { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 16px; border: 1px solid #424650; border-radius: 24px; background: #24272e; box-shadow: 0 6px 24px #0008; cursor: pointer; }
+    .demo-state-trigger i { width: 7px; height: 7px; border-radius: 50%; background: #53d4a3; }
+    .demo-state-trigger[data-mode="repeat"] i { background: #efb45e; }
+    .demo-state-trigger small { color: #abb0b9; font-size: 11px; }
+    .demo-state-panel { width: 100%; padding: 16px; border: 1px solid #424650; border-radius: 16px; background: #202227; box-shadow: 0 12px 40px #0009; }
+    .demo-state-panel header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .demo-state-panel header button { min-width: 32px; min-height: 32px; border: 0; border-radius: 8px; background: #ffffff0a; cursor: pointer; }
+    .demo-state-options { display: grid; gap: 8px; }
+    .demo-state-options button { min-height: 58px; padding: 10px 12px; border: 1px solid #3c3f47; border-radius: 10px; background: #ffffff04; text-align: left; cursor: pointer; }
+    .demo-state-options button[aria-checked="true"] { border-color: #5c9ad6; background: #288bd719; }
+    .demo-state-options strong, .demo-state-options small { display: block; }
+    .demo-state-options small { margin-top: 5px; color: #a7abb5; font-size: 11px; }
+    .demo-state-notifications { width: 100%; min-height: 40px; margin-top: 12px; border: 1px solid #3c3f47; border-radius: 10px; background: transparent; text-align: center; cursor: pointer; }
+    .demo-state-hint { margin: 12px 0 0; color: #9298a4; font-size: 11px; line-height: 17px; }
+    @media (max-width: 600px) { .demo-state-control { right: 12px; bottom: 12px; } }
     .policy-dialog { width: min(100%, 420px); padding: 20px; border: 1px solid rgb(255 255 255 / 13%); border-radius: 22px; background: linear-gradient(160deg, #292b32, #17181d); box-shadow: 0 24px 60px rgb(0 0 0 / 52%); }
     .policy-dialog h2 { margin: 0 0 8px; font-size: 19px; }
     .policy-dialog > p { margin: 0 0 16px; color: var(--text-muted); font-size: 10px; line-height: 16px; }
@@ -1931,6 +1956,27 @@
     .dialog-action-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
     .dialog-action-row button { min-height: 46px; border: 1px solid rgb(255 255 255 / 10%); border-radius: 12px; background: rgb(255 255 255 / 5%); color: #fff; cursor: pointer; }
     .dialog-action-row button.danger { border-color: rgb(241 92 99 / 24%); background: rgb(241 92 99 / 10%); color: #ff9297; }
+    .rental-risk-backdrop { align-items: center; }
+    .rental-risk-dialog { position: relative; width: min(100%, 520px); max-height: calc(100% - 12px); overflow-y: auto; padding: 22px; border-radius: 10px; background: #1d1e20; }
+    .rental-risk-head { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: start; gap: 12px; padding-right: 28px; }
+    .rental-risk-warning { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 50%; background: #eeae4620; color: #efb356; }
+    .rental-risk-warning svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .rental-risk-head h2 { margin: 2px 0 6px; font-size: 18px; }
+    .rental-risk-head p { margin: 0; color: #a8abb1; font-size: 12px; line-height: 19px; }
+    .rental-risk-close { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 1px solid #ffffff16; border-radius: 7px; background: #ffffff05; color: #b6b8be; cursor: pointer; font-size: 20px; }
+    .rental-risk-product { display: grid; grid-template-columns: 94px minmax(0, 1fr) auto; align-items: center; gap: 12px; margin: 20px 0 12px; padding: 12px; border: 1px solid #ffffff16; border-radius: 8px; background: #26272a; }
+    .rental-risk-cover { width: 94px; height: 58px; border-radius: 5px; }
+    .rental-risk-product strong { display: block; font-size: 13px; line-height: 19px; }
+    .rental-risk-product small { display: block; margin-top: 6px; color: #9c9fa7; font-size: 11px; line-height: 17px; }
+    .rental-risk-product b { color: #f06e76; font-size: 16px; }
+    .rental-risk-dialog .rental-risk-assurance { margin: 0 0 16px; padding: 10px 12px; border-radius: 6px; background: #c7983616; color: #e4bd76; font-size: 11px; line-height: 18px; }
+    .rental-risk-dialog .dialog-action-row button { min-height: 44px; border-radius: 7px; font-size: 12px; }
+    .rental-risk-dialog .dialog-action-row .primary-action { border-color: #b9596045; background: #963b431b; color: #ff959d; box-shadow: none; }
+    .portrait .rental-risk-dialog { padding: 20px 16px 16px; }
+    .portrait .rental-risk-head { grid-template-columns: 36px minmax(0, 1fr); gap: 9px; }
+    .portrait .rental-risk-warning { width: 36px; height: 36px; }
+    .portrait .rental-risk-product { grid-template-columns: 68px minmax(0, 1fr) auto; gap: 9px; padding: 10px; }
+    .portrait .rental-risk-cover { width: 68px; height: 48px; }
 
     .landscape-membership-plans .membership-plan-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .landscape-membership-plans .membership-plan-card { min-height: 92px; }
@@ -2116,7 +2162,7 @@
     .pc-channel-search .search-box > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .pc-channel-search .device-link, .pc-notification { position: relative; display: grid; width: 24px; height: 40px; flex: 0 0 24px; place-items: center; padding: 0; border: 0; background: none; color: #e1e1e1; cursor: pointer; }
     .pc-channel-search .device-link svg, .pc-notification svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; }
-    .pc-notification::after { position: absolute; top: 7px; right: 0; width: 7px; height: 7px; border-radius: 50%; background: #ff403f; content: ""; }
+    .pc-notification.has-unread::after { top: 7px; }
     .pc-channel-page .home-channel-tabs { gap: 20px; margin-bottom: 14px; }
     .pc-channel-page .section-head { min-height: 30px; margin: 14px 0 12px; }
     .pc-channel-page .section-head h2 { color: #f0f0f0; font-size: 16px; font-weight: 700; }
@@ -2403,6 +2449,8 @@
       orderSearch: '',
       orderSearchOpen: false,
       noReasonPolicyOpen: false,
+      demoPurchaseMode: 'regular',
+      demoStatePanelOpen: false,
       rentalRiskDecision: {
         extraNoReasonRestricted: false,
         ruleVersion: 'RISK-20260811-01',
@@ -2471,6 +2519,10 @@
       replacementRequest: null,
       notificationTab: 'all',
       notificationReadIds: [],
+      notificationItems: [],
+      notificationDeliveryRecords: [],
+      notificationOrderSnapshots: {},
+      notificationAfterSales: {},
       networkAvailable: true,
       orderQueryError: false,
       lastExpiryMinutes: null,
@@ -2552,10 +2604,13 @@
       ]),
     });
     const RENTAL_NOTIFICATIONS = Object.freeze([
-      Object.freeze({ id: 'replacement-approved', orderId: 'APP-20260803001', type: 'after-sales', tone: 'service', icon: '换', title: '换号审核已通过', body: '《荒野大镖客：救赎 2》的换号申请已通过，新账号将在下次启动游戏时自动生效。', time: '今天 10:32', unread: true }),
-      Object.freeze({ id: 'refund-accepted', orderId: 'APP-20260803004', type: 'after-sales', tone: 'refund', icon: '退', title: '退款申请已受理', body: '订单 APP-20260803004 已进入审核，请在售后详情查看最新进度。', time: '今天 09:18', unread: true }),
-      Object.freeze({ id: 'refund-arrived', orderId: 'APP-20260803006', type: 'order', tone: 'refund', icon: '到', title: '退款已原路到账', body: '退款 ¥68.00 已退回原支付账户，实际到账时间以支付平台为准。', time: '昨天 18:45', unread: false }),
-      Object.freeze({ id: 'expiry-15m', orderId: 'APP-20260803001', type: 'order', tone: 'expiry', icon: '时', title: '租号权益将在15分钟后到期', body: '《荒野大镖客：救赎 2》的本次租号权益即将结束，请及时保存游戏进度。', time: '昨天 16:20', unread: false }),
+      Object.freeze({ id: 'replacement-approved', event: 'replacement-approved', periodId: 'replacement-01', orderId: 'APP-20260803001', type: 'after-sales', tone: 'service', icon: '换', title: '换号审核已通过', body: '《荒野大镖客：救赎 2》的换号申请已通过，新账号将在下次启动游戏时自动生效。', time: '今天 10:32', unread: true, requestType: 'replacement', resultStatus: 'approved-pending-launch' }),
+      Object.freeze({ id: 'refund-accepted', event: 'refund-accepted', periodId: 'refund-04', orderId: 'APP-20260803004', type: 'after-sales', tone: 'refund', icon: '退', title: '退款申请已受理', body: '订单 APP-20260803004 已进入审核，请在售后详情查看最新进度。', time: '今天 09:18', unread: true, requestType: 'refund', resultStatus: 'submitted' }),
+      Object.freeze({ id: 'refund-arrived', event: 'refund-arrived', periodId: 'refund-06', orderId: 'APP-20260803006', type: 'order', tone: 'refund', icon: '到', title: '退款已原路到账', body: '退款 ¥68.00 已退回原支付账户，实际到账时间以支付平台为准。', time: '昨天 18:45', unread: false, requestType: 'refund', resultStatus: 'refunded' }),
+      Object.freeze({ id: 'expiry-15m', event: 'expiry-15m', periodId: 'rental-01', orderId: 'APP-20260803001', type: 'order', tone: 'expiry', icon: '时', title: '租号权益将在15分钟后到期', body: '《荒野大镖客：救赎 2》的本次租号权益即将结束，请及时保存游戏进度。', time: '昨天 16:20', unread: false }),
+      Object.freeze({ id: 'order-expired', event: 'order-expired', periodId: 'rental-05', orderId: 'APP-20260803005', type: 'order', tone: 'expiry', icon: '止', title: '租号订单已到期', body: '《饥荒》的本次租用已结束，可进入订单或游戏详情查看当前可用权益。', time: '昨天 15:40', unread: true }),
+      Object.freeze({ id: 'replacement-rejected', event: 'replacement-rejected', periodId: 'replacement-02', orderId: 'APP-NOTICE-20260922002', baseOrderId: 'APP-20260803001', type: 'after-sales', tone: 'service', icon: '换', title: '换号审核未通过', body: '《荒野大镖客：救赎 2》的换号申请未通过，原账号继续可用，请在售后详情查看原因。', time: '昨天 14:12', unread: false, requestType: 'replacement', resultStatus: 'rejected' }),
+      Object.freeze({ id: 'refund-reviewed', event: 'refund-reviewed', periodId: 'refund-03', orderId: 'APP-NOTICE-20260922003', baseOrderId: 'APP-20260803006', type: 'after-sales', tone: 'refund', icon: '退', title: '退款审核已通过', body: '《Spiritfarer》的退款审核已通过，¥68.00 将按原支付方式退回，到账后另行通知。', time: '昨天 13:05', unread: false, requestType: 'refund', resultStatus: 'channel-processing' }),
     ]);
     const ORDER_FIXTURES = Object.freeze([
       { id: 'APP-20260803001', orderType: 'rental', saleMode: 'entitlement', sku: 'trial', benefitType: 'trial_2h', status: 'active', gameId: 'red-dead-2', gameName: '荒野大镖客：救赎 2', version: 'Steam · 标准版', editionId: 'standard', durationLabel: '首次体验 · 2小时', amount: 1.9, credentialAvailable: true, gameNotice: '启动后还需使用页面内的 Rockstar Games 登录信息。', createdAt: Date.now() - 90 * 60 * 1000, updatedAt: Date.now() - 10 * 60 * 1000, paidAt: Date.now() - 90 * 60 * 1000, expireAt: Date.now() + 30 * 60 * 1000, playedMinutes: 18, refundRuleVersion: 'REFUND-72H-30M-V1' },
@@ -3123,14 +3178,16 @@
       state.selectedSku = sku;
       const hourly = /^hourly-(\d+)h$/.exec(sku);
       if (hourly) state.selectedHours = Number(hourly[1]);
-      if (state.order?.status === 'pending') state.order = null;
-      if (state.screen === 'checkout') ensureGameOrder();
+      rebuildPendingOrder();
       renderApp();
       return state.selectedSku;
     }
 
     function rebuildPendingOrder() {
-      if (state.order?.status === 'pending') state.order = null;
+      if (state.order?.status === 'pending') {
+        state.pendingRiskSnapshot = state.order.riskSnapshot ? { ...state.order.riskSnapshot } : null;
+        state.order = null;
+      }
       if (state.screen === 'checkout') ensureGameOrder();
     }
 
@@ -3191,6 +3248,22 @@
       return { ...state.rentalRiskDecision };
     }
 
+    function setDemoPurchaseMode(value) {
+      if (!['regular', 'repeat'].includes(value)) return false;
+      state.demoPurchaseMode = value;
+      state.demoStatePanelOpen = false;
+      state.riskReminderOpen = false;
+      state.pendingRentalIntent = null;
+      state.pendingRiskSnapshot = null;
+      setRentalRiskDecision({
+        extraNoReasonRestricted: value === 'repeat',
+        ruleVersion: 'RISK-30D-3-NO-REASON-V1',
+        demoSimulation: true,
+      });
+      renderApp();
+      return value;
+    }
+
     function evaluateRefundRisk(history = state.refundHistory, now = nowFromServer()) {
       const windowStart = Number(now) - 30 * 24 * 60 * 60 * 1000;
       const counted = (Array.isArray(history) ? history : []).filter((item) => (
@@ -3218,7 +3291,14 @@
     function requestRentalCheckout(gameId = state.selectedGameId) {
       const game = getGameContext(gameId);
       if (!game) return { allowed: false, reason: 'game-not-found' };
-      state.pendingRentalIntent = { gameId };
+      const context = { ...getCheckoutEligibilityContext(gameId), editionId: 'standard' };
+      const offer = defaultCheckoutSku(game, context);
+      if (!offer) return { allowed: false, reason: 'sku-unavailable' };
+      state.pendingRentalIntent = {
+        gameId, gameName: game.name, editionId: 'standard', editionName: '标准版',
+        sku: offer.id, packageName: offer.packageName || offer.label || offer.durationLabel,
+        amount: Number(offer.price),
+      };
       state.pendingRiskSnapshot = null;
       const decision = state.rentalRiskDecision?.explicit ? state.rentalRiskDecision : evaluateRefundRisk();
       state.rentalRiskDecision = { ...decision };
@@ -3237,10 +3317,13 @@
     }
 
     function continueRentalCheckout() {
-      const gameId = state.pendingRentalIntent?.gameId || state.selectedGameId;
+      const intent = state.pendingRentalIntent;
+      if (!intent) return { allowed: false, reason: 'no-pending-rental-intent' };
+      const gameId = intent.gameId;
       if (!getGameContext(gameId)) return { allowed: false, reason: 'game-not-found' };
       setSelectedGame(gameId, { shouldRender: false });
       const selected = prepareCheckoutForSelectedGame();
+      if (selected && selected.id === intent.sku) state.selectedSku = intent.sku;
       if (!selected || !ensureGameOrder()) {
         state.pendingRentalIntent = null;
         state.pendingRiskSnapshot = null;
@@ -3255,6 +3338,7 @@
     }
 
     function confirmRentalRisk() {
+      if (!state.riskReminderOpen || !state.pendingRentalIntent) return { allowed: false, reason: 'no-pending-risk-reminder' };
       state.pendingRiskSnapshot = {
         extraNoReasonRestricted: true,
         extraNoReasonApplicable: false,
@@ -3620,7 +3704,15 @@
       } else {
         const replacement = state.replacementRequest;
         const replacementApplied = replacement?.status === 'approved-pending-launch' && replacement.orderId === order.id;
-        if (replacementApplied) state.replacementRequest = { ...replacement, status: 'executed', executedAt: nowFromServer(), originalBindingPreserved: false };
+        if (replacementApplied) {
+          state.replacementRequest = { ...replacement, status: 'executed', executedAt: nowFromServer(), originalBindingPreserved: false };
+          const ticket = state.notificationAfterSales[order.id];
+          if (ticket?.requestType === 'replacement') {
+            ticket.status = 'bound';
+            ticket.boundAt = nowFromServer();
+            if (state.afterSalesOrder?.orderId === order.id) state.afterSalesOrder = cloneOrder(ticket);
+          }
+        }
         if (state.order?.id === order.id) {
           state.order.firstFulfilledAt ||= nowFromServer();
           state.order.credentialAvailable = true;
@@ -3750,9 +3842,14 @@
 
     function getOrderCollection() {
       const fixtures = ORDER_FIXTURES.map(cloneOrder);
+      for (const order of Object.values(state.notificationOrderSnapshots)) {
+        const existing = fixtures.findIndex(({ id }) => id === order.id);
+        if (existing >= 0) fixtures.splice(existing, 1);
+        fixtures.push(cloneOrder(order));
+      }
       const visible = (orders) => orders.filter(({ id }) => !state.hiddenOrderIds.includes(id));
       if (!state.order) return visible(fixtures);
-      const index = fixtures.findIndex(({ id }) => id === state.order.id || (state.order.scenarioSeed && id === 'APP-20260803001'));
+      const index = fixtures.findIndex(({ id }) => id === state.order.id || (state.order.scenarioSeed && id === 'APP-20260803001' && !state.notificationOrderSnapshots[id]));
       if (index >= 0) fixtures.splice(index, 1);
       return visible([cloneOrder(state.order), ...fixtures]);
     }
@@ -3803,6 +3900,7 @@
     function selectOrder(orderId) {
       if (!getOrderCollection().some(({ id }) => id === orderId)) return false;
       state.selectedOrderId = orderId;
+      if (state.afterSalesOrder?.orderId !== orderId) state.afterSalesOrder = cloneOrder(state.notificationAfterSales[orderId] || null);
       navigate('order-detail');
       return true;
     }
@@ -4203,6 +4301,7 @@
       state.expiredLaunchReason = 'ended';
       state.routeContext.taskStack = [];
       state.screen = takeover ? 'detail' : 'order-detail';
+      recordRentalNotification({ orderId: state.order?.id, event: 'order-expired', periodId: usage.id });
       renderApp();
       return true;
     }
@@ -4223,6 +4322,7 @@
         state.remindedUsageIds.push(state.rentalUsage.id);
         state.expiryReminderCount += 1;
         state.expiryReminderOpen = true;
+        recordRentalNotification({ orderId: state.order?.id, event: 'expiry-15m', periodId: state.rentalUsage.id });
       }
       renderApp();
       return state.expiryReminderOpen;
@@ -4323,12 +4423,22 @@
       }
       state.rentalRiskDecision = evaluateRefundRisk();
       clearSensitiveState('after-sales');
+      recordRentalNotification({ orderId, event: 'refund-arrived', periodId: state.afterSalesOrder?.id || orderId, occurredAt: completedAt });
       return cloneOrder(state.order);
     }
 
     function openAfterSales() {
       const order = getSelectedOrder();
       if (!order || !['active', 'refunding'].includes(order.status)) return false;
+      const current = state.notificationAfterSales[order.id] || (state.afterSalesOrder?.orderId === order.id ? state.afterSalesOrder : null);
+      if (current && ['submitted', 'approved-pending-launch', 'channel-processing', 'no-stock'].includes(current.status)) {
+        state.afterSalesOrder = cloneOrder(current);
+        state.afterSalesProgressOpen = Boolean(current.notificationEvent);
+        if (!current.notificationEvent) state.afterSalesDraft = { ...state.afterSalesDraft, orderId: order.id, requestType: current.requestType, reason: current.reason };
+        navigate(current.notificationEvent ? 'order-detail' : 'after-sales');
+        return true;
+      }
+      if (current) state.afterSalesOrder = null;
       if (state.afterSalesDraft.orderId !== order.id) {
         const noReason = getNoReasonEligibility(order);
         state.afterSalesDraft = { orderId: order.id, requestType: 'refund', reason: noReason.eligible ? 'no-reason' : 'steam-login', description: '' };
@@ -4378,15 +4488,91 @@
       return true;
     }
 
+    function getRentalNotifications() {
+      return [...state.notificationItems, ...RENTAL_NOTIFICATIONS];
+    }
+
+    function hasUnreadRentalNotifications() {
+      return getRentalNotifications().some((item) => item.unread && !state.notificationReadIds.includes(item.id));
+    }
+
+    function notificationEventKey(item) {
+      return `${item.orderId}|${item.event}|${item.periodId || item.orderId}`;
+    }
+
+    function recordRentalNotification({ orderId, event, periodId, occurredAt = nowFromServer(), pushAvailable = true, smsAvailable = true } = {}) {
+      const order = getOrderCollection().find(({ id }) => id === orderId);
+      if (!order) return null;
+      const templates = {
+        'expiry-15m': ['order', 'expiry', '时', '租号权益将在15分钟后到期', `《${order.gameName}》的本次租号权益将在15分钟后到期，请及时保存游戏进度。`],
+        'order-expired': ['order', 'expiry', '止', '租号订单已到期', `《${order.gameName}》的本次租用已结束，可进入订单或游戏详情查看当前可用权益。`],
+        'replacement-approved': ['after-sales', 'service', '换', '换号审核已通过', `《${order.gameName}》的换号申请已通过，新账号将在下次启动游戏时自动生效。`, 'replacement', 'approved-pending-launch'],
+        'replacement-rejected': ['after-sales', 'service', '换', '换号审核未通过', `《${order.gameName}》的换号申请未通过，原账号继续可用，请在售后详情查看原因。`, 'replacement', 'rejected'],
+        'refund-accepted': ['after-sales', 'refund', '退', '退款申请已受理', `订单 ${order.id} 已进入审核，请在售后详情查看最新进度。`, 'refund', 'submitted'],
+        'refund-reviewed': ['after-sales', 'refund', '退', '退款审核已通过', `《${order.gameName}》的退款审核已通过，¥${Number(order.amount).toFixed(2)} 将按原支付方式退回，到账后另行通知。`, 'refund', 'channel-processing'],
+        'refund-rejected': ['after-sales', 'refund', '退', '退款审核未通过', `《${order.gameName}》的退款申请未通过，原权益保持有效，请在售后详情查看原因。`, 'refund', 'rejected'],
+        'refund-arrived': ['order', 'refund', '到', '退款已原路到账', `退款 ¥${Number(order.amount).toFixed(2)} 已退回原支付账户，到账结果以支付渠道确认为准。`, 'refund', 'refunded'],
+      };
+      const copy = templates[event];
+      if (!copy) return null;
+      const proposedCycle = String(periodId || (state.rentalUsage?.orderId === order.id ? state.rentalUsage.id : order.id));
+      const cycle = /^[a-zA-Z0-9:_-]{1,80}$/.test(proposedCycle) ? proposedCycle : order.id;
+      const key = notificationEventKey({ orderId, event, periodId: cycle });
+      const existing = getRentalNotifications().find((item) => notificationEventKey(item) === key);
+      const channels = copy[0] === 'after-sales' || event === 'refund-arrived' ? ['in-app', 'push', 'sms'] : ['in-app', 'push'];
+      for (const channel of channels) {
+        const deliveryKey = `${key}|${channel}`;
+        if (state.notificationDeliveryRecords.some((record) => record.key === deliveryKey)) continue;
+        state.notificationDeliveryRecords.push({ key: deliveryKey, orderId, event, periodId: cycle, channel, status: channel === 'in-app' ? 'stored' : (channel === 'push' ? pushAvailable : smsAvailable) ? 'simulated' : 'unreachable', occurredAt: Number(occurredAt) });
+      }
+      if (existing) return cloneOrder(existing);
+      const [type, tone, icon, title, body, requestType, resultStatus] = copy;
+      const item = { id: `notice-${state.notificationItems.length + 1}`, orderId, event, periodId: cycle, type, tone, icon, title, body, time: formatOrderDateTime(occurredAt), occurredAt: Number(occurredAt), unread: true, ...(requestType ? { requestType, resultStatus } : {}) };
+      state.notificationItems.unshift(item);
+      if (requestType) {
+        const ticket = notificationTicket(item);
+        const previous = state.notificationAfterSales[orderId];
+        if (previous?.requestType === requestType) Object.assign(ticket, { reason: previous.reason, type: previous.type, description: previous.description, submittedAt: previous.submittedAt });
+        state.notificationAfterSales[orderId] = ticket;
+        if (state.afterSalesOrder?.orderId === orderId) state.afterSalesOrder = cloneOrder(ticket);
+        const nextStatus = resultStatus === 'refunded' ? 'refunded' : resultStatus === 'channel-processing' ? 'refunding' : resultStatus === 'rejected' ? 'active' : order.status;
+        const snapshot = { ...cloneOrder(order), status: nextStatus, updatedAt: Number(occurredAt), ...(resultStatus === 'refunded' ? { refundedAt: Number(occurredAt), credentialAvailable: false } : {}) };
+        if (state.order?.id === orderId) Object.assign(state.order, snapshot);
+        else state.notificationOrderSnapshots[orderId] = snapshot;
+      }
+      if (state.screen === 'notifications') renderApp();
+      return cloneOrder(item);
+    }
+
+    function notificationTicket(item) {
+      if (!item.requestType) return null;
+      const order = getOrderCollection().find(({ id }) => id === item.orderId);
+      return { id: `AFTER-${item.orderId}`, orderId: item.orderId, requestType: item.requestType, reason: 'steam-login', type: 'steam-login', description: item.body, status: item.resultStatus, submittedAt: item.occurredAt || order?.updatedAt || nowFromServer(), notificationEvent: item.event, periodId: item.periodId };
+    }
+
     function openRentalNotification(notificationId) {
-      const notification = RENTAL_NOTIFICATIONS.find(({ id }) => id === notificationId);
+      const notification = getRentalNotifications().find(({ id }) => id === notificationId);
       if (!notification) return false;
+      let order = getOrderCollection().find(({ id }) => id === notification.orderId);
+      if (!order) {
+        const base = ORDER_FIXTURES.find(({ id }) => id === (notification.baseOrderId || notification.orderId));
+        if (!base) return false;
+        order = { ...cloneOrder(base), id: notification.orderId, scenarioSeed: false, ...(notification.resultStatus === 'channel-processing' ? { status: 'refunding' } : notification.resultStatus === 'rejected' ? { status: 'active' } : {}) };
+        state.notificationOrderSnapshots[order.id] = order;
+      }
+      state.orderTab = 'all';
+      state.orderSearch = '';
+      if (notification.requestType && !state.notificationAfterSales[order.id]) state.notificationAfterSales[order.id] = notificationTicket(notification);
+      state.afterSalesOrder = cloneOrder(state.notificationAfterSales[order.id] || null);
+      state.afterSalesProgressOpen = false;
+      state.refundProgressOrderId = null;
       if (!state.notificationReadIds.includes(notificationId)) state.notificationReadIds.push(notificationId);
       return selectOrder(notification.orderId);
     }
 
     function submitAfterSales() {
-      if (state.afterSalesOrder?.orderId === state.afterSalesDraft.orderId) return cloneOrder(state.afterSalesOrder);
+      const activeTicket = state.notificationAfterSales[state.afterSalesDraft.orderId] || (state.afterSalesOrder?.orderId === state.afterSalesDraft.orderId ? state.afterSalesOrder : null);
+      if (activeTicket && ['submitted', 'approved-pending-launch', 'channel-processing', 'no-stock'].includes(activeTicket.status)) return cloneOrder(activeTicket);
       const noReasonRefund = state.afterSalesDraft.requestType === 'refund' && state.afterSalesDraft.reason === 'no-reason';
       if (!state.afterSalesDraft.orderId || (!noReasonRefund && !state.afterSalesDraft.description.trim())) {
         showToast('请填写问题描述');
@@ -4402,6 +4588,8 @@
         status: 'submitted',
         submittedAt: Date.now(),
       };
+      state.notificationAfterSales[state.afterSalesOrder.orderId] = cloneOrder(state.afterSalesOrder);
+      if (state.afterSalesOrder.requestType === 'refund') recordRentalNotification({ orderId: state.afterSalesOrder.orderId, event: 'refund-accepted', periodId: `${state.afterSalesOrder.id}-${state.afterSalesOrder.submittedAt}`, occurredAt: state.afterSalesOrder.submittedAt });
       state.afterSalesProgressOpen = false;
       wipeSensitiveState({ clearAccount: true, closePanels: true });
       navigate('order-detail', { rememberSource: false, replaceTask: true });
@@ -4411,11 +4599,12 @@
 
     function withdrawAfterSales() {
       const ticket = state.afterSalesOrder;
-      if (!ticket || ticket.status !== 'submitted') return false;
+      if (!ticket || !['submitted', 'approved-pending-launch'].includes(ticket.status)) return false;
       const orderId = ticket.orderId;
+      state.notificationAfterSales[orderId] = { ...cloneOrder(ticket), status: 'withdrawn', withdrawnAt: nowFromServer() };
       state.afterSalesOrder = null;
       state.afterSalesProgressOpen = false;
-      state.replacementRequest = null;
+      if (state.replacementRequest?.orderId === orderId) state.replacementRequest = null;
       state.afterSalesDraft = { orderId, requestType: 'refund', reason: 'no-reason', description: '' };
       navigate('order-detail', { rememberSource: false, replaceTask: true });
       showToast('售后申请已撤销');
@@ -4451,6 +4640,7 @@
         approvedAt: nowFromServer(),
         originalBindingPreserved: true,
       };
+      recordRentalNotification({ orderId: order.id, event: 'replacement-approved', periodId: state.afterSalesOrder?.periodId || state.afterSalesOrder?.id || order.id, occurredAt: state.replacementRequest.approvedAt });
       renderApp();
       return true;
     }
@@ -4559,6 +4749,8 @@
       state.orderSearch = '';
       state.orderSearchOpen = false;
       state.noReasonPolicyOpen = false;
+      state.demoPurchaseMode = 'regular';
+      state.demoStatePanelOpen = false;
       state.rentalRiskDecision = { extraNoReasonRestricted: false, ruleVersion: 'RISK-30D-3-NO-REASON-V1', explicit: false };
       state.refundHistory = [];
       state.language = 'zh-CN';
@@ -4612,6 +4804,10 @@
       state.replacementRequest = null;
       state.notificationTab = 'all';
       state.notificationReadIds = [];
+      state.notificationItems = [];
+      state.notificationDeliveryRecords = [];
+      state.notificationOrderSnapshots = {};
+      state.notificationAfterSales = {};
       state.networkAvailable = true;
       state.orderQueryError = false;
       state.lastExpiryMinutes = null;
@@ -4820,7 +5016,7 @@
       const featureGames = PLAY_PC_GAMES.slice(0, 2);
       const listGames = PLAY_PC_GAMES.slice(2);
       return `<section class="pc-channel-page" data-app-baseline="user-pc-channel-20260921">
-        <div class="pc-channel-search"><button class="search-box" type="button" data-action="navigate" data-screen="search" aria-label="搜索游戏"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></svg><span>漫威蜘蛛侠：重制版</span></button><button class="pc-notification" type="button" data-action="navigate" data-screen="notifications" aria-label="消息通知"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14l-1.5-3V9a5.5 5.5 0 0 0-11 0v5L5 17Z"/><path d="M10 21h4M12 1v2"/></svg></button><button class="device-link" type="button" data-action="feedback" aria-label="连接设备"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="10" height="18" rx="2"/><path d="M17 4c2 1 3 2.5 3 5M17 10h2l2 2v6h-4M8 17h2"/></svg></button></div>
+        <div class="pc-channel-search"><button class="search-box" type="button" data-action="navigate" data-screen="search" aria-label="搜索游戏"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></svg><span>漫威蜘蛛侠：重制版</span></button><button class="pc-notification ${hasUnreadRentalNotifications() ? 'has-unread' : ''}" type="button" data-action="navigate" data-screen="notifications" aria-label="消息通知"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14l-1.5-3V9a5.5 5.5 0 0 0-11 0v5L5 17Z"/><path d="M10 21h4M12 1v2"/></svg></button><button class="device-link" type="button" data-action="feedback" aria-label="连接设备"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="10" height="18" rx="2"/><path d="M17 4c2 1 3 2.5 3 5M17 10h2l2 2v6h-4M8 17h2"/></svg></button></div>
         ${renderHomeChannels('pc')}
         <div class="section-head"><h2>热门推荐</h2></div>
         <div class="pc-hot-rail"><article class="pc-hot-card">${entryCrop('memberEntryPcReference', [21, 199, 454, 212], '鬼武者 Way of the Sword 游戏封面', '', 'pc-hot-cover')}<div class="pc-hot-copy"><h3>鬼武者 Way of the Sword</h3><p>鬼武者新作 2026发售</p></div></article><article class="pc-hot-card" data-action="navigate" data-screen="detail" data-game-id="hogwarts">${wireframeMedia('landscapeSteamLibrary', [608, 753, 390, 216], '霍格沃茨之遗 游戏封面', '', 'pc-hot-cover')}<div class="pc-hot-copy"><h3>霍格沃茨之遗</h3><p>沉浸式开放世界冒险</p></div></article></div>
@@ -4951,7 +5147,7 @@
     function renderProfile() {
       const membership = getMembershipStatusModel();
       return `<section class="profile-v611" data-profile-baseline="user-reference">
-        <header class="profile-v611-head"><div><h1>个人中心</h1><button type="button" data-action="feedback">动态</button></div><div class="profile-v611-tools"><button type="button" data-action="navigate" data-screen="notifications" aria-label="通知">♧</button><button type="button" data-action="feedback" aria-label="下载管理">⇩</button><button type="button" data-action="feedback" aria-label="设置">⌾</button></div></header>
+        <header class="profile-v611-head"><div><h1>个人中心</h1><button type="button" data-action="feedback">动态</button></div><div class="profile-v611-tools"><button class="${hasUnreadRentalNotifications() ? 'has-unread' : ''}" type="button" data-action="navigate" data-screen="notifications" aria-label="通知">♧</button><button type="button" data-action="feedback" aria-label="下载管理">⇩</button><button type="button" data-action="feedback" aria-label="设置">⌾</button></div></header>
         <section class="profile-user-card">
           <div class="profile-user-overview">${wireframeMedia('orderCenterReference', [18, 112, 82, 82], '用户头像', '', 'profile-v611-avatar real-avatar')}<div class="profile-social-stats"><div><strong>1246</strong><span>关注</span></div><div><strong>2.4w</strong><span>粉丝</span></div><div><strong>8.8k</strong><span>获赞与收藏</span></div></div></div>
           <div class="profile-name-row"><h2>用户名用户名用户名</h2><button class="profile-inline-member" type="button" data-action="navigate" data-screen="membership">${membership.chip}<b>›</b></button></div><div class="profile-user-meta"><span>UID 12789457489</span><em>已实名</em></div><p>简洁简介 Hello Gamer · 记录每一段精彩游戏时光</p>
@@ -5344,6 +5540,11 @@
       if (surface === 'detail' && state.afterSalesOrder?.orderId === order?.id && state.afterSalesOrder.status === 'submitted') {
         actions = actions.map((action) => action[0] === 'after-sales' ? ['after-sales-detail', '售后详情', action[2]] : action);
       }
+      if (surface === 'detail' && state.afterSalesOrder?.orderId === order?.id && state.afterSalesOrder.notificationEvent) {
+        const canReapply = ['rejected', 'withdrawn', 'bound'].includes(state.afterSalesOrder.status);
+        actions = actions.filter(([id]) => !['after-sales-detail', 'progress', ...(!canReapply ? ['after-sales'] : [])].includes(id));
+        actions.push(['after-sales-detail', '售后详情', 'secondary']);
+      }
       actions = actions.filter(([id]) => id !== 'credentials' || order.credentialAvailable !== false);
       if (['refunded', 'ended'].includes(order?.status)) {
         const next = hasDirectGameEntitlement(order.gameId)
@@ -5462,20 +5663,20 @@
     }
 
     function renderRentalNotifications() {
-      return `<div class="notification-list">${RENTAL_NOTIFICATIONS.map((item) => {
+      return `<div class="notification-list">${getRentalNotifications().map((item) => {
         const unread = item.unread && !state.notificationReadIds.includes(item.id);
-        return `<button class="notification-card ${unread ? 'unread' : ''}" type="button" data-action="open-rental-notification" data-notification-id="${item.id}" data-notification-type="${item.type}" data-tone="${item.tone}"><span class="notification-icon" aria-hidden="true">${item.icon}</span><span class="notification-copy"><strong>${item.title}</strong><p>${item.body}</p><time>${item.time}</time></span></button>`;
+        return `<article class="system-message-item"><time class="system-message-time">${escapeAttribute(item.time)}</time><div class="system-message-sender"><span class="system-message-avatar" aria-hidden="true">盖</span><span>系统管理员</span></div><button class="notification-card ${unread ? 'unread' : ''}" type="button" data-action="open-rental-notification" data-notification-id="${item.id}" data-notification-type="${item.type}" data-notification-event="${item.event}" data-tone="${item.tone}" aria-label="${escapeAttribute(item.title)}${unread ? '，未读' : ''}"><span class="notification-icon" aria-hidden="true">${item.icon}</span><span class="notification-copy"><strong>${escapeAttribute(item.title)}</strong><p>${escapeAttribute(item.body)}</p><span class="notification-link">查看订单 ›</span></span></button></article>`;
       }).join('')}</div>`;
     }
 
     function renderPortraitNotifications() {
-      const unread = RENTAL_NOTIFICATIONS.filter((item) => item.unread && !state.notificationReadIds.includes(item.id)).length;
-      return `<section class="portrait-notifications" data-layout="portrait-notifications">${subpageHead('消息中心', 'profile')}${renderNotificationTabs()}<div class="notification-summary"><strong>租号通知</strong><span>${unread}条未读</span></div>${renderRentalNotifications()}</section>`;
+      const unread = getRentalNotifications().filter((item) => item.unread && !state.notificationReadIds.includes(item.id)).length;
+      return `<section class="portrait-notifications" data-layout="portrait-notifications">${subpageHead('系统消息', 'profile')}<div class="notification-summary"><strong>订单与售后</strong><span>${unread}条未读</span></div>${renderRentalNotifications()}</section>`;
     }
 
     function renderLandscapeNotifications() {
-      const unread = RENTAL_NOTIFICATIONS.filter((item) => item.unread && !state.notificationReadIds.includes(item.id)).length;
-      return `<section class="landscape-task-page landscape-notifications" data-layout="landscape-notifications">${renderTaskHeader('消息中心')}<div class="notification-layout"><aside><div class="notification-summary"><strong>租号通知</strong><span>${unread}条未读</span></div>${renderNotificationTabs()}</aside>${renderRentalNotifications()}</div></section>`;
+      const unread = getRentalNotifications().filter((item) => item.unread && !state.notificationReadIds.includes(item.id)).length;
+      return `<section class="landscape-task-page landscape-notifications" data-layout="landscape-notifications">${renderTaskHeader('系统消息')}<div class="notification-layout"><div class="notification-summary"><strong>订单与售后</strong><span>${unread}条未读</span></div>${renderRentalNotifications()}</div></section>`;
     }
 
     function renderLandscapeAfterSales() {
@@ -5557,11 +5758,32 @@
       return `<div class="modal-backdrop" data-action="close-refund-progress" role="presentation"><section class="refund-progress-dialog" role="dialog" aria-modal="true" aria-label="退款进度"><div class="credential-head"><div><h2>退款进度</h2><p>订单 ${order.id}</p></div><button class="dialog-close" type="button" data-action="close-refund-progress" aria-label="关闭退款进度">×</button></div><div class="refund-progress-summary"><strong>${completed ? '退款已完成' : '退款处理中'}</strong><span>退款金额 ¥${Number(order.amount).toFixed(2)}，${completed ? '已按原支付方式退回。' : '正在由原支付渠道处理，到账时间以支付平台为准。'}</span></div><div class="refund-progress-timeline">${steps.map(([label, status]) => `<span class="${status}">${label}</span>`).join('')}</div><button class="primary-action" type="button" data-action="close-refund-progress">我知道了</button></section></div>`;
     }
 
+    function renderNotificationAfterSalesProgress(ticket, order) {
+      const refund = ticket.requestType === 'refund';
+      const service = refund ? '退款' : '换号';
+      const status = ticket.status;
+      const summaries = {
+        submitted: [`${service}处理中`, refund ? '平台正在核对订单与使用记录；审核通过后按原支付方式退款。' : '平台正在核对账号状态，审核结果将在系统消息中通知。'],
+        'approved-pending-launch': ['换号审核已通过', '新账号将在下次启动游戏时自动生效；本次游玩继续使用原账号。'],
+        'channel-processing': ['退款处理中', `退款审核已通过，¥${Number(order.amount).toFixed(2)} 正在原路退回；实际到账以支付渠道回调为准。`],
+        refunded: ['退款已到账', `退款 ¥${Number(order.amount).toFixed(2)} 已原路到账，本订单租用权益已收回。`],
+        rejected: [`${service}审核未通过`, '当前问题描述不足以确认履约异常。请补充登录或启动失败的现象后重新申请；原账号及权益保持有效。'],
+        bound: ['换号已生效', '新账号已在本次启动时绑定，后续使用当前账号。'],
+        withdrawn: ['售后申请已撤销', '原账号及权益保持有效；如仍有问题，可在订单中重新申请售后。'],
+      };
+      const [title, description] = summaries[status] || [`${service}处理中`, '请以订单最新处理结果为准。'];
+      const reviewDone = status !== 'submitted';
+      const finished = ['refunded', 'bound', 'rejected', 'withdrawn'].includes(status);
+      const steps = [[`${service}申请已提交`, 'done'], [status === 'rejected' ? '审核未通过' : status === 'withdrawn' ? '申请已撤销' : '平台审核', reviewDone ? 'done' : 'current'], [refund ? '退款原路到账' : '下次启动生效', ['rejected', 'withdrawn'].includes(status) ? '' : finished ? 'done' : reviewDone ? 'current' : '']];
+      return `<div class="modal-backdrop" data-action="close-after-sales-progress" role="presentation"><section class="refund-progress-dialog after-sales-progress-dialog" role="dialog" aria-modal="true" aria-label="售后进度" data-after-sales-status="${status}"><div class="credential-head"><div><h2>售后进度</h2><p>订单 ${order.id}</p></div><button class="dialog-close" type="button" data-action="close-after-sales-progress" aria-label="关闭售后进度">×</button></div><div class="refund-progress-summary"><strong>${title}</strong><span>${description}</span></div><div class="refund-progress-timeline">${steps.map(([label, step]) => `<span class="${step}">${label}</span>`).join('')}</div><div class="after-sales-progress-actions">${['submitted', 'approved-pending-launch'].includes(status) ? '<button class="after-sales-withdraw" type="button" data-action="withdraw-after-sales">撤销售后</button>' : ''}<button class="primary-action" type="button" data-action="close-after-sales-progress">我知道了</button></div></section></div>`;
+    }
+
     function renderAfterSalesProgressDialog() {
       if (!state.afterSalesProgressOpen) return '';
       const ticket = state.afterSalesOrder;
       const order = getOrderCollection().find(({ id }) => id === ticket?.orderId);
       if (!ticket || !order) return '';
+      if (ticket.notificationEvent) return renderNotificationAfterSalesProgress(ticket, order);
       const cancellable = ticket.status === 'submitted';
       const refund = ticket.requestType === 'refund';
       const steps = refund
@@ -5590,7 +5812,9 @@
 
     function renderRentalRiskDialog() {
       if (!state.riskReminderOpen) return '';
-      return `<div class="modal-backdrop" role="presentation"><section class="policy-dialog rental-risk-dialog" role="alertdialog" aria-modal="true" aria-label="退款权益提醒"><h2>退款权益提醒</h2><p>本单不适用平台额外“3天无理由”承诺。法定退款权利，以及 Steam 登录失败、启动失败、账号异常等履约售后不受影响。</p><div class="dialog-action-row"><button type="button" data-action="close-rental-risk">暂不购买</button><button class="primary-action" type="button" data-action="confirm-rental-risk">确认继续</button></div></section></div>`;
+      const intent = state.pendingRentalIntent;
+      if (!intent) return '';
+      return `<div class="modal-backdrop rental-risk-backdrop" role="presentation"><section class="policy-dialog rental-risk-dialog" role="alertdialog" aria-modal="true" aria-labelledby="rentalRiskTitle" aria-describedby="rentalRiskDescription"><button class="rental-risk-close" type="button" data-action="close-rental-risk" aria-label="关闭退款权益提醒">×</button><header class="rental-risk-head"><span class="rental-risk-warning" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10.2 4.5a2 2 0 0 1 3.6 0l7 12.5a2 2 0 0 1-1.8 3H5a2 2 0 0 1-1.8-3Z"/><path d="M12 8v5m0 3v.2"/></svg></span><div><h2 id="rentalRiskTitle">退款权益提醒</h2><p id="rentalRiskDescription">再次购买可能无法享受3天无理由退款，请确认后购买。</p></div></header><div class="rental-risk-product">${wireframeMedia('rental-risk', null, `${intent.gameName} 游戏封面`, '', 'rental-risk-cover')}<div><strong data-risk-product-name>${escapeAttribute(intent.gameName)}</strong><small data-risk-product-edition>${intent.editionName} · ${escapeAttribute(intent.packageName)}</small></div><b data-risk-product-price data-amount="${intent.amount}">¥${intent.amount.toFixed(2)}</b></div><p class="rental-risk-assurance">本单仍保留 Steam 登录失败、游戏启动失败和账号异常等履约售后；法定退款权利不受影响。</p><div class="dialog-action-row"><button type="button" data-action="close-rental-risk">暂不购买</button><button class="primary-action" type="button" data-action="confirm-rental-risk">确认并继续</button></div></section></div>`;
     }
 
     function renderNonTargetLaunchGuard() {
@@ -5798,7 +6022,7 @@
     function renderLandscapeProfile() {
       const membership = getMembershipStatusModel();
       return `<section class="landscape-profile landscape-profile-v611" data-profile-baseline="user-reference">
-        <header class="landscape-profile-head"><div><h1>个人中心</h1><span>动态</span></div><div>通知　下载　设置</div></header>
+        <header class="landscape-profile-head"><div><h1>个人中心</h1><span>动态</span></div><div><button class="profile-notification-entry ${hasUnreadRentalNotifications() ? 'has-unread' : ''}" type="button" data-action="navigate" data-screen="notifications" aria-label="通知">通知</button>　下载　设置</div></header>
         <div class="landscape-profile-grid">
           <section class="landscape-profile-identity-card"><div class="profile-user-overview">${wireframeMedia('orderCenterReference', [18, 112, 82, 82], '用户头像', '', 'profile-v611-avatar real-avatar')}<div class="profile-social-stats"><div><strong>1246</strong><span>关注</span></div><div><strong>2.4w</strong><span>粉丝</span></div><div><strong>8.8k</strong><span>获赞收藏</span></div></div></div><div class="profile-name-row"><h2>用户名用户名用户名</h2><button class="profile-inline-member" type="button" data-action="navigate" data-screen="membership">${membership.chip}<b>›</b></button></div><div class="profile-user-meta"><span>UID 12789457489</span><em>已实名</em></div><p>简洁简介 Hello Gamer · 记录每一段精彩游戏时光</p></section>
           <div class="landscape-profile-middle"><button class="profile-order-entry" type="button" data-action="navigate" data-screen="orders"><span class="profile-order-icon">▣</span><span>订单中心</span><b>›</b></button>${wireframeMedia('orderCenterReference', [19, 610, 358, 64], '加入盖世掌游官方游戏圈', '', 'profile-promo profile-v611-promo')}</div>
@@ -5937,6 +6161,16 @@
       });
     }
 
+    function renderDemoStateControl() {
+      const repeat = state.demoPurchaseMode === 'repeat';
+      return `<aside class="demo-state-control" aria-label="Demo演示状态">${state.demoStatePanelOpen ? `<section class="demo-state-panel" id="demoStatePanel"><header><strong>Demo 状态</strong><button type="button" data-action="toggle-demo-state" aria-label="收起Demo状态">×</button></header><div class="demo-state-options" role="radiogroup" aria-label="购买场景"><button type="button" role="radio" aria-checked="${!repeat}" data-action="set-demo-purchase-mode" data-value="regular"><strong>常规购买</strong><small>租号开玩后直接进入确认订单</small></button><button type="button" role="radio" aria-checked="${repeat}" data-action="set-demo-purchase-mode" data-value="repeat"><strong>多次购买</strong><small>租号开玩前提醒退款权益限制</small></button></div><button class="demo-state-notifications" type="button" data-action="demo-open-notifications">查看消息中心 ›</button><p class="demo-state-hint">仅切换演示场景，已生成订单的权益保持不变。</p></section>` : ''}<button class="demo-state-trigger" type="button" data-action="toggle-demo-state" data-mode="${state.demoPurchaseMode}" aria-expanded="${state.demoStatePanelOpen}" aria-controls="demoStatePanel"><i aria-hidden="true"></i><strong>Demo 状态</strong><small>${repeat ? '多次购买' : '常规购买'}</small></button></aside>`;
+    }
+
+    function updateDemoStateControl() {
+      document.querySelector('.demo-state-control')?.remove();
+      document.body.insertAdjacentHTML('beforeend', renderDemoStateControl());
+    }
+
     function renderApp() {
       const root = document.querySelector('#appRentalDemo');
       const pageId = PAGE_CONTRACTS[state.capturePageId] ? state.capturePageId : state.screen;
@@ -5946,20 +6180,39 @@
       root.dataset.baselineSource = PAGE_CONTRACTS[pageId]?.baselineSource || (isCoreScreen(state.screen) ? 'app-v611' : 'mac-rental');
       if (state.orientation === 'portrait') {
         root.innerHTML = renderPortraitShell(renderPortraitContent(), state.screen);
+        updateDemoStateControl();
         updateCountdownDisplay(root);
         updateGuardDisplays(root);
         return;
       }
       root.innerHTML = renderLandscapeShell(renderLandscapeContent(), state.screen);
+      updateDemoStateControl();
       updateCountdownDisplay(root);
       updateGuardDisplays(root);
     }
 
-    document.querySelector('#appRentalDemo').addEventListener('click', (event) => {
+    document.addEventListener('click', (event) => {
       const target = event.target.closest('[data-action]');
-      if (!target) return;
+      if (!target || !target.closest('#appRentalDemo, .demo-state-control')) return;
       const action = target.dataset.action;
       if (target.classList.contains('modal-backdrop') && event.target !== target) return;
+      if (action === 'toggle-demo-state') {
+        state.demoStatePanelOpen = !state.demoStatePanelOpen;
+        updateDemoStateControl();
+        return;
+      }
+      if (action === 'set-demo-purchase-mode') {
+        setDemoPurchaseMode(target.dataset.value);
+        return;
+      }
+      if (action === 'demo-open-notifications') {
+        state.demoStatePanelOpen = false;
+        state.riskReminderOpen = false;
+        state.pendingRentalIntent = null;
+        state.pendingRiskSnapshot = null;
+        navigate('notifications');
+        return;
+      }
       if (action === 'navigate') {
         if (target.dataset.gameId) setSelectedGame(target.dataset.gameId, { shouldRender: false });
         if (target.dataset.screen === 'play' && ['cloud', 'pc', 'retro'].includes(target.dataset.channel)) state.playTab = target.dataset.channel;
@@ -6423,7 +6676,10 @@
 
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
-      if (state.membershipIntroOpen) {
+      if (state.demoStatePanelOpen) {
+        state.demoStatePanelOpen = false;
+        updateDemoStateControl();
+      } else if (state.membershipIntroOpen) {
         dismissMembershipIntro();
       } else if (state.rentalIntroOpen) {
         state.rentalIntroOpen = false;
@@ -6530,6 +6786,7 @@
       getCheckoutAmountModel,
       requestRentalCheckout,
       confirmRentalRisk,
+      setDemoPurchaseMode,
       setRentalRiskDecision,
       evaluateRefundRisk,
       setRefundHistory,
@@ -6626,6 +6883,8 @@
       setAfterSalesType,
       setAfterSalesDescription,
       setNotificationTab,
+      getRentalNotifications,
+      recordRentalNotification,
       openRentalNotification,
       submitAfterSales,
       withdrawAfterSales,
