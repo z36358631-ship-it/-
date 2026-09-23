@@ -386,27 +386,30 @@
         // ================= 数据 Mock =================
         let mockTasks =[
             { id: 'T_001', type: 'daily', conditionGroup: 'app_active', purpose: '每日签到', reward: 2, dailyLimit: '2', buttonText: '签到', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_002', type: 'daily', conditionGroup: 'app_active', purpose: '连续签到（3/7/15/30天）', reward: '2/8/20/50', dailyLimit: '-', buttonText: '-', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_003', type: 'daily', conditionGroup: 'app_feature_active', purpose: '有效游玩游戏（秒玩/PC模拟器）', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'game_library', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_004', type: 'daily', conditionGroup: 'app_community_active', purpose: '完成3次点赞/收藏', reward: 2, dailyLimit: '2', buttonText: '去完成', landingPage: 'community', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_005', type: 'daily', conditionGroup: 'app_community_active', purpose: '有效评论', reward: 2, dailyLimit: '4', buttonText: '去完成', landingPage: 'community', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_006', type: 'daily', conditionGroup: 'app_community_active', purpose: '社区帖子发布', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'create_post', targetValue: '', topic: '黑神话悟空', zone: '单机游戏区', status: 1 },
-            { id: 'T_007', type: 'daily', conditionGroup: 'app_external_exposure', purpose: '社区帖子分享（微信/朋友圈/QQ/微博）', reward: 3, dailyLimit: '3', buttonText: '去完成', landingPage: 'community', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_008', type: 'daily', conditionGroup: 'app_revenue', purpose: '观看广告视频（3次）', reward: 3, dailyLimit: '9', buttonText: '去观看', landingPage: 'open_ad', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_009', type: 'once', conditionGroup: 'personal_info', purpose: '首次修改个人资料（头像/昵称/性别…）', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_010', type: 'once', conditionGroup: 'personal_info', purpose: '首次完成第三方账号绑定（微信/QQ）', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_011', type: 'once', conditionGroup: 'community_guide', purpose: '首次加入社区分区', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_012', type: 'once', conditionGroup: 'community_guide', purpose: '首次发布社区帖子', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'create_post', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_013', type: 'once', conditionGroup: 'community_guide', purpose: '首次分享PC引擎设置（纯发布/挂帖子内）', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_014', type: 'once', conditionGroup: 'community_guide', purpose: '首次分享按键配置（纯发布/挂帖子内）', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_015', type: 'once', conditionGroup: 'app_settings', purpose: '开启通知弹窗', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_016', type: 'once', conditionGroup: 'app_settings', purpose: '首次绑定游戏平台账号（Steam/Epic/…）', reward: 15, dailyLimit: '15', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
-            { id: 'T_017', type: 'once', conditionGroup: 'social_guide', purpose: '首次关注社媒（公众号）', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 }
+            { id: 'T_002', type: 'daily', conditionGroup: 'app_active', purpose: '连续签到', streakDays: 3, reward: 2, dailyLimit: '-', buttonText: '-', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_003', type: 'daily', conditionGroup: 'app_active', purpose: '连续签到', streakDays: 7, reward: 8, dailyLimit: '-', buttonText: '-', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_004', type: 'daily', conditionGroup: 'app_active', purpose: '连续签到', streakDays: 15, reward: 20, dailyLimit: '-', buttonText: '-', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_005', type: 'daily', conditionGroup: 'app_active', purpose: '连续签到', streakDays: 30, reward: 50, dailyLimit: '-', buttonText: '-', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_006', type: 'daily', conditionGroup: 'app_feature_active', purpose: '有效游玩游戏（秒玩/PC模拟器）', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'game_library', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_007', type: 'daily', conditionGroup: 'app_community_active', purpose: '完成3次点赞/收藏', reward: 2, dailyLimit: '2', buttonText: '去完成', landingPage: 'community', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_008', type: 'daily', conditionGroup: 'app_community_active', purpose: '有效评论', reward: 2, dailyLimit: '4', buttonText: '去完成', landingPage: 'community', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_009', type: 'daily', conditionGroup: 'app_community_active', purpose: '社区帖子发布', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'create_post', targetValue: '', topic: '黑神话悟空', zone: '单机游戏区', status: 1 },
+            { id: 'T_010', type: 'daily', conditionGroup: 'app_external_exposure', purpose: '社区帖子分享（微信/朋友圈/QQ/微博）', reward: 3, dailyLimit: '3', buttonText: '去完成', landingPage: 'community', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_011', type: 'daily', conditionGroup: 'app_revenue', purpose: '观看广告视频（3次）', reward: 3, dailyLimit: '9', buttonText: '去观看', landingPage: 'open_ad', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_012', type: 'once', conditionGroup: 'personal_info', purpose: '首次修改个人资料（头像/昵称/性别…）', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_013', type: 'once', conditionGroup: 'personal_info', purpose: '首次完成第三方账号绑定（微信/QQ）', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_014', type: 'once', conditionGroup: 'community_guide', purpose: '首次加入社区分区', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_015', type: 'once', conditionGroup: 'community_guide', purpose: '首次发布社区帖子', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'create_post', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_016', type: 'once', conditionGroup: 'community_guide', purpose: '首次分享PC引擎设置（纯发布/挂帖子内）', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_017', type: 'once', conditionGroup: 'community_guide', purpose: '首次分享按键配置（纯发布/挂帖子内）', reward: 10, dailyLimit: '10', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_018', type: 'once', conditionGroup: 'app_settings', purpose: '开启通知弹窗', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_019', type: 'once', conditionGroup: 'app_settings', purpose: '首次绑定游戏平台账号（Steam/Epic/…）', reward: 15, dailyLimit: '15', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 },
+            { id: 'T_020', type: 'once', conditionGroup: 'social_guide', purpose: '首次关注社媒（公众号）', reward: 5, dailyLimit: '5', buttonText: '去完成', landingPage: 'none', targetValue: '', topic: '', zone: '', status: 1 }
         ];
 
         const taskConditionGroups = {
             daily: [
-                { value: 'app_active', label: 'APP活跃', purposes: ['每日签到', '连续签到（3/7/15/30天）'] },
+                { value: 'app_active', label: 'APP活跃', purposes: ['每日签到', '连续签到'] },
                 { value: 'app_feature_active', label: 'APP功能活跃', purposes: ['有效游玩游戏（秒玩/PC模拟器）'] },
                 { value: 'app_community_active', label: 'APP社区活跃', purposes: ['完成3次点赞/收藏', '有效评论', '社区帖子发布'] },
                 { value: 'app_external_exposure', label: 'APP外站曝光', purposes: ['社区帖子分享（微信/朋友圈/QQ/微博）'] },
@@ -428,6 +431,7 @@
 
         const mockTopics = ['黑神话悟空', '盖世新版体验', '手柄评测', '游戏攻略分享', '我的游戏时刻', '社区建议'];
         const mockZones = ['单机游戏区', '多人联机区', '手柄外设区', '云游戏区', '新游速递区', '社区杂谈区'];
+        const streakDayOptions = [3, 7, 15, 30];
 
         let mockRewards =[
             { id: 'R_9901', img: 'https://api.dicebear.com/7.x/shapes/svg?seed=Game', name: 'X5Lite手柄 (包邮)', type: 'physical', price: 50000, stock: 15, limit: 1, redeemed: 12, status: 1 },
@@ -556,11 +560,16 @@
             return purpose === '社区帖子发布' || purpose === '首次发布社区帖子';
         }
 
+        function isStreakTaskPurpose(purpose) {
+            return purpose === '连续签到';
+        }
+
         function renderTasks() {
             const typeMap = { once: '<span class="tag tag-warning">成长任务</span>', daily: '<span class="tag tag-blue">每日任务</span>' };
             document.getElementById('task-table-body').innerHTML = mockTasks.map(t => {
                 const statusTag = t.status === 1 ? '<span class="tag tag-success">生效中</span>' : '<span class="tag tag-gray">已停用</span>';
                 const conditionText = `<span class="tag tag-gray">${getConditionLabel(t.type, t.conditionGroup)}</span>`;
+                const displayPurpose = isStreakTaskPurpose(t.purpose) && t.streakDays ? `${t.purpose}（${t.streakDays}天）` : t.purpose;
                 const conditionDetail = t.topic || t.zone ? `<div style="font-size:12px;color:#999;margin-top:4px;">${t.topic ? `话题：${t.topic}` : ''}${t.topic && t.zone ? '；' : ''}${t.zone ? `专区：${t.zone}` : ''}</div>` : '';
                 const targetText = t.targetValue ? `<span class="tag tag-orange task-target-cell">${t.targetValue}</span>` : '<span style="color:#999">-</span>';
                 return `
@@ -568,7 +577,7 @@
                     <td style="font-family:monospace; color:var(--text-sub);">${t.id}</td>
                     <td>${typeMap[t.type] || '-'}</td>
                     <td class="task-condition-cell">${conditionText}</td>
-                    <td class="task-purpose-cell"><div style="font-weight:bold;">${t.purpose}</div>${conditionDetail}</td>
+                    <td class="task-purpose-cell"><div style="font-weight:bold;">${displayPurpose}</div>${conditionDetail}</td>
                     <td class="coin-text">+${t.reward}</td>
                     <td>${t.dailyLimit || '-'}</td>
                     <td>${t.buttonText || '-'}</td>
@@ -625,6 +634,13 @@
                 if (customInput) customInput.value = '';
             }
 
+            const streakRow = document.getElementById('task-streak-row');
+            if (streakRow) streakRow.style.display = isStreakTaskPurpose(purposeSelect.value) ? 'block' : 'none';
+            if (!isStreakTaskPurpose(purposeSelect.value)) {
+                const streakSelect = document.getElementById('m-t-streak-days');
+                if (streakSelect) streakSelect.value = '';
+            }
+
             const needsTarget = landingSelect.value === 'specific_post' || landingSelect.value === 'specific_topic';
             targetRow.style.display = needsTarget ? 'block' : 'none';
             const targetInput = document.getElementById('m-t-target');
@@ -648,7 +664,7 @@
 
         function openTaskModal(id = null) {
             const original = id ? mockTasks.find(t => t.id === id) : null;
-            const task = original || { type: 'daily', conditionGroup: 'app_active', purpose: '每日签到', reward: '', dailyLimit: '', buttonText: '', landingPage: 'none', targetValue: '', topic: '', zone: '' };
+            const task = original || { type: 'daily', conditionGroup: 'app_active', purpose: '每日签到', streakDays: '', reward: '', dailyLimit: '', buttonText: '', landingPage: 'none', targetValue: '', topic: '', zone: '' };
             const typeTags = `<span class="chip ${task.type==='daily'?'active':''}" data-val="daily" onclick="toggleChip(this,'type'); onTaskTypeChange();">每日任务</span><span class="chip ${task.type==='once'?'active':''}" data-val="once" onclick="toggleChip(this,'type'); onTaskTypeChange();">成长任务</span>`;
             const topicTags = mockTopics.map(tp => `<span class="chip ${task.topic===tp?'active':''}" data-val="${tp}" onclick="toggleChip(this,'topic')">${tp}</span>`).join('');
             const zoneTags = mockZones.map(z => `<span class="chip ${task.zone===z?'active':''}" data-val="${z}" onclick="toggleChip(this,'zone')">${z}</span>`).join('');
@@ -659,7 +675,8 @@
                 <div class="form-group"><label class="required">任务类型</label><div id="chip-type" style="flex:1;padding-top:4px;">${typeTags}</div></div>
                 <div class="form-group"><label class="required">任务条件</label><select class="form-control task-select" id="m-t-condition" onchange="onTaskConditionChange()"></select></div>
                 <div class="form-group"><label class="required">任务目的</label><select class="form-control task-select" id="m-t-purpose" onchange="syncTaskFormVisibility()"></select></div>
-                <div class="form-group"><label class="required">奖励积分</label><div style="flex:1;"><input type="text" class="form-control" id="m-t-reward" value="${task.reward ?? ''}" placeholder="请输入正整数，可填多档值如 2/8/20/50"><div id="m-t-reward-error" class="task-field-error"></div></div></div>
+                <div id="task-streak-row" class="form-group" style="display:${isStreakTaskPurpose(task.purpose)?'flex':'none'};"><label class="required">连续签到天数</label><select class="form-control task-select" id="m-t-streak-days"><option value="">请选择连续天数</option>${streakDayOptions.map(days => `<option value="${days}" ${Number(task.streakDays)===days?'selected':''}>连续 ${days} 天</option>`).join('')}</select></div>
+                <div class="form-group"><label class="required">奖励积分</label><div style="flex:1;"><input type="text" class="form-control" id="m-t-reward" value="${task.reward ?? ''}" placeholder="请输入大于0的整数"><div id="m-t-reward-error" class="task-field-error"></div></div></div>
                 <div class="form-group"><label class="required">每日上限</label><input type="text" class="form-control" id="m-t-limit" value="${task.dailyLimit ?? ''}" placeholder="如：5；无上限填 -"></div>
                 <div class="task-form-section">完成条件</div>
                 <div id="task-post-condition" class="task-conditional">
@@ -713,6 +730,7 @@
                 type: document.querySelector('#chip-type .chip.active')?.dataset.val || 'daily',
                 conditionGroup: document.getElementById('m-t-condition')?.value || '',
                 purpose: document.getElementById('m-t-purpose')?.value || '',
+                streakDays: document.getElementById('m-t-streak-days')?.value || '',
                 reward: document.getElementById('m-t-reward')?.value.trim() || '',
                 dailyLimit: document.getElementById('m-t-limit')?.value.trim() || '',
                 buttonText: document.getElementById('m-t-button')?.value.trim() || '-',
@@ -726,9 +744,12 @@
         function validateTaskForm(data) {
             clearTaskFormErrors();
             if (!data.conditionGroup || !data.purpose) return showToast('请选择任务条件和任务目的', 'error'), false;
-            if (!/^\d+(\/\d+)*$/.test(data.reward) || data.reward.split('/').some(value => Number(value) <= 0)) {
-                setTaskFieldError('m-t-reward-error', '请输入大于 0 的整数，可用 / 填写多档奖励。');
+            if (!/^\d+$/.test(data.reward) || Number(data.reward) <= 0) {
+                setTaskFieldError('m-t-reward-error', '请输入大于 0 的整数。');
                 return false;
+            }
+            if (isStreakTaskPurpose(data.purpose) && !streakDayOptions.includes(Number(data.streakDays))) {
+                return showToast('请选择连续签到天数', 'error'), false;
             }
             if (data.landingPage === 'specific_post' || data.landingPage === 'specific_topic') {
                 if (!data.targetValue) {
@@ -746,6 +767,7 @@
                 form.topic = '';
                 form.zone = '';
             }
+            if (!isStreakTaskPurpose(form.purpose)) form.streakDays = '';
             if (form.landingPage !== 'specific_post' && form.landingPage !== 'specific_topic') form.targetValue = '';
             if (id) {
                 const task = mockTasks.find(item => item.id === id);

@@ -18,7 +18,7 @@
 
 - [x] **Step 1: 替换 Mock 任务结构**
 
-将 `mockTasks` 的字段统一为 `id/type/conditionGroup/purpose/reward/dailyLimit/buttonText/landingPage/targetValue/topic/zone/status`，录入设计规格中的 17 条任务。连续签到保留 `reward: '2/8/20/50'` 与 `dailyLimit: '-'`，无配置统一使用空字符串或 `-`。
+将 `mockTasks` 的字段统一为 `id/type/conditionGroup/purpose/streakDays/reward/dailyLimit/buttonText/landingPage/targetValue/topic/zone/status`，录入设计规格中的 20 条任务。连续签到拆成 3、7、15、30 天四条任务，分别配置 2、8、20、50 积分；无配置统一使用空字符串或 `-`。
 
 - [x] **Step 2: 增加条件和落地页元数据**
 
@@ -27,7 +27,7 @@
 ```js
 const taskConditionGroups = {
   daily: [
-    { value: 'app_active', label: 'APP活跃', purposes: ['每日签到', '连续签到（3/7/15/30天）'] },
+    { value: 'app_active', label: 'APP活跃', purposes: ['每日签到', '连续签到'] },
     { value: 'app_feature_active', label: 'APP功能活跃', purposes: ['有效游玩游戏（秒玩/PC模拟器）'] },
     { value: 'app_community_active', label: 'APP社区活跃', purposes: ['完成3次点赞/收藏', '有效评论', '社区帖子发布'] },
     { value: 'app_external_exposure', label: 'APP外站曝光', purposes: ['社区帖子分享（微信/朋友圈/QQ/微博）'] },
@@ -84,9 +84,9 @@ const landingPageOptions = [
 
 保留 `.modal`、`.form-group` 等现有样式，增加分组标题、条件块、字段错误提示和可滚动表单样式；不新增页面或全局弹窗。
 
-- [x] **Step 2: 实现任务类型、条件和目的联动**
+- [x] **Step 2: 实现任务类型、条件、目的和连续天数联动**
 
-新增 `conditionGroup`、`purpose` 控件。任务类型变化时只展示对应条件组；条件变化时更新目的选项；如果原条件或目的失效，自动选中该类型的首个有效组合。
+新增 `conditionGroup`、`purpose` 控件。任务类型变化时只展示对应条件组；条件变化时更新目的选项；选择“连续签到”时额外显示“连续签到天数”并限定为 3/7/15/30 天；如果原条件或目的失效，自动选中该类型的首个有效组合。
 
 - [x] **Step 3: 实现发帖类完成条件联动**
 
@@ -120,7 +120,7 @@ const landingPageOptions = [
 
 - [x] **Step 4: 验证异常路径**
 
-逐项验证：奖励为空、奖励为 0、指定帖子无目标值、指定话题无目标值均阻止保存；切换到普通页面后目标值被清空；切离发帖类目的 topic/zone 被清空。
+逐项验证：奖励为空、奖励为 0、连续签到未选天数、指定帖子无目标值、指定话题无目标值均阻止保存；切换到普通页面后目标值被清空；切离连续签到时 streakDays 被清空；切离发帖类目的 topic/zone 被清空。
 
 ### Task 5: 回归验收与证据
 
@@ -138,7 +138,7 @@ const landingPageOptions = [
 
 - [x] **Step 3: 验收编辑回显**
 
-重新打开保存后的任务，确认每个字段与列表数据一致，尤其是目的、跳转页面、目标值和发帖条件。
+重新打开保存后的任务，确认每个字段与列表数据一致，尤其是目的、连续签到天数、跳转页面、目标值和发帖条件。
 
 - [x] **Step 4: 回归其他后台页面**
 
