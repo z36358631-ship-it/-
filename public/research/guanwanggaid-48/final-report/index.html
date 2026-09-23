@@ -1,0 +1,1113 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>【竞品分析】移动端与小黑盒对标调研</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f2f4f5;color:#1f3038;font:16px/1.8 "Microsoft YaHei",sans-serif}
+main{max-width:1180px;margin:28px auto;padding:42px 52px;background:#fff;border-radius:8px}
+h1{font-size:30px;border-bottom:2px solid #176b5b;padding-bottom:14px}h2{font-size:23px;margin-top:38px}h3{font-size:19px;margin-top:30px}
+blockquote{margin:20px 0;padding:18px 22px;background:#eaf3ef;border-left:5px solid #176b5b}blockquote p{margin:7px 0}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:16px 0 26px}th,td{border:1px solid #d7e0e3;padding:10px 12px;text-align:left;vertical-align:top}th{background:#edf2f3}
+img{display:block;max-width:100%;max-height:900px;margin:18px auto;border:1px solid #e1e7e9}em{color:#61727a}strong{color:#142a34}
+@media(max-width:760px){main{margin:0;padding:20px}body{font-size:15px}.table-wrap{overflow:auto}table{min-width:760px}}
+@media print{body{background:#fff}main{margin:0;padding:0;max-width:none}img{max-height:650px}}
+</style><main><h1>【竞品分析】移动端与小黑盒对标调研</h1>
+<p><strong>结论：盖世考虑吸收小黑盒在资料、优惠、资产和社区上的成熟能力，并围绕自身的移动端 PC 游戏运行能力，把更多用户带入“发现游戏—形成兴趣—获得游戏—解决问题—在手机上游玩—组队与分享”的完整路径。</strong></p>
+<h1>一、需求及项目信息</h1>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>项目版本</td>
+<td>盖世 6.3.0（139）× 小黑盒 1.3.396（1134）</td>
+</tr>
+<tr>
+<td>项目类型</td>
+<td>移动端竞品调研、目标用户扩展与功能范围分析</td>
+</tr>
+<tr>
+<td>需求负责人</td>
+<td>郑群超</td>
+</tr>
+<tr>
+<td>决策对象</td>
+<td>CTO：确认能力边界、建设顺序和技术承载方式</td>
+</tr>
+<tr>
+<td>项目优先级</td>
+<td>P0：社区游戏攻略库、社区热点榜单；P1：语音组队、默认页、详情信息、限免、评分、愿望单、数据分享、网络加速；P2：小程序、成就、游戏单、存档、商城、领券、外设精选</td>
+</tr>
+<tr>
+<td>项目顺序</td>
+<td>先建立内容获客与游戏服务闭环，再扩展资产社交，最后承接平台化和商业化能力</td>
+</tr>
+</tbody></table>
+<h1>二、核心判断</h1>
+<h2>1. 小黑盒与盖世服务的不是同一批核心用户</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>小黑盒目标用户诉求</th>
+<th>盖世现有用户诉求</th>
+<th>对盖世的启示</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>使用目的</td>
+<td>查资料、看价格、读内容、管理平台资产、参与玩家社区</td>
+<td>在手机上找到、配置、运行 PC 游戏，并处理兼容和操作问题</td>
+<td>引入信息能力时必须继续导向“能玩”和“玩得更好”</td>
+</tr>
+<tr>
+<td>游戏阶段</td>
+<td>购买前、游玩中、游玩后均覆盖</td>
+<td>以拥有游戏后的导入、配置和运行阶段为主</td>
+<td>向购买前延伸，扩大盖世可触达的人群</td>
+</tr>
+<tr>
+<td>内容需求</td>
+<td>新闻、攻略、百科、评价、榜单、价格和优惠</td>
+<td>运行教程、按键布局、兼容评价、故障求助</td>
+<td>从运行内容扩展到选游和入门内容，但不做泛资讯门户</td>
+</tr>
+<tr>
+<td>资产需求</td>
+<td>Steam 等多平台资产、成就、愿望单、游戏数据展示</td>
+<td>Steam 游戏库、成就、工坊、MOD、好友</td>
+<td>复用已绑定资产，增强关注、分享和回访，不重建一套平台账号体系</td>
+</tr>
+<tr>
+<td>社交需求</td>
+<td>关注、好友、私信、语音、社区表达</td>
+<td>社区、Steam 好友、聊天、云组队和世界频道</td>
+<td>重点补“找队友到共同入局”，不以关系数量作为结果</td>
+</tr>
+<tr>
+<td>商业需求</td>
+<td>游戏购买、优惠券、外设、会员和工具服务</td>
+<td>云时长、游戏运行和相关增值服务</td>
+<td>商业能力围绕游戏获得和游玩服务展开，避免变成综合商城</td>
+</tr>
+</tbody></table>
+<h2>2. 盖世可以扩展的四类目标用户</h2>
+<table>
+<thead>
+<tr>
+<th>扩展人群</th>
+<th>当前行为</th>
+<th>进入盖世的入口</th>
+<th>转化到盖世核心价值的路径</th>
+<th>对应功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>热门游戏新手与问题用户</td>
+<td>搜索攻略、版本区别、配置和故障答案</td>
+<td>GTA 5 攻略库、热点、评分<br></td>
+<td>内容到达→选择正确版本→使用配置/攻略→真机游玩</td>
+<td>攻略库、热点榜单、评分、详情信息</td>
+</tr>
+<tr>
+<td>免费游戏与价格敏感用户</td>
+<td>关注限免、史低和愿望单<br></td>
+<td>喜加一、价格趋势、愿望单</td>
+<td>发现免费/低价游戏→领取或收藏→同步资产→导入并游玩</td>
+<td>限时免费、愿望单、详情价格、领券</td>
+</tr>
+<tr>
+<td>Steam 资产与身份表达用户</td>
+<td>查看库、成就、时长和游戏记录</td>
+<td>成就、数据卡、游戏单</td>
+<td>绑定资产→生成个人游戏身份→分享→回到社区和游戏</td>
+<td>成就、数据分享、游戏单</td>
+</tr>
+<tr>
+<td>联机与社交用户</td>
+<td>找队友、语音沟通</td>
+<td>组队语音、数据分享、社区热点</td>
+<td>发布组队需求→语音沟通→共同入局→分享结果</td>
+<td>语音组队、数据分享、热点</td>
+</tr>
+</tbody></table>
+<p>商城、外设和付费存档能够扩展高消费用户，但与盖世当前核心路径距离更远，放在 P2；抽奖、泛娱乐测试和与游玩无关的小工具不进入本轮范围。</p>
+<h2>3. 用户扩展主路径</h2>
+<p><strong>攻略/热点/限免带来新用户 → 评分、详情和愿望单形成兴趣 → 领取或绑定平台资产 → 攻略、配置和网络能力帮助开始游玩 → 语音组队和数据分享形成回访。</strong></p>
+<h1>三、竞品与产品结构</h1>
+<h2>1. 竞品列表</h2>
+<table>
+<thead>
+<tr>
+<th>竞品名称</th>
+<th>竞品属性</th>
+<th>调研平台</th>
+<th>版本</th>
+<th>目标用户</th>
+<th>主要体验路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>盖世游戏</td>
+<td>现有产品/直接对标对象</td>
+<td>Android 移动端</td>
+<td>6.3.0（139）</td>
+<td>希望在移动端管理、配置、运行 PC 游戏并交流的玩家</td>
+<td>首页→游戏详情→运行/社区/配置；我的→Steam 资产/好友</td>
+</tr>
+<tr>
+<td>小黑盒</td>
+<td>PC/主机游戏信息与社区平台</td>
+<td>Android 移动端</td>
+<td>1.3.396（1134）</td>
+<td>PC/主机玩家、游戏资料用户、优惠用户和社区用户</td>
+<td>游戏库→详情/百科/社区；我的→资产/工具；喜加一→领取平台</td>
+</tr>
+</tbody></table>
+<h2>2. 产品结构对比</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>盖世游戏</th>
+<th>小黑盒</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>信息架构</td>
+<td>首页、社区、排行榜、游戏库、我的</td>
+<td>首页、热点、发布、游戏库、我的</td>
+<td>一级导航相近，差异在游戏对象下连接的信息深度</td>
+</tr>
+<tr>
+<td>页面结构</td>
+<td>详情承接运行、社区、兼容评价；配置与资产分布在不同入口</td>
+<td>详情承接价格、百科、社区和统计；个人页承接资产和工具</td>
+<td>盖世应把资料直接连接到运行和社区，不增加无结果的中间页面</td>
+</tr>
+<tr>
+<td>页面跳转</td>
+<td>详情→社区/配置/运行；我的→Steam 资产/好友</td>
+<td>游戏→百科/社区/统计；工具→外部平台或 PC 客户端</td>
+<td>盖世需要保持游戏、版本、平台和运行方式上下文一致</td>
+</tr>
+<tr>
+<td>核心优势</td>
+<td>真机运行、按键布局、兼容评价、云组队</td>
+<td>资料深、优惠丰富、内容回访和轻工具多</td>
+<td>盖世用小黑盒能力拉新，用自身运行能力完成转化</td>
+</tr>
+</tbody></table>
+<p><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/01-overview-home-navigation.png" alt="6a19d778-dfa0-45f2-88ba-c90a0ae75ce6.png"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/02-overview-platform-assets.png" alt="f5b22b29-0827-4b9b-8e6b-36f2a5e4eecc.png"></p>
+<p><em>图 1：盖世强调运行入口，小黑盒强调内容消费。盖世新增内容后仍应保留直接进入游戏的路径。</em></p>
+<p><em>图 2：盖世已经具备 Steam 资产、成就和好友基础；后续重点是用资产形成关注、分享和游玩转化。</em></p>
+<h1>四、范围总览</h1>
+<table>
+<thead>
+<tr>
+<th><strong>序号</strong></th>
+<th><strong>优先级</strong></th>
+<th><strong>功能方向</strong></th>
+<th><strong>小黑盒用户诉求</strong></th>
+<th><strong>盖世扩展人群</strong></th>
+<th><strong>对盖世的价值</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>P0</td>
+<td>社区游戏攻略库</td>
+<td>快速找到游戏资料与答案</td>
+<td>热门游戏新手、问题用户</td>
+<td>用内容获客，并把答案直接连到配置和运行</td>
+</tr>
+<tr>
+<td>2</td>
+<td>P0</td>
+<td>社区热点榜单</td>
+<td>快速了解当天值得看的内容</td>
+<td>高频内容用户</td>
+<td>建立每日回访入口，为攻略和社区分发流量</td>
+</tr>
+<tr>
+<td>3</td>
+<td>P1</td>
+<td>语音组队</td>
+<td>找到同游戏队友并实时沟通</td>
+<td>联机和社交用户</td>
+<td>从社区互动推进到真实共同游玩</td>
+</tr>
+<tr>
+<td>4</td>
+<td>P1</td>
+<td>自定义 App 默认页</td>
+<td>启动后直达最常用模块</td>
+<td>高频现有用户</td>
+<td>提高核心路径效率，不承担拉新</td>
+</tr>
+<tr>
+<td>5</td>
+<td>P1</td>
+<td>游戏详情信息补全</td>
+<td>一处完成配置和价格判断</td>
+<td>购买决策用户、硬件关注用户</td>
+<td>把选游、购买和运行条件连接起来</td>
+</tr>
+<tr>
+<td>6</td>
+<td>P1</td>
+<td>限时免费聚合</td>
+<td>不错过 Epic/Steam 限免</td>
+<td>免费游戏与价格敏感用户</td>
+<td>低成本获客，并导向平台资产和游戏导入</td>
+</tr>
+<tr>
+<td>7</td>
+<td>P1</td>
+<td>玩家评分与评价</td>
+<td>购买前参考真实玩家意见</td>
+<td>购买决策与表达型用户</td>
+<td>增加详情决策信息和社区供给</td>
+</tr>
+<tr>
+<td>8</td>
+<td>P1</td>
+<td>愿望单</td>
+<td>保存游戏并关注后续变化</td>
+<td>犹豫购买与长期关注用户</td>
+<td>建立价格、限免和内容回访关系</td>
+</tr>
+<tr>
+<td>9</td>
+<td>P1</td>
+<td>游戏数据分享</td>
+<td>展示游戏资产和个人成绩</td>
+<td>Steam 资产与身份表达用户</td>
+<td>形成外部传播和社区身份</td>
+</tr>
+<tr>
+<td>10</td>
+<td>P1</td>
+<td>网络加速</td>
+<td>降低联网和云游网络门槛</td>
+<td>网络敏感和联机用户</td>
+<td>提高进入游戏和联机成功率</td>
+</tr>
+<tr>
+<td>11</td>
+<td>P2</td>
+<td>小程序能力</td>
+<td>快速使用多种轻工具</td>
+<td>工具型用户</td>
+<td>提高功能迭代速度</td>
+</tr>
+<tr>
+<td>12</td>
+<td>P2</td>
+<td>成就系统</td>
+<td>查看完成度并展示成果</td>
+<td>资产与收集型用户</td>
+<td>提升身份沉淀和回访</td>
+</tr>
+<tr>
+<td>13</td>
+<td>P2</td>
+<td>游戏单</td>
+<td>收藏和分享主题游戏集合</td>
+<td>选游和内容创作用户</td>
+<td>增加 UGC 选游供给</td>
+</tr>
+<tr>
+<td>14</td>
+<td>P2</td>
+<td>存档广场</td>
+<td>快速体验核心内容或接续进度</td>
+<td>单机玩家、时间有限用户</td>
+<td>把内容服务连接到实际游玩</td>
+</tr>
+<tr>
+<td>15</td>
+<td>P2</td>
+<td>商城</td>
+<td>集中发现优惠和游戏商品</td>
+<td>高消费和价格敏感用户</td>
+<td>承接购买转化</td>
+</tr>
+<tr>
+<td>16</td>
+<td>P2</td>
+<td>领券中心</td>
+<td>集中领取可用优惠</td>
+<td>商城价格敏感用户</td>
+<td>提升商城转化</td>
+</tr>
+<tr>
+<td>17</td>
+<td>P2</td>
+<td>外设精选</td>
+<td>选择适合游戏和设备的外设</td>
+<td>手柄、掌机和移动游玩用户</td>
+<td>强化盖世移动 PC 游戏定位</td>
+</tr>
+</tbody></table>
+<h1>4.1、功能详细分析</h1>
+<h2>P0-1 社区游戏攻略库</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>在现有游戏社区内建立结构化资料与问题解决入口，首个样本为 GTA 5。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>GTA 5 新手、回流玩家、运行问题用户、Online 组队用户，以及从搜索引擎进入的攻略用户。</td>
+</tr>
+<tr>
+<td>规模依据</td>
+<td>当前业务口径中，GTA 5 是国区和海外加入人数最多的社区：国区约 7,500 人、海外约 1,200 人。该数字是加入人数。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户进入 GTA 5 社区后，需要判断版本和平台、了解入门路径、查任务攻略、解决启动或加载问题、寻找配置与队友。现有帖子能承接内容，但答案分散在综合、攻略和求助流中。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 识别 Steam/Epic、Legacy/Enhanced、故事模式/Online；<br>2. 建立新手入门、运行故障、任务攻略、配置方案、兼容评价和组队六类入口；<br>3. 求助发布时补齐平台、版本、设备、错误和已尝试动作；<br>4. 提问者可标记采用答案；</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>把搜索攻略和问题答案的人群带入盖世，再通过配置、布局和运行入口转化为实际用户。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>攻略不再只是阅读内容，而是连接游戏对象、运行环境、配置应用和社区答案的服务层。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/03-community-guide-gta5.png" alt="f44ff3d3-c752-4be7-8a16-6640af274969.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>攻略到达率、问题解决率、采用答案率、配置应用率、攻略后真机启动率。</td>
+</tr>
+</tbody></table>
+<h2>P0-2 社区热点榜单</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>汇总盖世社区内当天值得关注的游戏内容和问题，形成稳定的每日入口。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>希望快速了解游戏动态、热门攻略和社区事件的高频内容用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户没有明确搜索目标，只想知道今天有哪些值得看的内容；普通信息流难以快速判断内容优先级。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 设置全部、热门游戏、攻略、求助、配置等榜单；<br>2. 热度综合阅读、收藏、评论、分享、问题解决和时效衰减；</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>吸引原本只使用资讯和社区产品的用户，建立每日访问习惯。<br></td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>为攻略库、评价、游戏单和官方内容提供统一分发入口。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/04-community-hot-ranking.png" alt="b428d85c-eb39-4a12-a7fc-efc75fdd47cf.png"><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/21-community-hot-ranking-detail.png" alt="image.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>热点页日访问、内容点击率、关联游戏访问率、收藏率、热点到运行入口转化率。</td>
+</tr>
+</tbody></table>
+<h2>P1-1 游戏语音组队</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>在盖世现有云组队基础上，为具体游戏提供结构化队伍卡和临时语音房。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>GTA Online、合作游戏、多人竞技和跨地区联机用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户在公共频道发布“有人玩吗”后，信息很快被淹没；即使进入频道，也缺少平台、模式、人数和入局状态。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 队伍卡包含游戏、平台、版本、模式、地区、语言、时区、人数和语音偏好；<br>2. 房主可开启临时语音；3. 展示招募中、已满、已开局、已结束；<br>4. 记录邀请、接受和入局结果；5. 房间结束后自动关闭语音。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>把只在 Discord、QQ群或竞品语音大厅找人的玩家吸引到盖世。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>让社区关系从“看帖和聊天”进入“共同游玩”，直接强化盖世核心价值。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/05-voice-team.png" alt="b75a55ab-60fc-4a78-9c9a-9a9b0299554c.png"><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/22-voice-team-room.png" alt="image.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>组队卡发布量、匹配接受率、真实入局率、语音接通率、结束后再次组队率。<br></td>
+</tr>
+</tbody></table>
+<h2>P1-2 自定义 App 默认页</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>用户可选择启动盖世后默认进入的一级页面。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>高频使用游戏库、社区、云游戏或最近游玩的现有用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>不同用户打开 App 的目的不同，统一首页会增加重复切换。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>在设置中提供主页、社区、排行榜、游戏库、我的和上次停留页；保留恢复默认；异常页面自动回到主页。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>不直接拉新，主要降低高频用户操作成本。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>让内容型、运行型和资产型用户都能把盖世作为高频入口。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/06-default-home.png" alt="ab98b3e6-5193-4901-a89b-e6ab294d5b42.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>设置使用率、启动后首次有效操作时长、首屏退出率、默认页恢复率。</td>
+</tr>
+</tbody></table>
+<h2>P1-3 游戏详情页信息补全</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>在游戏详情页补充 PC 官方配置、价格趋势和盖世真机运行条件。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>购买前决策用户、硬件关注用户、希望判断手机能否运行的盖世用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户需要在商店、配置网站和盖世详情之间切换，才能判断值不值得买、PC 能否运行、手机端能否通过盖世运行。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 分开展示官方最低/推荐 PC 配置、盖世运行方式和兼容评价；<br>2. 展示当前价、史低、价格趋势和平台；3. 标明版本、地区、更新时间；<br>4. 愿望单和限免状态进入同一详情；5. 已拥有用户突出导入和运行。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>吸引处于购买和硬件决策阶段的用户，在拥有游戏前就建立盖世关系。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>把“选游戏—获得游戏—导入资产—开始游玩”放到同一游戏对象下。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/07-game-details.png" alt="a6187488-f77e-49ea-8ec1-1d6c71ad4bb7.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>详情停留、愿望单添加、外部商店到达、资产绑定、详情到运行转化。</td>
+</tr>
+</tbody></table>
+<h2>P1-4 限时免费聚合</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>聚合 Epic、Steam 等平台当前和历史限时免费游戏，并跳转官方领取页。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>免费游戏收集用户、价格敏感用户和新 PC 游戏用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>限免信息分散在多个商店和内容渠道，用户容易错过截止时间，也容易混淆永久入库、免费试玩和订阅权益。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 首期支持 Epic 和 Steam；2. 展示平台、地区、免费类型、起止时间和领取条件；<br>3. 当前与历史限免分开；4. 跳转官方领取页；5. 用户可记录已领取；6. 已领取游戏可继续进入资产同步与运行入口。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>用明确、持续的利益点获得新用户，再把领取用户转化为盖世资产和运行用户。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>连接优惠发现、愿望单、平台资产、游戏导入和运行。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/08-free-games.png" alt="6ab4f486-a57e-4f14-8d82-e6f8179d9c16.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>限免详情点击、官方领取到达、已领取记录、资产同步率、领取后游戏导入率。</td>
+</tr>
+</tbody></table>
+<h2>P1-5 玩家游戏评分与评价</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>用户可在游戏详情内评分、评价、修改和删除自己的评价，并参考其他玩家意见。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>购买决策用户、已拥有游戏用户和有表达意愿的社区用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>盖世已有兼容评价，但用户还需要回答“游戏好不好玩、适合谁、当前版本体验如何”。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 综合评分与文字评价；2. 显示 Steam 已拥有、盖世已运行等身份；3. 评价绑定平台和版本；<br>4. 支持最新、最有帮助、已拥有筛选；5. 用户可修改评价；6. 兼容评价保持独立。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>吸引购买前用户和内容表达用户，增加游戏详情的决策价值。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>形成攻略之外的长期 UGC，并反哺榜单、推荐和热点。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/09-game-ratings.png" alt="b13dccf5-9011-4ad5-963f-721a516b5637.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>评分覆盖率、有效评价率、评价有用反馈、详情到愿望单/运行转化、举报率。</td>
+</tr>
+</tbody></table>
+<h2>P1-6 愿望单</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>用户收藏感兴趣的游戏，并集中查看价格、限免、内容和盖世支持状态变化。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>尚未购买、等待降价、关注新作和持续比较的用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户看到感兴趣的游戏后没有稳定的回访入口，后续价格变化、限免或盖世支持更新容易错过。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 详情页添加/取消愿望；2. 愿望单按平台、价格、发售状态和盖世支持筛选；<br>3. 接收降价、限免、发售和盖世支持提醒；4. 已拥有后转入资产库；5. Steam 愿望单作为可选同步来源。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>在用户购买前建立长期关系，把一次浏览变成后续转化。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>串联详情、限免、价格、资产与运行，是内容拉新后的核心承接能力。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/10-wishlist-details.png" alt="3d7164ab-60eb-4092-81f6-d11ab6347163.png"><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/11-wishlist-list.png" alt="269c0f15-1f10-4d9b-a723-90da43bd22a9.png"><br></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>添加率、提醒打开率、愿望转拥有率、愿望转导入率、取消率。</td>
+</tr>
+</tbody></table>
+<h2>P1-7 游戏数据分享</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>基于已绑定的 Steam 资产、成就和游戏数据生成可分享的玩家卡片。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>Steam 资产用户、成就玩家、内容创作者和希望展示游戏身份的用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户在盖世已经能看到游戏库、成就和好友，但缺少适合站内外传播的个人游戏结果。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 生成单游戏卡和个人游戏名片；2. 字段包含游戏、成就、时长、最近游玩和自选标签；3. 用户选择公开字段；<br>4. 支持保存图片和分享链接；5. 链接回流对应游戏详情或个人主页。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>通过玩家主动分享触达同类 Steam 用户和朋友。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>把已有资产数据转化为社区身份、外部传播和游戏回流入口。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/12-game-data-share.png" alt="d495277c-1b64-44ab-8d2e-fa3b9c612f9c.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>卡片生成率、分享率、外部回流、回流用户绑定率、隐私设置使用率。</td>
+</tr>
+</tbody></table>
+<h2>P1-8 运行链路网络加速</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>在云游戏、串流和联机启动路径中提供网络诊断与加速能力。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>网络波动、跨区联机、云游戏延迟和下载速度敏感用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户遇到高延迟、丢包或连接失败时，需要知道网络问题发生在哪里，并在原游戏路径内处理。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 启动前检测目标节点延迟、抖动、丢包和 NAT；2. 对支持场景提供加速开关；3. 显示加速前后数据；4. 失败时给出网络、节点或服务状态；5. 返回原游戏继续启动。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>吸引原本依赖独立加速器的联机和跨区用户。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>网络能力直接服务盖世运行成功率，而不是增加一个孤立工具。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/13-network-acceleration.png" alt="14ffbeb1-7180-4f62-9ae8-ef2deec81a80.png"><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/23-network-acceleration-promo.png" alt="image.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>诊断完成率、加速开启率、延迟改善、启动成功率、联机失败率。<br></td>
+</tr>
+</tbody></table>
+<h2>P2-1 小程序能力</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>用统一 Web 容器承载更新频繁、依赖较轻的游戏工具。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>高频使用资料、活动、计算和分享工具的用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>工具类功能发布节奏快，全部跟随客户端版本会增加研发和审核成本。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 提供统一登录、游戏对象、分享、收藏和埋点能力；2. 工具优先从游戏详情和社区进入；3. 工具达到一定数量后再提供统一目录和搜索；4. 建立权限、域名、审核和下线机制。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>承接垂直游戏工具用户，但容器本身不负责拉新。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>降低资料工具、活动和轻服务的发布成本，支持快速迭代。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/14-miniapps.png" alt="438dfa78-74d3-4fdf-99bc-7a6eaea2eda5.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>工具使用人数、任务完成率、复用组件比例、发布周期、异常率。</td>
+</tr>
+</tbody></table>
+<h2>P2-2 成就系统</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>聚合 Steam 等平台成就，形成完成度、稀有度和分享入口。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>收集型玩家、Steam 资产用户和成就展示用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>盖世已能查看 Steam 成就，但当前主要是资产浏览，缺少持续目标和社区表达。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 展示总完成度、最近解锁、稀有成就和单游戏进度；2. 关联攻略；3. 生成成就卡；4. 支持关注未完成目标；5. 新解锁成就进入个人动态。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>吸引重视游戏完成度和资产沉淀的 Steam 用户。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>复用已有 Steam 数据，连接攻略、社区和分享。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/15-achievements.png" alt="1bbd5e70-a006-42b0-ac62-2440bd901b20.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>成就页访问、目标关注、攻略点击、成就卡分享、资产用户回访。</td>
+</tr>
+</tbody></table>
+<h2>P2-3 游戏单</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>用户或官方按主题创建游戏集合，其他用户可收藏和关注。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>游戏荒用户、选游用户、内容创作者和垂直品类玩家。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>排行榜解决“大多数人玩什么”，游戏单解决“某个具体场景适合玩什么”。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 创建标题、说明和游戏列表；2. 支持顺序、标签和适用平台；3. 官方可创建掌机友好、低配置、合作游戏等专题；4. 收藏后进入个人游戏单；5. 单个游戏继续到详情、愿望和运行。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>吸引仍处于选游阶段、还没有明确游戏目标的用户。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>增加低成本 UGC 供给，并为愿望单、限免和详情导流。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/16-game-list.png" alt="bee4b09b-7d48-4d31-88d7-b8660f7b23ee.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>创建率、收藏率、单内游戏点击、愿望添加、游戏导入。</td>
+</tr>
+</tbody></table>
+<h2>P2-4 存档广场</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>用户浏览、收藏和应用适配特定游戏与版本的共享存档。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>单机玩家、希望体验核心内容的用户、设备迁移和进度恢复用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户希望跳过重复流程、体验特定周目或恢复进度，但存档来源、版本和覆盖风险难以判断。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 按游戏、版本、平台和进度筛选；2. 展示作者、说明、文件版本、更新时间和使用风险；3. 应用前自动备份当前存档；4. 支持恢复和回滚；5. 付费存档采用单项购买或会员权益，交易记录与文件版本绑定。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>吸引重度单机玩家、时间有限用户和存档内容创作者。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>连接云存档、游戏详情和实际运行，形成有差异的增值服务。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/17-save-square.png" alt="7478b16d-cde9-4cc1-bc68-01d5701c06c6.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>收藏与应用率、应用成功率、回滚率、投诉退款率、付费转化。</td>
+</tr>
+</tbody></table>
+<h2>P2-5 商城</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>聚合与盖世支持游戏相关的游戏商品、激活码和外设优惠。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>有购买意愿的游戏用户、价格敏感用户和外设用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户在详情看到价格和游戏后，还要去其他平台搜索购买渠道和优惠。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 商品绑定游戏、平台、地区和激活方式；2. 详情页展示可购买渠道；3. 首期跳转合作方完成交易；4. 订单、退款和售后只在自营交易开启后建设；5. 已购游戏回到资产绑定和导入。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>覆盖购买阶段用户，并承接限免之外的价格需求。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>形成从发现、决策到获得游戏的商业闭环。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/18-store.png" alt="cd07da0e-a810-4aed-ae80-3444f3e6cae7.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>商品点击、合作方到达、购买回传、购买后绑定、退款投诉。</td>
+</tr>
+</tbody></table>
+<h2>P2-6 领券中心</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>集中展示商城和合作方中可领取、可使用的优惠券。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>价格敏感用户和有明确购买目标的商城用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>优惠券分散在活动、商品和合作方页面，用户难以判断是否可用。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 展示金额、门槛、适用商品、平台、领取期限和使用期限；2. 已领取、已使用、已过期分开；3. 商品详情自动匹配可用券；4. 优惠券与愿望单降价提醒联动。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>提升价格敏感用户的购买决策效率。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>为商城转化服务，不单独承担获客。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/19-coupon-center.png" alt="c5ffa60f-ed31-45fe-88c9-c14bfba0ebe7.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>领取率、使用率、券后购买、过期率、优惠成本。</td>
+</tr>
+</tbody></table>
+<h2>P2-7 外设精选</h2>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>功能简介</td>
+<td>围绕盖世移动 PC 游戏场景，推荐经过兼容说明的手柄、转接器、扩展坞和掌机外设。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>手机玩 PC 游戏用户、手柄用户、掌机用户和首次购买外设的用户。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户知道需要手柄或扩展设备，但不知道是否兼容自己的手机、系统、连接方式和目标游戏。</td>
+</tr>
+<tr>
+<td>功能方案</td>
+<td>1. 按设备、系统、连接方式和游戏场景筛选；2. 展示兼容说明、按键支持和已知限制；3. 关联盖世控制器配置；4. 提供编辑精选和用户体验内容；5. 跳转合作渠道购买。</td>
+</tr>
+<tr>
+<td>用户扩展价值</td>
+<td>吸引外设和掌机用户，扩大盖世在移动 PC 游戏场景的认知。</td>
+</tr>
+<tr>
+<td>平台价值</td>
+<td>将控制器支持、按键布局和硬件导购连接起来，形成具有盖世特色的内容商业化。</td>
+</tr>
+<tr>
+<td>功能图示</td>
+<td><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@beabbee2558d0f8f39dfb547429e3857d71a744c/public/research/guanwanggaid-48/feishu-20260923/20-accessories.png" alt="cb20474a-bcdf-4fd8-a797-6757bc534d62.png"></td>
+</tr>
+<tr>
+<td>结果指标</td>
+<td>兼容筛选使用、商品点击、配置应用、购买回传、兼容投诉。</td>
+</tr>
+</tbody></table>
+<h1>五、建设顺序</h1>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>建设范围</th>
+<th>主要目标</th>
+<th>CTO 需要确认的技术事项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第一阶段</td>
+<td>GTA 5 攻略库、社区热点榜单</td>
+<td>建立内容获客和问题解决入口</td>
+<td>游戏对象模型、版本/平台标签、内容搜索与排序、国区/海外内容隔离</td>
+</tr>
+<tr>
+<td></td>
+<td>详情信息、限免、评分、愿望单</td>
+<td>把内容用户转化为关注、领取和资产用户</td>
+<td>价格与限免数据源、愿望状态、评价治理、外部商店跳转</td>
+</tr>
+<tr>
+<td><br>第二阶段</td>
+<td>语音组队、默认页、数据分享、网络加速</td>
+<td>提升游玩成功和社交留存</td>
+<td>RTC、房间状态、隐私分享、网络节点和运行链路接入</td>
+</tr>
+<tr>
+<td></td>
+<td>成就、游戏单、小程序容器</td>
+<td>扩展资产表达和工具供给</td>
+<td>Steam 数据复用、UGC 治理、Web 容器权限与发布机制</td>
+</tr>
+<tr>
+<td>第三阶段</td>
+<td>存档广场、商城、领券、外设精选</td>
+<td>承接高付费意愿用户</td>
+<td>存档安全与回滚、交易责任、合作方回传、商品兼容数据</td>
+</tr>
+</tbody></table>
+<p>小程序容器不阻塞前面三阶段。攻略、限免、愿望和组队应先用现有客户端与 Web 能力完成；当多个工具出现重复登录、游戏对象、分享和埋点需求时，再抽象统一容器。</p>
+<h2>5.1、待确认的范围</h2>
+<ol>
+<li><p><strong>先做内容获客。</strong> GTA 5 攻略库和社区热点直接覆盖当前最大社区，也能吸引盖世现有用户之外的攻略与资讯用户。</p>
+</li>
+<li><p><strong>再做兴趣与资产承接。</strong> 详情信息、限免、评分和愿望单把购买前用户留在盖世，并连接 Steam 资产和真机游玩。</p>
+</li>
+<li><p><strong>社交必须导向共同游玩。</strong> 语音组队复用现有云组队和好友能力，以真实入局作为结果。</p>
+</li>
+<li><p><strong>资产数据用于身份和传播。</strong> 成就与游戏数据分享复用现有 Steam 数据，不建设重复的虚拟成长体系。</p>
+</li>
+<li><p><strong>商业化围绕游戏获得和游玩服务。</strong> 商城、领券、外设和存档放在 P2，先采用合作导购和限定范围，控制交易与安全成本。</p>
+</li>
+<li><p><strong>小程序是技术方案，不是产品战略。</strong> 先把选定功能做成用户任务闭环，再决定是否统一容器和目录。</p>
+</li>
+</ol>
+</main></html>
