@@ -51,7 +51,7 @@
         .filter-item { display: flex; align-items: center; gap: 8px; font-size: 14px; position: relative;}
         .filter-item input[type="text"], .filter-item input[type="number"], .filter-item select { padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; outline: none; font-size: 13px; height: 32px; box-sizing: border-box;}
         .filter-item input:focus, .filter-item select:focus { border-color: var(--primary); }
-        
+
         .btn { padding: 0 16px; height: 32px; border-radius: 4px; font-size: 14px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;}
         .btn-primary { background: var(--primary); color: var(--white); }
         .btn-primary:hover:not([disabled]) { background: #40a9ff; }
@@ -98,9 +98,9 @@
         th { background: #fafafa; font-weight: bold; color: #333; }
         tr:hover { background: #fafafa; }
         td { vertical-align: middle; }
-        
+
         .td-icon { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; background: #f5f5f5; border: 1px solid #eee;}
-        
+
         .tag { padding: 2px 6px; border-radius: 4px; font-size: 12px; border: 1px solid transparent; display: inline-block;}
         .tag-success { background: #f6ffed; border-color: #b7eb8f; color: var(--success); }
         .tag-error { background: #fff2f0; border-color: #ffccc7; color: var(--danger); }
@@ -139,9 +139,9 @@
         .form-control { flex: 1; padding: 6px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; outline: none; transition: 0.2s;}
         .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
         textarea.form-control { resize: vertical; min-height: 60px; }
-        
+
         .coin-text { color: var(--warning); font-weight: bold; font-family: monospace;}
-        
+
         .address-box { background: #fafafa; border: 1px solid #e8e8e8; padding: 15px; border-radius: 4px; line-height: 1.6; margin-bottom: 15px;}
         .address-box strong { display: inline-block; width: 70px; color: #666; }
         .task-table-wrap { overflow-x: auto; }
@@ -186,20 +186,20 @@
         </header>
 
         <div class="content-scroll">
-            
+
             <!-- ====== 1. 任务管理 ====== -->
             <div class="page active" id="page-task">
                 <div class="card">
                     <div class="filter-bar" id="task-filter">
                         <div class="filter-item">任务名称: <input type="text" placeholder="输入名称关键词"></div>
-                        <div class="filter-item">任务类型: 
+                        <div class="filter-item">任务类型:
                             <select>
                                 <option value="">全部</option>
                                 <option value="once">成长任务</option>
                                 <option value="daily">每日任务</option>
                             </select>
                         </div>
-                        <div class="filter-item">状态: 
+                        <div class="filter-item">状态:
                             <select>
                                 <option value="">全部</option>
                                 <option value="1">生效中</option>
@@ -246,14 +246,14 @@
                     <div class="filter-bar" id="reward-filter">
                         <div class="filter-item">奖品ID: <input type="text" placeholder="输入ID"></div>
                         <div class="filter-item">奖品名称: <input type="text" placeholder="输入名称"></div>
-                        <div class="filter-item">奖品类型: 
+                        <div class="filter-item">奖品类型:
                             <select>
                                 <option value="">全部</option>
                                 <option value="virtual">虚拟商品</option>
                                 <option value="physical">实物商品</option>
                             </select>
                         </div>
-                        <div class="filter-item">状态: 
+                        <div class="filter-item">状态:
                             <select>
                                 <option value="">全部</option>
                                 <option value="1">已上架</option>
@@ -288,9 +288,9 @@
                             <!-- JS 渲染 -->
                         </tbody>
                     </table>
-                    
+
                     <div class="pagination">
-                        共 12 条记录，当前显示 1-12 条 
+                        共 12 条记录，当前显示 1-12 条
                         <div class="page-num active">1</div>
                     </div>
                 </div>
@@ -303,14 +303,14 @@
                         <div class="filter-item">订单号: <input type="text" placeholder="输入兑换订单号"></div>
                         <div class="filter-item">用户UID: <input type="text" placeholder="输入用户UID"></div>
                         <div class="filter-item">奖品名称: <input type="text" placeholder="输入奖品名称模糊搜索" style="width: 150px;"></div>
-                        <div class="filter-item">商品类型: 
+                        <div class="filter-item">商品类型:
                             <select>
                                 <option value="">全部</option>
                                 <option value="virtual">虚拟商品</option>
                                 <option value="physical">实物商品</option>
                             </select>
                         </div>
-                        <div class="filter-item">订单状态: 
+                        <div class="filter-item">订单状态:
                             <select>
                                 <option value="">全部</option>
                                 <option value="3">已发放(虚拟)</option>
@@ -320,7 +320,7 @@
                             </select>
                         </div>
                         <div class="filter-item">
-                            兑换时间: 
+                            兑换时间:
                             <div class="date-picker-container" data-picker="order"></div>
                         </div>
                         <div class="filter-item" style="margin-left: auto;">
@@ -348,9 +348,9 @@
                             <!-- JS 渲染 -->
                         </tbody>
                     </table>
-                    
+
                     <div class="pagination">
-                        共 458 条记录，当前显示 1-10 条 
+                        共 458 条记录，当前显示 1-10 条
                         <div class="page-num active">1</div>
                         <div class="page-num">2</div>
                         <div class="page-num">3</div>
@@ -476,11 +476,11 @@
             `;
             document.querySelectorAll('.date-picker-container').forEach(el => { el.innerHTML = template(el.getAttribute('data-picker')); });
         }
-        
+
         function toggleDP(key) {
             const dp = document.getElementById(`dd-${key}`);
             const btn = document.getElementById(`rp-btn-${key}`);
-            if (dp.classList.contains('show')) { dp.classList.remove('show'); btn.classList.remove('active'); } 
+            if (dp.classList.contains('show')) { dp.classList.remove('show'); btn.classList.remove('active'); }
             else { dp.classList.add('show'); btn.classList.add('active'); }
         }
         function clearDP(key, e) {
@@ -530,7 +530,7 @@
             if(el) el.classList.add('active');
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('page-' + pageId).classList.add('active');
-            
+
             const titles = { 'task': '任务配置', 'reward': '奖品配置', 'order': '兑换与发货' };
             document.getElementById('breadcrumb').innerText = `首页 / ${titles[pageId]}`;
 
@@ -765,7 +765,7 @@
                 const typeTag = r.type === 'virtual' ? `<span class="tag tag-blue">虚拟商品</span>` : `<span class="tag tag-orange">实物商品</span>`;
                 const statusTag = r.status === 1 ? `<span class="tag tag-success">已上架</span>` : `<span class="tag tag-gray">已下架</span>`;
                 const stockText = r.stock === 0 ? `<span style="color:var(--danger);font-weight:bold;">售罄 (0)</span>` : (r.stock > 9999 ? '9999+' : r.stock);
-                
+
                 return `
                 <tr>
                     <td style="font-family:monospace; color:var(--text-sub);">${r.id}</td>
@@ -821,7 +821,7 @@
             openModal(id ? '编辑奖品信息' : '新增商场奖品', html, () => {
                 const name = document.getElementById('m-r-name').value;
                 if(!name || !document.getElementById('m-r-price').value) return showToast('核心字段不可为空', 'error');
-                
+
                 if(!id) {
                     mockRewards.unshift({
                         id: 'R_' + Math.floor(Math.random()*9000+1000), img: document.getElementById('m-r-img').value,
@@ -842,7 +842,7 @@
         function renderOrders() {
             document.getElementById('order-table-body').innerHTML = mockOrders.map(o => {
                 const typeTag = o.type === 'virtual' ? `<span class="tag tag-blue">虚拟</span>` : `<span class="tag tag-orange">实物</span>`;
-                
+
                 let statusTag, actionHtml = '', logisticsStr = '-';
                 if(o.status === 0) {
                     statusTag = `<span class="tag tag-error">待填地址</span>`;
@@ -954,7 +954,7 @@
                 o.status = 2; // 已发货
                 o.trackingCompany = company;
                 o.trackingNo = no || '-';
-                
+
                 showToast('订单已标记为发货');
                 renderOrders();
                 closeModal();
