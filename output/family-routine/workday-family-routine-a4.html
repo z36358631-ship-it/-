@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作日家庭作息表</title>
+  <style>
+    @page { size: A4 landscape; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 3508px;
+      height: 2480px;
+      background: #ffffff;
+    }
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      color: #213430;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .sheet {
+      width: 3508px;
+      height: 2480px;
+      padding: 82px 94px 76px;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 170px minmax(0, 1fr) 350px;
+      gap: 30px;
+      background: #ffffff;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 8px solid #177565;
+      padding-bottom: 24px;
+    }
+    .title {
+      margin: 0;
+      font-size: 74px;
+      line-height: 1;
+      letter-spacing: 0;
+      color: #143f37;
+      font-weight: 800;
+    }
+    .subtitle {
+      margin: 18px 0 0;
+      color: #63746f;
+      font-size: 31px;
+      line-height: 1.35;
+    }
+    .sleep-target {
+      flex: 0 0 auto;
+      padding: 22px 28px;
+      border: 2px solid #cfe5df;
+      background: #edf7f4;
+      color: #155044;
+      border-radius: 14px;
+      font-size: 31px;
+      line-height: 1.35;
+      font-weight: 800;
+      text-align: right;
+    }
+    .morning {
+      display: grid;
+      grid-template-columns: 250px repeat(5, 1fr);
+      border: 3px solid #c8d6d3;
+      background: #fbfcfc;
+      overflow: hidden;
+    }
+    .morning-cell {
+      min-width: 0;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 2px solid #d7e0de;
+      text-align: center;
+    }
+    .morning-cell:last-child { border-right: 0; }
+    .morning-label {
+      background: #dcece7;
+      color: #17584b;
+      font-size: 36px;
+      font-weight: 800;
+    }
+    .morning-cell time {
+      display: block;
+      margin-bottom: 7px;
+      color: #155b4e;
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 800;
+    }
+    .morning-cell span {
+      color: #344843;
+      font-size: 29px;
+      line-height: 1.25;
+      font-weight: 600;
+    }
+    .plans {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1.16fr 1fr;
+      gap: 30px;
+    }
+    .plan {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      border: 3px solid #c9d5d2;
+      background: #ffffff;
+      overflow: hidden;
+    }
+    .plan-header {
+      padding: 28px 34px 24px;
+      border-bottom: 3px solid #c9d5d2;
+      background: #e4f0ec;
+    }
+    .plan-header h2 {
+      margin: 0;
+      color: #145448;
+      font-size: 50px;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+    .plan-header p {
+      margin: 12px 0 0;
+      color: #5b6d68;
+      font-size: 28px;
+      line-height: 1.25;
+    }
+    .class-plan .plan-header {
+      border-color: #e0c58f;
+      background: #fff0d4;
+    }
+    .class-plan .plan-header h2 { color: #84530d; }
+    .normal-content,
+    .class-content {
+      min-height: 0;
+      display: grid;
+    }
+    .normal-content { grid-template-rows: repeat(7, 1fr); }
+    .class-content { grid-template-rows: 190px repeat(5, 1fr); }
+    .timeline-row {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      align-items: center;
+      gap: 24px;
+      padding: 16px 30px;
+      border-bottom: 2px dashed #d9e2df;
+    }
+    .timeline-row time {
+      color: #176555;
+      font-size: 33px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+    .timeline-row span {
+      color: #253934;
+      font-size: 31px;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+    .class-plan .timeline-row time { color: #915e12; }
+    .course-differences {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding: 22px 28px;
+      border-bottom: 2px solid #ead9b8;
+      background: #fffbf3;
+    }
+    .course {
+      min-width: 0;
+      padding: 18px 22px;
+      border: 2px solid #e2c588;
+      border-radius: 12px;
+      background: #fffdf8;
+    }
+    .course h3 {
+      margin: 0 0 10px;
+      color: #84530d;
+      font-size: 31px;
+      line-height: 1.1;
+    }
+    .course p {
+      margin: 0;
+      color: #574b38;
+      font-size: 25px;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+    .lights-out {
+      padding: 22px 20px;
+      background: #177565;
+      color: #ffffff;
+      font-size: 42px;
+      line-height: 1;
+      font-weight: 800;
+      text-align: center;
+    }
+    .class-plan .lights-out { background: #bd791b; }
+    .support {
+      display: grid;
+      grid-template-columns: 1.32fr 0.92fr 1.08fr;
+      gap: 24px;
+    }
+    .support-box {
+      min-width: 0;
+      padding: 24px 28px;
+      border: 3px solid #cfdbd8;
+      background: #ffffff;
+    }
+    .support-box h2 {
+      margin: 0 0 14px;
+      color: #145448;
+      font-size: 32px;
+      line-height: 1.1;
+    }
+    .script-box { background: #f3faf8; }
+    .script {
+      margin: 0 0 12px;
+      color: #153f37;
+      font-size: 28px;
+      line-height: 1.45;
+      font-weight: 800;
+    }
+    .explain {
+      margin: 0;
+      color: #4d5f5a;
+      font-size: 23px;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+    .rules {
+      margin: 0;
+      padding-left: 30px;
+      color: #334740;
+      font-size: 24px;
+      line-height: 1.55;
+      font-weight: 600;
+    }
+    .tracker {
+      display: grid;
+      grid-template-columns: 115px repeat(5, 1fr);
+      border-top: 2px solid #d5dfdc;
+      border-left: 2px solid #d5dfdc;
+    }
+    .tracker > div {
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-right: 2px solid #d5dfdc;
+      border-bottom: 2px solid #d5dfdc;
+      color: #53625e;
+      font-size: 23px;
+      line-height: 1;
+    }
+    .tracker .tracker-head {
+      background: #edf4f2;
+      color: #24584e;
+      font-weight: 800;
+    }
+    .tracker .week-label {
+      color: #52625d;
+      font-weight: 800;
+    }
+    .tracker-note {
+      margin: 13px 0 0;
+      color: #596963;
+      font-size: 20px;
+      line-height: 1.35;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="header">
+      <div>
+        <h1 class="title">工作日家庭作息表</h1>
+        <p class="subtitle">托班已提供晚餐｜接送与晚间执行：爸爸或妈妈</p>
+      </div>
+      <div class="sleep-target">普通日 21:15 熄灯<br>课外班日 21:25–21:30 熄灯</div>
+    </header>
+
+    <section class="morning" aria-label="共同早晨">
+      <div class="morning-cell morning-label">共同早晨</div>
+      <div class="morning-cell"><time>07:25</time><span>温和叫醒</span></div>
+      <div class="morning-cell"><time>07:30–07:45</time><span>如厕、洗脸、穿衣</span></div>
+      <div class="morning-cell"><time>07:45–08:00</time><span>早餐</span></div>
+      <div class="morning-cell"><time>08:00–08:05</time><span>刷牙、梳头、检查书包</span></div>
+      <div class="morning-cell"><time>08:05–08:10</time><span>穿鞋、出门</span></div>
+    </section>
+
+    <section class="plans">
+      <article class="plan normal-plan">
+        <header class="plan-header">
+          <h2>普通日 · 周二 / 周三 / 周五</h2>
+          <p>固定保护一小时自由玩耍，晚上 21:15 熄灯</p>
+        </header>
+        <div class="normal-content">
+          <div class="timeline-row"><time>19:00–19:25</time><span>爸爸或妈妈接回；喝水、简短聊天、放松</span></div>
+          <div class="timeline-row"><time>19:25–20:25</time><span>自由玩耍，优先非屏幕活动</span></div>
+          <div class="timeline-row"><time>20:20 / 20:24</time><span>5分钟预告 / 1分钟预告，启动可视计时器</span></div>
+          <div class="timeline-row"><time>20:25–20:50</time><span>收尾转场、洗澡</span></div>
+          <div class="timeline-row"><time>20:50–21:00</time><span>睡衣、刷牙、如厕</span></div>
+          <div class="timeline-row"><time>21:00–21:10</time><span>简单整理书包、准备次日衣服</span></div>
+          <div class="timeline-row"><time>21:10–21:15</time><span>短绘本、拥抱或聊天</span></div>
+        </div>
+        <div class="lights-out">21:15 熄灯</div>
+      </article>
+
+      <article class="plan class-plan">
+        <header class="plan-header">
+          <h2>课外班日 · 周一 / 周四</h2>
+          <p>到家后保留自主恢复时间，最晚 21:00 停止玩耍</p>
+        </header>
+        <div class="class-content">
+          <div class="course-differences">
+            <section class="course">
+              <h3>周一 · 写字课</h3>
+              <p>19:00 爸爸或妈妈接；按需喝水或少量点心<br>19:30–20:30 上课</p>
+            </section>
+            <section class="course">
+              <h3>周四 · 画画课</h3>
+              <p>托班已提供晚餐；爸爸或妈妈接，按需补水<br>19:00–20:30 上课</p>
+            </section>
+          </div>
+          <div class="timeline-row"><time>20:30–约20:45</time><span>爸爸或妈妈接，返程回家</span></div>
+          <div class="timeline-row"><time>到家–21:00</time><span>安静自由玩耍；避免屏幕、追逐和大型拼搭</span></div>
+          <div class="timeline-row"><time>21:00–21:10</time><span>快速冲洗或最低必要清洁，不洗头</span></div>
+          <div class="timeline-row"><time>21:10–21:20</time><span>刷牙、睡衣、如厕</span></div>
+          <div class="timeline-row"><time>21:20–21:25</time><span>3–5分钟短故事、拥抱或聊天</span></div>
+        </div>
+        <div class="lights-out">21:25–21:30 熄灯</div>
+      </article>
+    </section>
+
+    <section class="support">
+      <article class="support-box script-box">
+        <h2>计时器响后的统一话术</h2>
+        <p class="script">“玩耍时间结束了。你自己走，还是爸爸或妈妈牵手一起走？”</p>
+        <p class="explain">等待约10秒；不动则平静陪同转场，不反复说理。基础3–5分钟亲密收尾始终保留。</p>
+      </article>
+      <article class="support-box">
+        <h2>共同底线</h2>
+        <ul class="rules">
+          <li>睡眠边界不变，清洁和整理可降级</li>
+          <li>不拖拽、不压制、不临时加罚</li>
+          <li>谁当班谁执行共同方案至熄灯</li>
+        </ul>
+      </article>
+      <article class="support-box">
+        <h2>两周完成记录</h2>
+        <div class="tracker" aria-label="两周完成记录">
+          <div class="tracker-head"></div><div class="tracker-head">一</div><div class="tracker-head">二</div><div class="tracker-head">三</div><div class="tracker-head">四</div><div class="tracker-head">五</div>
+          <div class="week-label">第1周</div><div>□</div><div>□</div><div>□</div><div>□</div><div>□</div>
+          <div class="week-label">第2周</div><div>□</div><div>□</div><div>□</div><div>□</div><div>□</div>
+        </div>
+        <p class="tracker-note">完成＝按目标熄灯，并且没有临时加罚或吼叫</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

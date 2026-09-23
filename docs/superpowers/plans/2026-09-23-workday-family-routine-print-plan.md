@@ -21,7 +21,7 @@
 **Files:**
 - Create: `output/family-routine/workday-family-routine-a4.html`
 
-- [ ] **Step 1: 创建固定尺寸页面骨架**
+- [x] **Step 1: 创建固定尺寸页面骨架**
 
 使用以下页面约束，确保截图和打印比例一致：
 
@@ -39,7 +39,7 @@ html, body { margin: 0; width: 3508px; height: 2480px; }
 }
 ```
 
-- [ ] **Step 2: 实现共同早晨**
+- [x] **Step 2: 实现共同早晨**
 
 页面必须按以下顺序展示，且 `08:10` 为最终出门时间：
 
@@ -51,7 +51,7 @@ html, body { margin: 0; width: 3508px; height: 2480px; }
 <div class="morning-item"><time>08:05–08:10</time><span>穿鞋、出门</span></div>
 ```
 
-- [ ] **Step 3: 实现两条晚间主流程**
+- [x] **Step 3: 实现两条晚间主流程**
 
 左侧标题必须为 `普通日 · 周二 / 周三 / 周五`，展示普通日晚间完整时间轴；右侧标题必须为 `课外班日 · 周一 / 周四`，顶部用两个轻量差异块展示周一写字课和周四画画课，其下只展示一次共同流程。
 
@@ -70,11 +70,11 @@ html, body { margin: 0; width: 3508px; height: 2480px; }
 </section>
 ```
 
-- [ ] **Step 4: 实现底部辅助区**
+- [x] **Step 4: 实现底部辅助区**
 
 底部依次展示统一话术、共同底线和两周10个勾选格。所有接送与陪同文案必须使用“爸爸或妈妈”。
 
-- [ ] **Step 5: 在浏览器打开源文件检查排版**
+- [x] **Step 5: 在浏览器打开源文件检查排版**
 
 Run:
 
@@ -90,7 +90,7 @@ Expected: 页面为横向单页；两条主流程和底部辅助区完整显示�
 - Create: `tools/render-workday-family-routine.mjs`
 - Create: `output/family-routine/workday-family-routine-a4.png`
 
-- [ ] **Step 1: 写入关键文案与边界检查**
+- [x] **Step 1: 写入关键文案与边界检查**
 
 脚本加载本地 HTML 后检查：
 
@@ -120,7 +120,7 @@ if (overflow.width > 0 || overflow.height > 0) {
 }
 ```
 
-- [ ] **Step 2: 截取固定像素图片**
+- [x] **Step 2: 截取固定像素图片**
 
 ```js
 await page.locator('.sheet').screenshot({
@@ -129,7 +129,7 @@ await page.locator('.sheet').screenshot({
 });
 ```
 
-- [ ] **Step 3: 校验 PNG IHDR 尺寸**
+- [x] **Step 3: 校验 PNG IHDR 尺寸**
 
 ```js
 const png = readFileSync(outputPath);
@@ -140,7 +140,7 @@ if (width !== 3508 || height !== 2480) {
 }
 ```
 
-- [ ] **Step 4: 运行渲染脚本**
+- [x] **Step 4: 运行渲染脚本**
 
 Run:
 
@@ -159,7 +159,7 @@ PASS workday-family-routine-a4.png 3508x2480
 **Files:**
 - Verify: `output/family-routine/workday-family-routine-a4.png`
 
-- [ ] **Step 1: 检查最终图片**
+- [x] **Step 1: 检查最终图片**
 
 使用图片查看工具检查以下项目：
 
@@ -171,7 +171,7 @@ PASS workday-family-routine-a4.png 3508x2480
 5. 无文字重叠、裁切、大面积空白或过小字号。
 ```
 
-- [ ] **Step 2: 提交实现文件**
+- [x] **Step 2: 提交实现文件**
 
 ```powershell
 git add -- `
@@ -181,6 +181,6 @@ git add -- `
 git commit -m "feat: add printable family routine chart"
 ```
 
-- [ ] **Step 3: 向用户提供图片链接**
+- [x] **Step 3: 向用户提供图片链接**
 
 最终回复使用绝对路径嵌入图片，并同时提供本地文件链接，方便打开和打印。
