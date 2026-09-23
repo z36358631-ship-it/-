@@ -564,6 +564,12 @@
             return purpose === '连续签到';
         }
 
+        function syncTaskStreakInput() {
+            const activeValue = getActiveChipValue('streak');
+            const customRow = document.getElementById('custom-streak-row');
+            if (customRow) customRow.style.display = activeValue === '__custom__' ? 'block' : 'none';
+        }
+
         function renderTasks() {
             const typeMap = { once: '<span class="tag tag-warning">成长任务</span>', daily: '<span class="tag tag-blue">每日任务</span>' };
             document.getElementById('task-table-body').innerHTML = mockTasks.map(t => {
@@ -637,8 +643,11 @@
             const streakRow = document.getElementById('task-streak-row');
             if (streakRow) streakRow.style.display = isStreakTaskPurpose(purposeSelect.value) ? 'block' : 'none';
             if (!isStreakTaskPurpose(purposeSelect.value)) {
-                const streakSelect = document.getElementById('m-t-streak-days');
-                if (streakSelect) streakSelect.value = '';
+                const streakContainer = document.getElementById('chip-streak');
+                streakContainer?.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
+                const customStreakInput = document.getElementById('m-t-streak-custom');
+                if (customStreakInput) customStreakInput.value = '';
+                syncTaskStreakInput();
             }
 
             const needsTarget = landingSelect.value === 'specific_post' || landingSelect.value === 'specific_topic';
@@ -668,6 +677,9 @@
             const typeTags = `<span class="chip ${task.type==='daily'?'active':''}" data-val="daily" onclick="toggleChip(this,'type'); onTaskTypeChange();">每日任务</span><span class="chip ${task.type==='once'?'active':''}" data-val="once" onclick="toggleChip(this,'type'); onTaskTypeChange();">成长任务</span>`;
             const topicTags = mockTopics.map(tp => `<span class="chip ${task.topic===tp?'active':''}" data-val="${tp}" onclick="toggleChip(this,'topic')">${tp}</span>`).join('');
             const zoneTags = mockZones.map(z => `<span class="chip ${task.zone===z?'active':''}" data-val="${z}" onclick="toggleChip(this,'zone')">${z}</span>`).join('');
+            const streakValue = String(task.streakDays ?? '');
+            const isCustomStreak = streakValue && !streakDayOptions.includes(Number(streakValue));
+            const streakTags = streakDayOptions.map(days => `<span class="chip ${Number(streakValue)===days?'active':''}" data-val="${days}" onclick="toggleChip(this,'streak'); syncTaskStreakInput();">${days}天</span>`).join('') + `<span class="chip ${isCustomStreak?'active':''}" data-val="__custom__" onclick="toggleChip(this,'streak'); syncTaskStreakInput();">自定义</span>`;
             const targetNeedsValue = task.landingPage === 'specific_post' || task.landingPage === 'specific_topic';
             const html = `
                 <style>.chip{display:inline-block;padding:5px 14px;border-radius:16px;font-size:13px;border:1px solid #d9d9d9;color:#666;cursor:pointer;margin:0 6px 8px 0;transition:0.2s;}.chip:hover{border-color:var(--primary);color:var(--primary);}.chip.active{background:var(--primary);color:#fff;border-color:var(--primary);}.task-select{height:34px;}.task-conditional{display:none;}</style>
@@ -675,7 +687,7 @@
                 <div class="form-group"><label class="required">任务类型</label><div id="chip-type" style="flex:1;padding-top:4px;">${typeTags}</div></div>
                 <div class="form-group"><label class="required">任务条件</label><select class="form-control task-select" id="m-t-condition" onchange="onTaskConditionChange()"></select></div>
                 <div class="form-group"><label class="required">任务目的</label><select class="form-control task-select" id="m-t-purpose" onchange="syncTaskFormVisibility()"></select></div>
-                <div id="task-streak-row" class="form-group" style="display:${isStreakTaskPurpose(task.purpose)?'flex':'none'};"><label class="required">连续签到天数</label><select class="form-control task-select" id="m-t-streak-days"><option value="">请选择连续天数</option>${streakDayOptions.map(days => `<option value="${days}" ${Number(task.streakDays)===days?'selected':''}>连续 ${days} 天</option>`).join('')}</select></div>
+                <div id="task-streak-row" class="form-group" style="display:${isStreakTaskPurpose(task.purpose)?'flex':'none'};"><label class="required">连续签到天数</label><div style="flex:1;"><div id="chip-streak" style="padding-top:4px;">${streakTags}</div><div id="custom-streak-row" style="display:${isCustomStreak?'block':'none'};margin-top:2px;"><input type="number" min="1" step="1" class="form-control" id="m-t-streak-custom" value="${isCustomStreak ? streakValue : ''}" placeholder="请输入大于0的天数"></div><div class="task-help">固定选项可直接选择，也可自定义连续签到天数。</div></div></div>
                 <div class="form-group"><label class="required">奖励积分</label><div style="flex:1;"><input type="text" class="form-control" id="m-t-reward" value="${task.reward ?? ''}" placeholder="请输入大于0的整数"><div id="m-t-reward-error" class="task-field-error"></div></div></div>
                 <div class="form-group"><label class="required">每日上限</label><input type="text" class="form-control" id="m-t-limit" value="${task.dailyLimit ?? ''}" placeholder="如：5；无上限填 -"></div>
                 <div class="task-form-section">完成条件</div>
@@ -706,6 +718,7 @@
                 const customRow = document.getElementById('custom-topic-row');
                 if (customRow) customRow.style.display = el.dataset.val === '__custom__' ? 'block' : 'none';
             }
+            if (group === 'streak') syncTaskStreakInput();
         }
 
         function setTaskFieldError(id, message) {
@@ -730,7 +743,10 @@
                 type: document.querySelector('#chip-type .chip.active')?.dataset.val || 'daily',
                 conditionGroup: document.getElementById('m-t-condition')?.value || '',
                 purpose: document.getElementById('m-t-purpose')?.value || '',
-                streakDays: document.getElementById('m-t-streak-days')?.value || '',
+                streakDays: (() => {
+                    const selected = getActiveChipValue('streak');
+                    return selected === '__custom__' ? (document.getElementById('m-t-streak-custom')?.value.trim() || '') : selected;
+                })(),
                 reward: document.getElementById('m-t-reward')?.value.trim() || '',
                 dailyLimit: document.getElementById('m-t-limit')?.value.trim() || '',
                 buttonText: document.getElementById('m-t-button')?.value.trim() || '-',
@@ -748,8 +764,8 @@
                 setTaskFieldError('m-t-reward-error', '请输入大于 0 的整数。');
                 return false;
             }
-            if (isStreakTaskPurpose(data.purpose) && !streakDayOptions.includes(Number(data.streakDays))) {
-                return showToast('请选择连续签到天数', 'error'), false;
+            if (isStreakTaskPurpose(data.purpose) && (!/^\d+$/.test(data.streakDays) || Number(data.streakDays) <= 0)) {
+                return showToast('请输入大于 0 的连续签到天数', 'error'), false;
             }
             if (data.landingPage === 'specific_post' || data.landingPage === 'specific_topic') {
                 if (!data.targetValue) {
