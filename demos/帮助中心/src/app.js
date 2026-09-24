@@ -82,6 +82,6 @@ HelpStore.subscribe(()=>{if(state.surface==='app')render();});
 window.HelpApp={state,render,go,surface};
 $('#protocol').innerHTML=HelpStore.protocols.map(p=>`<option value="${esc(p.code)}">${esc(p.label)}</option>`).join('');$('#protocol').value=state.protocol;
 if($('#package'))$('#package').value=state.package;
-if($('#language-select'))$('#language-select').value=state.lang;
+if($('#language-select')){$('#language-select').innerHTML=HelpStore.languages.map(l=>`<option value="${esc(l.code)}">${esc(l.label)}</option>`).join('');$('#language-select').value=state.lang;}
 surface(state.surface);
 })();

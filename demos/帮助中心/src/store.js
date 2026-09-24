@@ -2,13 +2,12 @@
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
   const listeners = new Set();
-  const languages = [
-    {code:'zh',label:'简体中文'}, {code:'en',label:'English'}, {code:'ja',label:'日本語'},
-    {code:'pt-BR',label:'Português (Brasil)'}, {code:'ru',label:'Русский'}, {code:'hi',label:'हिन्दी（印地语）'}
-  ];
+  const languages = [['zh','简体中文'],['zh-Hant','繁体中文'],['en','英语'],['ja','日语'],['ko','韩语'],['id','印尼语'],['th','泰语'],['pt-BR','葡萄牙语'],['vi','越南语'],['hi','印地语'],['ms','马来语'],['fr','法语'],['de','德语'],['es','西班牙语'],['ru','俄语'],['ar','阿拉伯语']].map(([code,label])=>({code,label}));
   const protocols=[{code:'android-official',label:'安卓官方包'},{code:'ios-official',label:'iOS官方包'},{code:'zhangyou-android',label:'盖世掌游安卓'},{code:'zhangyou-ios',label:'盖世掌游iOS'},{code:'harmony',label:'安卓鸿蒙渠道'},{code:'lenovo',label:'安卓联想渠道'},{code:'logitech',label:'安卓罗技渠道'},{code:'redmagic',label:'安卓红魔渠道'}];
   const defaultProtocols=['android-official','ios-official'];
   const languageCodes = languages.map(item => item.code);
+  const translation=(item,code)=>code==='id'?item?.translations?.id:item?.[code];
+  const setTranslation=(item,code,value)=>{if(code==='id'){item.translations||={};item.translations.id=value;}else item[code]=value;return value;};
   const defaults = {domestic:'zh',overseas:'en'};
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const safeLink = value => /^https:\/\/[^\s<>"']+$/i.test(String(value || '').trim());
@@ -36,7 +35,7 @@
     }
     clean(template.content); return template.innerHTML;
   }
-  const localeSet=(title,html='')=>Object.fromEntries(languageCodes.map(code=>[code,{title:code==='zh'?title:(code==='en'?title:''),...(html!==undefined?{html:code==='zh'?html:''}:{})}]));
+  const localeSet=(title,html='')=>{const values={};languageCodes.forEach(code=>setTranslation(values,code,{title:code==='zh'?title:(code==='en'?title:''),html:code==='zh'?html:''}));return values;};
   const seed={navs:[
     {id:'HC-N001',package:'domestic',zh:{title:'入门指南'},en:{title:'Getting started'},order:10},
     {id:'HC-N002',package:'domestic',zh:{title:'常见问题'},en:{title:'Frequently asked questions'},order:20},
@@ -56,26 +55,36 @@
   const englishBodies=['<h2>Start here</h2><p>Select an article under a category heading to read it.</p>','<h2>Media example</h2><p>[[DEMO_IMAGE]]</p><p>Press play to watch the sample. It does not autoplay.</p><p>[[DEMO_VIDEO]]</p>','<h2>Browse by category</h2><p>Select an article title under a category heading.</p>','<h2>Press play</h2><p>Video articles contain playback controls. Videos do not autoplay.</p>'];
   const hindiTitles=['सहायता केंद्र में आपका स्वागत है','चित्र और वीडियो पढ़ना','लेख कैसे पढ़ें?','वीडियो कैसे देखें?'];
   const hindiBodies=['<h2>यहाँ से शुरू करें</h2><p>पढ़ने के लिए किसी श्रेणी के अंतर्गत एक लेख चुनें। यह सामग्री केवल नमूना है।</p>','<h2>चित्र और वीडियो का नमूना</h2><p>[[DEMO_IMAGE]]</p><p>वीडियो देखने के लिए प्ले दबाएँ। वीडियो अपने आप नहीं चलता।</p><p>[[DEMO_VIDEO]]</p>','<h2>श्रेणी के अनुसार पढ़ें</h2><p>लेख पढ़ने के लिए श्रेणी के अंतर्गत उसके शीर्षक पर क्लिक करें।</p>','<h2>प्ले दबाएँ</h2><p>वीडियो देखने के लिए प्ले दबाएँ। नियंत्रणों से वीडियो रोकें या आगे बढ़ाएँ।</p>'];
-  for(const nav of seed.navs)for(const code of languageCodes)nav[code] ||= {title:''};
+  for(const nav of seed.navs)for(const code of languageCodes)if(!translation(nav,code))setTranslation(nav,code,{title:''});
   seed.docs.forEach((doc,index)=>{doc.protocols=[...defaultProtocols];doc.en={title:englishTitles[index%4],html:englishBodies[index%4]};if(doc.package==='overseas'){doc.zh={title:'',html:''};doc.hi={title:hindiTitles[index%4],html:hindiBodies[index%4]};}});
+  for(const item of [...seed.navs,...seed.docs]){item.defaultLanguage=defaults[item.package];item.enabledLanguages=item.package==='domestic'?['zh','en']:['en','hi'];}
+  const requiredLanguages=item=>[defaults[item.package]];
+  function languageIssue(item,enabled,defaultCode){
+    if(!Array.isArray(enabled)||!enabled.length||enabled.some(code=>!languageCodes.includes(code))||!languageCodes.includes(defaultCode))return '请选择有效的语言配置。';
+    if(!enabled.includes(defaultCode))return '默认语言必须保留。';
+    if(requiredLanguages(item).some(code=>!enabled.includes(code)))return '当前包必需的语种必须保留。';
+    return '';
+  }
   const ownedPackages=new Map([...seed.navs,...seed.docs].map(item=>[item.id,item.package]));
   const hasBody=html=>{const element=document.createElement('div');element.innerHTML=sanitize(html);return !!(element.textContent.trim()||element.querySelector('img,video'));};
   const validOrder=value=>Number.isInteger(Number(value))&&String(value).trim()!==''&&Number(value)>=0&&Number(value)<=999999;
-  const store={draft:clone(seed),published:clone(seed),languages,protocols,pendingMedia:new Set(),escape,sanitize,safeLink,
+  const store={draft:clone(seed),published:clone(seed),languages,protocols,requiredLanguages,translation,setTranslation,pendingMedia:new Set(),escape,sanitize,safeLink,
     subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},notify(){listeners.forEach(fn=>fn(store));},
     get(type,id){return store.draft[type].find(item=>item.id===id);},
-    locale(item,language){const code=language||defaults[item?.package]||'zh';return item?.[code]?.title?.trim()?item[code]:item?.[defaults[item?.package]||'zh']||{title:'',html:''};},
+    locale(item,language){const fallback=item?.defaultLanguage||defaults[item?.package]||'zh',code=language||fallback;return item?.enabledLanguages?.includes(code)&&translation(item,code)?.title?.trim()?translation(item,code):translation(item,fallback)||{title:'',html:''};},
+    setLanguages(type,id,enabled,defaultCode){const item=store.get(type,id);if(!item)return '内容不存在。';const error=languageIssue(item,enabled,defaultCode);if(error)return error;item.enabledLanguages=languageCodes.filter(code=>enabled.includes(code));item.defaultLanguage=defaultCode;item.enabledLanguages.forEach(code=>{if(!translation(item,code))setTranslation(item,code,{title:'',...(type==='docs'?{html:''}:{})});});store.notify();return '';},
     visible(item,pack,protocol='android-official'){if(!item||item.package!==pack)return false;if(Object.prototype.hasOwnProperty.call(item,'navId')&&(!Array.isArray(item.protocols)||!item.protocols.includes(protocol)))return false;return true;},
     status(type,id){const draft=store.get(type,id),live=store.published[type].find(item=>item.id===id);const content=value=>{const copy=clone(value);delete copy.order;return JSON.stringify(copy);};return !live?'草稿':content(draft)===content(live)?'已发布':'有未发布修改';},
     update(type,id,changes){const item=store.get(type,id);if(!item)return '内容不存在。';if(changes.package&&changes.package!==ownedPackages.get(id))return '内容包创建后不可更改。';if(type==='docs'&&changes.navId&&store.get('navs',changes.navId)?.package!==item.package)return '不能跨包迁移文章。';Object.assign(item,changes);store.notify();return '';},
-    create(type,pack='domestic'){if(!defaults[pack])throw new Error('无效的内容包。');const number=++serial;const prefix=pack==='overseas'?'O':'';const item={id:`HC-${prefix}${type==='navs'?'N':'D'}${String(number).padStart(3,'0')}`,package:pack,order:Math.min(999999,Math.max(0,...store.draft[type].filter(row=>row.package===pack).map(row=>row.order))+10)};if(type==='docs'){item.navId=store.draft.navs.filter(nav=>nav.package===pack).sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id))[0]?.id||'';item.order=Math.min(999999,Math.max(0,...store.draft.docs.filter(doc=>doc.navId===item.navId).map(doc=>doc.order))+10);item.protocols=[...defaultProtocols];}languageCodes.forEach(code=>{item[code]={title:'',...(type==='docs'?{html:''}:{})};});ownedPackages.set(item.id,pack);store.draft[type].push(item);store.notify();return item;},
+    create(type,pack='domestic'){if(!defaults[pack])throw new Error('无效的内容包。');const number=++serial;const prefix=pack==='overseas'?'O':'';const item={id:`HC-${prefix}${type==='navs'?'N':'D'}${String(number).padStart(3,'0')}`,package:pack,order:Math.min(999999,Math.max(0,...store.draft[type].filter(row=>row.package===pack).map(row=>row.order))+10)};if(type==='docs'){item.navId=store.draft.navs.filter(nav=>nav.package===pack).sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id))[0]?.id||'';item.order=Math.min(999999,Math.max(0,...store.draft.docs.filter(doc=>doc.navId===item.navId).map(doc=>doc.order))+10);item.protocols=[...defaultProtocols];}item.defaultLanguage=defaults[pack];item.enabledLanguages=[...requiredLanguages(item)];languageCodes.forEach(code=>setTranslation(item,code,{title:'',...(type==='docs'?{html:''}:{})}));ownedPackages.set(item.id,pack);store.draft[type].push(item);store.notify();return item;},
     validate(type,id){
       const item=store.get(type,id);if(!item)return '内容不存在。';
       if(item.package!==ownedPackages.get(id))return '内容包创建后不可更改。';
       if(!validOrder(item.order))return '排序权重必须为 0–999999 的整数。';
       if(type==='docs'&&store.pendingMedia.has(id))return '请等待该文档的媒体处理完成后再发布。';
-      for(const {code,label} of languages){const locale=item[code]||{};const title=String(locale.title||'').trim(),body=type==='docs'&&hasBody(locale.html||'');
-        if(code===defaults[item.package]&&(!title||(type==='docs'&&!body)))return `请完善默认语言${label}内容。`;
+      const configError=languageIssue(item,item.enabledLanguages,item.defaultLanguage);if(configError)return configError;
+      for(const {code,label} of languages.filter(lang=>item.enabledLanguages.includes(lang.code))){const locale=translation(item,code)||{};const title=String(locale.title||'').trim(),body=type==='docs'&&hasBody(locale.html||'');
+        if((code===item.defaultLanguage||requiredLanguages(item).includes(code))&&(!title||(type==='docs'&&!body)))return `请完善${code===item.defaultLanguage?'默认语言':'当前包必需语种'}${label}内容。`;
         if(type==='docs'&&!!title!==!!body)return `${label}需要同时填写标题和正文，或全部清空。`;
       }
       if(type==='docs'){
@@ -86,11 +95,11 @@
       }
       return '';
     },
-    publish(type,id){const error=store.validate(type,id);if(error)return error;const item=clone(store.get(type,id));if(type==='docs')languageCodes.forEach(code=>{if(item[code])item[code].html=sanitize(item[code].html||'');});const index=store.published[type].findIndex(row=>row.id===id);if(index<0)store.published[type].push(item);else store.published[type][index]=item;Object.assign(store.get(type,id),clone(item));store.notify();return'';},
+    publish(type,id){const error=store.validate(type,id);if(error)return error;const item=clone(store.get(type,id));if(type==='docs')languageCodes.forEach(code=>{const locale=translation(item,code);if(locale)locale.html=sanitize(locale.html||'');});const index=store.published[type].findIndex(row=>row.id===id);if(index<0)store.published[type].push(item);else store.published[type][index]=item;Object.assign(store.get(type,id),clone(item));store.notify();return'';},
     remove(type,id){if(type==='navs'&&[...store.draft.docs,...store.published.docs].some(doc=>doc.navId===id))return'该导航仍有关联子文档，请先迁移并发布或删除子文档。';store.draft[type]=store.draft[type].filter(item=>item.id!==id);store.published[type]=store.published[type].filter(item=>item.id!==id);store.notify();return'';},
     setOrder(type,id,value){const item=store.get(type,id);if(!item)return '内容不存在。';if(!validOrder(value))return '排序权重必须为 0–999999 的整数。';item.order=Number(value);const live=store.published[type].find(row=>row.id===id);if(live)live.order=item.order;store.notify();return '';},
     move(type,id,direction){const item=store.get(type,id),group=store.draft[type].filter(row=>row.package===item.package&&(type==='navs'||row.navId===item.navId)).sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id));const index=group.findIndex(row=>row.id===id),target=index+direction;if(target<0||target>=group.length)return;const other=group[target];if(item.order===other.order)return '权重相同，请编辑排序权重。';const old=item.order;store.setOrder(type,id,other.order);store.setOrder(type,other.id,old);return '';},
-    setDemoMedia(image,video){if(typeof image==='object'&&image){video=image.video;image=image.image;}const imageHtml=safeImage(image)?`<img src="${image}" alt="图文阅读示例">`:'',videoHtml=safeVideo(video)?`<video src="${video}" controls playsinline preload="metadata"></video>`:'';for(const state of [store.draft,store.published])for(const doc of state.docs)for(const code of languageCodes){if(imageHtml&&doc[code])doc[code].html=String(doc[code].html||'').replace('[[DEMO_IMAGE]]',imageHtml);if(videoHtml&&doc[code])doc[code].html=String(doc[code].html||'').replace('[[DEMO_VIDEO]]',videoHtml);}store.notify();}
+    setDemoMedia(image,video){if(typeof image==='object'&&image){video=image.video;image=image.image;}const imageHtml=safeImage(image)?`<img src="${image}" alt="图文阅读示例">`:'',videoHtml=safeVideo(video)?`<video src="${video}" controls playsinline preload="metadata"></video>`:'';for(const state of [store.draft,store.published])for(const doc of state.docs)for(const code of languageCodes){const locale=translation(doc,code);if(imageHtml&&locale)locale.html=String(locale.html||'').replace('[[DEMO_IMAGE]]',imageHtml);if(videoHtml&&locale)locale.html=String(locale.html||'').replace('[[DEMO_VIDEO]]',videoHtml);}store.notify();}
   };
   let serial=10;window.HelpStore=store;store.setDemoMedia(window.HELP_DEMO_IMAGE,window.HELP_DEMO_VIDEO);
 })();
