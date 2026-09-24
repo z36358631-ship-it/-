@@ -1801,6 +1801,8 @@ button.review-attachment-card:focus-visible { outline: 3px solid rgba(62,99,221,
 .publisher-console-shell { min-height: 720px; display: grid; grid-template-columns: 230px minmax(0, 1fr); }
 .publisher-console-main { min-width: 0; }
 .publisher-console-sidebar { padding: 24px 14px 36px; border-right: 1px solid #E0E5EB; background: #FFFFFF; }
+.side-nav.publisher-console-sidebar { width: 230px; padding: 24px 14px 36px; background: #FFFFFF; }
+.is-finance-workspace .workspace { left: 230px; }
 .publisher-console-sidebar > strong { display: block; padding: 0 6px 24px; color: #9AA3B0; font-size: 13px; font-weight: 500; }
 .publisher-console-sidebar section { display: grid; gap: 7px; margin-bottom: 27px; }
 .publisher-console-sidebar section > span { padding: 0 6px; color: #A0A8B4; font-size: 11px; }
@@ -2138,6 +2140,8 @@ button.review-attachment-card:focus-visible { outline: 3px solid rgba(62,99,221,
 }
 @media (max-width: 1100px) {
   .publisher-console-shell { grid-template-columns: 190px minmax(0, 1fr); }
+  .side-nav.publisher-console-sidebar { width: 190px; }
+  .is-finance-workspace .workspace { left: 190px; }
   .publisher-platform-content { padding-right: 24px; padding-left: 24px; }
   .publisher-game-grid { grid-template-columns: minmax(180px, .5fr) minmax(380px, 1.5fr); }
   .publisher-game-card { grid-template-columns: 150px minmax(0, 1fr); }
@@ -2151,6 +2155,8 @@ button.review-attachment-card:focus-visible { outline: 3px solid rgba(62,99,221,
   .publisher-store-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 800px) {
+  .side-nav.publisher-console-sidebar { inset: 56px 0 auto; width: 100%; height: 102px; padding: 10px 12px; overflow-y: hidden; }
+  .is-finance-workspace .workspace { inset: 158px 0 0; }
   .publisher-console-shell { grid-template-columns: 1fr; }
   .publisher-console-sidebar { padding: 10px 12px; display: flex; align-items: center; gap: 8px; overflow-x: auto; border-right: 0; border-bottom: 1px solid #E1E6EE; }
   .publisher-console-sidebar > strong, .publisher-console-sidebar section > span { display: none; }

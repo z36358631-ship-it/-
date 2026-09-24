@@ -392,6 +392,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const routePart = requestedRoutePart === 'P15-03' ? 'P15-02' : requestedRoutePart;
     if (routePart !== requestedRoutePart) history.replaceState(null, '', `${location.href.split('#')[0]}#/${routePart}${queryPart ? `?${queryPart}` : ''}`);
     const query = new URLSearchParams(queryPart);
+    if (routePart === 'P02-01' && query.get('view') === 'channels' && ['channel-supply', 'channel-revenue'].includes(query.get('section'))) {
+      memory.pendingChannelSection = query.get('section');
+      query.delete('view');
+      query.delete('section');
+      history.replaceState(null, '', `${location.href.split('#')[0]}#/${routePart}${query.size ? `?${query}` : ''}`);
+    }
     const requested = routes.find(item => item.id === routePart);
     let route = requested || routes.find(item => item.id === moduleConfig.defaultRoute) || routes[0];
     if (!requested && route?.id) {
@@ -453,6 +459,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       else if (requested?.id === 'P01-01' && hasPublisherRoute) route = routes.find(item => item.id === 'P02-01') || route;
       else if (memory.qualification.status !== 'approved') route = routes.find(item => item.id === 'P01-03') || route;
       else if (!requested && route.id === 'P01-01') route = routes.find(item => item.id === 'P01-02') || route;
+    }
+    if (memory.pendingChannelSection && memory.session.authenticated && publisherAccessForView().qualificationStatus === 'approved') {
+      memory.page['P02-01'] = { ...memory.page['P02-01'], workspaceView:'channels', channelSection:memory.pendingChannelSection, addGameOpen:false, gameMenuOpen:'' };
+      delete memory.pendingChannelSection;
+      persistPublisherWorkspace();
+      route = routes.find(item => item.id === 'P02-01') || route;
     }
     if (requested && route.id !== requested.id) history.replaceState(null, '', `${location.href.split('#')[0]}#/${route.id}`);
     const role = route.role;
@@ -1775,12 +1787,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         event.currentTarget.setAttribute('aria-expanded', String(open));
         return;
       }
-      if (route.id === 'P02-01' && action === 'publisher-sidebar-view') {
+      if (hasPublisherRoute && action === 'publisher-sidebar-view') {
         const requested = event.currentTarget.dataset.publisherView;
         if (requested === 'channels' && publisherAccessForView().qualificationStatus !== 'approved') return;
         memory.channelTransientSecret = '';
         const distribution = channelDistributionState();
         updatePublisherWorkspace({ workspaceView: ['vendor', 'channels'].includes(requested) ? requested : 'games', addGameOpen: false, gameMenuOpen: '', channelDistribution:{ ...distribution, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' } });
+        if (route.id !== 'P02-01') navigate({ routeId:'P02-01', state:'default' });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-open-data') {

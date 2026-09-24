@@ -452,14 +452,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return records[game.gameKey] || records[game.detailVariant] || [];
   };
 
-  const renderPublisherConsoleSidebar = (active, language = 'zh', rawAccess) => {
+  const renderPublisherConsoleSidebar = (active, language = 'zh', rawAccess, shellSidebar = false) => {
     const access = publisherAccessFor(rawAccess);
     const channels = access.qualificationStatus === 'approved' ? `<section><span>${language === 'en' ? 'Distribution' : '发行与供给'}</span><button type="button" class="${active === 'channels' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="channels">${icon('key')}<b>${language === 'en' ? 'Channel distribution' : '渠道分销'}</b>${icon('chevron')}</button></section>` : '';
     const finance = window.PublisherFinance
-      ? `<section><span>${language === 'en' ? 'Finance' : '财务'}</span><button type="button" data-portal-action="open-finance-entity">${icon('vendor')}<b>${language === 'en' ? 'Finance entity' : '财务主体'}</b>${icon('chevron')}</button><button type="button" data-portal-action="open-finance-settlement">${icon('chart')}<b>${language === 'en' ? 'Reconciliation & settlement' : '对账结算'}</b>${icon('chevron')}</button></section>`
+      ? `<section><span>${language === 'en' ? 'Finance' : '财务'}</span><button type="button" class="${active === 'finance-entity' ? 'is-active' : ''}" data-portal-action="open-finance-entity">${icon('vendor')}<b>${language === 'en' ? 'Finance entity' : '财务主体'}</b>${icon('chevron')}</button><button type="button" class="${active === 'finance-settlement' ? 'is-active' : ''}" data-portal-action="open-finance-settlement">${icon('chart')}<b>${language === 'en' ? 'Reconciliation & settlement' : '对账结算'}</b>${icon('chevron')}</button></section>`
       : '';
     const vendor = `<section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section>`;
-    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${channels}${finance}${vendor}</aside>`;
+    return `<aside class="publisher-console-sidebar${shellSidebar ? ' side-nav' : ''}"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${channels}${finance}${vendor}</aside>`;
   };
 
   const renderPublisherGameCard = ({ name, gameId, appId, systems, stage, status, updatedAt, gameKey }) => `<button class="publisher-game-card" type="button" data-portal-action="enter-publisher-game" data-publisher-game="${e(gameKey)}" aria-label="进入${e(name)}控制台">
@@ -1425,6 +1425,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   };
 
   namespace.templates = {
+    renderPublisherConsoleSidebar,
     publisherGame: getPublisherGame,
     registry,
     render({ route, page, state = 'default', editorMode = 'edit', qualification, language = 'zh', managedContent, contentEditor, operationsReview, registration, authenticated = false, workspaceState, access, demoState, transientSecret = '' }) {
