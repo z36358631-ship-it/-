@@ -78,6 +78,8 @@ after(async()=>browser?.close());
 test('渠道入口仅对企业认证通过账号开放',async()=>{
   const page=await browser.newPage({viewport:{width:1280,height:900}});
   await openGame(page,{qualificationStatus:'unsubmitted'});
+  await page.locator('[data-portal-action="demo-approval-toggle"]').first().click();
+  await page.locator('[data-demo-approval-panel] [data-demo-qualification-status="unsubmitted"]').click();
   for(const label of ['渠道与供给','分销数据']) assert.equal(await page.getByRole('button',{name:label,exact:true}).count(),0);
   await page.locator('[data-portal-action="back-publisher-games"]').click();
   assert.equal(await page.locator('[data-publisher-view="channels"]').count(),0);

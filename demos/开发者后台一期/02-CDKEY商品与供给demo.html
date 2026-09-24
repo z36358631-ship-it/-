@@ -189,7 +189,10 @@ svg { display: block; }
 .portal-demo-switch__badge { min-width: 39px; height: 22px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; color: #086B7A; font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; border-radius: 999px; background: #E2F8FB; }
 .portal-demo-switch__label--short { display: none; }
 
-.developer-demo-state-switcher { position: fixed; right: 24px; bottom: 24px; z-index: 70; }
+.developer-demo-state-switcher { position: fixed; right: 24px; bottom: 24px; z-index: 70; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.developer-demo-approval-fab { min-height: 38px; display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border: 1px solid #8dccd6; border-radius: 999px; background: #f1fcfe; color: #176479; box-shadow: 0 5px 18px rgba(9,25,46,.14); font-size: 12px; font-weight: 650; cursor: pointer; }
+.developer-demo-approval-fab:focus-visible { outline: 3px solid rgba(56,201,220,.45); outline-offset: 3px; }
+.developer-demo-state-switcher .developer-demo-state-panel { bottom: 100px; max-height: min(650px, calc(100dvh - 148px)); }
 .developer-demo-state-fab { min-height: 44px; padding: 0 16px 0 9px; display: inline-flex; align-items: center; gap: 9px; color: #F7FBFF; border: 1px solid rgba(56,232,255,.34); border-radius: 999px; background: linear-gradient(135deg, rgba(12,29,52,.97), rgba(28,54,85,.97)); box-shadow: 0 12px 32px rgba(9,25,46,.28); backdrop-filter: blur(16px); font-size: 12px; font-weight: 700; cursor: pointer; }
 .developer-demo-state-fab:hover { border-color: rgba(56,232,255,.7); box-shadow: 0 15px 38px rgba(9,25,46,.34); transform: translateY(-1px); }
 .developer-demo-state-fab:focus-visible,
@@ -14390,8 +14393,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (module?.standalone !== true || role !== 'developer' || redacted || isLogin) return '';
     const isEnglish = language === 'en';
     const triggerLabel = isEnglish ? 'Demo states' : 'Demo 状态';
-    const trigger = `<button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
-    if (!demoState.open) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
+    const approvalLabels = { unsubmitted:['未提交','Not submitted'], pending:['审核中','In review'], approved:['审核通过','Approved'], rejected:['审核未通过','Not approved'], delisted:['资格已暂停','Access suspended'] };
+    const approvalLabel = (approvalLabels[demoState.qualificationStatus] || approvalLabels.approved)[isEnglish ? 1 : 0];
+    const trigger = `<button class="developer-demo-approval-fab" type="button" data-portal-action="demo-approval-toggle" aria-expanded="${Boolean(demoState.approvalOpen)}" aria-controls="developer-demo-state-panel">${isEnglish ? 'Review status' : '审核状态'}：${approvalLabel}<span aria-hidden="true">⌄</span></button><button class="developer-demo-state-fab" type="button" data-portal-action="demo-state-toggle" aria-expanded="${Boolean(demoState.open)}" aria-controls="developer-demo-state-panel" title="${triggerLabel}"><span class="developer-demo-state-fab__mark" aria-hidden="true">Demo</span><span>${triggerLabel}</span></button>`;
+    if (!demoState.open && !demoState.approvalOpen) return `<section class="developer-demo-state-switcher">${trigger}</section>`;
     const radioOption = ([value, zh, en], action, attribute, current) => `<button type="button" role="radio" aria-checked="${current === value}" class="${current === value ? 'is-active' : ''}" data-portal-action="${action}" ${attribute}="${value}">${isEnglish ? en : zh}</button>`;
     const publisherScenario = demoState.publisherScenario === 'empty' ? 'empty' : 'exhaustive';
     const publisherScenarioOptions = [
@@ -14402,7 +14407,11 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ? `<section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Page data' : '页面数据'}</strong><small>${isEnglish ? 'Preview complete data or the true empty state' : '预览完整数据或真实缺省状态'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Page data state' : '页面数据状态'}">${publisherScenarioOptions.map(item => radioOption(item, 'demo-publisher-scenario', 'data-demo-publisher-scenario', publisherScenario)).join('')}</div></section>`
       : '';
     const footer = `<footer><span>${demoState.active ? (isEnglish ? 'Preview is active' : '当前已启用预览状态') : (isEnglish ? 'Showing saved account state' : '当前为已保存账号状态')}</span><button type="button" data-portal-action="demo-state-reset"${demoState.active ? '' : ' disabled'}>${isEnglish ? 'Restore saved state' : '恢复已保存状态'}</button></footer>`;
-    const panel = (groups, title = isEnglish ? 'Page-state preview' : '页面状态预览', hint = isEnglish ? 'Demo only. Refresh to restore saved data.' : '仅影响当前演示，刷新后恢复已保存状态') => `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${title}</strong><small>${hint}</small></div><button type="button" data-portal-action="demo-state-toggle" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header>${groups}${footer}</aside></section>`;
+    const panel = (groups, title = isEnglish ? 'Page-state preview' : '页面状态预览', hint = isEnglish ? 'Demo only. Review status defaults to approved on refresh.' : '仅影响演示，刷新后审核状态默认恢复为审核通过') => `<section class="developer-demo-state-switcher">${trigger}<aside class="developer-demo-state-panel" id="developer-demo-state-panel" data-demo-state-panel ${demoState.approvalOpen ? 'data-demo-approval-panel' : ''} role="dialog" aria-modal="false" aria-labelledby="developer-demo-state-title"><header><div><strong id="developer-demo-state-title">${title}</strong><small>${hint}</small></div><button type="button" data-portal-action="${demoState.approvalOpen ? 'demo-approval-toggle' : 'demo-state-toggle'}" aria-label="${isEnglish ? 'Close state preview' : '关闭状态预览'}">×</button></header>${groups}${footer}</aside></section>`;
+    if (demoState.approvalOpen) {
+      const options = Object.entries(approvalLabels).map(([value, labels]) => [value, ...labels]);
+      return panel(`<section class="developer-demo-state-group"><div><strong>${isEnglish ? 'Company verification' : '企业认证审核状态'}</strong><small>${isEnglish ? 'Controls company access across all demo pages' : '所有页面共用，联动企业权限及渠道分销入口'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'Company verification status' : '企业认证状态'}">${options.map(item => radioOption(item, 'demo-qualification-status', 'data-demo-qualification-status', demoState.qualificationStatus)).join('')}</div></section>`, isEnglish ? 'Review status' : '审核状态切换');
+    }
     if (demoState.channelMode) {
       const batchOptions = [['downloaded','已下载','Downloaded'],['cancelled','已取消','Cancelled'],['expired','已到期','Expired'],['failed','生成失败','Generation failed']];
       const batchGroup = `<section class="developer-demo-state-group"><div><strong>${isEnglish ? 'File batch status' : '文件批次状态'}</strong><small>${isEnglish ? 'Preview the states that can appear in the batch list' : '预览批次列表中可出现的状态'}</small></div><div class="developer-demo-state-options" role="radiogroup" aria-label="${isEnglish ? 'File batch status' : '文件批次状态'}">${batchOptions.map(item => radioOption(item, 'demo-channel-batch-outcome', 'data-demo-channel-batch-outcome', demoState.channelBatchOutcome || 'downloaded')).join('')}</div></section>`;
@@ -14998,7 +15007,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }
     restoredHandoff = null;
   }
-  const developerLandingRoute = () => hasPublisherRoute && memory.registration?.accountTier !== 'unselected'
+  const developerLandingRoute = () => hasPublisherRoute && (memory.qualificationPreview?.status === 'approved' || memory.registration?.accountTier !== 'unselected')
     ? 'P02-01'
     : 'P01-03';
   const fallbackPage = route => ({
@@ -15067,7 +15076,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }
     if (route?.role === 'developer') {
       if (!memory.session.authenticated) route = routes.find(item => item.id === 'P01-01') || route;
-      else if (memory.registration?.accountTier === 'unselected') route = routes.find(item => item.id === 'P01-03') || route;
+      else if (memory.registration?.accountTier === 'unselected' && !memory.qualificationPreview) route = routes.find(item => item.id === 'P01-03') || route;
       else if (route.id === 'P02-01') route = requested || route;
       else if (financeRouteIds.has(route.id)) route = requested || route;
       else if (requested?.id === 'P01-01' && hasPublisherRoute) route = routes.find(item => item.id === 'P02-01') || route;
@@ -15156,6 +15165,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     persistPublisherSession();
     loadPublisherWorkspaceForSession();
     persistAccountState();
+    if (moduleConfig.standalone === true && hasPublisherRoute) memory.qualificationPreview = buildQualificationPreview('approved');
     queueMicrotask(() => initializePublisherProfiles());
   };
   const refreshDeveloperAccountContext = () => {
@@ -17263,6 +17273,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'logout') {
+        defaultApprovalAccount = '';
         memory.session.authenticated = false;
         memory.session.accountKey = '';
         memory.session.activeGameId = '';
@@ -17652,7 +17663,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         root.querySelector('[data-portal-action="qualification-review-filter"]')?.click();
         return;
       }
+      if (action === 'demo-approval-toggle') {
+        memory.demoPreview.approvalOpen = !memory.demoPreview.approvalOpen;
+        memory.demoPreview.open = false;
+        render();
+        requestAnimationFrame(() => root.querySelector(memory.demoPreview.approvalOpen ? '[data-demo-approval-panel] > header > button' : '[data-portal-action="demo-approval-toggle"]')?.focus());
+        return;
+      }
       if (action === 'demo-state-toggle') {
+        memory.demoPreview.approvalOpen = false;
         const open = !memory.demoPreview.open;
         memory.demoPreview.open = open;
         render();
@@ -17689,6 +17708,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         if (!preview) return;
         memory.qualificationPreview = preview;
         memory.demoPreview.open = false;
+        memory.demoPreview.approvalOpen = false;
         delete memory.result[route.id];
         clearPreviewQuery();
         if (nextStatus === 'approved' && hasPublisherRoute && route.id !== 'P02-01') {
@@ -18652,7 +18672,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }));
   };
 
+  let defaultApprovalAccount = '';
   const render = (options = {}) => {
+    if (moduleConfig.standalone === true && hasPublisherRoute && memory.session.authenticated && defaultApprovalAccount !== memory.session.accountKey) {
+      defaultApprovalAccount = memory.session.accountKey;
+      memory.qualificationPreview = buildQualificationPreview('approved');
+    }
     const previousScrollTop = options.preserveScroll ? (root.querySelector('.workspace')?.scrollTop || 0) : 0;
     const { route, role, state, cdkeyTab } = parseLocation();
     const access = role === 'developer' ? publisherAccessForView() : publisherAccess();
@@ -18678,6 +18703,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const publisherScenarioActive = publisherScenario === 'empty';
     const demoState = {
       open: memory.demoPreview.open,
+      approvalOpen: Boolean(memory.demoPreview.approvalOpen),
       qualificationStatus: qualificationForView.status || 'unsubmitted',
       releaseStatus: memory.demoPreview.releaseStatus,
       publisherMode,
@@ -18686,7 +18712,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       channelMode,
       channelBatchOutcome,
       channelCredentialSecret: memory.channelTransientSecret || '',
-      active: publisherScenarioActive || (financeMode
+      active: Boolean(memory.qualificationPreview) || publisherScenarioActive || (financeMode
         ? Boolean(memory.qualificationPreview)
         : channelMode
         ? Boolean(channelBatchOutcome !== 'downloaded')
@@ -18838,8 +18864,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       updateChannelDistribution(state => ({ ...state, dialog:'', dialogChannelId:'', dialogBatchId:'' }));
       return;
     }
-    if (memory.demoPreview.open) {
+    if (memory.demoPreview.open || memory.demoPreview.approvalOpen) {
       memory.demoPreview.open = false;
+      memory.demoPreview.approvalOpen = false;
       render();
       requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
       return;
@@ -18863,8 +18890,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     root.querySelectorAll('[data-qualification-example-modal]:not([hidden])').forEach(modal => modal.setAttribute('hidden', ''));
   });
   addEventListener('click', event => {
-    if (!memory.demoPreview.open || event.target.closest('.developer-demo-state-switcher')) return;
+    if ((!memory.demoPreview.open && !memory.demoPreview.approvalOpen) || event.target.closest('.developer-demo-state-switcher')) return;
     memory.demoPreview.open = false;
+    memory.demoPreview.approvalOpen = false;
     render();
   });
   addEventListener('storage', event => {

@@ -378,7 +378,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }
     restoredHandoff = null;
   }
-  const developerLandingRoute = () => hasPublisherRoute && memory.registration?.accountTier !== 'unselected'
+  const developerLandingRoute = () => hasPublisherRoute && (memory.qualificationPreview?.status === 'approved' || memory.registration?.accountTier !== 'unselected')
     ? 'P02-01'
     : 'P01-03';
   const fallbackPage = route => ({
@@ -447,7 +447,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }
     if (route?.role === 'developer') {
       if (!memory.session.authenticated) route = routes.find(item => item.id === 'P01-01') || route;
-      else if (memory.registration?.accountTier === 'unselected') route = routes.find(item => item.id === 'P01-03') || route;
+      else if (memory.registration?.accountTier === 'unselected' && !memory.qualificationPreview) route = routes.find(item => item.id === 'P01-03') || route;
       else if (route.id === 'P02-01') route = requested || route;
       else if (financeRouteIds.has(route.id)) route = requested || route;
       else if (requested?.id === 'P01-01' && hasPublisherRoute) route = routes.find(item => item.id === 'P02-01') || route;
@@ -536,6 +536,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     persistPublisherSession();
     loadPublisherWorkspaceForSession();
     persistAccountState();
+    if (moduleConfig.standalone === true && hasPublisherRoute) memory.qualificationPreview = buildQualificationPreview('approved');
     queueMicrotask(() => initializePublisherProfiles());
   };
   const refreshDeveloperAccountContext = () => {
@@ -2643,6 +2644,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (action === 'logout') {
+        defaultApprovalAccount = '';
         memory.session.authenticated = false;
         memory.session.accountKey = '';
         memory.session.activeGameId = '';
@@ -3032,7 +3034,15 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         root.querySelector('[data-portal-action="qualification-review-filter"]')?.click();
         return;
       }
+      if (action === 'demo-approval-toggle') {
+        memory.demoPreview.approvalOpen = !memory.demoPreview.approvalOpen;
+        memory.demoPreview.open = false;
+        render();
+        requestAnimationFrame(() => root.querySelector(memory.demoPreview.approvalOpen ? '[data-demo-approval-panel] > header > button' : '[data-portal-action="demo-approval-toggle"]')?.focus());
+        return;
+      }
       if (action === 'demo-state-toggle') {
+        memory.demoPreview.approvalOpen = false;
         const open = !memory.demoPreview.open;
         memory.demoPreview.open = open;
         render();
@@ -3069,6 +3079,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         if (!preview) return;
         memory.qualificationPreview = preview;
         memory.demoPreview.open = false;
+        memory.demoPreview.approvalOpen = false;
         delete memory.result[route.id];
         clearPreviewQuery();
         if (nextStatus === 'approved' && hasPublisherRoute && route.id !== 'P02-01') {
@@ -4032,7 +4043,12 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     }));
   };
 
+  let defaultApprovalAccount = '';
   const render = (options = {}) => {
+    if (moduleConfig.standalone === true && hasPublisherRoute && memory.session.authenticated && defaultApprovalAccount !== memory.session.accountKey) {
+      defaultApprovalAccount = memory.session.accountKey;
+      memory.qualificationPreview = buildQualificationPreview('approved');
+    }
     const previousScrollTop = options.preserveScroll ? (root.querySelector('.workspace')?.scrollTop || 0) : 0;
     const { route, role, state, cdkeyTab } = parseLocation();
     const access = role === 'developer' ? publisherAccessForView() : publisherAccess();
@@ -4058,6 +4074,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const publisherScenarioActive = publisherScenario === 'empty';
     const demoState = {
       open: memory.demoPreview.open,
+      approvalOpen: Boolean(memory.demoPreview.approvalOpen),
       qualificationStatus: qualificationForView.status || 'unsubmitted',
       releaseStatus: memory.demoPreview.releaseStatus,
       publisherMode,
@@ -4066,7 +4083,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       channelMode,
       channelBatchOutcome,
       channelCredentialSecret: memory.channelTransientSecret || '',
-      active: publisherScenarioActive || (financeMode
+      active: Boolean(memory.qualificationPreview) || publisherScenarioActive || (financeMode
         ? Boolean(memory.qualificationPreview)
         : channelMode
         ? Boolean(channelBatchOutcome !== 'downloaded')
@@ -4218,8 +4235,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       updateChannelDistribution(state => ({ ...state, dialog:'', dialogChannelId:'', dialogBatchId:'' }));
       return;
     }
-    if (memory.demoPreview.open) {
+    if (memory.demoPreview.open || memory.demoPreview.approvalOpen) {
       memory.demoPreview.open = false;
+      memory.demoPreview.approvalOpen = false;
       render();
       requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
       return;
@@ -4243,8 +4261,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     root.querySelectorAll('[data-qualification-example-modal]:not([hidden])').forEach(modal => modal.setAttribute('hidden', ''));
   });
   addEventListener('click', event => {
-    if (!memory.demoPreview.open || event.target.closest('.developer-demo-state-switcher')) return;
+    if ((!memory.demoPreview.open && !memory.demoPreview.approvalOpen) || event.target.closest('.developer-demo-state-switcher')) return;
     memory.demoPreview.open = false;
+    memory.demoPreview.approvalOpen = false;
     render();
   });
   addEventListener('storage', event => {
