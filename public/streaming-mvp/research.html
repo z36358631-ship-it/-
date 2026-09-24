@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>竞品体验与证据</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#17202c;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}header{background:#10161f;color:#fff;padding:28px max(24px,calc((100vw - 1180px)/2));}header a{color:#a9daff;margin-right:24px}main{max-width:1240px;padding:32px;margin:auto}h1{font-size:30px}h2{margin-top:44px;border-bottom:1px solid #d9e0e8;padding-bottom:10px}h3{margin-top:30px}a{color:#136db3}table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0;background:white}th,td{padding:12px 15px;border:1px solid #dde3ea;vertical-align:top;text-align:left}th{background:#eaf0f6}td:first-child{min-width:110px}img{max-width:100%;height:auto;max-height:650px;object-fit:contain;object-position:left}td img{display:block;max-height:550px;margin:12px 0}blockquote{border-left:4px solid #319dcc;padding:10px 20px;background:#eaf4fa;margin:20px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{padding:24px;border:1px solid #dce3ec;background:white;border-radius:16px;text-decoration:none;color:inherit}.card strong{display:block;color:#086ca8;font-size:20px}.muted{color:#64748b}.lead{font-size:22px;line-height:1.6;max-width:900px}.button{display:inline-block;background:#177cac;color:white;padding:12px 20px;border-radius:9px;text-decoration:none}pre{overflow:auto}code{background:#edf1f5}@media(max-width:700px){main{padding:18px}table{display:block;overflow:auto}header{padding:24px}h1{font-size:26px}}</style><header><a href="index.html">串流一期交付</a><a href="demo.html">交互 Demo</a><a href="proposal.html">MVP 方案</a><a href="prd.html">PRD</a><a href="research.html">116 项竞品盘点</a></header><main><h1>UU远程竞品体验与证据</h1>
 <p>2026-09-25｜盖世串流一期研究摘要</p>
-<p><strong>UU已经是一套完整远程工具：连接、输入、音画和安全是共同能力，游戏、办公和电脑AI在其上完成不同任务。盖世一期应做好同账号自用电脑的完整任务，不能以复制菜单数量作为完成标准。</strong>完整候选池为116项；本轮完成官方资料盘点、部分手机/电脑操作与文件往返，未完成所有平台、外设和任务。以下逐项列出已看到什么、没有执行什么，以及一期取舍。</p>
+<p><strong>UU已经是一套完整远程工具：连接、输入、音画和安全是共同能力，游戏、办公和电脑AI在其上完成不同任务。盖世一期应做好同账号自用电脑的完整任务，不能以复制菜单数量作为完成标准。</strong>完整候选池为116项；本轮完成官方资料盘点、手机短文本输入保存与文件往返、主动退出再连及部分电脑操作，未完成所有平台、外设和任务。以下逐项列出已看到什么、没有执行什么，以及一期取舍。</p>
 <h2>1. 环境与证据口径</h2>
 <table>
 <thead>
@@ -14,7 +14,7 @@
 <tr>
 <td>Android真机</td>
 <td>4.39.1</td>
-<td>独立数字编号；已合并177步阶段交接与53条结果校正；178—210补录占用、文件往返和接管中断。203显示收发完成，84字节样本往返哈希一致；完整原图留本地。</td>
+<td>独立数字编号；已合并177步阶段交接与53条结果校正；178—249补录占用、84字节文件往返、短中文/英文/数字输入保存与主动退出再连；完整原图留本地。</td>
 </tr>
 <tr>
 <td>Android模拟器</td>
@@ -42,8 +42,10 @@
 <p><img alt="UU电脑端文件窗口裁图" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/uu-pc-files.png" /></p>
 <p>手机画质面板：显示自定义码率和流量估算；估算不等于真实流量或画质测试。</p>
 <p><img alt="UU手机端画质面板裁图" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/uu-phone-quality.png" /></p>
-<p>手机中文输入结果：测试记事本收到“你好”；此图只证明这一次选字结果，不等于多行输入完成。</p>
+<p>手机中文输入结果：测试记事本收到“你好”；这张早期图只证明一次选字；后续短文本与保存结果见下图。</p>
 <p><img alt="UU中文输入结果" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/uu-phone-chinese.png" /></p>
+<p>后续输入保存：238的远端测试文档显示两行“你好”、ab.和1；本地读取确认相同内容，SHA256为254f92713d4d6e5e2a6914125df34c29139e6987cb507c6b07e09651dbbab264。原图仅裁出测试文档正文。</p>
+<p><img alt="UU真机短文本输入保存" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@76e8b7281d722da06b6c448fcddd183db7ac3e1c/public/prd/streaming-mvp/uu-phone-input-saved.png" /></p>
 <p>真机文件往返：203显示已接收1、已发送1。测试文件实际84字节，UU列表显示1KB；三方SHA256一致。截图证明完成状态，字节与内容由落盘文件另行核对。</p>
 <p><img alt="UU真机单文件往返" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@88a3c62adce309db9f1ebb499d85fb2598f1a4c2/public/prd/streaming-mvp/uu-phone-files-roundtrip.png" /></p>
 <p>上传的中间状态：194显示已暂停0%，195点击继续后成功。本轮未定位暂停原因，不能据此认定网络故障或默认行为。</p>
@@ -69,9 +71,14 @@
 <td>再次确认其他设备仍在控制。181可进入独立文件页，182点击发送文件后要求接管，183取消返回；该入口仍受控制权占用限制，未执行接管或传输。</td>
 </tr>
 <tr>
-<td>输入文字</td>
-<td>A11—A17、W02/W03、真机130—141</td>
-<td>模拟器单键可达输入法；真机141的电脑测试记事本收到“你好”。未完成中文多行任务；ADB整段文本没有落入目标编辑器，不归因为普遍产品故障</td>
+<td>输入文字与保存</td>
+<td>真机130—141、211—238</td>
+<td>真机拼音选字、回车、英文ab.、数字1及Ctrl+S已执行；保存文件核对含两行你好、ab.和1。属于短文本分行输入，不是整段粘贴或AI提交。ADB整段文本未落入编辑器不作为普遍产品故障。</td>
+</tr>
+<tr>
+<td>主动退出与再连</td>
+<td>真机247—249</td>
+<td>247直接回设备详情，没有二次确认；248重连，249稳定显示原测试文档。不是断网自动恢复测试。</td>
 </tr>
 <tr>
 <td>游戏触屏和启动</td>
@@ -236,13 +243,13 @@
 <tr>
 <td>U018 系统软键盘</td>
 <td>手机输入文字；<a href="https://uuyc.163.com/help/">官方</a></td>
-<td>局部完成：真机130—141手机搜狗拼音选字，电脑测试记事本出现“你好”；多行与长文本未完成。</td>
+<td>局部完成：130—141选字；211—238追加中文、换行、ab.及数字1并保存，已核对落盘内容。长段落、整段粘贴及AI提交未测。</td>
 <td>一期：中文组词、多行与提交须分别正确。</td>
 </tr>
 <tr>
 <td>U019 显示桌面快捷入口</td>
 <td>APP主控；<a href="https://uuyc.163.com/help/20241203/40220_1197649.html">官方</a></td>
-<td>入口：A04起及真机087工具栏可见；未单独核对显示桌面结果。</td>
+<td>局部完成：真机242显示桌面、243恢复窗口、244展示全部窗口、245选回测试文档。</td>
 <td>一期：基础桌面快捷操作。</td>
 </tr>
 <tr>
@@ -302,7 +309,7 @@
 <tr>
 <td>U029 组合键</td>
 <td>APP主控；<a href="https://uuyc.163.com/help/20250513/40220_1233996.html">官方</a></td>
-<td>入口：A12快捷键、A13组合键模式；未逐组合核对远端效果。</td>
+<td>局部完成：真机227快捷保存、236—238组合键Ctrl+S并核对落盘；其余组合不能类推。</td>
 <td>一期收窄：必要快捷键，非任意组合编辑。</td>
 </tr>
 <tr>
@@ -900,12 +907,12 @@
 <h2>6. 本轮尚未完成的体验</h2>
 <ul>
 <li>iOS/Mac主控及Mac被控的完整任务未执行；六组合不能引用一次Windows结果共同通过。</li>
-<li>真机线程持续取证，当前概要没有完整游戏、中文文档编辑、原AI补指令并取产物的三类成功证据；后续逐项更新，不以截图数量计算完成率。</li>
+<li>真机短中文、英文及数字输入保存已完成；完整游戏、长文编辑、原AI补指令并取产物尚无全流程证据；后续逐项更新，不以截图数量计算完成率。</li>
 <li>外网/移动网络切换、长时稳定性、实际延迟/掉帧/温升/耗电尚无完整对照成绩。</li>
 <li>实体手柄、键鼠、震动、多个手柄、多物理屏、TV及WOL硬件等缺对应环境结果。</li>
 <li>安全/权限撤销、锁屏恢复、自动解锁、防窥的实际行为没有全部执行；官方加密声明不替安全审计。</li>
 <li>付费云电脑/云盘没有购买和开通，跨账号协助没有连接他人设备；停止在入口或说明不伪装为成功。</li>
 </ul>
 <p>这些缺口不妨碍形成一期候选范围，但限制性能、平台和任务承诺。盖世发布须完成自己的真实设备验收。迁移价值看任务成功、纠错和再次主动使用，不看菜单数、下载数或等待时长。</p>
-<p>真机后续因另一设备取得控制而暂停；142以后的截图标题不用于证明第二行中文成功。真机文件往返、游戏连续操作、主动退出再连，以及iOS/Mac实测仍未完成，不能将本研究称为全功能体验通过。</p>
+<p>早期142—147因他机接管而未完成输入，不能凭文件名判定成功；后续211—238才取得短文本输入保存证据。文件往返及主动退出再连已有独立结果，完整游戏和iOS/Mac仍不作通过判断。</p>
 <p>177步阶段收尾另覆盖离线设备的开机前置、反馈草稿与空历史、FAQ、客服自动欢迎、扫码相机拒权取消；未提交反馈或发送客服消息。其证据只补入口和前置，不补成主任务通过。</p><p><a download href="竞品体验与证据.md">下载 Markdown</a></p></main></html>
