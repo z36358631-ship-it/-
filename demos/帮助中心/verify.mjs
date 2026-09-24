@@ -18,7 +18,7 @@ try{
  assert.equal(await video.evaluate(v=>v.paused),false);record('设置→帮助分组→正文，内嵌视频真实播放');
  await p.evaluate(()=>window.__playingVideo=document.querySelector('.article-content video'));
  await p.locator('[data-back]').click();assert.equal(await p.evaluate(()=>window.__playingVideo.paused),true);record('离开文章暂停媒体');
- await p.locator('#language').click();assert.match(await p.locator('.help-row').first().innerText(),/Welcome/);await p.locator('#language').click();record('App中英文内容切换');
+ await p.locator('#language-select').selectOption('en');assert.match(await p.locator('.help-row').first().innerText(),/Welcome/);await p.locator('#language-select').selectOption('zh');record('App中英文内容切换');
  for(const [scenario,txt]of [['empty','暂无帮助内容'],['loading','正在加载'],['error','暂时无法加载']]){await p.locator('#scenario').selectOption(scenario);assert.match(await p.locator('#device').innerText(),new RegExp(txt));}
  await p.locator('[data-retry]').click();assert.equal(await p.locator('.help-row').count(),4);record('加载、空态、错误与重试');
  await p.locator('#scenario').selectOption('media-error');assert.equal(await p.locator('.media-error').count(),1);assert.ok((await p.locator('.article-content').innerText()).includes('文字与图片'));await p.locator('.media-error button').click();assert.equal(await p.locator('.media-error').count(),0);await video.evaluate(v=>v.play());await video.evaluate(v=>v.pause());record('视频失败隔离与重试恢复');
@@ -27,7 +27,7 @@ try{
  await p.locator('[data-ha-tab="docs"]').click();await p.locator('[data-ha-action="edit"][data-id="HC-D001"]').click();
  await p.locator('[data-ha-title]').fill('修改中的入门文章');
  assert.equal(await p.evaluate(()=>HelpStore.published.docs[0].zh.title),'认识帮助中心');
- await p.locator('[data-ha-lang="en"]').click();await p.locator('[data-ha-title]').fill('Updated welcome article');await p.locator('[data-ha-lang="zh"]').click();assert.equal(await p.locator('[data-ha-title]').inputValue(),'修改中的入门文章');record('双语切换保留输入且草稿不泄露');
+ await p.locator('[data-ha-language]').selectOption('en');await p.locator('[data-ha-title]').fill('Updated welcome article');await p.locator('[data-ha-language]').selectOption('zh');assert.equal(await p.locator('[data-ha-title]').inputValue(),'修改中的入门文章');record('双语切换保留输入且草稿不泄露');
  await p.locator('[data-ha-video-file]').setInputFiles(path.join(dir,'assets/example.webm'));await p.waitForFunction(()=>document.querySelector('[data-ha-feedback]').textContent.includes('视频已插入'));
  assert.equal(await p.locator('[data-ha-body] video').count(),1);
  await p.locator('[data-ha-image-file]').setInputFiles(path.join(dir,'assets/example.png'));await p.waitForFunction(()=>document.querySelector('[data-ha-feedback]').textContent.includes('图片已插入'));
@@ -42,14 +42,14 @@ try{
   const old=s.published.docs.find(d=>d.id==='HC-D002').zh.title;s.get('docs','HC-D002').zh.title='排序不可发布此草稿';s.move('docs','HC-D002',-1);
   r.order=s.published.docs.filter(d=>d.navId==='HC-N001').sort((a,b)=>a.order-b.order).map(d=>d.id);
   r.draftIsolated=s.published.docs.find(d=>d.id==='HC-D002').zh.title===old;
-  const n=s.create('navs');n.zh.title='新目录';r.missingEn=s.publish('navs',n.id);n.en.title='New category';
+  const n=s.create('navs');n.zh.title='新目录';r.missingEn=s.validate('navs',n.id);n.en.title='New category';
   const d=s.create('docs');d.navId=n.id;d.zh={title:'新文章',html:'<p>说明</p>'};d.en={title:'New article',html:'<p>Example</p>'};r.parentUnpublished=s.publish('docs',d.id);s.publish('navs',n.id);r.newPublish=s.publish('docs',d.id);
   const moved=s.get('docs','HC-D001');moved.navId=n.id;r.oldReference=s.remove('navs','HC-N001');
   const sanitized=s.sanitize('<p onclick="alert(1)">安全</p><script>alert(1)</script><a href="javascript:alert(1)">危险</a><img src=x onerror="alert(1)"><iframe src="https://example.com"></iframe>');r.sanitized=sanitized;
   r.removal=s.remove('docs',d.id);r.deleted=!s.published.docs.some(x=>x.id===d.id);return r;
  });
- assert.equal(api.order[0],'HC-D002');assert.equal(api.draftIsolated,true);assert.match(api.missingEn,/English/);assert.match(api.parentUnpublished,/先发布/);assert.equal(api.newPublish,'');assert.match(api.oldReference,/关联/);assert.doesNotMatch(api.sanitized,/script|onclick|onerror|iframe|javascript/);assert.equal(api.deleted,true);
- record('顺序与内容隔离、双语必填、父目录发布依赖、迁移引用保护、删除快照同步、富文本安全净化',api);
+ assert.equal(api.order[0],'HC-D002');assert.equal(api.draftIsolated,true);assert.equal(api.missingEn,'');assert.match(api.parentUnpublished,/先发布/);assert.equal(api.newPublish,'');assert.match(api.oldReference,/关联/);assert.doesNotMatch(api.sanitized,/script|onclick|onerror|iframe|javascript/);assert.equal(api.deleted,true);
+ record('顺序与内容隔离、默认语言必填与其他语言可空、父目录发布依赖、迁移引用保护、删除快照同步、富文本安全净化',api);
  // UI delete and cancellation are separate from the model contract checks above.
  await p.locator('[data-surface="admin"]').click();await p.locator('[data-ha-tab="docs"]').click();await p.locator('[data-ha-action="delete"][data-id="HC-D004"]').click();await p.locator('[data-ha-action="cancel-delete"]').click();assert.equal(await p.locator('[data-ha-action="edit"][data-id="HC-D004"]').count(),1);
  await p.locator('[data-ha-action="delete"][data-id="HC-D004"]').click();assert.match(await p.locator('.ha-delete').innerText(),/App 移除/);await p.locator('[data-ha-action="confirm-delete"]').click();assert.equal(await p.locator('[data-ha-action="edit"][data-id="HC-D004"]').count(),0);record('删除确认、取消及发布态影响提示');
