@@ -1,0 +1,398 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一期MVP方案</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#17202c;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}header{background:#10161f;color:#fff;padding:28px max(24px,calc((100vw - 1180px)/2));}header a{color:#a9daff;margin-right:24px}main{max-width:1240px;padding:32px;margin:auto}h1{font-size:30px}h2{margin-top:44px;border-bottom:1px solid #d9e0e8;padding-bottom:10px}h3{margin-top:30px}a{color:#136db3}table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0;background:white}th,td{padding:12px 15px;border:1px solid #dde3ea;vertical-align:top;text-align:left}th{background:#eaf0f6}td:first-child{min-width:110px}img{max-width:100%;height:auto;max-height:650px;object-fit:contain;object-position:left}td img{display:block;max-height:550px;margin:12px 0}blockquote{border-left:4px solid #319dcc;padding:10px 20px;background:#eaf4fa;margin:20px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{padding:24px;border:1px solid #dce3ec;background:white;border-radius:16px;text-decoration:none;color:inherit}.card strong{display:block;color:#086ca8;font-size:20px}.muted{color:#64748b}.lead{font-size:22px;line-height:1.6;max-width:900px}.button{display:inline-block;background:#177cac;color:white;padding:12px 20px;border-radius:9px;text-decoration:none}pre{overflow:auto}code{background:#edf1f5}@media(max-width:700px){main{padding:18px}table{display:block;overflow:auto}header{padding:24px}h1{font-size:26px}}</style><header><a href="index.html">串流一期交付</a><a href="demo.html">交互 Demo</a><a href="proposal.html">MVP 方案</a><a href="prd.html">PRD</a><a href="research.html">116 项竞品盘点</a></header><main><h1>盖世串流一期 MVP 方案</h1>
+<p>2026-09-24｜供 CTO 确认范围、依赖和验收标准</p>
+<p><strong>一期在盖世 APP 和 Mac 中增加“连接自己的电脑”：同账号找到设备，首次授权后进入桌面，用同一条连接玩游戏、临时办公或继续电脑上的 AI 任务。保留完成任务必需的输入、声音、文件和恢复能力；专用终端、远程开机、隐私屏、云电脑等独立能力后置。</strong></p>
+<p>Android、iOS、Mac 主控到 Windows、Mac 被控的六种组合是一期覆盖目标，不是当前已实现清单。工程先贯通公共链路，再逐组合完成验收；没有资源和引擎评估，不承诺上线日期。</p>
+<h2>一、为什么做，先服务谁</h2>
+<p>首批服务已有盖世用户：电脑有游戏或工作任务，人希望离开桌面继续操作。用户当前可用 UU 远程解决；UU 已有游戏、办公、文件和终端能力，因此“也能远控”“支持 AI”不足以让用户迁移。</p>
+<p>盖世应争取两项具体收益：玩家少切一个 App、少重复配置操控；临时办公和 AI 用户能在同一会话中读清内容、正确输入并取回结果。前者有现有游戏和手柄用户基础，后者依赖实际小屏操作体验。尚未使用盖世的纯办公用户，一期还缺少独特迁移动机，不作为首批获客承诺。</p>
+<table>
+<thead>
+<tr>
+<th>用户</th>
+<th>一期完成的任务</th>
+<th>体验重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>新手玩家</td>
+<td>连接电脑，从桌面启动已安装游戏并退出</td>
+<td>首次授权易懂；不会被启动器、键盘或隐藏退出入口卡住</td>
+</tr>
+<tr>
+<td>资深玩家</td>
+<td>用实体手柄连续游玩，按网络调画质</td>
+<td>输入正确、状态可见、断线后无卡键；不承诺电竞级延迟</td>
+</tr>
+<tr>
+<td>产品经理</td>
+<td>改文档局部文字，保存并取回</td>
+<td>中文选字、多行编辑、精准定位</td>
+</tr>
+<tr>
+<td>UI 设计师</td>
+<td>看设计稿、改文案、导出文件</td>
+<td>文字清晰、缩放准确；不做专业色彩验收承诺</td>
+</tr>
+<tr>
+<td>美术</td>
+<td>查看渲染进度，切屏并取预览图</td>
+<td>找到原工作窗口；不承诺压感绘画</td>
+</tr>
+<tr>
+<td>研发</td>
+<td>回到原 IDE/终端，补指令、看构建结果</td>
+<td>符号输入、长文本与快捷键；不新建终端体系</td>
+</tr>
+<tr>
+<td>测试</td>
+<td>复现桌面操作，保存并取回截图</td>
+<td>操作不重放、结果可确认；不承诺远端物理外设测试</td>
+</tr>
+<tr>
+<td>运营/行政</td>
+<td>紧急修改表格，交付保存后的文件</td>
+<td>数字/中文输入及正确文件版本</td>
+</tr>
+<tr>
+<td>电脑 AI 用户</td>
+<td>回到原会话，补要求、处理确认、查看产物</td>
+<td>保留上下文，换行与提交分开，断开后任务继续</td>
+</tr>
+</tbody>
+</table>
+<p>九类角色用于检查遗漏，不是九套需求，也不是已访谈的九组用户。新手默认自动画质，资深保留少量参数和快捷操作，共用同一套页面。</p>
+<h2>二、界面与端分工</h2>
+<p>APP 在现有游戏库内新增明确的“远程电脑”文字入口，不先要求选择游戏，也不增加游戏、办公、AI 三个导航。原设备图标的落点尚无足够证据，不将它认定为串流入口；原“我的设备”已有手柄语义，不能直接混成远程电脑列表。</p>
+<p>Mac 沿用用户提供的<a href="demo-source-notes.md">开发标注版界面</a>，侧栏加入串流入口，进入同账号电脑列表；“本机允许被控”独立说明和设置。串流会话操作栏与客户端全局导航区分，用户始终知道自己正在操作哪台电脑。原稿没有串流页，本次是新增设计，不能描述成现有能力。</p>
+<table>
+<thead>
+<tr>
+<th>控制端→被控端</th>
+<th>主要任务</th>
+<th>单独验收重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Android→Windows</td>
+<td>游戏、办公、电脑 AI</td>
+<td>真机中文输入、触控坐标、手柄、声音、文件</td>
+</tr>
+<tr>
+<td>iOS→Windows</td>
+<td>游戏、办公、电脑 AI</td>
+<td>iOS 输入法、后台恢复、剪贴板权限、文件保存</td>
+</tr>
+<tr>
+<td>Mac→Windows</td>
+<td>Windows 游戏及连续办公</td>
+<td>焦点、系统快捷键、全屏、鼠标捕获与释放</td>
+</tr>
+<tr>
+<td>Android→Mac</td>
+<td>原 Mac 工作及 AI 任务</td>
+<td>Mac 录屏/控制权限、锁屏、中文及文件访问</td>
+</tr>
+<tr>
+<td>iOS→Mac</td>
+<td>原 Mac 工作及 AI 任务</td>
+<td>Mac 被控条件与 iOS 限制同时通过</td>
+</tr>
+<tr>
+<td>Mac→Mac</td>
+<td>在另一台 Mac 继续原任务</td>
+<td>双端权限区分、快捷键归属、切屏和文件权限</td>
+</tr>
+</tbody>
+</table>
+<p>被控端负责采集、编码、声音、输入处理和访问控制；控制端负责画面、操控、文件及会话状态。游戏能否运行由被控电脑决定，串流不会让 Mac 获得 Windows 游戏的本地兼容能力。Windows 被控服务是必要交付，不因用户界面重点是 APP/Mac 而省略。</p>
+<h2>三、逐项功能范围</h2>
+<p>“一期”表示本次规格必须交付；功能是否通过以真实端组合验收为准。完整竞品候选池另见<a href="research/UU官方功能盘点.md">UU 官方 116 项功能盘点</a>，不将其全部纳入盖世。</p>
+<table>
+<thead>
+<tr>
+<th>功能介绍</th>
+<th>解决什么问题</th>
+<th>对盖世的价值</th>
+<th>一期判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同账号电脑列表：显示设备名和状态</td>
+<td>找不到要连接的电脑</td>
+<td>承接所有场景的共同入口</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>首次可信授权：主机确认控制端</td>
+<td>登录账号不等于允许控制电脑</td>
+<td>建立可解释的访问关系</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>本机允许被控开关</td>
+<td>用户需要暂停远程访问</td>
+<td>用户能决定何时开放电脑</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>撤销控制端授权</td>
+<td>换设备后旧端仍可访问</td>
+<td>降低信任成本</td>
+<td>一期，终止现有会话</td>
+</tr>
+<tr>
+<td>主机本地停止控制</td>
+<td>本人回到电脑要收回控制</td>
+<td>保留机主最终控制权</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>局域网连接</td>
+<td>家中换位置玩或工作</td>
+<td>承接高频近距离使用</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>外网连接</td>
+<td>出差、外出无法访问家中电脑</td>
+<td>使办公和 AI 场景成立</td>
+<td>一期，含连通回退</td>
+</tr>
+<tr>
+<td>单控制者占用提示</td>
+<td>两端输入相互干扰</td>
+<td>避免错误操作和任务破坏</td>
+<td>一期，不自动抢占</td>
+</tr>
+<tr>
+<td>桌面会话</td>
+<td>启动器、文档、AI 窗口各不相同</td>
+<td>一个基础能力承接三类任务</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>精准指针</td>
+<td>手机点不中小按钮</td>
+<td>降低办公和启动游戏门槛</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>画面缩放与复位</td>
+<td>字太小或放大后迷失位置</td>
+<td>提升小屏可读性</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>中文输入与选字</td>
+<td>组词未完成就进入远端</td>
+<td>减少文档和 AI 纠错</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>多行文字编辑</td>
+<td>换行被误当成提交</td>
+<td>避免指令或表格误操作</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>纯文本复制粘贴</td>
+<td>长指令需要重新输入</td>
+<td>缩短补充要求的路径</td>
+<td>一期，粘贴不附回车</td>
+</tr>
+<tr>
+<td>必要系统快捷键</td>
+<td>被本机系统拦截或作用错端</td>
+<td>保证保存、切窗等基本任务</td>
+<td>一期，保留键给替代入口</td>
+</tr>
+<tr>
+<td>桌面/游戏操控切换</td>
+<td>同一输入方式不适合所有任务</td>
+<td>共用会话而不牺牲操控</td>
+<td>一期，明确手动切换</td>
+</tr>
+<tr>
+<td>已有物理屏选择</td>
+<td>工作窗口位于另一显示器</td>
+<td>避免连上却找不到任务</td>
+<td>一期，一次显示一屏</td>
+</tr>
+<tr>
+<td>单实体手柄</td>
+<td>玩家不能沿用惯用操控</td>
+<td>发挥盖世硬件与玩家基础</td>
+<td>一期，分端核对映射</td>
+</tr>
+<tr>
+<td>基础触屏布局</td>
+<td>无手柄无法操作游戏</td>
+<td>保留最低可玩路径</td>
+<td>一期，不承诺全游戏适配</td>
+</tr>
+<tr>
+<td>远端声音及音量</td>
+<td>游戏或工作反馈听不到</td>
+<td>完成基本音画体验</td>
+<td>一期，不含麦克风直通</td>
+</tr>
+<tr>
+<td>自动画质</td>
+<td>用户不会调编码参数</td>
+<td>降低首次使用门槛</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>基础画质/帧率档位</td>
+<td>网络与设备能力不同</td>
+<td>给资深用户可理解的调整</td>
+<td>一期，不保证实际帧率</td>
+</tr>
+<tr>
+<td>单文件发送</td>
+<td>手机材料无法交给电脑</td>
+<td>完成临时修改和 AI 输入</td>
+<td>一期，普通单文件≤100MB</td>
+</tr>
+<tr>
+<td>单文件取回</td>
+<td>结果留在电脑无法交付</td>
+<td>让办公任务真正完成</td>
+<td>一期，普通单文件≤100MB</td>
+</tr>
+<tr>
+<td>传输进度与取消</td>
+<td>不知道是否完成或想停止</td>
+<td>减少等待和误判</td>
+<td>一期</td>
+</tr>
+<tr>
+<td>文件校验与冲突处理</td>
+<td>半成品被报成功、同名被覆盖</td>
+<td>保证产物可信</td>
+<td>一期，同名生成副本</td>
+</tr>
+<tr>
+<td>失败原因与重试</td>
+<td>不知道是网络、授权还是主机问题</td>
+<td>降低放弃和支持成本</td>
+<td>一期，失败不删设备</td>
+</tr>
+<tr>
+<td>断线恢复与输入清理</td>
+<td>重连后卡键、重复点击或提交</td>
+<td>避免恢复造成二次损失</td>
+<td>一期，不重放旧输入</td>
+</tr>
+<tr>
+<td>后台回前台恢复</td>
+<td>返回后状态不明</td>
+<td>适应手机临时切应用</td>
+<td>一期，恢复画面后再接输入</td>
+</tr>
+<tr>
+<td>明确断开并返回</td>
+<td>找不到退出，只能强关 App</td>
+<td>完成一轮使用闭环</td>
+<td>一期，保留远端程序</td>
+</tr>
+<tr>
+<td>专用终端/多会话</td>
+<td>希望直接管理命令行任务</td>
+<td>可拓展开发者使用</td>
+<td>后置，先接续原桌面</td>
+</tr>
+<tr>
+<td>远程开机 WOL</td>
+<td>电脑关机时无法访问</td>
+<td>扩展无人值守范围</td>
+<td>后置，涉及硬件与配置</td>
+</tr>
+<tr>
+<td>隐私屏</td>
+<td>现场旁人可能看到内容</td>
+<td>扩展敏感办公场景</td>
+<td>后置，当前明确现场可见</td>
+</tr>
+<tr>
+<td>虚拟多屏</td>
+<td>需要新增或同时使用多个屏幕</td>
+<td>扩展重度桌面工作</td>
+<td>后置</td>
+</tr>
+<tr>
+<td>跨账号远程协助</td>
+<td>帮助别人操作电脑</td>
+<td>拓展客服/亲友协助</td>
+<td>后置，超出自用电脑</td>
+</tr>
+<tr>
+<td>宏与键位市场</td>
+<td>重复动作或复杂个性化操控</td>
+<td>服务重度游戏用户</td>
+<td>后置，先保基本操控</td>
+</tr>
+<tr>
+<td>云电脑</td>
+<td>用户没有可用主机</td>
+<td>增加云算力供给</td>
+<td>后置，不新增商业业务</td>
+</tr>
+</tbody>
+</table>
+<h2>四、不能省略的操作规则</h2>
+<p>主机需开机、联网且服务运行；离线不显示可用的唤醒按钮。允许被控与系统录屏/辅助功能等权限分开引导。首次建立信任后可无人值守连接，不要求每次由主机现场点击；新增控制端不能仅凭同账号直接接管。</p>
+<p>会话冻结、断线、失焦或切后台时停止新输入，释放修饰键、鼠标长按和摇杆。恢复前先核对授权、占用并取得最新画面；不补发离线点击、文字或 AI 提交。原会话保留 <strong>30 秒恢复资格是设计默认值，不是恢复成绩或保证</strong>；超时释放占用，用户可重试或返回。</p>
+<p>缩放和移动画面不能变成远端点击；切物理屏先停输入、重算坐标。中文先完成选字，换行与发送区分；粘贴不自动提交。断开返回设备列表，原游戏、文档和 AI 程序继续运行。授权撤销则立即停控，不能自动恢复。</p>
+<p>文件一次传一个普通文件，≤100MB 为本方案设计默认值，不是 UU 限制或实测传输上限。先写临时文件，完整校验后报成功；同名生成副本，不覆盖。取消或失败保留源文件、清理半成品，用户手动整份重试；一期不承诺断点续传。结束会话仅断开并保留程序，不提供结束后系统锁屏选项；远端物理屏仍可能被现场看到。</p>
+<h2>五、五轮评审改变了什么</h2>
+<p>以下为专家框架和角色场景交叉审查，不是真人访谈或投票。</p>
+<table>
+<thead>
+<tr>
+<th>轮次</th>
+<th>暴露的问题</th>
+<th>最终修正</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1 独立提案</td>
+<td>只连接画面不能交付任务；全面复制 UU 过大</td>
+<td>保留共同会话和三类任务必需能力</td>
+</tr>
+<tr>
+<td>R2 交叉质疑</td>
+<td>六组合被误当同日承诺；工作窗口可能在副屏</td>
+<td>六组合逐项验收；加入物理屏切换，虚拟屏后置</td>
+</tr>
+<tr>
+<td>R3 方案收敛</td>
+<td>三套场景导航会分裂流程；并发和文件规则不足</td>
+<td>一个设备列表；单控制者；文件校验及同名副本</td>
+</tr>
+<tr>
+<td>R4 失败反证</td>
+<td>公开评论涉及连不上、输入法、退出困难和卡顿</td>
+<td>失败保留设备、明确退出、完整中文输入、冻结停输入</td>
+</tr>
+<tr>
+<td>R5 发布复核</td>
+<td>规格和竞品成绩可能被写成盖世已实现</td>
+<td>分开规格、竞品实测、盖世验收；采用任务完成与再用指标</td>
+</tr>
+</tbody>
+</table>
+<p>评审记录：<a href="research/五轮评审/R5-用户价值.md">用户价值</a>、<a href="research/五轮评审/R5-技术交付.md">技术交付</a>、<a href="research/五轮评审/R5-用户场景.md">用户场景</a>。</p>
+<h2>六、推进顺序与发布门槛</h2>
+<p>先由产品与客户端/引擎负责人核对旧实现、可复用操控、主机服务、Mac 权限和中继依赖，给出工作量；数据负责人明确连接和任务口径。再将一条真实设备链路贯通到任务完成，随后扩展其余组合。APP/Mac 原型和 PRD 对照同一功能清单；原型可点不算引擎通过。无资源数据时不排固定周数。</p>
+<p><strong>发布前必须满足：</strong>六组合分别完成授权、连接、输入、文件、断开与恢复；游戏使用主机实际支持的样本，文档能保存取回，原 AI 会话能正确收到补充要求。覆盖离线、锁屏、撤权、占用、切网、弱网和后台返回。错设备操作、撤权后继续控制、旧命令重放及错误覆盖文件均阻断发布。不能用平均延迟或一张首帧截图代替连续任务证据。</p>
+<p>首要指标是独立任务完成率，游戏、文件、AI 分开；辅助看首次成功耗时、输入纠错、失败恢复，以及首次完成后 7 日主动再用。再用率分母为完成首次任务且观察满 7 日的人，分端组合及新手/资深记录。与 UU 同设备、网络、任务比较，成功率不退步，并在至少一个主场景减少操作或纠错；当前没有基线，不编目标数字。中继带宽、长会话和支持成本同步核算，不用免费无限中继换短期时长。</p>
+<h2>七、研究依据与当前证据</h2>
+<p>UU 官方已覆盖 116 项候选功能；<a href="research/UU版本演进与宣发重点.md">版本演进</a>显示其持续补齐输入、文件、多屏和终端，不能据发布时间直接排列盖世需求。<a href="research/UU%20iOS评价问题.md">iOS 评价</a>中的连接、输入法、退出和卡顿投诉支持故障检查方向，不代表整体发生率。原始来源：<a href="https://uuyc.163.com/help/">UU 帮助</a>、<a href="https://apps.apple.com/cn/app/id1642306791">App Store 功能/历史</a>、<a href="https://itunes.apple.com/cn/rss/customerreviews/id=1642306791/sortBy=mostRecent/json">Apple 公开评价</a>。</p>
+<p>既有模拟器 UU 4.42.0→Windows 已记录连接及单文件往返校验，中文和游戏任务未完成。真机 UU 4.39.1 由另一线程继续取证，结果按交付证据索引逐项引用，不能用菜单截图证明任务完成。以<a href="evidence.html">真机证据口径</a>和<a href="research.html">功能证据映射</a>核对完成程度，不把版本和环境拼成一条成功流程。</p>
+<p>盖世现状依据<a href="demo-source-notes.md">APP 与 Mac 基线</a>。本方案没有上传原始个人截图，没有把专家推演换算为“98%成功率”；充分把握来自真实任务和逐组合验收。</p>
+<p>真机新增证据：141号图显示电脑测试记事本收到手机输入的“你好”；多行、文件往返和游戏流程因另一设备接管而尚未完成。详见<a href="research.html">竞品体验与证据</a>。</p><p><a download href="一期MVP方案.md">下载 Markdown</a></p></main></html>

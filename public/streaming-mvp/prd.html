@@ -1,0 +1,943 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世串流一期PRD</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#17202c;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}header{background:#10161f;color:#fff;padding:28px max(24px,calc((100vw - 1180px)/2));}header a{color:#a9daff;margin-right:24px}main{max-width:1240px;padding:32px;margin:auto}h1{font-size:30px}h2{margin-top:44px;border-bottom:1px solid #d9e0e8;padding-bottom:10px}h3{margin-top:30px}a{color:#136db3}table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0;background:white}th,td{padding:12px 15px;border:1px solid #dde3ea;vertical-align:top;text-align:left}th{background:#eaf0f6}td:first-child{min-width:110px}img{max-width:100%;height:auto;max-height:650px;object-fit:contain;object-position:left}td img{display:block;max-height:550px;margin:12px 0}blockquote{border-left:4px solid #319dcc;padding:10px 20px;background:#eaf4fa;margin:20px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{padding:24px;border:1px solid #dce3ec;background:white;border-radius:16px;text-decoration:none;color:inherit}.card strong{display:block;color:#086ca8;font-size:20px}.muted{color:#64748b}.lead{font-size:22px;line-height:1.6;max-width:900px}.button{display:inline-block;background:#177cac;color:white;padding:12px 20px;border-radius:9px;text-decoration:none}pre{overflow:auto}code{background:#edf1f5}@media(max-width:700px){main{padding:18px}table{display:block;overflow:auto}header{padding:24px}h1{font-size:26px}}</style><header><a href="index.html">串流一期交付</a><a href="demo.html">交互 Demo</a><a href="proposal.html">MVP 方案</a><a href="prd.html">PRD</a><a href="research.html">116 项竞品盘点</a></header><main><h1>【PRD】《盖世游戏》串流一期</h1>
+<h2>修订记录</h2>
+<table>
+<thead>
+<tr>
+<th>修订日期</th>
+<th>修订内容</th>
+<th>版本</th>
+<th>修订人</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026/9/24</td>
+<td>建立 APP、Mac 主控与 Windows、Mac 被控的页面、访问、输入、文件及恢复规则</td>
+<td>V1.0</td>
+<td>产品</td>
+</tr>
+</tbody>
+</table>
+<p><strong>备注：</strong> 无。</p>
+<h2>一、文档概述</h2>
+<h3>1.1 背景概述</h3>
+<ul>
+<li><strong>需求背景：</strong> [已确认] 重构盖世串流，让用户离开电脑后，能用 APP 或另一台 Mac 继续游戏、临时修改文档，以及操作电脑上已有的 AI 软件。</li>
+<li><strong>当前方式：</strong> 用户可通过 UU 远程访问自己的电脑。盖世 APP 个人中心“我的设备”用于手柄；首页/游戏库右上无名设备图标尚无点击证据，不能认定为远程电脑入口；提供的 Mac 界面有首页、游戏库等导航，没有远程电脑页面。本期在原产品框架中加入串流。</li>
+<li><strong>问题：</strong> 仅能看到桌面不足以完成任务。手机点不中、中文输入错误、粘贴误提交、结果拿不回来或断线重放操作，都会让连接失去价值。</li>
+<li><strong>证据：</strong> UU 官方功能与公开评价显示输入、文件、连接恢复是共同需求；本次模拟器到 Windows 的连接与文件往返已有记录，不能代表盖世或其余端组合通过。本文定义交付行为，图示为产品原型，不是现有引擎能力证明。</li>
+</ul>
+<h3>1.2 需求边界</h3>
+<table>
+<thead>
+<tr>
+<th>边界类型</th>
+<th>范围说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>产品边界</td>
+<td>Android/iOS APP、Mac 主控；Windows/Mac 被控服务及本机设置。六种组合为一期目标，分别通过实际设备测试后开放。主机设置属于用户客户端，不新增运营后台。</td>
+</tr>
+<tr>
+<td>业务边界</td>
+<td>同账号访问本人已授权电脑；一个设备列表、一个桌面会话，承接游戏、办公和原 AI 窗口。包含单文件双向传输、单物理屏、单手柄、授权撤销和恢复。不做跨账号协助、远程开机、隐私屏、虚拟屏、独立终端、AI 托管、云电脑、目录或批量文件管理、麦克风直通。</td>
+</tr>
+<tr>
+<td>运营边界</td>
+<td>提供开机联网、系统授权、文件保存及失败排查说明；不新增活动、权益或付费套餐。</td>
+</tr>
+<tr>
+<td>人力边界</td>
+<td>产品与设计负责页面及操作规则；APP/Mac 客户端负责主控体验；Windows/Mac 被控负责人负责权限、会话与文件处理；服务端负责设备关系、信任及连接服务；测试逐组合留证；数据负责本文事件口径。</td>
+</tr>
+</tbody>
+</table>
+<h3>1.3 术语定义</h3>
+<table>
+<thead>
+<tr>
+<th>术语／缩写</th>
+<th>英文全称（按需）</th>
+<th>定义与判断口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主控端</td>
+<td>无</td>
+<td>用户手持或正在操作、显示远程画面的 APP 或 Mac。</td>
+</tr>
+<tr>
+<td>被控端／主机</td>
+<td>无</td>
+<td>实际运行游戏、文档和 AI 软件的 Windows 或 Mac 电脑。</td>
+</tr>
+<tr>
+<td>信任授权</td>
+<td>无</td>
+<td>主机本地允许当前账号下某一主控设备访问；同账号登录本身不构成授权。</td>
+</tr>
+<tr>
+<td>桌面会话</td>
+<td>无</td>
+<td>主控与某一主机的独占控制连接；远端运行的程序共用该会话。</td>
+</tr>
+<tr>
+<td>物理屏</td>
+<td>无</td>
+<td>被控系统当前识别且能够采集的实际显示器；一次展示其中一屏。</td>
+</tr>
+<tr>
+<td>连接成功</td>
+<td>无</td>
+<td>授权和占用校验通过，主控收到当前画面且输入通道可用；不是只建立网络连接。</td>
+</tr>
+</tbody>
+</table>
+<h2>二、产品说明</h2>
+<h3>2.1 产品／方案简介</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>产品／方案定位</td>
+<td>在盖世连接自己的电脑，完成原来的任务，再安全离开。</td>
+</tr>
+<tr>
+<td>目标用户</td>
+<td>优先服务已有盖世用户：想换位置玩电脑游戏的人，以及临时处理文档或继续电脑 AI 任务的人。</td>
+</tr>
+<tr>
+<td>核心目标</td>
+<td>用户能完成授权、连接、正确操作、取回单文件、退出及故障恢复；不靠“连上了”代替任务完成。</td>
+</tr>
+<tr>
+<td>使用场景</td>
+<td>家中换位置玩游戏；外出修改并取回文档；回到电脑原 AI 会话补要求、处理确认和查看产物。主机须开机、联网、服务运行，软件及游戏由主机正常运行。</td>
+</tr>
+<tr>
+<td>功能概述</td>
+<td>APP 游戏库内新增明确的“远程电脑”文字入口，原手柄入口不变；Mac 侧栏“串流”进入同账号列表。会话内手动切换桌面或游戏操控，不设三套场景导航。</td>
+</tr>
+</tbody>
+</table>
+<h3>2.2 产品流程</h3>
+<p><img alt="串流产品流程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/flow.png" /></p>
+<p><em>图示：从远程电脑列表，经首次授权、桌面会话与必要文件传输，到断开返回。异常分支在连接失败页恢复；可信设备再次连接跳过首次授权。</em></p>
+<h2>三、功能需求</h2>
+<h3>3.1 C 端功能需求</h3>
+<h4>3.1.1 远程电脑列表</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>同账号电脑发现、状态展示与连接入口。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户准备连接自己的电脑，或结束会话后重新选择电脑。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>主控已登录盖世账号；列表只返回该账号登记的电脑。主控本机不列为自身可连接对象。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="APP远程电脑" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/app-devices.png" /><br><img alt="Mac远程电脑" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/mac-devices.png" /><br><strong>详细说明：</strong> 两张图分别为 APP 与 Mac 当前列表页；原应用导航继续承担本地页面切换。<br><strong>展示说明：</strong><br>1. 页首显示“远程电脑”、添加电脑入口；Mac 侧栏标明“串流”，本机设置入口与连接卡片分开。<br>2. 卡片显示电脑名称、Windows/Mac 标识、连接状态及对应操作。名称来自主机登记信息，不展示公网地址、完整系统账号或远端窗口内容。<br>3. 首次加载显示加载态；无设备显示“还没有远程电脑”及“添加电脑”；读取失败显示“电脑列表加载失败”与“重试”。刷新失败保留旧卡片并标明状态未更新，不继续显示可连接保证。<br>4. 列表不做搜索或业务筛选；按可连接、需授权、被占用、离线分组，组内最近成功连接优先，其次登记时间倒序，同值按设备标识稳定排序；分批每次 20 台，滑动加载，不重复插入。<br><strong>交互说明：</strong><br>1. 点击“添加电脑”进入设置引导；未登录时完成现有登录，再返回列表，不直接发起连接。<br>2. 点击可连接设备后重新校验在线、授权及占用；通过才占用主机并进入会话。请求中禁用重复点击，取消后回列表并释放本次占用。<br>3. 需授权设备进入首次授权引导；离线卡片展示开机联网说明；被占用卡片提示“这台电脑正在被其他设备控制”，不提供抢占。<br>4. 下拉刷新或 Mac 刷新操作重新读取状态；从会话返回时自动刷新。点击 Mac 本机设置进入允许被控设置。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>选定电脑进入授权或连接流程；正常退出会话后回到列表，设备状态重新获取。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>1. 设备已撤销、服务关闭或账号变更时，以最新校验结果阻止连接；旧卡片不是授权凭据。<br>2. 同一主机同时收到两个请求，只允许一个取得控制权，另一个返回被占用，不自动顶掉前者。<br>3. 主控账号退出后立即结束会话并清空该账号列表缓存；重新登录仍须核对有效信任。</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>共同行为</th>
+<th>端差异</th>
+<th>限制与降级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APP 入口</td>
+<td>点击远程电脑进入列表</td>
+<td>游戏库内新增“远程电脑”文字入口；系统返回回游戏库，个人中心原“我的设备”手柄入口不变</td>
+<td>原手柄管理不改成电脑列表</td>
+</tr>
+<tr>
+<td>Mac 入口</td>
+<td>展示同账号设备及状态</td>
+<td>原深色外壳侧栏增加“串流”；顶部保留原应用导航，列表页可进入本机设置</td>
+<td>不以主控登录自动开启本机被控</td>
+</tr>
+</tbody>
+</table>
+<h4>3.1.2 添加电脑与首次授权</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>主机准备说明、新控制设备的可信授权。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户首次在 APP 或另一台 Mac 连接自己的电脑。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>两端使用同一盖世账号；主机安装对应客户端或被控组件，具备本机操作条件。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="电脑设置引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/app-setup.png" /><br><strong>详细说明：</strong> 图为主控引导页；主机实际授权在本机设置中完成，主控不能代替主机授予自己访问权。<br><strong>展示说明：</strong><br>1. 按顺序展示“在电脑登录同一账号”“允许此电脑被连接”“完成系统权限”“在电脑确认本次设备授权”，以及“重新检查”与返回操作。<br>2. 显示当前目标电脑、主控设备类型及各步骤完成状态；没有目标电脑时先说明电脑端准备方法，不伪造已发现设备。<br>3. 授权等待时显示“请在电脑上允许此设备连接”；说明授权后可再次连接，电脑现场屏幕可能显示远程操作。<br><strong>交互说明：</strong><br>1. 用户在主机开启被控并补全权限后，主控点击“重新检查”，根据真实返回更新步骤；未完成项继续指出对应主机和操作。<br>2. 对首次连接的主控设备发起授权请求；主机显示账号、请求设备名及类型，机主选择允许或拒绝。允许后建立该主控与该主机的信任关系，再进入连接校验。<br>3. 拒绝后主控显示“电脑未允许本次连接”，可返回或重新请求；返回取消本次等待，不撤销此前已有信任。<br>4. 请求有效期为 2 分钟的设计默认；超时显示“授权请求已过期”，用户主动重新请求，旧请求不能再次授予权限。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>主机准备完成且首次请求被允许后，该设备成为可信主控；通过在线及占用校验才进入会话。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>1. 后续连接有效可信设备不要求每次现场同意；新安装、更换设备或信任已撤销则重新授权。<br>2. 主机未安装、关机、休眠或服务不可用时，说明需在主机完成准备，不显示唤醒成功。<br>3. Mac 系统权限从实际授权状态读取；拒绝、退出设置或授权后要求重启相关进程时，步骤保持未完成，不能仅凭打开系统设置判定成功。<br>4. Windows 系统安全桌面或 Mac 锁屏无法采集、无法输入时，停在明确受限状态，不绕过系统身份验证。</td>
+</tr>
+</tbody>
+</table>
+<h4>3.1.3 桌面会话</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>远程画面、桌面与游戏操控、文本输入、物理屏切换及退出。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户在同一台电脑内切换游戏启动器、游戏、文档、IDE 或原 AI 会话。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>主机允许被控，当前主控信任有效且取得唯一控制权；系统采集与输入权限有效。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="APP桌面会话" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/app-session.png" /><br><img alt="Mac桌面会话" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/mac-session.png" /><br><img alt="APP横屏会话" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/landscape-session.png" /><br><strong>详细说明：</strong> 三图为同一会话在 APP 竖屏、Mac 窗口与 APP 横屏的表现；远端桌面始终显示被控电脑真实当前画面。<br><strong>展示说明：</strong><br>1. 会话栏持续显示目标电脑名、连接状态、桌面/游戏操控、文字输入、物理屏、文件、设置和断开入口；工具栏收起后仍保留可见的展开柄，不能遮住唯一退出路径。<br>2. 新会话默认桌面操控。桌面画面等比适配，不拉伸；提供缩放、拖动画面及复位。游戏操控显示基础方向、摇杆及标准手柄按钮，不根据窗口标题自动切模式。<br>3. 文字输入区显示待输入文字、多行编辑、明确的“发送文字”“换行”及“粘贴文本”；内容为空或还在输入法组词时，发送不可用。这里的发送只把文字写入远端，不代表 AI 或软件中的提交。<br>4. 显示可用物理屏名称及当前屏；只有一屏时显示当前屏但不提供无效切换。文件、设置打开会话内面板；远端窗口内容不作为本地功能导航。<br>5. 连接中、锁屏、恢复中与操作受限状态覆盖远端画面并说明原因；冻结画面不显示“可操作”。<br><strong>交互说明：</strong><br>1. 桌面模式以相对指针实现精准定位，移动手指移动鼠标，轻点完成单击，双击对应双击，明确右键按钮执行右键；拖拽用长按后移动，抬起释放。双指缩放/移动仅改变本地视图，不向远端发送点击。复位恢复适配比例。<br>2. 点击桌面/游戏切换时先释放全部输入，再切换操控层；游戏触控与实体手柄共用一个虚拟手柄槽。触控或实体手柄激活时另一来源先归零，不叠加相反轴值。<br>3. 中文完成选字后再发送已确认文本；输入区允许 1—10000 个字符，保留换行和空格。超长时保留草稿并提示拆分，取消不发送。收到远端写入确认才清空本地草稿；失败保留草稿，禁止自动重复写入。确认丢失时提示“发送结果未确认，请先查看远端”，用户核对后决定是否再次发送。<br>4. 用户明确点击粘贴才读取系统剪贴板，过滤为纯文本并先放入编辑区；写入远端不附带 Enter。远端复制文本通过明确复制操作取回，并经系统权限允许后写入本地剪贴板；图片、富文本和文件不走剪贴板同步。<br>5. 快捷操作分别发送远端 Enter、Esc、Tab、复制、粘贴、保存和切换窗口；Enter 为独立明确操作，文字换行和粘贴不触发它。不同主机将复制/保存映射为其原生快捷键。<br>6. 切物理屏先停止输入并清理按键，再获取新屏画面及尺寸，更新坐标后恢复操作；切换失败保留原屏，原屏已消失则保持停止输入，要求重新选择。<br>7. 点击断开或确认系统返回离开会话后，结束控制并返回设备列表，释放占用及全部输入。电脑上的游戏、文档和 AI 程序继续运行，不自动关闭程序、退出系统账号或锁定电脑。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>用户在目标电脑完成操作；断开后主控回列表，主机停止接收本会话输入并可被下一次连接。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>1. 不读取或保存系统密码；锁屏需要用户按系统流程认证。无法控制安全桌面时明确要求在主机完成认证。<br>2. 手柄拔出、App 后台、窗口失焦、模式切换、屏幕变更、网络中断或退出时释放键盘、鼠标及摇杆状态，不保留按住状态。<br>3. 返回前台必须重新核验权限与占用、取得新画面后才收输入；离线操作、文字、粘贴及 AI 提交均不排队、不重放。<br>4. 游戏是否可运行由主机系统、硬件和许可决定；Steam 登录、游戏启动器及 AI 确认仍在原桌面操作。串流不代替登录、不新建 AI 会话。<br>5. 主机现场屏幕可见，远程与现场共用桌面；敏感公司电脑不是本期优先场景。主机本地停止控制或撤销授权优先于任何主控操作。</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>共同行为</th>
+<th>端差异</th>
+<th>限制与降级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APP 竖屏与横屏</td>
+<td>使用同一会话、输入草稿、当前物理屏和状态</td>
+<td>横屏扩大画面并重排工具栏；旋转时先清理输入、重新计算显示区域</td>
+<td>旋转不重连、不拉伸、不改变远端分辨率</td>
+</tr>
+<tr>
+<td>iOS 主控</td>
+<td>中文确认、多行及明确粘贴</td>
+<td>使用 iOS 输入法、文件选择器、剪贴板授权；回前台后恢复资格重新检查</td>
+<td>系统拒绝权限则提示“未获得剪贴板访问权限”，保留手动输入</td>
+</tr>
+<tr>
+<td>Mac 主控</td>
+<td>鼠标键盘操作当前选中的远端画面</td>
+<td>画面获焦点才转发；点击本地工具栏或切其他 App 立即释放远端修饰键；全屏仍能调出会话栏</td>
+<td>本地系统保留快捷键不强行截获；通过会话快捷按钮发送目标操作</td>
+</tr>
+<tr>
+<td>Mac 游戏鼠标</td>
+<td>相对移动、捕获时目标固定为远端</td>
+<td>捕获前说明释放方式；固定以 Ctrl+Option+Esc 释放，不发送到远端</td>
+<td>释放后鼠标回本地，可操作断开；重新点击画面才再次捕获</td>
+</tr>
+<tr>
+<td>实体手柄</td>
+<td>一次一个控制槽，按当前主机平台转发基础按键和摇杆</td>
+<td>Android/iOS/Mac 分别检测系统可识别手柄，显示连接或断连</td>
+<td>不识别时继续提供触屏或键鼠，不承诺宏、震动和全外设映射</td>
+</tr>
+</tbody>
+</table>
+<h5>页面子功能汇总</h5>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>图示</th>
+<th>内容</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>输入面板</td>
+<td><img alt="中文多行输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/app-input.png" /></td>
+<td>中文输入、换行、发送文字、远端 Enter、纯文本复制</td>
+<td><strong>展示说明：</strong><br>1. 输入区与远端画面分开，草稿先留在本地。<br><strong>交互说明：</strong><br>1. 发送只写入文字；远端 Enter 单独触发，避免误提交。</td>
+</tr>
+<tr>
+<td>游戏操控层</td>
+<td><img alt="横屏游戏操控" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/landscape-game.png" /></td>
+<td>单手柄基础触控布局</td>
+<td><strong>展示说明：</strong><br>1. 按键叠加在远端游戏画面，保留断开入口。<br><strong>交互说明：</strong><br>1. 切换操控模式先释放全部输入，按键只作用于当前会话。</td>
+</tr>
+</tbody>
+</table>
+<h4>3.1.4 单文件传输</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>在主控与电脑之间发送或取回一个文件。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户发送素材给电脑，或将修改后的文档、截图、AI 产物取回。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>当前会话可操作、信任有效；对源文件有读取权限，对目标保存位置有写入权限及足够空间。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="单文件传输" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/app-files.png" /><br><strong>详细说明：</strong> 文件面板属于当前电脑会话；Mac 使用同样的任务规则，以桌面文件选择及保存面板交互。<br><strong>展示说明：</strong><br>1. 展示“发送到电脑”“从电脑取回”及关闭入口。选择后显示本次文件名、大小、方向和保存位置；这些信息只供当前用户操作，不上报分析埋点。<br>2. 单次仅一个普通文件，设计默认上限 100 MB（100×1024×1024 字节），允许无扩展名文件；不按扩展名限制，拒绝目录、快捷方式与符号链接，不展开压缩包、不自动执行文件。上限是本期产品限制，不是现有传输性能结论。<br>3. 传输中展示字节进度、“取消”；校验中展示“正在校验文件”；完成展示“传输完成”、最终文件名及保存位置；失败展示具体原因与“重新传输”。<br><strong>交互说明：</strong><br>1. 发送时通过主控系统选择器选择一个文件，校验类型、大小、读取权限后选择主机接收位置并开始；默认主机用户下载目录下的 GameHub 文件夹，不具备权限时让用户重选可写目录，不自动提权。<br>2. 取回时仅浏览主机当前登录用户可访问的目录以定位一个文件，选择后再由主控系统保存面板确认去向。APP 使用系统文件/分享保存能力，Mac 默认下载目录；取消选择不创建传输。浏览器不提供删除、移动、重命名、批量选择或文件内容搜索。<br>3. 一次最多一项传输；进行中禁用新建上传/下载，面板关闭不取消任务，工具入口显示传输中。点击取消停止写入、清理目标半成品，源文件不变。<br>4. 接收端写临时文件，完成全量接收和完整性校验后再转为最终文件，并显示成功。目标同名时自动生成“名称 (1).扩展名”，继续递增到可用名称，禁止覆盖。<br>5. 失败后保留源文件并清理半成品；点击重新传输须重新检查源文件和保存位置，从头传整份文件。源文件已变化或不可读时要求重新选择，不续传旧内容。<br>6. 主动断开会话时若有传输，先明确“断开将取消正在传输的文件”，取消退出则继续；确认断开则取消文件并结束会话。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>校验通过的完整文件保存在用户确认的位置；源文件不删除，完成结果可在本次面板中查看。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>1. 超过 100 MB 时不启动上传，提示“单个文件不能超过 100 MB”，源文件保留；不拆分或压缩替用户处理。<br>2. 空间不足、权限丢失、校验失败、网络中断或授权撤销均不得报成功；网络恢复不会自动重传文件。<br>3. 接收端名称包含系统不允许字符时，在发送前显示经替换后的名称供确认；保留扩展名，不修改文件内容。<br>4. 不支持文件夹、批量、断点续传、自动同步和跨会话历史管理；本期不借文件入口扩展为远程文件管理器。</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>输入与校验</th>
+<th>操作与结果</th>
+<th>重复与失败</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>选择</td>
+<td>普通文件，0—100 MB，单选；源可读</td>
+<td>确认方向、目标位置后启动</td>
+<td>0 字节文件可正常传输；超限或源不可读不启动</td>
+</tr>
+<tr>
+<td>传输</td>
+<td>会话有效，目标可写、空间充足</td>
+<td>字节进度递增，用户可取消</td>
+<td>重复点击不创建第二任务；切后台按系统能力运行，若中断则失败</td>
+</tr>
+<tr>
+<td>校验</td>
+<td>接收字节数及完整性一致</td>
+<td>完整文件落盘后才标成功</td>
+<td>不一致清除临时文件、允许整份重试；不把下载到缓存当保存完成</td>
+</tr>
+<tr>
+<td>同名</td>
+<td>目标最终名称是否存在</td>
+<td>自动副本名并在结果展示</td>
+<td>并发产生同名仍重新取可用名，不覆盖原文件</td>
+</tr>
+</tbody>
+</table>
+<h4>3.1.5 会话设置</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>自动画质、基础帧率与远端声音控制。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户在画面清晰度、流畅性和网络消耗之间调整，或关闭远端声音。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>已进入当前主机会话；设置只作用于当前主控与当前电脑，不改其他设备偏好。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="会话设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/app-settings.png" /><br><strong>详细说明：</strong> APP 以会话面板展示；Mac 同一会话工具栏打开设置，退出面板返回原远端画面。<br><strong>展示说明：</strong><br>1. 画质提供“自动”“流畅”“清晰”，默认自动；自动依据实时网络和端能力调整，流畅优先可操作性，清晰优先文字可读性，不固定承诺分辨率。<br>2. 帧率提供“30 FPS”“60 FPS”，默认 30 FPS；文字说明为请求上限，不保证实际值。主机或主控不支持的档位置灰并写明原因。<br>3. 声音默认开启，显示开关与 0—100 音量；默认 100，仅控制主控播放音量，不改变主机系统音量。<br>4. 提供返回/关闭；设置状态来自已生效值，不以刚点击的值代替生效结果。<br><strong>交互说明：</strong><br>1. 点击画质或帧率请求后显示应用中；成功更新选中项，失败回退原值并说明“设置未生效，请重试”。连续快速选择以最后一次有效请求为准，旧响应不得覆盖新选择。<br>2. 声音开关和音量即时影响本地播放；静音不停止远端程序，不影响远端文件或输入。系统不允许声音采集时显示“当前电脑无法提供声音”，会话仍可继续。<br>3. 返回关闭面板；保存已生效偏好，下次同主控连接同电脑时恢复；设备能力变化时回退自动画质、30 FPS，并说明该项已恢复默认。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>当前会话使用已生效的画质、帧率请求及音量；关闭设置后继续原任务。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>1. 弱网可降低实际质量，不把选择 60 FPS 显示为实际达到 60 FPS。<br>2. 不提供编码器、码率、HDR、4K/高刷保证、麦克风直通或远端会议专用配置。<br>3. 音画停滞时进入异常处理，不靠设置面板继续显示正常来掩盖中断。</td>
+</tr>
+</tbody>
+</table>
+<h4>3.1.6 连接异常与恢复</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>解释当前连接失败原因，提供安全的恢复或返回路径。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>首次连接失败、会话网络中断、权限变化、主机锁屏或被其他设备占用。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>已知本次目标电脑；连接请求或会话出现不能继续操作的状态。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="连接异常" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/app-error.png" /><br><strong>详细说明：</strong> 图为主控异常页；Mac 在会话区域显示同样原因和操作，原应用外壳可返回。<br><strong>展示说明：</strong><br>1. 显示目标电脑名、原因及对应动作；离线显示“电脑离线，请确认已开机、联网并开启串流”；被占用显示“这台电脑正在被其他设备控制”。<br>2. 网络中断时显示“连接中断，正在恢复”，暂停操作，展示剩余恢复窗口及“返回电脑列表”；过期显示“未能恢复连接”与“重新连接”。<br>3. 授权撤销显示“此设备的访问已被取消，请在电脑上重新授权”；主机主动停控显示“电脑已结束本次连接”；权限不足说明应在电脑开启的具体系统权限。<br><strong>交互说明：</strong><br>1. 中断后先释放全部输入并暂停文件传输；从中断时起保留原会话恢复资格 30 秒。此为设计默认窗口，不是恢复速度承诺。窗口内尝试恢复直连或可用中继，重新核验账号、信任、占用与画面。<br>2. 只有取得当前画面及有效输入通道后才回到可操作态；不重发此前按键、点击、文字、粘贴或 AI 提交，失败文件仍须手动整份重试。<br>3. 超过窗口释放占用，留在失败页；用户点“重新连接”发起新连接，点返回回列表。恢复中主动返回立即终止恢复并释放本次资格。<br>4. 授权撤销或主机停控立即中止连接，不进行自动恢复；再次连接分别要求重新授权或重新发起普通连接。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>成功恢复到同一电脑的新画面，或明确结束并返回列表；失败不删除设备。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>1. 恢复期间另一设备不自动抢占；资格过期后任何设备均须重新竞争空闲主机。<br>2. 主机休眠、关机或服务退出不提供“远程唤醒”假按钮；说明需在主机恢复运行。<br>3. 不能识别具体原因时用“连接失败，请检查两端网络后重试”，不把未知错误归咎用户配置；保留不含内容的故障编号供排查。<br>4. 若服务已撤销访问，任何迟到连接成功或恢复响应均作废。</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>进入／退出</th>
+<th>表现与操作</th>
+<th>结果与恢复</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连接中</td>
+<td>点击连接且校验开始；成功或失败退出</td>
+<td>禁止输入、可取消</td>
+<td>成功收取首帧及输入就绪后进入可操作</td>
+</tr>
+<tr>
+<td>锁屏待登录</td>
+<td>主机处于系统锁定状态</td>
+<td>可控的系统登录界面按系统规则操作；不可控时解释限制</td>
+<td>系统认证成功且采集正常后继续，不保存密码</td>
+</tr>
+<tr>
+<td>可操作</td>
+<td>当前画面与输入通道正常</td>
+<td>接收新的合法输入</td>
+<td>状态异常先停输入再改变展示</td>
+</tr>
+<tr>
+<td>恢复中</td>
+<td>运行中连接中断</td>
+<td>30 秒恢复窗口，清空全部按住状态</td>
+<td>新画面与授权均有效才恢复，超时结束原占用</td>
+</tr>
+<tr>
+<td>失败</td>
+<td>离线、忙、权限不足或恢复超时</td>
+<td>原因、重试或返回；忙时只能稍后重试</td>
+<td>新请求重新校验，不继承旧控制权</td>
+</tr>
+<tr>
+<td>已撤销／已停控</td>
+<td>主机撤权或结束当前会话</td>
+<td>当前会话终止，不自动恢复</td>
+<td>撤销需重新授权；停控后可主动重新请求</td>
+</tr>
+<tr>
+<td>主动结束</td>
+<td>主控确认断开</td>
+<td>返回列表，输入和传输清理</td>
+<td>不关闭远端程序</td>
+</tr>
+</tbody>
+</table>
+<h4>3.1.7 本机被控设置</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>机主控制本机是否开放串流、管理可信设备及停止控制。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>用户在 Windows 或 Mac 上准备远程使用，或收回已授予的访问权限。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>本机已登录盖世账号，用户能在主机本地操作；Mac 主控与本机被控为独立角色。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="本机被控设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/mac-settings.png" /><br><img alt="主机确认请求" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/mac-approval.png" /><br><strong>详细说明：</strong> 图为 Mac 本机设置；Windows 使用相同访问规则和对应系统权限说明，不新增运营后台。<br><strong>展示说明：</strong><br>1. 展示电脑名称、“允许此电脑被连接”开关，默认关闭；说明“电脑需开机联网，现场屏幕可见”。<br>2. 展示采集和控制权限的真实状态；Mac 分别说明屏幕录制与辅助功能所需用途，并给出打开对应系统设置入口。Windows 显示被控服务是否正常；不把 Mac 权限名称照搬到 Windows。<br>3. 显示可信主控设备名称、类型、最近连接时间与“撤销”；显示当前控制者和“停止控制”，没有会话时显示“当前没有远程连接”。<br>4. 首次请求出现时显示请求设备、账号及允许/拒绝；过期请求标记已失效，不允许迟到批准。<br><strong>交互说明：</strong><br>1. 开启允许被控后核对系统权限；缺少权限则说明缺项并保持不可连接，补全后更新可用状态。关闭开关立即停止当前控制和文件任务，禁止新连接。<br>2. 点击允许/拒绝仅处理当前未过期的请求；允许只信任这一主控设备，不批量授权同账号全部设备。<br>3. 点击某设备撤销并确认后，删除该主控的信任；若它正在控制立即终止，不继续接受新输入、文件或恢复请求。取消确认不改变授权。<br>4. 点击停止控制立即结束当前会话，可信关系保留；机主想禁止后续连接时关闭允许被控，想永久收回某设备访问则撤销它。<br>5. 从系统设置返回时重新读取权限；系统权限被收回、主机退出账号或服务停止时，立即使可用状态失效。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>本机能否被控、可信设备和会话占用与用户设置一致；主控及时显示相应离线、需授权或结束原因。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>1. 默认关闭属于首次启用规则，正常重启保留用户选择；账号退出后停止服务访问，不能沿用另一账号信任。<br>2. 设置关闭不是隐私屏：只停止远控，不熄灭主机显示器、不替用户锁屏。<br>3. 用户不能从未经授权的远端会话批准自己、恢复被撤销信任或更改访问控制；这些敏感操作只允许主机本地完成。<br>4. 访问关系以服务与主机有效授权共同判断；主控缓存、离线批准或过期请求均不能绕过撤销。</td>
+</tr>
+</tbody>
+</table>
+<h2>四、支撑及非功能需求</h2>
+<h3>4.1 埋点与数据需求</h3>
+<p><strong>数据结论：</strong> 新增。生产埋点只记录连接、功能及状态结果，不以时长推断游戏、文档或 AI 任务成功。“首次连接后七日再用”来自生产连接事件；“首次完成任务后七日再用”来自明确记录任务结果的试用，两者分母不同，分别报告，不得互换名称或合并。任务完成情况由有明确任务与用户同意的试用记录采集，不能读取窗口内容自动判断。</p>
+<h4>4.1.1 指标口径</h4>
+<table>
+<thead>
+<tr>
+<th>指标名称</th>
+<th>口径（含公式、分子和分母）</th>
+<th>去重与时间窗口</th>
+<th>数据源与决策用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连接成功率</td>
+<td>当日成功到可操作态的连接尝试数／当日发起连接尝试数；主动取消单列，仍计入总尝试</td>
+<td>attempt_id 去重；按发起日归属，结果回补；端组合分别统计</td>
+<td>stream_connect_start 与 stream_connect_result；定位连接损耗</td>
+</tr>
+<tr>
+<td>首次成功连接耗时</td>
+<td>用户首个成功尝试的 result.duration_ms；同时报告 P50、P90，不把失败记 0</td>
+<td>user_key 首次成功；日/版本，排除未成功用户并另报其人数</td>
+<td>连接事件；评价首次体验</td>
+</tr>
+<tr>
+<td>中断恢复成功率</td>
+<td>30 秒窗口内恢复可操作的中断次数／开启自动恢复的中断次数</td>
+<td>recovery_id 去重，按中断日归属</td>
+<td>stream_recovery_result；判断恢复作用，不混入主动退出</td>
+</tr>
+<tr>
+<td>文件传输成功率</td>
+<td>校验且落盘成功的传输尝试数／已启动的传输尝试数；取消单列</td>
+<td>transfer_id 去重；日/端组合/方向</td>
+<td>stream_transfer_start 与 stream_transfer_result；判断文件闭环</td>
+</tr>
+<tr>
+<td>首次连接后七日再用率</td>
+<td>首次成功日 D 后的 D+1 至 D+7 自然日内再次主动连接成功的用户数／已首次成功且观察至 D+7 日结束的用户数</td>
+<td>user_key 去重；按首次成功日期分组，使用当地自然日</td>
+<td>连接事件；反映再用，不能命名为任务复用率</td>
+</tr>
+<tr>
+<td>试用首次完成任务后七日再用率</td>
+<td>首次任务完成日 D 后 D+1 至 D+7 自然日内，再次主动使用串流完成任务的参与者数／首次任务已完成且观察至 D+7 日结束的参与者数</td>
+<td>按经用户同意的试用参与者标识去重；游戏、文档、AI 分组；未满观察窗口不入分母</td>
+<td>试用任务结果及七日回访记录；不能只凭连接事件判定，不记录任务正文</td>
+</tr>
+<tr>
+<td>试用任务完成率</td>
+<td>独立完成既定任务且结果经用户确认的任务数／开始的既定任务数；游戏、文档、AI 分开</td>
+<td>试用记录按参与者×任务×端组合去重；完整一次试用</td>
+<td>人工记录实际步骤、错误及结果，不采集任务正文；指导体验修改</td>
+</tr>
+</tbody>
+</table>
+<h4>4.1.2 埋点事件</h4>
+<p>下表均为新增。公共参数在每行完整列出；客户端重试上报保持同一事件业务标识，接收端幂等去重。连接和文件尝试产生唯一终态；重试是新尝试。无法实时上报时仅缓存无内容的事件，恢复网络补报，不补发操作指令。</p>
+<table>
+<thead>
+<tr>
+<th>事件</th>
+<th>页面／类型</th>
+<th>触发与成功</th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stream_devices_view</td>
+<td>C端远程电脑／新增</td>
+<td>列表页面真实展示一次；再次进入产生新 page_view_id，后台刷新不重报</td>
+<td>user_key, client_platform, client_version, page_view_id, device_count</td>
+</tr>
+<tr>
+<td>stream_connect_start</td>
+<td>C端列表／新增</td>
+<td>用户点击连接，通过本地参数检查并发起请求；同次重复点击不上报新尝试</td>
+<td>user_key, client_platform, client_version, host_platform, attempt_id</td>
+</tr>
+<tr>
+<td>stream_connect_result</td>
+<td>C端连接／新增</td>
+<td>本次成功可操作、失败或取消时各尝试只报一个终态；成功必须首帧与输入就绪</td>
+<td>user_key, client_platform, client_version, host_platform, attempt_id, result, failure_reason, duration_ms, transport</td>
+</tr>
+<tr>
+<td>stream_session_end</td>
+<td>C端会话／新增</td>
+<td>已成功会话终止一次；中断恢复成功不当作结束，窗口超时才结束</td>
+<td>user_key, client_platform, client_version, host_platform, attempt_id, end_reason, duration_ms</td>
+</tr>
+<tr>
+<td>stream_recovery_result</td>
+<td>C端异常恢复／新增</td>
+<td>每次中断恢复窗口结束时上报恢复、失败或用户取消；重新手动连接走连接事件</td>
+<td>user_key, client_platform, client_version, host_platform, attempt_id, recovery_id, result, failure_reason, duration_ms</td>
+</tr>
+<tr>
+<td>stream_input_result</td>
+<td>C端会话文字／新增</td>
+<td>明确发送文本或远端复制一次产生一个结果；只记录交付结果，不等于软件执行成功</td>
+<td>user_key, client_platform, client_version, host_platform, attempt_id, input_id, input_action, result, failure_reason</td>
+</tr>
+<tr>
+<td>stream_transfer_start</td>
+<td>C端文件／新增</td>
+<td>文件选择与校验通过、开始传输时上报；选择取消不算开始</td>
+<td>user_key, client_platform, client_version, host_platform, attempt_id, transfer_id, direction, size_bucket</td>
+</tr>
+<tr>
+<td>stream_transfer_result</td>
+<td>C端文件／新增</td>
+<td>每次传输落盘校验成功、失败或取消时上报一个终态</td>
+<td>user_key, client_platform, client_version, host_platform, attempt_id, transfer_id, direction, size_bucket, result, failure_reason, duration_ms</td>
+</tr>
+<tr>
+<td>stream_host_access_change</td>
+<td>C端主机设置／新增</td>
+<td>用户允许、拒绝、撤销信任、切换被控或停止控制的操作生效后上报；失败不伪报生效</td>
+<td>user_key, client_platform, client_version, host_platform, access_action</td>
+</tr>
+</tbody>
+</table>
+<h4>4.1.3 参数说明</h4>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型／必填</th>
+<th>说明</th>
+<th>枚举／示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user_key</td>
+<td>string／是</td>
+<td>经处理的账号分析标识；不用手机号、邮箱或昵称</td>
+<td>例如匿名账号标识 u_8f12</td>
+</tr>
+<tr>
+<td>client_platform</td>
+<td>enum／是</td>
+<td>事件发起客户端；主机设置事件可为 Windows</td>
+<td>android＝Android APP；ios＝iOS APP；mac＝Mac 客户端；windows＝Windows 被控客户端</td>
+</tr>
+<tr>
+<td>client_version</td>
+<td>string／是</td>
+<td>发起客户端实际版本</td>
+<td>例如 版本号+构建号</td>
+</tr>
+<tr>
+<td>host_platform</td>
+<td>enum／是（引用事件）</td>
+<td>被控电脑系统</td>
+<td>windows＝Windows 主机；mac＝Mac 主机</td>
+</tr>
+<tr>
+<td>page_view_id</td>
+<td>string／是（引用事件）</td>
+<td>一次列表真实展示标识</td>
+<td>例如随机 UUID，不含设备名</td>
+</tr>
+<tr>
+<td>device_count</td>
+<td>int／是（引用事件）</td>
+<td>本账号已登记电脑数量，不是当前分页数量</td>
+<td>例如 2；最小 0</td>
+</tr>
+<tr>
+<td>attempt_id</td>
+<td>string／是（引用事件）</td>
+<td>一次主动连接尝试及成功会话标识</td>
+<td>例如随机 UUID；自动恢复沿用、手动重连新建</td>
+</tr>
+<tr>
+<td>result</td>
+<td>enum／是（引用事件）</td>
+<td>对应动作终态</td>
+<td>success＝达到本事件成功标准；failed＝未达到且已终止；cancelled＝用户主动取消</td>
+</tr>
+<tr>
+<td>failure_reason</td>
+<td>enum／是（引用事件）</td>
+<td>动作失败主因，成功固定 none；按权威终态填写</td>
+<td>none＝成功无错误；user_cancel＝用户取消；offline＝主机离线；busy＝主机被占用；auth_required＝需要信任；auth_rejected＝授权被拒绝；auth_expired＝请求过期；revoked＝授权撤销；host_stopped＝主机停止控制；permission＝系统或文件权限不足；network＝网络失败；timeout＝超时；<br>locked＝锁屏受限；unsupported＝能力不支持；source_changed＝源文件改变；no_space＝空间不足；integrity＝完整性校验失败；unknown＝无法确定原因</td>
+</tr>
+<tr>
+<td>duration_ms</td>
+<td>int／是（引用事件）</td>
+<td>对应动作从开始到终态的毫秒数；会话为连接成功到最终结束，含恢复时间</td>
+<td>例如 1500；最小 0；用单调时间计算，不能以设备时钟相减</td>
+</tr>
+<tr>
+<td>transport</td>
+<td>enum／是（引用事件）</td>
+<td>连接终态时已建立链路类型，不采集 IP</td>
+<td>direct＝直连；relay＝中继；none＝未建立链路</td>
+</tr>
+<tr>
+<td>end_reason</td>
+<td>enum／是（引用事件）</td>
+<td>已成功会话最终结束原因</td>
+<td>user_disconnect＝用户断开；host_stop＝主机停控；revoked＝撤权；account_exit＝账号退出；recovery_timeout＝恢复超时；host_unavailable＝主机关闭/休眠/服务退出；permission_lost＝必要权限丢失；client_exit＝客户端退出；unknown＝其他无法判定</td>
+</tr>
+<tr>
+<td>recovery_id</td>
+<td>string／是（引用事件）</td>
+<td>每次中断恢复窗口唯一标识</td>
+<td>例如随机 UUID</td>
+</tr>
+<tr>
+<td>input_id</td>
+<td>string／是（引用事件）</td>
+<td>明确文本动作唯一标识，用于结果去重</td>
+<td>例如随机 UUID，不由正文生成</td>
+</tr>
+<tr>
+<td>input_action</td>
+<td>enum／是（引用事件）</td>
+<td>用户明确发起的文本功能</td>
+<td>send_text＝发送本地编辑的文字；paste_text＝从剪贴板取入并确认发送；copy_remote＝将远端已复制纯文本取回</td>
+</tr>
+<tr>
+<td>transfer_id</td>
+<td>string／是（引用事件）</td>
+<td>一次文件传输尝试标识，整份重试生成新值</td>
+<td>例如随机 UUID</td>
+</tr>
+<tr>
+<td>direction</td>
+<td>enum／是（引用事件）</td>
+<td>文件相对主控的方向</td>
+<td>upload＝主控到主机；download＝主机到主控</td>
+</tr>
+<tr>
+<td>size_bucket</td>
+<td>enum／是（引用事件）</td>
+<td>文件大小分档，避免上传精确文件特征</td>
+<td>zero＝0字节；small＝大于0且不超过1MB；medium＝大于1且不超过10MB；large＝大于10且不超过100MB</td>
+</tr>
+<tr>
+<td>access_action</td>
+<td>enum／是（引用事件）</td>
+<td>在主机本地实际生效的访问操作</td>
+<td>allow_host＝开放本机被控；disable_host＝关闭本机被控；trust_device＝允许一个主控；reject_device＝拒绝当前请求；revoke_device＝撤销一个主控；stop_control＝停止当前控制</td>
+</tr>
+</tbody>
+</table>
+<p>不采集文字、剪贴板、AI 指令、文件名、路径、文件内容、窗口标题、画面或完整设备名。支持日志使用随机故障编号关联状态；数据与会话内容隔离。</p>
+<h3>4.2 技术需求</h3>
+<table>
+<thead>
+<tr>
+<th>需求项</th>
+<th>具体要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>连接与网络</td>
+<td>局域网和公网都须形成完整连接闭环；直连不可用时尝试可用中继，仍失败时给出解释及重试。网络切换、弱网、后台与主机休眠按第三章处理；不能只证明同网段首帧。</td>
+</tr>
+<tr>
+<td>正确性</td>
+<td>不允许错设备输入、撤权后继续控制、旧命令重放、同名覆盖或半成品报成功。文件校验应覆盖双向传输；断开、失焦、切屏、切后台与手柄断连均检查输入归零。</td>
+</tr>
+<tr>
+<td>性能与成本</td>
+<td>30/60 FPS 是请求档位；测试记录连接耗时、实际帧率、延迟、卡顿、流量及中继占比，区分网络、设备和端组合，不用均值掩盖长尾。中继会话需能按无内容标识核算带宽和时长，不对外承诺免费无限资源。</td>
+</tr>
+<tr>
+<td>安全</td>
+<td>控制信令、画面和文件链路须加密并校验端身份；信任绑定账号、主控设备与主机，不依赖可伪造名称。权限撤销优先于连接缓存。账号退出停止访问；授权日志仅记录主体标识、动作和时间，不记录桌面内容。</td>
+</tr>
+<tr>
+<td>数据存储</td>
+<td>本地文字草稿仅保留在当前会话内存，断开或账号退出清除，不自动写云端。传输临时文件在失败、取消或下次服务启动清理；成功文件由用户管理，不因退出会话删除。授权关系按用户撤销结果失效，保留审计依既有隐私制度。</td>
+</tr>
+<tr>
+<td>发布控制</td>
+<td>按真实通过的主控/被控组合开放；未通过组合显示“当前版本暂不支持此电脑连接”，不可用其他平台结果替代。六组合目标全部完成前，不宣传已全面覆盖。</td>
+</tr>
+</tbody>
+</table>
+<p>以下每行都执行授权→连接→三类任务→文件→退出→恢复，覆盖离线、被占用、撤权、锁屏、切网与后台返回。任务样本为主机实际可运行的游戏、能保存并取回的文档，以及能正确收到多行补充要求的原 AI 窗口；证据含连续操作和结果，不只截图入口。</p>
+<table>
+<thead>
+<tr>
+<th>主控→被控</th>
+<th>单独核对的输入与系统行为</th>
+<th>文件与退出要求</th>
+<th>通过条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Android→Windows</td>
+<td>真机中文组词、多行、横竖屏坐标、手柄、启动器、声音</td>
+<td>双向完整性一致；退出、切后台、断线输入归零</td>
+<td>全流程真实设备通过；模拟器不能替代</td>
+</tr>
+<tr>
+<td>iOS→Windows</td>
+<td>iOS 输入法、剪贴板权限、系统返回、后台及手柄断连</td>
+<td>系统选择/保存、取消和同名副本正确</td>
+<td>独立 iOS 证据，不能复用 Android 成绩</td>
+</tr>
+<tr>
+<td>Mac→Windows</td>
+<td>窗口/全屏、焦点、保留快捷键替代、鼠标释放</td>
+<td>文件保存权限、失焦及退出无卡键</td>
+<td>键鼠连续游戏及办公任务通过</td>
+</tr>
+<tr>
+<td>Android→Mac</td>
+<td>Mac 录屏/辅助功能、锁屏、真机中文和物理屏</td>
+<td>用户目录可访问范围与双向校验</td>
+<td>同时通过 Android 主控和 Mac 被控规则</td>
+</tr>
+<tr>
+<td>iOS→Mac</td>
+<td>iOS 系统约束与 Mac 权限/锁屏同时覆盖</td>
+<td>系统文件保存及后台中断处理</td>
+<td>独立两端组合证据，不能拼接别组成绩</td>
+</tr>
+<tr>
+<td>Mac→Mac</td>
+<td>区分两台 Mac 的授权、快捷键、焦点及物理屏坐标</td>
+<td>双端目录权限、文件校验及正确主机退出</td>
+<td>无真实 Mac 测试即不能标记通过</td>
+</tr>
+</tbody>
+</table>
+<h3>4.3 运营需求</h3>
+<table>
+<thead>
+<tr>
+<th>需求项</th>
+<th>具体要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>使用说明</td>
+<td>解释同账号首次授权、主机开机联网、系统权限、单控制者、现场屏幕可见、文件 100 MB 和断开后程序继续运行；说明为普通用户语言，不能用“引擎异常”代替操作建议。</td>
+</tr>
+<tr>
+<td>对外介绍</td>
+<td>按已开放端组合描述“连接自己的电脑”；AI 场景只描述操作电脑已有软件，不宣称 AI 托管、关机继续执行或自带模型。</td>
+</tr>
+</tbody>
+</table>
+<h3>4.4 财务、法务、版权与合规需求</h3>
+<table>
+<thead>
+<tr>
+<th>需求项</th>
+<th>具体要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>收费与权益</td>
+<td>本期不新增套餐、收费按钮或云算力商品；不因没有付费设计而宣传永久、无限中继权益。</td>
+</tr>
+<tr>
+<td>隐私与授权</td>
+<td>首次启用明确屏幕、声音、输入、文件及现场可见用途；系统权限按需申请。没有隐私屏时不得宣传私密远程办公。</td>
+</tr>
+<tr>
+<td>软件与内容</td>
+<td>游戏和软件沿用用户主机已合法取得的账号与许可，不随串流提供破解、账号共享或绕过系统授权。</td>
+</tr>
+</tbody>
+</table>
+<h2>五、待确认项</h2>
+<p>无。本文参数为一期产品规则；端组合开放以实际测试结果为准，不将原型表现作为上线能力证明。</p><p><a download href="盖世串流一期PRD.md">下载 Markdown</a></p></main></html>
