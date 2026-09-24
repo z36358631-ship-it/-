@@ -441,11 +441,20 @@ test('编辑评价文字保留原快照，降为 2 星删除快照', async () =>
     const submitted = await submitSharedReview(page);
     const snapshotId = submitted.review.reviewSnapshotId;
     const originalHash = submitted.snapshot.configHash;
-    await page.evaluate((reviewId) => {
+    const originalCount = await page.evaluate(() => window.getFeedbacks().length);
+    await page.evaluate(() => {
       window.compatibilityDemo.setSessionSnapshot({ configHash: '', playSessionId: '', configGroups: null });
-      window.editMyReview(reviewId);
-    }, submitted.review.id);
+    });
+    await page.locator(`[data-feedback-id="${submitted.review.id}"] .ci-more-btn`).click();
+    const evidence = path.join(root, 'test-results/compatibility-review-v1.2/2026-09-24');
+    fs.mkdirSync(evidence, { recursive: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.waitForTimeout(2500);
+    await page.locator('#shell').screenshot({ path: path.join(evidence, '01-edit-menu.png'), animations: 'disabled' });
+    await page.locator(`[data-feedback-id="${submitted.review.id}"]`).getByRole('button', { name: '编辑', exact: true }).click();
+    assert.equal(await page.locator('#fbEditor').inputValue(), submitted.review.text);
     assert.equal(await page.locator('#shareSessionCheckbox').isChecked(), true, '无当前成功会话时仍应保留历史分享状态');
+    await page.locator('#shell').screenshot({ path: path.join(evidence, '02-edit-dialog.png'), animations: 'disabled' });
     await page.fill('#fbEditor', '只修改评价文字，不改历史配置。');
     await page.click('#modalFeedback .btn-submit');
     const edited = await page.evaluate((reviewId) => {
@@ -454,6 +463,7 @@ test('编辑评价文字保留原快照，降为 2 星删除快照', async () =>
     }, submitted.review.id);
     assert.equal(edited.review.reviewSnapshotId, snapshotId);
     assert.equal(edited.snapshot.configHash, originalHash);
+    assert.equal(await page.evaluate(() => window.getFeedbacks().length), originalCount, '编辑不得新建评价');
 
     await page.evaluate((reviewId) => window.editMyReview(reviewId), submitted.review.id);
     await page.click('#fbStarsWrap [data-val="2"]');
@@ -469,6 +479,86 @@ test('编辑评价文字保留原快照，降为 2 星删除快照', async () =>
   } finally {
     await page.close();
   }
+});
+
+test('同配置无可见评价自动切全部，同步高亮与分页且全部为空显示通用空态', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    await page.click('#openCompatibilityReviews');
+    assert.equal(await page.locator('#chipsLs .active').getAttribute('data-view'), 'device');
+    await page.evaluate(() => {
+      const list = window.getFeedbacks().map((item, index) => ({
+        ...item, gpu: index < 2 ? 'Adreno 750' : 'Other GPU',
+        hidden: index === 0, deleted: index === 1,
+      }));
+      window.saveFeedbacks(list);
+      window.refreshPanel('ls');
+    });
+    assert.equal(await page.locator('#chipsLs .active').getAttribute('data-view'), 'all');
+    assert.equal(await page.locator('#listLs .compat-item').count(), 5);
+    assert.equal(await page.locator('#emptyLs').isVisible(), false);
+    const visibleCount = await page.evaluate(() => window.getVisibleFeedbacks().length);
+    await page.click('#loadMoreLs');
+    assert.equal(await page.locator('#listLs .compat-item').count(), Math.min(10, visibleCount));
+    await page.click('#chipsLs [data-view="device"]');
+    assert.equal(await page.locator('#chipsLs .active').getAttribute('data-view'), 'all');
+    assert.equal(await page.locator('#listLs .compat-item').count(), 5, '回退全部必须从第一页展示');
+    const evidence = path.join(root, 'test-results/compatibility-review-v1.2/2026-09-24');
+    fs.mkdirSync(evidence, { recursive: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.locator('#shell').screenshot({ path: path.join(evidence, '03-auto-all.png'), animations: 'disabled' });
+    await page.evaluate(() => window.saveFeedbacks([]));
+    await page.click('#chipsLs [data-view="device"]');
+    assert.equal(await page.locator('#chipsLs .active').getAttribute('data-view'), 'all');
+    assert.equal(await page.locator('#reviewEmptyTitle').innerText(), '暂无评价');
+    assert.equal(await page.locator('#loadMoreLs').isVisible(), false);
+    await page.locator('#shell').screenshot({ path: path.join(evidence, '04-all-empty.png'), animations: 'disabled' });
+    await page.click('#chipsLs [data-view="mine"]');
+    assert.equal(await page.locator('#chipsLs .active').getAttribute('data-view'), 'mine');
+    assert.equal(await page.locator('#reviewEmptyTitle').innerText(), '暂无我的评价');
+    assertNoPageErrors(errors, '同配置自动兜底');
+  } finally { await page.close(); }
+});
+
+test('删除最后一条同配置评价后自动切全部', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    const submitted = await submitSharedReview(page);
+    await page.evaluate((id) => window.saveFeedbacks(window.getFeedbacks().map(item => ({
+      ...item, gpu: item.id === id ? 'Adreno 750' : 'Other GPU',
+    }))), submitted.review.id);
+    await page.click('#chipsLs [data-view="device"]');
+    assert.equal(await page.locator('#listLs .compat-item').count(), 1);
+    page.on('dialog', dialog => dialog.accept());
+    await page.locator(`[data-feedback-id="${submitted.review.id}"] .ci-more-btn`).click();
+    await page.locator(`[data-feedback-id="${submitted.review.id}"] .ci-more-item`).getByText('删除', { exact: true }).click();
+    assert.equal(await page.locator('#chipsLs .active').getAttribute('data-view'), 'all');
+    assert.equal(await page.locator('#listLs .compat-item').count(), 5);
+    assertNoPageErrors(errors, '删除后自动兜底');
+  } finally { await page.close(); }
+});
+
+test('编辑草稿与新增评价隔离，再次编辑可恢复且保存不新增评价', async () => {
+  const { page, errors } = await openDemo(cDemo, 'C 端');
+  try {
+    const submitted = await submitSharedReview(page);
+    await page.locator(`[data-feedback-id="${submitted.review.id}"] .ci-more-btn`).click();
+    await page.getByRole('button', { name: '编辑', exact: true }).click();
+    await page.fill('#fbEditor', '未提交的编辑草稿');
+    await page.evaluate(() => window.closeFeedbackModal());
+    await page.click('#manualReviewButton');
+    assert.equal(await page.locator('#fbEditor').inputValue(), '');
+    await page.fill('#fbEditor', '独立新增草稿');
+    await page.evaluate(() => window.closeFeedbackModal());
+    await page.locator(`[data-feedback-id="${submitted.review.id}"] .ci-more-btn`).click();
+    await page.getByRole('button', { name: '编辑', exact: true }).click();
+    assert.equal(await page.locator('#fbEditor').inputValue(), '未提交的编辑草稿');
+    await page.click('#modalFeedback .btn-submit');
+    assert.equal(await page.evaluate(() => window.getFeedbacks().filter(item => item.uid === 'me_demo_user').length), 1);
+    await page.click('#manualReviewButton');
+    assert.equal(await page.locator('#fbEditor').inputValue(), '独立新增草稿');
+    assertNoPageErrors(errors, '编辑草稿隔离');
+  } finally { await page.close(); }
 });
 
 test('客态 G-01～G-07 自然混排且仅有效同归属快照展示入口', async () => {

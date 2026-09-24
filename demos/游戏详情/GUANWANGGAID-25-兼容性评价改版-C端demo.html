@@ -655,6 +655,7 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.6); overflow: hidden;
         }
         .ci-more-item {
+            display: block; width: 100%; border: 0; background: transparent; text-align: left; font-family: inherit;
             padding: 10px 14px; font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer;
             transition: background 0.15s;
         }
@@ -1229,11 +1230,7 @@
             <div class="compat-list" id="listLs"></div>
             <div class="load-more" id="loadMoreLs" style="display:none;" onclick="loadMore('ls')">加载更多</div>
             <div class="compat-empty" id="emptyLs" style="display:none;">
-                <div id="sameConfigEmptyState">
-                    <strong>同配置暂无评价</strong>
-                    <p>同配置按当前游戏与 GPU 匹配，你可以查看其他配置的玩家评价。</p>
-                    <button id="showAllReviewsButton" type="button" onclick="showAllReviewsFromEmpty()">查看全部评价</button>
-                </div>
+                <strong id="reviewEmptyTitle">暂无评价</strong>
             </div>
         </div>
     </div>
@@ -1987,7 +1984,17 @@ function refreshPanel(side) {
 
     // 筛选
     let filtered = list;
-    if (viewMode === 'device') filtered = forceSameConfigEmpty ? [] : list.filter(f => f.gpu === CURRENT_GPU);
+    if (viewMode === 'device') {
+        filtered = forceSameConfigEmpty ? [] : list.filter(f => f.gpu === CURRENT_GPU);
+        if (!filtered.length) {
+            viewMode = 'all';
+            pages[side] = 1;
+            filtered = list;
+            document.querySelectorAll(side === 'ls' ? '#chipsLs .chip' : '#chipsPt .chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.view === 'all');
+            });
+        }
+    }
     else if (viewMode === 'support') {
         const likedSet = getLikedSet();
         filtered = list
@@ -2011,6 +2018,8 @@ function refreshPanel(side) {
     const emptyEl = document.getElementById(side === 'ls' ? 'emptyLs' : 'emptyPt');
 
     if (!filtered.length) {
+        const emptyTitle = emptyEl.querySelector('strong');
+        if (emptyTitle) emptyTitle.textContent = viewMode === 'mine' ? '暂无我的评价' : '暂无评价';
         listEl.innerHTML = '';
         emptyEl.style.display = 'block';
         loadEl.style.display = 'none';
@@ -2100,6 +2109,7 @@ function renderItem(f) {
         ? `<div style="position:relative;display:inline-block;">
             <div class="ci-more-btn" onclick="toggleMoreMenu(event,'more-${f.id}')">⋯</div>
             <div class="ci-more-menu" id="more-${f.id}" style="display:none;">
+                <button type="button" class="ci-more-item" onclick="closeMoreMenu('more-${f.id}');editMyReview('${f.id}')">编辑</button>
                 <div class="ci-more-item" style="color:#ff4d4f;" onclick="closeMoreMenu('more-${f.id}');deleteMyReview('${f.id}')">删除</div>
             </div>
           </div>`
@@ -2171,16 +2181,6 @@ function setView(mode, el, side) {
     el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     refreshPanel(side);
-}
-
-function showAllReviewsFromEmpty() {
-    forceSameConfigEmpty = false;
-    viewMode = 'all';
-    pages.ls = 1;
-    document.querySelectorAll('#chipsLs .chip').forEach(chip => {
-        chip.classList.toggle('active', chip.textContent.trim() === '全部');
-    });
-    refreshPanel('ls');
 }
 
 // ============================================================
@@ -2310,9 +2310,13 @@ function renderMediaList() {
     list.innerHTML = items + addBtn;
 }
 
+function feedbackDraftKey() {
+    return editingId === null ? REVIEW_DRAFT_KEY : REVIEW_DRAFT_KEY + ':edit:' + encodeURIComponent(editingId);
+}
+
 function saveFeedbackDraft() {
     const editor = document.getElementById('fbEditor');
-    localStorage.setItem(REVIEW_DRAFT_KEY, JSON.stringify({
+    localStorage.setItem(feedbackDraftKey(), JSON.stringify({
         stars: fbStarVal,
         type: selectedCompatType,
         text: editor ? editor.value : '',
@@ -2323,7 +2327,7 @@ function saveFeedbackDraft() {
 
 function restoreFeedbackDraft() {
     let draft = null;
-    try { draft = JSON.parse(localStorage.getItem(REVIEW_DRAFT_KEY) || 'null'); } catch (error) { draft = null; }
+    try { draft = JSON.parse(localStorage.getItem(feedbackDraftKey()) || 'null'); } catch (error) { draft = null; }
     fbStarVal = Number(draft?.stars) || 0;
     selectedCompatType = TYPE_BY_STAR[fbStarVal] || '';
     fbMediaFiles = Array.isArray(draft?.media) ? draft.media : [];
@@ -2623,7 +2627,7 @@ function submitFeedback() {
         }
     }
 
-    localStorage.removeItem(REVIEW_DRAFT_KEY);
+    localStorage.removeItem(feedbackDraftKey());
     closeFeedbackModal({ preserveDraft: false });
     finishReviewSubmission(savedReviewId);
     if (shareFailed) {
@@ -2666,8 +2670,12 @@ function deleteMyReview(id) {
 
 function editMyReview(id) {
     const item = getFeedbacks().find(x => x.id === id);
-    if (!item) return;
+    if (!item || item.uid !== MY_UID) return;
     editingId = id;
+    if (localStorage.getItem(feedbackDraftKey())) {
+        openFeedbackModal({ source: 'manual', editingId: id });
+        return;
+    }
     fbStarVal = item.stars || 0;
     selectedCompatType = TYPE_BY_STAR[fbStarVal] || '';
     shareSessionRequested = Boolean(item.reviewSnapshotId);
