@@ -14,7 +14,7 @@
 <tr>
 <td>Android真机</td>
 <td>4.39.1</td>
-<td>独立数字编号；已合并177步阶段交接与53条结果校正，追加178—183占用与文件入口检查；实际核看084、087、098、141、182，完整原图留本地；远控因他机占用暂停</td>
+<td>独立数字编号；已合并177步阶段交接与53条结果校正；178—210补录占用、文件往返和接管中断。203显示收发完成，84字节样本往返哈希一致；完整原图留本地。</td>
 </tr>
 <tr>
 <td>Android模拟器</td>
@@ -44,6 +44,10 @@
 <p><img alt="UU手机端画质面板裁图" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/uu-phone-quality.png" /></p>
 <p>手机中文输入结果：测试记事本收到“你好”；此图只证明这一次选字结果，不等于多行输入完成。</p>
 <p><img alt="UU中文输入结果" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@a7dfc25b408b726ef1c48a2c183e96b33c661a82/public/prd/streaming-mvp/uu-phone-chinese.png" /></p>
+<p>真机文件往返：203显示已接收1、已发送1。测试文件实际84字节，UU列表显示1KB；三方SHA256一致。截图证明完成状态，字节与内容由落盘文件另行核对。</p>
+<p><img alt="UU真机单文件往返" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@88a3c62adce309db9f1ebb499d85fb2598f1a4c2/public/prd/streaming-mvp/uu-phone-files-roundtrip.png" /></p>
+<p>上传的中间状态：194显示已暂停0%，195点击继续后成功。本轮未定位暂停原因，不能据此认定网络故障或默认行为。</p>
+<p><img alt="UU真机上传暂停状态" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@88a3c62adce309db9f1ebb499d85fb2598f1a4c2/public/prd/streaming-mvp/uu-phone-file-paused.png" /></p>
 <h2>3. 核心流程实际做到哪里</h2>
 <table>
 <thead>
@@ -76,8 +80,8 @@
 </tr>
 <tr>
 <td>文件下载与发送</td>
-<td>A29—A41</td>
-<td>模拟器单文件往返完成，原执行记录报告双方内容hash一致；暂停后恢复不等于断网续传；不外推真机或Mac</td>
+<td>A29—A41；真机184—203</td>
+<td>模拟器及红魔真机均完成指定单文件往返。真机84字节样本三方SHA256一致；上传初始已暂停0%，点继续后完成。没有大文件、断网续传或Mac结果。</td>
 </tr>
 <tr>
 <td>观看模式</td>
@@ -522,13 +526,13 @@
 <tr>
 <td>U062 普通文件发送</td>
 <td>APP/Win/Mac→Win/Mac；<a href="https://uuyc.163.com/help/20241210/40220_1199229.html">官方</a></td>
-<td>局部完成：A35—A41完成模拟器单文件发送，既有执行记录报告内容hash一致；真机传输不能沿用。</td>
+<td>局部完成：A35—A41为模拟器；真机184—195将84字节文本发送到Windows，落盘SHA256与源文件一致。193/194初始暂停，195点继续完成；未测大文件。</td>
 <td>一期：普通单文件发送≤100MB。</td>
 </tr>
 <tr>
 <td>U063 下载远端文件</td>
 <td>APP/Win/Mac←Win/Mac；<a href="https://uuyc.163.com/help/20241210/40220_1199229.html">官方</a></td>
-<td>局部完成：A29—A34完成模拟器单文件下载，既有执行记录报告内容hash一致；W15仅窗口。</td>
+<td>局部完成：A29—A34为模拟器；真机196—203取回同内容文件，手机落盘SHA256与源文件一致；W15仅窗口，无Mac结果。</td>
 <td>一期：普通单文件取回≤100MB。</td>
 </tr>
 <tr>
