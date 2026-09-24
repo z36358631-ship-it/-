@@ -27,7 +27,7 @@ try{
  await p.locator('[data-ha-tab="docs"]').click();await p.locator('[data-ha-action="edit"][data-id="HC-D001"]').click();
  await p.locator('[data-ha-title]').fill('修改中的入门文章');
  assert.equal(await p.evaluate(()=>HelpStore.published.docs[0].zh.title),'认识帮助中心');
- await p.locator('[data-ha-language]').selectOption('en');await p.locator('[data-ha-title]').fill('Updated welcome article');await p.locator('[data-ha-language]').selectOption('zh');assert.equal(await p.locator('[data-ha-title]').inputValue(),'修改中的入门文章');record('双语切换保留输入且草稿不泄露');
+ await p.locator('[data-ha-action="back"]').first().click();await p.locator('[data-ha-action="languages"][data-id="HC-D001"]').click();await p.locator('[data-ha-action="language-edit"][data-id="en"]').click();await p.locator('[data-ha-title]').fill('Updated welcome article');await p.locator('[data-ha-action="language-close"]').click();await p.locator('[data-ha-action="edit"][data-id="HC-D001"]').click();assert.equal(await p.locator('[data-ha-title]').inputValue(),'修改中的入门文章');record('双语切换保留输入且草稿不泄露');
  await p.locator('[data-ha-video-file]').setInputFiles(path.join(dir,'assets/example.webm'));await p.waitForFunction(()=>document.querySelector('[data-ha-feedback]').textContent.includes('视频已插入'));
  assert.equal(await p.locator('[data-ha-body] video').count(),1);
  await p.locator('[data-ha-image-file]').setInputFiles(path.join(dir,'assets/example.png'));await p.waitForFunction(()=>document.querySelector('[data-ha-feedback]').textContent.includes('图片已插入'));
