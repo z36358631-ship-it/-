@@ -452,12 +452,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return records[game.gameKey] || records[game.detailVariant] || [];
   };
 
-  const renderPublisherConsoleSidebar = (active, language = 'zh') => {
+  const renderPublisherConsoleSidebar = (active, language = 'zh', rawAccess) => {
+    const access = publisherAccessFor(rawAccess);
+    const channels = access.qualificationStatus === 'approved' ? `<section><span>${language === 'en' ? 'Distribution' : '发行与供给'}</span><button type="button" class="${active === 'channels' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="channels">${icon('key')}<b>${language === 'en' ? 'Channel distribution' : '渠道分销'}</b>${icon('chevron')}</button></section>` : '';
     const finance = window.PublisherFinance
       ? `<section><span>${language === 'en' ? 'Finance' : '财务'}</span><button type="button" data-portal-action="open-finance-entity">${icon('vendor')}<b>${language === 'en' ? 'Finance entity' : '财务主体'}</b>${icon('chevron')}</button><button type="button" data-portal-action="open-finance-settlement">${icon('chart')}<b>${language === 'en' ? 'Reconciliation & settlement' : '对账结算'}</b>${icon('chevron')}</button></section>`
       : '';
     const vendor = `<section><span>${language === 'en' ? 'Company' : '厂商管理'}</span><button type="button" class="${active === 'vendor' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="vendor">${icon('vendor')}<b>${language === 'en' ? 'Company settings' : '厂商设置'}</b>${icon('chevron')}</button></section>`;
-    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${finance}${vendor}</aside>`;
+    return `<aside class="publisher-console-sidebar"><strong>${language === 'en' ? 'Developer Console' : '开发者控制台'}</strong><section><span>${language === 'en' ? 'Games' : '游戏'}</span><button type="button" class="${active === 'games' ? 'is-active' : ''}" data-portal-action="publisher-sidebar-view" data-publisher-view="games">${icon('game')}<b>${language === 'en' ? 'Game management' : '游戏管理'}</b>${icon('chevron')}</button></section>${channels}${finance}${vendor}</aside>`;
   };
 
   const renderPublisherGameCard = ({ name, gameId, appId, systems, stage, status, updatedAt, gameKey }) => `<button class="publisher-game-card" type="button" data-portal-action="enter-publisher-game" data-publisher-game="${e(gameKey)}" aria-label="进入${e(name)}控制台">
@@ -736,18 +738,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       state.publicationDrafts = state.publicationDrafts || {};
       publicationDraft = state.publicationDrafts[game.gameKey] || (state.publicationDrafts[game.gameKey] = profileComponent.createDraft(game, game.profileDraft || resolvePublisherProfile(game)));
     }
-    const channelSectionsForAccess = access.qualificationStatus === 'approved' ? publisherChannelConsoleSections : [];
     const availableSections = access.canViewPublisherData
-      ? [...publisherGameConsoleSections, ['analytics', '经营数据', 'chart', '销量 免费领取 退款 拒付 订单 预估收入 待结算'], ...channelSectionsForAccess]
-      : [...publisherGameConsoleSections, ...channelSectionsForAccess];
+      ? [...publisherGameConsoleSections, ['analytics', '经营数据', 'chart', '销量 免费领取 退款 拒付 订单 预估收入 待结算']]
+      : [...publisherGameConsoleSections];
     const allowed = availableSections.map(([id]) => id);
     const gameSection = allowed.includes(state.gameSection) ? state.gameSection : 'release-workspace';
-    const channelSections = new Set(publisherChannelConsoleSections.map(([id]) => id));
     const sourceSections = new Set(['package-builds', 'price-packages', 'price-dlc']);
     const detail = sourceSections.has(gameSection) && profileComponent?.renderSourceSection
       ? profileComponent.renderSourceSection(gameSection, game, language, { publisherScenario:demoState.publisherScenario })
-      : channelSections.has(gameSection) && window.PublisherChannelDistribution
-      ? window.PublisherChannelDistribution.render({ section:gameSection, language, state, game, access, demoState, transientSecret })
       : gameSection === 'analytics'
         ? renderPublisherData(state, language, access, game, demoState)
         : profileComponent ? profileComponent.render(publicationDraft, language, { section: gameSection, game, access, demoReleaseStatus: demoState.releaseStatus || '', publisherScenario:demoState.publisherScenario }) : renderPublisherReleaseProfile(game);
@@ -759,18 +757,24 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return `<section class="publisher-game-console" data-publisher-game-console data-publisher-access="${e(access.accountKind)}" data-qualification-status="${e(access.qualificationStatus)}" data-game-tab="${gameSection}" data-game-section="${gameSection}" data-selected-game="${e(game.gameKey)}"><div class="publisher-game-layout"><aside class="publisher-game-sidebar"><nav class="publisher-game-nav" aria-label="${language === 'en' ? 'Game console' : '单游戏控制台'}">${gameNavigation}</nav></aside><main class="publisher-game-main"><nav class="publisher-game-context" aria-label="${language === 'en' ? 'Current location' : '当前位置'}"><button type="button" data-portal-action="back-publisher-games">${icon('arrow-left')}<span>${label('游戏管理')}</span></button><i>/</i><span class="publisher-game-context__game"><strong>${e(game.projectName || game.name)}</strong></span><i>/</i><span>${e(label(currentSectionLabel))}</span></nav>${detail}</main></div></section>`;
   };
 
+  const renderEnterpriseChannels = (state, language, access, demoState, transientSecret) => {
+    const section = state.channelSection === 'channel-revenue' ? 'channel-revenue' : 'channel-supply';
+    const tabs = publisherChannelConsoleSections.map(([id, title]) => `<button type="button" class="${id === section ? 'is-active' : ''}" aria-pressed="${id === section}" data-portal-action="enterprise-channel-section" data-channel-section="${id}">${language === 'en' ? (id === 'channel-supply' ? 'Channels & supply' : 'Distribution data') : title}</button>`).join('');
+    return `<section class="publisher-enterprise-channels"><header class="publisher-vendor-title"><h1>${language === 'en' ? 'Channel distribution' : '渠道分销'}</h1><p>${language === 'en' ? 'Manage company channels and distribute game products through batches.' : '统一管理企业合作渠道，按游戏和商品创建供给批次。'}</p></header><nav class="publisher-enterprise-channel-tabs" aria-label="${language === 'en' ? 'Channel distribution' : '渠道分销'}">${tabs}</nav>${window.PublisherChannelDistribution?.render({ section, language, state, access, demoState, transientSecret }) || ''}</section>`;
+  };
+
   const renderPublisherWorkspace = ({ page, workspaceState = {}, language = 'zh', rawAccess, qualification = {}, registration = {}, demoState = {}, transientSecret = '' }) => {
     const access = publisherAccessFor(rawAccess);
     const storageNotice = workspaceState.publicationLoadError ? c.resultStrip({ title: language === 'en' ? 'Saved game details could not be loaded' : '暂时无法读取已保存的游戏资料', detail: language === 'en' ? 'Reload this page before saving or submitting game details.' : '请刷新重试后再保存或提交游戏资料。', variant: 'warning' }) : '';
     if (workspaceState.addGameOpen && window.PublisherGameCreate) {
       return `<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="create"><div class="publisher-console-shell">${renderPublisherConsoleSidebar('games', language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${window.PublisherGameCreate.render(workspaceState.createDraft, language)}</div></main></div></div>`;
     }
-    const requestedView = ['games', 'vendor', 'game'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
-    const view = requestedView;
-    const activeSidebar = view === 'vendor' ? 'vendor' : 'games';
+    const requestedView = ['games', 'vendor', 'game', 'channels'].includes(workspaceState.workspaceView) ? workspaceState.workspaceView : 'games';
+    const view = requestedView === 'channels' && access.qualificationStatus !== 'approved' ? 'games' : requestedView;
+    const activeSidebar = ['vendor', 'channels'].includes(view) ? view : 'games';
     const content = view === 'game'
       ? renderPublisherGameConsole(page, workspaceState, language, access, demoState, transientSecret)
-      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'vendor' ? renderPublisherVendorSettings(language, access, qualification, registration, demoState) : renderPublisherGames(workspaceState, access, demoState)}</div></main></div>`;
+      : `<div class="publisher-console-shell">${renderPublisherConsoleSidebar(activeSidebar, language, access)}<main class="publisher-console-main"><div class="publisher-platform-content">${view === 'channels' ? renderEnterpriseChannels(workspaceState, language, access, demoState, transientSecret) : view === 'vendor' ? renderPublisherVendorSettings(language, access, qualification, registration, demoState) : renderPublisherGames(workspaceState, access, demoState)}</div></main></div>`;
     return `${storageNotice}<div class="publisher-workspace-v2" data-publisher-workspace data-publisher-access="${e(access.accountKind)}" data-workspace-view="${view}">${content}${renderPublisherDeleteGameModal(workspaceState)}</div>`;
   };
 

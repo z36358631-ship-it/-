@@ -319,9 +319,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       : requestedSection === 'channel-settlement'
         ? 'channel-revenue'
         : requestedSection;
-    const resumeSelectedGame = Boolean(selectedGame && (restoredPublisherWorkspace.workspaceView === 'game'
+    const legacyChannelView = String(normalizedRequestedSection || '').startsWith('channel-') && (!restoredPublisherWorkspace.workspaceView || restoredPublisherWorkspace.workspaceView === 'game');
+    const resumeSelectedGame = Boolean(!legacyChannelView && selectedGame && (restoredPublisherWorkspace.workspaceView === 'game'
       || (!Object.prototype.hasOwnProperty.call(restoredPublisherWorkspace, 'workspaceView') && memory.session.activeGameId)));
-    const restoredView = ['games', 'vendor'].includes(restoredPublisherWorkspace.workspaceView) ? restoredPublisherWorkspace.workspaceView : 'games';
+    const restoredView = legacyChannelView ? 'channels' : ['games', 'vendor', 'channels'].includes(restoredPublisherWorkspace.workspaceView) ? restoredPublisherWorkspace.workspaceView : 'games';
     const dataDashboard = window.PublisherDataDashboard?.createState(restoredPublisherWorkspace.dataDashboard || {}) || restoredPublisherWorkspace.dataDashboard || {};
     const channelDistribution = window.PublisherChannelDistribution?.createState(restoredPublisherWorkspace.channelDistribution || {})
       || restoredPublisherWorkspace.channelDistribution
@@ -333,7 +334,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ...restoredPublisherWorkspace,
       workspaceView: resumeSelectedGame ? 'game' : restoredView,
       gameTab: 'release',
-      gameSection: allowedSections.has(normalizedRequestedSection) ? normalizedRequestedSection : 'release-workspace',
+      gameSection: !String(normalizedRequestedSection || '').startsWith('channel-') && allowedSections.has(normalizedRequestedSection) ? normalizedRequestedSection : 'release-workspace',
+      channelSection: (legacyChannelView ? normalizedRequestedSection : restoredPublisherWorkspace.channelSection) === 'channel-revenue' ? 'channel-revenue' : 'channel-supply',
       selectedGame,
       addGameOpen: false,
       cdkeyTab: Number(restoredPublisherWorkspace.cdkeyTab || 0),
@@ -1174,6 +1176,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       batches:Array.isArray(source.batches) ? source.batches.map(item => strip(strip(item, secretFields), rawKeyFields)) : [],
       downloads:Array.isArray(source.downloads) ? source.downloads.map(item => strip(item, rawKeyFields)) : [],
       keyMetrics:Array.isArray(source.keyMetrics) ? source.keyMetrics.map(item => ({
+        gameId:String(item?.gameId || window.PublisherChannelDistribution?.fixture.products.find(product => product.id === item?.skuId)?.gameId || ''),
         channelId:String(item?.channelId || ''),
         skuId:String(item?.skuId || ''),
         delivery:item?.delivery === 'api' ? 'api' : 'file',
@@ -1504,12 +1507,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     && item.skuId === skuId
   ));
   const upsertKeyMetric = (items = [], change = {}) => {
+    const gameId = String(change.gameId || window.PublisherChannelDistribution?.fixture.products.find(product => product.id === change.skuId)?.gameId || '');
     const channelId = String(change.channelId || '');
     const skuId = String(change.skuId || '');
     const delivery = change.delivery === 'api' ? 'api' : 'file';
-    const found = items.find(item => item.channelId === channelId && item.skuId === skuId && (item.delivery === 'api' ? 'api' : 'file') === delivery);
+    const found = items.find(item => item.gameId === gameId && item.channelId === channelId && item.skuId === skuId && (item.delivery === 'api' ? 'api' : 'file') === delivery);
     const issuedAt = String(change.lastDeliveredAt || localIsoDate()).slice(0,10);
     if (!found) return [...items, {
+      gameId,
       channelId,
       skuId,
       delivery,
@@ -1561,7 +1566,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     return {
       name:formValue('[data-channel-batch-name]'),
       channelId:formValue('[data-channel-batch-channel]') || fallback?.channelId || '',
-      skuId:formValue('[data-channel-batch-sku]') || fallback?.skuId || '',
+      gameId:formValue('[data-channel-batch-game]'),
+      skuId:formValue('[data-channel-batch-sku]'),
       delivery,
       quantity:Number(formValue('[data-channel-batch-quantity]') || fallback?.quantity || 0),
       validUntil:delivery === 'file' ? (formValue('[data-channel-batch-valid-until]') || fallback?.validUntil || '') : '',
@@ -1586,6 +1592,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
   const validateBatchForm = (value, state, excludeBatchId = '') => {
     [
       ['[data-channel-batch-name]', '[data-channel-batch-name-error]'],
+      ['[data-channel-batch-game]', '[data-channel-batch-game-error]'],
+      ['[data-channel-batch-sku]', '[data-channel-batch-sku-error]'],
+      ['[data-channel-batch-channel]', '[data-channel-batch-channel-error]'],
       ['[data-channel-batch-delivery]', '[data-channel-batch-delivery-error]'],
       ['[data-channel-batch-effective-start]', '[data-channel-batch-effective-start-error]'],
       ['[data-channel-batch-effective-end]', '[data-channel-batch-effective-end-error]'],
@@ -1595,6 +1604,9 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     if (value.name.length < 1 || value.name.length > 50) return setFormError('[data-channel-batch-name]', '[data-channel-batch-name-error]', '请输入 1—50 个字的批次名称。');
     const channel = findChannel(state, value.channelId);
     if (!channel || channel.deleted) return setFormError('[data-channel-batch-channel]', '[data-channel-batch-channel-error]', '请选择有效渠道。');
+    const ownership = window.PublisherChannelDistribution.validateBatchOwnership(value.gameId, value.skuId);
+    if (ownership.error === 'game') return setFormError('[data-channel-batch-game]', '[data-channel-batch-game-error]', '请选择有效游戏。');
+    if (!ownership.valid) return setFormError('[data-channel-batch-sku]', '[data-channel-batch-sku-error]', '请选择该游戏下的商品/SKU。');
     if (!value.skuId) return setFormError('[data-channel-batch-sku]', '[data-channel-batch-sku-error]', '请选择销售项。');
     if (!['file', 'api'].includes(value.delivery)) return setFormError('[data-channel-batch-delivery]', '[data-channel-batch-delivery-error]', '请选择供给方式。');
     if (!value.effectiveStart) return setFormError('[data-channel-batch-effective-start]', '[data-channel-batch-effective-start-error]', '请选择生效开始时间。');
@@ -1704,6 +1716,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     root.querySelectorAll('[data-portal-action]').forEach(control => control.addEventListener('click', async event => {
       const action = event.currentTarget.dataset.portalAction;
       if (!action || event.currentTarget.disabled) return;
+      if (route.id === 'P02-01' && /^(channel-|batch-|enterprise-channel-)/.test(action) && publisherAccessForView().qualificationStatus !== 'approved') return;
       if (action === 'home') {
         memory.shell.helpOpen = false;
         if (route.id === 'P02-01') {
@@ -1763,7 +1776,10 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       }
       if (route.id === 'P02-01' && action === 'publisher-sidebar-view') {
         const requested = event.currentTarget.dataset.publisherView;
-        updatePublisherWorkspace({ workspaceView: requested === 'vendor' ? 'vendor' : 'games', addGameOpen: false, gameMenuOpen: '' });
+        if (requested === 'channels' && publisherAccessForView().qualificationStatus !== 'approved') return;
+        memory.channelTransientSecret = '';
+        const distribution = channelDistributionState();
+        updatePublisherWorkspace({ workspaceView: ['vendor', 'channels'].includes(requested) ? requested : 'games', addGameOpen: false, gameMenuOpen: '', channelDistribution:{ ...distribution, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' } });
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-open-data') {
@@ -1947,7 +1963,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         return;
       }
       if (route.id === 'P02-01' && action === 'publisher-open-cdkey') {
-        updatePublisherWorkspace({ workspaceView: 'game', selectedGame: 'existing', gameTab: 'store', gameSection: 'cdkey', cdkeyTab: 0, addGameOpen: false, gameMenuOpen: '' });
+        if (publisherAccessForView().qualificationStatus !== 'approved') return;
+        updatePublisherWorkspace({ workspaceView: 'channels', channelSection: 'channel-supply', addGameOpen: false, gameMenuOpen: '' });
         return;
       }
       if (route.id === 'P02-01' && action === 'game-console-tab') {
@@ -1961,10 +1978,23 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const requested = event.currentTarget.dataset.gameSection || 'release-workspace';
         const allowed = ['release-workspace', 'versions', 'qualifications', 'package-builds', 'price-packages', 'price-dlc', 'analytics', 'channel-supply', 'channel-revenue'];
         if (!allowed.includes(requested)) return;
+        if (requested.startsWith('channel-')) {
+          if (publisherAccessForView().qualificationStatus !== 'approved') return;
+          updatePublisherWorkspace({ workspaceView:'channels', channelSection:requested, gameSection:'release-workspace' });
+          return;
+        }
         if (requested === 'analytics' && !publisherAccessForView().canViewPublisherData) return;
         memory.channelTransientSecret = '';
         const distribution = channelDistributionState();
         updatePublisherWorkspace({ gameTab:'release', gameSection:requested, channelDialog:'', channelDistribution:{ ...distribution, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' } }, { preserveScroll:true });
+        return;
+      }
+      if (route.id === 'P02-01' && action === 'enterprise-channel-section') {
+        const requested = event.currentTarget.dataset.channelSection;
+        if (!['channel-supply', 'channel-revenue'].includes(requested)) return;
+        memory.channelTransientSecret = '';
+        const distribution = channelDistributionState();
+        updatePublisherWorkspace({ workspaceView:'channels', channelSection:requested, channelDistribution:{ ...distribution, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' } });
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-supply-tab') {
@@ -1978,16 +2008,18 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const key = { channels:'channelFilters', batches:'batchFilters', distribution:'distributionFilters' }[scope];
         if (!key) return;
         const defaults = scope === 'distribution'
-          ? { channelId:'', start:'2026-08-18', end:'2026-09-16' }
+          ? { gameId:'', channelId:'', start:'2026-08-18', end:'2026-09-16' }
           : scope === 'batches'
-            ? { keyword:'', channelId:'', delivery:'', status:'', start:'', end:'' }
+            ? { gameId:'', keyword:'', channelId:'', delivery:'', status:'', start:'', end:'' }
             : { keyword:'', status:'', start:'', end:'' };
         const form = root.querySelector(`[data-channel-filter-form="${scope}"]`);
         const filters = action === 'channel-filter-reset' ? defaults : scope === 'distribution' ? {
+          gameId:String(form?.querySelector('[data-channel-filter-game-id]')?.value || ''),
           channelId:String(form?.querySelector('[data-channel-filter-keyword]')?.value || '').trim(),
           start:String(form?.querySelector('[data-channel-filter-start]')?.value || ''),
           end:String(form?.querySelector('[data-channel-filter-end]')?.value || ''),
         } : scope === 'batches' ? {
+          gameId:String(form?.querySelector('[data-channel-filter-game-id]')?.value || ''),
           keyword:String(form?.querySelector('[data-channel-filter-batch-keyword]')?.value || '').trim(),
           channelId:String(form?.querySelector('[data-channel-filter-channel-id]')?.value || ''),
           delivery:String(form?.querySelector('[data-channel-filter-delivery]')?.value || ''),
@@ -2030,6 +2062,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
           createdAt,
           updatedAt:createdAt,
         };
+        memory.demoPreview.publisherScenario = 'exhaustive';
         updateChannelDistribution({
           ...current,
           activeChannelId:channel.id,
@@ -2091,7 +2124,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         if (!findChannel(current, channelId)) return;
         const next = patchChannel(current, channelId, { enabled:false });
         updateChannelDistribution({ ...next, dialog:'', dialogTargetType:'', dialogChannelId:'' });
-        resultMessage(route.id, '渠道已停用', '该渠道的批次已停止新供给；已发 Key 继续有效。', 'warning');
+        resultMessage(route.id, '渠道已停用', '该渠道所有游戏的 API 批次停止新取码；未下载文件仍可首次下载，已发 Key 继续有效。', 'warning');
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-delete-confirm') {
@@ -2182,6 +2215,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const value = locked ? {
           ...submitted,
           channelId:batch.channelId,
+          gameId:batch.gameId,
           skuId:batch.skuId,
           delivery:batch.delivery,
           quantity:batch.quantity,
@@ -2291,6 +2325,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
             downloads:[...(latest.downloads || []), {
               id:createDownloadId(latest.downloads),
               channelId:latestBatch.channelId,
+              gameId:latestBatch.gameId,
               batchId:latestBatch.id,
               skuId:latestBatch.skuId,
               fileName,
@@ -2301,7 +2336,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
               downloadedBy:'当前开发者',
               downloadCount:1,
             }],
-            keyMetrics:upsertKeyMetric(latest.keyMetrics, { channelId:latestBatch.channelId, skuId:latestBatch.skuId, delivery:'file', issuedDelta:latestBatch.quantity, lastDeliveredAt:downloadedAt }),
+            keyMetrics:upsertKeyMetric(latest.keyMetrics, { gameId:latestBatch.gameId, channelId:latestBatch.channelId, skuId:latestBatch.skuId, delivery:'file', issuedDelta:latestBatch.quantity, lastDeliveredAt:downloadedAt }),
           });
           resultMessage(route.id, '兑换码文件已下载', '页面不保存或回显明文 Key。');
         } catch (error) {
@@ -2429,7 +2464,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         });
         updateChannelDistribution({
           ...next,
-          keyMetrics:upsertKeyMetric(current.keyMetrics, { channelId:batch.channelId, skuId:batch.skuId, delivery:'api', issuedDelta:1, lastDeliveredAt:suppliedAt }),
+          keyMetrics:upsertKeyMetric(current.keyMetrics, { gameId:batch.gameId, channelId:batch.channelId, skuId:batch.skuId, delivery:'api', issuedDelta:1, lastDeliveredAt:suppliedAt }),
         });
         resultMessage(route.id, '接口取码成功', '已记录本次调用，页面不回显明文 Key。');
         return;
@@ -3052,7 +3087,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         const previewStatus = nextOutcome;
         memory.page['P02-01'] = {
           ...(memory.page['P02-01'] || {}),
-          workspaceView:'game', selectedGame:'existing', gameSection:'channel-supply', channelDialog:'',
+          workspaceView:'channels', channelSection:'channel-supply', channelDialog:'',
           channelDistribution:{
             ...distribution,
             dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'',
@@ -3664,6 +3699,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       resultMessage(route.id, '操作已完成', '最新状态已保存。');
     }));
     const batchDelivery = root.querySelector('[data-channel-batch-delivery]');
+    const batchGame = root.querySelector('[data-channel-batch-game]');
+    root.querySelector('[data-channel-batch-sku]')?.addEventListener('change', () => setFormError('[data-channel-batch-sku]', '[data-channel-batch-sku-error]'));
+    batchGame?.addEventListener('change', () => {
+      window.PublisherChannelDistribution.updateBatchGameSelection(batchGame.closest('form') || root, batchGame.value, memory.shell.language);
+      setFormError('[data-channel-batch-game]', '[data-channel-batch-game-error]');
+      setFormError('[data-channel-batch-sku]', '[data-channel-batch-sku-error]');
+    });
     const syncBatchDeliveryFields = () => {
       const slot = root.querySelector('[data-channel-batch-inventory-fields]');
       if (!slot || !batchDelivery) return;
@@ -3728,6 +3770,13 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         wrapper.dataset.baseMonth = (wrapper.dataset.draftStart || '2026-09-16').slice(0,7);
         refreshChannelDatePicker(wrapper);
         popover.hidden = false;
+        if (getComputedStyle(popover).position === 'absolute') {
+          const anchor = wrapper.getBoundingClientRect();
+          const width = popover.getBoundingClientRect().width;
+          const left = Math.max(16, Math.min(anchor.left, window.innerWidth - width - 16));
+          popover.style.left = `${left - anchor.left}px`;
+          popover.style.right = 'auto';
+        }
         return;
       }
       if (action === 'cancel') {
@@ -3995,7 +4044,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const registrationForView = role === 'developer' && memory.qualificationPreview
       ? { ...memory.registration, accountTier: qualificationForView.status === 'approved' ? 'enterprise' : 'registered' }
       : memory.registration;
-    const channelMode = route.id === 'P02-01' && String(memory.page['P02-01']?.gameSection || '').startsWith('channel-');
+    const channelMode = route.id === 'P02-01' && memory.page['P02-01']?.workspaceView === 'channels';
     const financeMode = financeRouteIds.has(route.id);
     const channelBatchOutcome = memory.demoPreview.channelBatchOutcome || 'downloaded';
     const publisherScenario = memory.demoPreview.publisherScenario === 'empty' ? 'empty' : 'exhaustive';
@@ -4005,7 +4054,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       ? ''
       : publisherWorkspace.workspaceView === 'game'
         ? (publisherWorkspace.gameSection || 'release-workspace')
-        : (publisherWorkspace.workspaceView || 'games');
+        : publisherWorkspace.workspaceView === 'channels' ? (publisherWorkspace.channelSection || 'channel-supply') : (publisherWorkspace.workspaceView || 'games');
     const publisherScenarioActive = publisherScenario === 'empty';
     const demoState = {
       open: memory.demoPreview.open,

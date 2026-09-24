@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>企业级渠道分销流程</title>
+<style>
+:root{--page:#f3f7fa;--border:#dce5eb;--text:#132b3f;--accent:#16a8b5}
+*{box-sizing:border-box}html,body{margin:0;width:3500px;height:850px;background:var(--page);font-family:"Microsoft YaHei UI","Segoe UI",sans-serif;color:var(--text)}
+main{padding:36px 36px 30px}h1{font-size:34px;margin:0 0 12px;font-weight:700}.subtitle{font-size:22px;color:#607889;margin:0 0 34px;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(5,644px);gap:52px}.card{position:relative;border:1px solid var(--border);border-radius:22px;background:white;box-shadow:0 12px 30px rgba(26,55,76,.08);height:640px;padding:20px}
+.card:not(:last-child):after{content:"";position:absolute;left:100%;top:297px;width:38px;height:5px;background:var(--accent)}.card:not(:last-child):before{content:"";position:absolute;left:calc(100% + 34px);top:287px;border-top:12px solid transparent;border-bottom:12px solid transparent;border-left:17px solid var(--accent)}
+header{display:flex;align-items:center;gap:13px;font-size:27px;font-weight:700;height:52px;white-space:nowrap}.index{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:white;border-radius:11px;min-width:43px;height:43px;font-size:23px}.screen{width:100%;height:386px;border:1px solid #e7edf1;border-radius:12px;object-fit:contain;margin-top:15px;background:white}.caption{font-size:24px;line-height:1.55;margin:16px 0 0}.detail{font-size:20px;line-height:1.6;color:#617888;margin:8px 0 0}.tag{color:#1596a1;font-weight:600}footer{margin-top:24px;font-size:20px;color:#617888;line-height:1.5}
+</style></head>
+<body><main><h1>企业级渠道分销流程</h1><p class="subtitle">渠道归企业统一维护；批次明确游戏与商品/SKU；通过文件或 API 交付，按游戏查看兑换结果。</p>
+<section class="grid">
+<article class="card"><header><span class="index">01</span>进入企业渠道分销</header><img class="screen" src="02-channel-list.png" alt="企业级渠道分销入口"><p class="caption">企业控制台 → 渠道分销</p><p class="detail">与游戏管理、厂商设置同层级。<br>无需先进入某款游戏。</p></article>
+<article class="card"><header><span class="index">02</span>创建并管理企业渠道</header><img class="screen" src="03-create-channel.png" alt="创建企业渠道"><p class="caption">填写渠道及合作期限</p><p class="detail">一个渠道可供多款游戏复用，<br>无需在各游戏内重复建档。</p></article>
+<article class="card"><header><span class="index">03</span>按游戏创建供给批次</header><img class="screen" src="05-create-batch.png" alt="选择游戏商品SKU创建批次"><p class="caption">选择游戏 → 本体 / DLC 商品/SKU</p><p class="detail">选择企业渠道及供给方式、数量和时间。<br>一个批次对应一个游戏、渠道与商品/SKU。</p></article>
+<article class="card"><header><span class="index">04</span>下载文件或 API 取码</header><img class="screen" src="04-batch-list.png" alt="批次供给与管理"><p class="caption"><span class="tag">文件</span> 首次下载　/　<span class="tag">API</span> 按订单取码</p><p class="detail">API 需符合启用、生效及余量条件。<br>数量不足时，可在原 API 批次追加数量。</p></article>
+<article class="card"><header><span class="index">05</span>查看兑换与分销数据</header><img class="screen" src="07-distribution-data.png" alt="企业分销汇总与游戏筛选"><p class="caption">企业汇总 → 可按游戏、渠道筛选</p><p class="detail">查看发放量、兑换量、未兑换量及兑换率。<br>按游戏、渠道、商品/SKU、方式区分记录。</p></article>
+</section><footer>已发 Key 按原有效期兑换；企业渠道停用影响所有关联游戏的新 API 取码，文件首次下载规则不变。</footer>
+</main></body></html>

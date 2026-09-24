@@ -16,7 +16,9 @@ let browser;
 async function openGame(page,{language='zh',qualificationStatus='approved'}={}){
   await page.addInitScript(({demoName,language,qualificationStatus})=>{
     if(!decodeURIComponent(location.pathname).endsWith(`/${demoName}`))return;
+    if(sessionStorage.getItem('enterprise-channel-test-seeded'))return;
     localStorage.clear();sessionStorage.clear();window.name='';
+    sessionStorage.setItem('enterprise-channel-test-seeded','1');
     localStorage.setItem('gamehub-developer-language-v1',language);
     const accountKey=`channel-batch:${qualificationStatus}:${language}`;
     sessionStorage.setItem('gamehub-developer-session-v2',JSON.stringify({version:2,authenticated:true,accountKey,vendorId:'VENDOR-STAR-001',activeGameId:'',qualificationStatus,expiresAt:Date.now()+28800000}));
@@ -33,7 +35,9 @@ async function openGame(page,{language='zh',qualificationStatus='approved'}={}){
 }
 
 async function openSection(page,label){
-  await page.getByRole('button',{name:label,exact:true}).click();
+  if(await page.locator('[data-publisher-game-console]').count())await page.locator('[data-portal-action="back-publisher-games"]').click();
+  if(!await page.locator('[data-workspace-view="channels"]').count())await page.locator('[data-publisher-view="channels"]').click();
+  await page.locator('[data-portal-action="enterprise-channel-section"]').filter({hasText:label}).click();
   await page.locator('.publisher-channel').waitFor();
 }
 
@@ -41,6 +45,12 @@ const channelRow=(page,name)=>page.locator('.publisher-channel-table--channels t
 const batchRow=(page,name)=>page.locator('.publisher-channel-table--batches tbody tr').filter({hasText:name});
 const distributionRow=(page,name)=>page.locator('.publisher-channel-table--distribution tbody tr').filter({hasText:name});
 const publisherStateText=page=>page.evaluate(()=>localStorage.getItem('gamehub-developer-publisher-accounts-v2')||'');
+const captureEvidence=async(page,name)=>{
+  if(!process.env.PUBLISHER_CHANNEL_EVIDENCE_DIR)return;
+  const directory=path.resolve(process.env.PUBLISHER_CHANNEL_EVIDENCE_DIR);
+  fs.mkdirSync(directory,{recursive:true});
+  await page.screenshot({path:path.join(directory,`${name}.png`),fullPage:true,animations:'disabled'});
+};
 const expectDrawer=async(page,title)=>{
   const surface=page.getByRole('dialog',{name:title,exact:true});
   await surface.waitFor();
@@ -59,7 +69,7 @@ before(async()=>{
   const buildArgs=path.basename(demoFile)==='开发者平台demo.html'
     ? [path.resolve('demos/开发者后台一期/build.mjs'),'--module=02']
     : [path.resolve('demos/开发者后台一期/build-developer-channel.mjs')];
-  execFileSync(process.execPath,buildArgs,{stdio:'pipe'});
+  if(process.env.PUBLISHER_CHANNEL_SKIP_BUILD!=='1')execFileSync(process.execPath,buildArgs,{stdio:'pipe'});
   browser=await chromium.launch({headless:true,executablePath:chrome,args:['--allow-file-access-from-files','--disable-background-networking']});
 });
 
@@ -69,6 +79,8 @@ test('渠道入口仅对企业认证通过账号开放',async()=>{
   const page=await browser.newPage({viewport:{width:1280,height:900}});
   await openGame(page,{qualificationStatus:'unsubmitted'});
   for(const label of ['渠道与供给','分销数据']) assert.equal(await page.getByRole('button',{name:label,exact:true}).count(),0);
+  await page.locator('[data-portal-action="back-publisher-games"]').click();
+  assert.equal(await page.locator('[data-publisher-view="channels"]').count(),0);
   await page.close();
 });
 
@@ -76,9 +88,11 @@ test('渠道与供给采用渠道管理和批次管理两层模型',async()=>{
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   await openGame(page);
   const sidebar=page.locator('.publisher-game-sidebar');
-  for(const label of ['渠道与供给','分销数据']) await sidebar.getByRole('button',{name:label,exact:true}).waitFor();
+  for(const label of ['渠道与供给','分销数据']) assert.equal(await sidebar.getByRole('button',{name:label,exact:true}).count(),0);
   for(const removed of ['渠道与供货','销售与收益','渠道分销','Key 批次','渠道数据','收益与结算']) assert.equal(await sidebar.getByRole('button',{name:removed,exact:true}).count(),0);
   await openSection(page,'渠道与供给');
+  await page.locator('.publisher-console-sidebar [data-publisher-view="channels"].is-active').waitFor();
+  assert.equal(await page.locator('[data-publisher-game-console]').count(),0);
   const tabs=page.getByRole('tablist',{name:'渠道与供给'});
   await tabs.getByRole('tab',{name:'渠道管理',exact:true}).waitFor();
   await tabs.getByRole('tab',{name:'批次管理',exact:true}).waitFor();
@@ -89,6 +103,7 @@ test('渠道与供给采用渠道管理和批次管理两层模型',async()=>{
   const body=await page.locator('.publisher-channel').innerText();
   assert.doesNotMatch(body,/授权计划|计划额度|剩余额度|提交申请|审核中|风险暂停|密钥待重置|外部\s*Key|双账本/);
   assert.equal(new URL(page.url()).hash,'#/P02-01');
+  await captureEvidence(page,'01-enterprise-channel-list');
   await page.close();
 });
 
@@ -211,6 +226,7 @@ test('渠道支持查看、新增、编辑、停用、启用和软删除',async(
   await openGame(page);await openSection(page,'渠道与供给');
   await page.getByRole('button',{name:'创建渠道',exact:true}).click();
   const create=page.getByRole('dialog',{name:'创建渠道'});
+  await captureEvidence(page,'08-create-channel');
   await create.getByLabel('渠道名称').fill('测试合作渠道');
   await create.getByLabel('备注').fill('线下合作');
   await create.getByRole('radio',{name:'启用',exact:true}).check();
@@ -234,14 +250,14 @@ test('渠道支持查看、新增、编辑、停用、启用和软删除',async(
   await edited.waitFor();
   await edited.getByRole('button',{name:'停用',exact:true}).click();
   const disable=page.getByRole('dialog',{name:'停用渠道'});
-  assert.match(await disable.innerText(),/全部批次[\s\S]*停止新供给[\s\S]*已发 Key 继续有效/);
+  assert.match(await disable.innerText(),/该企业渠道关联[\s\S]*关联 API 批次停止新取码[\s\S]*未下载文件仍可首次下载[\s\S]*已发 Key 继续有效/);
   await disable.getByRole('button',{name:'确认停用',exact:true}).click();
   assert.match(await edited.innerText(),/已停用/);
   await edited.getByRole('button',{name:'启用',exact:true}).click();
   assert.match(await edited.innerText(),/合作中/);
   await edited.getByRole('button',{name:'删除',exact:true}).click();
   const deleting=page.getByRole('dialog',{name:'删除渠道'});
-  assert.match(await deleting.innerText(),/全部批次[\s\S]*停止新供给[\s\S]*已发 Key 继续有效/);
+  assert.match(await deleting.innerText(),/该企业渠道关联[\s\S]*关联 API 批次停止新取码[\s\S]*未下载文件仍可首次下载[\s\S]*已发 Key 继续有效/);
   await deleting.getByRole('button',{name:'确认删除',exact:true}).click();
   assert.equal(await channelRow(page,'测试渠道已编辑').count(),0);
   assert.match(await publisherStateText(page),/测试渠道已编辑[^}]*"deleted":true/);
@@ -291,6 +307,7 @@ test('文件批次先创建再下载且单批最多十万',async()=>{
   const dialog=page.getByRole('dialog',{name:'创建批次'});
   await dialog.getByLabel('批次名称').fill('ArcadeX 测试文件批次');
   await dialog.getByLabel('所属渠道').selectOption('CH-240902');
+  await dialog.getByLabel('所属游戏').selectOption('GAME-48291');
   await dialog.getByLabel('销售项').selectOption('BASE-GLOBAL');
   await dialog.getByLabel('供给方式').selectOption('file');
   await dialog.getByRole('radio',{name:'启用',exact:true}).check();
@@ -329,6 +346,7 @@ test('API 批次支持十万上限和原批次追加数量',async()=>{
   const dialog=page.getByRole('dialog',{name:'创建批次'});
   await dialog.getByLabel('批次名称').fill('ArcadeX API 数量批次');
   await dialog.getByLabel('所属渠道').selectOption('CH-240902');
+  await dialog.getByLabel('所属游戏').selectOption('GAME-48291');
   await dialog.getByLabel('销售项').selectOption('BASE-GLOBAL');
   await dialog.getByLabel('供给方式').selectOption('api');
   const initial=dialog.getByLabel('初始可取数量');
@@ -346,6 +364,7 @@ test('API 批次支持十万上限和原批次追加数量',async()=>{
   const topup=page.getByRole('dialog',{name:'追加数量',exact:true});
   await expectDrawer(page,'追加数量');
   assert.match(await topup.innerText(),/当前剩余[^\n]*100,000/);
+  await captureEvidence(page,'09-api-topup');
   await topup.getByLabel('本次追加数量').fill('100001');
   await topup.getByRole('button',{name:'确认追加',exact:true}).click();
   assert.match(await topup.innerText(),/1[^\n]*100,000/);
@@ -420,6 +439,7 @@ test('API 数量用完后阻止继续取码',async()=>{
   const create=page.getByRole('dialog',{name:'创建批次'});
   await create.getByLabel('批次名称').fill('ArcadeX API 单次取码');
   await create.getByLabel('所属渠道').selectOption('CH-240902');
+  await create.getByLabel('所属游戏').selectOption('GAME-48291');
   await create.getByLabel('销售项').selectOption('BASE-GLOBAL');
   await create.getByLabel('供给方式').selectOption('api');
   await create.getByLabel('初始可取数量').fill('1');
@@ -471,7 +491,7 @@ test('已供给批次锁定核心字段并采用软删除',async()=>{
   await page.getByRole('dialog',{name:'批次详情'}).getByRole('button',{name:'关闭',exact:true}).click();
   await supplied.getByRole('button',{name:'编辑',exact:true}).click();
   const edit=page.getByRole('dialog',{name:'编辑批次'});
-  for(const label of ['所属渠道','销售项','供给方式','Key 数量']) assert.equal(await edit.getByLabel(label).isDisabled(),true,`${label} 应锁定`);
+  for(const label of ['所属渠道','所属游戏','销售项','供给方式','Key 数量']) assert.equal(await edit.getByLabel(label).isDisabled(),true,`${label} 应锁定`);
   await edit.getByLabel('批次名称').fill('ArcadeX 九月文件批次已编辑');
   await edit.getByRole('button',{name:'保存',exact:true}).click();
   const edited=batchRow(page,'ArcadeX 九月文件批次已编辑');
@@ -491,7 +511,7 @@ test('待供给批次可编辑、停用、启用和硬删除',async()=>{
   const pending=batchRow(page,'ArcadeX 十月预备批次');
   await pending.getByRole('button',{name:'编辑',exact:true}).click();
   const dialog=page.getByRole('dialog',{name:'编辑批次'});
-  for(const label of ['所属渠道','销售项','供给方式','Key 数量']) assert.equal(await dialog.getByLabel(label).isEnabled(),true,`${label} 应可编辑`);
+  for(const label of ['所属渠道','所属游戏','销售项','供给方式','Key 数量']) assert.equal(await dialog.getByLabel(label).isEnabled(),true,`${label} 应可编辑`);
   await dialog.getByLabel('批次名称').fill('ArcadeX 十月预备批次已编辑');
   await dialog.getByRole('button',{name:'保存',exact:true}).click();
   const edited=batchRow(page,'ArcadeX 十月预备批次已编辑');
@@ -567,6 +587,7 @@ test('分销数据只展示平台可验证的 Key 发放和兑换数据',async()
   assert.match(await fileRow.innerText(),/下载兑换码文件[\s\S]*300[\s\S]*42[\s\S]*258[\s\S]*14\.0%/);
   const body=await page.locator('.publisher-channel').innerText();
   for(const removed of ['销量','退款','拒付','币种','销售额','销售净额','预估收益','应结算','正式账单','已打款','导入销售清单']) assert.doesNotMatch(body,new RegExp(removed));
+  await captureEvidence(page,'10-enterprise-distribution-data');
   await page.close();
 });
 
@@ -602,6 +623,7 @@ test('帮助中心包含渠道与批次、文件下载和 API 接入说明',asyn
   const articleText=await page.locator('[data-help-article="channel-api-integration"]:not([hidden])').innerText();
   assert.match(articleText,/单次[\s\S]*100,000/);
   assert.match(articleText,/追加数量不改变接口地址[\s\S]*client_id[\s\S]*Secret/);
+  await captureEvidence(page,'11-help-api');
   await page.close();
 });
 
@@ -626,8 +648,8 @@ test('320、390、1280、1440 宽度无根节点溢出且列表在内容区滚�
     await openGame(page);await openSection(page,'渠道与供给');
     if(width<=390){
       const mobileGeometry=await page.evaluate(()=>{
-        const nav=document.querySelector('.publisher-game-nav').getBoundingClientRect();
-        const active=document.querySelector('.publisher-game-nav__tab.is-active').getBoundingClientRect();
+        const nav=document.querySelector('[data-portal-action="enterprise-channel-section"]').parentElement.getBoundingClientRect();
+        const active=document.querySelector('[data-portal-action="enterprise-channel-section"].is-active').getBoundingClientRect();
         const fab=document.querySelector('.developer-demo-state-fab').getBoundingClientRect();
         return {navLeft:nav.left,navRight:nav.right,activeLeft:active.left,activeRight:active.right,fabWidth:fab.width,paddingBottom:parseFloat(getComputedStyle(document.querySelector('.publisher-channel')).paddingBottom)};
       });
@@ -649,6 +671,132 @@ test('320、390、1280、1440 宽度无根节点溢出且列表在内容区滚�
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth),false,`${width}px 分销数据根节点溢出`);
     await page.close();
   }
+});
+
+test('企业渠道页面刷新后恢复企业页和分销 Tab',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'分销数据');
+  await page.reload({waitUntil:'load'});
+  await page.locator('[data-workspace-view="channels"] .publisher-channel-table--distribution').waitFor();
+  assert.equal(await page.locator('[data-publisher-game-console]').count(),0);
+  await page.locator('.publisher-console-sidebar [data-publisher-view="channels"].is-active').waitFor();
+  await page.close();
+});
+
+test('旧游戏渠道页面恢复为企业渠道，显式游戏管理页面不被旧 section 误迁移',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:900}});
+  await openGame(page);await openSection(page,'分销数据');
+  for(const oldView of ['game','missing','games']){
+    const before=await page.evaluate(oldView=>{
+      const key='gamehub-developer-publisher-accounts-v2';
+      const data=JSON.parse(localStorage.getItem(key));
+      const workspace=data.accounts['channel-batch:approved:zh'].publisherWorkspaces['publisher-console'];
+      if(oldView==='missing')delete workspace.workspaceView;else workspace.workspaceView=oldView;
+      workspace.gameSection='channel-revenue';delete workspace.channelSection;
+      localStorage.setItem(key,JSON.stringify(data));
+      return workspace.channelDistribution.batches.map(item=>({id:item.id,clientId:item.clientId}));
+    },oldView);
+    await page.reload({waitUntil:'load'});
+    await page.locator(`[data-workspace-view="${oldView==='games'?'games':'channels'}"]`).waitFor();
+    if(oldView!=='games')await page.locator('.publisher-channel-table--distribution').waitFor();
+    const after=await page.evaluate(()=>{
+      const data=JSON.parse(localStorage.getItem('gamehub-developer-publisher-accounts-v2'));
+      return data.accounts['channel-batch:approved:zh'].publisherWorkspaces['publisher-console'].channelDistribution.batches.map(item=>({id:item.id,clientId:item.clientId}));
+    });
+    assert.deepEqual(after,before,'迁移入口不得重新创建批次或凭证');
+  }
+  await page.close();
+});
+
+test('批次先选游戏再联动本体和 DLC，换游戏保留其他输入并阻止非法跨游戏 SKU',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
+  await page.getByRole('button',{name:'创建批次',exact:true}).click();
+  const drawer=page.getByRole('dialog',{name:'创建批次',exact:true});
+  const game=drawer.locator('[data-channel-batch-game]');
+  const sku=drawer.locator('[data-channel-batch-sku]');
+  assert.equal(await game.inputValue(),'');
+  assert.equal(await sku.isDisabled(),true);
+  await drawer.getByLabel('批次名称').fill('企业多游戏测试批次');
+  await drawer.getByLabel('所属渠道').selectOption('CH-240901');
+  await drawer.getByLabel('Key 数量').fill('24');
+  await drawer.getByLabel('备注').fill('切换游戏后保留备注');
+  await game.selectOption('GAME-48291');
+  assert.deepEqual(await sku.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value)),['','BASE-GLOBAL','DLC-SEASON-01']);
+  await sku.selectOption('DLC-SEASON-01');
+  await game.selectOption('GAME-58302');
+  assert.deepEqual(await sku.locator('option').evaluateAll(nodes=>nodes.map(node=>node.value)),['','TWILIGHT-BASE','TWILIGHT-DLC']);
+  assert.equal(await sku.inputValue(),'');
+  assert.equal(await drawer.getByLabel('批次名称').inputValue(),'企业多游戏测试批次');
+  assert.equal(await drawer.getByLabel('Key 数量').inputValue(),'24');
+  assert.equal(await drawer.getByLabel('备注').inputValue(),'切换游戏后保留备注');
+  await sku.evaluate(node=>{const option=new Option('非法跨游戏 SKU','BASE-GLOBAL');node.add(option);node.value='BASE-GLOBAL';});
+  await drawer.getByRole('button',{name:'创建',exact:true}).click();
+  assert.ok((await drawer.locator('[data-channel-batch-sku-error]').innerText()).trim());
+  assert.equal(await batchRow(page,'企业多游戏测试批次').count(),0);
+  await sku.selectOption('TWILIGHT-DLC');
+  await captureEvidence(page,'03-create-batch-game-dlc');
+  await drawer.getByRole('button',{name:'创建',exact:true}).click();
+  const row=batchRow(page,'企业多游戏测试批次');
+  await row.waitFor();
+  assert.match(await row.innerText(),/暮光边境[\s\S]*GAME-58302[\s\S]*NovaPlay Store[\s\S]*TWILIGHT-DLC/);
+  await row.getByRole('button',{name:'查看',exact:true}).click();
+  assert.match(await page.getByRole('dialog',{name:'批次详情',exact:true}).innerText(),/暮光边境[\s\S]*GAME-58302/);
+  await captureEvidence(page,'04-batch-game-detail');
+  await page.close();
+});
+
+test('同一企业渠道支持多游戏批次，批次与分销数据均按游戏筛选',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  await channelRow(page,'NovaPlay Store').getByRole('button',{name:'停用',exact:true}).click();
+  assert.match(await page.getByRole('dialog',{name:'停用渠道',exact:true}).innerText(),/关联 2 款游戏[\s\S]*批次[\s\S]*API 批次停止新取码[\s\S]*已发 Key 继续有效/);
+  await captureEvidence(page,'06-disable-enterprise-channel');
+  await page.getByRole('button',{name:'取消',exact:true}).click();
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
+  let tbody=page.locator('.publisher-channel-table--batches tbody');
+  assert.match(await tbody.innerText(),/星海远征/);
+  assert.match(await tbody.innerText(),/暮光边境/);
+  await captureEvidence(page,'02-enterprise-batch-list');
+  await page.locator('[data-channel-filter-game-id]').selectOption('GAME-58302');
+  await page.getByRole('button',{name:'查询',exact:true}).click();
+  assert.match(await tbody.innerText(),/暮光边境/);
+  assert.doesNotMatch(await tbody.innerText(),/星海远征/);
+  await page.getByRole('button',{name:'重置',exact:true}).click();
+  assert.match(await tbody.innerText(),/星海远征/);
+  await openSection(page,'分销数据');
+  await page.locator('[data-channel-filter-game-id]').selectOption('GAME-58302');
+  await page.getByRole('button',{name:'查询',exact:true}).click();
+  tbody=page.locator('.publisher-channel-table--distribution tbody');
+  assert.match(await tbody.innerText(),/暮光边境[\s\S]*GAME-58302[\s\S]*TWILIGHT-BASE/);
+  assert.doesNotMatch(await tbody.innerText(),/星海远征|BASE-GLOBAL/);
+  await captureEvidence(page,'05-distribution-game-filter');
+  await page.getByRole('button',{name:'重置',exact:true}).click();
+  assert.match(await tbody.innerText(),/星海远征/);
+  await page.close();
+});
+
+test('企业渠道保留右下角 Demo 状态并覆盖所有 Tab 的缺省与穷举',async()=>{
+  const page=await browser.newPage({viewport:{width:1440,height:1000}});
+  await openGame(page);await openSection(page,'渠道与供给');
+  const fab=page.locator('.developer-demo-state-fab');
+  const geometry=await fab.evaluate(node=>{const rect=node.getBoundingClientRect();return {position:getComputedStyle(node.closest('.developer-demo-state-switcher')).position,right:innerWidth-rect.right,bottom:innerHeight-rect.bottom};});
+  assert.equal(geometry.position,'fixed');
+  assert.ok(geometry.right>=0&&geometry.right<100&&geometry.bottom>=0&&geometry.bottom<100);
+  await fab.click();
+  await page.locator('[data-demo-publisher-scenario="empty"]').click();
+  assert.match(await page.locator('.publisher-channel').innerText(),/暂无渠道/);
+  await page.getByRole('tab',{name:'批次管理',exact:true}).click();
+  assert.match(await page.locator('.publisher-channel').innerText(),/请先创建企业渠道/);
+  assert.equal(await page.getByRole('button',{name:'去创建渠道',exact:true}).count(),1);
+  await openSection(page,'分销数据');
+  assert.match(await page.locator('.publisher-channel').innerText(),/暂无数据/);
+  await captureEvidence(page,'07-enterprise-channel-empty');
+  if(!await page.locator('[data-demo-state-panel]').count())await fab.click();
+  await page.locator('[data-demo-publisher-scenario="exhaustive"]').click();
+  assert.match(await page.locator('.publisher-channel-table--distribution tbody').innerText(),/暮光边境/);
+  await page.close();
 });
 
 test('静态交付文件不含固定明文 Key、Secret 或外部嵌入',()=>{
