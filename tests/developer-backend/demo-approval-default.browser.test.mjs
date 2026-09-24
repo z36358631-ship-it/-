@@ -12,8 +12,8 @@ const demoUrl = pathToFileURL(demoFile);
 demoUrl.hash = '/P01-01';
 let browser;
 
-const approvalButton = page => page.locator('button[data-portal-action="demo-approval-toggle"]').first();
-const approvalPanel = page => page.locator('[data-demo-approval-panel]');
+const approvalButton = page => page.locator('button[data-portal-action="demo-state-toggle"]').first();
+const approvalPanel = page => page.locator('[data-demo-state-panel]');
 const savedAccount = (page, accountKey) => page.evaluate(key => JSON.parse(localStorage.getItem('gamehub-developer-account-states-v1') || '{}')[key], accountKey);
 
 async function openDemo(page, status) {
@@ -41,20 +41,23 @@ async function showApproval(page) {
 
 async function expectApproved(page) {
   await page.locator('[data-publisher-workspace]').waitFor();
-  assert.ok(await page.locator('[data-publisher-view="channels"]').isVisible(), '默认审核通过后企业级渠道入口应可见');
+  for (const section of ['channel-supply', 'channel-revenue']) {
+    assert.ok(await page.locator(`.publisher-console-sidebar [data-channel-section="${section}"]`).isVisible(), '默认审核通过后两个企业级渠道入口均应可见');
+  }
   await showApproval(page);
   assert.equal(await approvalPanel(page).locator('[data-demo-qualification-status="approved"]').getAttribute('aria-checked'), 'true');
   await approvalButton(page).click();
 }
 
 async function expectFixedApproval(page) {
-  assert.ok(await approvalButton(page).isVisible(), '审核状态按钮应常驻');
+  assert.ok(await approvalButton(page).isVisible(), 'Demo 状态按钮应常驻');
+  assert.equal(await page.locator('[data-portal-action="demo-approval-toggle"]').count(), 0, '审核状态只能放在 Demo 状态面板内');
   const box = await approvalButton(page).boundingBox();
   const viewport = page.viewportSize();
-  assert.ok(box.x > viewport.width / 2 && box.y > viewport.height / 2, '审核状态按钮应位于右下角');
+  assert.ok(box.x > viewport.width / 2 && box.y > viewport.height / 2, 'Demo 状态按钮应位于右下角');
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   const afterScroll = await approvalButton(page).boundingBox();
-  assert.ok(Math.abs(box.y - afterScroll.y) <= 1, '滚动页面后审核状态按钮应保持悬浮位置');
+  assert.ok(Math.abs(box.y - afterScroll.y) <= 1, '滚动页面后 Demo 状态按钮应保持悬浮位置');
 }
 
 before(async () => {
@@ -104,13 +107,13 @@ for (const status of ['unsubmitted', 'pending', 'rejected']) {
   });
 }
 
-test('审核状态按钮在游戏列表、厂商设置、企业渠道、游戏详情持续悬浮，页面数据切换保留', async () => {
+test('审核状态在各页面的 Demo 面板内可切换，页面数据切换保留', async () => {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
     await openDemo(page, 'approved');
     await expectApproved(page);
     for (const view of ['games', 'vendor', 'channels']) {
-      await page.locator(`[data-publisher-view="${view}"]`).click();
+      await page.locator(`[data-publisher-view="${view}"]`).first().click();
       await page.locator(`[data-workspace-view="${view}"]`).waitFor();
       await expectFixedApproval(page);
       await showApproval(page);
@@ -152,7 +155,7 @@ test('可手动恢复真实审核状态，下一次刷新仍默认通过预览',
   } finally { await page.close(); }
 });
 
-test('审核浮层在桌面和窄屏完整可见，支持 Escape 关闭', async () => {
+test('含审核状态的 Demo 浮层在桌面和窄屏完整可见，支持 Escape 关闭', async () => {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   try {
     await openDemo(page, 'pending');

@@ -2003,12 +2003,14 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         updatePublisherWorkspace({ gameTab:'release', gameSection:requested, channelDialog:'', channelDistribution:{ ...distribution, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' } }, { preserveScroll:true });
         return;
       }
-      if (route.id === 'P02-01' && action === 'enterprise-channel-section') {
+      if (hasPublisherRoute && action === 'enterprise-channel-section') {
+        if (publisherAccessForView().qualificationStatus !== 'approved') return;
         const requested = event.currentTarget.dataset.channelSection;
         if (!['channel-supply', 'channel-revenue'].includes(requested)) return;
         memory.channelTransientSecret = '';
         const distribution = channelDistributionState();
         updatePublisherWorkspace({ workspaceView:'channels', channelSection:requested, channelDistribution:{ ...distribution, dialog:'', dialogTargetType:'', dialogChannelId:'', dialogBatchId:'' } });
+        if (route.id !== 'P02-01') navigate({ routeId:'P02-01', state:'default' });
         return;
       }
       if (route.id === 'P02-01' && action === 'channel-supply-tab') {
@@ -3047,15 +3049,7 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         root.querySelector('[data-portal-action="qualification-review-filter"]')?.click();
         return;
       }
-      if (action === 'demo-approval-toggle') {
-        memory.demoPreview.approvalOpen = !memory.demoPreview.approvalOpen;
-        memory.demoPreview.open = false;
-        render();
-        requestAnimationFrame(() => root.querySelector(memory.demoPreview.approvalOpen ? '[data-demo-approval-panel] > header > button' : '[data-portal-action="demo-approval-toggle"]')?.focus());
-        return;
-      }
       if (action === 'demo-state-toggle') {
-        memory.demoPreview.approvalOpen = false;
         const open = !memory.demoPreview.open;
         memory.demoPreview.open = open;
         render();
@@ -3092,7 +3086,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
         if (!preview) return;
         memory.qualificationPreview = preview;
         memory.demoPreview.open = false;
-        memory.demoPreview.approvalOpen = false;
         delete memory.result[route.id];
         clearPreviewQuery();
         if (nextStatus === 'approved' && hasPublisherRoute && route.id !== 'P02-01') {
@@ -4087,7 +4080,6 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     const publisherScenarioActive = publisherScenario === 'empty';
     const demoState = {
       open: memory.demoPreview.open,
-      approvalOpen: Boolean(memory.demoPreview.approvalOpen),
       qualificationStatus: qualificationForView.status || 'unsubmitted',
       releaseStatus: memory.demoPreview.releaseStatus,
       publisherMode,
@@ -4248,9 +4240,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
       updateChannelDistribution(state => ({ ...state, dialog:'', dialogChannelId:'', dialogBatchId:'' }));
       return;
     }
-    if (memory.demoPreview.open || memory.demoPreview.approvalOpen) {
+    if (memory.demoPreview.open) {
       memory.demoPreview.open = false;
-      memory.demoPreview.approvalOpen = false;
       render();
       requestAnimationFrame(() => root.querySelector('.developer-demo-state-fab')?.focus());
       return;
@@ -4274,9 +4265,8 @@ window.GameHubDeveloperPortal = window.GameHubDeveloperPortal || {};
     root.querySelectorAll('[data-qualification-example-modal]:not([hidden])').forEach(modal => modal.setAttribute('hidden', ''));
   });
   addEventListener('click', event => {
-    if ((!memory.demoPreview.open && !memory.demoPreview.approvalOpen) || event.target.closest('.developer-demo-state-switcher')) return;
+    if (!memory.demoPreview.open || event.target.closest('.developer-demo-state-switcher')) return;
     memory.demoPreview.open = false;
-    memory.demoPreview.approvalOpen = false;
     render();
   });
   addEventListener('storage', event => {

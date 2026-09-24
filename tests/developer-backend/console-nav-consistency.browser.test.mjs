@@ -9,11 +9,11 @@ const { chromium } = createRequire(import.meta.url)('playwright-core');
 const demoFile = path.resolve(process.env.PUBLISHER_CHANNEL_DEMO || 'demos/开发者后台一期/开发者平台demo.html');
 const chrome = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files/Microsoft/Edge/Application/msedge.exe'].find(file => file && fs.existsSync(file));
 const output = path.resolve(process.env.CONSOLE_NAV_EVIDENCE_DIR || 'tests/developer-backend/evidence/console-nav-consistency');
-const labels = ['游戏管理', '渠道分销', '财务主体', '对账结算', '厂商设置'];
+const labels = ['游戏管理', '渠道与供给', '分销数据', '财务主体', '对账结算', '厂商设置'];
 let browser;
 
 const sidebar = page => page.locator('aside.publisher-console-sidebar');
-const approvalButton = page => page.locator('button[data-portal-action="demo-approval-toggle"]').first();
+const approvalButton = page => page.locator('button[data-portal-action="demo-state-toggle"]').first();
 const demoUrl = hash => { const url = pathToFileURL(demoFile); url.hash = hash; return url.href; };
 
 async function openDemo(page, hash = '/P02-01') {
@@ -42,25 +42,26 @@ async function expectNavigation(page, activeLabel) {
   assert.deepEqual(actual, labels, '切换页面后企业入口名称与顺序不能变化');
   assert.equal(await nav.locator('button.is-active').count(), 1, '只允许当前页面选中');
   assert.equal(await nav.locator('button.is-active b').innerText(), activeLabel);
-  assert.ok(await approvalButton(page).isVisible(), '审核状态按钮必须常驻');
+  assert.ok(await approvalButton(page).isVisible(), 'Demo 状态按钮必须常驻');
   const fixed = await approvalButton(page).boundingBox();
   const viewport = page.viewportSize();
-  assert.ok(fixed.x >= 0 && fixed.x + fixed.width <= viewport.width + 1 && fixed.y >= 0 && fixed.y + fixed.height <= viewport.height + 1, '审核按钮应在当前视口内');
+  assert.ok(fixed.x >= 0 && fixed.x + fixed.width <= viewport.width + 1 && fixed.y >= 0 && fixed.y + fixed.height <= viewport.height + 1, 'Demo 状态按钮应在当前视口内');
 }
 
 async function navigate(page, label) {
   await sidebar(page).getByRole('button', { name: label, exact: true }).click();
   if (label === '财务主体' || label === '对账结算') await page.getByRole('heading', { name: label, exact: true, level: 1 }).waitFor();
-  else await page.locator(`[data-workspace-view="${({ 游戏管理: 'games', 渠道分销: 'channels', 厂商设置: 'vendor' })[label]}"]`).waitFor();
+  else await page.locator(`[data-workspace-view="${({ 游戏管理: 'games', 渠道与供给: 'channels', 分销数据: 'channels', 厂商设置: 'vendor' })[label]}"]`).waitFor();
   await expectNavigation(page, label);
 }
 
 async function expectChannelSection(page, section) {
   await page.locator('[data-workspace-view="channels"]').waitFor();
-  await expectNavigation(page, '渠道分销');
-  const tabs = page.locator('[data-portal-action="enterprise-channel-section"]');
-  assert.deepEqual(await tabs.allTextContents(), ['渠道与供给', '分销数据']);
-  assert.equal(await page.locator(`[data-channel-section="${section}"]`).getAttribute('aria-pressed'), 'true');
+  await expectNavigation(page, section === 'channel-supply' ? '渠道与供给' : '分销数据');
+  const entries = sidebar(page).locator('[data-portal-action="enterprise-channel-section"]');
+  assert.deepEqual(await entries.locator('b').allTextContents(), ['渠道与供给', '分销数据']);
+  assert.equal(await sidebar(page).locator(`[data-channel-section="${section}"].is-active`).count(), 1);
+  assert.equal(await page.locator('.publisher-enterprise-channel-tabs').count(), 0, '渠道两个入口只能在左侧并列展示');
   await page.locator(section === 'channel-supply' ? '.publisher-channel-table--channels' : '.publisher-channel-table--distribution').waitFor();
 }
 
@@ -82,13 +83,15 @@ for (const width of [1440, 390]) {
       await expectNavigation(page, '游戏管理');
       await navigate(page, '财务主体');
       await page.screenshot({ path: path.join(output, `finance-navigation-${width}.png`), fullPage: false });
-      await navigate(page, '渠道分销');
+      await navigate(page, '渠道与供给');
       await expectChannelSection(page, 'channel-supply');
       await page.screenshot({ path: path.join(output, `channel-supply-${width}.png`), fullPage: false });
       await page.locator('[data-channel-section="channel-revenue"]').click();
       await expectChannelSection(page, 'channel-revenue');
       await page.screenshot({ path: path.join(output, `channel-revenue-${width}.png`), fullPage: false });
       await navigate(page, '对账结算');
+      await navigate(page, '分销数据');
+      await expectChannelSection(page, 'channel-revenue');
       await navigate(page, '厂商设置');
       await navigate(page, '游戏管理');
       assert.deepEqual(errors, [], '导航期间不能出现运行时错误');

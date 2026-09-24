@@ -36,8 +36,7 @@ async function openGame(page,{language='zh',qualificationStatus='approved'}={}){
 
 async function openSection(page,label){
   if(await page.locator('[data-publisher-game-console]').count())await page.locator('[data-portal-action="back-publisher-games"]').click();
-  if(!await page.locator('[data-workspace-view="channels"]').count())await page.locator('[data-publisher-view="channels"]').click();
-  await page.locator('[data-portal-action="enterprise-channel-section"]').filter({hasText:label}).click();
+  await page.locator('.publisher-console-sidebar [data-portal-action="enterprise-channel-section"]').filter({hasText:label}).click();
   await page.locator('.publisher-channel').waitFor();
 }
 
@@ -78,8 +77,8 @@ after(async()=>browser?.close());
 test('渠道入口仅对企业认证通过账号开放',async()=>{
   const page=await browser.newPage({viewport:{width:1280,height:900}});
   await openGame(page,{qualificationStatus:'unsubmitted'});
-  await page.locator('[data-portal-action="demo-approval-toggle"]').first().click();
-  await page.locator('[data-demo-approval-panel] [data-demo-qualification-status="unsubmitted"]').click();
+  await page.locator('[data-portal-action="demo-state-toggle"]').first().click();
+  await page.locator('[data-demo-state-panel] [data-demo-qualification-status="unsubmitted"]').click();
   for(const label of ['渠道与供给','分销数据']) assert.equal(await page.getByRole('button',{name:label,exact:true}).count(),0);
   await page.locator('[data-portal-action="back-publisher-games"]').click();
   assert.equal(await page.locator('[data-publisher-view="channels"]').count(),0);
@@ -94,6 +93,10 @@ test('渠道与供给采用渠道管理和批次管理两层模型',async()=>{
   for(const removed of ['渠道与供货','销售与收益','渠道分销','Key 批次','渠道数据','收益与结算']) assert.equal(await sidebar.getByRole('button',{name:removed,exact:true}).count(),0);
   await openSection(page,'渠道与供给');
   await page.locator('.publisher-console-sidebar [data-publisher-view="channels"].is-active').waitFor();
+  const enterpriseSidebar=page.locator('.publisher-console-sidebar');
+  assert.deepEqual(await enterpriseSidebar.locator('[data-portal-action="enterprise-channel-section"] b').allTextContents(),['渠道与供给','分销数据']);
+  assert.equal(await enterpriseSidebar.getByRole('button',{name:'渠道分销',exact:true}).count(),0,'企业侧栏不能合并成渠道分销总入口');
+  assert.equal(await page.locator('.publisher-enterprise-channel-tabs').count(),0,'企业内容区不能重复放置顶层渠道页签');
   assert.equal(await page.locator('[data-publisher-game-console]').count(),0);
   const tabs=page.getByRole('tablist',{name:'渠道与供给'});
   await tabs.getByRole('tab',{name:'渠道管理',exact:true}).waitFor();
@@ -650,12 +653,12 @@ test('320、390、1280、1440 宽度无根节点溢出且列表在内容区滚�
     await openGame(page);await openSection(page,'渠道与供给');
     if(width<=390){
       const mobileGeometry=await page.evaluate(()=>{
-        const nav=document.querySelector('[data-portal-action="enterprise-channel-section"]').parentElement.getBoundingClientRect();
+        const nav=document.querySelector('.publisher-console-sidebar').getBoundingClientRect();
         const active=document.querySelector('[data-portal-action="enterprise-channel-section"].is-active').getBoundingClientRect();
         const fab=document.querySelector('.developer-demo-state-fab').getBoundingClientRect();
         return {navLeft:nav.left,navRight:nav.right,activeLeft:active.left,activeRight:active.right,fabWidth:fab.width,paddingBottom:parseFloat(getComputedStyle(document.querySelector('.publisher-channel')).paddingBottom)};
       });
-      assert.ok(mobileGeometry.activeLeft>=mobileGeometry.navLeft&&mobileGeometry.activeRight<=mobileGeometry.navRight,`${width}px 当前功能 Tab 被裁切`);
+      assert.ok(mobileGeometry.activeLeft>=mobileGeometry.navLeft&&mobileGeometry.activeRight<=mobileGeometry.navRight,`${width}px 当前侧栏入口被裁切`);
       assert.ok(mobileGeometry.fabWidth<=40&&mobileGeometry.paddingBottom>=72,`${width}px Demo 浮标缺少内容安全区`);
     }
     for(const tab of ['渠道管理','批次管理']){
