@@ -6,6 +6,8 @@
     {code:'zh',label:'简体中文'}, {code:'en',label:'English'}, {code:'ja',label:'日本語'},
     {code:'pt-BR',label:'Português (Brasil)'}, {code:'ru',label:'Русский'}, {code:'hi',label:'हिन्दी（印地语）'}
   ];
+  const protocols=[{code:'android-official',label:'安卓官方包'},{code:'ios-official',label:'iOS官方包'},{code:'zhangyou-android',label:'盖世掌游安卓'},{code:'zhangyou-ios',label:'盖世掌游iOS'},{code:'harmony',label:'安卓鸿蒙渠道'},{code:'lenovo',label:'安卓联想渠道'},{code:'logitech',label:'安卓罗技渠道'},{code:'redmagic',label:'安卓红魔渠道'}];
+  const defaultProtocols=['android-official','ios-official'];
   const languageCodes = languages.map(item => item.code);
   const defaults = {domestic:'zh',overseas:'en'};
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -59,19 +61,19 @@
   const hindiTitles=['सहायता केंद्र में आपका स्वागत है','चित्र और वीडियो पढ़ना','लेख कैसे पढ़ें?','वीडियो कैसे देखें?'];
   const hindiBodies=['<h2>यहाँ से शुरू करें</h2><p>पढ़ने के लिए किसी श्रेणी के अंतर्गत एक लेख चुनें। यह सामग्री केवल नमूना है।</p>','<h2>चित्र और वीडियो का नमूना</h2><p>[[DEMO_IMAGE]]</p><p>वीडियो देखने के लिए प्ले दबाएँ। वीडियो अपने आप नहीं चलता।</p><p>[[DEMO_VIDEO]]</p>','<h2>श्रेणी के अनुसार पढ़ें</h2><p>लेख पढ़ने के लिए श्रेणी के अंतर्गत उसके शीर्षक पर क्लिक करें।</p>','<h2>प्ले दबाएँ</h2><p>वीडियो देखने के लिए प्ले दबाएँ। नियंत्रणों से वीडियो रोकें या आगे बढ़ाएँ।</p>'];
   for(const nav of seed.navs)for(const code of languageCodes)nav[code] ||= {title:''};
-  seed.docs.forEach((doc,index)=>{doc.en={title:englishTitles[index%4],html:englishBodies[index%4]};if(doc.package==='overseas'){doc.zh={title:'',html:''};doc.hi={title:hindiTitles[index%4],html:hindiBodies[index%4]};}});
+  seed.docs.forEach((doc,index)=>{doc.protocols=[...defaultProtocols];doc.en={title:englishTitles[index%4],html:englishBodies[index%4]};if(doc.package==='overseas'){doc.zh={title:'',html:''};doc.hi={title:hindiTitles[index%4],html:hindiBodies[index%4]};}});
   const ownedPackages=new Map([...seed.navs,...seed.docs].map(item=>[item.id,item.package]));
   const hasBody=html=>{const element=document.createElement('div');element.innerHTML=sanitize(html);return !!(element.textContent.trim()||element.querySelector('img,video'));};
   const validVersion=value=>!value||/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(value);
   const validOrder=value=>Number.isInteger(Number(value))&&String(value).trim()!==''&&Number(value)>=0&&Number(value)<=999999;
-  const store={draft:clone(seed),published:clone(seed),languages,pendingMedia:new Set(),escape,sanitize,safeLink,compareVersion,
+  const store={draft:clone(seed),published:clone(seed),languages,protocols,pendingMedia:new Set(),escape,sanitize,safeLink,compareVersion,
     subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},notify(){listeners.forEach(fn=>fn(store));},
     get(type,id){return store.draft[type].find(item=>item.id===id);},
     locale(item,language){const code=language||defaults[item?.package]||'zh';return item?.[code]?.title?.trim()?item[code]:item?.[defaults[item?.package]||'zh']||{title:'',html:''};},
-    visible(item,pack,version){if(!item||item.package!==pack)return false;if(item.minVersion||item.maxVersion){if(!version||!validVersion(version))return false;if(item.minVersion&&compareVersion(version,item.minVersion)<0)return false;if(item.maxVersion&&compareVersion(version,item.maxVersion)>0)return false;}return true;},
+    visible(item,pack,version,protocol='android-official'){if(!item||item.package!==pack)return false;if(Object.prototype.hasOwnProperty.call(item,'navId')&&(!Array.isArray(item.protocols)||!item.protocols.includes(protocol)))return false;if(item.minVersion||item.maxVersion){if(!version||!validVersion(version))return false;if(item.minVersion&&compareVersion(version,item.minVersion)<0)return false;if(item.maxVersion&&compareVersion(version,item.maxVersion)>0)return false;}return true;},
     status(type,id){const draft=store.get(type,id),live=store.published[type].find(item=>item.id===id);const content=value=>{const copy=clone(value);delete copy.order;return JSON.stringify(copy);};return !live?'草稿':content(draft)===content(live)?'已发布':'有未发布修改';},
     update(type,id,changes){const item=store.get(type,id);if(!item)return '内容不存在。';if(changes.package&&changes.package!==ownedPackages.get(id))return '内容包创建后不可更改。';if(type==='docs'&&changes.navId&&store.get('navs',changes.navId)?.package!==item.package)return '不能跨包迁移文章。';Object.assign(item,changes);store.notify();return '';},
-    create(type,pack='domestic'){if(!defaults[pack])throw new Error('无效的内容包。');const number=++serial;const prefix=pack==='overseas'?'O':'';const item={id:`HC-${prefix}${type==='navs'?'N':'D'}${String(number).padStart(3,'0')}`,package:pack,order:Math.min(999999,Math.max(0,...store.draft[type].filter(row=>row.package===pack).map(row=>row.order))+10)};if(type==='docs'){item.navId=store.draft.navs.filter(nav=>nav.package===pack).sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id))[0]?.id||'';item.order=Math.min(999999,Math.max(0,...store.draft.docs.filter(doc=>doc.navId===item.navId).map(doc=>doc.order))+10);item.minVersion='6.3.2';item.maxVersion='';}languageCodes.forEach(code=>{item[code]={title:'',...(type==='docs'?{html:''}:{})};});ownedPackages.set(item.id,pack);store.draft[type].push(item);store.notify();return item;},
+    create(type,pack='domestic'){if(!defaults[pack])throw new Error('无效的内容包。');const number=++serial;const prefix=pack==='overseas'?'O':'';const item={id:`HC-${prefix}${type==='navs'?'N':'D'}${String(number).padStart(3,'0')}`,package:pack,order:Math.min(999999,Math.max(0,...store.draft[type].filter(row=>row.package===pack).map(row=>row.order))+10)};if(type==='docs'){item.navId=store.draft.navs.filter(nav=>nav.package===pack).sort((a,b)=>a.order-b.order||a.id.localeCompare(b.id))[0]?.id||'';item.order=Math.min(999999,Math.max(0,...store.draft.docs.filter(doc=>doc.navId===item.navId).map(doc=>doc.order))+10);item.minVersion='6.3.2';item.maxVersion='';item.protocols=[...defaultProtocols];}languageCodes.forEach(code=>{item[code]={title:'',...(type==='docs'?{html:''}:{})};});ownedPackages.set(item.id,pack);store.draft[type].push(item);store.notify();return item;},
     validate(type,id){
       const item=store.get(type,id);if(!item)return '内容不存在。';
       if(item.package!==ownedPackages.get(id))return '内容包创建后不可更改。';
@@ -82,6 +84,8 @@
         if(type==='docs'&&!!title!==!!body)return `${label}需要同时填写标题和正文，或全部清空。`;
       }
       if(type==='docs'){
+        if(!Array.isArray(item.protocols)||!item.protocols.length)return '请至少选择一个 APP协议。';
+        if(item.protocols.some(code=>!protocols.some(protocol=>protocol.code===code)))return 'APP协议包含未知配置，请重新选择。';
         if(store.get('navs',item.navId)?.package!==item.package)return '不能跨包迁移文章。';
         if(!store.published.navs.some(nav=>nav.id===item.navId&&nav.package===item.package))return '请先发布所属导航，再发布子文档。';
         if(!validVersion(item.minVersion)||!validVersion(item.maxVersion))return '版本号需为三段数字，例如 6.3.2。';

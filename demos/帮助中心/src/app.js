@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const $=s=>document.querySelector(s), device=$('#device');
 const params=new URLSearchParams(location.search);
-const state={page:params.get('page')||'settings',docId:params.get('doc')||'',orientation:params.get('orientation')==='landscape'?'landscape':'portrait',lang:params.get('lang')||'zh',package:params.get('package')||'domestic',version:params.get('version')||'6.3.2',scenario:'normal',surface:params.get('surface')==='admin'?'admin':'app'};
+const state={page:params.get('page')||'settings',docId:params.get('doc')||'',orientation:params.get('orientation')==='landscape'?'landscape':'portrait',lang:params.get('lang')||'zh',package:params.get('package')||'domestic',version:params.get('version')||'6.3.2',protocol:params.get('protocol')||'android-official',scenario:'normal',surface:params.get('surface')==='admin'?'admin':'app'};
 const scrollPositions={settings:0,help:0,feedback:0};
 const isLandscape=()=>state.orientation==='landscape'&&window.innerWidth>=600;
 if(params.has('capture'))document.body.classList.add('capture-mode');
@@ -11,7 +11,7 @@ const text=(zh,en)=>state.lang==='zh'?zh:state.lang==='hi'?(hindi[zh]||en):en;
 const img=(id,cl='')=>`<img class="${cl}" src="${window.HELP_ASSETS[id]}" alt="">`;
 const arrow=()=>img('arrow','row-arrow');
 const navs=()=>[...HelpStore.published.navs].filter(n=>!n.package||n.package===state.package).sort((a,b)=>(a.order??0)-(b.order??0)||a.id.localeCompare(b.id));
-const docs=()=>[...HelpStore.published.docs].filter(d=>(!d.package||d.package===state.package)&&(!HelpStore.visible||HelpStore.visible(d,state.package,state.version))&&navs().some(n=>n.id===d.navId)).sort((a,b)=>(a.order??0)-(b.order??0)||a.id.localeCompare(b.id));
+const docs=()=>[...HelpStore.published.docs].filter(d=>(!d.package||d.package===state.package)&&(!HelpStore.visible||HelpStore.visible(d,state.package,state.version,state.protocol))&&navs().some(n=>n.id===d.navId)).sort((a,b)=>(a.order??0)-(b.order??0)||a.id.localeCompare(b.id));
 const locale=o=>HelpStore.locale?HelpStore.locale(o,state.lang):o?.[state.lang]||o?.en||o?.zh||{title:'',html:''};
 const back=()=>`<button class="app-back" data-back aria-label="${text('返回','Back')}">${img('back')}</button>`;
 const status=()=>`<div class="statusbar" aria-hidden="true"><span>10:11</span><span class="status-right"><span class="signal">▂▄▆</span><span>⌁</span><span class="battery">91</span></span></div>`;
@@ -23,10 +23,10 @@ function settings(){return `<div class="settings-main"><div class="settings-card
 function feedback(){return `<div class="settings-card">${['提交反馈','反馈历史','官方网站'].map((s,i)=>`<div class="setting-row"><span class="row-label">${text(s,['Submit feedback','Feedback history','Official website'][i])}</span>${arrow()}</div>`).join('')}</div>`;}
 function groups(){return navs().map(n=>{const list=docs().filter(d=>d.navId===n.id);return list.length?`<section class="help-group"><h2>${esc(locale(n).title)}</h2><div class="help-card">${list.map(d=>`<button class="help-row" data-doc="${esc(d.id)}" ${state.docId===d.id?'aria-current="page"':''}><span>${esc(locale(d).title)}</span>${arrow()}</button>`).join('')}</div></section>`:'';}).join('');}
 function empty(title,copy='',retry=false){return `<div class="state-content"><h2>${title}</h2>${copy?`<p>${copy}</p>`:''}${retry?`<button class="inline-retry" data-retry>${text('重新加载','Try again')}</button>`:''}</div>`;}
-function helpState(){
+function helpState(articlePage=false){
  if(state.scenario==='loading')return `<div class="state-content" role="status"><span class="spinner"></span><h2>${text('正在加载','Loading')}</h2></div>`;
  if(state.scenario==='error')return empty(text('暂时无法加载','Unable to load'),text('请检查网络后重试','Check your connection and try again'),true);
- if(state.scenario==='empty'||!docs().length)return empty(text('暂无帮助内容','No help content'),text('请稍后再来查看','Please check back later'));
+ if(state.scenario==='empty'||(!articlePage&&!docs().length))return empty(text('暂无帮助内容','No help content'),text('请稍后再来查看','Please check back later'));
  return '';
 }
 function article(){
@@ -39,7 +39,7 @@ function pauseVideos(){device.querySelectorAll('video').forEach(v=>v.pause());}
 function render(){
  pauseVideos();device.className=`device ${isLandscape()?'landscape':'portrait'}`;
  const title=state.page==='settings'?text('设置','Settings'):state.page==='feedback'?text('反馈&建议','Feedback'):text('帮助中心','Help Center');
- const err=state.page==='help'||state.page==='article'?helpState():'';
+ const err=state.page==='help'||state.page==='article'?helpState(state.page==='article'):'';
  if(!isLandscape()){
   const content=state.page==='settings'?settings():state.page==='feedback'?feedback():err||(state.page==='article'?article():groups());
   device.innerHTML=`${status()}<header class="app-header" data-component-id="C-TOPBAR">${back()}<h1>${title}</h1></header><div class="app-body" data-page="${state.page}">${content}</div>`;
@@ -71,6 +71,7 @@ device.addEventListener('click',e=>{const b=e.target.closest('[data-route],[data
 function surface(next){pauseVideos();state.surface=next;$('#app-stage').hidden=next!=='app';$('#admin-stage').hidden=next!=='admin';document.querySelectorAll('[data-surface]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.surface===next)));$('.demo-options').hidden=next!=='app';if(next==='admin'){HelpAdmin.mount($('#admin-stage'));}else{HelpAdmin.unmount?.();render();}}
 document.querySelectorAll('[data-surface]').forEach(b=>b.onclick=()=>surface(b.dataset.surface));
 $('#orientation').onclick=()=>{state.orientation=state.orientation==='portrait'?'landscape':'portrait';if(state.orientation==='landscape'&&state.page==='help'&&!state.docId)state.docId=docs()[0]?.id||'';$('#orientation').textContent=state.orientation==='portrait'?'横屏':'竖屏';$('#orientation').setAttribute('aria-pressed',String(state.orientation==='landscape'));render();};
+$('#protocol').onchange=e=>{state.protocol=e.target.value;state.docId='';if(state.page==='article')state.page='help';render();};
 $('#package').onchange=e=>{state.package=e.target.value;state.docId='';if(state.page==='article')state.page='help';render();};
 $('#version').onchange=e=>{state.version=e.target.value.trim()||'6.3.2';state.docId='';if(state.page==='article')state.page='help';render();};
 $('#language-select').onchange=e=>{state.lang=e.target.value;render();};
@@ -80,6 +81,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseVideos
 window.addEventListener('resize',()=>{if(state.surface==='app')render();});
 HelpStore.subscribe(()=>{if(state.surface==='app')render();});
 window.HelpApp={state,render,go,surface};
+$('#protocol').innerHTML=HelpStore.protocols.map(p=>`<option value="${esc(p.code)}">${esc(p.label)}</option>`).join('');$('#protocol').value=state.protocol;
 if($('#package'))$('#package').value=state.package;
 if($('#version'))$('#version').value=state.version;
 if($('#language-select'))$('#language-select').value=state.lang;
