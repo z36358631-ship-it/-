@@ -26,6 +26,14 @@
     const nav=root.querySelector('[data-ha-nav]');
     if(nav&&item.navId!==nav.value) {item.navId=nav.value;item.order=Math.min(999999,Math.max(0,...store.draft.docs.filter(doc=>doc.navId===nav.value).map(doc=>doc.order))+10);}
     store.notify();
+    if(state.modal){
+      const card=root.querySelector(`[data-ha-language-card="${state.language}"]`);
+      if(card){
+        card.querySelector('.ha-language-card-title').textContent=item[state.language].title||'尚未填写标题';
+        const excerpt=card.querySelector('.ha-language-excerpt');
+        if(excerpt){const fragment=document.createElement('div');fragment.innerHTML=store.sanitize(item[state.language].html||'');excerpt.textContent=fragment.textContent.trim().slice(0,100)||(fragment.querySelector('img,video')?'含图片或视频':'尚未填写正文');}
+      }
+    }
     const saved=root.querySelector('[data-ha-saved]'); if(saved) saved.textContent='草稿已自动保留 · 发布后才会同步 App';
   }
   function feedback(message) {state.feedback=message;const node=root?.querySelector('[data-ha-language-dialog] [data-ha-feedback]')||root?.querySelector('[data-ha-feedback]');if(node) node.textContent=message;}
