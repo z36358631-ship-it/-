@@ -30,6 +30,7 @@ function applyReviewPreset(id,full){
  if(id==='mouse')s.mouseOpen=full;
  if(id==='windows')s.previewEmptyWindows=!full;
  if(id==='files'&&full)s.files=[{...sampleFile('running'),name:'方案文档.docx',size:'12 MB',progress:36},{...sampleFile('running',true),name:'会议录音.mp3',size:'8 MB',progress:65},{...sampleFile('running',true),name:'附件.zip',size:'24 MB',failed:true},{...sampleFile('received'),name:'会议纪要.txt'},{...sampleFile('sent'),name:'产品截图.png'}];
+ if(id==='files'&&s.platform==='mac'){macFilesInit();s.macFileTasks=full?[{id:'preview-running',name:'方案文档.docx',size:'12 MB',source:'/Users/demo/Documents/方案文档.docx',target:'C:/Users/Public/Documents',targetSide:'remote',status:'running',progress:36},{id:'preview-paused',name:'会议录音.mp3',size:'8 MB',source:'C:/Users/Public/Documents/会议录音.mp3',target:'/Users/demo/Documents',targetSide:'local',status:'paused',progress:65},{id:'preview-done',name:'产品截图.png',size:'2 MB',source:'/Users/demo/Documents/产品截图.png',target:'C:/Users/Public/Documents',targetSide:'remote',status:'done',progress:100}]:[];}
  if(id==='more'&&!full)s.device='off';
  if(id==='entry-library'||id==='entry-profile')s.empty=!full;
  render();
