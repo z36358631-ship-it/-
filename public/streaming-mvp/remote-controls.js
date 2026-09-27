@@ -24,11 +24,11 @@ function controlAction(a){const [k,v]=a.split(':');
  if(k.startsWith('mouse-')){if(s.view)return true;const doc=$('.doc');if(k==='mouse-left')doc?.focus();if(k==='mouse-right'){s.mouseMenu=!s.mouseMenu;render();}if(k==='mouse-scroll')doc?.scrollBy(0,v==='up'?-80:80);if(k==='mouse-select'){s.mouseMenu=false;render();$('.doc')?.select();}if(k==='mouse-menu-close'){s.mouseMenu=false;render();}return true;}
  return false;
 }
-function clampMouse(){const m=$('.floating-mouse'),c=$('.remote-canvas');if(!m||!c)return;const p=s.mousePos||{x:.86,y:.70};const x=Math.max(m.offsetWidth/2+22,Math.min(c.clientWidth-m.offsetWidth/2+(s.mouseOpen?54:12),p.x*c.clientWidth)),y=Math.max(m.offsetHeight/2+22,Math.min(c.clientHeight-m.offsetHeight/2+(s.mouseOpen?54:12),p.y*c.clientHeight));m.style.left=x+'px';m.style.top=y+'px';}
-let mouseDrag=null,ignoreMouseClick=false;
-document.addEventListener('pointerdown',e=>{const m=e.target.closest('.floating-mouse');if(!m||(!e.target.closest('.mouse-grip')&&s.mouseOpen))return;const c=$('.remote-canvas').getBoundingClientRect();mouseDrag={id:e.pointerId,startX:e.clientX,startY:e.clientY,c,m};m.setPointerCapture(e.pointerId);});
-document.addEventListener('pointermove',e=>{if(!mouseDrag)return;const d=mouseDrag;if(Math.hypot(e.clientX-d.startX,e.clientY-d.startY)<5&&!ignoreMouseClick)return;ignoreMouseClick=true;s.mousePos={x:Math.max(0,Math.min(1.18,(e.clientX-d.c.left)/d.c.width)),y:Math.max(0,Math.min(1.18,(e.clientY-d.c.top)/d.c.height))};clampMouse();});
-document.addEventListener('pointerup',()=>{mouseDrag=null;setTimeout(()=>ignoreMouseClick=false,0);});
+function clampMouse(){const m=$('.floating-mouse'),c=$('.remote-canvas');if(!m||!c)return;const p=s.mousePos||{x:.86,y:.70};const x=Math.max(m.offsetWidth/2+2,Math.min(c.clientWidth-m.offsetWidth/2-2,p.x*c.clientWidth)),y=Math.max(m.offsetHeight/2+2,Math.min(c.clientHeight-m.offsetHeight/2-2,p.y*c.clientHeight));m.style.left=x+'px';m.style.top=y+'px';}
+let mouseDrag=null,ignoreMouseClick=false,mousePressTimer=0;
+document.addEventListener('pointerdown',e=>{const m=e.target.closest('.floating-mouse');if(!m||s.mouseOpen&&e.target.closest('button'))return;const c=$('.remote-canvas').getBoundingClientRect();clearTimeout(mousePressTimer);mouseDrag={id:e.pointerId,startX:e.clientX,startY:e.clientY,c,m,active:false};m.setPointerCapture(e.pointerId);mousePressTimer=setTimeout(()=>{if(mouseDrag?.id===e.pointerId)mouseDrag.active=true;},220);});
+document.addEventListener('pointermove',e=>{if(!mouseDrag)return;const d=mouseDrag;if(Math.hypot(e.clientX-d.startX,e.clientY-d.startY)<5&&!d.active)return;if(!d.active)return;ignoreMouseClick=true;s.mousePos={x:Math.max(0,Math.min(1,(e.clientX-d.c.left)/d.c.width)),y:Math.max(0,Math.min(1,(e.clientY-d.c.top)/d.c.height))};clampMouse();});
+document.addEventListener('pointerup',()=>{clearTimeout(mousePressTimer);mouseDrag=null;setTimeout(()=>ignoreMouseClick=false,0);});
 document.addEventListener('click',e=>{if(ignoreMouseClick&&e.target.closest('.floating-mouse')){e.preventDefault();e.stopImmediatePropagation();}},true);
 document.addEventListener('input',e=>{if(e.target.id==='office-draft')s.textDraft=e.target.value;});
 
