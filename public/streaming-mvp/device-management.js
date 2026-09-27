@@ -6,3 +6,12 @@ function deviceManagementAction(a){if(a==='delete-device'){s.deleteDeviceId=devi
  if(a==='rename-save'){const input=$('#rename-value');if(!input)return true;updateDeviceNameInput(input);const name=input.value.trim();if(!name)return true;device().name=deviceNameChars(name).slice(0,40).join('');s.modal='';render();return true;}return false;}
 document.addEventListener('input',e=>{if(e.target.id==='rename-value'&&!e.isComposing)updateDeviceNameInput(e.target);});
 document.addEventListener('compositionend',e=>{if(e.target.id==='rename-value')updateDeviceNameInput(e.target);});
+
+// Sample device hardware for the prototype, independent of the controller layout.
+const deviceHardware={
+ win:{board:'ASUSTeK COMPUTER INC. · PRIME B760M-A',processor:'Intel Core i5-13400F · 2.50 GHz',network:'02:00:00:00:00:01',memory:'32 GB',system:'Windows 11 64-bit',graphics:'NVIDIA GeForce RTX 4060 · 8 GB'},
+ work:{board:'Micro-Star International · PRO B660M-A',processor:'Intel Core i7-12700 · 2.10 GHz',network:'02:00:00:00:00:02',memory:'32 GB',system:'Windows 11 64-bit',graphics:'Intel UHD Graphics 770'},
+ off:{board:'Colorful Technology And Development Co., LTD · BATTLE-AX B560M-F PRO',processor:'Intel Core i5-10400F CPU @ 2.90 GHz',network:'02:00:00:00:00:03',memory:'16253 MB',system:'Windows 10 64-bit',graphics:'NVIDIA GeForce GTX 1060 3GB | Virtual Display Adapter'},
+ mac:{processor:'Apple M2 Pro',network:'02:00:00:00:00:04',memory:'16 GB',system:'macOS 15.0',graphics:'Apple M2 Pro · 16 核 GPU'}
+};
+function devicePropertiesContent(){const d=device(),data=d.hardware||deviceHardware[d.id]||{},isMac=d.os==='macOS';const fields=[...(!isMac?[['board','主板']]:[]),['processor','处理器'],['network','网卡'],['memory','总内存'],['system','系统版本'],['graphics','显卡']];return head('设备属性')+'<main class="content device-properties"><div class="panel property-name">'+line('名称','rename',isMac?'laptop':'monitor','<small>'+esc(d.name)+'</small>')+'</div><dl class="panel property-hardware">'+fields.map(([key,label])=>'<div class="property-row"><dt>'+label+'</dt><dd>'+esc(data[key]||'暂未获取')+'</dd></div>').join('')+'</dl>'+btn('进入设备主页','detail','device-home-button')+btn('删除设备','delete-device','delete-device-button')+'</main>';}
