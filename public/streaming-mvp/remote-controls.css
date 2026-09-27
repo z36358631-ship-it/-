@@ -1,0 +1,30 @@
+.quick-tools button,.squares button,.keyboard-nav button{white-space:nowrap}
+.keyboard-nav{display:flex;align-items:center;gap:4px;width:100%;border-bottom:1px solid #ffffff15;padding-bottom:8px}
+.keyboard-nav .seg{flex:1;flex-wrap:nowrap;min-width:0;background:none;padding:0}
+.keyboard-nav .seg button{flex:1;min-width:0;font-size:14px;border-radius:0;background:none;padding:8px 2px}
+.keyboard-nav .seg .active{color:#6dcafa;border-bottom:2px solid #6dcafa}
+.keyboard-nav>button{flex:0 0 38px;min-width:38px;padding:5px;background:none}
+.ime input{width:100%;background:#333840;border:0;border-radius:8px;padding:9px 12px;margin:8px 0;color:#fff;font-size:14px}
+.ime-rows{display:grid;gap:9px}.ime-row{display:flex;justify-content:center;gap:5px}
+.ime-row button{flex:1;min-width:0;padding:0;min-height:44px;max-width:36px;background:#5b6169;border-radius:7px;font-size:20px;box-shadow:0 2px #1115}
+.ime-row .modifier{font-size:14px;max-width:60px;background:#41474f}.ime-row .space{max-width:none;flex:5;font-size:14px}
+.ime-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:4px}.ime-bottom button{font-size:12px;color:#9adaff;padding:4px}.ime-bottom small{font-size:10px}
+.app .keyboard-open .keyboard-panel{position:relative;max-height:60%;flex-shrink:0;padding:10px 12px}
+.app .keyboard-open .toolbar{display:none}.app .remote-window{width:94%;height:auto;aspect-ratio:16/10;min-height:0}
+.app .keyboard-open .remote-window{width:100%;max-height:100%}
+.keyboard-grid button{white-space:nowrap}.floating-mouse{position:absolute;z-index:2;transform:translate(-50%,-50%);touch-action:none;user-select:none}
+.floating-mouse>button{border-radius:50%;width:48px;height:48px;padding:10px;background:#111c;color:white;box-shadow:0 2px 12px #0006}
+.floating-mouse>button svg{width:29px;height:29px;stroke-width:2}
+.floating-mouse.expanded{width:140px;height:190px;border-radius:65px 65px 52px 52px;background:#dceafa;color:#354e62;border:3px solid #8b9ba8;box-shadow:0 5px 20px #0005}
+.floating-mouse.expanded>button{position:absolute;right:-4px;top:-10px;width:32px;height:32px;min-height:32px;padding:6px}
+.mouse-grip{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:64px;text-align:center;cursor:grab;font-size:25px;z-index:2}
+.mouse-buttons{display:flex;height:102px;overflow:hidden;border-radius:60px 60px 0 0;border-bottom:2px solid #8b9ba8}.mouse-buttons button{flex:1;align-items:flex-start;padding:25px 8px;background:none;color:#354e62;font-size:11px;border-radius:0}.mouse-buttons button+button{border-left:2px solid #8b9ba8}
+.mouse-wheel{position:absolute;left:50%;top:50px;transform:translateX(-50%);background:#b2c5d5;border:2px solid #8b9ba8;border-radius:12px;overflow:hidden}.mouse-wheel button{display:block;min-height:27px;height:27px;padding:0 10px;background:none;color:#354e62}
+.mouse-bottom{padding-top:25px;text-align:center;font-size:12px}.mouse-context{position:absolute;right:10px;top:20px;z-index:3;background:#252a31;padding:5px;border-radius:8px;display:grid}
+.office-windows{display:grid;gap:10px;margin:16px 0}.office-window{justify-content:flex-start;width:100%;text-align:left;padding:15px}.office-window span{min-width:0}.office-window small{display:block;font-size:11px;margin-top:4px;color:#a8bed0}
+.office-actions{display:flex;gap:8px;margin-bottom:12px}.office-actions button{flex:1;font-size:12px;white-space:nowrap}.text-target{font-size:12px;color:#c4d3df;margin-top:12px}.draft-hint{font-size:12px;color:#acb9c3;margin-bottom:14px}#office-draft{min-height:150px;resize:none}.session-panel:has(#office-draft)>small{display:block;margin-top:10px}.session-panel:has(#office-draft)>.primary{width:100%}
+.ai-empty{padding:12px;color:#4b5968;text-align:center;background:#fff;font-size:12px}.ai-empty small{display:block;font-size:10px;color:#84909c}.remote-window:has(.ai-empty) .doc{border:1px solid #ccd5dd;margin:6px;width:calc(100% - 12px);border-radius:8px}
+.landscape .keyboard-panel{width:390px;padding:10px 12px}.landscape .ime-row button{min-height:36px}.landscape .ime-rows{gap:6px}
+.session-panel:has(.office-windows){max-height:85%}.mac .session-panel:has(.office-windows),.landscape .session-panel:has(.office-windows){max-height:100%}
+
+.landscape .keyboard-open .remote-canvas{margin-right:390px}.landscape .keyboard-open .remote-window{width:94%;height:auto;aspect-ratio:16/10;min-height:0}
