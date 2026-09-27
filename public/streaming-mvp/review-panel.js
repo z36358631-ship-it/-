@@ -8,6 +8,31 @@ const fallbackGroups={
 };
 function currentReviewGroup(){if(s.page==='wake-guide'||s.powerKind==='boot'&&s.modal.startsWith('power-'))return '远程开机';if(s.page==='session'||s.page==='ended')return '远程会话';if(s.page==='files')return '文件传输';if(['detail','properties','more','quicklaunch'].includes(s.page))return '设备详情';return '设备列表';}
 function reviewSettings(){return '<p class="review-hint">切换使用场景与预览设备。</p><div class="mode-switch">'+['normal','game','office'].map((id,i)=>btn(['普通模式','游戏模式','AI办公模式'][i],'mode:'+id,s.mode===id?'active':'')).join('')+'</div><label class="review-field">预览布局<select id="platform"><option value="app" '+(s.platform==='app'?'selected':'')+'>APP 竖屏</option><option value="landscape" '+(s.platform==='landscape'?'selected':'')+'>APP 横屏</option><option value="mac" '+(s.platform==='mac'?'selected':'')+'>Mac</option></select></label>'+btn(s.compare?'关闭 UU 对照':'打开 UU 实机对照','compare','review-compare')+'<p class="review-links"><a href="prd.html">查看 PRD</a> · <a href="comparison.html">逐项比对与差异</a></p>';}
-function review(){const tab=s.reviewTab||'fallback',groups=tab==='all'?stateGroups:fallbackGroups;const saved=tab==='all'?s.reviewAllGroup:s.reviewFallbackGroup;const group=groups[saved]?saved:tab==='all'?'设备与详情':currentReviewGroup();return '<aside class="review organized-review"><div class="row spread"><h2>状态预览</h2>'+ib('关闭状态面板','review','close')+'</div><div class="review-tabs" role="tablist">'+[['fallback','缺省态'],['all','穷举态'],['settings','演示设置']].map(([id,title])=>'<button role="tab" aria-selected="'+(tab===id)+'" data-action="review-tab:'+id+'" class="'+(tab===id?'active':'')+'">'+title+'</button>').join('')+'</div>'+(tab==='settings'?reviewSettings():'<p class="review-hint">'+(tab==='fallback'?'查看当前页面的空、加载及异常状态。':'按页面分类查看全部交互与状态。')+'</p><label class="review-field">'+(tab==='fallback'?'所属页面':'页面分类')+'<select id="review-group">'+Object.keys(groups).map(n=>'<option '+(n===group?'selected':'')+'>'+n+'</option>').join('')+'</select></label><div class="review-group-heading"><strong>'+group+'</strong><small>'+groups[group].length+' 项</small></div><div class="state-grid">'+groups[group].map(([id,title])=>btn(title.replaceAll('＊',''),'state:'+id)).join('')+'</div>')+'</aside>';}
-function reviewAction(a){const[k,v]=a.split(':');if(k==='review-tab'){s.reviewTab=v;render();return true;}if(k==='review'&&!s.review){s.reviewTab='fallback';s.reviewFallbackGroup=currentReviewGroup();}return false;}
-document.addEventListener('change',e=>{if(e.target.id==='review-group'){if(s.reviewTab==='all')s.reviewAllGroup=e.target.value;else s.reviewFallbackGroup=e.target.value;render();}});
+const reviewItems={
+ '设备与详情':[['设备列表','list'],['设备详情','detail'],['设备属性','properties']],
+ '远程桌面':[['远程桌面','session'],['操作面板','operation'],['键盘输入','keyboard'],['悬浮鼠标','mouse'],['办公窗口','windows']],
+ '开机流程':[['远程开机','wake-idle']],
+ '文件与工具':[['文件传输','files'],['更多工具','more']],
+ '入口位置对比':[['游戏库入口','entry-library'],['我的设备入口','entry-profile']]
+};
+function reviewPageGroup(){return ({'设备列表':'设备与详情','设备详情':'设备与详情','远程会话':'远程桌面','文件传输':'文件与工具','远程开机':'开机流程'})[currentReviewGroup()];}
+function review(){const group=reviewItems[s.reviewGroup]?s.reviewGroup:reviewPageGroup();let rows=reviewItems[group];if(s.platform==='mac'&&group==='远程桌面')rows=[...rows.filter(x=>x[1]!=='mouse'),['连接信号','net-good'],['连接不稳定','net-unstable'],['弱网提示','net-weak'],['网络恢复','net-recovered']];return '<aside class="review organized-review"><div class="row spread"><h2>状态预览</h2>'+ib('关闭状态面板','review','close')+'</div>'+(s.reviewTab==='settings'?btn('返回页面状态','review-tab:pages','review-back')+reviewSettings():'<label class="review-field">页面分类<select id="review-group">'+Object.keys(reviewItems).map(n=>'<option '+(n===group?'selected':'')+'>'+n+'</option>').join('')+'</select></label><div class="review-item-list">'+rows.map(([name,id])=>'<section class="review-item"><div class="review-item-row"><strong>'+name+'</strong>'+btn('缺省','review-preset:'+id+':default','review-default')+btn('穷举','review-preset:'+id+':full')+'</div></section>').join('')+'</div>'+btn('演示设置','review-tab:settings','review-compare'))+'</aside>';}
+function applyReviewPreset(id,full){
+ if(id.startsWith('net-')){applyState(full?id:'net-good');if(full){s.macNetOpen=id==='net-good';if(id==='net-recovered'){s.macReduced=true;s.macPreviousQuality={quality:'自动',fps:'60'};s.quality='流畅 2M';s.fps='30';}}render();return;}
+ const target=id==='list'?(full?'all':'empty'):id==='detail'?(full?'busy':'detail'):id==='wake-idle'?(full?'wake-failed':'wake-idle'):id;
+ applyState(target);
+ s.reviewPresetFull=full;
+ if(id==='detail')s.expanded=full;
+ if(id==='properties'&&full)device().name='办公室的 Windows 电脑 · 设计与 AI 办公';
+ if(id==='session'){s.desktop=!full;s.mouseOpen=false;if(full){s.activeWindow='doc';s.doc='项目讨论记录\n\n一、待办事项\n整理会议记录，完善方案并同步进度。\n\n二、AI 办公\n在电脑浏览器打开 AI 工具，继续编辑提示词和文档。';}}
+ if(id==='operation'){s.mapping=full;if(s.platform==='mac')s.macControlCategory=full?'quality':'';}
+ if(id==='keyboard'){s.keyboard=full?'电脑键盘':'输入法';if(full)s.doc='这是一段从手机输入到电脑的示例文字。';}
+ if(id==='mouse')s.mouseOpen=full;
+ if(id==='windows')s.previewEmptyWindows=!full;
+ if(id==='files'&&full)s.files=[{...sampleFile('running'),name:'方案文档.docx',size:'12 MB',progress:36},{...sampleFile('running',true),name:'会议录音.mp3',size:'8 MB',progress:65},{...sampleFile('running',true),name:'附件.zip',size:'24 MB',failed:true},{...sampleFile('received'),name:'会议纪要.txt'},{...sampleFile('sent'),name:'产品截图.png'}];
+ if(id==='more'&&!full)s.device='off';
+ if(id==='entry-library'||id==='entry-profile')s.empty=!full;
+ render();
+}
+function reviewAction(a){const[k,v,w]=a.split(':');if(k==='review-preset'){applyReviewPreset(v,w==='full');return true;}if(k==='review-tab'){s.reviewTab=v;render();return true;}if(k==='review'&&!s.review){s.reviewTab='pages';s.reviewGroup=reviewPageGroup();}return false;}
+document.addEventListener('change',e=>{if(e.target.id==='review-group'){s.reviewGroup=e.target.value;render();}});
