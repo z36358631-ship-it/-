@@ -1,5 +1,5 @@
 // This release supports computer targets only, regardless of sharing preference.
-function isUnsupportedDevice(d){return ['Android','iOS','iPadOS'].includes(d.os);}
+function isUnsupportedDevice(d){return ['Android','iOS','iPadOS'].includes(d?.os);}
 function unsupportedDeviceDetail(){const d=device();return head('<span style="font-size:16px">'+badge(d)+' '+esc(d.name)+'</span>')+'<main class="content unsupported-detail"><section class="permission-note"><h3>'+icon('warning')+'该设备暂不支持连接</h3><p>暂不支持手机或平板作为被连接设备。</p></section><div class="panel"><div class="unsupported-device-art" aria-hidden="true">'+icon('screen')+'</div>'+btn('设备详情','properties','unsupported-info','user')+'</div></main>';}
 function unsupportedDeviceProperties(){const d=device();return head('设备详情')+'<main class="content"><div class="panel list-panel"><div class="line"><span class="grow">设备名称</span><span>'+esc(d.name)+'</span></div><div class="line"><span class="grow">操作系统</span><span>'+esc(d.os)+'</span></div><div class="line"><span class="grow">设备状态</span>'+badge(d)+'</div></div><p class="title-section">该设备暂不支持连接</p></main>';}
 function showUnsupportedDevice(){clearTimeout(connectTimer);s.page='detail';s.modal='';s.panel='';s.pending='';s.pendingAction='';s.menu=false;render();}
