@@ -9,7 +9,7 @@ function textPanel(){const w=remoteWindows.find(w=>w.id===(s.activeWindow||'doc'
 const mouseSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 2v7M6 10h12"/></svg>';
 function floatingMouse(){if(s.platform==='mac'||s.view)return '';const p=s.mousePos||{x:.86,y:.70};return '<div class="floating-mouse '+(s.mouseOpen?'expanded':'')+'" style="left:'+p.x*100+'%;top:'+p.y*100+'%" aria-label="悬浮鼠标" '+(s.mouseOpen?'':'data-action="mouse-open"')+'>'+(s.mouseOpen?'<div class="mouse-grip" aria-label="拖动鼠标">⠿</div>'+ib('收起鼠标','mouse-close','close')+'<div class="mouse-buttons">'+btn('左键','mouse-left')+btn('右键','mouse-right')+'</div><div class="mouse-wheel">'+btn('▴','mouse-scroll:up')+btn('▾','mouse-scroll:down')+'</div><div class="mouse-bottom">鼠标</div>':'<button data-action="mouse-open" aria-label="展开悬浮鼠标">'+mouseSvg+'</button>')+'</div>'+(s.mouseMenu?'<div class="mouse-context">'+btn('全选文字','mouse-select')+btn('关闭','mouse-menu-close')+'</div>':'');}
 function controlAction(a){const [k,v]=a.split(':');
- if(['quicklaunch','terminal','open-files','apps-permission'].includes(k)){
+ if(['quicklaunch','open-files','apps-permission'].includes(k)){
   if(!device().online||device().blocked){toast(!device().online?'设备已离线，无法操作':'该设备不允许被控');return true;}
   if(device().busy){s.pendingAction=a;s.modal='takeover';render();return true;}
  }
