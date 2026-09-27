@@ -1,52 +1,83 @@
-<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一期MVP方案</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#17202c;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}header{background:#10161f;color:#fff;padding:28px max(24px,calc((100vw - 1180px)/2));}header a{color:#a9daff;margin-right:24px}main{max-width:1240px;padding:32px;margin:auto}h1{font-size:30px}h2{margin-top:44px;border-bottom:1px solid #d9e0e8;padding-bottom:10px}h3{margin-top:30px}a{color:#136db3}table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0;background:white}th,td{padding:12px 15px;border:1px solid #dde3ea;vertical-align:top;text-align:left}th{background:#eaf0f6}td:first-child{min-width:110px}img{max-width:100%;height:auto;max-height:650px;object-fit:contain;object-position:left}td img{display:block;max-height:550px;margin:12px 0}blockquote{border-left:4px solid #319dcc;padding:10px 20px;background:#eaf4fa;margin:20px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{padding:24px;border:1px solid #dce3ec;background:white;border-radius:16px;text-decoration:none;color:inherit}.card strong{display:block;color:#086ca8;font-size:20px}.muted{color:#64748b}.lead{font-size:22px;line-height:1.6;max-width:900px}.button{display:inline-block;background:#177cac;color:white;padding:12px 20px;border-radius:9px;text-decoration:none}pre{overflow:auto}code{background:#edf1f5}@media(max-width:700px){main{padding:18px}table{display:block;overflow:auto}header{padding:24px}h1{font-size:26px}}</style><header><a href="index.html">串流一期交付</a><a href="mvp.html">MVP 摘要</a><a href="mobile.html">移动端 Demo</a><a href="mac.html">Mac Demo</a><a href="demo.html">交互 Demo</a><a href="proposal.html">MVP 方案</a><a href="prd.html">PRD</a><a href="research.html">116 项竞品盘点</a></header><main><h1>远程电脑入口与首次引导</h1>
-<p><strong>推荐在盖世 APP 首页频道栏下、今日推荐上，增加一条「远程电脑」入口。进入后展示「我的设备」，相关设置收在该页右上角。保留盖世原有五个底栏，不保留 UU 的「远程协助」与独立「我的」导航。首次进入时，用同一个弹窗完整展示手机和其他电脑两种连接方式。</strong></p>
-<p>这是在盖世内增加远程能力的设计方案，功能链路继续采用本轮已确认的设备列表、设备详情、桌面控制与文件传输。入口、引导和导航整合是本轮新增设计，不代表已上线。</p>
-<h2>1. 入口放在哪里</h2>
-<p>实际首页已有搜索、消息、设备形状图标、推荐／云游戏／PC 游戏等频道，以及推荐内容；底部是主页、社区、排行榜、游戏库、我的。本轮保留这些结构，在频道栏与「今日推荐」之间增加一条紧凑入口。</p>
-<p>入口展示电脑图标、<strong>远程电脑</strong>、说明「连接自己的电脑，继续游戏和工作」及向右箭头。点击直接进入「我的设备」，不先选游戏／办公，也不选择 Windows／Mac。返回时回到原来的盖世首页。横屏保持同一位置关系，不把整套 APP 变成远程专用客户端。</p>
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一期MVP方案</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#17202c;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}header{background:#10161f;color:#fff;padding:28px max(24px,calc((100vw - 1180px)/2));}header a{color:#a9daff;margin-right:24px}main{max-width:1240px;padding:32px;margin:auto}h1{font-size:30px}h2{margin-top:44px;border-bottom:1px solid #d9e0e8;padding-bottom:10px}h3{margin-top:30px}a{color:#136db3}table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0;background:white}th,td{padding:12px 15px;border:1px solid #dde3ea;vertical-align:top;text-align:left}th{background:#eaf0f6}td:first-child{min-width:110px}img{max-width:100%;height:auto;max-height:650px;object-fit:contain;object-position:left}td img{display:block;max-height:550px;margin:12px 0}blockquote{border-left:4px solid #319dcc;padding:10px 20px;background:#eaf4fa;margin:20px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{padding:24px;border:1px solid #dce3ec;background:white;border-radius:16px;text-decoration:none;color:inherit}.card strong{display:block;color:#086ca8;font-size:20px}.muted{color:#64748b}.lead{font-size:22px;line-height:1.6;max-width:900px}.button{display:inline-block;background:#177cac;color:white;padding:12px 20px;border-radius:9px;text-decoration:none}pre{overflow:auto}code{background:#edf1f5}@media(max-width:700px){main{padding:18px}table{display:block;overflow:auto}header{padding:24px}h1{font-size:26px}}</style><header><a href="index.html">串流一期交付</a><a href="mvp.html">MVP 摘要</a><a href="mobile.html">移动端 Demo</a><a href="mac.html">Mac Demo</a><a href="demo.html">交互 Demo</a><a href="proposal.html">MVP 方案</a><a href="prd.html">PRD</a><a href="research.html">116 项竞品盘点</a></header><main><h1>远程电脑入口位置评审</h1>
+<p><strong>本轮推荐：游戏库增加独立「远程电脑」卡作为主入口；「我的 → 我的设备」增加电脑入口作为辅助。首页恢复原推荐结构，不常驻远程卡。Mac 使用左侧电脑列表＋右侧选中电脑详情。</strong></p>
+<p>这是按俞军“新体验－旧体验－替换成本”的框架，对既有盖世页面作场景走查；不是本人意见，也不是招募用户后的统计结论。Demo 保留三种入口预览供评审，默认采用推荐方案。</p>
+<h2>1. 四个位置的比较</h2>
 <table>
 <thead>
 <tr>
-<th>备选位置</th>
-<th>对用户的影响</th>
-<th>取舍</th>
+<th>位置</th>
+<th>使用收益</th>
+<th>主要成本</th>
+<th>建议</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>首页频道栏下、今日推荐上</td>
-<td>打开盖世即可看到；游戏和工作都能理解；会占用一条推荐内容空间</td>
-<td>本轮采用紧凑入口，不使用大宣传卡</td>
+<td>游戏库，与 Steam 卡同区域的独立卡</td>
+<td>来找游戏、选择游玩方式的既有玩家容易发现；沿用底栏习惯</td>
+<td>纯办公用户不一定去游戏库找电脑；卡片宽度要适配四入口</td>
+<td>主入口。卡名「远程电脑」，不塞进 Steam 内，不要求绑定 Steam</td>
 </tr>
 <tr>
-<td>游戏库内的 PC 远程</td>
-<td>对已有串流玩家容易理解，但工作用户可能不会去游戏库找电脑</td>
-<td>不作为本轮主入口，也不额外增加一条重复路径</td>
+<td>我的 → 我的设备 → 远程电脑</td>
+<td>自己的电脑归属明确，适合设备管理、办公和回访</td>
+<td>现有设备区在账号内容之后；当前手柄语义需要区分</td>
+<td>辅助入口。原手柄保留，电脑明确单列；共享同一设备数据</td>
 </tr>
 <tr>
-<td>首页右上现有设备图标</td>
-<td>改动看似最小，但现有点击落点没有可靠证据；图标也不能说明它是手柄还是远程电脑</td>
-<td>保留原入口，不擅自更换含义</td>
+<td>推荐旁边增加远程频道</td>
+<td>第一屏可发现，不依赖游戏库概念</td>
+<td>原栏已有多种游戏频道；加入工具混合内容与操作，进一步拥挤</td>
+<td>只保留备选预览，本期不推荐</td>
 </tr>
 <tr>
-<td>底栏或「我的」</td>
-<td>新增底栏挤占现有导航；藏入「我的」会增加每次连接的路径</td>
-<td>不新增底栏，不把主入口藏入设置</td>
+<td>推荐上方独立卡</td>
+<td>曝光强</td>
+<td>每个无远程需求的用户都付出首屏空间、注意力成本；不像原有页面</td>
+<td>移除旧卡</td>
 </tr>
 </tbody>
 </table>
-<p>Mac 继续使用既有盖世主侧栏，增加「远程电脑」项；工作区同样显示「我的设备」和右上设置。既有全局账号与客户端设置保持原职责，这里的设置只管理远程相关项，不再复制一套账号中心。</p>
-<h2>2. 为什么值得这样放</h2>
-<p>按俞军的用户价值框架，这里的判断重点是用户是否能以更低成本完成原来的任务，而不是首页多了一个模块。这是依据其方法论作出的产品推断，不是本人意见或真实用户实验结论。</p>
-<ul>
-<li><strong>已有盖世用户：</strong> 手机上玩电脑游戏时，可以从已有 APP 连接自己的电脑，减少切换应用和重新寻找入口的成本。前提仍是连接和控制可用，入口本身不等于体验更好。</li>
-<li><strong>临时工作用户：</strong> 想回到电脑改文件、处理工作或继续 AI 会话时，「远程电脑」直接说明操作对象；不要求先理解 PC 游戏、模拟器、云游戏的区别。</li>
-<li><strong>已有 UU 用户：</strong> 保留熟悉的设备列表→详情→桌面链路，减少重新学习。盖世中的价值是已有账号与使用路径的整合，不能仅凭一套相似页面宣称足以替代 UU。</li>
-</ul>
-<p>本轮用一条可见入口解决发现问题，用原有五个底栏保留老用户习惯。是否值得占据更大的首页位置，后续看进入后实际完成连接和持续使用的情况；目前没有数据支持增加一个一级业务 Tab。</p>
+<h2>2. 用户、体验与业务判断</h2>
+<table>
+<thead>
+<tr>
+<th>用户处境</th>
+<th>推荐路径</th>
+<th>解决的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>已有盖世玩家想串流</td>
+<td>游戏库 → 远程电脑 → 设备</td>
+<td>去原来找游戏的位置选电脑，不再切换 APP</td>
+</tr>
+<tr>
+<td>临时办公或取文件</td>
+<td>我的 → 我的设备 → 远程电脑</td>
+<td>用“自己的电脑”理解功能，不先选择游戏或工作模式</td>
+</tr>
+<tr>
+<td>已使用过的回访用户</td>
+<td>游戏库或我的设备 → 同一设备列表</td>
+<td>两个入口是同一功能，设备、设置、引导已读一致，返回回到来路</td>
+</tr>
+<tr>
+<td>第一次使用</td>
+<td>入口 → 首次引导 → 电脑安装与同账号登录</td>
+<td>说明在哪台电脑安装；关闭引导不能假装添加成功</td>
+</tr>
+</tbody>
+</table>
+<p>产品侧：两个已有位置承接不同任务，不新增底栏和第二套远程产品。设计侧：游戏库沿用平台入口卡样式，但远程是连接能力，不假扮游戏平台；我的设备保留手柄并区分电脑。研发侧：两个入口共用同一设备页与数据，只保留返回来源。业务侧：优先承接已有盖世用户；不能把这个入口决定当成纯办公用户拉新的解决方案。后续若办公成为独立主业务，再重审一级导航。</p>
+<p>已核对页面：gh-105 游戏库现有 Steam／Epic／导入游戏；gh-11 与 gh-78 我的设备现有手柄入口；gh-17 首页现有游戏频道。依据这些事实，首页曝光更强不等于整体用户价值更高。没有点击或留存实验数据，因此不编造成功概率。</p>
+<h2>Mac 直接展示选中电脑</h2>
+<p>盖世主侧栏保留；进入远程后，左列列出电脑及在线／被控状态，右侧直接显示选中电脑的名称、进入桌面、文件传输、观看模式、终端、更多与快速启动。第一次默认选中一台示例电脑但不连接；点击其他电脑只换右侧详情。全部设备作为次入口保留；设置在左列“我的设备”右上角。空／加载／失败仍显示对应状态，不能凭空选出电脑。</p>
+<p>旋转屏幕后收起当前操作／设置／键盘面板，保留连接、设备对象、文档及设置；用户需要时从工具条重新展开。</p>
 <h2>3. 我的设备与设置</h2>
 <p>「我的设备」是远程工作区内的标题，只展示远程相关设备，不直接覆盖盖世个人中心中原有的手柄设备管理。设备系统是列表属性，不作平台切换 Tab。</p>
-<p>右上齿轮进入远程设置；返回恢复设备列表及滚动位置。删除远程协助入口、协助编号、收藏协助设备及 UU 式独立「我的」页。会话内的画质、输入和声音仍在操作面板中，不要求退出会话到齿轮设置。</p>
+<p>右上齿轮进入远程设置；返回设备列表；从设备列表返回时回到进入远程的游戏库或我的页面。删除远程协助入口、协助编号、收藏协助设备及 UU 式独立「我的」页。会话内的画质、输入和声音仍在操作面板中，不要求退出会话到齿轮设置。</p>
 <h2>4. 两种引导放在同一张图里</h2>
 <p>弹窗内用两张流程卡展示完整路径，不采用 Tab、轮播或「下一页」。竖屏上下排列，横屏与 Mac 并排；两种方式和主按钮都应可见。示意图必须标明「控制端 → 被控电脑」，避免看不清究竟要在哪台设备安装。</p>
 <table>
@@ -86,5 +117,4 @@
 <li>用户本轮两张 UU 图分别展示手机、其他电脑控制本机的引导；采用其安装与同账号登录的语义。用户明确要求合并展示，因此不复制原图的两个 Tab；图中的 UU 账号、二维码和域名不进入盖世界面。</li>
 <li>此结论替代旧文档中「Demo 直接打开孤立远程工作区」的安排。新版 Demo 应从盖世 APP 外壳进入新增入口，远程功能本身无需重做另一套业务流程。</li>
 </ul>
-<p>仅 Mac 显示手机 APP 下载二维码；APP 引导只提示电脑端下载、安装和同账号登录。</p>
-<p><a href="mvp.html">一期功能</a> · <a href="prd.html">当前 PRD</a></p><p><a download href="一期MVP方案.md">下载 Markdown</a></p></main></html>
+<p><a href="prd.html">最新 PRD</a></p><p><a download href="一期MVP方案.md">下载 Markdown</a></p></main></html>
