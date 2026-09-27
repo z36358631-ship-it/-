@@ -1,5 +1,5 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>逐项对照</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#17202c;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}header{background:#10161f;color:#fff;padding:28px max(24px,calc((100vw - 1180px)/2));}header a{color:#a9daff;margin-right:24px}main{max-width:1240px;padding:32px;margin:auto}h1{font-size:30px}h2{margin-top:44px;border-bottom:1px solid #d9e0e8;padding-bottom:10px}h3{margin-top:30px}a{color:#136db3}table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0;background:white}th,td{padding:12px 15px;border:1px solid #dde3ea;vertical-align:top;text-align:left}th{background:#eaf0f6}td:first-child{min-width:110px}img{max-width:100%;height:auto;max-height:650px;object-fit:contain;object-position:left}td img{display:block;max-height:550px;margin:12px 0}blockquote{border-left:4px solid #319dcc;padding:10px 20px;background:#eaf4fa;margin:20px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{padding:24px;border:1px solid #dce3ec;background:white;border-radius:16px;text-decoration:none;color:inherit}.card strong{display:block;color:#086ca8;font-size:20px}.muted{color:#64748b}.lead{font-size:22px;line-height:1.6;max-width:900px}.button{display:inline-block;background:#177cac;color:white;padding:12px 20px;border-radius:9px;text-decoration:none}pre{overflow:auto}code{background:#edf1f5}@media(max-width:700px){main{padding:18px}table{display:block;overflow:auto}header{padding:24px}h1{font-size:26px}}</style><header><a href="index.html">串流一期交付</a><a href="mvp.html">MVP 摘要</a><a href="mobile.html">移动端 Demo</a><a href="mac.html">Mac Demo</a><a href="demo.html">交互 Demo</a><a href="proposal.html">MVP 方案</a><a href="prd.html">PRD</a><a href="research.html">116 项竞品盘点</a></header><main><h1>UU 远程与盖世原型逐项对照</h1>
-<p>本轮重做了核心页面关系，使用盖世深色样式；不是 UU 全量功能的像素级复制。点击 Demo 右下角「状态与对照」可查看原始实机截图、切换页面和布局。</p>
+<p>本轮将远程融入盖世 APP；首页固定入口、双路径引导、右上设置按用户修正，远程协助及独立我的栏目已移除。设备详情和会话继续采用 UU 核心流程，使用盖世深色样式；不是 UU 全量功能的像素级复制。点击 Demo 右下角「状态与对照」可查看原始实机截图、切换页面和布局。</p>
 <table>
 <thead>
 <tr>
@@ -109,11 +109,12 @@
 </tbody>
 </table>
 <h2>状态覆盖</h2>
-<p>36 个可选择的单项样本，在 3 种布局中检查了 108 次渲染：设备正常／加载／空／失败，在线／离线／禁控／占用，连接中／失败／退出／会话结束，控制／仅观看，输入与显示面板，文件传输／暂停／失败／完成／冲突／清理等。</p>
+<p>37 个可选择的单项样本，在 3 种布局中检查了 111 次渲染：设备正常／加载／空／失败，在线／离线／禁控／占用，连接中／失败／退出／会话结束，控制／仅观看，输入与显示面板，文件传输／暂停／失败／完成／冲突／清理等。</p>
 <p>交互检查覆盖：全部设备独立页、占用取消不接管、确认接管后进入桌面、仅观看禁止文字输入、独立文件任务与取消、指定记录区清理、离线不生成传输成功。</p>
-<p>这些是浏览器原型检查，不是 108 次真实远控验证。带「＊」的样本是盖世异常补足；不是从 UU 截图推导出的已实测完整流程。未宣称全部状态组合穷举。</p>
+<p>这些是浏览器原型检查，不是 111 次真实远控验证。带「＊」的样本是盖世异常补足；不是从 UU 截图推导出的已实测完整流程。未宣称全部状态组合穷举。</p>
 <h2>入口决定</h2>
 <p>推荐首页固定「远程」入口，进入远程电脑工作区；Mac 侧栏为「远程」。连接后再决定游戏、办公或使用电脑上的 AI。同一台电脑不拆成两套业务入口，不把游戏库作为唯一入口，也不增加第六个底栏。入口草图与 UU 流程对照分开标注。</p>
 <h2>一期范围</h2>
 <p>一期优先：设备发现与状态、连接及占用处理、桌面控制、文字和必要快捷输入、基础显示与声音、文件收发、仅观看与退出恢复。终端、宏、远程开机、工具排序和应用快捷启动不因竞品中出现就自动进入一期。</p>
-<p>当前 PRD 为流程评审稿。进入开发前，需要结合现有串流引擎补齐真实鉴权、主机权限与输入转发接口；原型不会替这些能力作通过判定。</p><p><a download href="逐项对照.md">下载 Markdown</a></p></main></html>
+<p>当前 PRD 为流程评审稿。进入开发前，需要结合现有串流引擎补齐真实鉴权、主机权限与输入转发接口；原型不会替这些能力作通过判定。</p>
+<p>本次新增检查：APP 原五导航、首页到远程二级页、首次／复访／手动复看、关闭不创建设备、设置返回、三种布局双路径完整可见。二维码编码官方中文下载页，不包含个人账号信息。</p><p><a download href="逐项对照.md">下载 Markdown</a></p></main></html>

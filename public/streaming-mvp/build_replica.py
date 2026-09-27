@@ -30,7 +30,7 @@ for n,name in sources.items():
     im.save(R/'assets'/('uu-'+name+'.png'),optimize=True)
     manifest.append({'file':'uu-'+name+'.png','step':n,'source':f.name,'redacted':True})
 (R/'replica-source-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf8')
-css=(R/'replica.css').read_text(encoding='utf8');js=(R/'replica-icons.js').read_text(encoding='utf8')+'\n'+(R/'replica.js').read_text(encoding='utf8')
+css=(R/'replica.css').read_text(encoding='utf8')+'\n'+(R/'integration.css').read_text(encoding='utf8');js=(R/'replica-icons.js').read_text(encoding='utf8')+'\n'+(R/'home-media.js').read_text(encoding='utf8')+'\n'+(R/'integration.js').read_text(encoding='utf8')+'\n'+(R/'replica.js').read_text(encoding='utf8')
 for name,platform in [('demo','app'),('mobile','app'),('mac','mac')]:
     html='<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世远程 · UU 流程对照</title><style>'+css+'</style></head><body><div id="app"></div><script>const DEFAULT_PLATFORM="'+platform+'";\n'+js+'</script></body></html>'
     (R/(name+'.html')).write_text(html,encoding='utf8')
