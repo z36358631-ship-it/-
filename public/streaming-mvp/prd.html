@@ -12,6 +12,12 @@
 <tbody>
 <tr>
 <td>2026/9/27</td>
+<td>一期加入开机、重启、关机尝试与连接教程；状态面板新增普通／游戏／AI办公模式；鼠标允许右下越界</td>
+<td>V2.4</td>
+<td>产品</td>
+</tr>
+<tr>
+<td>2026/9/27</td>
 <td>被控信息默认折叠；统一接管；重做键盘；悬浮鼠标；办公窗口和长文本；直接退出</td>
 <td>V2.3</td>
 <td>产品</td>
@@ -98,10 +104,10 @@
 </table>
 <h2>二、产品说明</h2>
 <h3>2.1 产品／方案简介</h3>
-<p>为需要远程使用本人电脑的用户提供一个统一工作区：选择设备，查看详情，进入桌面或直接传文件。工作区不按游戏／办公拆分，也不按 Windows／Mac 拆分。右下角浮动按钮只供评审切换端、方向和缺省／异常状态，不属于正式产品功能。</p>
+<p>为需要远程使用本人电脑的用户提供一个统一工作区：选择设备，查看详情，进入桌面或直接传文件。工作区不按游戏／办公拆分，也不按 Windows／Mac 拆分。右下角「状态」按钮供评审切换普通模式、游戏模式、AI办公模式，以及端、方向和缺省／异常状态，不属于正式产品功能。</p>
 <p>本轮可对照终端、快速启动等竞品路径，但一期仍以连接、控制、输入、文件和退出为核心。原型中的模拟成功只证明交互可走通。</p>
 <h3>2.2 产品流程</h3>
-<p><img alt="远程产品流程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-flow.png" /></p>
+<p><img alt="远程产品流程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-flow.png" /></p>
 <p><em>游戏库／我的设备「远程电脑」→远程设备列表（首次双路径引导、右上设置）→设备详情→进入桌面（占用时先接管或取消）→桌面操作→退出回详情。文件传输从详情独立进入，不要求先打开桌面。</em></p>
 <h2>三、功能需求</h2>
 <h3>3.1 C 端功能需求</h3>
@@ -128,7 +134,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="游戏库主入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-library.png" /><br><img alt="我的设备辅助入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-profile.png" /><br><img alt="推荐旁边备选，仅评审" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-channel.png" /><br><strong>详细说明：</strong> 推荐游戏库主入口＋我的设备辅助入口；第三张推荐旁边仅作为备选预览，正式建议不同时上三种入口。<br><strong>展示说明：</strong><br>1. 游戏库沿用 Steam、Epic、导入游戏区域，增加独立「远程电脑」卡，不嵌入 Steam、不要求绑定 Steam。<br>2. 个人中心保留手柄入口，在我的设备内增加明确电脑图标及「远程电脑」入口，不复用同一“添加设备”表达两种配对。<br>3. 原五底栏保留；首页移除旧远程大卡，恢复推荐内容。远程内不出现远程协助或独立我的导航。<br><strong>交互说明：</strong><br>1. 两个入口进入同一设备列表，共享设备、设置与首次引导已读。<br>2. 设备列表返回游戏库或我的原来路；详情返回列表。<br>3. 右下角可切换三种评审方案，不作为正式用户设置；其他盖世功能不在本次原型实现范围内。</td>
+<td><strong>图示：</strong><br><img alt="游戏库主入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-library.png" /><br><img alt="我的设备辅助入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-profile.png" /><br><img alt="推荐旁边备选，仅评审" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-channel.png" /><br><strong>详细说明：</strong> 推荐游戏库主入口＋我的设备辅助入口；第三张推荐旁边仅作为备选预览，正式建议不同时上三种入口。<br><strong>展示说明：</strong><br>1. 游戏库沿用 Steam、Epic、导入游戏区域，增加独立「远程电脑」卡，不嵌入 Steam、不要求绑定 Steam。<br>2. 个人中心保留手柄入口，在我的设备内增加明确电脑图标及「远程电脑」入口，不复用同一“添加设备”表达两种配对。<br>3. 原五底栏保留；首页移除旧远程大卡，恢复推荐内容。远程内不出现远程协助或独立我的导航。<br><strong>交互说明：</strong><br>1. 两个入口进入同一设备列表，共享设备、设置与首次引导已读。<br>2. 设备列表返回游戏库或我的原来路；详情返回列表。<br>3. 右下角可切换三种评审方案，不作为正式用户设置；其他盖世功能不在本次原型实现范围内。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -163,7 +169,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="设备列表" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-list.png" /><br><strong>详细说明：</strong> 保留 UU 设备列表到详情的层级，不让卡片直接开始桌面连接。<br><strong>展示说明：</strong><br>1. 列表按「在线设备」「离线设备」分组，显示设备名称、图标及状态。Windows 与 Mac 在同一列表。<br>2. 页面标题改为「我的设备」，右上齿轮打开远程设置；「全部设备」保留在列表工具行，不是操作系统 Tab。列表为空时显示无设备说明；加载中不显示伪造的在线状态。<br>3. 工作区不出现「PC游戏」「复古游戏」和游戏库面包屑。<br><strong>交互说明：</strong><br>1. 点击设备进入该设备详情；返回列表保留分组展开状态。<br>2. 点击「全部设备」进入独立页面，按手机／平板与电脑显示；选择设备进入详情，不建立会话。Mac 在左列选择后直接替换右侧详情，左列保留。重复点击设备不会创建多份会话。<br>3. 评审浮钮打开状态选择面板；切换样本不调用真实账号或设备。</td>
+<td><strong>图示：</strong><br><img alt="设备列表" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-list.png" /><br><strong>详细说明：</strong> 保留 UU 设备列表到详情的层级，不让卡片直接开始桌面连接。<br><strong>展示说明：</strong><br>1. 列表按「在线设备」「离线设备」分组，显示设备名称、图标及状态。Windows 与 Mac 在同一列表。<br>2. 页面标题改为「我的设备」，右上齿轮打开远程设置；「全部设备」保留在列表工具行，不是操作系统 Tab。列表为空时显示无设备说明；加载中不显示伪造的在线状态。<br>3. 工作区不出现「PC游戏」「复古游戏」和游戏库面包屑。<br><strong>交互说明：</strong><br>1. 点击设备进入该设备详情；返回列表保留分组展开状态。<br>2. 点击「全部设备」进入独立页面，按手机／平板与电脑显示；选择设备进入详情，不建立会话。Mac 在左列选择后直接替换右侧详情，左列保留。重复点击设备不会创建多份会话。<br>3. 评审浮钮打开状态选择面板；切换样本不调用真实账号或设备。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -198,7 +204,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="设备详情" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-detail.png" /><br><img alt="被控默认折叠" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-busy-collapsed.png" /><br><img alt="占用接管" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-busy.png" /><br><strong>详细说明：</strong> 大封面上的「进入桌面」为主动作，工具行包含「文件传输」「观看模式」「终端」「更多」，下方为「快速启动」。<br><strong>展示说明：</strong><br>1. 顶部设备名、在线／离线；被控时显示「被控中」和控制设备数量，控制方名称及时长默认折叠；点击「展开／收起」切换。<br>2. 接管提示明确已有其他设备控制，提供「取消」和接管动作。离线或不允许被控不能显示已连接桌面。<br><strong>交互说明：</strong><br>1. 点击「进入桌面」检查状态；可控则连接，已占用先提示；点击取消停留详情，原会话不变。<br>2. 进入桌面、观看模式、文件传输、终端、更多和添加应用均先检查占用；统一复用「接管设备／取消」。确认成功后继续原动作，添加应用不能跳到桌面代替；取消不执行、不新增应用或文件。接管时再次检查在线与权限。<br>3. 文件传输打开独立页；观看模式打开仅观看桌面；终端和更多进入对应工具。<br>4. 返回关闭详情，回设备列表，不向电脑发送关机、重启或终止应用命令。</td>
+<td><strong>图示：</strong><br><img alt="设备详情" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-detail.png" /><br><img alt="被控默认折叠" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-busy-collapsed.png" /><br><img alt="占用接管" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-busy.png" /><br><strong>详细说明：</strong> 大封面上的「进入桌面」为主动作，工具行包含「文件传输」「观看模式」「终端」「更多」，下方为「快速启动」。<br><strong>展示说明：</strong><br>1. 顶部设备名、在线／离线；被控时显示「被控中」和控制设备数量，控制方名称及时长默认折叠；点击「展开／收起」切换。<br>2. 接管提示明确已有其他设备控制，提供「取消」和接管动作。离线或不允许被控不能显示已连接桌面。<br><strong>交互说明：</strong><br>1. 点击「进入桌面」检查状态；可控则连接，已占用先提示；点击取消停留详情，原会话不变。<br>2. 进入桌面、观看模式、文件传输、终端、更多和添加应用均先检查占用；统一复用「接管设备／取消」。确认成功后继续原动作，添加应用不能跳到桌面代替；取消不执行、不新增应用或文件。接管时再次检查在线与权限。<br>3. 文件传输打开独立页；观看模式打开仅观看桌面；终端和更多进入对应工具。<br>4. 返回关闭详情，回设备列表，不向电脑发送关机、重启或终止应用命令。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -233,7 +239,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="远程桌面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-session.png" /><br><strong>详细说明：</strong> 保留桌面与可展开工具栏关系，工具栏打开操作、显示、键盘和更多面板。<br><strong>展示说明：</strong><br>1. 桌面为主区域；工具面板覆盖或依附桌面，不回到游戏库。<br>2. 操作面板区分触控／鼠标、鼠标按键及仅观看；当前选择有明确选中态。移除「隐私安全状态／需关注」提示行，账号授权与主机权限仍正常生效。<br>3. 断开或被接管时显示会话已结束／需重连状态，不能继续呈现可操作假桌面。<br><strong>交互说明：</strong><br>1. 展开或收起工具栏只改变控件可见性，不断开会话。<br>2. 仅观看打开后阻止远程指针和键盘输入；关闭后恢复普通操作。<br>3. 「退出远控」直接结束本次控制并回详情，不再二次确认；不关闭电脑上的程序。关闭工具面板只回桌面。<br>4. 普通方式重新进入桌面不继承上次仅观看状态，此行为有真机样本。</td>
+<td><strong>图示：</strong><br><img alt="远程桌面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-session.png" /><br><strong>详细说明：</strong> 保留桌面与可展开工具栏关系，工具栏打开操作、显示、键盘和更多面板。<br><strong>展示说明：</strong><br>1. 桌面为主区域；工具面板覆盖或依附桌面，不回到游戏库。<br>2. 操作面板区分触控／鼠标、鼠标按键及仅观看；当前选择有明确选中态。移除「隐私安全状态／需关注」提示行，账号授权与主机权限仍正常生效。<br>3. 断开或被接管时显示会话已结束／需重连状态，不能继续呈现可操作假桌面。<br><strong>交互说明：</strong><br>1. 展开或收起工具栏只改变控件可见性，不断开会话。<br>2. 仅观看打开后阻止远程指针和键盘输入；关闭后恢复普通操作。<br>3. 「退出远控」直接结束本次控制并回详情，不再二次确认；不关闭电脑上的程序。关闭工具面板只回桌面。<br>4. 普通方式重新进入桌面不继承上次仅观看状态，此行为有真机样本。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -268,7 +274,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="显示设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-display.png" /><br><strong>详细说明：</strong> 设置留在会话内，不创建第二条连接。<br><strong>展示说明：</strong><br>1. 展示画质、帧率、分辨率、缩放控件；声音在独立面板；当前值在控件旁显示，不可用项置灰。<br>2. 原型数值是演示选项，不作为正式支持上限或实测帧率。<br><strong>交互说明：</strong><br>1. 选择选项更新当前选中态；本版只更新缩放数值，未模拟真实桌面重采样。<br>2. 声音开关只表现设置变化，不伪造真实收听证据。<br>3. 关闭面板回到当前桌面，仍保留本次选择。</td>
+<td><strong>图示：</strong><br><img alt="显示设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-display.png" /><br><strong>详细说明：</strong> 设置留在会话内，不创建第二条连接。<br><strong>展示说明：</strong><br>1. 展示画质、帧率、分辨率、缩放控件；声音在独立面板；当前值在控件旁显示，不可用项置灰。<br>2. 原型数值是演示选项，不作为正式支持上限或实测帧率。<br><strong>交互说明：</strong><br>1. 选择选项更新当前选中态；本版只更新缩放数值，未模拟真实桌面重采样。<br>2. 声音开关只表现设置变化，不伪造真实收听证据。<br>3. 关闭面板回到当前桌面，仍保留本次选择。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -303,7 +309,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="键盘输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-keyboard.png" /><br><strong>详细说明：</strong> 保留文字输入、电脑键盘及组合键模式；不把输入 AI 软件设计为新的业务页面。<br><strong>展示说明：</strong><br>1. 顶部「输入法／快捷键／电脑键盘」三项等宽单行，右侧关闭；标签和按钮不换行。竖屏输入法在桌面下方展开，桌面缩小保留可见；普通输入法不再使用大段文本框替代键盘。Demo 显示可点击键盘示意，正式客户端调起系统输入法；不以网页键盘证明系统键盘适配通过。<br>2. 文字样本使用测试内容；不读取或展示用户真实剪贴板。<br><strong>交互说明：</strong><br>1. 切换输入模式改变键盘布局，不跳出会话；关闭键盘回桌面。<br>2. 中文候选确认后才形成输入；回车是独立按键，不因粘贴文本自动触发。<br>3. 演示支持字符、空格、换行、退格、Esc、显示桌面和窗口选择；其余组合键为布局对照。真实组合键转发与释放属于引擎实现；仅观看时拦截演示输入。</td>
+<td><strong>图示：</strong><br><img alt="键盘输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-keyboard.png" /><br><strong>详细说明：</strong> 保留文字输入、电脑键盘及组合键模式；不把输入 AI 软件设计为新的业务页面。<br><strong>展示说明：</strong><br>1. 顶部「输入法／快捷键／电脑键盘」三项等宽单行，右侧关闭；标签和按钮不换行。竖屏输入法在桌面下方展开，桌面缩小保留可见；普通输入法不再使用大段文本框替代键盘。Demo 显示可点击键盘示意，正式客户端调起系统输入法；不以网页键盘证明系统键盘适配通过。<br>2. 文字样本使用测试内容；不读取或展示用户真实剪贴板。<br><strong>交互说明：</strong><br>1. 切换输入模式改变键盘布局，不跳出会话；关闭键盘回桌面。<br>2. 中文候选确认后才形成输入；回车是独立按键，不因粘贴文本自动触发。<br>3. 演示支持字符、空格、换行、退格、Esc、显示桌面和窗口选择；其余组合键为布局对照。真实组合键转发与释放属于引擎实现；仅观看时拦截演示输入。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -338,7 +344,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="悬浮鼠标" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-mouse.png" /><br><img alt="横屏鼠标" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-mouse-landscape.png" /><br><strong>详细说明：</strong> 不增加底部导航，在画面内提供圆形鼠标浮钮。<br><strong>展示说明：</strong><br>1. 默认收起，点击展开左键、右键、滚轮和收起按钮；Mac 使用本机鼠标，不展示手机浮钮。<br>2. 展开后可拖动底部握柄，收起时直接拖动浮钮；位置限制在画面范围内。<br><strong>交互说明：</strong><br>1. 拖动不触发展开；点击才展开；收起不退出会话。<br>2. 仅观看隐藏输入控件，并在事件处理层阻止输入；旋转后校正浮钮位置，不能移出可视区。<br>3. 演示左键聚焦文本、右键打开示例菜单、滚轮滚动测试文档；真实远端指针映射由客户端实现。</td>
+<td><strong>图示：</strong><br><img alt="悬浮鼠标" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-mouse.png" /><br><img alt="右下越界" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-mouse-edge-landscape.png" /><br><img alt="横屏鼠标" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-mouse-landscape.png" /><br><strong>详细说明：</strong> 不增加底部导航，在画面内提供圆形鼠标浮钮。<br><strong>展示说明：</strong><br>1. 默认收起，点击展开左键、右键、滚轮和收起按钮；Mac 使用本机鼠标，不展示手机浮钮。<br>2. 展开后可拖动顶部握柄，收起时直接拖动浮钮；左、上保留安全区；右、下允许部分越出远程画面。<br><strong>交互说明：</strong><br>1. 拖动不触发展开；点击才展开；收起不退出会话。<br>2. 仅观看隐藏输入控件，并在事件处理层阻止输入；展开鼠标允许向右、下各越出远程画面约 54px，收起浮钮最多越出 12px；始终保留可见拖动区域，不能整块拖丢。旋转后按新画面重新约束。外层 APP 窗口仍裁切溢出，不产生页面滚动条。<br>3. 演示左键聚焦文本、右键打开示例菜单、滚轮滚动测试文档；真实远端指针映射由客户端实现。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -373,7 +379,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="窗口选择" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-office.png" /><br><img alt="长文本输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-longtext.png" /><br><img alt="Mac窗口选择" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-office-mac.png" /><br><strong>详细说明：</strong> 作为盖世办公交互建议加入原型评审，复用现有工具栏，不增加独立 AI 业务页，不提供模型回答。<br><strong>展示说明：</strong><br>1. 「所有窗口」展示应用窗口标题；当前窗口选中。目标 AI 若在浏览器标签中，仍在远程浏览器切换标签，不虚构跨标签识别。<br>2. 「长文本输入」可从所有窗口或输入法下方进入，展示当前窗口、草稿、输入按钮；普通输入法与长文本分开。<br><strong>交互说明：</strong><br>1. 选窗口直接回到该电脑窗口；未打开目标应用时，点击显示桌面自行打开。正式窗口列表为空时只显示“暂无打开的窗口”和显示桌面入口。<br>2. 草稿收起后保留，切换窗口后展示新的目标；输入前由用户确认焦点。点击「输入到电脑」只写文字，不自动按回车或点击 AI 发送。<br>3. 原型输入成功清空草稿，退出会话直接清空本地未发送草稿；正式客户端仅在收到输入完成结果后清空，失败保留文字供重试。<br>4. 仅观看禁止切换远端窗口与输入；可以查看窗口列表及编辑本地草稿。</td>
+<td><strong>图示：</strong><br><img alt="窗口选择" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-office.png" /><br><img alt="长文本输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-longtext.png" /><br><img alt="Mac窗口选择" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-office-mac.png" /><br><strong>详细说明：</strong> 作为盖世办公交互建议加入原型评审，复用现有工具栏，不增加独立 AI 业务页，不提供模型回答。<br><strong>展示说明：</strong><br>1. 「所有窗口」展示应用窗口标题；当前窗口选中。目标 AI 若在浏览器标签中，仍在远程浏览器切换标签，不虚构跨标签识别。<br>2. 「长文本输入」可从所有窗口或输入法下方进入，展示当前窗口、草稿、输入按钮；普通输入法与长文本分开。<br><strong>交互说明：</strong><br>1. 选窗口直接回到该电脑窗口；未打开目标应用时，点击显示桌面自行打开。正式窗口列表为空时只显示“暂无打开的窗口”和显示桌面入口。<br>2. 草稿收起后保留，切换窗口后展示新的目标；输入前由用户确认焦点。点击「输入到电脑」只写文字，不自动按回车或点击 AI 发送。<br>3. 原型输入成功清空草稿，退出会话直接清空本地未发送草稿；正式客户端仅在收到输入完成结果后清空，失败保留文字供重试。<br>4. 仅观看禁止切换远端窗口与输入；可以查看窗口列表及编辑本地草稿。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -382,6 +388,41 @@
 <tr>
 <td>补充说明</td>
 <td>本轮仅演示固定的文档、浏览器和编辑器窗口；不是读取用户真实窗口。真实窗口枚举、焦点同步、中文注入属于客户端实现。本提案改善已连接后的效率，不新增 AI 账号、模型计费或回答生成。</td>
+</tr>
+</tbody>
+</table>
+<h4>3.1.5c 普通、游戏与 AI 办公场景预览</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>在右下角「状态」中一键切换三种场景，便于评审同一远控功能如何服务不同任务。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>普通用户操作电脑和取文件；游戏用户继续电脑游戏；PM 整理会议内容、研发查看代码、设计师整理反馈时继续使用电脑上已登录的 AI 工具。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>Demo 场景选择为评审控制，不向真实设备发送指令、不要求用户连接前选业务类型。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="场景选择" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-mode-picker.png" /><br><img alt="游戏模式" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-mode-game.png" /><br><img alt="AI办公模式" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-mode-office.png" /><br><strong>详细说明：</strong> 普通模式为完整桌面；游戏模式展示游戏示意和按键映射；AI办公模式展示浏览器窗口，工具栏提供所有窗口和长文本直达。<br><strong>展示说明：</strong><br>1. 右下角显示当前模式；弹出面板顶部三选一，切换后关闭面板。<br>2. AI 示例说明文字输入位置，支持编辑长问题；不伪造模型回答、任务完成或真实游戏已启动。<br><strong>交互说明：</strong><br>1. 已在会话时切换保留文档和未发送草稿，收起当前面板；不自动提交文字，不更改只读权限。非会话页面选模式则进入相应安全样例桌面。<br>2. AI办公中点击所有窗口选择电脑上已打开的浏览器／编辑器／文档，再点长文本编辑并输入；发送问题仍由用户在远程应用操作。<br>3. 无目标应用时显示桌面手动打开；不同浏览器标签继续在浏览器切换。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>对应场景的桌面与操作重点可直接体验，账号及连接核心流程相同。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>原型场景切换与正式功能开关分开：本轮不新增 AI 服务、模型计费或独立登录。游戏画面为示意，映射仅演示控件。</td>
 </tr>
 </tbody>
 </table>
@@ -408,7 +449,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="文件传输" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-files.png" /><br><strong>详细说明：</strong> 三入口为「发送照片 &amp; 视频」「发送文件」「从电脑下载文件到手机」；任务分「传输中」「已接收」「已发送」。Mac 的接收端文案改为本机。<br><strong>展示说明：</strong><br>1. 顶部当前设备名；各任务区显示数量，空区显示零数量；任务含文件名、大小、进度与状态。<br>2. 同名冲突实际按钮为「跳过」「保留两者」，不添加未经本轮验证的覆盖按钮。<br><strong>交互说明：</strong><br>1. 发送入口打开相应选择器；取消选择返回文件页，不创建任务。下载入口展示安全示例文件选择器，选中后建立模拟任务；不读取真实远端目录。<br>2. 同名选择跳过则不下载该项；保留两者创建带后缀的副本，不覆盖旧文件。<br>3. 清空已接收／已发送记录先确认；取消保留记录，确认只清记录，已传文件保留。<br>4. 返回关闭文件页回详情，不触发删除文件。</td>
+<td><strong>图示：</strong><br><img alt="文件传输" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-files.png" /><br><strong>详细说明：</strong> 三入口为「发送照片 &amp; 视频」「发送文件」「从电脑下载文件到手机」；任务分「传输中」「已接收」「已发送」。Mac 的接收端文案改为本机。<br><strong>展示说明：</strong><br>1. 顶部当前设备名；各任务区显示数量，空区显示零数量；任务含文件名、大小、进度与状态。<br>2. 同名冲突实际按钮为「跳过」「保留两者」，不添加未经本轮验证的覆盖按钮。<br><strong>交互说明：</strong><br>1. 发送入口打开相应选择器；取消选择返回文件页，不创建任务。下载入口展示安全示例文件选择器，选中后建立模拟任务；不读取真实远端目录。<br>2. 同名选择跳过则不下载该项；保留两者创建带后缀的副本，不覆盖旧文件。<br>3. 清空已接收／已发送记录先确认；取消保留记录，确认只清记录，已传文件保留。<br>4. 返回关闭文件页回详情，不触发删除文件。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -443,7 +484,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="更多工具" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-more.png" /><br><strong>详细说明：</strong> 更多工具包含文件传输、观看模式、终端、远程开机、重启、关机；快速启动为应用入口，不是盖世游戏资产库。<br><strong>展示说明：</strong><br>1. 工具显示名称及可用状态；高影响操作不使用成功提示充当实际结果。<br>2. 快速启动区保留添加应用；本次采集的应用搜索样本为无结果，原型保留该空态。<br><strong>交互说明：</strong><br>1. 文件、观看、终端回到各自流程；关闭更多回原页面。<br>2. 调整顺序仅展示已取得入口及证据边界；本版未实现排序保存，不宣称竞品排序流程已经还原。<br>3. 搜索应用仅展示匹配项；无结果时取消返回；点击应用不能绕过 Steam 账号选择等真实登录步骤。<br>4. 原型远程开机、重启、关机仅展示说明或确认界面，不执行系统动作，不模拟为已完成。</td>
+<td><strong>图示：</strong><br><img alt="更多工具" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-more.png" /><br><strong>详细说明：</strong> 更多工具包含文件传输、观看模式、终端、远程开机、重启、关机；快速启动为应用入口，不是盖世游戏资产库。<br><strong>展示说明：</strong><br>1. 工具显示名称及可用状态；高影响操作不使用成功提示充当实际结果。<br>2. 快速启动区保留添加应用；本次采集的应用搜索样本为无结果，原型保留该空态。<br><strong>交互说明：</strong><br>1. 文件、观看、终端回到各自流程；关闭更多回原页面。<br>2. 移除「调整顺序」入口及排序弹窗，工具顺序固定。<br>3. 搜索应用仅展示匹配项；无结果时取消返回；点击应用不能绕过 Steam 账号选择等真实登录步骤。<br>4. 一期提供远程开机、重启、关机的尝试入口；进入操作说明后主动点击开始尝试，显示请求进度和未响应出口，支持重试及连接教程。原型不执行系统动作。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -451,7 +492,42 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 真机游戏启动停在 Steam 账号选择页，未证明游戏成功运行。<br>2. 开机、重启、关机和终端不因复刻展示自动进入一期范围。</td>
+<td>1. 真机游戏启动停在 Steam 账号选择页，未证明游戏成功运行。<br>2. 本轮明确将开机、重启、关机纳入一期尝试流程；终端仍只作竞品对照。</td>
+</tr>
+</tbody>
+</table>
+<h4>3.1.7a 远程电源尝试与连接教程</h4>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>功能简介</td>
+<td>一期提供远程开机、重启和关机的尝试流程，失败时有重试与教程。</td>
+</tr>
+<tr>
+<td>场景描述</td>
+<td>外出后发现电脑未在线，尝试唤醒；电脑卡顿时尝试重启；远程任务完成后尝试关机。</td>
+</tr>
+<tr>
+<td>输入／前置条件</td>
+<td>当前账号下的电脑。开机需预先配置主机与网络支持的唤醒能力、保持供电及可达网络；重启、关机需主机在线且允许操作。离线不能据此认定电脑已关机。</td>
+</tr>
+<tr>
+<td>需求描述</td>
+<td><strong>图示：</strong><br><img alt="电源尝试" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-power.png" /><br><img alt="连接教程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-connect-guide.png" /><br><strong>详细说明：</strong> 三项能力本期纳入；统一采用一次主动远程尝试，不宣传保证成功。<br><strong>展示说明：</strong><br>1. 更多工具固定展示开机、重启、关机；不显示调整顺序。<br>2. 操作说明标明目标电脑。重启、关机提示会中断连接及先保存工作；开机说明供电和唤醒要求。<br>3. 请求中显示正在尝试；未收到主机确认显示暂未完成，提供重试、教程和返回。<br><strong>交互说明：</strong><br>1. 选择动作→说明→开始尝试→等待结果，等待期间不重复发送。未响应不自动重试；用户主动重试回说明。<br>2. 离线设备仍能进入更多并尝试开机；重启、关机被在线与权限检查拦截。占用时先复用接管，成功后继续原动作。<br>3. 开机以主机重新在线判断结果；重启须有主机确认及重新在线，不能将掉线等同重启成功；关机收到受理后结束控制，不能把网络断开当作关机完成。<br>4. 关闭等待仅停止本地等候，已发给真实主机的指令不能承诺撤回；原型计时可取消且不改设备状态。</td>
+</tr>
+<tr>
+<td>输出／后置条件</td>
+<td>真实执行以主机结果更新状态；失败保留重试。Demo 默认演示未响应，不伪造开关机成功。</td>
+</tr>
+<tr>
+<td>补充说明</td>
+<td>连接教程在设备详情、更多工具、连接失败及电源失败可打开，包含电脑安装、同账号、网络、权限及唤醒前提。Mac 权限说明区分屏幕录制与辅助功能；不默认 Windows、Mac 支持相同唤醒能力。</td>
 </tr>
 </tbody>
 </table>
@@ -478,7 +554,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="终端会话" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-terminal.png" /><br><strong>详细说明：</strong> 管理终端会话与执行命令是两种不同能力，本轮只复刻已有会话管理证据。<br><strong>展示说明：</strong><br>1. 显示会话名称、选中会话、创建／重命名／结束入口及键盘和桌面切换。<br>2. 演示输出只使用固定安全样本，不显示真实主机命令结果。<br><strong>交互说明：</strong><br>1. 本版只显示一个当前模拟会话；新建切换到会话 2，重命名只更新当前会话。取消编辑保留原名。<br>2. 结束会话先确认，取消保留；确认结束当前模拟会话并回设备详情；本版没有实现多会话持久化。<br>3. 进入桌面连接同一设备；终端键盘尚未完整复刻，点击显示证据边界。</td>
+<td><strong>图示：</strong><br><img alt="终端会话" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-terminal.png" /><br><strong>详细说明：</strong> 管理终端会话与执行命令是两种不同能力，本轮只复刻已有会话管理证据。<br><strong>展示说明：</strong><br>1. 显示会话名称、选中会话、创建／重命名／结束入口及键盘和桌面切换。<br>2. 演示输出只使用固定安全样本，不显示真实主机命令结果。<br><strong>交互说明：</strong><br>1. 本版只显示一个当前模拟会话；新建切换到会话 2，重命名只更新当前会话。取消编辑保留原名。<br>2. 结束会话先确认，取消保留；确认结束当前模拟会话并回设备详情；本版没有实现多会话持久化。<br>3. 进入桌面连接同一设备；终端键盘尚未完整复刻，点击显示证据边界。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -513,7 +589,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="手机双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-onboarding.png" /><br><img alt="Mac 双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-guide-mac.png" /><br><img alt="横屏双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-guide-landscape.png" /><br><strong>详细说明：</strong> 两条路径同时展示，不使用切换 Tab，不再逐页播放。<br><strong>展示说明：</strong><br>1. 顶部「添加你的设备」，共同说明被控电脑安装与同账号登录。仅 Mac 弹窗的手机卡包含可扫描的 APP 下载二维码及「扫码下载 APP」说明；移动端不显示 APP 下载二维码，只提示电脑端从官网下载安装。二维码到官方中文下载页，可选择 Android／iOS。<br>2. APP：手机连接你的电脑、另一台电脑连接你的电脑。Mac：手机远控本机、其他电脑远控本机；明确本机屏幕录制及辅助功能权限要求。<br>3. 竖屏上下两张卡；横屏和 Mac 左右两张卡；同一弹窗可看全两类引导与「知道了」。<br><strong>交互说明：</strong><br>1. 首次进入自动显示；关闭、Esc 或「知道了」都标记已看，返回原页面。<br>2. 同账号同客户端再次进入不自动弹出；从远程设置「添加设备指南」或无设备空态可主动复看。<br>3. 点击官网链接在浏览器打开官方页面；扫码只跳转下载页，不携带账号标识、不授权连接、不自动安装。</td>
+<td><strong>图示：</strong><br><img alt="手机双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-onboarding.png" /><br><img alt="Mac 双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-guide-mac.png" /><br><img alt="横屏双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-guide-landscape.png" /><br><strong>详细说明：</strong> 两条路径同时展示，不使用切换 Tab，不再逐页播放。<br><strong>展示说明：</strong><br>1. 顶部「添加你的设备」，共同说明被控电脑安装与同账号登录。仅 Mac 弹窗的手机卡包含可扫描的 APP 下载二维码及「扫码下载 APP」说明；移动端不显示 APP 下载二维码，只提示电脑端从官网下载安装。二维码到官方中文下载页，可选择 Android／iOS。<br>2. APP：手机连接你的电脑、另一台电脑连接你的电脑。Mac：手机远控本机、其他电脑远控本机；明确本机屏幕录制及辅助功能权限要求。<br>3. 竖屏上下两张卡；横屏和 Mac 左右两张卡；同一弹窗可看全两类引导与「知道了」。<br><strong>交互说明：</strong><br>1. 首次进入自动显示；关闭、Esc 或「知道了」都标记已看，返回原页面。<br>2. 同账号同客户端再次进入不自动弹出；从远程设置「添加设备指南」或无设备空态可主动复看。<br>3. 点击官网链接在浏览器打开官方页面；扫码只跳转下载页，不携带账号标识、不授权连接、不自动安装。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -548,7 +624,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="远程设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-settings.png" /><br><strong>详细说明：</strong> 设置为远程子页，不再建立独立「我的」栏目。<br><strong>展示说明：</strong><br>1. 设备与账号组：当前盖世账号、添加设备指南、全部设备。<br>2. 连接偏好组：默认电脑声音、默认操作方式；账号仅展示脱敏信息。<br><strong>交互说明：</strong><br>1. 打开设置不创建连接；返回「我的设备」。<br>2. 复看指南关闭后留在设置；全部设备入口进入相应页面。<br>3. 修改偏好更新当前演示设置，不更改远端系统权限。</td>
+<td><strong>图示：</strong><br><img alt="远程设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-settings.png" /><br><strong>详细说明：</strong> 设置为远程子页，不再建立独立「我的」栏目。<br><strong>展示说明：</strong><br>1. 设备与账号组：当前盖世账号、添加设备指南、全部设备。<br>2. 连接偏好组：默认电脑声音、默认操作方式；账号仅展示脱敏信息。<br><strong>交互说明：</strong><br>1. 打开设置不创建连接；返回「我的设备」。<br>2. 复看指南关闭后留在设置；全部设备入口进入相应页面。<br>3. 修改偏好更新当前演示设置，不更改远端系统权限。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -561,8 +637,8 @@
 </tbody>
 </table>
 <h4>跨端与状态评审</h4>
-<p><img alt="横屏布局" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-landscape.png" /></p>
-<p><img alt="Mac 布局" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@9018f8e9d6f8c7b3412bb3b86630cfd5dab90bf3/public/prd/streaming-mvp/replica-mac.png" /></p>
+<p><img alt="横屏布局" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-landscape.png" /></p>
+<p><img alt="Mac 布局" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@6a0fe333991e84d579ed86aeb0d3596dd60b865b/public/prd/streaming-mvp/replica-mac.png" /></p>
 <table>
 <thead>
 <tr>
@@ -593,7 +669,7 @@
 </tr>
 <tr>
 <td>右下角评审浮钮</td>
-<td>选择页面、端、方向及状态</td>
+<td>选择普通／游戏／AI办公场景，以及页面、端、方向及状态</td>
 <td>关闭回当前演示；切换不操作真实设备</td>
 <td>原型工具，正式产品移除</td>
 </tr>
@@ -631,4 +707,4 @@
 </tbody>
 </table>
 <h2>五、待确认项</h2>
-<p>无须新增业务决策即可评审本轮成果；完整复刻仍缺应用成功启动、工具排序、终端多会话及部分设置的后续界面。本版采用游戏库主入口和我的设备辅助入口；推荐旁边保留评审备选。新增入口、远程设置、Mac 分栏和双路径引导均为盖世设计。真实引擎、Mac 系统权限、游戏性能及完整跨端能力不由本原型作通过判定。</p><p><a download href="UU流程复刻PRD.md">下载 Markdown</a></p></main></html>
+<p>无须新增业务决策即可评审本轮成果；完整复刻仍缺应用成功启动、终端多会话及部分设置的后续界面；工具排序已移除。本版采用游戏库主入口和我的设备辅助入口；推荐旁边保留评审备选。新增入口、远程设置、Mac 分栏和双路径引导均为盖世设计。真实引擎、Mac 系统权限、游戏性能及完整跨端能力不由本原型作通过判定。</p><p><a download href="UU流程复刻PRD.md">下载 Markdown</a></p></main></html>
