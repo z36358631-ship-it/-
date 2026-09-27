@@ -1,9 +1,9 @@
 let deviceRefreshTimer;
-function controlledBadge(d){return d.busy?'<span class="controlled-badge" aria-label="被控中，1 台设备">'+icon('screen')+'<span>被控中 · 1</span></span>':'';}
-function addDeviceNotice(){return '<section class="add-device-notice">'+icon('info')+'<div><h3>添加你的其他电脑</h3><p>在其他电脑安装盖世游戏并登录同一账号，即可在这里找到设备。</p>'+btn('如何添加设备','guide','ghost')+'</div></section>';}
+function controlledBadge(d){return d.busy?'<span class="controlled-badge" aria-label="被控中">'+icon('screen')+'<span>被控中</span></span>':'';}
+function addDeviceNotice(){if(deviceNoticeClosed())return '';return '<section class="add-device-notice">'+icon('info')+'<div><h3>添加你的其他电脑</h3><p>在其他电脑安装盖世游戏并登录同一账号，即可在这里找到设备。</p>'+btn('如何添加设备','guide','ghost')+'</div>'+ib('关闭添加设备提示','dismiss-device-notice','close')+'</section>';}
 function refreshIndicator(){return '<div class="pull-refresh-status '+(s.deviceRefreshing||s.refreshComplete?'visible':'')+'" role="status">'+(s.deviceRefreshing?'正在刷新…':s.refreshComplete?'已刷新':'下拉刷新')+'</div>';}
 function refreshDevices(){if(s.deviceRefreshing)return;s.deviceRefreshing=true;s.refreshComplete=false;s.menu=false;const page=s.page,deviceId=s.device;render();clearTimeout(deviceRefreshTimer);deviceRefreshTimer=setTimeout(()=>{s.deviceRefreshing=false;s.refreshComplete=true;s.lastDeviceRefresh=Date.now();if(s.page===page&&s.device===deviceId)render();deviceRefreshTimer=setTimeout(()=>{s.refreshComplete=false;if(s.page===page&&s.device===deviceId)render();},1400);},650);}
-function deviceListAction(a){const[k,v]=a.split(':');if(k==='refresh-device'||k==='refresh-devices'){refreshDevices();return true;}if(k==='device-properties'){s.device=v;s.page='properties';s.modal='';s.menu=false;render();return true;}return false;}
+function deviceListAction(a){const[k,v]=a.split(':');if(k==='dismiss-device-notice'){s.deviceNoticeClosed=true;try{localStorage.setItem('gamehub-device-notice-closed','1');}catch{}render();return true;}if(k==='refresh-device'||k==='refresh-devices'){refreshDevices();return true;}if(k==='device-properties'){s.device=v;s.page='properties';s.modal='';s.menu=false;render();return true;}return false;}
 // Pull only starts at the top of a mobile device list; never hijack horizontal drags.
 let devicePull=null;
 document.addEventListener('pointerdown',e=>{const el=e.target.closest('[data-pull-refresh]');if(s.platform==='mac'||!el||s.deviceRefreshing||e.button!==0)return;devicePull={id:e.pointerId,x:e.clientX,y:e.clientY,el,amount:0,scroll:el.scrollTop,moved:false};});
@@ -13,3 +13,5 @@ document.addEventListener('pointerup',endDevicePull);document.addEventListener('
 
 function deviceQuickTools(){const d=device(),off=!d.online||d.blocked;const tool=(label,a,ic,disabled)=>btn(label,a,'',ic).replace('<button','<button '+(disabled?'disabled':''));return '<div class="quick-tools '+(!d.online?'offline-tools':'')+'">'+(!d.online?tool(d.wakeStatus==='loading'?'正在开机…':'远程开机','power:boot','power',d.os!=='Windows'||d.wakeStatus==='loading'):'')+tool('文件传输','open-files','folder',off)+tool('观看模式','watch','monitor',off)+tool('终端','terminal','keyboard',off)+tool('更多','more','grid',false)+'</div>';}
 function deviceToolsAction(a){if(a==='tools-back'||a==='file-back'){s.page=(a==='tools-back'?s.toolsReturn:s.fileReturn)||'detail';s.panel='';s.modal='';render();return true;}return false;}
+
+function deviceNoticeClosed(){try{return s.deviceNoticeClosed||localStorage.getItem('gamehub-device-notice-closed')==='1';}catch{return !!s.deviceNoticeClosed;}}
