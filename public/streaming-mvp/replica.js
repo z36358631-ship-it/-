@@ -11,12 +11,12 @@ const blank=(title,desc,act='',label='')=>'<div class="blank">'+icon('monitor')+
 const badge=d=>'<span class="pill '+(d.online?'online':'')+'">'+(d.online?'● 在线':'● 离线')+'</span>';
 function head(title,back=true,right=''){return '<header class="head">'+(back?ib('返回','back','back'):'')+'<h1>'+title+'</h1>'+right+'</header>';}
 function list(){
- let top=head('我的设备',s.platform!=='mac');
- if(s.loading)return top+'<main class="content device-home-content" data-pull-refresh="true">'+refreshIndicator()+addDeviceNotice()+blank('正在加载设备','正在获取当前账号的设备列表…')+'</main>';
- if(s.error)return top+'<main class="content device-home-content" data-pull-refresh="true">'+refreshIndicator()+addDeviceNotice()+blank('无法加载设备','请检查网络后重试。','retry','重新加载')+'</main>';
- if(s.empty||!devices.some(d=>!isUnsupportedDevice(d)))return top+'<main class="content device-home-content" data-pull-refresh="true">'+refreshIndicator()+addDeviceNotice()+blank('还没有添加电脑','在电脑上安装盖世游戏，登录同一账号。','guide','查看添加指南')+'</main>';
+ let top=head('我的设备',s.platform!=='mac',btn('连接教程','guide','ghost connection-tutorial'));
+ if(s.loading)return top+'<main class="content device-home-content" data-pull-refresh="true">'+refreshIndicator()+blank('正在加载设备','正在获取当前账号的设备列表…')+'</main>';
+ if(s.error)return top+'<main class="content device-home-content" data-pull-refresh="true">'+refreshIndicator()+blank('无法加载设备','请检查网络后重试。','retry','重新加载')+'</main>';
+ if(s.empty||!devices.some(d=>!isUnsupportedDevice(d)))return top+'<main class="content device-home-content" data-pull-refresh="true">'+refreshIndicator()+blank('还没有添加电脑','在电脑上安装盖世游戏，登录同一账号。','guide','查看添加指南')+'</main>';
  const group=online=>{let ds=devices.filter(d=>!isUnsupportedDevice(d)&&d.online===online&&(s.filter==='全部设备'||d.os===s.filter));return '<section><button class="group-title ghost" data-action="collapse:'+online+'">'+(s.collapsed[online]?'▸':'▾')+' '+(online?'在线':'离线')+'设备（'+ds.length+'）</button>'+(s.collapsed[online]?'':ds.map(d=>'<button class="device-row '+(!d.online?'off':'')+'" data-action="device:'+d.id+'"><span class="device-cover '+(d.os==='macOS'?'mac':d.os==='Android'?'phone':'')+'">'+icon(d.os==='macOS'?'laptop':'monitor')+badge(d)+'</span><span class="grow"><strong class="device-name">'+esc(d.name)+'</strong><span class="device-meta-row"><small>'+d.os+'</small>'+(d.busy?controlledBadge(d):'')+'</span></span><span class="arrow">›</span></button>').join(''))+'</section>';};
- return top+'<main class="content device-home-content" data-pull-refresh="true">'+refreshIndicator()+addDeviceNotice()+'<div class="device-groups">'+group(true)+group(false)+'</div></main>';
+ return top+'<main class="content device-home-content" data-pull-refresh="true">'+refreshIndicator()+'<div class="device-groups">'+group(true)+group(false)+'</div></main>';
 }
 function all(){const ds=s.empty?[]:devices.filter(d=>!isUnsupportedDevice(d));return head('全部设备',true,s.platform==='mac'?btn(s.deviceRefreshing?'刷新中…':'刷新','refresh-devices','ghost','refresh').replace('<button','<button '+(s.deviceRefreshing?'disabled':'')):'')+'<main class="content all-devices-content" data-pull-refresh="true">'+refreshIndicator()+'<p class="title-section">电脑（'+ds.length+'）</p><div class="panel list-panel all-device-list">'+ds.map(d=>'<div class="all-device-item">'+line(esc(d.name),'device-properties:'+d.id,d.os==='macOS'?'laptop':'monitor')+'</div>').join('')+'</div>'+(!ds.length?blank('还没有添加电脑','在电脑上安装盖世游戏，登录同一账号。','guide','查看添加指南'):'')+'</main>';}
 
