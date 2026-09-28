@@ -4,6 +4,7 @@
 
 | 修订日期 | 修订内容 | 版本 | 修订人 |
 |---|---|---|---|
+| 2026/9/28 | 补充 APP、Mac 及 ChatGPT 埋点、参数、核心指标和校验口径 | V3.1 | 产品 |
 | 2026/9/28 | 精简全文及重复说明；右下角常驻 APP / Mac 切换；产品流程补充 APP ChatGPT 应用内路径 | V3.0 | 产品 |
 | 2026/9/28 | APP 横屏设备采用左列表右详情；ChatGPT 横屏历史常驻左侧，当前对话与输入在右侧 | V2.9 | 产品 |
 | 2026/9/28 | 按最新 Demo 更新背景与配图，补全 Mac 工作区、控制中心、弱网和文件传输，重绘双端流程并精简重复内容 | V2.8 | 产品 |
@@ -297,9 +298,100 @@ APP 横屏左侧为设备列表，右侧为选中设备详情及快速启动；�
 
 ### 4.1 埋点与数据需求
 
-**数据结论：** 不涉及新增埋点。
+**数据结论：** 新增远程电脑埋点，覆盖 APP、Mac 的入口、设备、连接、会话、文件、电源、设置及 APP ChatGPT 适配。以下为正式客户端的采集规格，Demo 不上报生产数据。事件名暂用 `remote_` 前缀；账号、客户端版本和上报通道优先复用现有 SDK，具体映射在开发前核对。
 
-本轮仅评审原型，不新增埋点或业务成效统计。
+#### 4.1.1 核心指标
+
+默认按北京时间自然日统计，按主控平台、被控系统、版本和入口拆分；成功率按发起日归属，次日补算，迟到数据默认回补 7 日（建议，待数据平台核对）。未结束或缺失结果单列，不按成功处理；未关闭的统计窗口标记为暂定。以下指标先建立基线，不预设无依据的目标值。
+
+| 指标 | 计算口径 | 用途／边界 |
+|---|---|---|
+| 远程入口点击率 | 同日看见入口且点击的去重账号数 ÷ 看见入口的去重账号数 | 按入口分别计算；同一账号一天多次曝光计一次 UV。 |
+| 设备可用率 | 列表成功返回且可连接电脑数大于 0 的访问数 ÷ 列表成功返回的访问数 | 每次访问取首次成功列表结果；离线、禁控不算可连接。加载失败率另外按请求统计。 |
+| 连接成功率 | 结果为 success 的连接尝试数 ÷ 有 start 的连接尝试数 | 按 attempt_id 去重；用户取消仍在分母，另列取消率；离线／禁控在本地被拦截计 blocked。 |
+| 连接耗时 | 成功连接的 duration_ms 的 P50／P90 | 从主动发起到第一帧可显示且会话可用；接管确认时间包含在内，可按占用状态拆分。 |
+| 异常断开率与时长 | 异常结束会话数 ÷ 有 start 的会话数；已结束会话统计 duration_ms 的 P50／P90 | 异常含网络断开、设备离线、权限撤销、进程异常；主动退出／被接管分别展示。无结束结果单列。 |
+| 文件成功率 | 最终 success 的逻辑传输任务数 ÷ 创建的逻辑任务数 | 按 task_id 取最新有效状态；重试成功替换先前失败，不累计两个任务。跳过、取消分别列出，暂停不算失败。重试次数按 attempt_id 统计；待重试任务不计完成。 |
+| 电源受理率／完成率 | accepted／success 的电源尝试数各自 ÷ start 尝试数 | 分开机、重启、关机统计；关机仅确认受理而无法确认完成时，只进入受理率。 |
+| 弱网降画质采用率 | 同一弱网阶段内选择 lower_quality 的阶段数 ÷ 实际展示提示的阶段数 | 按 episode_id 去重；恢复原画质单列，不推断降画质一定解决网络问题。 |
+| ChatGPT 启动与使用 | 启动成功尝试数 ÷ 启动尝试数；成功打开后发生发送请求的访问数 ÷ 成功打开访问数 | 同一 visit_id 内归因；发送完成与取消／失败分列，停止生成不是失败。 |
+| 次日复用率 | D 日成功连接的账号中，D+1 再次成功连接的账号数 ÷ D 日成功连接账号数 | 跨 APP／Mac 按账号去重；D+1 完整结束后计算，不将仅浏览列表算复用。 |
+
+#### 4.1.2 上报与去重规则
+
+1. 下表事件均为**新增**，由主控客户端上报；主机或服务端结果先回传主控，不能两端重复计数。共用字段为：event_id、occurred_at、account_key、platform、app_version、environment、visit_id；对应电脑时加 target_os。
+2. 同一次逻辑操作生成 operation_id；每次真正发起或主动重试生成 attempt_id，自动补报沿用原 event_id。开始、受理、结束分别生成事件，终态同一 attempt_id 只能有一个。响应超时只说明未确认结果，不等于设备未执行。
+3. event_id 用于接收端幂等；客户端缓存断网期间事件，恢复后带原发生时间补报，不重复累计。连接成功即开始 session_id；自动恢复同一存活会话不新建，用户重新连接则新建尝试和会话。
+4. 仅采集统计字段，不采集设备名称、硬件标识、IP、文件名、绝对路径、文件内容、对话正文、历史标题、提示词、附件内容、密码或剪贴板。账号使用现有分析标识；关联 ID 使用随机业务 ID，不从用户内容生成。
+5. 入口曝光前创建 visit_id，点击进入后沿用；非入口直达工作区新建。
+6. 不在每次渲染、鼠标移动、按键或网络采样时上报；页面按进入记录，工具按主动操作记录，网络按状态阶段记录。测试与 Demo 数据使用 test／demo 环境，生产报表只统计 production。
+
+#### 4.1.3 事件定义
+
+所有事件自动附带上述共用字段；下表参数列同时列出共用字段与业务字段。stage=start 时 result、reason、duration_ms 不传；stage=end 必传 result、reason、duration_ms。点击事件只代表意图，不代表功能执行成功。
+
+| 事件 | 页面/类型 | 触发与成功 | 参数 |
+|---|---|---|---|
+| remote_entry（新增） | 游戏库／我的设备／Mac 首页：入口可见或点击 | action=expose 每入口每 visit_id 一次；click 每次有效点击一次，转入工作区沿用 visit_id。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, entry, action |
+| remote_device_list（新增） | 设备列表：首次加载／主动刷新开始及返回 | 接口返回有效列表即 success，空列表也是成功；数量仅成功结束时必填。每次请求一组 start/end。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, operation_id, attempt_id, stage, result, reason, duration_ms, device_count, available_count |
+| remote_guide（新增） | 添加设备教程：显示、关闭或点下载入口 | show／close 每次打开各一次；重复渲染不计。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, entry, action |
+| remote_device_manage（新增） | 属性页／设备菜单：查看属性、重命名或删除确认／刷新以外的管理结果 | 查看属性在页面显示后 success；编辑或删除弹窗打开记 start，取消记 cancel，保存／删除以接口结果为准；不传新旧名称。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, operation_id, attempt_id, operation, stage, result, reason, duration_ms |
+| remote_connect（新增） | 设备详情：发起控制／观看，及连接结果 | start 在本地状态检查前记录；禁控／离线记 blocked，接管取消记 cancel；第一帧可显示且会话可用才 success。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, operation_id, attempt_id, stage, result, reason, duration_ms, control_mode, device_state |
+| remote_session（新增） | 远程桌面：真实会话建立与结束 | attempt_id 关联成功连接尝试；本事件仅 start/end，不用 result/reason；结束必填 duration_ms、end_reason。最小化和旋转不结束；崩溃后有可靠记录才补报 crash，否则标记缺失。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, attempt_id, session_id, stage, control_mode, duration_ms, end_reason |
+| remote_tool（新增） | 会话内主动启用／操作工具 | action 为 open／enable／disable／apply；同一次点击一次，不采集输入内容。失败执行不应计 apply，返回失败时用 action=fail。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, session_id, tool, action |
+| remote_transfer（新增） | 手机文件页／Mac 双栏：逻辑任务创建、每次传输开始及结果 | 每个文件或目录一个 task_id；创建即首次 start，同名跳过为 skipped；接收端确认完整后 success。暂停沿用尝试，失败重试用新 attempt_id；保留两者不新增逻辑任务。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, operation_id, attempt_id, task_id, stage, result, reason, duration_ms, direction, file_kind, size_bucket |
+| remote_power（新增） | 更多：确认发起电源操作、主机受理及最终结果 | 仅正式发起记 start；accepted 阶段仅关机／重启收到主机受理时记，不是终态。开机重新在线、重启受理并重新在线才 success；关机无完成确认不得报 success。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, operation_id, attempt_id, operation, stage, result, reason, duration_ms |
+| remote_network（新增） | Mac 会话：弱网提示实际出现、降画质、恢复或关闭提示 | 每次进入 unstable／weak 新建阶段；同状态持续不重复 show。恢复仍归属原阶段；lower_quality 每阶段一次，恢复原画质记 restore_quality。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, session_id, episode_id, network_state, action |
+| remote_setting（新增） | Mac 本机设置：切换或保存；失败时记录失败结果 | 开关操作或路径保存记 start；持久化成功才 success。enabled 仅开关必填；路径只记录修改结果，不传路径值。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, operation_id, attempt_id, setting, stage, result, reason, duration_ms, enabled |
+| remote_gpt（新增） | APP ChatGPT：启动、请求发送及其结果；查看历史／切换对话／文件／新对话／停止 | launch／send 使用 start/end；启动就绪才成功，发送以请求最终完成为成功。历史等 action 用 stage=action，每次动作新建 operation_id/attempt_id，不传结果字段。停止另记 stop，原 send 结束为 cancel。 | event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, operation_id, attempt_id, action, stage, result, reason, duration_ms, attachment_count |
+
+#### 4.1.4 参数字典
+
+「条件必填」的适用事件见上表；未适用字段不传，不用空字符串占位。字段总数包含共用字段，每个事件不超过 20 项。下列状态值均为受控枚举，不上传原始报错文本。
+
+| 参数 | 类型／必填 | 说明 | 枚举／示例 |
+|---|---|---|---|
+| event_id | string／必填 | 单次事件唯一 ID，补报不变 | 随机 UUID，如 evt_8f31 |
+| occurred_at | datetime／必填 | 事件发生时间，非上传时间 | ISO 8601，如 2026-09-28T10:00:00+08:00 |
+| account_key | string／必填 | 现有分析账号标识，跨端可去重 | 如 analytics_u_123；不传手机号／邮箱 |
+| platform | string／必填 | 主控客户端 | android＝安卓 APP；ios＝iOS APP；macos＝Mac 客户端 |
+| app_version | string／必填 | 主控版本 | 如 6.3.0 |
+| environment | string／必填 | 数据环境 | production＝正式；test＝测试；demo＝原型 |
+| visit_id | string／必填 | 一次入口／工作区访问，切页和旋转不变；退出工作区结束 | 随机 UUID；通过直达链接进入时新建 |
+| target_os | string／条件必填 | 所操作电脑的系统；列表和本机设置不传 | windows＝Windows；macos＝Mac；unknown＝尚未获取 |
+| operation_id | string／条件必填 | 同一用户操作及其重试的关联 ID | 如 op_a81；新一轮独立操作新建 |
+| attempt_id | string／条件必填 | 单次执行尝试，重试新建 | 如 attempt_b21 |
+| session_id | string／条件必填 | 已建立的远控会话 ID | 如 session_c31；不同于 visit_id |
+| task_id | string／传输必填 | 单个逻辑文件／目录传输任务 ID，重试不变 | 如 task_d41 |
+| episode_id | string／网络必填 | 一次弱网阶段 ID | 如 net_e51；恢复后再次变差新建 |
+| stage | string／条件必填 | 操作生命周期 | start＝开始；accepted＝电源已受理；end＝结束；action＝GPT 非执行动作 |
+| result | string／结束必填 | 操作终态；remote_session 除外 | success＝确认成功；failed＝执行失败；cancel＝用户取消；blocked＝前置检查拦截；timeout＝等待超时；skipped＝同名跳过，仅文件适用 |
+| reason | string／结束必填 | 受控原因；success 为 none | none＝无错误；offline＝设备离线；permission＝权限不足；busy＝占用；network＝网络错误；user_cancel＝用户取消；user_stop＝主动停止；conflict_skip＝同名跳过；storage＝写入失败；unsupported＝能力不支持；timeout＝未及时确认；app_unavailable＝应用不可用；unknown＝未分类错误 |
+| duration_ms | number／结束必填 | 本次尝试或会话开始至结束的单调时钟时长，非负整数 | 如 2300；传输暂停等待计入，另用重试次数解释耗时 |
+| entry | string／入口与教程必填 | 打开来源 | library＝游戏库；my_devices＝我的设备；mac_home＝Mac 首页；direct＝直达；first_visit＝首次引导；tutorial＝连接教程 |
+| action | string／条件必填 | 按事件限制取值，不能混用 | entry：expose＝可见、click＝点击；<br>guide：show＝展示、close＝关闭、download＝下载入口；<br>tool：open＝展开、enable＝开启、disable＝关闭、apply＝应用、fail＝失败；<br>network：show＝提示出现、lower_quality＝降画质、restore_quality＝恢复画质、details＝查看信号、dismiss＝关闭、recovered＝网络恢复；<br>gpt：launch＝启动、send＝发送请求、history＝打开历史、switch_thread＝切换对话、file＝查看文件、new_thread＝新对话、stop＝停止请求 |
+| device_count | number／列表成功必填 | 返回的电脑总数，不含手机／平板 | 非负整数，如 4 |
+| available_count | number／列表成功必填 | 在线且允许控制的电脑数，含可接管设备 | 非负整数，且不大于 device_count |
+| operation | string／条件必填 | 管理或电源动作 | manage：properties＝查看属性、rename＝重命名、delete＝删除；power：boot＝开机、restart＝重启、shutdown＝关机 |
+| control_mode | string／连接及会话必填 | 开始时的连接模式 | control＝可控制；view＝仅观看；切换模式通过 tool 记录 |
+| device_state | string／连接必填 | 发起时状态，禁控优先于在线／占用 | blocked＝禁控；offline＝离线；busy＝在线且被控；idle＝在线空闲；unknown＝未知 |
+| end_reason | string／会话结束必填 | 会话结束原因 | user_exit＝主动退出；network＝网络中断；offline＝设备离线；permission＝权限撤销；taken_over＝被接管；crash＝进程异常；unknown＝未知 |
+| tool | string／工具必填 | 会话功能 | display＝显示；sound＝声音；security＝安全；keyboard＝键盘；mouse＝悬浮鼠标；virtual_keys＝虚拟按键；mapping＝手柄映射；windows＝窗口；text＝长文本；view＝观看模式；screen＝屏幕切换；fullscreen＝全屏 |
+| direction | string／传输必填 | 以主控为参照 | to_remote＝发往被控电脑；to_local＝接收到主控 |
+| file_kind | string／传输必填 | 分类，不采集扩展名或名称 | image＝图片；video＝视频；folder＝目录；other＝其他文件 |
+| size_bucket | string／传输必填 | 字节数区间，不采集文件内容 | lt_1mb＝小于1MiB；1_10mb＝1至小于10MiB；10_100mb＝10至小于100MiB；ge_100mb＝至少100MiB；unknown＝尚未计算 |
+| network_state | string／网络必填 | 复用连接引擎状态，不新增阈值 | unstable＝不稳定；weak＝较弱；recovered＝已恢复 |
+| setting | string／设置必填 | 本机配置项 | autostart＝开机自启；wake＝远程开机；prevent_sleep＝防休眠；receive_path＝存储路径；same_account＝同账号控制 |
+| enabled | boolean／开关必填 | 用户提交的开关目标值，失败不代表已生效 | true＝开；false＝关；路径修改不传 |
+| attachment_count | number／GPT发送必填 | 本次发送的附件数量，其余动作不传 | 非负整数，如 0、2 |
+
+#### 4.1.5 数据使用与联调要求
+
+数据看板按「入口 → 列表 → 发起连接 → 成功会话」展示转化，并独立展示文件、电源和 ChatGPT，避免把独立文件操作误算成连接流失。失败按 reason 和主被控组合定位，不把用户取消并入系统失败。
+
+联调至少覆盖：在线成功、离线拦截、禁控、接管取消、超时重试、异常断开、文件暂停恢复／同名跳过、弱网恢复、GPT 停止，以及 APP 横竖屏和 Mac。逐例核对开始与终态关联、事件去重、枚举、时长和环境；旋转／渲染不得增加曝光，补报不得增加次数，取消和模拟成功不得进入成功分子。缺失结果、迟到数据和 unknown 原因占比需可查询。接收端保存接收时间供迟到核对；客户端时钟异常时不使用负时长，单列异常样本。
+
+**开发前核对：** 数据团队确认现有 SDK 的账号／版本字段映射、事件命名冲突及留存策略；客户端确认连接超时、重试和网络状态来源。默认采用本文口径，不新增产品超时阈值或监控阈值。
 
 ### 4.2 技术与素材要求
 
