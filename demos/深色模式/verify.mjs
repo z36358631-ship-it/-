@@ -1,0 +1,36 @@
+import {chromium} from 'playwright-core';
+import {pathToFileURL,fileURLToPath} from 'node:url';
+import path from 'node:path';import fs from 'node:fs';import assert from 'node:assert/strict';
+const dir=path.dirname(fileURLToPath(import.meta.url)),ev=path.join(dir,'evidence');fs.mkdirSync(ev,{recursive:true});
+const url=pathToFileURL(path.join(dir,'深色模式demo.html')).href,checks=[],errors=[],requests=[];
+const b=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+const p=await b.newPage({viewport:{width:390,height:867},colorScheme:'light'});
+p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url())});
+const result=()=>p.evaluate(()=>({preference:ThemeDemo.state.preference,actual:ThemeDemo.effective()}));
+const record=name=>checks.push({name,status:'pass'});
+const pick=async value=>{await p.locator('#theme-entry').click();await p.locator(`[data-value=${value}]`).click()};
+try{
+ await p.goto(url+'?capture=1');await p.evaluate(()=>localStorage.clear());await p.reload();assert.deepEqual(await result(),{preference:'system',actual:'light'});record('新用户默认跟随系统，浅色系统呈现浅色');
+ await p.emulateMedia({colorScheme:'dark'});await p.waitForFunction(()=>document.querySelector('#device').dataset.theme==='dark');assert.equal((await result()).actual,'dark');record('跟随系统响应实际系统外观变化');
+ await p.screenshot({path:path.join(ev,'portrait-dark.png')});
+ await p.locator('#theme-entry').click();await p.screenshot({path:path.join(ev,'portrait-options.png')});assert.equal(await p.locator('[role=radio]').count(),3);
+ await p.keyboard.press('Escape');assert.equal(await p.locator('[role=dialog]').count(),0);assert.equal(await p.locator('#theme-entry').evaluate(x=>x===document.activeElement),true);record('三项单选容器、Esc取消与焦点恢复');
+ await pick('on');const sameTheme=await p.evaluate(()=>ThemeDemo.events.slice(-1)[0]);assert.equal(sameTheme.event,'theme_preference_change');assert.equal(sameTheme.previous_preference,'system');record('同主题改变偏好只报偏好事件');const count=await p.evaluate(()=>ThemeDemo.events.length);await pick('on');assert.equal(await p.evaluate(()=>ThemeDemo.events.length),count);record('重复选择不报偏好或曝光事件');
+ await p.evaluate(()=>{window.savedSet=Storage.prototype.setItem;Storage.prototype.setItem=()=>{throw new DOMException('denied')}});await pick('off');assert.deepEqual(await result(),{preference:'on',actual:'dark'});assert.equal(await p.evaluate(()=>ThemeDemo.events.length),count);await p.evaluate(()=>Storage.prototype.setItem=window.savedSet);record('存储失败回滚原偏好，不报成功事件');
+ await pick('off');assert.deepEqual(await result(),{preference:'off',actual:'light'});await p.screenshot({path:path.join(ev,'portrait-light.png')});
+ await p.emulateMedia({colorScheme:'light'});await p.emulateMedia({colorScheme:'dark'});assert.equal((await result()).actual,'light');await p.reload();assert.deepEqual(await result(),{preference:'off',actual:'light'});record('关闭立即切浅色、手动覆盖系统、刷新保持偏好');
+ await pick('on');assert.equal((await result()).actual,'dark');await p.emulateMedia({colorScheme:'light'});assert.equal((await result()).actual,'dark');record('开启始终深色');
+ await p.locator('#theme-entry').click();await p.keyboard.press('ArrowDown');await p.keyboard.press('Enter');assert.equal((await result()).preference,'off');record('键盘箭头移动与Enter提交选择');
+ await p.goto(url+'?scenario=old-dark&capture=1');assert.equal((await result()).preference,'off');record('已有明确偏好优先于迁移');
+ await p.evaluate(()=>localStorage.clear());await p.reload();assert.deepEqual(await result(),{preference:'on',actual:'dark'});record('老用户原深色迁移为开启');
+ await p.evaluate(()=>localStorage.clear());await p.goto(url+'?scenario=old-light&capture=1');assert.deepEqual(await result(),{preference:'off',actual:'light'});record('老用户原浅色迁移为关闭');
+ await p.setViewportSize({width:1040,height:468});await p.goto(url+'?capture=1&orientation=landscape');await pick('on');await p.screenshot({path:path.join(ev,'landscape-dark.png')});await pick('off');await p.screenshot({path:path.join(ev,'landscape-light.png')});
+ assert.equal(await p.locator('.land-settings').count(),1);assert.equal(await p.locator('.app-body').count(),0);record('横屏独立头部及双列布局，深浅即时切换');
+ await p.locator('#theme-entry').click();await p.screenshot({path:path.join(ev,'landscape-options.png')});await p.locator('.cancel').click();assert.equal((await result()).preference,'off');record('取消不改变偏好');
+ const es=await p.evaluate(()=>ThemeDemo.events);assert.ok(es.every(e=>['dark','light'].includes(e.user_mode)&&['system','on','off'].includes(e.theme_preference)&&e.event_id));assert.ok(es.filter(e=>e.event==='theme_view').every(e=>['foreground','user_selection','system_change'].includes(e.trigger_source)));assert.ok(es.filter(e=>e.event==='theme_preference_change').every(e=>e.previous_preference));record('本地事件名称、event_id、实际主题、偏好、来源/原偏好符合PRD');
+ await p.setViewportSize({width:320,height:740});await p.goto(url+'?capture=1');assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);record('320px竖屏无页面横向溢出');
+ await p.setViewportSize({width:1116,height:2480});await p.goto(url+'?capture=1&baseline=1');await p.evaluate(()=>{ThemeDemo.state.preference='on';ThemeDemo.render();const d=document.querySelector('#device');d.style.width='390px';d.style.height=(2480/(1116/390))+'px';d.style.zoom=1116/390;});await p.screenshot({path:path.join(ev,'settings-baseline-dom.png')});
+ const geometry=await p.evaluate(()=>Object.fromEntries([...document.querySelectorAll('[data-component-id]')].map(el=>{const b=el.getBoundingClientRect();return[el.dataset.componentId,{x:b.x,y:b.y,width:b.width,height:b.height}]})));fs.writeFileSync(path.join(ev,'geometry.json'),JSON.stringify(geometry,null,2));
+ assert.equal(errors.length,0);assert.equal(requests.length,0);record('离线无远程请求、无JavaScript异常');
+ fs.writeFileSync(path.join(ev,'verification.json'),JSON.stringify({passed:true,checks,errors,remoteRequests:requests,events:es},null,2));console.log(JSON.stringify({passed:true,checks:checks.length}));
+}finally{await b.close()}

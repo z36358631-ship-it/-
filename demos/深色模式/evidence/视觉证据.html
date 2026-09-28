@@ -1,0 +1,95 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>深色模式视觉证据</title><style>body{font:15px Microsoft YaHei;background:#f3f4f6;color:#252932;margin:24px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}figure{margin:0;background:white;padding:16px}img{width:100%;height:500px;object-fit:contain}pre{white-space:pre-wrap}</style><h1>深色模式 · 原稿与实现证据</h1><p>原稿证据并非实现。严格比较仅针对不含新增入口的原设置基线。失败项如实保留。</p><div class="grid"><figure><a href="settings-original.png"><img src="settings-original.png"></a><figcaption>任务原稿</figcaption></figure><figure><a href="settings-baseline-dom.png"><img src="settings-baseline-dom.png"></a><figcaption>原设置DOM基线</figcaption></figure><figure><a href="settings-overlay.png"><img src="settings-overlay.png"></a><figcaption>50%叠加</figcaption></figure><figure><a href="settings-difference.png"><img src="settings-difference.png"></a><figcaption>绝对差异</figcaption></figure><figure><a href="settings-heatmap.png"><img src="settings-heatmap.png"></a><figcaption>差异热图</figcaption></figure><figure><img src="settings-main-original.png"><figcaption>settings-main · original</figcaption></figure><figure><img src="settings-main-dom.png"><figcaption>settings-main · dom</figcaption></figure><figure><img src="settings-support-original.png"><figcaption>settings-support · original</figcaption></figure><figure><img src="settings-support-dom.png"><figcaption>settings-support · dom</figcaption></figure><figure><img src="header-original.png"><figcaption>header · original</figcaption></figure><figure><img src="header-dom.png"><figcaption>header · dom</figcaption></figure></div><pre>{
+  "nativeSize": [
+    1116,
+    2480
+  ],
+  "method": "native RGB, no resize or preblur, Canny sigma=0, uniform 7x7 SSIM, CIEDE2000 P95",
+  "thresholds": {
+    "rgb": 95,
+    "edge": 95,
+    "ssim": 95,
+    "deltaE2000P95": 3,
+    "geometryPixels": 2
+  },
+  "page": {
+    "rgbSimilarity": 96.569,
+    "edgeXorSimilarity": 96.97,
+    "ssim": 90.283,
+    "deltaE2000P95": 4.806,
+    "pixelGatePassed": false
+  },
+  "components": {
+    "settings-main": {
+      "box": [
+        44,
+        254,
+        1072,
+        1502
+      ],
+      "rgbSimilarity": 95.719,
+      "edgeXorSimilarity": 96.348,
+      "ssim": 89.678,
+      "deltaE2000P95": 5.238,
+      "pixelGatePassed": false
+    },
+    "settings-support": {
+      "box": [
+        44,
+        1546,
+        1072,
+        1856
+      ],
+      "rgbSimilarity": 96.347,
+      "edgeXorSimilarity": 96.509,
+      "ssim": 88.221,
+      "deltaE2000P95": 4.739,
+      "pixelGatePassed": false
+    },
+    "header": {
+      "box": [
+        44,
+        139,
+        1072,
+        224
+      ],
+      "rgbSimilarity": 93.862,
+      "edgeXorSimilarity": 97.626,
+      "ssim": 86.538,
+      "deltaE2000P95": 19.847,
+      "pixelGatePassed": false
+    }
+  },
+  "geometry": {
+    "sourceMain": [
+      44,
+      254,
+      1028,
+      1248
+    ],
+    "actualMain": [
+      44.0625,
+      254.09375,
+      1027.875,
+      1248.125
+    ],
+    "maxError": 0.125
+  },
+  "passed": false,
+  "manualReview": {
+    "status": "fail",
+    "functionalVisualReview": "新增入口、三选状态与深浅主题人工检查通过；严格基线仍失败，不声明像素一致",
+    "reviewedScreens": [
+      "portrait-dark.png",
+      "portrait-light.png",
+      "portrait-options.png",
+      "landscape-light.png"
+    ],
+    "remaining": "Android字体、状态栏及色差未达严格门槛"
+  },
+  "limitations": [
+    "新增深色模式入口不参与原稿基线比较，baseline参数只隐藏新增行。",
+    "Android原字体和系统栏资源未取得，原稿文字、图标栅格差异未消除。",
+    "浅色主题、深色模式三选一内容、横屏为derived，无同版原稿，不声明像素一致。",
+    "新增入口无已登记图标，保留空图标位且标签与原行对齐。"
+  ]
+}</pre></html>
