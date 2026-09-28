@@ -1,0 +1,13 @@
+from PIL import Image,ImageDraw,ImageFont
+from pathlib import Path
+p=Path('串流功能/交付/assets'); im=Image.new('RGB',(2860,1995),'#f3f6fa');d=ImageDraw.Draw(im);font=lambda n:ImageFont.truetype('C:/Windows/Fonts/msyh.ttc',n)
+d.text((40,25),'远程电脑｜APP 与 Mac 产品流程',font=font(36),fill='#132435')
+lanes=[('APP 主控',[('1 进入远程电脑','entry'),('2 我的设备','devices'),('3 设备详情','detail'),('4 远程桌面','desktop'),('5 操作 / 输入','controls'),('6 退出回详情','detail')],'设备详情分支：文件传输（独立进入）｜ChatGPT 快速启动 → 对话 / 历史 / 文件 → 返回详情'),('Mac 主控',[('1 Mac 首页远程入口','mac-entry'),('2 左列表 / 右详情','mac-workspace'),('3 进入远控窗口','mac-session'),('4 控制中心 / 信号','mac-network'),('5 可选：文件传输','mac-files'),('6 返回来源 / 退出','mac-workspace')],'连接前检查：离线 / 无权限 → 留在详情；被控中 → 接管或取消。文件页返回来源；关闭远控直接退出，最小化保留连接。'),('Mac 本机设置',[('1 进入远程工作区','mac-workspace'),('2 左下角设置','mac-settings'),('3 调整五项偏好','mac-settings'),('4 开关保存 / 路径保存','mac-settings'),('5 点击左侧设备','mac-workspace'),('6 回到设备详情','mac-workspace')],'设置仅作用于本机 Mac，不建立连接、不修改选中远端设备权限。APP 不提供该设置页。')]
+lanes.append(('APP · ChatGPT 应用内流程',[('1 快速启动 ChatGPT','gpt-quick-launch'),('2 手机工作区','gpt-welcome'),('3 历史 / 新对话','gpt-history'),('4 输入 / 发送 / 停止','gpt-composer'),('5 查看关联文件','gpt-file'),('6 返回设备详情','detail')],'在线且允许控制时启动；占用先接管。横屏左侧常驻历史、右侧对话与输入；返回不关闭电脑应用。'))
+for row,(label,cards,note) in enumerate(lanes):
+ y=95+row*465;d.text((35,y),label,font=font(28),fill='#167599')
+ for i,(title,name) in enumerate(cards):
+  x=35+i*470;d.rounded_rectangle((x,y+48,x+435,y+365),radius=12,fill='white',outline='#cbd5e1');d.text((x+12,y+60),title,font=font(22),fill='#142b3d');pic=Image.open(p/((name if name.startswith('gpt-') else 'sync-'+name)+'.png')).convert('RGB');pic.thumbnail((410,245));im.paste(pic,(x+(435-pic.width)//2,y+101));
+  if i<5:d.text((x+439,y+180),'→',font=font(27),fill='#167599')
+ d.text((35,y+384),note,font=font(21),fill='#43576c')
+im.save(p/'prd-app-mac-flow.png')
