@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {chromium} from 'file:///C:/Users/z3635/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
+const dir=path.dirname(fileURLToPath(import.meta.url));
+const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+const page=await browser.newPage({viewport:{width:1440,height:1000}});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto(pathToFileURL(path.join(dir,'深色模式PRD预览.html')).href,{waitUntil:'networkidle',timeout:90000});
+const images=await page.locator('img').evaluateAll(nodes=>nodes.map(x=>({alt:x.alt,src:x.getAttribute('src'),loaded:x.complete&&x.naturalWidth>0})));
+const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
+await page.screenshot({path:path.join(dir,'prd-preview.png')});
+const report={passed:images.length===4&&images.every(x=>x.loaded)&&!overflow&&errors.length===0,images,overflow,errors,scope:'文档渲染与远程Git图片加载，不代表飞书转存验证'};
+fs.writeFileSync(path.join(dir,'local-preview-report.json'),JSON.stringify(report,null,2));
+console.log(JSON.stringify(report));await browser.close();
+if(!report.passed)process.exitCode=1;
