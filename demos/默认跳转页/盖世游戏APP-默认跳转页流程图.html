@@ -71,7 +71,7 @@ card('04-portrait-landing','04','立即进入首页·云游戏',homePortrait(),[
 ].join('');
 document.getElementById('landscapeCards').innerHTML=[
 card('00-landscape-main','05','设置左侧导航',mainSettings(true),['进入设置，默认选中通用设置。','左侧保留全部设置导航；右侧直接展示通用四项。','左侧独立滚动；不改变主设置条目顺序。'],true),
-card('05-landscape-settings','06','通用设置打开默认页',landSettings(),['点击设置行右侧当前值。','横屏使用独立顶部导航与设置布局。','示例当前配置：首页·PC游戏。'],true),
+card('05-landscape-settings','06','通用设置打开默认页',landSettings(),['点击设置行右侧当前值。','左侧保留设置导航，右侧显示通用设置。','示例当前配置：首页·PC游戏。'],true),
 card('06-landscape-select','07','下拉直选游戏库',landSettings()+panel(true),['点击五项中的“游戏库”。','直接记录当前方向并进入游戏库；社区同理。','选择前旋转，重读新方向；点击时锁定记录方向。'],true),
 card('07-landscape-landing','08','立即进入游戏库',libraryDestination(true),['立即进入游戏库。','下次横屏普通冷启动仍进入游戏库。','另一方向不变；空库不回退；深链与热恢复沿用原规则。'],true)
 ].join('');
@@ -119,3 +119,4 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&edit){api.c
 
 renderLab();if(query.has('panel'))document.getElementById('interactiveLab').scrollIntoView();
 </script></body></html>
+
