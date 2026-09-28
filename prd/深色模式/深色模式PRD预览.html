@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世游戏 · 深色模式 PRD</title><style>
 *{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:#20242b;font:15px/1.8 -apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif}main{max-width:1200px;margin:36px auto;padding:44px 52px;background:#fff;border:1px solid #e4e7ec;border-radius:16px}h1{font-size:30px;line-height:1.4}h2{margin-top:46px;border-bottom:1px solid #e4e7ec;padding-bottom:10px}h3{margin-top:32px}h4{font-size:17px}table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14px}th,td{border:1px solid #dfe3e8;padding:12px 14px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#f3f5f8;font-weight:600}td:first-child{min-width:110px}a{color:#315fd7}img{max-width:100%;height:auto;border:1px solid #e1e4e8;border-radius:8px}td img{max-height:510px;width:auto;max-width:100%;margin:10px 12px 16px 0;vertical-align:top}td br:has(+img){display:none}strong{font-weight:650}p,li{max-width:100%}em{font-size:13px;color:#697386}.note{padding:10px 15px;background:#eef3ff;border-radius:8px;font-size:13px}@media(max-width:700px){main{margin:0;padding:24px 16px;border-radius:0}table{font-size:12px}td,th{padding:8px}h1{font-size:25px}}@media print{body{background:white}main{border:0;margin:0;padding:0}h2,h3,h4{break-after:avoid}img{max-height:400px}}
-</style><main><div class="note">V1.1 · 图片已发布到 Git 固定提交 · 仅完成公网验证，飞书转存未验证</div><h1>【PRD】《盖世游戏》深色模式需求</h1>
+</style><main><div class="note">V1.2 · 图片已发布到 Git 固定提交 · 仅完成公网验证，飞书转存未验证</div><h1>【PRD】《盖世游戏》深色模式需求</h1>
 <h2>修订记录</h2>
 <table>
 <thead>
@@ -23,14 +23,21 @@
 <td>V1.1</td>
 <td>Codex（依据郑群超确认）</td>
 </tr>
+<tr>
+<td>2026/9/28</td>
+<td>重写需求背景，补充用户场景、现有不足、竞品依据与建设价值</td>
+<td>V1.2</td>
+<td>Codex（依据郑群超反馈）</td>
+</tr>
 </tbody></table>
-<p><strong>备注：</strong> 搜2026.9.28修改：配图及附录链接更新。</p>
+<p><strong>备注：</strong> 搜2026.9.28修改：需求背景、竞品依据及价值说明更新。</p>
 <h2>一、文档概述</h2>
 <h3>1.1 背景概述</h3>
 <ul>
-<li><strong>需求背景：</strong> GUANWANGGAID-51 要求平台提供深色与非深色显示，用户可从“我的—设置”主动选择。</li>
-<li><strong>当前方式：</strong> 本次实机附图为深色设置页，包含“模式切换”，未提供独立主题选择入口。现有“模式切换”用于探索／掌机形态，不等于深色设置。</li>
-<li><strong>问题：</strong> 偏好浅色、或希望与系统外观一致的用户，无法在附图页面选择所需主题。无量化用户反馈，本期不预设留存或满意度提升幅度。</li>
+<li><strong>用户场景：</strong> 盖世游戏承载选游戏、阅读游戏信息与社区内容、管理下载、调整设置等使用行为。用户会在白天、夜间及不同光照环境下使用，也有各自固定的阅读和配色习惯：部分用户偏好深色界面，部分用户习惯浅底深字，还有用户希望应用随手机系统自动切换。单一配色难以同时满足这些使用需求。</li>
+<li><strong>现有不足：</strong> 当前设置未提供独立的深浅主题选择，偏好浅色的用户只能接受现有深色外观；希望跟随系统的用户，也缺少对应设置。调整屏幕亮度只能改变显示亮度，无法切换文字与背景的配色，不能替代主题选择。外观选择受限会持续影响用户在游戏之外浏览内容和操作功能时的体验。</li>
+<li><strong>竞品与行业参考：</strong> 游戏设备已提供外观选择能力：<a href="https://www.nintendo.com/en-gb/Support/Troubleshooting/How-to-Change-the-Theme-on-Nintendo-Switch-1496819.html">Nintendo Switch 支持白色与黑色主题</a>，<a href="https://news.xbox.com/en-us/2021/10/21/october-2021-xbox-update/">Xbox 主机支持深浅主题，并可结合夜间模式定时切换</a>；移动端的 <a href="https://support.google.com/youtube/answer/7385323?co=GENIE.Platform%3DAndroid&hl=zh-Hans">YouTube 支持浅色、深色和使用设备主题</a>。这些做法为盖世提供了两项明确参照：让用户保留自己的配色偏好，以及让应用外观与系统设置保持一致。</li>
+<li><strong>本期价值：</strong> 在保留现有深色体验的基础上，补齐浅色显示和跟随系统能力，让用户能选择适合自己的阅读与操作界面；选择跟随系统后，减少手动切换的负担。通过一个设置项覆盖固定深色、固定浅色和自动切换三类需求，同时保留老用户当前外观，补齐平台的基础体验与个性化能力。上线后统计两种模式的实际使用人数和主动选择情况，为后续界面适配提供依据。</li>
 </ul>
 <h3>1.2 需求边界</h3>
 <table>
@@ -98,10 +105,6 @@
 <tr>
 <td>默认策略</td>
 <td>[已确认] 新用户默认跟随系统；老用户保留升级前外观，当前深色则迁移为开启。已有明确主题偏好优先保留。</td>
-</tr>
-<tr>
-<td>外部参考</td>
-<td>YouTube 的外观设置提供设备主题和深浅选择，可借鉴“自动与手动并存”的心智；盖世沿用自己的入口和术语。Android 官方提供跟随系统、固定深色与固定浅色能力。参考仅证明交互与平台可行性，不作为盖世现状证据。</td>
 </tr>
 </tbody></table>
 <h3>2.2 产品流程</h3>
@@ -412,6 +415,16 @@
 <td>原页面图</td>
 <td><a href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@cd3009e26d9407bffe517de45134b83e127e7832/public/prd/dark-mode/settings-original.png">https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@cd3009e26d9407bffe517de45134b83e127e7832/public/prd/dark-mode/settings-original.png</a></td>
 <td>本次设置骨架最高优先级来源。</td>
+</tr>
+<tr>
+<td>Nintendo Switch 主题说明</td>
+<td><a href="https://www.nintendo.com/en-gb/Support/Troubleshooting/How-to-Change-the-Theme-on-Nintendo-Switch-1496819.html">https://www.nintendo.com/en-gb/Support/Troubleshooting/How-to-Change-the-Theme-on-Nintendo-Switch-1496819.html</a></td>
+<td>游戏设备端白色／黑色主题参考，2026/9/28 查阅。</td>
+</tr>
+<tr>
+<td>Xbox 夜间模式说明</td>
+<td><a href="https://news.xbox.com/en-us/2021/10/21/october-2021-xbox-update/">https://news.xbox.com/en-us/2021/10/21/october-2021-xbox-update/</a></td>
+<td>主机端深浅主题与定时切换参考，2026/9/28 查阅；本期不引入定时功能。</td>
 </tr>
 <tr>
 <td>YouTube 外观帮助</td>
