@@ -754,6 +754,19 @@ function savePublisherRolloutSettings(){
   showToast(`外放设置已保存：${enabled?`${percent}%`:'已关闭'}`);
 }
 
+function updateOfficialSchedule(){
+  const select=document.getElementById('official-duration');
+  const dateForDays=days=>{
+    const date=new Date('2026-09-11T10:00:00Z');
+    date.setUTCDate(date.getUTCDate()+days);
+    return date.toISOString().slice(0,10);
+  };
+  Array.from(select.options).forEach(option=>{
+    option.textContent=`${option.value} 天（预计 ${dateForDays(Number(option.value))} 截止）`;
+  });
+  document.getElementById('official-schedule-preview').textContent=`点赞统计至 ${dateForDays(Number(select.value)+7)}（任务截止后7天）`;
+}
+
 function openCreateTask(){
   document.getElementById('modal-box').innerHTML=`
 <div class="modal-header"><span>创建官方任务</span><span class="modal-close" onclick="closeModal()">✕</span></div>
@@ -763,9 +776,10 @@ function openCreateTask(){
 <div class="form-row"><label>每赞单价（盖世币／赞）</label><input type="number" min="1" step="1" value="2"></div>
 <div class="form-row"><label>单稿奖励上限（盖世币）</label><input type="number" min="1" step="1" value="10000"></div>
 <div class="form-row"><label>任务总预算（盖世币）</label><input type="number" min="5000" max="10000000" placeholder="5,000～10,000,000"></div>
-<div class="form-row"><label>投稿与点赞统计截止时间</label><div style="display:flex;gap:8px"><input type="date" value="2026-09-25" style="flex:1"><span style="line-height:36px">至</span><input type="date" value="2026-09-28" style="flex:1"></div></div>
+<div class="form-row" id="official-snapshot-rule"><label for="official-duration">任务天数</label><select id="official-duration" onchange="updateOfficialSchedule()"><option value="15">15 天</option><option value="30" selected>30 天</option><option value="60">60 天</option><option value="90">90 天</option><option value="180">180 天</option></select><div id="official-schedule-preview" style="font-size:12px;color:#999;line-height:1.8;margin-top:6px" aria-live="polite"></div><div style="font-size:12px;color:#999;line-height:1.8">正式发布后起算，日期为北京时间预估。</div></div>
 <div class="form-row"><label>视频要求</label><textarea placeholder="每行一条要求，如：&#10;视频时长≥15秒&#10;需包含游戏实际画面&#10;投稿内容必须为视频"></textarea></div>
 <div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="closeModal();showToast('官方任务创建成功，已直接上架')">创建并上架</button></div>`;
+  updateOfficialSchedule();
   document.getElementById('modal').classList.add('show');
 }
 

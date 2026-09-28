@@ -1,33 +1,3 @@
-const TASK_DURATION_DAYS=[15,30,60,90,180];
-const LIKE_STATISTICS_DAYS=7;
-
-// Calendar arithmetic is performed on the displayed Beijing time, independent of device timezone.
-function addTaskDays(value,days){
-  const normalized=value.length===10?`${value} 23:59`:value.replace('T',' ');
-  const date=new Date(`${normalized.replace(' ','T')}:00Z`);
-  if(!Number.isFinite(date.getTime()))return '';
-  date.setUTCDate(date.getUTCDate()+days);
-  return date.toISOString().slice(0,16).replace('T',' ');
-}
-
-function taskSchedule(publishedAt,durationDays){
-  if(!TASK_DURATION_DAYS.includes(durationDays))return null;
-  const deadline=addTaskDays(publishedAt,durationDays);
-  return deadline?{deadline,snapshotDeadline:addTaskDays(deadline,LIKE_STATISTICS_DAYS)}:null;
-}
-
-function updateCreateSchedule(){
-  const select=document.getElementById('cr-duration');
-  Array.from(select.options).forEach(option=>{
-    const schedule=taskSchedule(publisherState.beijingDateTime,Number(option.value));
-    option.textContent=`${option.value} 天（预计 ${schedule.deadline.slice(0,10)} 截止）`;
-  });
-  const schedule=taskSchedule(publisherState.beijingDateTime,Number(select.value));
-  document.getElementById('cr-schedule-preview').textContent=schedule
-    ?`点赞统计至 ${schedule.snapshotDeadline.slice(0,10)}（任务截止后7天）`
-    :'请选择有效的任务天数';
-}
-
 const games=[
 {id:1,name:'中奖概率倍儿高啊啊',icon:'🎰',color:'#ff6b6b'},
 {id:2,name:'凡人修仙模拟器',icon:'⚔️',color:'#667eea'},
@@ -42,15 +12,15 @@ const platformMap={douyin:'抖音',bilibili:'B站',kuaishou:'快手',xiaohongshu
 const CI='<span class="coin-icon">G</span>';
 
 const tasks=[
-{id:1,title:'中奖概率倍儿高啊啊',gameId:1,badge:'官方',platforms:['douyin','bilibili'],reward:2,maxReward:10000,pool:87100,reserved:30000,submissions:51,submittedAt:'2026-05-25 10:00',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'超刺激的转盘抽奖小游戏，每次转动都有惊喜！玩法简单上手快，适合各年龄段玩家。',
+{id:1,title:'中奖概率倍儿高啊啊',gameId:1,badge:'官方',platforms:['douyin','bilibili'],reward:2,maxReward:10000,pool:87100,reserved:30000,submissions:51,submittedAt:'2026-05-25 10:00',deadline:'2026-06-15',snapshotDeadline:'2026-06-18 23:59',status:'进行中',ruleVersion:1,productIntro:'超刺激的转盘抽奖小游戏，每次转动都有惊喜！玩法简单上手快，适合各年龄段玩家。',
 requirements:['视频时长≥15秒','需包含游戏实际游玩画面','投稿内容必须为视频内容']},
-{id:2,title:'凡人修仙模拟器宣传',gameId:2,badge:null,platforms:['bilibili'],reward:1,maxReward:8000,pool:50000,reserved:16000,submissions:11,submittedAt:'2026-05-24 12:00',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'国风修仙放置类RPG，从凡人一步步修炼成仙。画面精美，剧情丰富，适合喜欢修仙题材的玩家。建议展示核心战斗和升级系统。',
+{id:2,title:'凡人修仙模拟器宣传',gameId:2,badge:null,platforms:['bilibili'],reward:1,maxReward:8000,pool:50000,reserved:16000,submissions:11,submittedAt:'2026-05-24 12:00',deadline:'2026-06-10',snapshotDeadline:'2026-06-13 23:59',status:'进行中',ruleVersion:1,productIntro:'国风修仙放置类RPG，从凡人一步步修炼成仙。画面精美，剧情丰富，适合喜欢修仙题材的玩家。建议展示核心战斗和升级系统。',
 requirements:['视频时长≥30秒','需展示游戏核心玩法','标题需包含游戏名称','投稿内容必须为视频']},
-{id:3,title:'233购物街可摆摊收打赏啦',gameId:3,badge:'官方',platforms:['douyin','kuaishou','xiaohongshu'],reward:3,maxReward:6000,pool:30000,reserved:12000,submissions:7,submittedAt:'2026-05-20 09:30',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'模拟经营类游戏，玩家可以开店摆摊、装修店铺、与好友互动。新版本上线了打赏功能，社交玩法更丰富。',
+{id:3,title:'233购物街可摆摊收打赏啦',gameId:3,badge:'官方',platforms:['douyin','kuaishou','xiaohongshu'],reward:3,maxReward:6000,pool:30000,reserved:12000,submissions:7,submittedAt:'2026-05-20 09:30',deadline:'2026-06-01',snapshotDeadline:'2026-06-04 23:59',status:'进行中',ruleVersion:1,productIntro:'模拟经营类游戏，玩家可以开店摆摊、装修店铺、与好友互动。新版本上线了打赏功能，社交玩法更丰富。',
 requirements:['视频时长≥15秒','需展示摆摊和打赏功能','投稿内容必须为视频']},
-{id:4,title:'测测你是热梗王吗推广',gameId:4,badge:null,platforms:['douyin','bilibili','kuaishou','xiaohongshu'],reward:2,maxReward:5000,pool:25000,reserved:10000,submissions:7,submittedAt:'2026-05-21 14:00',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'趣味答题游戏，涵盖最新网络热梗。答对越多排名越高，适合拍摄"挑战类"短视频，容易引发观众互动。',
+{id:4,title:'测测你是热梗王吗推广',gameId:4,badge:null,platforms:['douyin','bilibili','kuaishou','xiaohongshu'],reward:2,maxReward:5000,pool:25000,reserved:10000,submissions:7,submittedAt:'2026-05-21 14:00',deadline:'2026-06-08',snapshotDeadline:'2026-06-11 23:59',status:'进行中',ruleVersion:1,productIntro:'趣味答题游戏，涵盖最新网络热梗。答对越多排名越高，适合拍摄"挑战类"短视频，容易引发观众互动。',
 requirements:['视频时长≥15秒','需展示答题过程和结果','推荐使用相关话题标签','投稿内容必须为视频']},
-{id:5,title:'polo小球角色分享',gameId:5,badge:null,platforms:['xiaohongshu'],reward:5,maxReward:15000,pool:60000,reserved:15000,submissions:7,submittedAt:'2026-05-26 11:00',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'休闲竞技小球对战游戏，角色造型可爱多样。适合在小红书分享角色外观和精彩对战瞬间。',
+{id:5,title:'polo小球角色分享',gameId:5,badge:null,platforms:['xiaohongshu'],reward:5,maxReward:15000,pool:60000,reserved:15000,submissions:7,submittedAt:'2026-05-26 11:00',deadline:'2026-06-20',snapshotDeadline:'2026-06-23 23:59',status:'进行中',ruleVersion:1,productIntro:'休闲竞技小球对战游戏，角色造型可爱多样。适合在小红书分享角色外观和精彩对战瞬间。',
 requirements:['视频时长≥10秒','需展示角色外观或对战画面','投稿内容必须为视频']}
 ];
 
@@ -65,8 +35,8 @@ const rankData=[
 ];
 
 const myPublished=[
-{id:101,title:'我的世界建筑大赛',status:'机器审核中',statusColor:'#1890ff',gameId:7,reward:10,maxReward:1000,pool:20000,reserved:0,submissions:0,platforms:['bilibili','douyin'],submittedAt:'2026-09-11 10:00',durationDays:30,publishedAt:null,deadline:null,snapshotDeadline:null,ruleVersion:1,productIntro:'分享有创意的建筑作品。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:20000,reward:0}},
-{id:102,title:'蛋仔派对新皮肤推广',status:'进行中',statusColor:'#ff8c00',gameId:8,reward:5,maxReward:500,pool:10000,reserved:2000,submissions:4,platforms:['douyin','kuaishou'],submittedAt:'2026-09-10 14:30',durationDays:15,publishedAt:'2026-09-10 14:30',deadline:'2026-09-25 14:30',snapshotDeadline:'2026-10-02 14:30',ruleVersion:1,productIntro:'展示新皮肤及局内效果。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:10000,reward:0}}
+{id:101,title:'我的世界建筑大赛',status:'机器审核中',statusColor:'#1890ff',gameId:7,reward:10,maxReward:1000,pool:20000,reserved:0,submissions:0,platforms:['bilibili','douyin'],submittedAt:'2026-09-11 10:00',deadline:'2026-09-30 23:59',snapshotDeadline:'2026-10-03 23:59',ruleVersion:1,productIntro:'分享有创意的建筑作品。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:20000,reward:0}},
+{id:102,title:'蛋仔派对新皮肤推广',status:'进行中',statusColor:'#ff8c00',gameId:8,reward:5,maxReward:500,pool:10000,reserved:2000,submissions:4,platforms:['douyin','kuaishou'],submittedAt:'2026-09-10 14:30',deadline:'2026-09-25 23:59',snapshotDeadline:'2026-09-28 23:59',ruleVersion:1,productIntro:'展示新皮肤及局内效果。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:10000,reward:0}}
 ];
 const myJoined=[
 {taskId:1,status:'进行中',statusColor:'#ff8c00',note:'剩余48小时'},
@@ -291,12 +261,7 @@ function requireSubmissionIdentity(){
   return true;
 }
 
-function isTaskAcceptingSubmissions(task){
-  return Boolean(task&&task.status==='进行中'&&task.deadline&&publisherState.beijingDateTime<addTaskDays(task.deadline,0));
-}
-
 function beginSubmission(){
-  if(!isTaskAcceptingSubmissions(currentTask))return showToast('任务尚未开放或已停止接收投稿');
   if(!canStartNewPublisherAction()){
     showToast('当前仅可处理已有投稿，不能参加新任务');
     return false;
@@ -318,21 +283,20 @@ function renderTaskList(){
 }
 
 function openDetail(id){
-  currentTask=tasks.find(t=>t.id===id)||myPublished.find(t=>t.id===id);if(!currentTask)return;const g=G(currentTask.gameId);
+  currentTask=tasks.find(t=>t.id===id);const g=G(currentTask.gameId);
   const pn=currentTask.platforms.map(p=>platformMap[p]).join(' / ');
   document.getElementById('detail-content').innerHTML=`
 <div class="detail-banner" style="background:linear-gradient(135deg,${g.color},${g.color}cc)"><span style="font-size:44px">${g.icon}</span><div class="game-name">${currentTask.title}</div></div>
 <div class="section"><div class="detail-stats"><div class="detail-stat-item"><div class="num">${currentTask.submissions}</div><div class="label">已投稿</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.reward}</div><div class="label">每赞奖励</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.pool.toLocaleString()}</div><div class="label">任务奖池</div></div></div></div>
 <div class="section"><div class="section-title">产品介绍</div><div style="font-size:13px;color:#666;line-height:1.8">${currentTask.productIntro||'暂无产品介绍'}</div></div>
-<div class="section" id="task-schedule"><div class="section-title">任务时间</div><div class="rule-copy">任务截止时间：<strong>${currentTask.deadline||'正式发布后确定'}</strong></div><div class="rule-copy">点赞统计截止时间：<strong>${currentTask.snapshotDeadline||'正式发布后确定'}</strong></div><div class="form-tip">点赞统计固定于任务截止后 7 天结束。以上时间均为北京时间。</div></div>
 <div class="section"><div class="section-title">投稿平台</div><div style="font-size:13px;color:#666">${pn}</div></div>
 <div class="section"><div class="section-title">投稿要求</div><ul class="requirement-list">${submissionRequirements(currentTask).map(r=>`<li>${r}</li>`).join('')}</ul></div>
-<div class="section"><div class="section-title">奖励与结算</div><div class="rule-copy">每 1 个赞奖励 ${currentTask.reward} 盖世币，单篇最高 ${currentTask.maxReward.toLocaleString()} 盖世币。</div><div class="rule-copy">预计奖励 = min（当前点赞数 × 每赞单价，单稿奖励上限）。最终以点赞统计截止时间 ${currentTask.snapshotDeadline||'正式发布后确定'} 的数据快照及人工结算结果为准。</div><div class="rule-copy">投稿数据校验通过时按单稿奖励上限预留奖池；可用预算不足一个单稿上限时停止接收新投稿。</div></div>
+<div class="section"><div class="section-title">奖励与结算</div><div class="rule-copy">每 1 个赞奖励 ${currentTask.reward} 盖世币，单篇最高 ${currentTask.maxReward.toLocaleString()} 盖世币。</div><div class="rule-copy">预计奖励 = min（当前点赞数 × 每赞单价，单稿奖励上限）。最终以点赞统计截止时间 ${currentTask.snapshotDeadline} 的数据快照及人工结算结果为准。</div><div class="rule-copy">投稿数据校验通过时按单稿奖励上限预留奖池；可用预算不足一个单稿上限时停止接收新投稿。</div></div>
 <div class="section"><div class="section-title">收入排行</div>${rankData.map((r,i)=>`<div class="rank-item"><div class="rank-num t${i+1}">${i+1}</div><div class="rank-avatar">${r.avatar}</div><div class="rank-info"><div class="rn">${r.name}</div><div class="rr">投稿奖励 ${CI}${r.reward}</div></div><div class="rank-view" onclick="event.stopPropagation();showToast('打开作品链接')">查看投稿 ›</div></div>`).join('')}</div>
 <div style="height:70px"></div>`;
   const btn=document.getElementById('btn-claim');
-  const canStartNew=canStartNewPublisherAction()&&isTaskAcceptingSubmissions(currentTask);
-  btn.textContent=canStartNew?'上传参与作品':!isTaskAcceptingSubmissions(currentTask)?'任务尚未开放或已停止接收投稿':'仅查看已有参与记录';
+  const canStartNew=canStartNewPublisherAction();
+  btn.textContent=canStartNew?'上传参与作品':'仅查看已有参与记录';
   btn.disabled=!canStartNew;
   btn.classList.toggle('disabled',!canStartNew);
   btn.onclick=beginSubmission;
@@ -347,7 +311,7 @@ function renderMyTasks(){
       return `<div class="my-task-item" onclick="openDetail(${t.id})"><div class="thumb" style="background:${g.color}22">${g.icon}</div><div class="info"><div class="name">${t.title}</div><div class="meta" style="color:${j.statusColor}">${j.status}${j.note?' · '+j.note:''}</div></div></div>`;}).join('');
   } else {
     c.innerHTML=myPublished.map(p=>{const g=G(p.gameId);
-      return `<div class="my-task-item"><div class="thumb" style="background:${g.color}22">${g.icon}</div><div class="info"><div class="name">${p.title}</div><div class="meta" style="color:${p.statusColor}">${p.status}${p.submissions?` · ${p.submissions} 个投稿`:''}</div></div><div class="actions"><span class="act-btn view-task" onclick="event.stopPropagation();openDetail(${p.id})">查看</span>${publishedActions(p)}</div></div>`;}).join('');
+      return `<div class="my-task-item"><div class="thumb" style="background:${g.color}22">${g.icon}</div><div class="info"><div class="name">${p.title}</div><div class="meta" style="color:${p.statusColor}">${p.status}${p.submissions?` · ${p.submissions} 个投稿`:''}</div></div><div class="actions"><span class="act-btn view" onclick="event.stopPropagation();showToast('查看任务详情')">查看</span>${publishedActions(p)}</div></div>`;}).join('');
   }
 }
 
@@ -363,14 +327,9 @@ function openTaskAdjustment(taskId){
   if(!task||task.status!=='进行中')return showToast('仅进行中任务可追加预算或延长时间');
   const currentDeadline=task.deadline.replace(' ','T');
   document.getElementById('modal-title').textContent='追加预算／延长时间';
-  document.getElementById('modal-content').innerHTML=`<div class="form-tip adjustment-lock">每赞单价 ${task.reward}、单稿上限 ${task.maxReward.toLocaleString()} 和核心投稿要求已锁定，不可降低或修改。</div><label class="adjustment-label" for="adjust-budget">追加预算（盖世币）</label><input id="adjust-budget" class="form-input" type="number" min="0" step="1" placeholder="输入追加预算"><label class="adjustment-label" for="adjust-deadline">任务截止时间</label><input id="adjust-deadline" class="form-input" type="datetime-local" min="${currentDeadline}" value="${currentDeadline}" oninput="updateAdjustmentSchedule()"><div class="form-tip" id="adjust-snapshot">点赞统计截止时间：${task.snapshotDeadline}（任务截止后 7 天，自动顺延）</div>`;
+  document.getElementById('modal-content').innerHTML=`<div class="form-tip adjustment-lock">每赞单价 ${task.reward}、单稿上限 ${task.maxReward.toLocaleString()} 和核心投稿要求已锁定，不可降低或修改。</div><label class="adjustment-label" for="adjust-budget">追加预算（盖世币）</label><input id="adjust-budget" class="form-input" type="number" min="0" step="1" placeholder="输入追加预算"><label class="adjustment-label" for="adjust-deadline">投稿截止时间</label><input id="adjust-deadline" class="form-input" type="datetime-local" min="${currentDeadline}" value="${currentDeadline}">`;
   document.getElementById('modal-confirm').onclick=()=>confirmTaskAdjustment(taskId);
   document.getElementById('modal').classList.add('show');
-}
-
-function updateAdjustmentSchedule(){
-  const deadline=document.getElementById('adjust-deadline').value;
-  document.getElementById('adjust-snapshot').textContent=`点赞统计截止时间：${addTaskDays(deadline,LIKE_STATISTICS_DAYS)||'请选择有效时间'}（任务截止后 7 天，自动顺延）`;
 }
 
 function confirmTaskAdjustment(taskId){
@@ -381,7 +340,8 @@ function confirmTaskAdjustment(taskId){
   const deadline=document.getElementById('adjust-deadline').value;
   const normalizedDeadline=deadline.replace('T',' ');
   if(!Number.isInteger(extra)||extra<0){showToast('追加预算必须为非负整数');return;}
-  if(!deadline||normalizedDeadline<task.deadline){showToast('任务截止时间只能延长');return;}
+  if(!deadline||normalizedDeadline<task.deadline){showToast('投稿截止时间只能延长');return;}
+  if(normalizedDeadline>=task.snapshotDeadline){showToast('投稿截止时间必须早于点赞统计截止时间');return;}
   if(extra===0&&normalizedDeadline===task.deadline){showToast('请追加预算或延长时间');return;}
   const sources=extra?freezeTaskBudget(extra):{recharge:0,reward:0};
   if(extra&&!sources){showToast('盖世币余额不足');return;}
@@ -389,10 +349,7 @@ function confirmTaskAdjustment(taskId){
   task.budgetSources.recharge+=sources.recharge;
   task.budgetSources.reward+=sources.reward;
   task.pool+=extra;
-  if(normalizedDeadline!==task.deadline){
-    task.deadline=normalizedDeadline;
-    task.snapshotDeadline=addTaskDays(normalizedDeadline,LIKE_STATISTICS_DAYS);
-  }
+  task.deadline=normalizedDeadline;
   closeModal();
   showToast('已追加预算／延长时间，原奖励规则保持不变');
   renderMyTasks();
@@ -487,11 +444,11 @@ function renderCreateForm(){
 <div class="form-row"><div class="form-group"><div class="form-label">每赞单价（盖世币／赞） *</div><input class="form-input" id="cr-price" type="number" min="1" step="1" placeholder="如：2"></div><div class="form-group"><div class="form-label">单稿奖励上限（盖世币） *</div><input class="form-input" id="cr-max" type="number" min="1" step="1" placeholder="如：10000"></div></div>
 <div class="form-tip">发布者自行设置单价和单稿上限，系统只按该单价计算并显示奖励。</div>
 <div class="form-group" style="margin-top:12px"><div class="form-label">任务总预算（盖世币） *</div><input class="form-input" id="cr-pool" type="number" min="5000" max="10000000" step="1" placeholder="如：50000"><div class="form-tip">最低 5,000 盖世币，最高 10,000,000 盖世币；提交后足额冻结。</div></div>
-<div class="form-group" id="create-schedule"><label class="form-label" for="cr-duration">任务天数 *</label><select class="form-input" id="cr-duration" onchange="updateCreateSchedule()">${TASK_DURATION_DAYS.map(days=>`<option value="${days}"${days===30?' selected':''}>${days} 天</option>`).join('')}</select><div class="form-tip" id="cr-schedule-preview" aria-live="polite"></div><div class="form-tip">正式发布后起算，日期为北京时间预估。</div></div>
+<div class="form-group"><div class="form-label">投稿截止时间 *</div><input class="form-input" id="cr-submit-deadline" type="datetime-local" value="2026-09-30T23:59"></div>
+<div class="form-group"><div class="form-label">点赞统计截止时间 *</div><input class="form-input" id="cr-like-deadline" type="datetime-local" value="2026-10-03T23:59"><div class="form-tip">最终以点赞统计截止时间的数据快照及人工结算结果为准。</div></div>
 <div class="form-tip">今日已提交 ${publisherState.submittedToday} 个；同一实名主体每天最多提交 10 个任务，取消或审核不通过不返还次数。</div>
 <div style="padding:16px 0"><button class="btn-primary" id="submit-task-btn" onclick="submitCreate(false)">提交</button><div class="form-tip" style="text-align:center">机器审核通过后自动发布；超时或结果不确定时转人工处理，不默认放行。</div></div></div>`;
   selectedGameId=null;
-  updateCreateSchedule();
   renderTaskImages();
 }
 
@@ -544,7 +501,8 @@ function validateTaskDraft(){
   const reward=readPositiveInt('cr-price');
   const maxReward=readPositiveInt('cr-max');
   const pool=readPositiveInt('cr-pool');
-  const durationDays=Number(document.getElementById('cr-duration').value);
+  const submitDeadline=document.getElementById('cr-submit-deadline').value;
+  const snapshotDeadline=document.getElementById('cr-like-deadline').value;
   if(!requirePublisherIdentity())return null;
   if(publisherState.submittedToday>=10){showToast('同一实名主体每天最多提交 10 个任务');return null;}
   if(!title){showToast('请输入任务名称');return null;}
@@ -556,11 +514,13 @@ function validateTaskDraft(){
   if(pool<5000||pool>10000000){showToast('任务预算需为 5,000～10,000,000 盖世币');return null;}
   if(maxReward>pool){showToast('单稿奖励上限不能高于任务总预算');return null;}
   if(pool>wallet.totalBalance){showToast('盖世币余额不足，请先充值');return null;}
-  if(!TASK_DURATION_DAYS.includes(durationDays)){showToast('请选择有效的任务天数');return null;}
+  if(!submitDeadline||!snapshotDeadline){showToast('请填写投稿与点赞统计截止时间');return null;}
+  if(Date.parse(submitDeadline)<=Date.parse(`${publisherState.beijingDate}T00:00`)){showToast('投稿截止时间必须晚于当前时间');return null;}
+  if(Date.parse(snapshotDeadline)<=Date.parse(submitDeadline)){showToast('点赞统计截止时间必须晚于投稿截止时间');return null;}
   if(publisherState.uploadedImages.some(image=>image.uploadStatus!=='上传成功'||image.machineStatus!=='内容安全通过'||image.ocrStatus!=='OCR 敏感词通过')){
     showToast('请等待任务图片完成上传与机器审核');return null;
   }
-  return {title,productIntro,requirements,platforms,reward,maxReward,pool,durationDays};
+  return {title,productIntro,requirements,platforms,reward,maxReward,pool,submitDeadline,snapshotDeadline};
 }
 
 function taskMachineScenario(task){
@@ -588,8 +548,6 @@ function runTaskMachineReview(task){
     showToast('机器审核结果不确定，已转人工异常处理');
     return;
   }
-  task.publishedAt=publisherState.beijingDateTime;
-  Object.assign(task,taskSchedule(task.publishedAt,task.durationDays||30));
   task.status='进行中';
   task.statusColor='#ff8c00';
   if(!tasks.some(item=>item.id===task.id))tasks.unshift(task);
@@ -608,7 +566,7 @@ function submitCreate(isEdit){
   const task={
     id:Date.now(),title:draft.title,gameId:selectedGameId,badge:null,platforms:draft.platforms,
     reward:draft.reward,maxReward:draft.maxReward,pool:draft.pool,reserved:0,submissions:0,
-    submittedAt:publisherState.beijingDateTime,durationDays:draft.durationDays,publishedAt:null,deadline:null,snapshotDeadline:null,
+    submittedAt:publisherState.beijingDateTime,deadline:draft.submitDeadline.replace('T',' '),snapshotDeadline:draft.snapshotDeadline.replace('T',' '),
     status:'机器审核中',statusColor:'#1890ff',ruleVersion:1,productIntro:draft.productIntro,
     requirements:draft.requirements,images:publisherState.uploadedImages.map(image=>({...image})),budgetSources
   };
@@ -628,7 +586,6 @@ function submitCreate(isEdit){
 }
 
 function submitVideo(){
-  if(!isTaskAcceptingSubmissions(currentTask))return showToast('任务尚未开放或已停止接收投稿');
   if(!requireSubmissionIdentity())return;
   const link=document.getElementById('video-link').value.trim();
   const selectedPlatform=document.querySelector('#submit-platforms .pm-item.selected')?.dataset.p||'';

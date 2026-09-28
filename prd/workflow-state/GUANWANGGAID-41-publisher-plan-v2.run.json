@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "5b5fe1f2-9cff-43a0-8f69-29ef1ed5ade0",
   "requirementId": "GUANWANGGAID-41",
-  "revision": 137,
-  "status": "passed",
+  "revision": 192,
+  "status": "failed",
   "createdAt": "2026-08-31T03:22:01.3837637Z",
-  "updatedAt": "2026-09-16T06:34:46.0650205Z",
+  "updatedAt": "2026-09-28T04:27:18.2021523Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
   "cardHash": "EE0FC695CB9E0559B6FD030D7FB8B6C439486CF996D39E7EBB2113B1A6E5F1C6",
   "contract": {
@@ -121,27 +121,15 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 14,
-      "inputHashes": [
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\docs\\superpowers\\specs\\2026-09-16-publisher-plan-uid-rollout-design.md",
-          "sha256": "B110B4C27019E2BB6ADE691F9C984CE621D8148921C3DA072DA63A6007BDF1C6"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
-          "sha256": "C53BC4C5D54B04ACDE86D093A6CBB66ABA0558309A554F4FC6660E872093BA3E"
-        }
-      ],
+      "attempt": 18,
+      "inputHashes": [],
       "outputs": [
-        "未登录隐藏，登录后仅按UID稳定分桶",
-        "20%包含于50%，同UID跨设备一致",
-        "UID未命中或关闭时存量任务、投稿、奖励和订单继续"
+        "V2.12 PRD与本地C/B时间字段"
       ],
       "evidence": [
-        "用户确认现有程序灰度仅支持账号并批准UID方案",
-        "D-021"
+        "docs/evidence/publisher-task-duration-20260928/review-notes.md"
       ],
-      "validation": "本轮变化已编译；独立灰度方案、主PRD、数据口径、测试与状态卡受影响，Demo与图片界面无需修改",
+      "validation": "用户明确确认，现有页面基线沿用，本地实现已完成",
       "error": null,
       "reviewer": null
     },
@@ -153,26 +141,15 @@
         "S3"
       ],
       "status": "passed",
-      "attempt": 10,
-      "inputHashes": [
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划demo.html",
-          "sha256": "37A56246FB5CA94C10B0016A24E0A04E80D0E1C0598DDB99A8144EC32D93DE5F"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\demos\\Mod与发行人\\发行人计划-后台demo.html",
-          "sha256": "B74087DE186DDA22E805F4A266FD9CC6A2E374D508EA9E8713FF30624C0F10EC"
-        }
-      ],
+      "attempt": 14,
+      "inputHashes": [],
       "outputs": [
-        "复用现有C端发行人计划入口与B端外放设置界面",
-        "本轮仅修改身份准入和存量规则，不新增页面或视觉元素"
+        "V2.12 PRD与本地C/B时间字段"
       ],
       "evidence": [
-        "当前C/B Demo",
-        "既有24-feature-rollout-settings.png"
+        "docs/evidence/publisher-task-duration-20260928/review-notes.md"
       ],
-      "validation": "原页面基线无变化，现有截图继续有效",
+      "validation": "用户明确确认，现有页面基线沿用，本地实现已完成",
       "error": null,
       "reviewer": null
     },
@@ -185,31 +162,15 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 12,
-      "inputHashes": [
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【方案】《盖世游戏》发行人计划灰度发布方案.md",
-          "sha256": "30B6F8F9DE91B0E0CEB6803545BDCE16693ED6D30C7E76D9B09B6B1BB2B52326"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【Prd】《盖世游戏》发行人计划需求.md",
-          "sha256": "C590E27F2F94AEFA391DD947AC64AD9FAE2BF75C5483AA3B536E014571642E51"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
-          "sha256": "C53BC4C5D54B04ACDE86D093A6CBB66ABA0558309A554F4FC6660E872093BA3E"
-        }
-      ],
+      "attempt": 18,
+      "inputHashes": [],
       "outputs": [
-        "UID灰度独立方案V2.0",
-        "发行人计划主PRD V2.8",
-        "状态卡D-021"
+        "V2.12 PRD与本地C/B时间字段"
       ],
       "evidence": [
-        "未登录隐藏与UID稳定分桶已同步",
-        "设备灰度旧口径已删除"
+        "docs/evidence/publisher-task-duration-20260928/review-notes.md"
       ],
-      "validation": "方案、PRD和状态卡已同步；Demo与图片无界面变化",
+      "validation": "用户明确确认，现有页面基线沿用，本地实现已完成",
       "error": null,
       "reviewer": null
     },
@@ -220,30 +181,13 @@
       "dependsOn": [
         "S5"
       ],
-      "status": "passed",
-      "attempt": 12,
-      "inputHashes": [
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【方案】《盖世游戏》发行人计划灰度发布方案.md",
-          "sha256": "30B6F8F9DE91B0E0CEB6803545BDCE16693ED6D30C7E76D9B09B6B1BB2B52326"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【Prd】《盖世游戏》发行人计划需求.md",
-          "sha256": "C590E27F2F94AEFA391DD947AC64AD9FAE2BF75C5483AA3B536E014571642E51"
-        }
-      ],
-      "outputs": [
-        "PRD质量校验0错误0警告",
-        "旧设备灰度口径无残留",
-        "28张图片公网状态与MIME通过"
-      ],
-      "evidence": [
-        "validate-prd-quality.ps1 PASS",
-        "validate-prd-images.ps1 28/28 PASS",
-        "rg旧口径检查"
-      ],
-      "validation": "机器验证通过；飞书真实转存未执行",
-      "error": null,
+      "status": "failed",
+      "attempt": 18,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [],
+      "validation": "failed",
+      "error": "11组专项检查通过；整体仍受3页旧缺图、数据校验术语误报及章节断言影响，不宣称全量通过",
       "reviewer": null
     },
     {
@@ -254,30 +198,15 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 12,
-      "inputHashes": [
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【方案】《盖世游戏》发行人计划灰度发布方案.md",
-          "sha256": "30B6F8F9DE91B0E0CEB6803545BDCE16693ED6D30C7E76D9B09B6B1BB2B52326"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【Prd】《盖世游戏》发行人计划需求.md",
-          "sha256": "C590E27F2F94AEFA391DD947AC64AD9FAE2BF75C5483AA3B536E014571642E51"
-        }
-      ],
-      "outputs": [
-        "用户视角：未登录无前后跳变，切号按账号资格变化",
-        "研发视角：单一UID准入、服务端终审、幂等和配置版本闭环",
-        "产品运营视角：只限制新增，存量权益继续履约"
-      ],
+      "attempt": 15,
+      "inputHashes": [],
+      "outputs": [],
       "evidence": [
-        "gray_user_states多场景评审",
-        "gray_dev_rules研发与测试评审",
-        "gray_product_ops产品运营与数据评审"
+        "docs/evidence/publisher-task-duration-20260928/review-notes.md"
       ],
-      "validation": "专业判断通过，未发现设备与UID混用、存量资产锁死或数据口径冲突",
+      "validation": "时间字段差异已复核修正；三张本地截图人工审阅通过；全量旧灰度不在本轮实现范围",
       "error": null,
-      "reviewer": "Codex用户、研发测试、产品运营多视角复核"
+      "reviewer": "产品经理交叉检查及主管人工审图"
     },
     {
       "id": "S8",
@@ -289,35 +218,33 @@
         "S6",
         "S7"
       ],
-      "status": "passed",
-      "attempt": 14,
+      "status": "stale",
+      "attempt": 15,
       "inputHashes": [
         {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
-          "sha256": "C53BC4C5D54B04ACDE86D093A6CBB66ABA0558309A554F4FC6660E872093BA3E"
-        },
-        {
-          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【方案】《盖世游戏》发行人计划灰度发布方案.md",
-          "sha256": "30B6F8F9DE91B0E0CEB6803545BDCE16693ED6D30C7E76D9B09B6B1BB2B52326"
-        },
-        {
           "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\ai生成\\【Prd】《盖世游戏》发行人计划需求.md",
-          "sha256": "C590E27F2F94AEFA391DD947AC64AD9FAE2BF75C5483AA3B536E014571642E51"
+          "sha256": "E693C18433D9E4106261701716852975C8CC4F6A1B8D63B9DEEE4F7456D8429C"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\.tmp\\publisher-plan-interactive-preview-20260910\\prd\\workflow-state\\GUANWANGGAID-41-publisher-plan-v2.md",
+          "sha256": "983920205D918CE5F21C0F0F5747375A71D8097FC5282F83C37250E43B2175AD"
         }
       ],
       "outputs": [
-        "源文件：UID灰度方案、V2.8 PRD和状态卡已同步",
-        "机器验证：质量0错误0警告，28/28图片公网通过",
-        "专业判断：UID准入、切号、跨设备、存量履约和数据口径一致",
-        "Demo与图片：无界面变化，无需重做",
-        "Git：待本地提交，不推送"
+        "源文件：V2.9主PRD和状态卡已同步",
+        "机器验证：PRD质量0错误0警告，28/28图片公网通过",
+        "专业判断：灰度选取、状态、存量、缩量和后台配置清晰一致",
+        "Git：本轮未提交、未推送",
+        "公开预览：未执行，文档无公开预览要求",
+        "远程资源：28/28图片通过HTTP与MIME验证，飞书转存未验证"
       ],
       "evidence": [
-        "D-021",
-        "V2.8修订记录",
-        "本轮质量与图片校验"
+        "V2.9修订记录",
+        "2.3灰度发布方案",
+        "状态卡2026-09-16增量记录",
+        "本轮质量、图片和一致性验证"
       ],
-      "validation": "UID灰度PRD完成本地对账，待本地提交与用户验收",
+      "validation": "本轮文档精简整合已完成；独立方案、Demo和图片无需修改",
       "error": null,
       "reviewer": null
     }

@@ -1,33 +1,305 @@
-const TASK_DURATION_DAYS=[15,30,60,90,180];
-const LIKE_STATISTICS_DAYS=7;
-
-// Calendar arithmetic is performed on the displayed Beijing time, independent of device timezone.
-function addTaskDays(value,days){
-  const normalized=value.length===10?`${value} 23:59`:value.replace('T',' ');
-  const date=new Date(`${normalized.replace(' ','T')}:00Z`);
-  if(!Number.isFinite(date.getTime()))return '';
-  date.setUTCDate(date.getUTCDate()+days);
-  return date.toISOString().slice(0,16).replace('T',' ');
-}
-
-function taskSchedule(publishedAt,durationDays){
-  if(!TASK_DURATION_DAYS.includes(durationDays))return null;
-  const deadline=addTaskDays(publishedAt,durationDays);
-  return deadline?{deadline,snapshotDeadline:addTaskDays(deadline,LIKE_STATISTICS_DAYS)}:null;
-}
-
-function updateCreateSchedule(){
-  const select=document.getElementById('cr-duration');
-  Array.from(select.options).forEach(option=>{
-    const schedule=taskSchedule(publisherState.beijingDateTime,Number(option.value));
-    option.textContent=`${option.value} 天（预计 ${schedule.deadline.slice(0,10)} 截止）`;
-  });
-  const schedule=taskSchedule(publisherState.beijingDateTime,Number(select.value));
-  document.getElementById('cr-schedule-preview').textContent=schedule
-    ?`点赞统计至 ${schedule.snapshotDeadline.slice(0,10)}（任务截止后7天）`
-    :'请选择有效的任务天数';
-}
-
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>发行人计划 Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:375px;height:812px;background:#fff;border-radius:40px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.phone [hidden]{display:none!important}
+.status-bar{height:44px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;color:#333}
+.header{height:48px;display:flex;align-items:center;justify-content:center;padding:0 16px;position:relative;background:#fff;border-bottom:1px solid #f0f0f0}
+.header .back{position:absolute;left:16px;font-size:20px;cursor:pointer;color:#333}
+.header .title{font-size:17px;font-weight:600;color:#333}
+.header .right-btn{position:absolute;right:16px;font-size:13px;color:#ff8c00;cursor:pointer;font-weight:500;border:0;background:transparent;padding:0}
+.header .right-btn:focus-visible{outline:2px solid #2bc3df;outline-offset:3px}
+.content{height:calc(812px - 44px - 48px - 56px);overflow-y:auto;background:#f5f5f5}
+.content::-webkit-scrollbar{display:none}
+.bottom-nav{height:56px;background:#fff;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-around;position:absolute;bottom:0;left:0;right:0}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-size:10px;color:#999}
+.nav-item.active{color:#ff8c00}
+.nav-item .icon{font-size:20px}
+.view{display:none}.view.active{display:block}
+.btn-primary{width:100%;height:44px;background:linear-gradient(135deg,#ff8c00,#ffaa00);border:none;border-radius:22px;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+.btn-primary:active{opacity:.8}
+.btn-primary.disabled{background:#ccc;pointer-events:none}
+.toast{position:absolute;top:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.publisher-access-banner{position:absolute;top:100px;left:50%;transform:translateX(-50%);z-index:90;max-width:330px;padding:7px 12px;border-radius:16px;background:rgba(26,41,64,.94);color:#d9e7ff;border:1px solid rgba(40,125,250,.28);box-shadow:0 6px 18px rgba(0,0,0,.12);font-size:11px;line-height:1.4;white-space:nowrap;pointer-events:none}
+.publisher-access-banner.existing{background:rgba(75,55,20,.94);color:#ffe1a3;border-color:rgba(250,173,20,.32)}
+.publisher-access-banner[hidden]{display:none}
+.modal-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:300px;text-align:center}
+.modal .modal-title{font-size:16px;font-weight:600;color:#333;margin-bottom:12px}
+.modal .modal-content{font-size:14px;color:#666;line-height:1.6;margin-bottom:20px;white-space:pre-line}
+.modal .modal-btns{display:flex;gap:12px}
+.modal .modal-btn{flex:1;height:40px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;border:none}
+.modal .modal-btn.cancel{background:#f5f5f5;color:#666}
+.modal .modal-btn.confirm{background:#ff8c00;color:#fff}
+.section{background:#fff;margin:12px 16px;border-radius:12px;padding:16px}
+.section-title{font-size:15px;font-weight:600;color:#333;margin-bottom:12px}
+.coin-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:#ffb800;border-radius:50%;font-size:9px;color:#fff;font-weight:bold;vertical-align:middle;margin-right:2px}
+.filter-tag{padding:4px 12px;border-radius:14px;font-size:12px;background:#f5f5f5;color:#666;cursor:pointer;display:inline-block}
+.filter-tag.active{background:#fff5e6;color:#ff8c00}
+.task-list{padding:12px 16px}
+.task-card{background:#fff;border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:pointer}
+.task-card-img{height:100px;position:relative;display:flex;align-items:center;justify-content:center}
+.task-card-img .badge{position:absolute;top:8px;left:8px;background:#ff8c00;color:#fff;font-size:10px;padding:2px 8px;border-radius:10px}
+.task-card-body{padding:12px}
+.task-card-title{font-size:15px;font-weight:600;color:#333;margin-bottom:6px}
+.task-card-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.task-card-meta{font-size:12px;color:#999}
+.task-card-reward{font-size:14px;font-weight:700;color:#ff8c00;display:flex;align-items:center;gap:3px}
+.task-card-footer{display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid #f5f5f5;font-size:12px;color:#666}
+.task-card-footer .pool{color:#ff8c00;font-weight:600;font-size:13px}
+.detail-banner{height:150px;display:flex;align-items:center;justify-content:center;position:relative}
+.detail-banner .game-name{position:absolute;bottom:14px;left:16px;color:#fff;font-size:16px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+.detail-stats{display:flex;justify-content:space-around;text-align:center}
+.detail-stat-item .num{font-size:18px;font-weight:600;color:#333}
+.detail-stat-item .label{font-size:11px;color:#999;margin-top:2px}
+.detail-bottom{position:absolute;bottom:56px;left:0;right:0;padding:12px 16px;background:#fff;border-top:1px solid #f0f0f0}
+.reward-table{width:100%;border-collapse:collapse}
+.reward-table th{background:#fff5e6;padding:8px 12px;font-size:12px;color:#ff8c00;text-align:left}
+.reward-table td{padding:8px 12px;font-size:13px;color:#333;border-bottom:1px solid #f5f5f5}
+.requirement-list{font-size:13px;color:#666;line-height:2;padding-left:8px;border-left:3px solid #ff8c00}
+.requirement-list li{list-style:none;padding-left:12px;position:relative}
+.requirement-list li::before{content:"•";position:absolute;left:0;color:#ff8c00}
+.my-tabs{display:flex;padding:0 16px;background:#fff;border-bottom:1px solid #f0f0f0}
+.my-tab{padding:12px 16px;font-size:14px;color:#666;cursor:pointer;border-bottom:2px solid transparent}
+.my-tab.active{color:#333;font-weight:600;border-bottom-color:#ff8c00}
+.my-task-item{background:#fff;margin:8px 16px;border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.my-task-item .thumb{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.my-task-item .info{flex:1;min-width:0}
+.my-task-item .info .name{font-size:14px;font-weight:500;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.my-task-item .info .meta{font-size:12px;color:#999;margin-top:4px}
+.my-task-item .actions{display:flex;gap:6px;flex-shrink:0}
+.act-btn{padding:4px 10px;border-radius:12px;font-size:11px;cursor:pointer}
+.act-btn.edit{background:#fff5e6;color:#ff8c00}
+.act-btn.cancel{background:#fff1f0;color:#ff4d4f}
+.act-btn.view{background:#f0f5ff;color:#1890ff}
+/* 收益 */
+.earn-header{background:#fff;padding:20px 16px;text-align:center}
+.earn-header .eh-amount{font-size:36px;font-weight:700;color:#333;margin:4px 0}
+.earn-header .eh-label{font-size:12px;color:#999}
+.earn-header .eh-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
+.earn-header .eh-btn{padding:8px 24px;background:#ff8c00;color:#fff;border-radius:16px;font-size:13px;cursor:pointer}
+.earn-header .eh-sub{display:flex;justify-content:space-around;margin-top:16px;padding-top:16px;border-top:1px solid #f5f5f5}
+.earn-header .eh-sub-item{text-align:center}
+.earn-header .eh-sub-item .sn{font-size:16px;font-weight:600;color:#333}
+.earn-header .eh-sub-item .sl{font-size:11px;color:#999;margin-top:2px}
+.redeem-card-entry{width:100%;border:1px solid #ffe0b2;background:#fff9f0;border-radius:12px;margin-top:18px;padding:14px;display:flex;align-items:center;justify-content:space-between;text-align:left;cursor:pointer;color:#333}
+.redeem-card-entry strong{display:block;font-size:15px;color:#333}
+.redeem-card-entry span{display:block;font-size:11px;color:#999;margin-top:4px}
+.redeem-card-entry .entry-arrow{font-size:22px;color:#ff8c00;margin:0}
+.wallet-rule{font-size:11px;color:#999;line-height:1.6;text-align:left;margin-top:10px}
+.earn-tabs{display:flex;background:#fff;border-bottom:1px solid #f0f0f0;padding:0 16px}
+.earn-tab{padding:10px 12px;font-size:13px;color:#666;cursor:pointer;border-bottom:2px solid transparent}
+.earn-tab.active{color:#ff8c00;font-weight:600;border-bottom-color:#ff8c00}
+.earn-item{background:#fff;margin:0 16px 1px;padding:14px;display:flex;justify-content:space-between;align-items:center}
+.earn-item:first-child{border-radius:10px 10px 0 0;margin-top:8px}
+.earn-item:last-child{border-radius:0 0 10px 10px;margin-bottom:12px}
+.earn-item .left .name{font-size:13px;color:#333}
+.earn-item .left .time{font-size:11px;color:#999;margin-top:3px}
+.earn-item .right{font-size:15px;font-weight:600}
+.earn-item .right.pos{color:#52c41a}
+.earn-item .right.neg{color:#ff4d4f}
+/* 京东电子卡兑换：figma-03 / X-03，沿用现有竖屏 Shell、Topbar、Tab 与 Dialog */
+.redeem-balance-card{margin:12px 16px;padding:18px;border-radius:14px;background:linear-gradient(135deg,#ff9a2e,#ff7200);color:#fff;position:relative}
+.redeem-balance-card .balance-label{display:block;font-size:12px;opacity:.85}
+.redeem-balance-card strong{display:block;font-size:32px;line-height:1.2;margin-top:6px}
+.redeem-balance-card button{position:absolute;right:14px;top:14px;border:1px solid rgba(255,255,255,.65);background:rgba(255,255,255,.12);color:#fff;border-radius:14px;padding:5px 10px;font-size:11px;cursor:pointer}
+.redeem-tip{font-size:11px;line-height:1.6;color:#999;margin:0 16px 10px}
+.jd-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 20px}
+.jd-card-item{min-height:148px;border:1px solid #f0f0f0;background:#fff;border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.jd-card-item:focus-visible,.redeem-card-entry:focus-visible,.modal button:focus-visible{outline:2px solid #2bc3df;outline-offset:2px}
+.jd-card-item .jd-brand{font-size:12px;color:#d92b23;font-weight:600}
+.jd-card-item strong{font-size:28px;color:#333;margin:8px 0 12px}
+.jd-card-item .jd-cost{font-size:12px;color:#666;display:flex;align-items:center}
+.jd-card-item .jd-limit{font-size:10px;color:#999;margin-top:5px}
+.jd-card-item em{font-style:normal;font-size:12px;color:#ff8c00;font-weight:600;margin-top:auto;padding-top:12px}
+.jd-card-item.disabled{background:#f5f5f5;box-shadow:none;cursor:not-allowed}
+.jd-card-item.disabled strong,.jd-card-item.disabled .jd-brand,.jd-card-item.disabled .jd-cost,.jd-card-item.disabled .jd-limit{color:#999}
+.jd-card-item.disabled em{color:#999}
+.card-modal{width:316px;padding:22px;text-align:left}
+.card-modal .modal-title{text-align:center}
+.card-confirm-name{text-align:center;font-size:18px;font-weight:700;color:#333;margin:4px 0 18px}
+.card-confirm-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f5f5f5;font-size:13px;color:#666}
+.card-confirm-row strong{font-size:14px;color:#333}
+.card-modal p{font-size:12px;color:#999;line-height:1.7;margin:14px 0}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions button,.result-close,.card-history-close{height:40px;border-radius:20px;border:none;font-size:14px;cursor:pointer}
+.modal-actions button{flex:1}
+.modal-cancel{background:#f5f5f5;color:#666}
+.modal-confirm,.result-close{background:#ff8c00;color:#fff}
+.modal-confirm:disabled{background:#ccc;cursor:not-allowed}
+.card-success-mark{width:46px;height:46px;border-radius:50%;background:#e8f8ef;color:#21a45d;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:700;margin:0 auto 12px}
+.card-code{font-family:Consolas,"Courier New",monospace;font-size:15px;letter-spacing:.4px;text-align:center;color:#333;background:#f7f7f7;border-radius:10px;padding:13px 8px;word-break:break-all}
+.result-close{width:100%;margin-top:10px}
+.card-history-modal{width:332px;max-height:620px;text-align:left;padding:20px}
+.card-history-modal .modal-title{text-align:center}
+.card-history-list{max-height:500px;overflow-y:auto;margin:10px -4px 14px;padding:0 4px}
+.card-order-item{padding:13px 0;border-bottom:1px solid #f0f0f0}
+.card-order-item:last-child{border-bottom:none}
+.card-order-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-order-head strong{font-size:14px;color:#333}
+.card-order-head em{font-style:normal;font-size:11px;color:#21a45d;flex-shrink:0}
+.card-order-meta{font-size:11px;color:#999;line-height:1.6;margin:4px 0 10px}
+.card-order-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.card-order-actions button{border:none;background:#fff5e6;color:#ff8c00;border-radius:13px;padding:5px 10px;font-size:11px;cursor:pointer}
+.card-history-close{width:100%;background:#f5f5f5;color:#666}
+.rule-copy{font-size:13px;color:#666;line-height:2}
+/* 充值 */
+.recharge-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0}
+.ra-item{padding:14px 8px;text-align:center;border-radius:10px;border:2px solid #f0f0f0;cursor:pointer}
+.ra-item.selected{border-color:#ff8c00;background:#fff5e6}
+.ra-item .ra-coin{font-size:16px;font-weight:700;color:#333}
+.ra-item .ra-price{font-size:12px;color:#999;margin-top:4px}
+.pay-method{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.pay-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:10px;border:2px solid #f0f0f0;cursor:pointer}
+.pay-item.selected{border-color:#ff8c00}
+.pay-item .pay-icon{font-size:20px}
+.pay-item .pay-name{font-size:14px;color:#333;flex:1}
+.pay-item .pay-check{width:18px;height:18px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center}
+.pay-item.selected .pay-check{border-color:#ff8c00;background:#ff8c00;color:#fff;font-size:10px}
+.agree-row{display:flex;align-items:center;gap:8px;margin:16px 0;font-size:12px;color:#666}
+.agree-row input[type=checkbox]{width:16px;height:16px;accent-color:#ff8c00}
+.agree-row a{color:#ff8c00;text-decoration:none}
+/* 创建/编辑任务 */
+.form-group{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px}
+.form-label{font-size:13px;color:#999;margin-bottom:8px}
+.form-input{width:100%;padding:10px 12px;border:1px solid #e8e8e8;border-radius:10px;font-size:14px;outline:none;color:#333}
+.form-input:focus{border-color:#ff8c00}
+.form-input::placeholder{color:#ccc}
+.form-row{display:flex;gap:12px}
+.form-row .form-group{flex:1}
+.form-tip{font-size:11px;color:#999;margin-top:6px}
+.upload-box{height:42px;border:1px dashed #ffb057;background:#fff9f0;border-radius:10px;color:#ff8c00;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.upload-box:active{background:#fff4df}
+#cr-image-list{margin-top:8px}
+.upload-file{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:10px 12px;background:#f9f9f9;border-radius:10px}
+.upload-file span{font-size:13px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upload-file small{grid-column:1;font-size:10px;color:#52a642;line-height:1.5}
+.upload-file button{grid-column:2;grid-row:1/3;border:0;background:transparent;color:#ff4d4f;font-size:11px;cursor:pointer}
+.adjustment-lock{text-align:left;line-height:1.7;margin:0 0 12px;color:#666}
+.adjustment-label{display:block;text-align:left;font-size:12px;color:#999;margin:10px 0 6px}
+.game-search{position:relative}
+.game-results{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 10px 10px;max-height:180px;overflow-y:auto;z-index:10;display:none}
+.game-results.show{display:block}
+.game-result-item{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
+.game-result-item:hover{background:#f9f9f9}
+.game-result-item .gi{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.game-result-item .gn{font-size:13px;color:#333}
+.selected-game{display:flex;align-items:center;gap:10px;padding:10px;background:#f9f9f9;border-radius:10px;margin-top:8px}
+.selected-game .gi{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.selected-game .gn{font-size:14px;color:#333;font-weight:500}
+.selected-game .remove{margin-left:auto;color:#999;cursor:pointer;font-size:16px}
+.platform-multi{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.pm-item{padding:6px 12px;border-radius:16px;border:1.5px solid #e8e8e8;cursor:pointer;font-size:13px;color:#666}
+.pm-item.selected{border-color:#ff8c00;background:#fff5e6;color:#ff8c00}
+.rank-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f8f8f8}
+.rank-item:last-child{border-bottom:none}
+.rank-num{width:18px;font-size:13px;font-weight:700;color:#999}
+.rank-num.t1{color:#ff8c00}.rank-num.t2{color:#aaa}.rank-num.t3{color:#cd7f32}
+.rank-avatar{width:28px;height:28px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:12px}
+.rank-info{flex:1}.rank-info .rn{font-size:13px;color:#333}.rank-info .rr{font-size:11px;color:#999;margin-top:2px}
+.rank-view{font-size:11px;color:#ff8c00;cursor:pointer}
+.fab{position:absolute;bottom:72px;right:16px;background:linear-gradient(135deg,#ff8c00,#ffaa00);color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;box-shadow:0 4px 12px rgba(255,140,0,.4);cursor:pointer;z-index:10}
+.fab:active{transform:scale(.9)}
+</style>
+</head>
+<body>
+<div class="phone" id="app" data-component-id="C-SHELL-P" data-recipe-id="X-03" data-source-ref="figma-03:88688-6274">
+<div class="status-bar"><span>17:10</span></div>
+<div id="publisher-access-banner" class="publisher-access-banner" hidden aria-live="polite"></div>
+<!-- 找任务 -->
+<div class="view active" id="view-plaza">
+<div class="header" data-component-id="C-TOPBAR"><span class="title">发行人计划</span><span class="right-btn" onclick="showRules('plaza')">玩法说明</span></div>
+<div class="content"><div class="task-list" id="task-list"></div></div>
+<div class="fab" onclick="openCreateTask()">+ 发布</div>
+</div>
+<!-- 玩法说明 -->
+<div class="view" id="view-rules">
+<div class="header" data-component-id="C-TOPBAR"><span class="back" onclick="closeRules()">‹</span><span class="title">玩法说明</span></div>
+<div class="content">
+<div class="section"><div class="section-title">什么是发行人计划？</div><div style="font-size:13px;color:#666;line-height:2">发行人计划是盖世游戏的推广任务平台。你可以领取任务，去抖音/B站/快手/小红书发布游戏推广视频，根据视频点赞量获得盖世币奖励。</div></div>
+<div class="section"><div class="section-title">如何参与？</div><div class="rule-copy">1. 浏览可参与任务<br>2. 完成实名认证与创作者认证<br>3. 按要求发布外站作品并提交链接<br>4. 系统抓取作品数据并自动校验<br>5. 数据校验通过后等待任务级人工结算<br>6. 结算所得盖世币可进入兑换商城</div></div>
+<div class="section"><div class="section-title">结算规则</div><div class="rule-copy">发布者自行设置每赞单价和单稿奖励上限；系统按点赞统计截止时间的快照计算，运营只确认系统结果，不修改点赞、单价、上限或金额。抓取失败、作品删除、转私密或命中风险时进入重试或人工处理，不按 0 点赞结算。</div></div>
+<div class="section"><div class="section-title">盖世币兑换规则</div><div class="rule-copy">任务中心获得的是盖世积分，与盖世币分开计算，不计入盖世币总余额或兑换余额。充值获得的盖世币仅可用于发布任务，不可兑换京东卡；任务取消、审核驳回或结算后退回的未消耗预算沿用原来源，不计入兑换余额。只有参与发行任务并结算获得的盖世币可兑换京东电子卡。</div></div>
+<div class="section"><div class="section-title">如何发布任务？</div><div style="font-size:13px;color:#666;line-height:2">任何用户完成实名认证后均可发布任务。填写任务信息、上传任务图片并冻结预算后提交；任务文字、图片与 OCR 等机器审核全部明确通过后自动发布，结果不确定时转人工异常处理，不默认放行。</div></div>
+</div>
+</div>
+<!-- 详情 -->
+<div class="view" id="view-detail">
+<div class="header"><span class="back" onclick="showView('plaza')">‹</span><span class="title">任务详情</span></div>
+<div class="content" id="detail-content"></div>
+<div class="detail-bottom"><button class="btn-primary" id="btn-claim">上传参与作品</button></div>
+</div>
+<!-- 做任务（我的任务） -->
+<div class="view" id="view-mytask">
+<div class="header"><span class="title">做任务</span><span class="right-btn" onclick="openCreateTask()">+ 发布任务</span></div>
+<div class="content">
+<div class="my-tabs"><div class="my-tab active" data-t="joined">我参与的</div><div class="my-tab" data-t="published">我发布的</div></div>
+<div id="my-task-content"></div>
+</div>
+</div>
+<!-- 提交投稿 -->
+<div class="view" id="view-submit">
+<div class="header"><span class="back" onclick="showView('mytask')">‹</span><span class="title">提交投稿</span></div>
+<div class="content">
+<div class="section"><div class="section-title">选择投稿平台</div><div class="platform-multi" id="submit-platforms"><div class="pm-item selected" data-p="douyin">抖音</div><div class="pm-item" data-p="bilibili">B站</div><div class="pm-item" data-p="kuaishou">快手</div><div class="pm-item" data-p="xiaohongshu">小红书</div></div></div>
+<div class="section" id="submit-requirements"><div class="section-title">投稿要求</div></div>
+<div class="section"><div class="section-title">粘贴视频链接</div><textarea id="video-link" style="width:100%;padding:12px;border:1px solid #e8e8e8;border-radius:10px;font-size:14px;resize:none;height:80px;outline:none" placeholder="请粘贴已发布的视频链接"></textarea><div class="form-tip">· 视频时长≥15秒 · 需包含游戏画面 · 同一视频仅可关联一个任务</div></div>
+<div class="section submission-data-card" id="submission-data-card"><div class="section-title">数据获取与奖励</div><div class="form-tip">提交后系统抓取标题、描述、标签、发布时间、时长和点赞数；抓取失败不会按 0 点赞结算。</div><div class="form-tip">预计奖励随点赞数据变化，最终以点赞统计截止时间的数据快照及人工结算结果为准。</div></div>
+<div style="padding:0 16px 16px"><button class="btn-primary" onclick="submitVideo()">提交投稿</button></div>
+</div>
+</div>
+<!-- 收益 -->
+<div class="view" id="view-earnings">
+<div class="header" data-component-id="C-TOPBAR"><span class="title">我的钱包</span><span class="right-btn" onclick="showView('recharge')">充值</span></div>
+<div class="content">
+<div class="earn-header">
+<div class="eh-label">盖世币总余额</div>
+<div class="eh-row"><div class="eh-amount" id="wallet-total">3,650</div></div>
+<button class="redeem-card-entry" type="button" onclick="showView('card-store')"><span><strong>兑换商城</strong><span>只有参与发行任务并结算获得的盖世币可兑换</span></span><span class="entry-arrow">›</span></button>
+<div class="wallet-rule">任务中心盖世积分与盖世币分开计算；充值盖世币不计入兑换余额。</div>
+</div>
+<div class="earn-tabs" data-component-id="C-TAB"><div class="earn-tab active" data-et="all">全部</div><div class="earn-tab" data-et="income">收入</div><div class="earn-tab" data-et="expense">消耗</div><div class="earn-tab" data-et="recharge">充值</div></div>
+<div id="earn-list"></div>
+</div>
+</div>
+<!-- 兑换京东电子卡：目标设计来自 figma-03，非 V6.1.1 实机事实 -->
+<div class="view" id="view-card-store">
+<div class="header" data-component-id="C-TOPBAR"><span class="back" onclick="showView('earnings')">‹</span><span class="title">兑换商城</span><button type="button" class="right-btn" onclick="openCardHistory()">兑换记录</button></div>
+<div class="content">
+<div class="redeem-balance-card"><span class="balance-label">可兑换盖世币</span><strong id="redeemable-balance">2,650</strong><button type="button" onclick="showRules('card-store')">规则说明</button></div>
+<div class="redeem-tip">仅展示参与发行任务并结算获得的盖世币；充值盖世币与盖世积分不计入此余额。</div>
+<div id="jd-card-grid" class="jd-card-grid"></div>
+</div>
+</div>
+<!-- 充值 -->
+<div class="view" id="view-recharge">
+<div class="header"><span class="back" onclick="showView('earnings')">‹</span><span class="title">充值盖世币</span></div>
+<div class="content" id="recharge-content"></div>
+</div>
+<!-- 创建/编辑任务 -->
+<div class="view" id="view-create">
+<div class="header"><span class="back" onclick="showView('plaza')">‹</span><span class="title" id="create-title">创建发行任务</span></div>
+<div class="content" id="create-content"></div>
+</div>
+<div class="bottom-nav">
+<div class="nav-item active" onclick="switchNav(this,'plaza')"><span class="icon">🔍</span><span>找任务</span></div>
+<div class="nav-item" onclick="switchNav(this,'mytask')"><span class="icon">📋</span><span>做任务</span></div>
+<div class="nav-item" onclick="switchNav(this,'earnings')"><span class="icon">💰</span><span>钱包</span></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="modal-overlay" id="modal"><div class="modal" data-component-id="C-DIALOG"><div class="modal-title" id="modal-title"></div><div class="modal-content" id="modal-content"></div><div class="modal-btns"><button class="modal-btn cancel" type="button" onclick="closeModal()">取消</button><button class="modal-btn confirm" type="button" id="modal-confirm">确认</button></div></div></div>
+<div class="modal-overlay" id="card-redeem-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="card-redeem-title"><div class="modal card-modal" data-component-id="C-DIALOG"><div id="card-redeem-content"></div></div></div>
+<div class="modal-overlay" id="card-history-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="card-history-title"><div class="modal card-history-modal" data-component-id="C-DIALOG"><div class="modal-title" id="card-history-title">兑换记录</div><div id="card-history-list" class="card-history-list"></div><button type="button" class="card-history-close" onclick="closeCardHistory()">关闭</button></div></div>
+</div>
+<script data-maintenance-source="发行人计划demo.js">
 const games=[
 {id:1,name:'中奖概率倍儿高啊啊',icon:'🎰',color:'#ff6b6b'},
 {id:2,name:'凡人修仙模拟器',icon:'⚔️',color:'#667eea'},
@@ -42,15 +314,15 @@ const platformMap={douyin:'抖音',bilibili:'B站',kuaishou:'快手',xiaohongshu
 const CI='<span class="coin-icon">G</span>';
 
 const tasks=[
-{id:1,title:'中奖概率倍儿高啊啊',gameId:1,badge:'官方',platforms:['douyin','bilibili'],reward:2,maxReward:10000,pool:87100,reserved:30000,submissions:51,submittedAt:'2026-05-25 10:00',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'超刺激的转盘抽奖小游戏，每次转动都有惊喜！玩法简单上手快，适合各年龄段玩家。',
+{id:1,title:'中奖概率倍儿高啊啊',gameId:1,badge:'官方',platforms:['douyin','bilibili'],reward:2,maxReward:10000,pool:87100,reserved:30000,submissions:51,submittedAt:'2026-05-25 10:00',deadline:'2026-06-15',snapshotDeadline:'2026-06-18 23:59',status:'进行中',ruleVersion:1,productIntro:'超刺激的转盘抽奖小游戏，每次转动都有惊喜！玩法简单上手快，适合各年龄段玩家。',
 requirements:['视频时长≥15秒','需包含游戏实际游玩画面','投稿内容必须为视频内容']},
-{id:2,title:'凡人修仙模拟器宣传',gameId:2,badge:null,platforms:['bilibili'],reward:1,maxReward:8000,pool:50000,reserved:16000,submissions:11,submittedAt:'2026-05-24 12:00',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'国风修仙放置类RPG，从凡人一步步修炼成仙。画面精美，剧情丰富，适合喜欢修仙题材的玩家。建议展示核心战斗和升级系统。',
+{id:2,title:'凡人修仙模拟器宣传',gameId:2,badge:null,platforms:['bilibili'],reward:1,maxReward:8000,pool:50000,reserved:16000,submissions:11,submittedAt:'2026-05-24 12:00',deadline:'2026-06-10',snapshotDeadline:'2026-06-13 23:59',status:'进行中',ruleVersion:1,productIntro:'国风修仙放置类RPG，从凡人一步步修炼成仙。画面精美，剧情丰富，适合喜欢修仙题材的玩家。建议展示核心战斗和升级系统。',
 requirements:['视频时长≥30秒','需展示游戏核心玩法','标题需包含游戏名称','投稿内容必须为视频']},
-{id:3,title:'233购物街可摆摊收打赏啦',gameId:3,badge:'官方',platforms:['douyin','kuaishou','xiaohongshu'],reward:3,maxReward:6000,pool:30000,reserved:12000,submissions:7,submittedAt:'2026-05-20 09:30',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'模拟经营类游戏，玩家可以开店摆摊、装修店铺、与好友互动。新版本上线了打赏功能，社交玩法更丰富。',
+{id:3,title:'233购物街可摆摊收打赏啦',gameId:3,badge:'官方',platforms:['douyin','kuaishou','xiaohongshu'],reward:3,maxReward:6000,pool:30000,reserved:12000,submissions:7,submittedAt:'2026-05-20 09:30',deadline:'2026-06-01',snapshotDeadline:'2026-06-04 23:59',status:'进行中',ruleVersion:1,productIntro:'模拟经营类游戏，玩家可以开店摆摊、装修店铺、与好友互动。新版本上线了打赏功能，社交玩法更丰富。',
 requirements:['视频时长≥15秒','需展示摆摊和打赏功能','投稿内容必须为视频']},
-{id:4,title:'测测你是热梗王吗推广',gameId:4,badge:null,platforms:['douyin','bilibili','kuaishou','xiaohongshu'],reward:2,maxReward:5000,pool:25000,reserved:10000,submissions:7,submittedAt:'2026-05-21 14:00',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'趣味答题游戏，涵盖最新网络热梗。答对越多排名越高，适合拍摄"挑战类"短视频，容易引发观众互动。',
+{id:4,title:'测测你是热梗王吗推广',gameId:4,badge:null,platforms:['douyin','bilibili','kuaishou','xiaohongshu'],reward:2,maxReward:5000,pool:25000,reserved:10000,submissions:7,submittedAt:'2026-05-21 14:00',deadline:'2026-06-08',snapshotDeadline:'2026-06-11 23:59',status:'进行中',ruleVersion:1,productIntro:'趣味答题游戏，涵盖最新网络热梗。答对越多排名越高，适合拍摄"挑战类"短视频，容易引发观众互动。',
 requirements:['视频时长≥15秒','需展示答题过程和结果','推荐使用相关话题标签','投稿内容必须为视频']},
-{id:5,title:'polo小球角色分享',gameId:5,badge:null,platforms:['xiaohongshu'],reward:5,maxReward:15000,pool:60000,reserved:15000,submissions:7,submittedAt:'2026-05-26 11:00',durationDays:30,publishedAt:'2026-09-11 10:00',deadline:'2026-10-11 10:00',snapshotDeadline:'2026-10-18 10:00',status:'进行中',ruleVersion:1,productIntro:'休闲竞技小球对战游戏，角色造型可爱多样。适合在小红书分享角色外观和精彩对战瞬间。',
+{id:5,title:'polo小球角色分享',gameId:5,badge:null,platforms:['xiaohongshu'],reward:5,maxReward:15000,pool:60000,reserved:15000,submissions:7,submittedAt:'2026-05-26 11:00',deadline:'2026-06-20',snapshotDeadline:'2026-06-23 23:59',status:'进行中',ruleVersion:1,productIntro:'休闲竞技小球对战游戏，角色造型可爱多样。适合在小红书分享角色外观和精彩对战瞬间。',
 requirements:['视频时长≥10秒','需展示角色外观或对战画面','投稿内容必须为视频']}
 ];
 
@@ -65,8 +337,8 @@ const rankData=[
 ];
 
 const myPublished=[
-{id:101,title:'我的世界建筑大赛',status:'机器审核中',statusColor:'#1890ff',gameId:7,reward:10,maxReward:1000,pool:20000,reserved:0,submissions:0,platforms:['bilibili','douyin'],submittedAt:'2026-09-11 10:00',durationDays:30,publishedAt:null,deadline:null,snapshotDeadline:null,ruleVersion:1,productIntro:'分享有创意的建筑作品。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:20000,reward:0}},
-{id:102,title:'蛋仔派对新皮肤推广',status:'进行中',statusColor:'#ff8c00',gameId:8,reward:5,maxReward:500,pool:10000,reserved:2000,submissions:4,platforms:['douyin','kuaishou'],submittedAt:'2026-09-10 14:30',durationDays:15,publishedAt:'2026-09-10 14:30',deadline:'2026-09-25 14:30',snapshotDeadline:'2026-10-02 14:30',ruleVersion:1,productIntro:'展示新皮肤及局内效果。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:10000,reward:0}}
+{id:101,title:'我的世界建筑大赛',status:'机器审核中',statusColor:'#1890ff',gameId:7,reward:10,maxReward:1000,pool:20000,reserved:0,submissions:0,platforms:['bilibili','douyin'],submittedAt:'2026-09-11 10:00',deadline:'2026-09-30 23:59',snapshotDeadline:'2026-10-03 23:59',ruleVersion:1,productIntro:'分享有创意的建筑作品。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:20000,reward:0}},
+{id:102,title:'蛋仔派对新皮肤推广',status:'进行中',statusColor:'#ff8c00',gameId:8,reward:5,maxReward:500,pool:10000,reserved:2000,submissions:4,platforms:['douyin','kuaishou'],submittedAt:'2026-09-10 14:30',deadline:'2026-09-25 23:59',snapshotDeadline:'2026-09-28 23:59',ruleVersion:1,productIntro:'展示新皮肤及局内效果。',requirements:['投稿内容必须为视频内容'],budgetSources:{recharge:10000,reward:0}}
 ];
 const myJoined=[
 {taskId:1,status:'进行中',statusColor:'#ff8c00',note:'剩余48小时'},
@@ -291,12 +563,7 @@ function requireSubmissionIdentity(){
   return true;
 }
 
-function isTaskAcceptingSubmissions(task){
-  return Boolean(task&&task.status==='进行中'&&task.deadline&&publisherState.beijingDateTime<addTaskDays(task.deadline,0));
-}
-
 function beginSubmission(){
-  if(!isTaskAcceptingSubmissions(currentTask))return showToast('任务尚未开放或已停止接收投稿');
   if(!canStartNewPublisherAction()){
     showToast('当前仅可处理已有投稿，不能参加新任务');
     return false;
@@ -318,21 +585,20 @@ function renderTaskList(){
 }
 
 function openDetail(id){
-  currentTask=tasks.find(t=>t.id===id)||myPublished.find(t=>t.id===id);if(!currentTask)return;const g=G(currentTask.gameId);
+  currentTask=tasks.find(t=>t.id===id);const g=G(currentTask.gameId);
   const pn=currentTask.platforms.map(p=>platformMap[p]).join(' / ');
   document.getElementById('detail-content').innerHTML=`
 <div class="detail-banner" style="background:linear-gradient(135deg,${g.color},${g.color}cc)"><span style="font-size:44px">${g.icon}</span><div class="game-name">${currentTask.title}</div></div>
 <div class="section"><div class="detail-stats"><div class="detail-stat-item"><div class="num">${currentTask.submissions}</div><div class="label">已投稿</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.reward}</div><div class="label">每赞奖励</div></div><div class="detail-stat-item"><div class="num">${CI}${currentTask.pool.toLocaleString()}</div><div class="label">任务奖池</div></div></div></div>
 <div class="section"><div class="section-title">产品介绍</div><div style="font-size:13px;color:#666;line-height:1.8">${currentTask.productIntro||'暂无产品介绍'}</div></div>
-<div class="section" id="task-schedule"><div class="section-title">任务时间</div><div class="rule-copy">任务截止时间：<strong>${currentTask.deadline||'正式发布后确定'}</strong></div><div class="rule-copy">点赞统计截止时间：<strong>${currentTask.snapshotDeadline||'正式发布后确定'}</strong></div><div class="form-tip">点赞统计固定于任务截止后 7 天结束。以上时间均为北京时间。</div></div>
 <div class="section"><div class="section-title">投稿平台</div><div style="font-size:13px;color:#666">${pn}</div></div>
 <div class="section"><div class="section-title">投稿要求</div><ul class="requirement-list">${submissionRequirements(currentTask).map(r=>`<li>${r}</li>`).join('')}</ul></div>
-<div class="section"><div class="section-title">奖励与结算</div><div class="rule-copy">每 1 个赞奖励 ${currentTask.reward} 盖世币，单篇最高 ${currentTask.maxReward.toLocaleString()} 盖世币。</div><div class="rule-copy">预计奖励 = min（当前点赞数 × 每赞单价，单稿奖励上限）。最终以点赞统计截止时间 ${currentTask.snapshotDeadline||'正式发布后确定'} 的数据快照及人工结算结果为准。</div><div class="rule-copy">投稿数据校验通过时按单稿奖励上限预留奖池；可用预算不足一个单稿上限时停止接收新投稿。</div></div>
+<div class="section"><div class="section-title">奖励与结算</div><div class="rule-copy">每 1 个赞奖励 ${currentTask.reward} 盖世币，单篇最高 ${currentTask.maxReward.toLocaleString()} 盖世币。</div><div class="rule-copy">预计奖励 = min（当前点赞数 × 每赞单价，单稿奖励上限）。最终以点赞统计截止时间 ${currentTask.snapshotDeadline} 的数据快照及人工结算结果为准。</div><div class="rule-copy">投稿数据校验通过时按单稿奖励上限预留奖池；可用预算不足一个单稿上限时停止接收新投稿。</div></div>
 <div class="section"><div class="section-title">收入排行</div>${rankData.map((r,i)=>`<div class="rank-item"><div class="rank-num t${i+1}">${i+1}</div><div class="rank-avatar">${r.avatar}</div><div class="rank-info"><div class="rn">${r.name}</div><div class="rr">投稿奖励 ${CI}${r.reward}</div></div><div class="rank-view" onclick="event.stopPropagation();showToast('打开作品链接')">查看投稿 ›</div></div>`).join('')}</div>
 <div style="height:70px"></div>`;
   const btn=document.getElementById('btn-claim');
-  const canStartNew=canStartNewPublisherAction()&&isTaskAcceptingSubmissions(currentTask);
-  btn.textContent=canStartNew?'上传参与作品':!isTaskAcceptingSubmissions(currentTask)?'任务尚未开放或已停止接收投稿':'仅查看已有参与记录';
+  const canStartNew=canStartNewPublisherAction();
+  btn.textContent=canStartNew?'上传参与作品':'仅查看已有参与记录';
   btn.disabled=!canStartNew;
   btn.classList.toggle('disabled',!canStartNew);
   btn.onclick=beginSubmission;
@@ -347,7 +613,7 @@ function renderMyTasks(){
       return `<div class="my-task-item" onclick="openDetail(${t.id})"><div class="thumb" style="background:${g.color}22">${g.icon}</div><div class="info"><div class="name">${t.title}</div><div class="meta" style="color:${j.statusColor}">${j.status}${j.note?' · '+j.note:''}</div></div></div>`;}).join('');
   } else {
     c.innerHTML=myPublished.map(p=>{const g=G(p.gameId);
-      return `<div class="my-task-item"><div class="thumb" style="background:${g.color}22">${g.icon}</div><div class="info"><div class="name">${p.title}</div><div class="meta" style="color:${p.statusColor}">${p.status}${p.submissions?` · ${p.submissions} 个投稿`:''}</div></div><div class="actions"><span class="act-btn view-task" onclick="event.stopPropagation();openDetail(${p.id})">查看</span>${publishedActions(p)}</div></div>`;}).join('');
+      return `<div class="my-task-item"><div class="thumb" style="background:${g.color}22">${g.icon}</div><div class="info"><div class="name">${p.title}</div><div class="meta" style="color:${p.statusColor}">${p.status}${p.submissions?` · ${p.submissions} 个投稿`:''}</div></div><div class="actions"><span class="act-btn view" onclick="event.stopPropagation();showToast('查看任务详情')">查看</span>${publishedActions(p)}</div></div>`;}).join('');
   }
 }
 
@@ -363,14 +629,9 @@ function openTaskAdjustment(taskId){
   if(!task||task.status!=='进行中')return showToast('仅进行中任务可追加预算或延长时间');
   const currentDeadline=task.deadline.replace(' ','T');
   document.getElementById('modal-title').textContent='追加预算／延长时间';
-  document.getElementById('modal-content').innerHTML=`<div class="form-tip adjustment-lock">每赞单价 ${task.reward}、单稿上限 ${task.maxReward.toLocaleString()} 和核心投稿要求已锁定，不可降低或修改。</div><label class="adjustment-label" for="adjust-budget">追加预算（盖世币）</label><input id="adjust-budget" class="form-input" type="number" min="0" step="1" placeholder="输入追加预算"><label class="adjustment-label" for="adjust-deadline">任务截止时间</label><input id="adjust-deadline" class="form-input" type="datetime-local" min="${currentDeadline}" value="${currentDeadline}" oninput="updateAdjustmentSchedule()"><div class="form-tip" id="adjust-snapshot">点赞统计截止时间：${task.snapshotDeadline}（任务截止后 7 天，自动顺延）</div>`;
+  document.getElementById('modal-content').innerHTML=`<div class="form-tip adjustment-lock">每赞单价 ${task.reward}、单稿上限 ${task.maxReward.toLocaleString()} 和核心投稿要求已锁定，不可降低或修改。</div><label class="adjustment-label" for="adjust-budget">追加预算（盖世币）</label><input id="adjust-budget" class="form-input" type="number" min="0" step="1" placeholder="输入追加预算"><label class="adjustment-label" for="adjust-deadline">投稿截止时间</label><input id="adjust-deadline" class="form-input" type="datetime-local" min="${currentDeadline}" value="${currentDeadline}">`;
   document.getElementById('modal-confirm').onclick=()=>confirmTaskAdjustment(taskId);
   document.getElementById('modal').classList.add('show');
-}
-
-function updateAdjustmentSchedule(){
-  const deadline=document.getElementById('adjust-deadline').value;
-  document.getElementById('adjust-snapshot').textContent=`点赞统计截止时间：${addTaskDays(deadline,LIKE_STATISTICS_DAYS)||'请选择有效时间'}（任务截止后 7 天，自动顺延）`;
 }
 
 function confirmTaskAdjustment(taskId){
@@ -381,7 +642,8 @@ function confirmTaskAdjustment(taskId){
   const deadline=document.getElementById('adjust-deadline').value;
   const normalizedDeadline=deadline.replace('T',' ');
   if(!Number.isInteger(extra)||extra<0){showToast('追加预算必须为非负整数');return;}
-  if(!deadline||normalizedDeadline<task.deadline){showToast('任务截止时间只能延长');return;}
+  if(!deadline||normalizedDeadline<task.deadline){showToast('投稿截止时间只能延长');return;}
+  if(normalizedDeadline>=task.snapshotDeadline){showToast('投稿截止时间必须早于点赞统计截止时间');return;}
   if(extra===0&&normalizedDeadline===task.deadline){showToast('请追加预算或延长时间');return;}
   const sources=extra?freezeTaskBudget(extra):{recharge:0,reward:0};
   if(extra&&!sources){showToast('盖世币余额不足');return;}
@@ -389,10 +651,7 @@ function confirmTaskAdjustment(taskId){
   task.budgetSources.recharge+=sources.recharge;
   task.budgetSources.reward+=sources.reward;
   task.pool+=extra;
-  if(normalizedDeadline!==task.deadline){
-    task.deadline=normalizedDeadline;
-    task.snapshotDeadline=addTaskDays(normalizedDeadline,LIKE_STATISTICS_DAYS);
-  }
+  task.deadline=normalizedDeadline;
   closeModal();
   showToast('已追加预算／延长时间，原奖励规则保持不变');
   renderMyTasks();
@@ -487,11 +746,11 @@ function renderCreateForm(){
 <div class="form-row"><div class="form-group"><div class="form-label">每赞单价（盖世币／赞） *</div><input class="form-input" id="cr-price" type="number" min="1" step="1" placeholder="如：2"></div><div class="form-group"><div class="form-label">单稿奖励上限（盖世币） *</div><input class="form-input" id="cr-max" type="number" min="1" step="1" placeholder="如：10000"></div></div>
 <div class="form-tip">发布者自行设置单价和单稿上限，系统只按该单价计算并显示奖励。</div>
 <div class="form-group" style="margin-top:12px"><div class="form-label">任务总预算（盖世币） *</div><input class="form-input" id="cr-pool" type="number" min="5000" max="10000000" step="1" placeholder="如：50000"><div class="form-tip">最低 5,000 盖世币，最高 10,000,000 盖世币；提交后足额冻结。</div></div>
-<div class="form-group" id="create-schedule"><label class="form-label" for="cr-duration">任务天数 *</label><select class="form-input" id="cr-duration" onchange="updateCreateSchedule()">${TASK_DURATION_DAYS.map(days=>`<option value="${days}"${days===30?' selected':''}>${days} 天</option>`).join('')}</select><div class="form-tip" id="cr-schedule-preview" aria-live="polite"></div><div class="form-tip">正式发布后起算，日期为北京时间预估。</div></div>
+<div class="form-group"><div class="form-label">投稿截止时间 *</div><input class="form-input" id="cr-submit-deadline" type="datetime-local" value="2026-09-30T23:59"></div>
+<div class="form-group"><div class="form-label">点赞统计截止时间 *</div><input class="form-input" id="cr-like-deadline" type="datetime-local" value="2026-10-03T23:59"><div class="form-tip">最终以点赞统计截止时间的数据快照及人工结算结果为准。</div></div>
 <div class="form-tip">今日已提交 ${publisherState.submittedToday} 个；同一实名主体每天最多提交 10 个任务，取消或审核不通过不返还次数。</div>
 <div style="padding:16px 0"><button class="btn-primary" id="submit-task-btn" onclick="submitCreate(false)">提交</button><div class="form-tip" style="text-align:center">机器审核通过后自动发布；超时或结果不确定时转人工处理，不默认放行。</div></div></div>`;
   selectedGameId=null;
-  updateCreateSchedule();
   renderTaskImages();
 }
 
@@ -544,7 +803,8 @@ function validateTaskDraft(){
   const reward=readPositiveInt('cr-price');
   const maxReward=readPositiveInt('cr-max');
   const pool=readPositiveInt('cr-pool');
-  const durationDays=Number(document.getElementById('cr-duration').value);
+  const submitDeadline=document.getElementById('cr-submit-deadline').value;
+  const snapshotDeadline=document.getElementById('cr-like-deadline').value;
   if(!requirePublisherIdentity())return null;
   if(publisherState.submittedToday>=10){showToast('同一实名主体每天最多提交 10 个任务');return null;}
   if(!title){showToast('请输入任务名称');return null;}
@@ -556,11 +816,13 @@ function validateTaskDraft(){
   if(pool<5000||pool>10000000){showToast('任务预算需为 5,000～10,000,000 盖世币');return null;}
   if(maxReward>pool){showToast('单稿奖励上限不能高于任务总预算');return null;}
   if(pool>wallet.totalBalance){showToast('盖世币余额不足，请先充值');return null;}
-  if(!TASK_DURATION_DAYS.includes(durationDays)){showToast('请选择有效的任务天数');return null;}
+  if(!submitDeadline||!snapshotDeadline){showToast('请填写投稿与点赞统计截止时间');return null;}
+  if(Date.parse(submitDeadline)<=Date.parse(`${publisherState.beijingDate}T00:00`)){showToast('投稿截止时间必须晚于当前时间');return null;}
+  if(Date.parse(snapshotDeadline)<=Date.parse(submitDeadline)){showToast('点赞统计截止时间必须晚于投稿截止时间');return null;}
   if(publisherState.uploadedImages.some(image=>image.uploadStatus!=='上传成功'||image.machineStatus!=='内容安全通过'||image.ocrStatus!=='OCR 敏感词通过')){
     showToast('请等待任务图片完成上传与机器审核');return null;
   }
-  return {title,productIntro,requirements,platforms,reward,maxReward,pool,durationDays};
+  return {title,productIntro,requirements,platforms,reward,maxReward,pool,submitDeadline,snapshotDeadline};
 }
 
 function taskMachineScenario(task){
@@ -588,8 +850,6 @@ function runTaskMachineReview(task){
     showToast('机器审核结果不确定，已转人工异常处理');
     return;
   }
-  task.publishedAt=publisherState.beijingDateTime;
-  Object.assign(task,taskSchedule(task.publishedAt,task.durationDays||30));
   task.status='进行中';
   task.statusColor='#ff8c00';
   if(!tasks.some(item=>item.id===task.id))tasks.unshift(task);
@@ -608,7 +868,7 @@ function submitCreate(isEdit){
   const task={
     id:Date.now(),title:draft.title,gameId:selectedGameId,badge:null,platforms:draft.platforms,
     reward:draft.reward,maxReward:draft.maxReward,pool:draft.pool,reserved:0,submissions:0,
-    submittedAt:publisherState.beijingDateTime,durationDays:draft.durationDays,publishedAt:null,deadline:null,snapshotDeadline:null,
+    submittedAt:publisherState.beijingDateTime,deadline:draft.submitDeadline.replace('T',' '),snapshotDeadline:draft.snapshotDeadline.replace('T',' '),
     status:'机器审核中',statusColor:'#1890ff',ruleVersion:1,productIntro:draft.productIntro,
     requirements:draft.requirements,images:publisherState.uploadedImages.map(image=>({...image})),budgetSources
   };
@@ -628,7 +888,6 @@ function submitCreate(isEdit){
 }
 
 function submitVideo(){
-  if(!isTaskAcceptingSubmissions(currentTask))return showToast('任务尚未开放或已停止接收投稿');
   if(!requireSubmissionIdentity())return;
   const link=document.getElementById('video-link').value.trim();
   const selectedPlatform=document.querySelector('#submit-platforms .pm-item.selected')?.dataset.p||'';
@@ -847,3 +1106,6 @@ document.querySelectorAll('#submit-platforms .pm-item').forEach(item=>item.addEv
 
 renderTaskList();
 applyInboundPublisherAccessState();
+</script>
+</body>
+</html>

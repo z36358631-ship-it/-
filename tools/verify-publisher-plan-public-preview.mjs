@@ -66,8 +66,7 @@ try {
   await c.locator('#cr-price').fill('2');
   await c.locator('#cr-max').fill('10000');
   await c.locator('#cr-pool').fill('10000');
-  await c.locator('#cr-submit-deadline').fill('2026-09-25T23:59');
-  await c.locator('#cr-like-deadline').fill('2026-09-28T23:59');
+  await c.locator('#cr-duration').selectOption('15');
   assert.equal(await c.locator('#submit-task-btn').innerText(), '提交');
   await c.locator('#submit-task-btn').click();
   await c.waitForTimeout(700);

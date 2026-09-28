@@ -350,8 +350,7 @@ try {
   await taskFlow.page.locator('#cr-price').fill('2');
   await taskFlow.page.locator('#cr-max').fill('10000');
   await taskFlow.page.locator('#cr-pool').fill('10000');
-  await taskFlow.page.locator('#cr-submit-deadline').fill('2026-09-25T23:59');
-  await taskFlow.page.locator('#cr-like-deadline').fill('2026-09-28T23:59');
+  await taskFlow.page.locator('#cr-duration').selectOption('15');
 
   await taskFlow.page.evaluate(() => { publisherState.submittedToday = 10; });
   await taskFlow.page.locator('#submit-task-btn').click();

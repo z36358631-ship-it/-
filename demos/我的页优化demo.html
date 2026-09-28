@@ -73,7 +73,7 @@
 
         /* 用户信息 */
         .user-hero-new { display: flex; align-items: center; padding: 0 20px; gap: 15px; margin-bottom: 15px; margin-top: 15px; }
-        .landscape .user-hero-new { margin-top: 10px; }
+        .landscape .user-hero-new { margin-top: 6px; margin-bottom: 10px; }
         
         .avatar-container-new { width: 55px; height: 55px; border-radius: 50%; padding: 2px; border: 2px solid var(--primary); flex-shrink: 0; cursor: pointer; }
         .avatar-img { width: 100%; height: 100%; border-radius: 50%; background: #333 center/cover; }
@@ -89,6 +89,7 @@
 
         /* 统计数据 */
         .data-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 20px; margin-bottom: 15px; }
+        .landscape .data-stats { margin-bottom: 10px; }
         .stat-item { text-align: center; cursor: pointer; }
         .stat-item .val { font-size: 17px; font-weight: bold; display: block; margin-bottom: 4px; }
         .stat-item .lbl { font-size: 12px; color: var(--text-s); }
@@ -224,14 +225,45 @@
         .modal-btn { width: 100%; padding: 12px; border-radius: 25px; background: #00a884; color: white; border: none; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.2s; }
         .modal-btn:active { opacity: 0.8; }
 
-        .orientation-toggle { margin-bottom: 20px; padding: 10px 20px; border-radius: 20px; border: 1px solid #444; background: #222; color: #fff; cursor: pointer; }
+        .demo-toolbar { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .orientation-toggle, .demo-state-select { min-height: 38px; padding: 8px 14px; border-radius: 20px; border: 1px solid #444; background: #222; color: #fff; cursor: pointer; }
+        .demo-state-label { font-size: 12px; color: #aeb8c3; }
+        .demo-state-summary { min-width: 170px; font-size: 12px; color: #7fb3ff; }
+
+        .publisher-entry-row { display: flex; gap: 10px; margin: 0 20px 10px; }
+        .landscape .creator-center-entry { padding-top: 12px !important; padding-bottom: 12px !important; margin-bottom: 8px !important; }
+        .profile-entry-card { flex: 1; min-width: 0; border-radius: 12px; padding: 14px; border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; color: inherit; text-align: left; }
+        .task-center-entry { background: var(--bg-card); }
+        .publisher-plan-entry { background: linear-gradient(135deg, #1a2940 0%, #0d1b2a 100%); border-color: rgba(40,125,250,0.15); font: inherit; }
+        .publisher-plan-entry[hidden], #creator-publisher-link[hidden] { display: none !important; }
+        .publisher-plan-entry:focus-visible { outline: 2px solid #5c9dff; outline-offset: 2px; }
+        .profile-entry-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .task-center-entry .profile-entry-icon { background: linear-gradient(135deg, #52c41a 0%, #13c2c2 100%); }
+        .publisher-plan-entry .profile-entry-icon { background: linear-gradient(135deg, #287dfa 0%, #6c5ce7 100%); }
+        .profile-entry-title { font-size: 13px; font-weight: bold; color: #fff; white-space: nowrap; }
+        .profile-entry-sub { font-size: 10px; color: var(--text-s); margin-top: 2px; white-space: nowrap; }
+        .publisher-existing-badge { margin-left: auto; padding: 2px 6px; border-radius: 8px; background: rgba(250,173,20,0.14); color: #f6bd4b; font-size: 9px; white-space: nowrap; }
+        .publisher-inline-message { display: none; margin: -2px 20px 10px; color: #ffb84d; font-size: 11px; line-height: 1.4; }
+        .publisher-inline-message.show { display: block; }
     </style>
 </head>
 <body>
 
-    <button class="orientation-toggle" onclick="toggleOrientation()">🔄 切换 横竖版 (当前: 竖版)</button>
+    <div class="demo-toolbar" aria-label="Demo 演示控制">
+        <button class="orientation-toggle" type="button" onclick="toggleOrientation()">切换竖屏（当前：横屏）</button>
+        <label class="demo-state-label" for="publisher-demo-state">发行人计划状态</label>
+        <select id="publisher-demo-state" class="demo-state-select" onchange="setPublisherScenario(this.value)">
+            <option value="uid_matched">已登录 · UID 命中</option>
+            <option value="uid_unmatched">已登录 · UID 未命中 · 无存量</option>
+            <option value="uid_unmatched_existing">已登录 · UID 未命中 · 有存量</option>
+            <option value="logged_out">未登录</option>
+            <option value="master_off">总开关关闭 · 无存量</option>
+            <option value="master_off_existing">总开关关闭 · 有存量</option>
+        </select>
+        <span id="publisher-demo-summary" class="demo-state-summary" aria-live="polite"></span>
+    </div>
 
-    <div id="device" class="portrait">
+    <div id="device" class="landscape">
         <!-- 顶部系统状态栏 -->
         <div class="sys-status-bar">
             <span id="sys-time">10:41</span>
@@ -248,8 +280,8 @@
                 <!-- 顶部导航：Tab + 操作按钮同行 -->
                 <div class="top-nav-bar">
                     <div class="top-nav-tabs">
-                        <div class="nav-tab active" onclick="switchMainSection('profile', this)">个人主页</div>
-                        <div class="nav-tab" onclick="switchMainSection('feed', this)">动态</div>
+                        <div class="nav-tab active" data-main-section="profile" onclick="switchMainSection('profile', this)">个人主页</div>
+                        <div class="nav-tab" data-main-section="feed" onclick="switchMainSection('feed', this)">动态</div>
                     </div>
                     <div class="top-controls">
                         <div class="icon-btn" title="消息" onclick="openMessages()">
@@ -283,7 +315,7 @@
                         </div>
 
                         <!-- 创作者中心（一行） -->
-                        <div style="margin:0 20px 10px; background:var(--bg-card); border-radius:12px; padding:14px 16px; border:1px solid var(--border); cursor:pointer;" onclick="openCreatorPanel()">
+                        <div class="creator-center-entry" style="margin:0 20px 10px; background:var(--bg-card); border-radius:12px; padding:14px 16px; border:1px solid var(--border); cursor:pointer;" onclick="openCreatorPanel()">
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #faad14 0%, #fa541c 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                                     <svg width="18" height="18" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
@@ -298,26 +330,28 @@
                         </div>
 
                         <!-- 任务中心 + 发行人计划（一行2个） -->
-                        <div style="display:flex; gap:10px; margin:0 20px 10px;">
-                            <div style="flex:1; background:var(--bg-card); border-radius:12px; padding:14px; border:1px solid var(--border); cursor:pointer; display:flex; align-items:center; gap:10px;" onclick="showToast('跳转任务中心')">
-                                <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg, #52c41a 0%, #13c2c2 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <div class="publisher-entry-row">
+                            <div id="task-center-entry" class="profile-entry-card task-center-entry" onclick="showPublisherInlineMessage('任务中心不在本次演示范围内')">
+                                <div class="profile-entry-icon">
                                     <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
                                 </div>
                                 <div>
-                                    <div style="font-size:13px; font-weight:bold; color:#fff;">任务中心</div>
-                                    <div style="font-size:10px; color:var(--text-s); margin-top:2px;">做任务赚盖世币</div>
+                                    <div class="profile-entry-title">任务中心</div>
+                                    <div class="profile-entry-sub">做任务赚盖世币</div>
                                 </div>
                             </div>
-                            <div style="flex:1; background:linear-gradient(135deg, #1a2940 0%, #0d1b2a 100%); border-radius:12px; padding:14px; border:1px solid rgba(40,125,250,0.15); cursor:pointer; display:flex; align-items:center; gap:10px;" onclick="window.open('发行人计划demo.html','_blank')">
-                                <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg, #287dfa 0%, #6c5ce7 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <button id="publisher-plan-entry" class="profile-entry-card publisher-plan-entry" type="button" onclick="openPublisherPlan()">
+                                <span class="profile-entry-icon">
                                     <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
-                                </div>
-                                <div>
-                                    <div style="font-size:13px; font-weight:bold; color:#fff;">发行人计划</div>
-                                    <div style="font-size:10px; color:var(--text-s); margin-top:2px;">推广赚佣金</div>
-                                </div>
-                            </div>
+                                </span>
+                                <span>
+                                    <span class="profile-entry-title">发行人计划</span>
+                                    <span class="profile-entry-sub" style="display:block;">推广赚佣金</span>
+                                </span>
+                                <span id="publisher-existing-badge" class="publisher-existing-badge" hidden>仅存量</span>
+                            </button>
                         </div>
+                        <div id="publisher-inline-message" class="publisher-inline-message" role="status"></div>
 
                         <!-- 广告位 -->
                         <div class="op-banner" onclick="alert('即将跳转到官方游戏圈')">
@@ -598,6 +632,168 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
+        const PUBLISHER_PROFILE_STORAGE_KEY = 'publisher-profile-demo-state-v1';
+        const PUBLISHER_SCENARIOS = {
+            uid_matched: {
+                loggedIn: true,
+                masterEnabled: true,
+                uidMatched: true,
+                hasExisting: false,
+                summary: '入口展示，可发起新操作'
+            },
+            uid_unmatched: {
+                loggedIn: true,
+                masterEnabled: true,
+                uidMatched: false,
+                hasExisting: false,
+                summary: '入口隐藏，不可新增'
+            },
+            uid_unmatched_existing: {
+                loggedIn: true,
+                masterEnabled: true,
+                uidMatched: false,
+                hasExisting: true,
+                summary: '入口展示，仅处理存量'
+            },
+            logged_out: {
+                loggedIn: false,
+                masterEnabled: true,
+                uidMatched: false,
+                hasExisting: false,
+                summary: '未登录，不展示入口'
+            },
+            master_off: {
+                loggedIn: true,
+                masterEnabled: false,
+                uidMatched: true,
+                hasExisting: false,
+                summary: '总开关关闭，入口隐藏'
+            },
+            master_off_existing: {
+                loggedIn: true,
+                masterEnabled: false,
+                uidMatched: false,
+                hasExisting: true,
+                summary: '总开关关闭，仅处理存量'
+            }
+        };
+
+        let publisherScenario = 'uid_matched';
+        let currentMainSection = 'profile';
+        let publisherMessageTimer = 0;
+
+        function resolvePublisherAccess(scenario) {
+            if (!scenario.loggedIn) return { visible: false, mode: 'hidden' };
+            if (scenario.masterEnabled && scenario.uidMatched) return { visible: true, mode: 'full' };
+            if (scenario.hasExisting) return { visible: true, mode: 'existing' };
+            return { visible: false, mode: 'hidden' };
+        }
+
+        function getPublisherProfileSnapshot() {
+            const device = document.getElementById('device');
+            const mainScroller = document.getElementById('main-scroller');
+            const profileScroller = document.querySelector('#section-profile .profile-part');
+            return {
+                scenario: publisherScenario,
+                orientation: device.classList.contains('landscape') ? 'landscape' : 'portrait',
+                section: currentMainSection,
+                mainScrollTop: mainScroller ? mainScroller.scrollTop : 0,
+                profileScrollTop: profileScroller ? profileScroller.scrollTop : 0
+            };
+        }
+
+        function savePublisherProfileState() {
+            try {
+                sessionStorage.setItem(PUBLISHER_PROFILE_STORAGE_KEY, JSON.stringify(getPublisherProfileSnapshot()));
+            } catch (error) {
+                // 本地文件预览若禁用存储，仍允许继续演示。
+            }
+        }
+
+        function readPublisherProfileState() {
+            try {
+                return JSON.parse(sessionStorage.getItem(PUBLISHER_PROFILE_STORAGE_KEY) || 'null');
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function updateOrientationButton() {
+            const device = document.getElementById('device');
+            const button = document.querySelector('.orientation-toggle');
+            const isLandscape = device.classList.contains('landscape');
+            button.textContent = isLandscape ? '切换竖屏（当前：横屏）' : '切换横屏（当前：竖屏）';
+        }
+
+        function showPublisherInlineMessage(message) {
+            const messageElement = document.getElementById('publisher-inline-message');
+            if (!messageElement) return;
+            window.clearTimeout(publisherMessageTimer);
+            messageElement.textContent = message;
+            messageElement.classList.add('show');
+            publisherMessageTimer = window.setTimeout(() => messageElement.classList.remove('show'), 2400);
+        }
+
+        function applyPublisherAccessState() {
+            const scenario = PUBLISHER_SCENARIOS[publisherScenario] || PUBLISHER_SCENARIOS.uid_matched;
+            const access = resolvePublisherAccess(scenario);
+            const entry = document.getElementById('publisher-plan-entry');
+            const badge = document.getElementById('publisher-existing-badge');
+            const selector = document.getElementById('publisher-demo-state');
+            const summary = document.getElementById('publisher-demo-summary');
+            const creatorLink = document.getElementById('creator-publisher-link');
+
+            entry.hidden = !access.visible;
+            entry.dataset.access = access.mode;
+            entry.setAttribute('aria-disabled', access.visible ? 'false' : 'true');
+            badge.hidden = access.mode !== 'existing';
+            if (creatorLink) creatorLink.hidden = !access.visible;
+            if (selector) selector.value = publisherScenario;
+            if (summary) summary.textContent = scenario.summary;
+            savePublisherProfileState();
+            return access;
+        }
+
+        function setPublisherScenario(value) {
+            if (!PUBLISHER_SCENARIOS[value]) return;
+            publisherScenario = value;
+            applyPublisherAccessState();
+        }
+
+        function openPublisherPlan() {
+            const scenario = PUBLISHER_SCENARIOS[publisherScenario] || PUBLISHER_SCENARIOS.uid_matched;
+            const access = resolvePublisherAccess(scenario);
+            if (!access.visible) return;
+
+            savePublisherProfileState();
+            const target = new URL('Mod与发行人/发行人计划demo.html', window.location.href);
+            target.searchParams.set('access', access.mode);
+            target.searchParams.set('source', 'profile-landscape');
+            const opened = window.open(target.href, '_blank');
+            if (!opened) showPublisherInlineMessage('页面未打开，请允许浏览器打开新窗口');
+        }
+
+        function restorePublisherProfileState() {
+            const state = readPublisherProfileState();
+            if (state && PUBLISHER_SCENARIOS[state.scenario]) publisherScenario = state.scenario;
+
+            const device = document.getElementById('device');
+            device.className = state && state.orientation === 'portrait' ? 'portrait' : 'landscape';
+            updateOrientationButton();
+
+            const section = state && state.section === 'feed' ? 'feed' : 'profile';
+            const sectionTab = document.querySelector(`[data-main-section="${section}"]`);
+            if (sectionTab) switchMainSection(section, sectionTab, false);
+            applyPublisherAccessState();
+
+            requestAnimationFrame(() => {
+                const mainScroller = document.getElementById('main-scroller');
+                const profileScroller = document.querySelector('#section-profile .profile-part');
+                if (mainScroller) mainScroller.scrollTop = state?.mainScrollTop || 0;
+                if (profileScroller) profileScroller.scrollTop = state?.profileScrollTop || 0;
+            });
+        }
+
         const ICONS = {
             view: `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`,
             like: `<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
@@ -646,10 +842,8 @@
 
         function toggleOrientation() {
             const dev = document.getElementById('device');
-            const btn = document.querySelector('.orientation-toggle');
             if(dev.classList.contains('portrait')) { 
                 dev.className = 'landscape'; 
-                btn.innerText = '🔄 切换 竖版 (当前: 横版)'; 
                 
                 // 切换至横版时自动打开第一个菜单详情（分屏模式体验）
                 if (document.getElementById('messages-panel').classList.contains('show')) {
@@ -660,8 +854,9 @@
                 }
             } else { 
                 dev.className = 'portrait'; 
-                btn.innerText = '🔄 切换 横版 (当前: 竖版)'; 
             }
+            updateOrientationButton();
+            savePublisherProfileState();
         }
 
         function goToDetail(e) { 
@@ -819,9 +1014,10 @@
                 `;
                 // 更新申请区域
                 document.getElementById('creator-apply-area').innerHTML = `
-                    <div style="width:100%; padding:12px; border-radius:20px; background:var(--primary); color:#fff; text-align:center; font-size:14px; font-weight:bold; cursor:pointer;" onclick="window.open('发行人计划demo.html','_blank')">前往发行人计划 ›</div>
+                    <button id="creator-publisher-link" type="button" style="width:100%; padding:12px; border:0; border-radius:20px; background:var(--primary); color:#fff; text-align:center; font-size:14px; font-weight:bold; cursor:pointer;" onclick="openPublisherPlan()">前往发行人计划 ›</button>
                     <div style="text-align:center; font-size:12px; color:var(--text-s); margin-top:10px;">发行人计划已解锁，可提交作品获取佣金</div>
                 `;
+                applyPublisherAccessState();
                 // 更新主页badge
                 document.getElementById('creator-status-badge').textContent = '已认证';
                 document.getElementById('creator-status-badge').style.background = 'rgba(82,196,26,0.15)';
@@ -830,12 +1026,14 @@
             }
         }
 
-        function switchMainSection(section, el) {
-            document.querySelectorAll('.top-nav-tabs .nav-tab').forEach(t => t.classList.remove('active'));
+        function switchMainSection(section, el, shouldSave = true) {
+            document.querySelectorAll('[data-main-section]').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
             document.getElementById('section-profile').style.display = section === 'profile' ? 'block' : 'none';
             document.getElementById('section-feed').style.display = section === 'feed' ? 'block' : 'none';
             if (section === 'feed') renderFeed('dynamic', 'feed-list');
+            currentMainSection = section;
+            if (shouldSave) savePublisherProfileState();
         }
         function showApplyForm() {
             document.getElementById('publisher-status-area').style.display = 'none';
@@ -1060,6 +1258,9 @@
 
         // 页面启动执行初始化
         initMsgBadgesAndSubs();
+        restorePublisherProfileState();
+        window.addEventListener('pagehide', savePublisherProfileState);
+        window.addEventListener('pageshow', restorePublisherProfileState);
 
     </script>
 </body>
