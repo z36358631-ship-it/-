@@ -1,0 +1,66 @@
+<!doctype html><meta charset="utf-8"><title>远程电脑功能同步</title><style>body{max-width:880px;margin:40px auto;padding:24px;font:16px/1.8 system-ui;color:#17202c}img{max-width:100%;max-height:650px;display:block;margin:16px 0}h2{margin-top:40px}a{color:#187fa5}</style><h1>远程电脑功能同步｜APP + Mac</h1>
+<p><strong>背景</strong></p>
+<p>游戏、文件和 AI 任务往往留在自己的电脑上。用户离开电脑后，需要延续原来的软件环境、打开的窗口和任务。本次将远程访问接入盖世 APP 与 Mac：通过同账号找到电脑，完成桌面操作、文件收发和电源操作，并针对手机输入、Mac 工作区和 ChatGPT 手机显示进行适配。</p>
+<p>以下为当前可交互 Demo 的评审范围，真实远控、文件及 ChatGPT 接入不以演示效果代表已上线。</p>
+<h2>一、设备与连接</h2>
+<p><strong>1. 双端入口</strong></p>
+<p>APP 从游戏库或我的设备进入远程电脑；Mac 从首页远程入口进入工作区，连接同账号下的 Windows / Mac。</p>
+<p><img alt="双端入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-entry.png" /></p>
+<p><strong>2. 设备列表与状态</strong></p>
+<p>仅展示电脑，区分在线、离线和被控中；手机不作为被控设备，移除「全部设备」入口。</p>
+<p><img alt="设备列表与状态" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-devices.png" /></p>
+<p><strong>3. 设备管理</strong></p>
+<p>更多菜单提供设备属性、刷新、重命名和删除；名称最多40个汉字，删除需二次确认，属性按 Windows / Mac 展示硬件信息。</p>
+<p><img alt="设备管理" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-hardware.png" /></p>
+<p><strong>4. 连接引导与权限检查</strong></p>
+<p>首次引导说明手机与电脑两种连接方式，关闭后不再自动弹出，可从连接教程重看；连接前拦截离线、禁控状态，被占用时先确认接管。</p>
+<p><img alt="连接引导与权限检查" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-guide.png" /></p>
+<h2>二、APP 远程操作</h2>
+<p><strong>5. 远程桌面与观看模式</strong></p>
+<p>进入电脑桌面继续操作，观看模式禁止远程输入；退出回设备详情，电脑上的程序继续运行。</p>
+<p><img alt="远程桌面与观看模式" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-desktop.png" /></p>
+<p><strong>6. 操作面板与虚拟按键</strong></p>
+<p>提供触控方式、开启虚拟按键、切换虚拟按键布局及手柄映射；点击开关和映射方案保持当前滚动位置。</p>
+<p><img alt="操作面板与虚拟按键" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-controls.png" /></p>
+<p><strong>7. 画面与输入适配</strong></p>
+<p>调整画质、帧率、分辨率和缩放；提供输入法、电脑键盘及快捷键，横竖屏切换保留会话。</p>
+<p><img alt="画面与输入适配" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-keyboard.png" /></p>
+<p><strong>8. 悬浮鼠标与办公窗口</strong></p>
+<p>提供左键、右键、滚轮和可移动鼠标面板；可选择已打开的电脑窗口，长文本输入不自动回车或提交。</p>
+<p><img alt="悬浮鼠标与办公窗口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-mouse.png" /></p>
+<p><strong>9. 手机文件传输</strong></p>
+<p>发送照片、视频、文件或下载电脑文件；查看传输中、已接收、已发送记录，处理暂停、失败和同名文件。</p>
+<p><img alt="手机文件传输" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-files.png" /></p>
+<p><strong>10. 远程电源操作</strong></p>
+<p>更多中保留文件传输、远程开机、重启、关机；离线 Windows 仅可尝试开机，其余依赖在线的操作置灰，失败可重试或查看帮助。</p>
+<p><img alt="远程电源操作" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-power.png" /></p>
+<h2>三、Mac 端</h2>
+<p><strong>11. Mac 设备工作区</strong></p>
+<p>左侧常驻设备列表，右侧显示选中设备详情；被控状态突出展示，设备管理和连接操作集中在当前工作区。</p>
+<p><img alt="Mac 设备工作区" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-mac-workspace.png" /></p>
+<p><strong>12. 远控窗口与控制中心</strong></p>
+<p>顶部显示设备、屏幕页签和控制中心，支持画质、窗口、声音、安全与外设设置；最小化保留连接，退出结束远控。</p>
+<p><img alt="远控窗口与控制中心" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-mac-control.png" /></p>
+<p><strong>13. 连接时长与弱网处理</strong></p>
+<p>显示连接时长，悬浮或点击信号查看延迟、帧率、丢包等信息；网络较弱时提示降低画质，恢复后由用户选择恢复原画质。</p>
+<p><img alt="连接时长与弱网处理" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-mac-network.png" /></p>
+<p><strong>14. 双栏文件传输</strong></p>
+<p>本机与远端分栏浏览和选择文件，支持双向发送及任务管理；文件页按来源返回详情、更多或远控会话。</p>
+<p><img alt="双栏文件传输" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-mac-files.png" /></p>
+<p><strong>15. Mac 本机设置</strong></p>
+<p>仅保留开机自动启动、允许通过远程开机启动、防止电脑休眠、移动设备文件存储路径、允许同账号控制本设备五项。</p>
+<p><img alt="Mac 本机设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/sync-mac-settings.png" /></p>
+<h2>四、ChatGPT 手机适配</h2>
+<p><strong>16. ChatGPT 快速启动</strong></p>
+<p>在电脑详情的快速启动中打开 ChatGPT 手机工作区，表达电脑运行软件、手机适配操作的使用方式。</p>
+<p><img alt="ChatGPT 快速启动" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/gpt-quick-launch.png" /></p>
+<p><strong>17. 历史对话与关联文件</strong></p>
+<p>历史按钮从左侧展开对话列表；切换对话同步展示消息、当前修改文件及关联内容，文件支持预览和定位对应对话。</p>
+<p><img alt="历史对话与关联文件" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/gpt-history.png" /></p>
+<p><strong>18. 完整对话输入框</strong></p>
+<p>还原上传附件、完全访问、模型与思考强度选择、发送及停止按钮，并保留各对话草稿。</p>
+<p><img alt="完整对话输入框" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/gpt-composer.png" /></p>
+<h2>双端产品流程</h2>
+<p><img alt="APP与Mac流程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@63c67ea8c976e1bd3e443bcd8efc7c2cbf647eed/public/prd/streaming-mvp/prd-app-mac-flow.png" /></p>
+<p><a href="https://z36358631-ship-it.github.io/-/public/streaming-mvp/mobile.html">APP Demo</a> · <a href="https://z36358631-ship-it.github.io/-/public/streaming-mvp/mac.html">Mac Demo</a> · <a href="https://z36358631-ship-it.github.io/-/public/streaming-mvp/prd.html">完整 PRD</a></p>
+<p>后续评审继续更新原 Demo 与 PRD 地址。</p>
