@@ -2973,18 +2973,17 @@
                                 </div>
                             </div>
                             <div class="filter-item">
-                                <span class="filter-label">星级:</span>
-                                <div class="ms-wrap" id="ms-dom-stars">
-                                    <div class="ms-trigger" onclick="window.msToggle('ms-dom-stars')">
-                                        <span class="ms-trigger-text" id="ms-dom-stars-text">全部</span>
+                                <span class="filter-label">兼容性:</span>
+                                <div class="ms-wrap" id="ms-dom-type">
+                                    <div class="ms-trigger" onclick="window.msToggle('ms-dom-type')">
+                                        <span class="ms-trigger-text" id="ms-dom-type-text">全部</span>
                                         <span class="ms-arrow">▾</span>
                                     </div>
                                     <div class="ms-dropdown">
-                                        <label class="ms-option"><input type="checkbox" value="5" onchange="window.msChange('ms-dom-stars')"> ★★★★★</label>
-                                        <label class="ms-option"><input type="checkbox" value="4" onchange="window.msChange('ms-dom-stars')"> ★★★★☆</label>
-                                        <label class="ms-option"><input type="checkbox" value="3" onchange="window.msChange('ms-dom-stars')"> ★★★☆☆</label>
-                                        <label class="ms-option"><input type="checkbox" value="2" onchange="window.msChange('ms-dom-stars')"> ★★☆☆☆</label>
-                                        <label class="ms-option"><input type="checkbox" value="1" onchange="window.msChange('ms-dom-stars')"> ★☆☆☆☆</label>
+                                        <label class="ms-option"><input type="checkbox" value="perfect" onchange="window.msChange('ms-dom-type')"> 完美兼容</label>
+                                        <label class="ms-option"><input type="checkbox" value="basic" onchange="window.msChange('ms-dom-type')"> 基本可玩</label>
+                                        <label class="ms-option"><input type="checkbox" value="partial" onchange="window.msChange('ms-dom-type')"> 部分兼容</label>
+                                        <label class="ms-option"><input type="checkbox" value="unplayable" onchange="window.msChange('ms-dom-type')"> 不可玩</label>
                                     </div>
                                 </div>
                             </div>
@@ -3040,7 +3039,7 @@
                                     <th>用户</th>
                                     <th>设备</th>
                                     <th>版本</th>
-                                    <th>星级</th>
+                                    <th>兼容性</th>
                                     <th>标签</th>
                                     <th>反馈内容</th>
                                     <th>关联快照</th>
@@ -7555,6 +7554,24 @@
     const domFbSelected = new Set();
     const ovsFbSelected = new Set();
 
+    const COMPAT_TYPE_LABELS = { perfect: '完美兼容', basic: '基本可玩', partial: '部分兼容', unplayable: '不可玩' };
+    function getCompatReviewType(feedback) {
+        if (feedback?.compatType && COMPAT_TYPE_LABELS[feedback.compatType]) return feedback.compatType;
+        const labelTypes = { '完美兼容': 'perfect', '基本可玩': 'basic', '部分兼容': 'partial', '有部分问题': 'partial', '不可玩': 'unplayable' };
+        const tag = (feedback?.tags || []).find(value => labelTypes[value]);
+        if (tag) return labelTypes[tag];
+        return ({ 1: 'unplayable', 2: 'partial', 3: 'basic', 4: 'perfect', 5: 'perfect' })[feedback?.stars] || 'basic';
+    }
+
+    function getCompatReviewTypeLabel(feedback) {
+        return COMPAT_TYPE_LABELS[getCompatReviewType(feedback)];
+    }
+
+    function getCompatReviewTags(feedback) {
+        const legacyLabels = ['完美兼容', '基本可玩', '部分兼容', '有部分问题', '不可玩'];
+        return [...new Set((feedback.tags || []).map(tag => legacyLabels.includes(tag) ? getCompatReviewTypeLabel(feedback) : tag))];
+    }
+
     function createCompatSnapshotConfigGroups(overrides = {}) {
         return [
             {
@@ -7661,7 +7678,7 @@
             if (checked.length === 0) {
                 textEl.textContent = '全部';
             } else {
-                textEl.textContent = checked.join('、');
+                textEl.textContent = checked.map(value => id === 'ms-dom-type' ? COMPAT_TYPE_LABELS[value] : value).join('、');
             }
         }
     };
@@ -7698,7 +7715,8 @@
             uid:     (document.getElementById(p + '-fb-uid')?.value || '').trim(),
             phone:   (document.getElementById(p + '-fb-phone')?.value || '').trim(),
             versions: window.msGetValues('ms-' + p + '-version'),
-            stars:    window.msGetValues('ms-' + p + '-stars'),
+            stars:    region === 'overseas' ? window.msGetValues('ms-ovs-stars') : [],
+            types:    region === 'overseas' ? [] : window.msGetValues('ms-dom-type'),
             statuses: window.msGetValues('ms-' + p + '-status'),
             solutionLinked: document.getElementById(p + '-fb-solution-linked')?.value || 'all',
             solutionStatus: document.getElementById(p + '-fb-solution-status')?.value || 'all',
@@ -7712,6 +7730,7 @@
             if (filters.phone && (f.phone || '') !== filters.phone)  return false;
             if (filters.versions.length > 0 && !filters.versions.includes(f.appVersion || '')) return false;
             if (filters.stars.length   > 0 && !filters.stars.includes(String(f.stars)))        return false;
+            if (filters.types.length > 0 && !filters.types.includes(getCompatReviewType(f))) return false;
             if (filters.statuses.length > 0) {
                 const isLive   = filters.statuses.includes('live');
                 const isHidden = filters.statuses.includes('hidden');
@@ -7797,7 +7816,8 @@
 
         tbody.innerHTML = pageItems.map(f => {
             const isChecked = selected.has(f.id);
-            const tags = Array.isArray(f.tags) && f.tags.length ? f.tags.slice(0,3).join('、') : '-';
+            const displayTags = region === 'overseas' ? f.tags : getCompatReviewTags(f);
+            const tags = Array.isArray(displayTags) && displayTags.length ? displayTags.slice(0,3).join('、') : '-';
             const content = (f.content || f.text || '').trim() || '（未填写）';
             const device = f.device || '-';
             const version = f.appVersion || '-';
@@ -7806,7 +7826,9 @@
             const statusBadge = f.hidden
                 ? '<span class="status-badge hidden">已隐藏</span>'
                 : '<span class="status-badge live">显示中</span>';
-            const starsHtml = `<span style="color:#faad14;font-weight:600;">${clampInt(f.stars,1,5)}.0</span>`;
+            const resultHtml = region === 'overseas'
+                ? `<span style="color:#faad14;font-weight:600;">${clampInt(f.stars,1,5)}.0</span>`
+                : `<span class="status-badge" style="white-space:nowrap;min-width:76px;" data-compat-type="${getCompatReviewType(f)}">${getCompatReviewTypeLabel(f)}</span>`;
             const hideOp = f.hidden
                 ? `<a class="action-link" onclick="window.adminRestoreCompatFeedback('${f.id}')">恢复</a>`
                 : `<a class="action-link danger" onclick="window.adminHideCompatFeedback('${f.id}')">隐藏</a>`;
@@ -7826,7 +7848,7 @@
                 <td><div style="font-weight:500">${pinnedBadge}${escapeHtml(userName)}</div>${userSub}</td>
                 <td style="color:var(--text-secondary);font-size:12px">${escapeHtml(device)}</td>
                 <td style="color:var(--text-secondary);font-size:12px">${escapeHtml(version)}</td>
-                <td>${starsHtml}</td>
+                <td>${resultHtml}</td>
                 <td style="color:var(--text-secondary);font-size:12px">${escapeHtml(tags)}</td>
                 <td style="max-width:360px;line-height:1.5">"${escapeHtml(content).slice(0,120)}"</td>
                 <td>${getCompatSolutionCell(f)}</td>
@@ -7834,7 +7856,7 @@
                 <td>${statusBadge}</td>
                 <td>${createdAt}</td>
                 <td><div class="table-actions">
-                    <a class="action-link" data-action="view-review" onclick="window.openCompatReviewDetail('${f.id}')">查看评价</a>
+                    <a class="action-link" data-action="view-review" onclick="window.openCompatReviewDetail('${f.id}','${region}')">查看评价</a>
                     ${solutionOp}
                     <a class="action-link" data-action="export-review" onclick="window.openCompatExportPreview('${region}','single','${f.id}')">导出</a>
                     ${hideOp.replace('class="action-link', 'data-action="' + (f.hidden ? 'restore-review' : 'hide-review') + '" class="action-link')}
@@ -7870,7 +7892,7 @@
         if (el_uid) el_uid.value = '';
         if (el_phone) el_phone.value = '';
         window.msClear('ms-' + p + '-version');
-        window.msClear('ms-' + p + '-stars');
+        window.msClear(region === 'overseas' ? 'ms-ovs-stars' : 'ms-dom-type');
         window.msClear('ms-' + p + '-status');
         const solutionLinked = document.getElementById(p + '-fb-solution-linked');
         const solutionStatus = document.getElementById(p + '-fb-solution-status');
@@ -7979,7 +8001,7 @@
         }).join('');
     }
 
-    window.openCompatReviewDetail = function(feedbackId) {
+    window.openCompatReviewDetail = function(feedbackId, region = 'domestic') {
         const feedback = findCompatFeedbackById(feedbackId);
         const drawer = document.getElementById('compat-review-detail-drawer');
         const fields = document.getElementById('compat-review-detail-fields');
@@ -7990,7 +8012,9 @@
             ['游戏', escapeHtml(feedback.gameName || feedback.gameId || '-')],
             ['用户', `${escapeHtml(feedback.name || '-')}<div class="compat-solution-meta">${escapeHtml(feedback.uid || '-')}</div>`],
             ['设备', escapeHtml(feedback.device || '-')],
-            ['评分与类型', `${clampInt(feedback.stars,1,5)} 星 · ${escapeHtml((feedback.tags || []).join('、') || '-')}`],
+            region === 'overseas'
+                ? ['评分与类型', `${clampInt(feedback.stars,1,5)} 星 · ${escapeHtml((feedback.tags || []).join('、') || '-')}`]
+                : ['兼容性', getCompatReviewTypeLabel(feedback)],
             ['反馈内容', escapeHtml(feedback.content || feedback.text || '（未填写）')],
             ['评价状态', feedback.deleted ? '已删除' : (feedback.hidden ? '已隐藏' : '显示中')],
             ['关联快照', feedback.snapshot
@@ -8093,8 +8117,10 @@
     };
 
     let compatExportRows = [];
+    let compatExportRegion = 'domestic';
 
     window.openCompatExportPreview = function(region, scope, feedbackId) {
+        compatExportRegion = region;
         const filters = getCompatFbFilters(region);
         const all = getCompatFeedbacks();
         if (scope === 'single') {
@@ -8141,15 +8167,15 @@
 
     window.confirmCompatExport = function() {
         if (!compatExportRows.length) return;
-        const headers = ['评价ID','游戏名称','用户UID','设备','客户端版本','星级','标签','反馈内容','支持数','评价状态','创建时间','review_snapshot_id','snapshot_status','duration_seconds','snapshot_shared_at'];
+        const headers = ['评价ID','游戏名称','用户UID','设备','客户端版本',compatExportRegion === 'overseas' ? '星级' : '兼容性','标签','反馈内容','支持数','评价状态','创建时间','review_snapshot_id','snapshot_status','duration_seconds','snapshot_shared_at'];
         const body = compatExportRows.map(item => [
             item.id,
             item.gameName || item.gameId,
             item.uid,
             item.device,
             item.appVersion,
-            item.stars,
-            (item.tags || []).join('|'),
+            compatExportRegion === 'overseas' ? item.stars : getCompatReviewTypeLabel(item),
+            (compatExportRegion === 'overseas' ? (item.tags || []) : getCompatReviewTags(item)).join('|'),
             item.content || item.text,
             item.supportCount || item.likes || 0,
             item.hidden ? '已隐藏' : '显示中',

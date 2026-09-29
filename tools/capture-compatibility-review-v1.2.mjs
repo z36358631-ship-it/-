@@ -235,6 +235,8 @@ async function captureBLinkedFilter() {
   try {
     await requireOne(page, '#dom-fb-solution-linked', '是否关联快照筛选');
     await requireOne(page, '#dom-fb-solution-status', '快照状态筛选');
+    await requireOne(page, '#ms-dom-type', '四类兼容性筛选');
+    await shot(page, '15-b-compatibility-list-1440x900.png');
     await page.selectOption('#dom-fb-solution-linked', 'linked');
     await page.selectOption('#dom-fb-solution-status', 'available');
     await domClick(page, '#dom-query-feedbacks', '国内评价查询');
@@ -252,10 +254,12 @@ async function captureBLinkedFilter() {
 }
 
 try {
-  await captureCConnectedJourney();
+  const onlyB = process.argv.includes('--only-b');
+  if (!onlyB) await captureCConnectedJourney();
   await captureBLinkedFilter();
-  await captureGuestReviewStates();
-  if (captured.length !== 14) throw new Error(`截图数量错误：预期 14，实际 ${captured.length}`);
+  if (!onlyB) await captureGuestReviewStates();
+  const expected = onlyB ? 2 : 15;
+  if (captured.length !== expected) throw new Error(`截图数量错误：预期 ${expected}，实际 ${captured.length}`);
 } finally {
   await browser.close();
 }

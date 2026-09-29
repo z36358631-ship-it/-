@@ -65,6 +65,7 @@ $assetMap = [ordered]@{
     '12-c-edit-menu-428x888.png' = 'c08-edit-menu.png'
     '13-c-edit-dialog-428x888.png' = 'c09-edit-dialog.png'
     '14-c-auto-all-428x888.png' = 'c10-auto-all.png'
+    '15-b-compatibility-list-1440x900.png' = 'b02-compatibility-list.png'
 }
 
 $flowFileName = 'flow-compatibility-review-v1.2.png'
