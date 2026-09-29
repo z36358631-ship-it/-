@@ -1239,7 +1239,6 @@
         <header class="solution-detail-header">
             <button id="solutionDetailBack" class="flow-back" type="button" aria-label="返回评价列表" onclick="closeSolutionDetail()">‹</button>
             <div class="flow-title">本次启动配置</div>
-            <button id="refreshSolutionDetail" class="solution-refresh" type="button" aria-label="刷新方案详情" onclick="reloadSolutionDetail()">↻</button>
         </header>
         <div id="solutionDetailBody" class="solution-detail-body">
             <div id="solutionDetailState" class="solution-detail-state" hidden></div>
@@ -1877,10 +1876,19 @@ function resolveReviewSnapshot(review) {
 function calcStats(list) {
     const dist = {5:0,4:0,3:0,2:0,1:0};
     const levels = { perfect:0, basic:0, partial:0, unplayable:0 };
-    let total = 0;
-    list.forEach(f => { dist[f.stars] = (dist[f.stars]||0)+1; total += f.stars; levels[reviewLevel(f)]++; });
-    if (!list.length) return { avg: '—', count: 0, dist, levels };
-    return { avg: (total/list.length).toFixed(1), count: list.length, dist, levels };
+    let total = 0, scoredCount = 0;
+    list.forEach(f => {
+        const legacy = Number(f.stars);
+        const score = TYPE_LABELS[f.compatType] ? STAR_BY_TYPE[f.compatType]
+            : (Number.isFinite(legacy) && legacy >= 1 && legacy <= 5 ? legacy : STAR_BY_TYPE[reviewLevel(f)]);
+        dist[f.stars] = (dist[f.stars]||0)+1;
+        total += score;
+        scoredCount++;
+        levels[reviewLevel(f)]++;
+    });
+    const rawAverage = scoredCount ? total / scoredCount : null;
+    return { avg: rawAverage === null ? '—' : rawAverage.toFixed(1), rawAverage,
+        overallCompatType: overallLevel(rawAverage), count: list.length, dist, levels };
 }
 
 function starsSVG(score, size) {
@@ -1901,7 +1909,7 @@ function refreshEntryCard() {
     const hasDataLs = document.getElementById('entryHasDataLs');
     const noDataLs  = document.getElementById('entryNoDataLs');
     if (s.count) {
-        const level = overallLevel(s.levels);
+        const level = s.overallCompatType;
         hasData.style.display = 'block';
         noData.style.display  = 'none';
         const levelEl = document.getElementById('entryLevel');
@@ -1940,7 +1948,7 @@ function refreshPanel(side) {
     const ovLevelEl = document.getElementById(side === 'ls' ? 'ovLevelLs' : 'ovLevelPt');
     if (ovLevelEl) {
         if (s.count) {
-            const level = overallLevel(s.levels);
+            const level = s.overallCompatType;
             ovLevelEl.textContent = TYPE_LABELS[level];
             ovLevelEl.className = 'ov-level-big level-text-' + level;
         } else {
@@ -2237,6 +2245,7 @@ const journeyState = {
     appliedSolutionRecord: null,
     playSessionId: '',
     startedAt: 0,
+    shareSessionActive: false,
     sessionSnapshot: {
         ...REVIEW_SNAPSHOT_DIMENSIONS,
         configHash: 'cfg_local_default_v1',
@@ -2264,16 +2273,14 @@ function reviewLevel(f) {
     return TYPE_BY_STAR[f && f.stars] || 'basic';
 }
 
-// 整体等级：取数量最多的等级，并列时优先更好的等级
-function overallLevel(levels) {
-    let best = LEVEL_ORDER[0], bestCount = -1;
-    LEVEL_ORDER.forEach(type => {
-        const c = (levels && levels[type]) || 0;
-        if (c > bestCount) { bestCount = c; best = type; }
-    });
-    return best;
+// Demo 模拟服务端按原始平均分返回兼容性，客户端实际接入后读取服务端结果。
+function overallLevel(average) {
+    if (average === null || !Number.isFinite(Number(average)) || average < 1 || average > 5) return null;
+    return average >= 4 ? 'perfect' : average >= 3 ? 'basic' : average >= 2 ? 'partial' : 'unplayable';
 }
+// 7/7/30仅为演示参数；评审未确认上线值，生产由服务端统一裁决。
 const INVITE_CONFIG = { globalDays: 7, unreviewedDays: 7, reviewUpdateDays: 30, maxPerGameGpu: 0 };
+const completedInviteSessions = new Set();
 const inviteDemoState = {
     globalLastInviteAt: null,
     byGameGpu: {
@@ -2381,12 +2388,16 @@ function restoreFeedbackDraft() {
 function closeFeedbackModal(options = {}) {
     if (options.preserveDraft !== false) saveFeedbackDraft();
     document.getElementById('modalFeedback').classList.remove('show');
+    journeyState.shareSessionActive = false;
+    shareSessionRequested = false;
 }
 
 function openFeedbackModal(options = {}) {
     const source = options.source === 'proactive' ? 'proactive' : 'manual';
     const modal = document.getElementById('modalFeedback');
     editingId = options.editingId || null;
+    journeyState.shareSessionActive = source === 'proactive' && Boolean(options.playSessionId)
+        && options.playSessionId === journeyState.sessionSnapshot?.playSessionId;
     modal.dataset.entrySource = source;
     document.getElementById('feedbackModalTitle').textContent = source === 'proactive'
         ? '这次游戏体验怎么样？'
@@ -2398,18 +2409,49 @@ function openFeedbackModal(options = {}) {
         renderMediaList();
         renderFeedbackSolution();
     }
+    if (source === 'proactive') {
+        shareSessionRequested = false;
+        renderFeedbackSolution();
+    }
     modal.classList.add('show');
     if (source === 'proactive') recordInviteExposure(options.gameKey || 'gta5|Adreno 750');
 }
 
 function routeSessionResult(result, session = {}) {
+    const playSessionId = session.playSessionId || journeyState.playSessionId;
+    if (!playSessionId || completedInviteSessions.has(playSessionId)) return;
     closeFeedbackModal({ preserveDraft: true });
-    if (result !== 'normal') return;
+    completedInviteSessions.add(playSessionId);
+    const eligibility = getInviteEligibility(result, session);
+    if (!eligibility.allowed) return;
     openFeedbackModal({
         source: 'proactive',
-        gameKey: 'gta5|Adreno 750',
-        playSessionId: session.playSessionId || journeyState.playSessionId
+        gameKey: eligibility.gameKey,
+        playSessionId
     });
+}
+
+function getInviteEligibility(result, session = {}) {
+    const gameId = session.gameId === undefined ? journeyState.sessionSnapshot?.gameId : session.gameId;
+    const gpu = session.gpuModel || CURRENT_GPU;
+    const gameKey = gameId + '|' + gpu;
+    // 本地演示服务端裁决，实际客户端须使用服务端返回的资格。
+    const reject = reason => ({ allowed: false, reason, gameKey });
+    if (result !== 'normal') return reject('abnormal-exit');
+    if (session.platform && session.platform !== 'android') return reject('platform');
+    if (session.loggedIn === false || (session.totalPlayMinutes ?? 30) < 30) return reject('review-qualification');
+    if (!gameId || session.supportsReviews === false) return reject('game-identity');
+    if (!navigator.onLine || session.online === false || session.serverAllowed === false) return reject('server-unavailable');
+    if (session.higherPriorityModal || session.pageActive === false) return reject('not-visible');
+    const now = session.now ?? Date.now();
+    const day = 86400000;
+    if (inviteDemoState.globalLastInviteAt !== null && now - inviteDemoState.globalLastInviteAt < INVITE_CONFIG.globalDays * day) return reject('global-cooldown');
+    const state = inviteDemoState.byGameGpu[gameKey];
+    const reviewed = session.reviewed ?? getFeedbacks().some(f => f.uid === MY_UID && f.gpu === gpu && gameId === 'gta5');
+    const days = reviewed ? INVITE_CONFIG.reviewUpdateDays : INVITE_CONFIG.unreviewedDays;
+    if (state?.lastInviteAt !== null && state?.lastInviteAt !== undefined && now - state.lastInviteAt < days * day) return reject('game-cooldown');
+    if (INVITE_CONFIG.maxPerGameGpu > 0 && (state?.exposures || 0) >= INVITE_CONFIG.maxPerGameGpu) return reject('limit');
+    return { allowed: true, gameKey };
 }
 
 function setJourneyStage(stage) {
@@ -2421,6 +2463,7 @@ function setJourneyStage(stage) {
 }
 
 function startGame() {
+    journeyState.shareSessionActive = false;
     journeyState.playSessionId = 'play_' + Date.now();
     journeyState.startedAt = Date.now();
     const sourceRecord = journeyState.appliedSolutionRecord || journeyState.sessionSnapshot;
@@ -2461,8 +2504,7 @@ function confirmExitGame() {
 }
 
 function recordInviteExposure(gameKey) {
-    const state = inviteDemoState.byGameGpu[gameKey];
-    if (!state) return;
+    const state = inviteDemoState.byGameGpu[gameKey] ||= { lastInviteAt: null, lastReviewAt: null, exposures: 0 };
     const now = Date.now();
     state.lastInviteAt = now;
     state.exposures += 1;
@@ -2488,7 +2530,7 @@ document.querySelectorAll('#fbTypeWrap [data-type]').forEach(button => {
 
 function setRating(value) {
     fbStarVal = Number(value) || 0;
-    // 兼容性为主选项：用户先选兼容性，再单独调整评分；未选兼容性时按星级回填
+    // 仅供历史星级数据恢复；界面不提供独立评分入口。
     if (!selectedCompatType) selectedCompatType = TYPE_BY_STAR[fbStarVal] || '';
     if (fbStarVal < 3) {
         shareSessionRequested = false;
@@ -2518,7 +2560,7 @@ function renderFeedbackSolution() {
         ? null
         : getFeedbacks().find(item => item.id === editingId);
     const hasExistingSnapshot = Boolean(existingReview?.reviewSnapshotId && findReviewSnapshot(existingReview.reviewSnapshotId));
-    const hasCurrentSession = Boolean(journeyState.sessionSnapshot?.configHash)
+    const hasCurrentSession = journeyState.shareSessionActive && Boolean(journeyState.sessionSnapshot?.configHash)
         && Boolean(journeyState.sessionSnapshot?.playSessionId);
     const canShare = fbStarVal >= 3 && (hasExistingSnapshot || hasCurrentSession);
     if (!canShare) {
@@ -2569,7 +2611,7 @@ function submitFeedback() {
         ? findReviewSnapshot(existingReview.reviewSnapshotId)
         : null;
     let snapshot = wantsShare ? existingSnapshot : null;
-    const pendingSnapshot = wantsShare && !snapshot
+    const pendingSnapshot = wantsShare && !snapshot && journeyState.shareSessionActive
         ? buildReviewSnapshot(savedReviewId, {
             ...journeyState.sessionSnapshot,
             reviewAuthorDisplayName: existingReview?.name || '我'
@@ -2920,9 +2962,11 @@ function getSolutionActionsForRecord(record) {
 
 function getEffectiveSolutionActions(record) {
     const serverActions = record?.actions || getSolutionActionsForRecord(record);
+    const gpu = record?.gpuModel || record?.gpu?.displayName;
+    const gpuMismatch = Boolean(gpu) && gpu !== CURRENT_GPU;
     const deviceActions = {
-        canApply: solutionApplicationMode !== 'hard',
-        applyDisabledReason: solutionApplicationMode === 'hard'
+        canApply: !gpuMismatch && solutionApplicationMode !== 'hard',
+        applyDisabledReason: gpuMismatch ? '当前 GPU 与配置 GPU 不同，暂无法应用' : solutionApplicationMode === 'hard'
             ? '当前设备 GPU 或运行架构不兼容，无法应用。'
             : '',
         canCopy: true,
@@ -3237,6 +3281,7 @@ function resetJourney() {
         appliedSolutionRecord: null,
         playSessionId: '',
         startedAt: 0,
+        shareSessionActive: false,
         sessionSnapshot: {
             ...REVIEW_SNAPSHOT_DIMENSIONS,
             configHash: 'cfg_local_default_v1',
@@ -3276,6 +3321,9 @@ function bindCompatibilityV12Demo() {
                 : 'ready';
         },
         simulateGlobalCooldown,
+        getInviteEligibility,
+        setInviteConfig: config => Object.assign(INVITE_CONFIG, config),
+        routeSessionResult,
         setApplicationMode,
         showSameConfigEmpty: showSameConfigEmptyScenario,
         resetJourney
