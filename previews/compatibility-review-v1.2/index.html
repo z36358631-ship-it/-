@@ -499,7 +499,7 @@
         .compat-list { padding: 0 20px; }
         /* 横版单列 */
         .shell.ls .compat-list { display: block; }
-        .compat-item { border-bottom: 1px solid var(--divider); padding: 14px 0; }
+        .compat-item { border-bottom: 1px solid rgba(255,255,255,.18); padding: 16px 0; }
         .compat-item:last-child { border-bottom: none; }
         .ci-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .ci-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; flex-shrink: 0; object-fit: cover; }
@@ -920,6 +920,7 @@
         .ci-media-image { width: 100%; aspect-ratio: 1; min-width: 0; border-radius: 8px; overflow: hidden; background: #080b0d; }
         .ci-media-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
         .ci-media.single { grid-template-columns: minmax(0,1fr); }
+        .ci-media.single.landscape { grid-template-columns: minmax(0,66.666667%); }
         .ci-media.single .ci-media-image { aspect-ratio: auto; }
         .ci-media.single .ci-media-image img { height: auto; max-height: 280px; object-fit: contain; }
         .ci-media.single .media-wireframe { aspect-ratio: 16/9; }
@@ -2065,7 +2066,7 @@ function renderReviewMedia(media) {
     if (!images.length) return '';
     return `<div class="ci-media${images.length === 1 ? ' single' : ''}">${images.map((m, i) => {
         const src = reviewImageSource(m);
-        return src ? `<div class="ci-media-image"><img src="${src}" alt="评价配图 ${i + 1}"></div>`
+        return src ? `<div class="ci-media-image"><img src="${src}" alt="评价配图 ${i + 1}" onload="if(this.closest('.ci-media').classList.contains('single'))this.closest('.ci-media').classList.toggle('landscape',this.naturalWidth>this.naturalHeight)"></div>`
             : '<div class="ci-media-image media-wireframe" role="img" aria-label="评价图片不可用"><span class="media-wireframe-label">评价图片</span></div>';
     }).join('')}</div>`;
 }
