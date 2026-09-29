@@ -159,7 +159,7 @@ test('查看并应用他人快照后，可启动、横屏退出并分享本次�
     const card = page.locator('[data-review-state="valid"] .review-solution-card').first();
     assert.match(await card.innerText(), /本次启动配置/);
     assert.doesNotMatch(await card.innerText(), /本次启动方案/);
-    assert.match(await card.innerText(), /本次游玩 18分42秒/);
+    assert.match(await card.innerText(), /Pixel 9 Pro · Adreno 750/);
     assert.doesNotMatch(await card.innerText(), /成功率|次验证|最近验证|样本较少|社区共同验证/);
     await card.click();
     assert.equal(await page.locator('#solutionDetailPage').getAttribute('aria-label'), '本次启动配置详情');
@@ -202,7 +202,7 @@ test('查看并应用他人快照后，可启动、横屏退出并分享本次�
     assert.equal(result.snapshot.durationSeconds, 1122);
     assert.equal(result.snapshot.sourceType, 'review_snapshot');
     assert.equal(result.snapshot.configHash, 'cfg_adreno750_stable_v1');
-    assert.match(await page.locator('[data-owner="me"] .review-solution-card').innerText(), /本次启动配置[\s\S]*本次游玩 18分42秒/);
+    assert.match(await page.locator('[data-owner="me"] .review-solution-card').innerText(), /本次启动配置[\s\S]*Pixel 9 Pro · Adreno 750/);
     assertNoPageErrors(errors, 'C 端连续旅程');
   } finally {
     await page.close();
@@ -587,7 +587,7 @@ test('客态 G-01～G-07 自然混排且仅有效同归属快照展示入口', a
 
     const validCard = page.locator('[data-feedback-id="s1"] .review-solution-card');
     assert.equal(await validCard.evaluate((element) => element.tabIndex >= 0), true);
-    assert.match(await validCard.innerText(), /本次启动配置[\s\S]*本次游玩 18分42秒/);
+    assert.match(await validCard.innerText(), /本次启动配置[\s\S]*Pixel 9 Pro · Adreno 750/);
     await validCard.click();
     assert.equal(await page.locator('#solutionDetailPage').isVisible(), true);
     assert.match(await page.locator('#solutionShareSummary').innerText(), /Pixel用户_洛圣都 · 本次游玩 18分42秒/);

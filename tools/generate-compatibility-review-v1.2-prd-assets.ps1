@@ -69,7 +69,7 @@ $assetMap = [ordered]@{
 }
 
 $flowFileName = 'flow-compatibility-review-v1.2.png'
-$expectedFileNames = @($assetMap.Values) + $flowFileName
+$expectedFileNames = @($assetMap.Values) + $flowFileName + @('c11-photo-review.png', 'c12-multi-photo-review.png')
 
 foreach ($sourceFileName in $assetMap.Keys) {
     $sourcePath = Join-Path $sourceDirectory $sourceFileName
