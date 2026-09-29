@@ -32,6 +32,7 @@ test('图片评价：单图、多图、无文字、无快照和配置入口', as
       const item = page.locator('#listLs #ci-s1');
       assert.equal(await item.locator('.ci-media img').count(), count);
       assert.equal(await item.locator('.review-solution-card').count(), 1);
+      assert.equal(await item.locator('.review-solution-duration').innerText(), '本次游玩 18分42秒');
       if (count) {
         const layout = await item.evaluate(el => {
           const media = el.querySelector('.ci-media').getBoundingClientRect();
@@ -67,6 +68,7 @@ test('图片评价：单图、多图、无文字、无快照和配置入口', as
       await page.setViewportSize({ width, height: 844 });
       const item = page.locator('#listLs #ci-s1');
       assert.ok(await item.evaluate(el => el.scrollWidth <= el.clientWidth + 1));
+      assert.ok(await item.locator('.review-solution-duration').evaluate(el => el.scrollWidth <= el.clientWidth + 1));
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.locator('#listLs #ci-s1').screenshot({ path: path.join(out, 'photo-example-final.png') });
