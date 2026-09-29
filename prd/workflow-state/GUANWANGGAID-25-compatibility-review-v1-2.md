@@ -69,3 +69,4 @@
 - C端、公开预览副本、PRD、群同步MD、15张文档图片同步；B端无需改动。45项回归通过，证据：test-results/compatibility-review-v1.2/2026-09-29-images/card-regression.txt。
 - 审核者Codex：已查看photo-example-page.png，图标、两行文字和卡片顺序正确；320及390窄屏图片专项通过。
 - 本轮图片固定资产提交：f142a966a653c8e36afe33d8cdde96101c7eea37；Pages提交dfdd3e0b1。
+- 本轮最终验证：公开页面蓝色图标、设备＋GPU及配置详情点击通过；15张图片HTTP200/image/png。PRD校验0错误0警告。源文件｜机器验证｜专业判断｜Git｜公开预览｜远程资源均已完成对应核验。
