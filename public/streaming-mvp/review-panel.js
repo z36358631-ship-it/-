@@ -13,7 +13,7 @@ const reviewItems={
  '远程桌面':[['远程桌面','session'],['操作面板','operation'],['显示设置','display'],['安全设置','security'],['键盘输入','keyboard'],['悬浮鼠标','mouse'],['办公窗口','windows']],
  '开机流程':[['远程开机','wake-idle']],
  '文件与工具':[['文件传输','files'],['更多工具','more']],
- '入口位置对比':[['游戏库入口','entry-library'],['我的设备入口','entry-profile']]
+ '功能入口':[['游戏库入口','entry-library']]
 };
 function reviewPageGroup(){return ({'设备列表':'设备与详情','设备详情':'设备与详情','远程会话':'远程桌面','文件传输':'文件与工具','远程开机':'开机流程'})[currentReviewGroup()];}
 function review(){const group=reviewItems[s.reviewGroup]?s.reviewGroup:reviewPageGroup();let rows=reviewItems[group];if(s.platform!=='mac'&&group==='文件与工具')rows=[...rows,['ChatGPT','gpt']];if(s.platform==='mac'&&group==='远程桌面')rows=[...rows.filter(x=>x[1]!=='mouse'),['连接信号','net-good'],['连接不稳定','net-unstable'],['弱网提示','net-weak'],['网络恢复','net-recovered']];return '<aside class="review organized-review"><div class="row spread"><h2>状态预览</h2>'+ib('关闭状态面板','review','close')+'</div>'+(s.reviewTab==='settings'?btn('返回页面状态','review-tab:pages','review-back')+reviewSettings():'<label class="review-field">页面分类<select id="review-group">'+Object.keys(reviewItems).map(n=>'<option '+(n===group?'selected':'')+'>'+n+'</option>').join('')+'</select></label><div class="review-item-list">'+rows.map(([name,id])=>'<section class="review-item"><div class="review-item-row"><strong>'+name+'</strong>'+btn('缺省','review-preset:'+id+':default','review-default')+btn('穷举','review-preset:'+id+':full')+'</div></section>').join('')+'</div>'+btn('演示设置','review-tab:settings','review-compare'))+'</aside>';}

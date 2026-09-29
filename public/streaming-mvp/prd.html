@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世游戏远程电脑 PRD · V3.8</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#17202c;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}header{background:#10161f;color:#fff;padding:28px max(24px,calc((100vw - 1180px)/2));}header a{color:#a9daff;margin-right:24px}main{max-width:1240px;padding:32px;margin:auto}h1{font-size:30px}h2{margin-top:44px;border-bottom:1px solid #d9e0e8;padding-bottom:10px}h3{margin-top:30px}a{color:#136db3}table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0;background:white}th,td{padding:12px 15px;border:1px solid #dde3ea;vertical-align:top;text-align:left}th{background:#eaf0f6}td:first-child{min-width:110px}img{max-width:100%;height:auto;max-height:650px;object-fit:contain;object-position:left}td img{display:block;max-height:550px;margin:12px 0}blockquote{border-left:4px solid #319dcc;padding:10px 20px;background:#eaf4fa;margin:20px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{padding:24px;border:1px solid #dce3ec;background:white;border-radius:16px;text-decoration:none;color:inherit}.card strong{display:block;color:#086ca8;font-size:20px}.muted{color:#64748b}.lead{font-size:22px;line-height:1.6;max-width:900px}.button{display:inline-block;background:#177cac;color:white;padding:12px 20px;border-radius:9px;text-decoration:none}pre{overflow:auto}code{background:#edf1f5}@media(max-width:700px){main{padding:18px}table{display:block;overflow:auto}header{padding:24px}h1{font-size:26px}}</style><header><a href="index.html">串流一期交付</a><a href="mvp.html">MVP 摘要</a><a href="mobile.html">移动端 Demo</a><a href="mac.html">Mac Demo</a><a href="demo.html">交互 Demo</a><a href="proposal.html">MVP 方案</a><a href="prd.html">PRD</a><a href="research.html">116 项竞品盘点</a></header><main><h1>【PRD】盖世游戏远程电脑（APP / Mac）</h1>
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世游戏远程电脑 PRD · V3.9</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#17202c;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif}header{background:#10161f;color:#fff;padding:28px max(24px,calc((100vw - 1180px)/2));}header a{color:#a9daff;margin-right:24px}main{max-width:1240px;padding:32px;margin:auto}h1{font-size:30px}h2{margin-top:44px;border-bottom:1px solid #d9e0e8;padding-bottom:10px}h3{margin-top:30px}a{color:#136db3}table{border-collapse:collapse;width:100%;font-size:14px;margin:24px 0;background:white}th,td{padding:12px 15px;border:1px solid #dde3ea;vertical-align:top;text-align:left}th{background:#eaf0f6}td:first-child{min-width:110px}img{max-width:100%;height:auto;max-height:650px;object-fit:contain;object-position:left}td img{display:block;max-height:550px;margin:12px 0}blockquote{border-left:4px solid #319dcc;padding:10px 20px;background:#eaf4fa;margin:20px 0}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{padding:24px;border:1px solid #dce3ec;background:white;border-radius:16px;text-decoration:none;color:inherit}.card strong{display:block;color:#086ca8;font-size:20px}.muted{color:#64748b}.lead{font-size:22px;line-height:1.6;max-width:900px}.button{display:inline-block;background:#177cac;color:white;padding:12px 20px;border-radius:9px;text-decoration:none}pre{overflow:auto}code{background:#edf1f5}@media(max-width:700px){main{padding:18px}table{display:block;overflow:auto}header{padding:24px}h1{font-size:26px}}</style><header><a href="index.html">串流一期交付</a><a href="mvp.html">MVP 摘要</a><a href="mobile.html">移动端 Demo</a><a href="mac.html">Mac Demo</a><a href="demo.html">交互 Demo</a><a href="proposal.html">MVP 方案</a><a href="prd.html">PRD</a><a href="research.html">116 项竞品盘点</a></header><main><h1>【PRD】盖世游戏远程电脑（APP / Mac）</h1>
 <h2>修订记录</h2>
 <table>
 <thead>
@@ -10,6 +10,12 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>2026/9/29</td>
+<td>按远程电脑评审收敛一期局域网及游戏库入口，补齐应用添加、目录选择、只读操作、键鼠与缩放规则；标明 GPT 技术验证项</td>
+<td>V3.9</td>
+<td>产品</td>
+</tr>
 <tr>
 <td>2026/9/29</td>
 <td>按最新 Demo 统一页面说明、截图和完整流程；修正鼠标拖动边界，补充游戏启动数据口径</td>
@@ -132,11 +138,11 @@
 </tr>
 </tbody>
 </table>
-<p><strong>备注：</strong> 搜2026.9.28修改。页面及交互以最新 APP、Mac Demo 为准；历史版本与当前规则冲突时，以当前正文为准。</p>
+<p><strong>备注：</strong> 本文已按 2026/9/29 评审更新。页面及交互以最新 APP、Mac Demo 为准；历史版本与当前规则冲突时，以当前正文为准。</p>
 <h2>一、文档概述</h2>
 <h3>1.1 背景概述</h3>
-<p>用户离开电脑后，仍会需要继续游戏、处理文件，或使用电脑上已登录的软件。目前主要依靠第三方远控，或把文件发到手机、重新登录应用。前者需要切换产品寻找设备，后者难以保留电脑上的窗口、任务和运行环境。</p>
-<p>本需求让盖世用户通过 APP 连接自己的 Windows / Mac，或通过 Mac 连接另一台电脑。同账号设备集中展示，用户可进入桌面、传输文件或执行电源操作。APP 提供触控、键盘、悬浮鼠标和横竖屏布局；Mac 提供设备分栏、独立远控窗口、控制中心和双栏文件传输。</p>
+<p>用户在家中或办公室不便坐在电脑前时，仍会需要继续游戏、处理文件，或使用电脑上已登录的软件。目前主要依靠第三方远控，或把文件发到手机、重新登录应用。前者需要切换产品寻找设备，后者难以保留电脑上的窗口、任务和运行环境。</p>
+<p>本需求让盖世用户在同一局域网内，通过 APP 连接自己的电脑，或通过 Mac 连接另一台电脑。优先交付 APP 和 Mac；Windows 端仍有客户端开发依赖，接入随被控能力就绪后开放，不承诺同步上线。同账号设备集中展示，用户可进入桌面、传输文件或执行电源操作。APP 提供触控、键盘、悬浮鼠标和横竖屏布局；Mac 提供设备分栏、独立远控窗口、控制中心和双栏文件传输。</p>
 <p>流程参考 UU 远程的设备状态、连接检查和文件入口，并融入盖世现有导航。本期不保留手机被控、终端和「全部设备」。ChatGPT 首批适配手机布局，支持继续电脑中的对话、查看历史和关联文件，减少缩放电脑窗口的操作。游戏快捷入口则在用户自己的电脑启动盖世或 Steam 游戏，手机仅负责远程显示和操作。当前用户需先进入电脑桌面，再寻找软件或游戏，手机上的点选和文字输入步骤较多。</p>
 <p>本版用于评审页面、交互与异常处理。Demo 使用样例数据，不建立真实连接、执行系统命令、传输文件或调用模型；相关能力须由客户端实现并验证。</p>
 <h3>1.2 需求边界</h3>
@@ -150,7 +156,7 @@
 <tbody>
 <tr>
 <td>产品边界</td>
-<td>覆盖 APP 竖屏、横屏和 Mac 主控，无运营后台。APP 从游戏库或我的设备进入；Mac 从主侧栏进入，采用左列表右详情。</td>
+<td>覆盖 APP 竖屏、横屏和 Mac 主控。一期只支持局域网，二期再接入公网／云连接；本期不增加后台页面。APP 仅从游戏库进入；Mac 从主侧栏进入，采用左列表右详情。</td>
 </tr>
 <tr>
 <td>业务边界</td>
@@ -158,7 +164,7 @@
 </tr>
 <tr>
 <td>运营边界</td>
-<td>无新增运营配置、套餐、付费或推送。</td>
+<td>首次引导、连接教程及开机帮助文案复用后台内容配置；无新增套餐、付费或推送。</td>
 </tr>
 <tr>
 <td>人力边界</td>
@@ -194,7 +200,7 @@
 <p>APP「我的设备」页可通过右上角旋转图标切换横竖屏：竖屏位于连接教程右侧，横屏位于更多左侧，切换保留当前所选设备。用户选择电脑，确认状态后进入桌面、传输文件或执行电源操作；APP 另提供 ChatGPT 和游戏快速启动。Mac 本机设置用于配置当前 Mac 的被控和文件接收偏好，不修改远端设备。</p>
 <p>右下角常驻「APP」「Mac」Demo 切换入口；状态面板按项提供「缺省」「穷举」，点击直接更新页面。方向和场景在演示设置中选择；这些入口仅用于评审，正式产品不展示。</p>
 <h3>2.2 产品流程</h3>
-<p><img alt="双端产品流程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/prd-app-mac-flow.png" /></p>
+<p><img alt="双端产品流程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/prd-app-mac-flow.png" /></p>
 <p>APP：入口 → 我的设备 → 详情 → 连接检查 / 接管 → 桌面操作 → 退出回详情；文件传输可独立进入。</p>
 <p>Mac：远程入口 → 左列表右详情 → 连接检查 / 接管 → 远控窗口 → 控制中心与连接质量；文件传输可从详情、更多或控制中心进入，并返回来源。本机设置：左下角设置 → 调整五项偏好 → 保存 → 选择左侧设备回详情，不建立连接。</p>
 <p>APP ChatGPT：设备详情快速启动 → 对话工作区 → 选择历史 / 新对话 → 输入、发送 / 停止 → 查看关联文件 → 返回详情；工作区随时可切换到同一电脑的远程桌面。横屏历史常驻左侧，右侧显示对话与输入；竖屏历史通过抽屉展开。</p>
@@ -212,11 +218,11 @@
 <tbody>
 <tr>
 <td>功能简介</td>
-<td>从原盖世游戏库或我的设备进入同一远程功能。</td>
+<td>从盖世游戏库进入远程电脑。</td>
 </tr>
 <tr>
 <td>场景描述</td>
-<td>游戏用户从游戏库进入；办公或设备管理用户从我的设备进入。</td>
+<td>用户在游戏库找到远程入口，再选择自己的电脑。</td>
 </tr>
 <tr>
 <td>输入／前置条件</td>
@@ -224,7 +230,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="游戏库主入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-entry.png" /><br><strong>详细说明：</strong> 游戏库为主入口，我的设备为辅助入口。<br><strong>展示说明：</strong><br>1. 游戏库新增独立「远程电脑」卡，保留 Steam、Epic 和导入游戏；无需绑定 Steam。<br>2. 我的设备新增电脑图标及「远程电脑」入口，保留手柄入口；教程说明两种连接方式。<br>3. 保留五个底部导航；首页恢复推荐内容，移除旧远程大卡；远程内无远程协助或独立我的导航。<br><strong>交互说明：</strong><br>1. 两个入口共享设备列表、设置和引导已读状态。<br>2. 设备列表返回游戏库或我的原来路；详情返回列表。<br>3. 三种入口方案仅供评审；其他盖世功能不在本期原型范围。</td>
+<td><strong>图示：</strong><br><img alt="游戏库主入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-entry.png" /><br><strong>详细说明：</strong> APP 只保留游戏库入口。<br><strong>展示说明：</strong><br>1. 游戏库新增独立「远程电脑」卡，保留 Steam、Epic 和导入游戏；无需绑定 Steam。<br>2. 「我的」页保留原手柄设备内容，不新增远程电脑入口。<br>3. 保留五个底部导航；首页恢复推荐内容，移除旧远程大卡；远程内无远程协助或独立我的导航。<br><strong>交互说明：</strong><br>1. 游戏库入口进入同账号电脑列表，沿用引导已读状态。<br>2. 设备列表返回游戏库；详情返回列表。<br>3. 废弃原入口对比方案；其他盖世功能不在本期原型范围。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -232,7 +238,7 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>推荐旁边的第三种入口仅用于方案评审，不与两个正式入口同时开放。</td>
+<td>「我的设备」仍是远程电脑内的列表页名称，不是「我的」页新增入口。</td>
 </tr>
 </tbody>
 </table>
@@ -255,11 +261,11 @@
 </tr>
 <tr>
 <td>输入／前置条件</td>
-<td>已登录，设备属于当前账号。</td>
+<td>已登录，设备属于当前账号；一期连接双方须处于同一局域网。</td>
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="设备列表" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/devices-orientation-app.png" /><br><strong>详细说明：</strong> 标题为「我的设备」，仅展示电脑，不提供「全部设备」。<br><strong>展示说明：</strong><br>1. 按「在线设备」「离线设备」分组，显示设备名称、系统和状态；手机、平板等不支持作为被控端的设备不进入列表。<br>2. 卡片补充被控标识；点击整行进入详情，属性从详情右上菜单进入。<br>3. APP 竖屏右上显示「连接教程」，其右侧为横竖屏切换图标；横屏采用左设备列表、右详情布局，切换图标位于右上更多左侧。Mac 工作区顶部保留教程，设置位于左侧，不显示手机旋转按钮。<br><strong>交互说明：</strong><br>1. 点击设备进入详情；设备属性返回原详情。<br>2. 教程同时说明手机连电脑、电脑连电脑；关闭或「知道了」返回原页。<br>3. 点击旋转图标在横竖屏间切换，保留选中设备，不自动建立连接。Mac 以左侧电脑列表、右侧内容区呈现；不显示「全部设备」和手机类设备。</td>
+<td><strong>图示：</strong><br><img alt="设备列表" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/devices-orientation-app.png" /><br><strong>详细说明：</strong> 标题为「我的设备」，仅展示电脑，不提供「全部设备」。<br><strong>展示说明：</strong><br>1. 按「在线设备」「离线设备」分组，显示设备名称、系统和状态；手机、平板等不支持作为被控端的设备不进入列表。<br>2. 卡片补充被控标识；点击整行进入详情，属性从详情右上菜单进入。<br>3. APP 竖屏右上显示「连接教程」，其右侧为横竖屏切换图标；横屏采用左设备列表、右详情布局，切换图标位于右上更多左侧。Mac 工作区顶部保留教程，设置位于左侧，不显示手机旋转按钮。<br><strong>交互说明：</strong><br>1. 点击设备进入详情；设备属性返回原详情。<br>2. 教程同时说明手机连电脑、电脑连电脑；关闭或「知道了」返回原页。<br>3. 点击旋转图标在横竖屏间切换，保留选中设备，不自动建立连接。Mac 以左侧电脑列表、右侧内容区呈现；不显示「全部设备」和手机类设备。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -294,7 +300,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="设备详情" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-detail.png" /><br><img alt="设备属性" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-hardware.png" /><br><strong>详细说明：</strong> 设备详情工具只保留「文件传输」「观看模式」「更多」，Mac 和 APP 均移除「终端」。<br><strong>展示说明：</strong><br>1. 离线设备显示「设备已离线」；Windows 的远程开机入口可用，Mac 的该入口置灰，其余需要在线的操作置灰；Mac 离线且不允许被控时显示「该设备不允许被控」。<br>2. 权限提示为「请在该设备的『设置』中开启允许远程控制。」；手机、平板作为被控设备直接提示「该设备暂不支持连接」。<br>3. APP 横屏快速启动放在远程画面卡片下方，四个图标同排；右上旋转图标位于更多左侧。<br>4. 右上设备菜单仅包含「设备属性」「刷新」「重命名」「删除设备」；删除需二次确认，名称修改最多 40 个汉字。<br><strong>交互说明：</strong><br>1. 点击设备属性查看名称、系统及硬件字段；Mac 字段为名称、处理器、网卡、总内存、系统版本、显卡，Windows 额外展示主板。<br>2. 点击文件传输或观看模式进入对应页面；点击更多进入四项操作。菜单带蒙层，点空白或再次点击菜单按钮收起；弹窗通过取消或关闭退出，仍保留当前设备。<br>3. 被其他设备控制时先接管确认，无权限时不建立桌面连接；取消、无权限或失败均不建立连接。<br>4. 删除确认取消则保留设备，确认后从列表移除并返回列表；重命名保存后同步列表名称。</td>
+<td><strong>图示：</strong><br><img alt="设备详情" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-detail.png" /><br><img alt="设备属性" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-hardware.png" /><br><strong>详细说明：</strong> 设备详情工具只保留「文件传输」「观看模式」「更多」，Mac 和 APP 均移除「终端」。<br><strong>展示说明：</strong><br>1. 离线设备显示「设备已离线」；Windows 的远程开机入口可用，Mac 的该入口置灰，其余需要在线的操作置灰；Mac 离线且不允许被控时显示「该设备不允许被控」。<br>2. 权限提示为「请在该设备的『设置』中开启允许远程控制。」；手机、平板作为被控设备直接提示「该设备暂不支持连接」。<br>3. APP 横屏快速启动放在远程画面卡片下方，四个图标同排；右上旋转图标位于更多左侧。<br>4. 右上设备菜单仅包含「设备属性」「刷新」「重命名」「删除设备」；删除需二次确认，名称修改最多 40 个汉字。<br><strong>交互说明：</strong><br>1. 点击设备属性查看名称、系统及硬件字段；Mac 字段为名称、处理器、网卡、总内存、系统版本、显卡，Windows 额外展示主板。<br>2. 点击文件传输或观看模式进入对应页面；点击更多进入四项操作。菜单带蒙层，点空白或再次点击菜单按钮收起；弹窗通过取消或关闭退出，仍保留当前设备。<br>3. 被其他设备控制时先接管确认，无权限时不建立桌面连接；取消、无权限或失败均不建立连接。<br>4. 删除确认取消则保留设备，确认后从列表移除并返回列表；重命名保存后同步列表名称。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -332,7 +338,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="远程桌面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-desktop.png" /><br><img alt="虚拟按键入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/operation-virtual-keys-app.png" /><br><strong>详细说明：</strong> 桌面工具栏可展开操作、显示、键盘和更多面板。<br><strong>展示说明：</strong><br>1. 电脑画面保持横屏比例。手机竖屏时按 16:9 居中、上下留黑；横屏时下方保留黑色操作区。工具面板覆盖或依附播放器，不离开会话。<br>2. 操作面板提供触控／鼠标、鼠标按键及仅观看，标记当前选项；不显示「隐私安全状态／需关注」行，仍检查账号和主机权限。<br>3. 断开或被接管时显示会话已结束／需重连状态，停止远程输入。<br><strong>交互说明：</strong><br>1. 展开或收起工具栏只改变控件可见性，不断开会话。<br>2. 仅观看打开后阻止远程指针和键盘输入；关闭后恢复普通操作。<br>3. 「退出远控」直接断开并回详情，无二次确认，远端程序继续运行；关闭面板只回桌面。<br>4. 普通方式重新进入不继承上次仅观看状态（真机已验证）。<br>5. 「开启虚拟按键」控制按键显示；下方「切换虚拟按键布局」带右箭头，点击提示「复用原页面：切换虚拟按键布局」，不跳页。仅观看时开关与布局入口均禁用。<br>6. 切换开关、点击映射方案及提示消失均保持滚动位置；其他面板从顶部显示。</td>
+<td><strong>图示：</strong><br><img alt="远程桌面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-desktop.png" /><br><img alt="虚拟按键入口" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/operation-virtual-keys-app.png" /><br><strong>详细说明：</strong> 桌面工具栏可展开操作、显示、键盘和更多面板。<br><strong>展示说明：</strong><br>1. 电脑画面保持横屏比例。手机竖屏时按 16:9 居中、上下留黑；横屏时下方保留黑色操作区。工具面板覆盖或依附播放器，不离开会话。<br>2. 操作面板提供触控／鼠标、鼠标按键及仅观看，标记当前选项；不显示「隐私安全状态／需关注」行，仍检查账号和主机权限。<br>3. 断开或被接管时显示会话已结束／需重连状态，停止远程输入。<br><strong>交互说明：</strong><br>1. 展开或收起工具栏只改变控件可见性，不断开会话。<br>2. 仅观看只保留退出、旋转、声音和恢复操作；底部所有窗口、显示桌面、键盘及面板内其他设置置灰，并在动作入口拦截远程输入。恢复操作后才可使用。<br>3. 「退出远控」直接断开并回详情，无二次确认，远端程序继续运行；关闭面板只回桌面。<br>4. 普通方式重新进入不继承上次仅观看状态（真机已验证）。<br>5. 「开启虚拟按键」控制按键显示；下方「切换虚拟按键布局」带右箭头，点击提示「复用原页面：切换虚拟按键布局」，不跳页。仅观看时开关与布局入口均禁用。<br>6. 切换开关、点击映射方案及提示消失均保持滚动位置；其他面板从顶部显示。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -367,7 +373,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="显示设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-display.png" /><br><strong>详细说明：</strong> 设置留在会话内，不创建第二条连接。<br><strong>展示说明：</strong><br>1. 展示画质、帧率、分辨率、缩放控件；声音在独立面板；当前值在控件旁显示，不可用项置灰。<br>2. 数值为演示选项，非正式上限或实测结果。<br><strong>交互说明：</strong><br>1. 选择后更新选中态；缩放仅更新数值，未模拟重采样。<br>2. 声音开关仅演示设置变化，未验证音频收听。<br>3. 关闭面板回到当前桌面，仍保留本次选择。</td>
+<td><strong>图示：</strong><br><img alt="显示设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-display.png" /><br><strong>详细说明：</strong> 设置留在会话内，不创建第二条连接。<br><strong>展示说明：</strong><br>1. 展示画质、帧率、分辨率、缩放控件；声音在独立面板；当前值在控件旁显示，不可用项置灰。<br>2. 数值为演示选项，非正式上限或实测结果。<br><strong>交互说明：</strong><br>1. 选择后更新选中态；双指在画面内缩放远端内容，原画面框裁切，悬浮鼠标、虚拟按键和黑边操作区不随内容缩放。Demo 支持 1–3 倍预览，该范围不是正式性能承诺。<br>2. 声音开关仅演示设置变化，未验证音频收听。<br>3. 关闭面板回到当前桌面，仍保留本次选择。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -402,7 +408,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="键盘输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-keyboard.png" /><br><strong>详细说明：</strong> 向远程应用输入文字或按键，与 ChatGPT 适配页的消息输入分开。<br><strong>展示说明：</strong><br>1. 顶部「输入法／快捷键／电脑键盘」等宽单行，右侧关闭。竖屏键盘在桌面下方展开，桌面缩小但仍可见；普通输入法使用键盘，长文本另设入口。Demo 为可点击键盘示意；正式客户端调起系统输入法，需单独验证适配。<br>2. 使用测试文字，不读取真实剪贴板。<br><strong>交互说明：</strong><br>1. 切换输入模式改变键盘布局，不跳出会话；关闭键盘回桌面。<br>2. 中文候选确认后才形成输入；回车是独立按键，不因粘贴文本自动触发。<br>3. 演示支持字符、空格、换行、退格、Esc、显示桌面和窗口选择；其余组合键为布局对照。真实按键转发与释放由引擎实现；仅观看拦截输入。</td>
+<td><strong>图示：</strong><br><img alt="键盘输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-keyboard.png" /><br><img alt="完整电脑键盘" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/review-computer-keyboard.png" /><br><strong>详细说明：</strong> 电脑键盘提供常用 104 键，保留常规 QWERTY 行、功能键、导航键与数字区，小屏在键盘内部横向滚动，不打乱键位；先点 Ctrl／Alt／Shift／Win 等修饰键再点目标键，发送一次组合后释放。关闭键盘、失焦或结束连接时释放按键，系统保留组合键以平台能力为准。<br> 向远程应用输入文字或按键，与 ChatGPT 适配页的消息输入分开。<br><strong>展示说明：</strong><br>1. 顶部「输入法／快捷键／电脑键盘」等宽单行，右侧关闭。竖屏键盘在桌面下方展开，桌面缩小但仍可见；普通输入法使用键盘，长文本另设入口。Demo 为可点击键盘示意；正式客户端调起系统输入法，需单独验证适配。<br>2. 使用测试文字，不读取真实剪贴板。<br><strong>交互说明：</strong><br>1. 切换输入模式改变键盘布局，不跳出会话；关闭键盘回桌面。<br>2. 中文候选确认后才形成输入；回车是独立按键，不因粘贴文本自动触发。<br>3. 演示支持字符、空格、换行、退格、Esc、显示桌面和窗口选择；其余组合键为布局对照。真实按键转发与释放由引擎实现；仅观看拦截输入。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -437,7 +443,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="悬浮鼠标" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-mouse.png" /><br><strong>详细说明：</strong> 播放器内显示圆形鼠标浮钮，可移出远程画面放在黑色操作区。<br><strong>展示说明：</strong><br>1. 默认收起，点击展开左键、右键、滚轮和收起按钮；Mac 使用本机鼠标，不展示手机浮钮。<br>2. 展开后长按握柄或鼠标空白区域可拖动；收起时长按浮钮拖动。按键点击仍执行左键、右键或滚轮操作。<br><strong>交互说明：</strong><br>1. 拖动不触发展开；点击才展开；收起不退出会话。<br>2. 仅观看隐藏控件并阻止输入。鼠标可拖到播放器右侧和底部黑区，控件保持在可见边界内；旋转后重新限位。拖动不扩大、拉伸或移动远程画面，不产生额外滚动条。<br>3. 演示左键聚焦文本、右键打开示例菜单、滚轮滚动测试文档；真实远端指针映射由客户端实现。</td>
+<td><strong>图示：</strong><br><img alt="悬浮鼠标" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-mouse.png" /><br><strong>详细说明：</strong> 播放器内显示圆形鼠标浮钮，可移出远程画面放在黑色操作区。<br><strong>展示说明：</strong><br>1. 默认收起，点击展开左键、右键、滚轮和收起按钮；Mac 使用本机鼠标，不展示手机浮钮。<br>2. 展开后长按握柄或鼠标空白区域可拖动；收起时长按浮钮拖动。按键点击仍执行左键、右键或滚轮操作。<br><strong>交互说明：</strong><br>1. 拖动不触发展开；点击才展开；收起不退出会话。<br>2. 仅观看隐藏控件并阻止输入。鼠标可拖到播放器右侧和底部黑区，控件保持在可见边界内；旋转后重新限位。拖动不扩大、拉伸或移动远程画面，不产生额外滚动条。<br>3. 左键聚焦文本、右键打开示例菜单；滚轮区域上下滑动滚动内容，轻点箭头也可滚动。滚轮手势不拖动整个鼠标；握柄和空白区域长按后才拖动。真实远端输入由客户端实现。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -472,7 +478,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="窗口选择" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-windows.png" /><br><img alt="长文本输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-text.png" /><br><strong>详细说明：</strong> 本节为办公交互建议，复用桌面工具栏，不生成模型回答。<br><strong>展示说明：</strong><br>1. 「所有窗口」展示应用窗口标题；当前窗口选中。浏览器内的 AI 标签仍需手动切换，不跨标签识别。<br>2. 「长文本输入」可从所有窗口或输入法下方进入，展示当前窗口、草稿、输入按钮；普通输入法与长文本分开。<br><strong>交互说明：</strong><br>1. 选窗口直接回到该电脑窗口；未打开目标应用时，点击显示桌面自行打开。空列表显示「暂无打开的窗口」及显示桌面入口。<br>2. 草稿收起后保留，切换窗口后展示新的目标；输入前由用户确认焦点。点击「输入到电脑」只写文字，不自动按回车或点击 AI 发送。<br>3. Demo 输入成功或退出会话时清空草稿；正式客户端收到输入完成结果才清空，失败保留供重试。<br>4. 仅观看禁止切换远端窗口与输入；可以查看窗口列表及编辑本地草稿。</td>
+<td><strong>图示：</strong><br><img alt="窗口选择" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-windows.png" /><br><img alt="长文本输入" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-text.png" /><br><strong>详细说明：</strong> 本节为办公交互建议，复用桌面工具栏，不生成模型回答。<br><strong>展示说明：</strong><br>1. 「所有窗口」展示应用窗口标题；当前窗口选中。浏览器内的 AI 标签仍需手动切换，不跨标签识别。<br>2. 「长文本输入」可从所有窗口或输入法下方进入，展示当前窗口、草稿、输入按钮；普通输入法与长文本分开。<br><strong>交互说明：</strong><br>1. 选窗口直接回到该电脑窗口；未打开目标应用时，点击显示桌面自行打开。空列表显示「暂无打开的窗口」及显示桌面入口。<br>2. 草稿收起后保留，切换窗口后展示新的目标；输入前由用户确认焦点。点击「输入到电脑」只写文字，不自动按回车或点击 AI 发送。<br>3. Demo 输入成功或退出会话时清空草稿；正式客户端收到输入完成结果才清空，失败保留供重试。<br>4. 仅观看禁用窗口、键盘、长文本入口及远程输入；恢复操作后可继续编辑。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -507,7 +513,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="文件传输" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-files.png" /><br><strong>详细说明：</strong> 三入口为「发送照片 &amp; 视频」「发送文件」「从电脑下载文件到手机」；任务分「传输中」「已接收」「已发送」。Mac 使用独立双栏文件页，见对应页面说明。<br><strong>展示说明：</strong><br>1. 顶部当前设备名；各任务区显示数量，空区显示零数量；任务含文件名、大小、进度与状态。<br>2. 同名冲突提供「跳过」「保留两者」，不提供覆盖。<br><strong>交互说明：</strong><br>1. 发送入口打开相应选择器；取消选择返回文件页，不创建任务。下载使用样例文件选择器，选中后建立模拟任务，不读取真实目录。<br>2. 同名选择跳过则不下载该项；保留两者创建带后缀的副本，不覆盖旧文件。<br>3. 清空已接收／已发送记录先确认；取消保留记录，确认只清记录，已传文件保留。<br>4. 返回关闭文件页并回到打开它的页面，不删除文件或记录。</td>
+<td><strong>图示：</strong><br><img alt="文件传输" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-files.png" /><br><strong>详细说明：</strong> 三入口为「发送照片 &amp; 视频」「发送文件」「从电脑下载文件到手机」；任务分「传输中」「已接收」「已发送」。Mac 使用独立双栏文件页，见对应页面说明。<br><strong>展示说明：</strong><br>1. 顶部当前设备名；各任务区显示数量，空区显示零数量；任务含文件名、大小、进度与状态。<br>2. 同名冲突提供「跳过」「保留两者」，不提供覆盖。<br><strong>交互说明：</strong><br>1. 发送入口打开相应选择器；取消选择返回文件页，不创建任务。下载先浏览并选择远端文件／文件夹，再建立任务；Demo 用样例目录，不读取真实远端文件。手机发送文件保存到被控电脑配置的接收目录，默认用户下载目录下的 GameHub 文件夹。<br>2. 同名选择跳过则不下载该项；保留两者创建带后缀的副本，不覆盖旧文件。<br>3. 清空已接收／已发送记录先确认；取消保留记录，确认只清记录，已传文件保留。<br>4. 返回关闭文件页并回到打开它的页面，不删除文件或记录。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -542,7 +548,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="更多工具" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-power.png" /><br><strong>详细说明：</strong> 更多页面只包含「文件传输」「远程开机」「重启」「关机」四项；APP 快速启动增加 ChatGPT，在线且允许控制时打开适配工作区；Mac 不增加。<br><strong>展示说明：</strong><br>1. Windows 离线时「远程开机」可用，其余三项置灰；Mac 离线时四项均置灰；在线时按权限决定可用状态。<br>2. 页面提供返回上一页入口；不展示终端、观看模式或调整顺序。<br><strong>交互说明：</strong><br>1. 点击进入对应功能；电源操作按说明、尝试、结果展示。<br>2. 文件传输进入独立文件页；返回回到来源页面，仍对应当前设备。<br>3. 操作结果须由主机确认，不能仅凭本地提示判定成功。</td>
+<td><strong>图示：</strong><br><img alt="更多工具" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-power.png" /><br><img alt="已安装应用选择" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/review-installed-apps.png" /><br><strong>详细说明：</strong> 更多页面只包含「文件传输」「远程开机」「重启」「关机」四项；APP 快速启动中的 ChatGPT 打开适配工作区；Mac 保留普通应用添加和远端窗口，不新增 GPT 适配页。<br><strong>展示说明：</strong><br>1. Windows 离线时「远程开机」可用，其余三项置灰；Mac 离线时四项均置灰；在线时按权限决定可用状态。<br>2. 页面提供返回上一页入口；不展示终端、观看模式或调整顺序。<br><strong>交互说明：</strong><br>1. 点击进入对应功能；电源操作按说明、尝试、结果展示。<br>2. 文件传输进入独立文件页；返回回到来源页面，仍对应当前设备。<br>3. 操作结果须由主机确认，不能仅凭本地提示判定成功。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -550,7 +556,7 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>快速启动只启动应用，结果以目标程序确认为准。</td>
+<td>快速启动按电脑分别保存；经授权扫描该电脑已安装应用，支持搜索并添加。不设数量上限，四个图标一排，超出换行并随页面滚动。不增加管理、编辑排序流程。非 GPT 应用直接显示远端原窗口，不另做移动端适配；启动结果以目标程序确认为准。</td>
 </tr>
 </tbody>
 </table>
@@ -569,7 +575,7 @@
 </tr>
 <tr>
 <td>场景描述</td>
-<td>外出后发现电脑未在线，尝试唤醒；电脑卡顿时尝试重启；远程任务完成后尝试关机。</td>
+<td>在同一局域网内发现电脑未在线，尝试唤醒；电脑卡顿时尝试重启；远程任务完成后尝试关机。</td>
 </tr>
 <tr>
 <td>输入／前置条件</td>
@@ -577,7 +583,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="电源尝试" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-power-attempt.png" /><br><img alt="连接教程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-wake-guide.png" /><br><strong>详细说明：</strong> 每次由用户主动发起，不保证成功。<br><strong>展示说明：</strong><br>1. 更多工具固定展示开机、重启、关机；不显示调整顺序。<br>2. 操作说明标明目标电脑。重启、关机提示会中断连接及先保存工作；开机说明供电和唤醒要求。<br>3. 请求中显示正在尝试；未收到主机确认显示暂未完成，提供重试、教程和返回。<br><strong>交互说明：</strong><br>1. 选择动作→说明→开始尝试→等待结果，等待期间不重复发送。未响应不自动重试；用户主动重试回说明。<br>2. 离线设备仍能进入更多并尝试开机；重启、关机被在线与权限检查拦截。占用时先复用接管，成功后继续原动作。<br>3. 开机以主机重新在线判断结果；重启须有主机确认及重新在线，不能将掉线等同重启成功；关机收到受理后结束控制，不能把网络断开当作关机完成。<br>4. 关闭只停止本地等待，不撤回已发主机指令；Demo 取消计时，不改设备状态。</td>
+<td><strong>图示：</strong><br><img alt="电源尝试" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-power-attempt.png" /><br><img alt="连接教程" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-wake-guide.png" /><br><strong>详细说明：</strong> 每次由用户主动发起，不保证成功。<br><strong>展示说明：</strong><br>1. 更多工具固定展示开机、重启、关机；不显示调整顺序。<br>2. 操作说明标明目标电脑。重启、关机提示会中断连接及先保存工作；开机说明供电和唤醒要求。<br>3. 请求中显示正在尝试；未收到主机确认显示暂未完成，提供重试、教程和返回。<br><strong>交互说明：</strong><br>1. 选择动作→说明→开始尝试→等待结果，等待期间不重复发送。未响应不自动重试；用户主动重试回说明。<br>2. 离线设备仍能进入更多并尝试开机；重启、关机被在线与权限检查拦截。占用时先复用接管，成功后继续原动作。<br>3. 开机以主机重新在线判断结果；重启须有主机确认及重新在线，不能将掉线等同重启成功；关机收到受理后结束控制，不能把网络断开当作关机完成。<br>4. 关闭只停止本地等待，不撤回已发主机指令；Demo 取消计时，不改设备状态。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -612,7 +618,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="手机双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-guide.png" /><br><img alt="Mac 双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-mac-guide.png" /><br><strong>详细说明：</strong> 同一弹窗同时展示两种连接方式。<br><strong>展示说明：</strong><br>1. 标题「添加你的设备」，说明电脑安装与同账号登录。Mac 手机卡提供「扫码下载 APP」二维码，打开官方中文下载页选择 Android／iOS；APP 只提示电脑从官网下载安装，不展示二维码。<br>2. APP：手机连接你的电脑、另一台电脑连接你的电脑。Mac：手机远控本机、其他电脑远控本机；明确本机屏幕录制及辅助功能权限要求。<br>3. 竖屏上下两张卡；横屏和 Mac 左右两张卡；同一弹窗可看全两类引导与「知道了」。<br><strong>交互说明：</strong><br>1. 首次进入自动显示；关闭、Esc 或「知道了」都标记已看，返回原页面。<br>2. 同账号同客户端再次进入不自动弹出；从连接教程入口可主动复看。<br>3. 点击官网链接在浏览器打开官方页面；扫码只跳转下载页，不携带账号标识、不授权连接、不自动安装。</td>
+<td><strong>图示：</strong><br><img alt="手机双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-guide.png" /><br><img alt="Mac 双路径引导" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-mac-guide.png" /><br><strong>详细说明：</strong> 同一弹窗同时展示两种连接方式。<br><strong>展示说明：</strong><br>1. 标题「添加你的设备」，说明电脑安装、同账号登录及一期同一局域网要求。Mac 手机卡提供「扫码下载 APP」二维码，打开官方中文下载页选择 Android／iOS；APP 只提示电脑从官网下载安装，不展示二维码。<br>2. APP：手机连接你的电脑、另一台电脑连接你的电脑。Mac：手机远控本机、其他电脑远控本机；明确本机屏幕录制及辅助功能权限要求。<br>3. 竖屏上下两张卡；横屏和 Mac 左右两张卡；同一弹窗可看全两类引导与「知道了」。<br><strong>交互说明：</strong><br>1. 首次进入自动显示；关闭、Esc 或「知道了」都标记已看，返回原页面。<br>2. 同账号同客户端再次进入不自动弹出；从连接教程入口可主动复看。引导及教程文案复用后台配置，读取失败使用内置文案；本期不新增管理页面。<br>3. 点击官网链接在浏览器打开官方页面；扫码只跳转下载页，不携带账号标识、不授权连接、不自动安装。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -647,7 +653,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="Mac 远程设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-mac-settings.png" /><br><strong>详细说明：</strong> 仅保留五项：开机自动启动、允许通过远程开机启动、防止电脑休眠、移动设备传输文件存储路径、允许同账号控制本设备。<br><strong>展示说明：</strong><br>1. 页面标题「设置」，标注「当前设置应用于这台 Mac」。开机自动启动、防止电脑休眠、允许同账号控制本设备默认开；允许通过远程开机启动默认关。文件路径默认 /Users/mac/Downloads/GameHub，提供编辑、取消和保存。<br>2. 「允许同账号控制本设备」允许同账号设备控制当前 Mac；Demo 只保存本机偏好。<br>3. APP 端不提供页面级远程设置入口；本期不开放手机作为被控设备。<br><strong>交互说明：</strong><br>1. 切换开关立即更新当前 Demo 设置并保留；修改路径需输入以 / 开头的有效文件夹路径；无效输入保留待修改，取消恢复原值。<br>2. 点击左侧设备显示该设备详情；顶部返回退出远程工作区。设置页不提供单独返回按钮。<br>3. 权限同步由客户端与主机服务实现；禁控样例独立展示。</td>
+<td><strong>图示：</strong><br><img alt="Mac 远程设置" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-mac-settings.png" /><br><strong>详细说明：</strong> 仅保留五项：开机自动启动、允许通过远程开机启动、防止电脑休眠、移动设备传输文件存储路径、允许同账号控制本设备。<br><strong>展示说明：</strong><br>1. 页面标题「设置」，标注「当前设置应用于这台 Mac」。开机自动启动、防止电脑休眠、允许同账号控制本设备默认开；允许通过远程开机启动默认关。文件路径默认用户下载目录下的 GameHub 文件夹；点击文件夹图标调用系统目录选择器，不提供手输路径。<br>2. 「允许同账号控制本设备」允许同账号设备控制当前 Mac；Demo 只保存本机偏好。<br>3. APP 端不提供页面级远程设置入口；本期不开放手机作为被控设备。<br><strong>交互说明：</strong><br>1. 切换开关立即更新当前 Demo 设置并保留；修改目录调用系统文件夹选择器，选定后保存，取消或拒绝不改变旧值。浏览器 Demo 只显示所选文件夹名，不伪造完整系统路径，也不写入该文件夹。<br>2. 点击左侧设备显示该设备详情；顶部返回退出远程工作区。设置页不提供单独返回按钮。<br>3. 权限同步由客户端与主机服务实现；禁控样例独立展示。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -677,7 +683,7 @@
 </tr>
 <tr>
 <td>场景描述</td>
-<td>用户外出时继续电脑上的任务，不需要在手机上缩放完整电脑窗口。</td>
+<td>用户离开电脑座位后，在同一局域网内继续电脑上的任务，不需要在手机上缩放完整电脑窗口。</td>
 </tr>
 <tr>
 <td>输入／前置条件</td>
@@ -685,7 +691,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="对话模式" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/gpt-mode-chat-app.png" /><br><img alt="桌面模式" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/gpt-mode-desktop-app.png" /><br><img alt="历史记录侧栏" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/gpt-history.png" /><br><strong>详细说明：</strong> 顶部导航左侧为「会话」，对话和桌面模式均可展开历史；中间为「对话／桌面」切换，右侧返回设备详情；默认进入对话模式，展示对话标题、当前修改文件、消息和输入区。桌面模式复用同一设备的远控画面与操作栏，支持窗口、键盘和操作面板。页面标注样例数据。<br><strong>展示说明：</strong><br>1. 初次打开显示「欢迎回来，随时开始吧」与「暂无关联文件」；有历史内容时展示选中对话及其文件。<br>2. 对话模式竖屏历史从左侧展开并覆盖蒙层，横屏历史常驻左栏。桌面模式两种方向均通过「会话」打开历史抽屉，可点蒙层或关闭按钮收起。选中会话有选中态，只显示当前电脑的对话。<br>3. 文件卡展示名称与对应对话；点击打开只读样例预览，支持关闭及「查看对应对话」。横屏右侧依次展示当前对话、关联文件、消息和输入框。<br><strong>交互说明：</strong><br>1. 竖屏点击历史记录打开侧栏，点蒙层、关闭按钮或 Escape 收起；横屏对话模式侧栏始终可见，桌面模式默认收起历史，点击「会话」展开。选择对话更新消息、文件和草稿，不离开工作区。<br>2. 切换模式保留当前对话、草稿、待发送附件、模型偏好和关联文件，不新建会话或重复启动应用。从桌面模式选择历史或新对话时切回对话模式；点蒙层、关闭或 Escape 仅收起列表，不改变模式。切回对话收起桌面操作面板；发送中也可切换。新对话不删除历史；返回后保留本次运行数据，重开仍属于原电脑；刷新浏览器恢复样例。<br>3. 文件预览点击「查看对应对话」回到关联消息。文件内容不因输入消息而伪造修改。<br>4. 离线或禁控时禁用入口并拦截启动；使用中设备不可用时提示原因，禁用输入和发送。</td>
+<td><strong>图示：</strong><br><img alt="对话模式" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/gpt-mode-chat-app.png" /><br><img alt="桌面模式" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/gpt-mode-desktop-app.png" /><br><img alt="历史记录侧栏" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/gpt-history.png" /><br><strong>详细说明：</strong> 顶部导航左侧为「会话」，对话和桌面模式均可展开历史；中间为「对话／桌面」切换，右侧返回设备详情；默认进入对话模式，展示对话标题、当前修改文件、消息和输入区。桌面模式复用同一设备的远控画面与操作栏，支持窗口、键盘和操作面板。页面标注样例数据。<br><strong>展示说明：</strong><br>1. 初次打开显示「欢迎回来，随时开始吧」与「暂无关联文件」；有历史内容时展示选中对话及其文件。<br>2. 对话模式竖屏历史从左侧展开并覆盖蒙层，横屏历史常驻左栏。桌面模式两种方向均通过「会话」打开历史抽屉，可点蒙层或关闭按钮收起。选中会话有选中态，只显示当前电脑的对话。<br>3. 文件卡展示名称与对应对话；点击打开只读样例预览，支持关闭及「查看对应对话」。横屏右侧依次展示当前对话、关联文件、消息和输入框。<br><strong>交互说明：</strong><br>1. 竖屏点击历史记录打开侧栏，点蒙层、关闭按钮或 Escape 收起；横屏对话模式侧栏始终可见，桌面模式默认收起历史，点击「会话」展开。选择对话更新消息、文件和草稿，不离开工作区。<br>2. 切换模式保留当前对话、草稿、待发送附件、模型偏好和关联文件，不新建会话或重复启动应用。从桌面模式选择历史或新对话时切回对话模式；点蒙层、关闭或 Escape 仅收起列表，不改变模式。切回对话收起桌面操作面板；发送中也可切换。新对话不删除历史；返回后保留本次运行数据，重开仍属于原电脑；刷新浏览器恢复样例。<br>3. 文件预览点击「查看对应对话」回到关联消息。文件内容不因输入消息而伪造修改。<br>4. 离线或禁控时禁用入口并拦截启动；使用中设备不可用时提示原因，禁用输入和发送。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -693,7 +699,7 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 本期只做手机适配，不新增 AI 账号或套餐。<br>2. Mac 设备详情与既有远程桌面操作不增加新入口。<br>3. 评审面板「文件与工具 → ChatGPT」的缺省和穷举分别直接展示空对话与带文件的样例对话。</td>
+<td>1. 只适配电脑端已有 GPT 能力，不新增 AI 账号、模型服务或套餐。历史、消息、附件及文件关联的读取方式和授权仍需技术验证；未通过前，不计为可上线功能。远端所需网络环境由电脑自身提供。<br>2. Mac 设备详情与既有远程桌面操作不增加新入口。<br>3. 评审面板「文件与工具 → ChatGPT」的缺省和穷举分别直接展示空对话与带文件的样例对话。</td>
 </tr>
 </tbody>
 </table>
@@ -720,7 +726,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="手机输入区" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/gpt-composer.png" /><br><img alt="模型选型" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/gpt-model.png" /><br><strong>详细说明：</strong> 输入区布局：文本框占上方，左下「＋」与橙色「完全访问」，右下「6 Astra 高」与圆形发送按钮；处理中显示方形停止图标。<br><strong>展示说明：</strong><br>1. 占位文字「使用 ChatGPT Work」。空文本且无附件时发送禁用，Enter 换行，点击发送按钮提交演示消息。<br>2. 附件选择后以文件名标签展示并提供移除按钮。访问模式默认「完全访问」；模型默认「6 Astra」、思考强度默认「高」。<br>3. 模型弹层提供 6 Astra、6 Sol、6 Luna 样例选项及低、中、高思考强度，当前项标记选中；选项为样例，实际可用模型以接入结果为准。<br><strong>交互说明：</strong><br>1. 「＋」打开本机文件选择器，支持多选；取消不新增，移除只取消本次选择。原型只保留文件名和大小，不读取内容、不上传文件。<br>2. 点击访问模式可选择「默认访问」或「完全访问」，只更新偏好，不授予系统或远端权限。<br>3. 点击模型展开选型与思考强度；选择模型更新选中态，选择强度后收起，关闭按钮或点输入区外收起。<br>4. 发送将文本及附件名加入当前对话并清空草稿和选择；处理中防重复发送，可停止。完成或停止均提示未发送真实请求，不生成模型回答。</td>
+<td><strong>图示：</strong><br><img alt="手机输入区" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/gpt-composer.png" /><br><img alt="模型选型" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/gpt-model.png" /><br><strong>详细说明：</strong> 输入区布局：文本框占上方，左下「＋」与橙色「完全访问」，右下「6 Astra 高」与圆形发送按钮；处理中显示方形停止图标。<br><strong>展示说明：</strong><br>1. 占位文字「使用 ChatGPT Work」。空文本且无附件时发送禁用，Enter 换行，点击发送按钮提交演示消息。<br>2. 附件选择后以文件名标签展示并提供移除按钮。访问模式默认「完全访问」；模型默认「6 Astra」、思考强度默认「高」。<br>3. 模型弹层提供 6 Astra、6 Sol、6 Luna 样例选项及低、中、高思考强度，当前项标记选中；选项为样例，实际可用模型以接入结果为准。<br><strong>交互说明：</strong><br>1. 「＋」打开本机文件选择器，支持多选；取消不新增，移除只取消本次选择。原型只保留文件名和大小，不读取内容、不上传文件。<br>2. 点击访问模式可选择「默认访问」或「完全访问」，只更新偏好，不授予系统或远端权限。<br>3. 点击模型展开选型与思考强度；选择模型更新选中态，选择强度后收起，关闭按钮或点输入区外收起。<br>4. 发送将文本及附件名加入当前对话并清空草稿和选择；处理中防重复发送，可停止。完成或停止均提示未发送真实请求，不生成模型回答。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -755,7 +761,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="当前页面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-mac-workspace.png" /><br><strong>详细说明：</strong> 左侧常驻设备列表，右侧展示所选电脑详情；不提供「全部设备」或手机设备入口。<br><strong>展示说明：</strong><br>1. 左侧显示名称、在线状态和「被控中」标识，不附加人数数字；底部为本机「设置」。<br>2. 右侧显示设备状态、名称、设备菜单、桌面入口、文件传输、观看模式、更多及快速启动；顶部提供连接教程。<br>3. 被控信息区默认折叠，可展开查看控制设备；离线、禁控有独立提示，禁用需要在线或授权的操作。<br><strong>交互说明：</strong><br>1. 点击左侧电脑切换右侧详情；点击进入桌面开始连接检查，被控时先接管确认，取消留在详情。<br>2. 设备菜单提供设备属性、刷新、重命名、删除设备；有蒙层，点外部关闭。名称最多 40 个汉字；删除二次确认，取消不变，确认移除设备。<br>3. 设备属性展示名称、处理器、网卡、总内存、系统版本、显卡，Windows 另有主板；返回原设备详情，不再有「进入设备主页」按钮。<br>4. 更多含文件传输、远程开机、重启、关机。离线 Windows 仅开机可点，离线 Mac 四项禁用；更多仍可打开与返回。</td>
+<td><strong>图示：</strong><br><img alt="当前页面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-mac-workspace.png" /><br><strong>详细说明：</strong> 左侧常驻设备列表，右侧展示所选电脑详情；不提供「全部设备」或手机设备入口。<br><strong>展示说明：</strong><br>1. 左侧显示名称、在线状态和「被控中」标识，不附加人数数字；底部为本机「设置」。<br>2. 右侧显示设备状态、名称、设备菜单、桌面入口、文件传输、观看模式、更多及快速启动；顶部提供连接教程。<br>3. 被控信息区默认折叠，可展开查看控制设备；离线、禁控有独立提示，禁用需要在线或授权的操作。<br><strong>交互说明：</strong><br>1. 点击左侧电脑切换右侧详情；点击进入桌面开始连接检查，被控时先接管确认，取消留在详情。<br>2. 设备菜单提供设备属性、刷新、重命名、删除设备；有蒙层，点外部关闭。名称最多 40 个汉字；删除二次确认，取消不变，确认移除设备。<br>3. 设备属性展示名称、处理器、网卡、总内存、系统版本、显卡，Windows 另有主板；返回原设备详情，不再有「进入设备主页」按钮。<br>4. 更多含文件传输、远程开机、重启、关机。离线 Windows 仅开机可点，离线 Mac 四项禁用；更多仍可打开与返回。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -790,7 +796,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="当前页面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-mac-control.png" /><br><strong>详细说明：</strong> 顶部保留 Mac 窗口控制、设备名、屏幕页签、信号与时长、控制中心。<br><strong>展示说明：</strong><br>1. 屏幕区显示物理屏和虚拟屏页签，虚拟屏有关闭按钮，＋用于添加。<br>2. 控制中心提供显示、画质、窗口、声音、安全、外设相关设置，以及文件传输、观看模式、窗口切换、长文本输入、全屏、退出。<br>3. 显示项包括跟随当前屏幕、跟随被控端、其他分辨率、缩放和超级屏；画质含自动、原画 30M、超清 14M、高清 8M、流畅 2M、自定义码率，帧率提供 144 / 90 / 60 / 30，色彩可选真彩或常规。<br>4. 窗口可选自适应、实际大小、小窗及不透明度；声音含音量和播放开关；外设含快捷键转发、配置快捷键、指针或相对鼠标。更多含网络状态和全屏隐藏悬浮球；选中态留在当前会话。<br>5. 安全项包含结束后锁屏、被控端静音、结束后恢复声音、防窥模式；Windows 另有自动解锁及黑屏，Mac 防窥仅有关闭和自定义屏保。<br><strong>交互说明：</strong><br>1. 选择屏幕页签切换画面；添加或关闭虚拟屏更新页签，真实支持能力由被控电脑决定。<br>2. 打开控制中心并选择分类展开相应子菜单；修改选项留在当前会话。切换仅观看后停止远程输入，关闭后恢复控制。<br>3. 点击最小化返回设备详情并保留连接；全屏只改变窗口尺寸。点击关闭或退出直接结束连接并返回设备详情，远端程序继续运行。<br>4. 文件传输进入双栏文件页，返回后恢复原会话；窗口选择和长文本输入只作用于当前电脑。</td>
+<td><strong>图示：</strong><br><img alt="当前页面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-mac-control.png" /><br><strong>详细说明：</strong> 顶部保留 Mac 窗口控制、设备名、屏幕页签、信号与时长、控制中心。<br><strong>展示说明：</strong><br>1. 屏幕区显示物理屏和虚拟屏页签，虚拟屏有关闭按钮，＋用于添加。<br>2. 控制中心提供显示、画质、窗口、声音、安全、外设相关设置，以及文件传输、观看模式、窗口切换、长文本输入、全屏、退出。<br>3. 显示项包括跟随当前屏幕、跟随被控端、其他分辨率、缩放和超级屏；画质含自动、原画 30M、超清 14M、高清 8M、流畅 2M、自定义码率，帧率提供 144 / 90 / 60 / 30，色彩可选真彩或常规。<br>4. 窗口可选自适应、实际大小、小窗及不透明度；声音含音量和播放开关；外设含快捷键转发、配置快捷键、指针或相对鼠标。更多含网络状态和全屏隐藏悬浮球；选中态留在当前会话。<br>5. 安全项包含结束后锁屏、被控端静音、结束后恢复声音、防窥模式；Windows 另有自动解锁及黑屏，Mac 防窥仅有关闭和自定义屏保。<br><strong>交互说明：</strong><br>1. 选择屏幕页签切换画面；添加或关闭虚拟屏更新页签，真实支持能力由被控电脑决定。<br>2. 打开控制中心并选择分类展开相应子菜单；修改选项留在当前会话。切换仅观看后停止远程输入，关闭后恢复控制。<br>3. 点击最小化返回设备详情并保留连接；全屏只改变窗口尺寸。点击关闭或退出直接结束连接并返回设备详情，远端程序继续运行。<br>4. 文件传输进入双栏文件页，返回后恢复原会话；窗口选择和长文本输入只作用于当前电脑。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -825,7 +831,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="当前页面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-mac-network.png" /><br><strong>详细说明：</strong> 信号入口与计时位于远控窗口顶部；网络提示条出现在画面上方。<br><strong>展示说明：</strong><br>1. 时长按时、分、秒递增；悬浮或点击信号显示网络延时、帧延时、帧率、带宽占用、丢包率、连接方式、画质、编解码器与编码格式。<br>2. 不稳定提示「连接不稳定，可能出现延迟或画面卡顿。」；弱网提示「当前网络较弱，画面可能卡顿，建议降低画质。」<br>3. 提示提供降低画质、查看信号、关闭；降画质后显示已切换流畅画质及 30 帧。<br><strong>交互说明：</strong><br>1. 点击降低画质保存原画质与帧率，切换为「流畅 2M / 30 帧」，不重新建立连接。<br>2. 网络恢复后保留流畅设置，提示已恢复；用户点击「恢复原画质」才恢复原值，不自动反复切换。<br>3. 点击查看信号展开详情；点外部收起。关闭提示仅隐藏当前提示，不关闭会话；状态变化时可展示新提示。</td>
+<td><strong>图示：</strong><br><img alt="当前页面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-mac-network.png" /><br><strong>详细说明：</strong> 信号入口与计时位于远控窗口顶部；网络提示条出现在画面上方。<br><strong>展示说明：</strong><br>1. 时长按时、分、秒递增；悬浮或点击信号显示网络延时、帧延时、帧率、带宽占用、丢包率、连接方式、画质、编解码器与编码格式。<br>2. 不稳定提示「连接不稳定，可能出现延迟或画面卡顿。」；弱网提示「当前网络较弱，画面可能卡顿，建议降低画质。」<br>3. 提示提供降低画质、查看信号、关闭；降画质后显示已切换流畅画质及 30 帧。<br><strong>交互说明：</strong><br>1. 点击降低画质保存原画质与帧率，切换为「流畅 2M / 30 帧」，不重新建立连接。<br>2. 网络恢复后保留流畅设置，提示已恢复；用户点击「恢复原画质」才恢复原值，不自动反复切换。<br>3. 点击查看信号展开详情；点外部收起。关闭提示仅隐藏当前提示，不关闭会话；状态变化时可展示新提示。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -860,7 +866,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="当前页面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/sync-mac-files.png" /><br><strong>详细说明：</strong> 左侧本机、右侧远端，上方双向发送，下方统一任务列表。<br><strong>展示说明：</strong><br>1. 两栏分别展示设备名、位置路径、返回、上一级、刷新及目录列表；文件含名称、修改日期、类型、大小与选择框。<br>2. 任务显示名称、状态、大小、发送路径、接收路径和操作；提供全部开始、全部暂停、全部取消、清除完结任务。<br>3. 未选择文件时对应方向发送按钮禁用；Windows「此电脑」为目录入口，不能作为发送目的地。<br><strong>交互说明：</strong><br>1. 两侧独立浏览、选择文件或文件夹；进入目标文件夹后，点击相应方向发送，任务加入列表。取消选择不创建任务。<br>2. 运行任务可暂停、继续或取消；失败保留任务供重试；同名冲突选择跳过或保留两者，不覆盖已有文件。<br>3. 设备离线后任务等待上线，恢复后可继续；不把中断任务标成完成。批量操作只处理符合对应状态的任务。<br>4. 清除完结任务仅清理记录，不删除磁盘文件；返回按进入来源回到详情、更多或原远控会话。</td>
+<td><strong>图示：</strong><br><img alt="当前页面" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/sync-mac-files.png" /><br><strong>详细说明：</strong> 左侧本机、右侧远端，上方双向发送，下方统一任务列表。<br><strong>展示说明：</strong><br>1. 两栏分别展示设备名、位置路径、返回、上一级、刷新及目录列表；文件含名称、修改日期、类型、大小与选择框。<br>2. 任务显示名称、状态、大小、发送路径、接收路径和操作；提供全部开始、全部暂停、全部取消、清除完结任务。<br>3. 未选择文件时对应方向发送按钮禁用；Windows「此电脑」为目录入口，不能作为发送目的地。<br><strong>交互说明：</strong><br>1. 两侧独立浏览、选择文件或文件夹；进入目标文件夹后，点击相应方向发送，任务加入列表。取消选择不创建任务。<br>2. 运行任务可暂停、继续或取消；失败保留任务供重试；同名冲突选择跳过或保留两者，不覆盖已有文件。<br>3. 设备离线后任务等待上线，恢复后可继续；不把中断任务标成完成。批量操作只处理符合对应状态的任务。<br>4. 清除完结任务仅清理记录，不删除磁盘文件；返回按进入来源回到详情、更多或原远控会话。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -895,7 +901,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong><br><img alt="游戏快速启动" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/game-quick-app.png" /><br><img alt="游戏虚拟按键" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/game-landscape-mouse-black-area.png" /><br><img alt="Steam登录步骤" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/steam-login-app.png" /><br><strong>详细说明：</strong> 盖世入口在当前远端电脑启动盖世游戏 Windows 或 Mac 客户端，再启动游戏；Steam 入口连接电脑后打开电脑端 Steam，未登录时先登录，再启动对应游戏，不经过盖世客户端。手机展示远程画面，不运行手机端游戏。<br><strong>展示说明：</strong><br>1. 横屏快速启动位于远程画面卡片下方，不再占右侧窄栏。快速启动一排四个图标：ChatGPT、盖世游戏、Steam 游戏、添加应用。游戏图标右下角分别显示盖世 Logo 或 Steam Logo，不再额外显示来源副标题。<br>2. Steam 未登录时停留在登录步骤，登录完成才继续；取消或失败不启动游戏。Demo 使用「模拟登录完成」按钮，不收集账号信息。<br>3. 启动中展示游戏名与进度状态；进入后默认显示方向、轻攻击、重攻击、闪避、跳跃、定身术和喝药按键，支持横竖屏。从快捷入口启动盖世或 Steam 游戏时自动切到横屏。横屏下画面底部保留黑色操作区；悬浮鼠标可长按拖到右侧和底部黑区，限位以播放器为准，不扩大或拉伸远程画面。手动切回手机竖屏后，电脑及游戏画面按 16:9 居中，上下留黑边，不拉伸铺满；虚拟按键位于横屏画面内。<br><strong>交互说明：</strong><br>1. 复用远控操作面板，支持关闭虚拟按键、进入既有布局切换入口及退出远控。仅观看时隐藏可操作按键。</td>
+<td><strong>图示：</strong><br><img alt="游戏快速启动" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/game-quick-app.png" /><br><img alt="游戏虚拟按键" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/game-landscape-mouse-black-area.png" /><br><img alt="Steam登录步骤" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/steam-login-app.png" /><br><strong>详细说明：</strong> 手机只发起启动并显示远端电脑；Steam 未登录时显示电脑上的原生登录界面，由用户自行登录，APP 不新增登录页、不代登或收集凭证。Demo「电脑端已登录」按钮仅用于跳转演示状态。<br> 盖世入口在当前远端电脑启动盖世游戏 Windows 或 Mac 客户端，再启动游戏；Steam 入口连接电脑后打开电脑端 Steam，未登录时先登录，再启动对应游戏，不经过盖世客户端。手机展示远程画面，不运行手机端游戏。<br><strong>展示说明：</strong><br>1. 横屏快速启动位于远程画面卡片下方，不再占右侧窄栏。快速启动每排四个图标，默认演示 ChatGPT、盖世游戏、Steam 游戏、添加应用；添加后继续换行。游戏图标右下角分别显示盖世 Logo 或 Steam Logo，不再额外显示来源副标题。<br>2. Steam 未登录时停留在登录步骤，登录完成才继续；取消或失败不启动游戏。Demo 使用「演示：电脑端已登录」按钮，不收集账号信息。<br>3. 启动中展示游戏名与进度状态；进入后默认显示方向、轻攻击、重攻击、闪避、跳跃、定身术和喝药按键，支持横竖屏。从快捷入口启动盖世或 Steam 游戏时自动切到横屏。横屏下画面底部保留黑色操作区；悬浮鼠标可长按拖到右侧和底部黑区，限位以播放器为准，不扩大或拉伸远程画面。手动切回手机竖屏后，电脑及游戏画面按 16:9 居中，上下留黑边，不拉伸铺满；虚拟按键位于横屏画面内。<br><strong>交互说明：</strong><br>1. 复用远控操作面板，支持关闭虚拟按键、进入既有布局切换入口及退出远控。仅观看时隐藏可操作按键。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -908,8 +914,8 @@
 </tbody>
 </table>
 <h4>评审预览与横竖屏</h4>
-<p><img alt="横屏设备分栏" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/devices-orientation-landscape.png" /></p>
-<p><img alt="横屏对话分栏" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@2de244aa9c2aed9065dfcd98ae7984eeb7d08f4f/public/prd/streaming-mvp/landscape-gpt-split.png" /></p>
+<p><img alt="横屏设备分栏" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/devices-orientation-landscape.png" /></p>
+<p><img alt="横屏对话分栏" src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@270d738b596413649ab8fb60bad2a92abcf6cca6/public/prd/streaming-mvp/landscape-gpt-split.png" /></p>
 <p>APP 横屏左侧为设备列表，右侧为选中设备详情及快速启动；切换设备不自动连接。远控、属性、文件和更多均返回原来源。旋转后保留所选设备、会话和设置，收起当前工具面板，不重新连接。Mac 使用本机鼠标键盘，不显示手机悬浮鼠标和软键盘。</p>
 <p>右下角常驻 APP / Mac 切换按钮，点击直接进入对应端 Demo；状态预览按页面分类，每项提供「缺省」「穷举」，点击直接更新当前页面。正式产品不展示这些评审入口。覆盖列表加载 / 空 / 失败，设备在线 / 离线 / 禁控 / 被控，连接中 / 失败 / 结束，以及文件传输、暂停、完成、失败和同名冲突。普通、游戏和 AI 办公为演示场景，不要求正式用户连接前选择模式。</p>
 <h2>四、支撑及非功能需求</h2>
@@ -1006,7 +1012,7 @@
 <tbody>
 <tr>
 <td>remote_entry（新增）</td>
-<td>游戏库／我的设备／Mac 首页：入口可见或点击</td>
+<td>游戏库／Mac 首页：入口可见或点击</td>
 <td>action=expose 每入口每 visit_id 一次；click 每次有效点击一次，转入工作区沿用 visit_id。</td>
 <td>event_id, occurred_at, account_key, platform, app_version, environment, visit_id, entry, action</td>
 </tr>
@@ -1032,7 +1038,7 @@
 <td>remote_connect（新增）</td>
 <td>设备详情：发起控制／观看，及连接结果</td>
 <td>start 在本地状态检查前记录；禁控／离线记 blocked，接管取消记 cancel；第一帧可显示且会话可用才 success。</td>
-<td>event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, operation_id, attempt_id, stage, result, reason, duration_ms, control_mode, device_state</td>
+<td>event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, operation_id, attempt_id, stage, result, reason, duration_ms, control_mode, device_state, network_scope</td>
 </tr>
 <tr>
 <td>remote_session（新增）</td>
@@ -1079,7 +1085,7 @@
 <tr>
 <td>remote_game（新增）</td>
 <td>APP 游戏快速启动：盖世／Steam 启动尝试及结果</td>
-<td>点击入口记 start，launch_step=connect；Steam 确认需登录和登录完成分别以 stage=action 记录 login_required／login_completed，每个阶段同一 attempt_id 只记一次。远端游戏进程就绪且首帧可显示才 end/success；仅打开客户端不算成功。重试新建 attempt_id，取消登录记 cancel。</td>
+<td>点击入口记 start，launch_step=connect；仅在远端提供可信状态时，将 Steam 需登录和登录完成分别以 stage=action 记录 login_required／login_completed，每个阶段同一 attempt_id 只记一次。远端游戏进程就绪且首帧可显示才 end/success；仅打开客户端不算成功。重试新建 attempt_id；用户取消本次启动记 cancel，不从远端失焦推断取消登录。</td>
 <td>event_id, occurred_at, account_key, platform, app_version, environment, visit_id, target_os, operation_id, attempt_id, launcher, game_key, launch_step, stage, result, reason, duration_ms</td>
 </tr>
 </tbody>
@@ -1208,7 +1214,7 @@
 <td>reason</td>
 <td>string／结束必填</td>
 <td>受控原因；success 为 none</td>
-<td>none＝无错误；offline＝设备离线；permission＝权限不足；busy＝占用；network＝网络错误；user_cancel＝用户取消；user_stop＝主动停止；conflict_skip＝同名跳过；storage＝写入失败；unsupported＝能力不支持；timeout＝未及时确认；app_unavailable＝客户端或游戏不可用；login_failed＝Steam 登录失败；unknown＝未分类错误</td>
+<td>none＝无错误；offline＝设备离线；permission＝权限不足；busy＝占用；network＝网络错误；not_same_lan＝不在同一局域网；user_cancel＝用户取消；user_stop＝主动停止；conflict_skip＝同名跳过；storage＝写入失败；unsupported＝能力不支持；timeout＝未及时确认；app_unavailable＝客户端或游戏不可用；login_failed＝Steam 登录失败；unknown＝未分类错误</td>
 </tr>
 <tr>
 <td>duration_ms</td>
@@ -1220,7 +1226,7 @@
 <td>entry</td>
 <td>string／入口与教程必填</td>
 <td>打开来源</td>
-<td>library＝游戏库；my_devices＝我的设备；mac_home＝Mac 首页；direct＝直达；first_visit＝首次引导；tutorial＝连接教程</td>
+<td>library＝游戏库；mac_home＝Mac 首页；direct＝直达；first_visit＝首次引导；tutorial＝连接教程</td>
 </tr>
 <tr>
 <td>action</td>
@@ -1289,6 +1295,12 @@
 <td>lt_1mb＝小于1MiB；1_10mb＝1至小于10MiB；10_100mb＝10至小于100MiB；ge_100mb＝至少100MiB；unknown＝尚未计算</td>
 </tr>
 <tr>
+<td>network_scope</td>
+<td>string／连接必填</td>
+<td>当前连接范围</td>
+<td>lan＝局域网；一期只上报此值，二期接入再扩展</td>
+</tr>
+<tr>
 <td>network_state</td>
 <td>string／网络必填</td>
 <td>复用连接引擎状态，不新增阈值</td>
@@ -1316,8 +1328,9 @@
 </table>
 <h4>4.1.5 数据使用与联调要求</h4>
 <p>数据看板按「入口 → 列表 → 发起连接 → 成功会话」展示转化，并独立展示文件、电源、游戏和 ChatGPT，避免把独立文件操作误算成连接流失。失败按 reason 和主被控组合定位，不把用户取消并入系统失败。</p>
-<p>联调至少覆盖：在线成功、离线拦截、禁控、接管取消、超时重试、异常断开、文件暂停恢复／同名跳过、弱网恢复、GPT 停止、盖世游戏启动、Steam 登录取消／失败／完成及启动结果，以及 APP 横竖屏和 Mac。逐例核对开始与终态关联、事件去重、枚举、时长和环境；旋转／渲染不得增加曝光，补报不得增加次数，取消和模拟成功不得进入成功分子。缺失结果、迟到数据和 unknown 原因占比需可查询。接收端保存接收时间供迟到核对；客户端时钟异常时不使用负时长，单列异常样本。</p>
+<p>联调至少覆盖：在线成功、离线拦截、禁控、接管取消、超时重试、异常断开、文件暂停恢复／同名跳过、弱网恢复、GPT 停止、盖世游戏启动、Steam 远端登录提示及可观测启动结果，以及 APP 横竖屏和 Mac。逐例核对开始与终态关联、事件去重、枚举、时长和环境；应用添加要核对设备隔离、拒绝授权、空列表、搜索无结果、重复添加与多行滚动；旋转／渲染不得增加曝光，补报不得增加次数，取消和模拟成功不得进入成功分子。缺失结果、迟到数据和 unknown 原因占比需可查询。接收端保存接收时间供迟到核对；客户端时钟异常时不使用负时长，单列异常样本。</p>
 <p><strong>开发前核对：</strong> 数据团队确认现有 SDK 的账号／版本字段映射、事件命名冲突及留存策略；客户端确认连接超时、重试和网络状态来源。默认采用本文口径，不新增产品超时阈值或监控阈值。</p>
+<p>埋点补充口径：一期连接链路记录 <code>network_scope=lan</code>，非局域网拦截记为 <code>not_same_lan</code>；二期接入时扩展枚举。Steam 登录步骤仅在远端有可信回执时上报，不通过点击 Demo 按钮推断登录成功。应用添加仅记录匿名应用类别与结果，不采集完整安装清单或本地目录。</p>
 <h3>4.2 技术与素材要求</h3>
 <table>
 <thead>
@@ -1329,7 +1342,7 @@
 <tbody>
 <tr>
 <td>权限</td>
-<td>系统录屏、辅助控制、悬浮窗等由对应设备系统处理；拒绝后不显示授权成功。不在移动端伪造主机权限已完成。</td>
+<td>由客户端逐平台核对屏幕录制、输入控制、文件读取／保存、已安装应用读取及电源操作权限，并在协议与授权说明中写清用途。拒绝后不显示授权成功，不在手机伪造主机授权；此清单不代表已完成法务或商店合规审核。</td>
 </tr>
 <tr>
 <td>原型安全</td>
@@ -1346,4 +1359,4 @@
 </tbody>
 </table>
 <h2>五、待确认项</h2>
-<p>页面规则以本文为准。开发前需确认连接引擎、Mac 系统权限、跨端性能及 ChatGPT 接入方案；未验证能力不计为已完成。</p><p><a download href="盖世串流一期PRD.md">下载 Markdown</a> · <a download href="飞书配图包.zip">下载原图包</a> · <a download href="飞书单图验证.md">单图验证文件</a></p></main></html>
+<p>一期局域网范围和上述页面规则已确认，具体发版时间未定。开发前仍需验证：Windows 被控端接入进度；GPT 历史、消息、附件及关联文件的授权与读取方案；各系统的录屏、输入控制、唤醒和文件权限；真实键鼠、传输与性能。未验证能力不计为已完成。</p><p><a download href="盖世串流一期PRD.md">下载 Markdown</a> · <a download href="飞书配图包.zip">下载原图包</a> · <a download href="飞书单图验证.md">单图验证文件</a></p></main></html>

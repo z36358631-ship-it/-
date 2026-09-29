@@ -37,3 +37,18 @@
 .mouse-grip{top:2px;bottom:auto;width:48px;font-size:22px}.floating-mouse.expanded>button{left:-12px;right:auto}.mouse-buttons button{padding-top:31px}
 
 .app .mapping-pad .keys{display:grid;grid-template-columns:repeat(2,46px);gap:6px}.app .mapping-pad .keys button{width:46px;padding:0}
+
+/* Review: wheel gestures scroll content; long press moves the floating mouse. */
+.mouse-wheel{touch-action:none;cursor:ns-resize}.mouse-bottom,.mouse-grip{touch-action:none}
+.computer-keyboard-scroll{overflow-x:auto;overflow-y:hidden;max-width:100%;padding:10px 0 8px;overscroll-behavior-x:contain;touch-action:pan-x;scrollbar-width:thin}
+.computer-keyboard-board{display:grid;grid-template-columns:600px 128px 172px;grid-template-rows:38px auto;gap:10px 14px;width:928px}
+.computer-function-row,.computer-system-row,.computer-key-row{display:flex;gap:4px;flex-wrap:nowrap}
+.computer-function-row{grid-column:1;grid-row:1}.computer-function-row .computer-key:first-child{margin-right:12px}
+.computer-system-row{grid-column:2;grid-row:1}.computer-main-keys{grid-column:1;grid-row:2;display:grid;gap:4px}
+.computer-keyboard .computer-key{min-width:0;min-height:38px;height:38px;padding:3px 1px;border-radius:5px;font-size:11px;white-space:nowrap;flex:var(--key-width,1) 1 0}
+.computer-navigation-keys{grid-column:2;grid-row:2;display:flex;flex-direction:column;justify-content:space-between}
+.computer-navigation-six,.computer-arrows{display:grid;grid-template-columns:repeat(3,40px);gap:4px}.computer-arrows .arrow-up{grid-column:2;grid-row:1}.computer-arrows button:not(.arrow-up){grid-row:2}
+.computer-number-keys{grid-column:3;grid-row:2;display:grid;grid-template-columns:repeat(4,40px);grid-template-rows:repeat(5,38px);gap:4px;grid-auto-flow:row}
+.computer-number-keys .number-add{grid-column:4;grid-row:2 / span 2;height:auto}.computer-number-keys .number-enter{grid-column:4;grid-row:4 / span 2;height:auto}.computer-number-keys .number-zero{grid-column:1 / span 2}
+.computer-key-status{font-size:11px;color:#9bc8e2;margin:12px 0 0;line-height:1.5}
+.remote-canvas{touch-action:none}.remote-zoom-surface{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:inherit;transform-origin:center;pointer-events:auto}
