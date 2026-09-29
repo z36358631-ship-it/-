@@ -41,6 +41,11 @@ test('图片评价：单图、多图、无文字、无快照和配置入口', as
         });
         assert.ok(layout.gap >= 8 && Math.abs(layout.widthDiff) < 1 && Math.abs(layout.aligned) < 1);
         assert.ok(layout.loaded);
+        if (count === 1) {
+          const ratio = await item.evaluate(el => el.querySelector('.ci-media-image').getBoundingClientRect().width / el.querySelector('.ci-media').getBoundingClientRect().width);
+          assert.ok(Math.abs(ratio - 2/3) < 0.01, '单张横图占内容宽度的2/3');
+        }
+        assert.equal(await item.evaluate(el => getComputedStyle(el).borderBottomWidth), '1px');
         await item.screenshot({ path: path.join(out, `photo-review-${count}.png`) });
         if (count === 1) {
           await item.scrollIntoViewIfNeeded();
@@ -65,6 +70,7 @@ test('图片评价：单图、多图、无文字、无快照和配置入口', as
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.locator('#listLs #ci-s1').screenshot({ path: path.join(out, 'photo-example-final.png') });
+    await page.locator('#shell').screenshot({ path: path.join(out, 'photo-example-page.png') });
     assert.deepEqual(errors, []);
   } finally { await browser.close(); }
 });
