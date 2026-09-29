@@ -19,27 +19,29 @@
 | D-012 | 同配置无可见评价时自动切换全部、高亮 Tab 并重置分页；全部为空显示“暂无评价”。 |
 | D-013 | 用户只选兼容性，不再评分；四类为完美兼容、基本可玩、部分兼容、不可玩。设备信息与标题同行。内部 stars 仅作旧链路映射。替代 D-001、D-006、D-009 中按用户星级判断的规则。 |
 | D-014 | 游戏详情入口移除条数；评价概览左侧显示结论与总数，右侧显示四类分布。 |
+| D-016 | Tab 按全部、同配置、支持最多、我的排列；默认仍为同配置，空结果仍切全部。 |
+| D-017 | B 端国内评价筛选、列表、详情和 CSV 用四类兼容性替换评分；额外问题标签保留，海外评分不改。 |
 | D-015 | 分享入口按完美兼容／基本可玩判断；新增需成功会话，编辑已有快照可继续沿用。改为部分兼容／不可玩或取消分享后提交时删除关联快照。 |
 
 ## 产物
 
 | 产物 | 路径 | 验证 |
 |---|---|---|
-| C 端 Demo | demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html | 43/43 浏览器回归通过，含布局专项。 |
-| B 端 Demo | demos/后台管理/GUANWANGGAID-25-兼容性评价改版-B端demo.html | 本轮界面不改；保留历史字段，PRD 已说明映射边界。 |
-| 最终 PRD | prd/【PRD】《盖世游戏》兼容性评价改版V1.2需求.md | 正文与本轮 Demo 同步，保留 12 个固定版本图片地址。 |
+| C 端 Demo | demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-C端demo.html | 44/44 浏览器回归通过，含布局专项。 |
+| B 端 Demo | demos/后台管理/GUANWANGGAID-25-兼容性评价改版-B端demo.html | 国内筛选、列表、详情和 CSV 统一四类兼容性；海外不改。 |
+| 最终 PRD | prd/【PRD】《盖世游戏》兼容性评价改版V1.2需求.md | 正文与本轮 Demo 同步，保留 13 个固定版本图片地址。 |
 | 群同步 MD | prd/兼容性评价改版V1.2-飞书群同步功能点.md | 分类、一行一个功能、对应图片；未向群发送。 |
-| 图片 | public/prd/compatibility-review-v1.2/ | 11 张页面图＋1 张流程图，HTTP 200、image/png、SHA-256 与本地原图一致。 |
-| 截图证据 | test-results/compatibility-review-v1.2/2026-09-29-prd/ | 14 张连续流程截图，已人工审图。 |
-| 回归与在线验证 | test-results/compatibility-review-v1.2/2026-09-29/ | full-regression.txt、public-verification.json；公网及断网本地打开均通过评价页／表单交互检查。 |
+| 图片 | public/prd/compatibility-review-v1.2/ | 12 张页面图＋1 张流程图，HTTP 200、image/png、SHA-256 与本地原图一致。 |
+| 截图证据 | test-results/compatibility-review-v1.2/2026-09-29-prd/ | 15 张连续流程截图，已人工审图。 |
+| 回归与在线验证 | test-results/compatibility-review-v1.2/2026-09-29/ | full-regression-final.txt、public-verification.json；公网及断网本地打开均通过评价页／表单交互检查。 |
 
 ## 发布与后续更新
 
 - C 端固定入口：https://z36358631-ship-it.github.io/-/previews/compatibility-review-v1.2/index.html
 - B 端入口：https://z36358631-ship-it.github.io/-/previews/compatibility-review-v1.2/admin.html
 - main 保存任务源文件、文档和图片；Pages 实际发布源为 master 根目录。更新后把两个 Demo 源文件完整复制到 previews/compatibility-review-v1.2/index.html 和 admin.html，并同步到 master；不用改公开地址或仓库 Pages 设置。
-- 图片固定资产提交：2f087a9ec046740f42ca71556af80f61dfc259c6。
-- Pages 发布提交：11c472bd46b97bcc4e364744b11b35c027fa5231；已确认构建成功。
+- 图片固定资产提交：1c8f69fc822561240f682648ed1f05b54aa5491c。
+- Pages 发布提交：329dac1e6；已确认构建成功。
 - jsDelivr 只用于图片，HTML 返回 text/plain；raw.githack 有额外确认页，均不作为一键演示入口。
 - 未验证飞书实际导入或所有国内网络可达性。Demo 无外部资源依赖，会议室网络异常时可直接用本地 HTML。
 
