@@ -20,6 +20,13 @@ test('兼容性单选提交、编辑、旧草稿恢复及概览左右布局', as
     assert.equal(await page.locator('#entrySub, #entrySubLs, #fbStarsWrap').count(), 0);
     await page.locator('#shell').screenshot({ path: path.join(out, '01-detail.png'), animations: 'disabled' });
     await page.click('#openCompatibilityReviews');
+    assert.deepEqual(await page.locator('#chipsLs .chip').allTextContents(), ['全部', '同配置', '支持最多', '我的']);
+    assert.equal(await page.locator('#chipsLs .chip.active').getAttribute('data-view'), 'device');
+    await page.click('#chipsLs [data-view="all"]');
+    await page.click('#compatPage .compat-page-back');
+    await page.waitForTimeout(420);
+    await page.click('#openCompatibilityReviews');
+    assert.equal(await page.locator('#chipsLs .chip.active').getAttribute('data-view'), 'device', '返回后重新进入，高亮仍应对应同配置而非第一项');
     await page.locator('#shell').screenshot({ path: path.join(out, '02-overview.png'), animations: 'disabled' });
     const summary = await page.locator('.ov-summary').boundingBox();
     const bars = await page.locator('#distBarsLs').boundingBox();
