@@ -928,8 +928,9 @@
         .ci-media.single .ci-media-image img { height: auto; max-height: 280px; object-fit: contain; }
         .ci-media.single .media-wireframe { aspect-ratio: 16/9; }
         .review-solution-card:hover { border-color: rgba(64,165,255,.6); background: #252d36; }
-        .review-solution-heading { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-        .review-solution-heading strong { color: #e4e7eb; font-size: 15px; line-height: 1.4; font-weight: 700; }
+        .review-solution-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+        .review-solution-heading strong { color: #e4e7eb; font-size: 15px; line-height: 1.4; font-weight: 700; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .review-solution-duration { flex: none; color: #90949b; font-size: 10px; line-height: 1.4; white-space: nowrap; }
         .review-solution-card .review-solution-meta { display: block; margin-top: 3px; color: #90949b; font-size: 12px; line-height: 1.4; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         #copySolutionDialog { z-index: 1400; }
         .copy-solution-box { width: 350px; }
@@ -2029,11 +2030,7 @@ function canRenderReviewSolution(review, snapshot) {
 function renderReviewSolution(review) {
     const snapshot = resolveReviewSnapshot(review);
     if (!canRenderReviewSolution(review, snapshot)) return '';
-    const device = String(review.device || '').split(/\s*[·•]\s*/)[0];
-    const gpu = snapshot.gpu?.displayName || snapshot.gpuModel || review.gpu || '';
-    const meta = [device, gpu].filter(Boolean).join(' · ');
-    const escapedMeta = meta.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开' + REVIEW_SNAPSHOT_DISPLAY_NAME + '"><span class="review-solution-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 2 22 7v10l-10 5L2 17V7Z M2 7l10 5 10-5 M12 12v10"/></svg></span><span class="review-solution-copy"><span class="review-solution-heading"><strong>' + REVIEW_SNAPSHOT_DISPLAY_NAME + '</strong></span><span class="review-solution-meta" title="' + escapedMeta + '">' + escapedMeta + '</span></span></button>';
+    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开' + REVIEW_SNAPSHOT_DISPLAY_NAME + '"><span class="review-solution-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 2 22 7v10l-10 5L2 17V7Z M2 7l10 5 10-5 M12 12v10"/></svg></span><span class="review-solution-copy"><span class="review-solution-heading"><strong>' + REVIEW_SNAPSHOT_DISPLAY_NAME + '</strong></span><span class="review-solution-meta review-solution-duration">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></span></button>';
 }
 
 function handleReviewSolutionAction(event) {
