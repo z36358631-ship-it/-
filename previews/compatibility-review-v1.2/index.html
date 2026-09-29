@@ -915,7 +915,10 @@
         .solution-apply-result { width: 100%; display: grid; gap: 3px; color: #ffb37b; font-size: 11px; line-height: 1.45; }
         .solution-apply-result[hidden], .solution-action-message[hidden] { display: none; }
         .solution-action-message { padding: 0 2px; }
-        .review-solution-card { width: 100%; margin-top: 10px; padding: 11px 12px; display: block; text-align: left; color: inherit; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); border-radius: 12px; cursor: pointer; }
+        .review-solution-card { width: 100%; margin-top: 10px; padding: 9px; display: flex; align-items: center; gap: 10px; text-align: left; color: inherit; border: 1px dashed rgba(68,130,180,.32); background: #20252c; border-radius: 16px; cursor: pointer; }
+        .review-solution-icon { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 9px; background: #1c2b39; color: #2695f5; }
+        .review-solution-icon svg { width: 23px; height: 23px; display: block; }
+        .review-solution-copy { display: block; flex: 1; min-width: 0; }
         .ci-media { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; margin-top: 8px; min-width: 0; }
         .ci-media-image { width: 100%; aspect-ratio: 1; min-width: 0; border-radius: 8px; overflow: hidden; background: #080b0d; }
         .ci-media-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -924,11 +927,10 @@
         .ci-media.single .ci-media-image { aspect-ratio: auto; }
         .ci-media.single .ci-media-image img { height: auto; max-height: 280px; object-fit: contain; }
         .ci-media.single .media-wireframe { aspect-ratio: 16/9; }
-        .review-solution-card:hover { border-color: rgba(64,165,255,.42); background: rgba(64,165,255,.055); }
-        .review-solution-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-        .review-solution-heading strong { color: #eef3f6; font-size: 12px; font-weight: 700; }
-        .review-solution-heading b { color: #7b8a94; font-size: 18px; font-weight: 400; }
-        .review-solution-card .review-solution-meta { display: block; margin-top: 4px; color: #81919c; font-size: 10px; line-height: 1.45; text-align: left; }
+        .review-solution-card:hover { border-color: rgba(64,165,255,.6); background: #252d36; }
+        .review-solution-heading { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .review-solution-heading strong { color: #e4e7eb; font-size: 15px; line-height: 1.4; font-weight: 700; }
+        .review-solution-card .review-solution-meta { display: block; margin-top: 3px; color: #90949b; font-size: 12px; line-height: 1.4; text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         #copySolutionDialog { z-index: 1400; }
         .copy-solution-box { width: 350px; }
         .copy-solution-input {
@@ -955,7 +957,7 @@
             .modal-footer { padding: 12px 16px; }
             .fb-row { margin-bottom: 10px; }
             .flow-config { grid-template-columns: 1fr; }
-            .review-solution-card { align-items: flex-start; flex-direction: column; }
+            .review-solution-card { align-items: center; flex-direction: row; }
             .review-solution-card span { text-align: left; }
             .solution-detail-body { padding: 14px 14px 24px; }
             #solutionDetailSchemeName { font-size: 22px; }
@@ -2027,7 +2029,11 @@ function canRenderReviewSolution(review, snapshot) {
 function renderReviewSolution(review) {
     const snapshot = resolveReviewSnapshot(review);
     if (!canRenderReviewSolution(review, snapshot)) return '';
-    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开' + REVIEW_SNAPSHOT_DISPLAY_NAME + '"><span class="review-solution-heading"><strong>' + REVIEW_SNAPSHOT_DISPLAY_NAME + '</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
+    const device = String(review.device || '').split(/\s*[·•]\s*/)[0];
+    const gpu = snapshot.gpu?.displayName || snapshot.gpuModel || review.gpu || '';
+    const meta = [device, gpu].filter(Boolean).join(' · ');
+    const escapedMeta = meta.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开' + REVIEW_SNAPSHOT_DISPLAY_NAME + '"><span class="review-solution-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 2 22 7v10l-10 5L2 17V7Z M2 7l10 5 10-5 M12 12v10"/></svg></span><span class="review-solution-copy"><span class="review-solution-heading"><strong>' + REVIEW_SNAPSHOT_DISPLAY_NAME + '</strong></span><span class="review-solution-meta" title="' + escapedMeta + '">' + escapedMeta + '</span></span></button>';
 }
 
 function handleReviewSolutionAction(event) {
