@@ -1,0 +1,261 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { chromium } from 'playwright-core';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const cDemo = path.join(root, 'demos', '游戏详情', 'GUANWANGGAID-25-兼容性评价改版-C端demo.html');
+const bDemo = path.join(root, 'demos', '后台管理', 'GUANWANGGAID-25-兼容性评价改版-B端demo.html');
+const resultsRoot = path.join(root, 'test-results');
+const outDir = path.join(resultsRoot, 'compatibility-review-v1.2', '2026-09-29-prd');
+const executablePath = [
+  process.env.CHROME_PATH,
+  'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+].filter(Boolean).find(fs.existsSync);
+
+if (!executablePath) throw new Error('浏览器依赖未安装：未找到本地 Chrome 或 Edge');
+if (!path.resolve(outDir).startsWith(`${path.resolve(resultsRoot)}${path.sep}`)) {
+  throw new Error(`拒绝清理非预期输出目录：${outDir}`);
+}
+
+fs.mkdirSync(outDir, { recursive: true });
+
+const browser = await chromium.launch({
+  headless: true,
+  executablePath,
+  args: ['--allow-file-access-from-files', '--disable-background-networking'],
+});
+
+const captured = [];
+
+function requireDemo(file, label) {
+  if (!fs.existsSync(file)) throw new Error(`未实现契约：${label} Demo 文件不存在\n${file}`);
+}
+
+async function openDemo(file, label, viewport) {
+  requireDemo(file, label);
+  const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(pathToFileURL(file).href, { waitUntil: 'load' });
+  await page.evaluate(() => localStorage.clear());
+  await page.reload({ waitUntil: 'load' });
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+  // The demo's orientation initializer finishes a 350 ms close transition.
+  // Wait it out before driving a state so that its delayed hide cannot race the capture.
+  await page.waitForTimeout(420);
+  return { page, errors, label };
+}
+
+async function requireOne(page, selector, contract) {
+  const count = await page.locator(selector).count();
+  if (count !== 1) {
+    throw new Error(`未实现契约：${contract} (${selector})，实际节点数 ${count}`);
+  }
+}
+
+async function domClick(page, selector, contract) {
+  await requireOne(page, selector, contract);
+  await page.locator(selector).evaluate((element) => {
+    element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+  });
+  await page.waitForTimeout(420);
+}
+
+async function shot(page, filename, { fullPage = true } = {}) {
+  const output = path.join(outDir, filename);
+  const frozenMotionStyle = await page.addStyleTag({
+    content: `
+      *, *::before, *::after {
+        animation: none !important;
+        caret-color: transparent !important;
+        scroll-behavior: auto !important;
+        transition: none !important;
+      }
+    `,
+  });
+  try {
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    if (filename.includes('-b-')) await page.screenshot({ path: output, fullPage });
+    else if (await page.locator('#runtimeDeviceFrame').isVisible()) await page.locator('#runtimeDeviceFrame').screenshot({ path: output });
+    else await page.locator('#shell').screenshot({ path: output });
+  } finally {
+    await frozenMotionStyle.evaluate((style) => style.remove());
+  }
+  if (!fs.existsSync(output) || fs.statSync(output).size === 0) {
+    throw new Error(`截图未生成：${output}`);
+  }
+  captured.push(output);
+  console.log(output);
+}
+
+function assertNoPageErrors(errors, label) {
+  if (errors.length) throw new Error(`${label} 产生 pageerror：\n${errors.join('\n')}`);
+}
+
+async function captureCConnectedJourney() {
+  const { page, errors } = await openDemo(cDemo, 'C 端', { width: 1440, height: 1000 });
+  try {
+    await requireOne(page, '#gameHeroWireframe', '游戏详情主媒体线框');
+    await requireOne(page, '#startGameButton', '启动游戏按钮');
+    await shot(page, '01-c-game-detail-wireframe-428x888.png');
+
+    await domClick(page, '#openCompatibilityReviews', '兼容性评价入口');
+    await requireOne(page, '[data-feedback-id="s1"] .review-solution-card', '有效快照评价卡');
+    await shot(page, '02-c-review-list-428x888.png');
+
+    await domClick(page, '[data-feedback-id="s1"] .review-solution-card', '有效快照卡');
+    await requireOne(page, '#solutionDetailPage:not([hidden])', '可见方案详情页');
+    await requireOne(page, '#solutionDetailSchemeName', '完整方案名称');
+    await requireOne(page, '#solutionDetailGpu', '方案 GPU 标签');
+    await requireOne(page, '#solutionShareSummary', '当前评价人与本次游玩时长');
+    if (await page.locator('#solutionConfigGroups .solution-config-section').count() < 3) {
+      throw new Error('未实现契约：方案详情未展示完整参数分组');
+    }
+    const detailText = await page.locator('#solutionDetailPage').innerText();
+    if (!/本次启动配置/.test(detailText) || !/Pixel用户_洛圣都 · 本次游玩 18分42秒/.test(detailText)) {
+      throw new Error('未实现契约：快照详情未展示固定标题、当前评价人与当次游玩时长');
+    }
+    if (/社区共同验证|成功率|次验证|最近验证|样本较少/.test(detailText)) {
+      throw new Error('未实现契约：快照详情仍展示多人聚合信息');
+    }
+    await shot(page, '03-c-solution-detail-428x888.png');
+
+    await domClick(page, '#applySolutionButton', '应用方案');
+    if (await page.locator('#solutionDetailPage').isVisible()) {
+      throw new Error('未实现契约：应用方案后未返回游戏详情');
+    }
+    if (!/本次启动配置/.test(await page.locator('#currentAppliedSolution').innerText())) {
+      throw new Error('未实现契约：游戏详情未展示当前已应用配置');
+    }
+    if (await page.locator('#gameplayLayer').isVisible()) {
+      throw new Error('未实现契约：应用方案后不应自动启动游戏');
+    }
+    await page.waitForFunction(() => !document.getElementById('toast')?.classList.contains('show'));
+    await page.waitForTimeout(420);
+    await shot(page, '04-c-applied-solution-detail-428x888.png');
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await requireOne(page, '#startGameButton', '启动游戏按钮');
+    await page.click('#startGameButton');
+    await page.waitForFunction(() => document.body.dataset.journeyStage === 'launching');
+    await requireOne(page, '#runtimeDeviceFrame', '居中横屏手机壳');
+    await shot(page, '05-c-launching-device-1440x900.png', { fullPage: false });
+
+    await page.waitForFunction(() => document.body.dataset.journeyStage === 'gameplay');
+    await requireOne(page, '#gameplayLayer:not([hidden])', '横屏手机内游戏层');
+    await shot(page, '06-c-gameplay-device-1440x900.png', { fullPage: false });
+
+    await domClick(page, '#exitGameButton', '退出游戏入口');
+    await requireOne(page, '#exitGameConfirm:not([hidden])', '退出游戏确认弹窗');
+    await shot(page, '07-c-exit-confirm-device-1440x900.png', { fullPage: false });
+
+    await page.click('#confirmExitGameButton');
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.waitForFunction(() => document.getElementById('modalFeedback')?.classList.contains('show'));
+    await page.click('#fbTypeWrap [data-type="perfect"]');
+    await requireOne(page, '#shareSessionCheckbox', '分享本次运行配置勾选项');
+    await shot(page, '08-c-proactive-review-428x888.png');
+
+    await page.check('#shareSessionCheckbox');
+    await page.click('#modalFeedback .btn-submit');
+    await page.waitForFunction(() => document.getElementById('compatPage')?.classList.contains('show'));
+    await requireOne(page, '[data-owner="me"]', '提交后的我的评价');
+    const mine = await page.evaluate(() => window.getFeedbacks().find((item) => item.uid === 'me_demo_user'));
+    const snapshots = await page.evaluate(() => window.compatibilityDemo.getReviewSnapshots());
+    if (!mine?.reviewSnapshotId || snapshots[mine.reviewSnapshotId]?.reviewId !== mine.id) {
+      throw new Error('未实现契约：我的评价未关联独立配置快照');
+    }
+    await page.waitForFunction(() => !document.getElementById('toast')?.classList.contains('show'));
+    await page.waitForTimeout(420);
+    await shot(page, '09-c-my-linked-review-428x888.png');
+    await page.locator('[data-owner="me"] .ci-more-btn').click();
+    await shot(page, '12-c-edit-menu-428x888.png');
+    await page.getByRole('button', { name: '编辑', exact: true }).click();
+    await shot(page, '13-c-edit-dialog-428x888.png');
+    await page.evaluate(() => window.closeFeedbackModal());
+    await page.evaluate(() => window.showSameConfigEmptyScenario());
+    await shot(page, '14-c-auto-all-428x888.png');
+    assertNoPageErrors(errors, 'C 端连续旅程截图');
+  } finally {
+    await page.close();
+  }
+}
+
+async function captureGuestReviewStates() {
+  const { page, errors } = await openDemo(cDemo, 'C 端', { width: 1440, height: 1000 });
+  try {
+    await domClick(page, '#openCompatibilityReviews', '兼容性评价入口');
+    await domClick(page, '#chipsLs [data-view="all"]', '全部评价筛选');
+    await requireOne(page, '[data-feedback-id="s1"] .review-solution-card', '客态有效方案入口');
+    await requireOne(page, '[data-feedback-id="s3"]', '客态未分享普通评价');
+    if (await page.locator('[data-feedback-id="s3"] .review-solution-card').count() !== 0) {
+      throw new Error('未实现契约：未分享评价错误展示方案入口');
+    }
+    const visibleListText = await page.locator('#listLs').innerText();
+    if (/未分享|方案失效|方案无效|归属不一致/.test(visibleListText)) {
+      throw new Error('未实现契约：客态列表暴露技术状态说明');
+    }
+    await page.locator('[data-feedback-id="s3"]').evaluate((element) => {
+      element.scrollIntoView({ block: 'end' });
+    });
+    await page.waitForTimeout(420);
+    const screenshotEvidence = await page.evaluate(() => {
+      const viewportHeight = window.innerHeight;
+      const isVisible = (selector) => {
+        const element = document.querySelector(selector);
+        if (!element) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.bottom > 0 && rect.top < viewportHeight;
+      };
+      return {
+        validSolution: isVisible('[data-feedback-id="s2"] .review-solution-card'),
+        ordinaryReview: isVisible('[data-feedback-id="s3"]'),
+      };
+    });
+    if (!screenshotEvidence.validSolution || !screenshotEvidence.ordinaryReview) {
+      throw new Error('未实现契约：客态截图未同屏展示有效方案评价与无方案普通评价');
+    }
+    await shot(page, '11-c-guest-review-states-428x888.png');
+    assertNoPageErrors(errors, 'C 端客态自然混排截图');
+  } finally {
+    await page.close();
+  }
+}
+
+async function captureBLinkedFilter() {
+  const { page, errors } = await openDemo(bDemo, 'B 端', { width: 1440, height: 900 });
+  try {
+    await requireOne(page, '#dom-fb-solution-linked', '是否关联快照筛选');
+    await requireOne(page, '#dom-fb-solution-status', '快照状态筛选');
+    await page.selectOption('#dom-fb-solution-linked', 'linked');
+    await page.selectOption('#dom-fb-solution-status', 'available');
+    await domClick(page, '#dom-query-feedbacks', '国内评价查询');
+    const rows = page.locator('#dom-fb-tbody tr[data-feedback-id]');
+    if (await rows.count() === 0) throw new Error('未实现契约：B 端有效关联快照筛选无演示数据');
+    await rows.first().locator('[data-action="view-snapshot"]').click();
+    if (await page.locator('#compat-solution-detail-drawer').getAttribute('aria-hidden') !== 'false') {
+      throw new Error('未实现契约：B 端关联快照预览未打开');
+    }
+    await shot(page, '10-b-linked-filter-solution-drawer-1440x900.png');
+    assertNoPageErrors(errors, 'B 端筛选与方案预览截图');
+  } finally {
+    await page.close();
+  }
+}
+
+try {
+  await captureCConnectedJourney();
+  await captureBLinkedFilter();
+  await captureGuestReviewStates();
+  if (captured.length !== 14) throw new Error(`截图数量错误：预期 14，实际 ${captured.length}`);
+} finally {
+  await browser.close();
+}

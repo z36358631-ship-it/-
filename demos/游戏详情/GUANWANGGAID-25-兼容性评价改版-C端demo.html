@@ -1,0 +1,3258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>盖世游戏 - 兼容性评价改版 v1.2 C端 Demo</title>
+    <style>
+        :root {
+            --bg-dark: #0f1115;
+            --panel-bg: #13161a;
+            --primary-blue: #009dff;
+            --blue-gradient: linear-gradient(90deg, #00bfff, #0080ff);
+            --btn-dark: #2a2d33;
+            --text-main: #ffffff;
+            --text-sub: #8a9ba8;
+            --divider: rgba(255,255,255,0.08);
+            --radius-box: 16px;
+            --radius-btn: 12px;
+            --popup-bg: #252830;
+            --star-yellow: #f5c518;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; user-select: none; }
+        /* 单文件 Demo 不依赖外部图标字体，使用轻量字符回退，避免离线出现方框。 */
+        .fas, .far, .fab { display: inline-flex; align-items: center; justify-content: center; font-style: normal; line-height: 1; }
+        .fas::before, .far::before, .fab::before { content: ''; }
+        .fa-chevron-left::before { content: '‹'; font-size: 22px; }
+        .fa-chevron-right::before { content: '›'; }
+        .fa-pause::before { content: 'Ⅱ'; }
+        .fa-play::before { content: '▶'; font-size: 0.72em; }
+        .fa-volume-mute::before { content: '×'; }
+        .fa-volume-up::before { content: '))'; font-size: 0.72em; }
+        .fa-expand-alt::before { content: '⛶'; }
+        .fa-clock::before { content: '◷'; }
+        .fa-cloud::before { content: '⌁'; }
+        .fa-star::before { content: '★'; }
+        .fa-fire::before { content: '▲'; }
+        .fa-th-large::before { content: '▦'; }
+        .fa-trash-alt::before { content: '×'; }
+        .fa-times::before { content: '×'; }
+        .fa-link::before { content: '↗'; }
+        .fa-desktop, .fa-gamepad {
+            width: 15px; height: 10px; border: 1.5px solid currentColor; border-radius: 2px;
+        }
+        .fa-desktop::after { content: ''; width: 7px; border-top: 1.5px solid currentColor; transform: translateY(7px); }
+        .fa-gamepad { border-radius: 7px 7px 4px 4px; }
+        .fa-signal::before { content: '▂▅▇'; font-size: 8px; letter-spacing: -1px; }
+        .fa-wifi::before { content: '⌁'; }
+        .fa-battery-full { width: 14px; height: 7px; border: 1px solid currentColor; border-radius: 2px; }
+        body {
+            background: #1a1a2e; height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; color: var(--text-main); gap: 16px;
+        }
+
+        /* ---- 手机壳 ---- */
+        .phone-frame {
+            position: relative;
+            border-radius: 44px;
+            background: #1c1c1e;
+            box-shadow:
+                0 0 0 2px #3a3a3c,
+                0 0 0 6px #1c1c1e,
+                0 0 0 8px #3a3a3c,
+                0 30px 80px rgba(0,0,0,0.9),
+                inset 0 0 20px rgba(0,0,0,0.4);
+            padding: 14px;
+            transition: width 0.4s ease, height 0.4s ease;
+            flex-shrink: 0;
+        }
+        /* 横版手机壳：860+28 x 400+28 */
+        .phone-frame.ls { width: 916px; height: 456px; }
+        /* 竖版手机壳：400+28 x 860+28 */
+        .phone-frame.pt { width: 456px; height: 916px; }
+        /* 横版侧边按钮装饰 */
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            right: -10px; top: 80px;
+            width: 4px; height: 60px;
+            background: #3a3a3c;
+            border-radius: 2px;
+            box-shadow: 0 80px 0 #3a3a3c;
+        }
+        .phone-frame.pt::before {
+            right: auto; top: auto;
+            left: -10px; bottom: 120px;
+            width: 4px; height: 40px;
+            box-shadow: 0 -50px 0 #3a3a3c, 0 60px 0 #3a3a3c;
+        }
+
+        /* ---- APP 外壳 ---- */
+        .shell {
+            position: relative; border-radius: 30px; overflow: hidden;
+            background: var(--bg-dark);
+            width: 100%; height: 100%;
+        }
+
+        /* 横屏：860×400 */
+        .shell.ls .inner {
+            width: 100%; height: 100%;
+            display: grid; grid-template-columns: 1fr 280px; overflow: hidden;
+        }
+        .shell.ls .col-left { height: 100%; overflow-y: auto; overflow-x: hidden; background: linear-gradient(to bottom, #1a1d24 0%, var(--bg-dark) 40%); }
+        .shell.ls .col-right { height: 100%; overflow-y: auto; background: var(--panel-bg); border-left: 1px solid var(--divider); display: flex; flex-direction: column; }
+        .shell.ls .bottom-bar { display: none !important; }
+
+        /* 竖屏：400×860 */
+        .shell.pt .inner { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+        .shell.pt .col-left { flex: 1; overflow-y: auto; overflow-x: hidden; background: var(--bg-dark); }
+        .shell.pt .col-right { display: none; }
+        .shell.pt .bottom-bar { display: flex !important; }
+
+        /* 滚动条隐藏 */
+        .col-left::-webkit-scrollbar, .col-right::-webkit-scrollbar { display: none; }
+
+        /* ---- 媒体区 ---- */
+        .media-container { width: 100%; position: relative; background: #000; overflow: hidden; flex-shrink: 0; }
+        .shell.ls .media-container { aspect-ratio: 21/9; }
+        .shell.pt .media-container { aspect-ratio: 16/9; }
+        .media-content { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hidden { display: none !important; }
+        .back-btn {
+            position: absolute; top: 14px; left: 14px; z-index: 50;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.45); border-radius: 50%; color: white; font-size: 15px; cursor: pointer; transition: 0.2s;
+        }
+        .back-btn:hover { background: rgba(0,0,0,0.7); }
+        .video-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 40%);
+            display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 16px; pointer-events: none;
+        }
+        .video-controls-layer { pointer-events: auto; }
+        .play-pause-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-size: 44px; color: rgba(255,255,255,0.85); cursor: pointer;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5)); opacity: 0; transition: 0.3s; pointer-events: auto;
+        }
+        .media-container:hover .play-pause-center { opacity: 1; }
+        .progress-track {
+            width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px;
+            margin-bottom: 12px; cursor: pointer; pointer-events: auto;
+        }
+        .progress-fill { height: 100%; background: var(--primary-blue); width: 0%; border-radius: 2px; }
+        .controls-row { display: flex; justify-content: space-between; align-items: center; pointer-events: auto; }
+        .toggle-capsule {
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); border-radius: 20px;
+            padding: 3px; display: flex; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tc-btn { padding: 4px 14px; font-size: 12px; color: #aaa; border-radius: 16px; cursor: pointer; transition: 0.2s; font-weight: 600; }
+        .tc-btn.active { background: #fff; color: #000; }
+        .right-icons { color: white; font-size: 15px; display: flex; gap: 14px; opacity: 0.8; cursor: pointer; }
+
+        /* ---- 左列内容区 ---- */
+        .content-pad { padding: 16px 20px 60px; }
+        .shell.ls .content-pad { padding: 20px 30px 80px; }
+
+        /* ---- 三合一信息卡：兼容性评价 + 游玩时长 + 云存档 ---- */
+        .info-card {
+            background: linear-gradient(135deg, #1c2535 0%, #111620 100%);
+            border-radius: var(--radius-box); margin-bottom: 28px;
+            border: 1px solid rgba(255,255,255,0.07); overflow: hidden;
+        }
+        /* 卡片顶部 header 行（参考原PC引擎卡样式） */
+        .info-card-hdr {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer; transition: background 0.2s;
+        }
+        .info-card-hdr:hover { background: rgba(255,255,255,0.02); }
+        .ic-hdr-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #fff; }
+        .ic-hdr-left i { font-size: 16px; color: #b0bec5; }
+        .ic-hdr-right { display: flex; align-items: center; gap: 4px; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .ic-hdr-right i { font-size: 10px; }
+        /* 主体区域 */
+        .info-card-body { display: flex; align-items: stretch; }
+        /* 横屏：三项并排一行 */
+        .shell.ls .info-card-body { flex-direction: row; }
+        .shell.ls .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative;
+        }
+        .shell.ls .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.ls .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .shell.ls .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.ls .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 竖屏：三列并排一行（图标+标签+描述格式） */
+        .shell.pt .info-card-body { flex-direction: row; }
+        .shell.pt .info-compat {
+            flex: 1; padding: 12px 10px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; min-width: 0; text-align: center; position: relative;
+        }
+        .shell.pt .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.pt .ic-main { display: flex; flex-direction: column; align-items: center; min-width: 0; width: 100%; }
+        /* 竖版：info-sub-row 两列 */
+        .shell.pt .info-sub-row { flex: 2; display: flex; flex-direction: row; }
+        .shell.pt .info-time {
+            flex: 1; padding: 10px 8px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.pt .info-cloud {
+            flex: 1; padding: 10px 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 竖版 兼容性：大图标圆圈；横版隐藏 */
+        .shell.ls .info-compat .ic-icon-wrap { display: none; }
+        .shell.pt .info-compat .ic-icon-wrap {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(80,200,120,0.15);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 4px; flex-shrink: 0;
+        }
+        .shell.pt .info-compat .ic-icon-wrap span { font-size: 13px; font-weight: 800; color: #6fffa8; }
+        /* 标签文字 */
+        .shell.pt .ic-compat-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 2px; white-space: nowrap; }
+        /* 描述：最多1行，无渐隐效果 */
+        .shell.pt .ic-compat-desc {
+            font-size: 11px; color: var(--text-sub); line-height: 1.45;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;
+        }
+        /* 末尾渐隐遮罩 — 已移除 */
+        .shell.pt .ic-compat-desc-wrap {
+            position: relative; width: 100%; overflow: hidden;
+        }
+        /* 竖版：隐藏绿圈、ic-sub 文字、专用描述块；显示评分行 */
+        .shell.pt .info-compat .ic-icon-wrap { display: none; }
+        .shell.pt .info-compat .ic-score-row { display: flex; flex-wrap: nowrap; }
+        .shell.pt .info-compat .ic-score { font-size: 15px; }
+        .shell.pt .info-compat .ic-stars svg { width: 9px; height: 9px; }
+        .shell.pt .info-compat .ic-sub { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .shell.pt .info-compat .ic-empty { font-size: 10px; }
+        /* 竖版描述专用 — 已由 ic-sub 替代，隐藏 */
+        .pt-compat-desc { display: none; }
+        .shell.pt .pt-compat-desc { display: none; }
+        /* 兼容性标签 */
+        .ic-compat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+        /* 共용 텍스트 */
+        .ic-score-row { display: flex; align-items: baseline; gap: 8px; margin: 4px 0 3px; }
+        .ic-score { font-size: 26px; font-weight: 800; color: #fff; }
+        .ic-stars { display: flex; gap: 2px; align-items: center; }
+        .ic-sub { font-size: 11px; color: var(--text-sub); }
+        .ic-empty { font-size: 12px; color: var(--text-sub); line-height: 1.5; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px; }
+        .ic-empty .ic-icon { font-size: 18px; color: rgba(255,255,255,0.2); margin-bottom: 0; }
+        .ic-icon { font-size: 18px; color: #b0bec5; }
+        .ic-val-label { font-size: 11px; color: var(--text-sub); }
+        .ic-val { font-size: 13px; font-weight: 600; color: #fff; }
+
+        /* ---- 可玩性等级（替代星级，突出是否可玩） ---- */
+        .level-perfect { color: #6fffa8; background: rgba(80,200,120,0.14); border: 1px solid rgba(80,200,120,0.42); }
+        .level-basic { color: #4db4ff; background: rgba(0,157,255,0.14); border: 1px solid rgba(0,157,255,0.42); }
+        .level-partial { color: #ffb454; background: rgba(255,170,50,0.16); border: 1px solid rgba(255,170,50,0.42); }
+        .level-unplayable { color: #ff6b6b; background: rgba(255,80,80,0.14); border: 1px solid rgba(255,80,80,0.42); }
+        .level-text-perfect { color: #6fffa8; }
+        .level-text-basic { color: #4db4ff; }
+        .level-text-partial { color: #ffb454; }
+        .level-text-unplayable { color: #ff6b6b; }
+        /* 入口卡等级胶囊 */
+        .ic-level-row { display: flex; align-items: center; gap: 8px; margin: 6px 0 5px; }
+        .ic-level-pill { display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 9px; font-size: 16px; font-weight: 800; line-height: 1.2; }
+        .shell.pt .ic-level-pill { font-size: 14px; padding: 4px 11px; }
+        /* 评价列表项等级胶囊（醒目主标签） */
+        .ci-level { display: inline-flex; align-items: center; padding: 3px 11px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+        /* 概览卡主等级 */
+        .ov-level-big { font-size: 30px; font-weight: 900; line-height: 1.15; margin-bottom: 6px; }
+
+        /* 横版右列 PC游戏引擎卡（横铺满底部） */
+        .shell.ls #detailPanel { flex: none; }
+        .ls-engine-card {
+            background: linear-gradient(135deg, #1c2535 0%, #111620 100%);
+            border-top: 1px solid rgba(255,255,255,0.07);
+            margin-top: auto;
+        }
+        .ls-engine-hdr {
+            padding: 12px 20px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; align-items: center;
+        }
+        .ls-engine-card .info-card-body { flex-direction: row; }
+        .ls-engine-card .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .ls-engine-card .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .ls-engine-card .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .ls-engine-card .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .ls-engine-card .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        /* 横版时隐藏右列的 ls-engine-card（PC游戏引擎在左列显示），竖版时显示 */
+        .shell.ls .col-right .ls-engine-card { display: none; }
+        .shell.pt .col-right .ls-engine-card { display: none; }
+        /* 横版左列 info-card：水平布局与 ls-engine-card 相同 */
+        .shell.ls .col-left .info-card .info-card-body { flex-direction: row; }
+        .shell.ls .col-left .info-compat {
+            flex: 1.3; padding: 14px 20px 16px; cursor: pointer; transition: background 0.2s;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; justify-content: center;
+            position: relative;
+        }
+        .shell.ls .col-left .info-compat:hover { background: rgba(255,255,255,0.03); }
+        .shell.ls .col-left .info-sub-row { flex: 1; display: flex; flex-direction: row; }
+        .shell.ls .col-left .info-time {
+            flex: 1; padding: 14px 14px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .shell.ls .col-left .info-cloud {
+            flex: 1; padding: 14px 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+
+        /* 横版：左列视频下方开发商信息横排 */
+        .ls-dev-bar {
+            display: none;
+            padding: 10px 30px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-wrap: wrap; gap: 0 24px; align-items: center;
+        }
+        .shell.ls .ls-dev-bar { display: flex; }
+        .ls-dev-item { display: flex; align-items: center; gap: 6px; }
+        .ls-dev-item .dev-label { font-size: 11px; color: var(--text-sub); white-space: nowrap; }
+        .ls-dev-item .dev-val { font-size: 11px; color: #ddd; font-weight: 500; white-space: nowrap; }
+        /* 横版右列 dev-info-list 隐藏 */
+        .shell.ls .col-right .dev-info-list { display: none; }
+
+        /* ---- 游戏介绍 ---- */
+        .section-header { margin-bottom: 16px; font-size: 17px; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; }
+        .section-header::before { content: ''; width: 4px; height: 17px; background: var(--primary-blue); border-radius: 2px; }
+        .intro-lead { font-size: 13px; color: #ccc; line-height: 1.7; background: rgba(255,255,255,0.04); padding: 14px; border-radius: 10px; margin-bottom: 20px; }
+        .rich-img { width: 100%; border-radius: 8px; margin-bottom: 10px; display: block; border: 1px solid rgba(255,255,255,0.06); }
+
+        /* ---- 右列状态栏 & 游戏信息 ---- */
+        .status-bar { height: 40px; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; gap: 10px; font-size: 12px; flex-shrink: 0; }
+        .game-meta { padding: 8px 20px 20px; display: flex; flex-direction: column; }
+        .title-block { margin-bottom: 14px; }
+        .title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+        .game-title { font-size: 26px; font-weight: 800; color: white; line-height: 1.2; }
+        .btn-share-icon {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--btn-dark);
+            display: flex; align-items: center; justify-content: center;
+            color: #aaa; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;
+        }
+        .btn-share-icon:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .game-subtitle { font-size: 12px; color: var(--text-sub); }
+        .rating-capsule { display: flex; height: 30px; border-radius: 6px; overflow: hidden; margin-bottom: 18px; width: fit-content; cursor: pointer; }
+        .rc-left { background: linear-gradient(90deg, #2c3e50, #34495e); padding: 0 10px; display: flex; align-items: center; gap: 5px; color: #d1d5db; font-size: 12px; font-weight: 600; }
+        .rc-right { background: #181b21; padding: 0 10px; display: flex; align-items: center; color: #6fffa8; font-size: 15px; font-weight: 700; }
+        .tags-group { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
+        .tag-hot { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 3px; }
+        .tag-normal { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); padding: 3px 9px; border-radius: 4px; font-size: 11px; }
+        .action-buttons-group { display: flex; gap: 9px; align-items: stretch; margin-bottom: 20px; position: relative; }
+        .btn-menu { width: 46px; height: 46px; flex-shrink: 0; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .btn-cloud { flex: 1; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; height: 46px; transition: 0.2s; }
+        .btn-get { flex: 1.5; background: var(--blue-gradient); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0,157,255,0.3); height: 46px; transition: 0.2s; }
+        .btn-menu:active, .btn-cloud:active, .btn-get:active { transform: scale(0.96); }
+        .menu-popup { position: absolute; top: 55px; left: 0; width: 180px; background: var(--popup-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: none; flex-direction: column; overflow: hidden; z-index: 100; }
+        .menu-item { padding: 11px 15px; font-size: 13px; color: #ccc; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 9px; }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { background: rgba(255,255,255,0.1); color: white; }
+        .text-danger { color: #ff4d4f; }
+        .dev-info-list { display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); padding: 8px 0; }
+        .dev-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .dev-row:last-child { border-bottom: none; }
+        .dev-label { font-size: 12px; color: var(--text-sub); }
+        .dev-val { font-size: 12px; color: #fff; font-weight: 500; text-align: right; }
+
+        /* ---- 竖屏底部栏 ---- */
+        .bottom-bar {
+            display: none; height: 76px; flex-shrink: 0;
+            background: var(--panel-bg); border-top: 1px solid var(--divider);
+            padding: 12px 16px; align-items: center; gap: 10px;
+        }
+        .btn-cloud-pt { flex: 1; height: 48px; background: var(--btn-dark); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .btn-get-pt { flex: 2; height: 48px; background: var(--blue-gradient); border-radius: var(--radius-btn); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(0,157,255,0.3); }
+
+        /* ---- 分享弹窗 ---- */
+        .share-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .share-overlay.show { opacity: 1; pointer-events: auto; }
+        .share-modal {
+            background: #17191e; border-radius: 24px; width: 400px; padding: 24px 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            transform: translateY(20px) scale(0.95); transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275); position: relative;
+        }
+        .share-overlay.show .share-modal { transform: translateY(0) scale(1); }
+        .share-header { text-align: center; margin-bottom: 24px; position: relative; }
+        .share-title { font-size: 16px; font-weight: 700; color: #fff; }
+        .share-close { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 20px; color: #777; cursor: pointer; transition: 0.2s; }
+        .share-close:hover { color: #fff; }
+        .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 8px; }
+        .share-option { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+        .share-icon-circle { width: 52px; height: 52px; border-radius: 50%; background: #25282e; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; transition: 0.2s; }
+        .share-option:hover .share-icon-circle { background: #32363e; transform: scale(1.08) translateY(-2px); }
+        .share-option span { font-size: 12px; color: #9aa0a6; transition: 0.2s; }
+        .share-option:hover span { color: #fff; }
+        .share-icon-circle svg { width: 28px; height: 28px; stroke: #fff; }
+
+        /* =========================================
+           兼容性评价面板（旧：已废弃）
+           ========================================= */
+        .compat-panel { display: none !important; }
+        .compat-panel-pt { display: none !important; }
+
+        /* =========================================
+           兼容性评价全屏页面（从右侧滑入）
+           ========================================= */
+        .compat-page {
+            position: absolute; inset: 0;
+            background: var(--bg-dark);
+            z-index: 80;
+            display: flex; flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+            will-change: transform;
+        }
+        .compat-page.show { transform: translateX(0); }
+
+        .compat-page-hdr {
+            padding: 12px 16px 10px; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--divider); flex-shrink: 0;
+            background: var(--panel-bg);
+        }
+        .compat-page-back {
+            width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: rgba(255,255,255,0.7); transition: 0.2s; flex-shrink: 0;
+        }
+        .compat-page-back:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .compat-page-title { font-size: 15px; font-weight: 700; color: #fff; }
+        .compat-page-body { flex: 1; overflow-y: auto; }
+        .compat-page-body::-webkit-scrollbar { display: none; }
+        /* 横版页面：评价2列；概览卡限半宽 */
+        .shell.ls .compat-page .compat-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+        .shell.ls .compat-page .compat-item:nth-last-child(-n+2) { border-bottom: none; }
+        .shell.ls .compat-overview { max-width: 50%; }
+
+        /* 概览卡 */
+        .compat-overview { padding: 18px 20px; display: flex; gap: 18px; align-items: center; }
+        .ov-summary { flex: 0 0 116px; min-width: 0; }
+        .ov-summary .ov-level-big { font-size: 26px; white-space: nowrap; }
+        .compat-overview > .dist-bars { flex: 1; min-width: 0; margin-top: 0; }
+        .compat-overview .dist-row { gap: 6px; }
+        .compat-overview .dist-cnt { width: 16px; }
+        .ov-score-big { font-size: 50px; font-weight: 900; color: #fff; line-height: 1; min-width: 70px; }
+        .ov-right { flex: 1; }
+        .ov-stars { display: flex; gap: 4px; margin-bottom: 6px; align-items: center; }
+        .ov-count { font-size: 12px; color: var(--text-sub); }
+        .dist-bars { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .dist-row { display: flex; align-items: center; gap: 8px; }
+        .dist-lbl { font-size: 11px; color: var(--text-sub); width: 26px; text-align: right; flex-shrink: 0; }
+        .dist-track { flex: 1; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .dist-fill { height: 100%; background: var(--star-yellow); border-radius: 3px; transition: width 0.4s; }
+        .dist-cnt { font-size: 11px; color: var(--text-sub); width: 20px; flex-shrink: 0; }
+
+        /* 工具栏 */
+        .compat-toolbar {
+            padding: 0 20px 14px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+        }
+        .compat-chips { display: flex; gap: 6px; flex: 1; }
+        .chip {
+            padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+            cursor: pointer; border: 1px solid transparent; transition: 0.2s;
+        }
+        .chip.active { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
+        .btn-feedback {
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+            background: var(--blue-gradient); color: #fff; cursor: pointer; white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(0,157,255,0.3); transition: 0.2s;
+        }
+        .btn-feedback:hover { opacity: 0.9; }
+
+        /* 评价列表 */
+        .compat-list { padding: 0 20px; }
+        /* 横版单列 */
+        .shell.ls .compat-list { display: block; }
+        .compat-item { border-bottom: 1px solid var(--divider); padding: 14px 0; }
+        .compat-item:last-child { border-bottom: none; }
+        .ci-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .ci-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; flex-shrink: 0; object-fit: cover; }
+        .ci-meta { flex: 1; }
+        .ci-name { font-size: 13px; font-weight: 600; color: #ddd; }
+        .ci-device { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+        .ci-footer { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .ci-like-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 12px; color: var(--text-sub); cursor: pointer;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; transition: 0.2s; white-space: nowrap; flex-shrink: 0; user-select: none;
+        }
+        .ci-like-btn:hover { color: #f5c518; border-color: rgba(245,197,24,0.4); }
+        .ci-like-btn.liked { color: #f5c518; border-color: rgba(245,197,24,0.5); background: rgba(245,197,24,0.08); }
+        .ci-like-btn.liked svg { fill: #f5c518; }
+        .ci-like-btn svg { transition: 0.2s; fill: rgba(255,255,255,0.35); }
+        .ci-report-btn {
+            display: inline-flex; align-items: center;
+            font-size: 12px; color: var(--text-sub); cursor: pointer;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; transition: 0.2s; white-space: nowrap; flex-shrink: 0;
+        }
+        .ci-report-btn:hover { color: #ff7875; border-color: rgba(255,120,117,0.4); }
+        .ci-report-btn.reported { color: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.06); cursor: default; pointer-events: none; }
+        .ci-mine-actions { display: flex; gap: 6px; }
+        .ci-edit-btn, .ci-delete-btn {
+            display: inline-flex; align-items: center; gap: 3px;
+            font-size: 12px; cursor: pointer;
+            padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+            background: transparent; transition: 0.2s; white-space: nowrap; flex-shrink: 0;
+        }
+        .ci-edit-btn { color: var(--text-sub); }
+        .ci-edit-btn:hover { color: #69b1ff; border-color: rgba(105,177,255,0.4); }
+        .ci-delete-btn { color: var(--text-sub); }
+        .ci-delete-btn:hover { color: #ff7875; border-color: rgba(255,120,117,0.4); }
+        .ci-stars { display: flex; gap: 3px; margin-bottom: 6px; }
+        .ci-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+        .ci-tag { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.55); padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .ci-text { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+        .ci-date { font-size: 11px; color: var(--text-sub); margin-top: 6px; }
+
+        /* 加载更多 */
+        .load-more {
+            margin: 14px 20px 24px; height: 40px; border-radius: 10px;
+            background: rgba(255,255,255,0.05); color: #aaa;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.08); transition: 0.2s;
+        }
+        .load-more:hover { background: rgba(255,255,255,0.09); color: #fff; }
+
+        /* 空状态 */
+        .compat-empty { padding: 40px 20px; text-align: center; color: var(--text-sub); font-size: 14px; }
+
+        /* =========================================
+           通用弹窗
+           ========================================= */
+        .modal-mask {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);
+            z-index: 1000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s;
+        }
+        .modal-mask.show { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: #1e2124; border-radius: 20px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            width: 380px; max-width: 95%;
+            transform: translateY(20px) scale(0.97);
+            transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .modal-mask.show .modal-box { transform: translateY(0) scale(1); }
+        .modal-hdr {
+            padding: 18px 20px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .modal-hdr-title { font-size: 17px; font-weight: 800; color: #fff; }
+        .modal-x { cursor: pointer; color: rgba(255,255,255,0.4); transition: 0.2s; }
+        .modal-x:hover { color: #fff; }
+        .modal-body { padding: 18px 20px; }
+        .modal-footer {
+            padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.15); display: flex; justify-content: flex-end; gap: 10px;
+        }
+
+        /* 表单 */
+        .fb-row { margin-bottom: 14px; }
+        .fb-lbl { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; }
+        .fb-lbl-device { color: rgba(255,255,255,0.32); font-size: 11px; margin-left: 2px; }
+        .fb-device-box { font-size: 13px; color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; }
+        .fb-tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+        .fb-tag {
+            padding: 5px 12px; border-radius: 6px; font-size: 12px;
+            background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55);
+            border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: 0.2s;
+        }
+        .fb-tag.active { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
+        .fb-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 14px 0; }
+        .fb-textarea {
+            width: 100%; min-height: 70px; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+            padding: 10px 12px; color: #fff; font-size: 13px; resize: none; outline: none;
+            box-sizing: border-box; font-family: inherit;
+        }
+        .fb-textarea:focus { border-color: rgba(0,157,255,0.4); }
+        .fb-editor-toolbar {
+            display: flex; gap: 4px; padding: 6px 8px; background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1); border-bottom: none;
+            border-radius: 10px 10px 0 0;
+        }
+        .fb-editor-btn {
+            width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .fb-editor-btn:hover { background: rgba(255,255,255,0.1); }
+        .fb-editor-btn.active { background: rgba(0,157,255,0.15); border-color: rgba(0,157,255,0.4); }
+        .fb-editor-btn svg { width: 14px; height: 14px; fill: rgba(255,255,255,0.7); }
+        .fb-editor-content {
+            width: 100%; min-height: 70px; max-height: 150px; overflow-y: auto;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0 0 10px 10px; padding: 10px 12px; color: #fff; font-size: 13px;
+            outline: none; box-sizing: border-box;
+        }
+        .fb-editor-content:focus { border-color: rgba(0,157,255,0.4); }
+        .fb-editor-content:empty:before { content: attr(data-placeholder); color: rgba(255,255,255,0.3); }
+        .fb-media-upload {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px;
+        }
+        .fb-media-item {
+            position: relative; width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .fb-media-item img, .fb-media-item video {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .fb-media-remove {
+            position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
+            background: rgba(0,0,0,0.7); border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer;
+        }
+        .fb-media-remove svg { width: 12px; height: 12px; stroke: #fff; }
+        .fb-media-add {
+            aspect-ratio: 1; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.03); display: flex; align-items: center;
+            justify-content: center; cursor: pointer; transition: 0.2s;
+        }
+        .fb-media-add:hover { background: rgba(255,255,255,0.08); border-color: rgba(0,157,255,0.4); }
+        .fb-media-add svg { width: 24px; height: 24px; fill: rgba(255,255,255,0.4); }
+        .btn-cancel {
+            padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7); transition: 0.2s;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+        .btn-submit {
+            padding: 8px 20px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+            background: var(--blue-gradient); color: #fff; border: none;
+            box-shadow: 0 3px 12px rgba(0,157,255,0.3); transition: 0.2s;
+        }
+        .btn-submit:hover { opacity: 0.9; }
+
+        /* ---- 更多菜单 ---- */
+        .ci-more-btn {
+            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+            background: transparent; color: rgba(255,255,255,0.4); font-size: 16px; font-weight: 700;
+            cursor: pointer; border-radius: 50%; transition: background 0.15s; flex-shrink: 0;
+            letter-spacing: -1px; line-height: 1; user-select: none;
+        }
+        .ci-more-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+        .ci-more-menu {
+            position: absolute; right: 0; top: 28px; z-index: 200;
+            background: #252830; border-radius: 8px; width: 120px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6); overflow: hidden;
+        }
+        .ci-more-item {
+            display: block; width: 100%; border: 0; background: transparent; text-align: left; font-family: inherit;
+            padding: 10px 14px; font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer;
+            transition: background 0.15s;
+        }
+        .ci-more-item:hover { background: rgba(255,255,255,0.08); }
+
+        /* ---- Toast ---- */
+        #toast {
+            position: fixed; bottom: var(--toast-bottom, 80px); left: 50%; transform: translateX(-50%);
+            background: rgba(30,30,40,0.96); color: #fff; padding: 10px 20px;
+            border-radius: 20px; font-size: 13px; font-weight: 600;
+            max-width: calc(100vw - 32px); white-space: nowrap;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 9999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        #toast.show { opacity: 1; }
+
+        /* ===== GUANWANGGAID-25 v1.2：仅任务专属 Demo 使用 ===== */
+        [hidden] { display: none !important; }
+        button, input, textarea { font: inherit; }
+        button { color: inherit; }
+        .fas, .far, .fab {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1em; height: 1em; font-style: normal; vertical-align: -0.08em;
+        }
+        .fas::before, .far::before, .fab::before {
+            content: ''; width: 0.52em; height: 0.52em; border: 1.5px solid currentColor;
+            border-radius: 2px; box-sizing: border-box;
+        }
+        .fa-chevron-left::before { content: '‹'; width: auto; height: auto; border: 0; font-size: 1.5em; line-height: 1; }
+        .fa-chevron-right::before { content: '›'; width: auto; height: auto; border: 0; font-size: 1.25em; line-height: 1; }
+        .fa-times::before { content: '×'; width: auto; height: auto; border: 0; font-size: 1.2em; line-height: 1; }
+        .fa-star::before {
+            border: 0; background: currentColor;
+            clip-path: polygon(50% 0,61% 35%,98% 35%,68% 56%,79% 92%,50% 70%,21% 92%,32% 56%,2% 35%,39% 35%);
+        }
+        .fa-play::before { border: 0; border-left: 0.62em solid currentColor; border-top: 0.38em solid transparent; border-bottom: 0.38em solid transparent; border-radius: 0; width: 0; height: 0; }
+        .fa-pause::before { border: 0; width: 0.6em; height: 0.72em; background: linear-gradient(90deg,currentColor 0 32%,transparent 32% 66%,currentColor 66%); }
+
+        .media-wireframe {
+            position: relative; overflow: hidden; background: #15171a;
+            border: 1px solid rgba(255,255,255,.14);
+        }
+        .media-wireframe::before,
+        .media-wireframe::after {
+            content: ''; position: absolute; left: 50%; top: 50%; width: 140%; height: 1px;
+            background: rgba(255,255,255,.12); transform-origin: center;
+        }
+        .media-wireframe::before { transform: translate(-50%,-50%) rotate(24deg); }
+        .media-wireframe::after { transform: translate(-50%,-50%) rotate(-24deg); }
+        .media-wireframe-label {
+            position: absolute; inset: 0; display: grid; place-items: center;
+            color: #73777f; font-size: 12px; letter-spacing: .04em;
+        }
+        .rich-img.media-wireframe { min-height: 150px; }
+        .review-avatar-wireframe { width: 32px; height: 32px; border-radius: 50%; }
+
+        .btn-start-game {
+            flex: 1; min-height: 46px; border: 0; border-radius: var(--radius-btn);
+            background: var(--blue-gradient); color: #fff; font-size: 14px; font-weight: 700;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,157,255,.3);
+        }
+        .current-applied-solution {
+            margin: -6px 0 16px 55px; padding: 8px 10px; border-radius: 8px;
+            color: #8de5f5; background: rgba(43,195,223,.08); border: 1px solid rgba(43,195,223,.18);
+            font-size: 11px; line-height: 1.45;
+        }
+        .runtime-stage {
+            position: fixed; inset: 0; z-index: 4000; display: flex; align-items: center;
+            justify-content: center; padding: 16px; background: #1a1a2e;
+        }
+        .runtime-stage[hidden] { display: none; }
+        .runtime-device-frame {
+            position: relative;
+            width: min(916px, calc(100vw - 32px), calc((100vh - 32px) * 2.0088));
+            aspect-ratio: 916 / 456; padding: 14px; border-radius: 44px; background: #1c1c1e;
+            box-shadow: 0 0 0 2px #3a3a3c, 0 0 0 6px #1c1c1e,
+                0 0 0 8px #3a3a3c, 0 30px 80px rgba(0,0,0,.9);
+        }
+        .runtime-device-frame::before {
+            content: ''; position: absolute; right: -10px; top: 80px; width: 4px; height: 60px;
+            border-radius: 2px; background: #3a3a3c; box-shadow: 0 80px 0 #3a3a3c;
+        }
+        .runtime-device-screen {
+            position: relative; width: 100%; height: 100%; overflow: hidden;
+            border-radius: 30px; background: #050607;
+        }
+        .journey-layer {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px; background: #090a0c;
+        }
+        .journey-layer[hidden], .gameplay-layer[hidden] { display: none; }
+        .launch-spinner {
+            width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.12);
+            border-top-color: #43c4df; animation: journey-spin .8s linear infinite;
+        }
+        @keyframes journey-spin { to { transform: rotate(360deg); } }
+        .gameplay-layer {
+            position: absolute; inset: 0; display: flex; align-items: center;
+            justify-content: center; overflow: hidden; background: #050607;
+        }
+        .gameplay-wireframe { position: absolute; inset: 0; border: 0; }
+        .gameplay-runtime {
+            position: absolute; left: 18px; top: 16px; z-index: 2; padding: 7px 10px;
+            border-radius: 8px; background: rgba(0,0,0,.55); color: #c8cdd2; font-size: 11px;
+        }
+        .game-exit-button {
+            position: absolute; right: 18px; top: 14px; z-index: 2; min-width: 92px; height: 36px;
+            border-radius: 9px; border: 1px solid rgba(255,255,255,.16); background: rgba(20,22,26,.84);
+            color: #fff; cursor: pointer;
+        }
+        .exit-confirm {
+            position: absolute; inset: 0; z-index: 3; display: grid; place-items: center;
+            background: rgba(0,0,0,.72); backdrop-filter: blur(10px);
+        }
+        .exit-confirm-card {
+            width: min(330px, calc(100% - 40px)); padding: 20px; border-radius: 16px;
+            background: #202328; border: 1px solid rgba(255,255,255,.12); text-align: center;
+        }
+        .exit-confirm-card strong { display: block; margin-bottom: 7px; font-size: 17px; }
+        .exit-confirm-card p { color: #8e99a3; font-size: 12px; margin-bottom: 18px; }
+        .exit-confirm-actions { display: flex; gap: 9px; }
+        .exit-confirm-actions button { flex: 1; height: 38px; border: 0; border-radius: 9px; cursor: pointer; }
+        .exit-confirm-actions button:first-child { color: #d5dbe0; background: #30343a; }
+        .exit-confirm-actions button:last-child { color: #fff; background: linear-gradient(#159ccb,#0872a8); }
+
+        .modal-mask { transition: none; }
+        .modal-box { max-height: calc(100% - 24px); display: flex; flex-direction: column; }
+        .modal-body { overflow-y: auto; }
+        .fb-tag { appearance: none; }
+        .fb-tag[aria-pressed="true"] { background: rgba(0,157,255,0.15); color: var(--primary-blue); border-color: rgba(0,157,255,0.4); }
+        .fb-solution-section { padding: 0; border: 0; background: transparent; }
+        .fb-solution-toggle { display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(255,255,255,.035); cursor: pointer; }
+        .fb-solution-toggle:hover { border-color: rgba(64,165,255,.42); background: rgba(64,165,255,.055); }
+        .fb-solution-toggle input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: #338feb; cursor: pointer; }
+        .fb-solution-copy { min-width: 0; flex: 1; }
+        .fb-solution-copy strong { display: block; color: #eef3f6; font-size: 13px; line-height: 1.35; }
+        .fb-solution-name { display: block; margin-top: 3px; color: #9aa8b2; font-size: 11px; line-height: 1.5; }
+
+        .flow-page { position: absolute; inset: 0; z-index: 1200; display: flex; flex-direction: column; background: #0f1115; }
+        .flow-page-header { min-height: 54px; padding: 11px 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--divider); background: #15181d; }
+        .flow-back { width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.06); cursor: pointer; }
+        .flow-title { font-size: 15px; font-weight: 800; }
+        .flow-page-body { flex: 1; overflow-y: auto; padding: 18px; }
+        .flow-card { max-width: 620px; margin: 0 auto 14px; border: 1px solid rgba(255,255,255,.09); background: #171a1f; border-radius: 14px; padding: 16px; }
+        .flow-kicker { font-size: 11px; color: #55d1e7; margin-bottom: 5px; }
+        .flow-card h3 { font-size: 17px; margin-bottom: 7px; }
+        .flow-copy { color: #91a0ad; font-size: 12px; line-height: 1.65; }
+        .flow-field { margin-top: 14px; }
+        .flow-field label { display: block; color: #8999a5; font-size: 11px; margin-bottom: 6px; }
+        .flow-field input, .flow-field textarea { width: 100%; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); color: #fff; border-radius: 9px; padding: 10px 11px; outline: 0; }
+        .flow-field textarea { min-height: 78px; resize: none; }
+        .flow-config { margin-top: 12px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+        .flow-config div { padding: 9px; border-radius: 9px; background: rgba(255,255,255,.035); color: #a5b1ba; font-size: 11px; }
+        .flow-actions { max-width: 620px; width: 100%; margin: auto; display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; }
+        .flow-actions button { border: 0; border-radius: 9px; padding: 9px 14px; cursor: pointer; }
+        .flow-actions button:not(.primary) { background: #24282f; color: #d5dde3; border: 1px solid rgba(255,255,255,.18); }
+        .flow-actions button:not(.primary):hover { background: #30353d; color: #fff; border-color: rgba(255,255,255,.3); }
+        .flow-actions button:not(.primary):focus-visible { outline: 2px solid #49cee5; outline-offset: 2px; background: #30353d; color: #fff; }
+        .flow-actions .primary { background: linear-gradient(#159ccb,#0872a8); color: #fff; }
+
+        .solution-detail-page {
+            position: absolute; inset: 0; z-index: 1200; display: flex; flex-direction: column;
+            background: #0f1115;
+        }
+        .solution-detail-header {
+            min-height: 58px; padding: 11px 14px; display: grid;
+            grid-template-columns: 32px minmax(0,1fr) 32px; align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--divider); background: rgba(15,17,21,.98);
+        }
+        .solution-detail-header .flow-title { text-align: center; }
+        .solution-refresh {
+            width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent;
+            color: #e7edf1; font-size: 25px; line-height: 1; cursor: pointer;
+        }
+        .solution-refresh:hover { background: rgba(255,255,255,.06); }
+        .solution-refresh:focus-visible { outline: 2px solid #49cee5; outline-offset: 2px; }
+        .solution-detail-body {
+            flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+            padding: 18px 18px 28px; scrollbar-width: thin;
+        }
+        #solutionDetailContent { max-width: 620px; margin: 0 auto; }
+        #solutionDetailSchemeName { margin: 8px 0 12px; color: #f3f7f9; font-size: 25px; line-height: 1.25; }
+        .solution-gpu-tag {
+            display: inline-flex; padding: 7px 10px; border-radius: 8px;
+            background: rgba(255,255,255,.08); color: #dce5ea; font-size: 12px;
+        }
+        .solution-trust-summary {
+            margin: 16px 0 24px; padding: 11px 12px; border-radius: 10px;
+            color: #87e0ef; background: rgba(43,195,223,.07);
+            border: 1px solid rgba(43,195,223,.18); font-size: 12px; line-height: 1.55;
+        }
+        .solution-config-section { margin-bottom: 24px; }
+        .solution-config-title {
+            margin: 0 0 12px; padding-left: 12px; position: relative;
+            color: #f0f4f7; font-size: 17px; line-height: 24px;
+        }
+        .solution-config-title::before {
+            content: ''; position: absolute; left: 0; top: 4px; width: 3px; height: 16px;
+            border-radius: 3px; background: #2ca8ff;
+        }
+        .solution-config-card {
+            overflow: hidden; border: 1px solid rgba(255,255,255,.1);
+            border-radius: 14px; background: #15181c;
+        }
+        .solution-config-row {
+            padding: 14px 15px; display: grid; grid-template-columns: minmax(0,1fr) auto;
+            align-items: center; gap: 18px; border-bottom: 1px solid rgba(255,255,255,.06);
+        }
+        .solution-config-row:last-child { border-bottom: 0; }
+        .solution-config-label { color: #eef3f6; font-size: 14px; font-weight: 700; }
+        .solution-config-description { margin-top: 5px; color: #7f8991; font-size: 11px; line-height: 1.45; }
+        .solution-config-value {
+            max-width: 150px; padding: 6px 9px; border-radius: 7px;
+            border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.045);
+            color: #e9eef1; font-size: 12px; line-height: 1.4; text-align: right; overflow-wrap: anywhere;
+        }
+        .solution-detail-state {
+            max-width: 620px; min-height: 280px; margin: 0 auto; display: grid;
+            place-content: center; gap: 14px; color: #a5afb6; text-align: center;
+        }
+        .solution-detail-state p { margin: 0; font-size: 14px; }
+        .solution-detail-state button {
+            justify-self: center; border: 1px solid rgba(64,165,255,.42); border-radius: 9px;
+            padding: 8px 14px; background: rgba(64,165,255,.08); color: #79c4ff; cursor: pointer;
+        }
+        .solution-detail-actions {
+            flex: none; max-width: none; margin: 0; flex-direction: column; justify-content: stretch;
+            padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+            border-top: 1px solid rgba(255,255,255,.08); background: rgba(15,17,21,.97);
+        }
+        .solution-action-buttons { width: 100%; display: flex; gap: 8px; }
+        .solution-detail-actions button { min-height: 46px; flex: 1; }
+        .solution-detail-actions button:disabled {
+            cursor: not-allowed; color: #646b70; background: #24272b; border-color: transparent; box-shadow: none;
+        }
+        .solution-apply-result { width: 100%; display: grid; gap: 3px; color: #ffb37b; font-size: 11px; line-height: 1.45; }
+        .solution-apply-result[hidden], .solution-action-message[hidden] { display: none; }
+        .solution-action-message { padding: 0 2px; }
+        .review-solution-card { width: 100%; margin-top: 10px; padding: 11px 12px; display: block; text-align: left; color: inherit; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.035); border-radius: 12px; cursor: pointer; }
+        .review-solution-card:hover { border-color: rgba(64,165,255,.42); background: rgba(64,165,255,.055); }
+        .review-solution-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .review-solution-heading strong { color: #eef3f6; font-size: 12px; font-weight: 700; }
+        .review-solution-heading b { color: #7b8a94; font-size: 18px; font-weight: 400; }
+        .review-solution-card .review-solution-meta { display: block; margin-top: 4px; color: #81919c; font-size: 10px; line-height: 1.45; text-align: left; }
+        #copySolutionDialog { z-index: 1400; }
+        .copy-solution-box { width: 350px; }
+        .copy-solution-input {
+            width: 100%; margin-top: 12px; padding: 11px 12px; border: 1px solid rgba(255,255,255,.12);
+            border-radius: 9px; outline: 0; background: #111419; color: #fff;
+        }
+        .copy-solution-input:focus { border-color: rgba(64,165,255,.65); box-shadow: 0 0 0 2px rgba(64,165,255,.12); }
+        #sameConfigEmptyState { padding: 46px 20px; text-align: center; }
+        #sameConfigEmptyState strong { display: block; font-size: 15px; margin-bottom: 6px; }
+        #sameConfigEmptyState p { color: #7f909d; font-size: 12px; margin-bottom: 14px; }
+        #showAllReviewsButton { border: 1px solid rgba(43,195,223,.5); color: #67d7eb; background: rgba(43,195,223,.08); border-radius: 9px; padding: 8px 14px; cursor: pointer; }
+
+        @media (max-width: 1099px) {
+            body { gap: 0; display: block; }
+            .phone-frame { width: 100vw !important; height: 100vh !important; padding: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+            .phone-frame::before { display: none; }
+            .shell { border-radius: 0; }
+        }
+        @media (max-width: 520px) {
+            .modal-mask { align-items: flex-end; }
+            .modal-box { width: 100%; max-width: 100%; max-height: calc(100% - 12px); border-radius: 18px 18px 0 0; }
+            .modal-hdr { padding: 14px 16px; }
+            .modal-body { padding: 14px 16px; }
+            .modal-footer { padding: 12px 16px; }
+            .fb-row { margin-bottom: 10px; }
+            .flow-config { grid-template-columns: 1fr; }
+            .review-solution-card { align-items: flex-start; flex-direction: column; }
+            .review-solution-card span { text-align: left; }
+            .solution-detail-body { padding: 14px 14px 24px; }
+            #solutionDetailSchemeName { font-size: 22px; }
+            .solution-config-row { grid-template-columns: minmax(0,1fr) minmax(82px, 128px); gap: 12px; }
+            .solution-detail-actions { padding-left: 14px; padding-right: 14px; }
+        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame pt" id="phoneFrame">
+<div class="shell pt" id="shell" onclick="closeMenu()">
+    <div class="inner">
+
+        <!-- ===== 左列（滚动内容） ===== -->
+        <div class="col-left" id="colLeft">
+
+            <div class="media-container" onclick="togglePlay()">
+                <div id="gameHeroWireframe" class="media-content media-wireframe" role="img" aria-label="游戏视频占位"><span class="media-wireframe-label">游戏视频</span></div>
+                <div id="gameGalleryWireframe" class="media-content media-wireframe hidden" role="img" aria-label="游戏图集占位"><span class="media-wireframe-label">游戏图集</span></div>
+                <div class="back-btn" onclick="event.stopPropagation(); alert('返回')">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+                <div class="video-overlay">
+                    <i id="playPauseBtn" class="fas fa-pause play-pause-center"></i>
+                    <div class="video-controls-layer">
+                        <div class="progress-track" onclick="seekVideo(event); event.stopPropagation();">
+                            <div id="progressBar" class="progress-fill"></div>
+                        </div>
+                        <div class="controls-row">
+                            <div class="toggle-capsule" onclick="event.stopPropagation()">
+                                <div id="tabVideo" class="tc-btn active" onclick="switchMedia('video')">视频</div>
+                                <div id="tabGallery" class="tc-btn" onclick="switchMedia('gallery')">图集</div>
+                            </div>
+                            <div class="right-icons" onclick="event.stopPropagation()">
+                                <i id="muteBtn" class="fas fa-volume-mute" onclick="toggleMute()"></i>
+                                <i class="fas fa-expand-alt" onclick="alert('全屏')"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横版：视频下方开发商信息横排一行 -->
+            <div class="ls-dev-bar">
+                <div class="ls-dev-item"><span class="dev-label">开发商</span><span class="dev-val">Rockstar Games</span></div>
+                <div class="ls-dev-item"><span class="dev-label">发行日期</span><span class="dev-val">2015 年 4 月 14 日</span></div>
+                <div class="ls-dev-item"><span class="dev-label">年龄评级</span><span class="dev-val">18+</span></div>
+                <div class="ls-dev-item"><span class="dev-label">语言</span><span class="dev-val">中文、英文</span></div>
+            </div>
+
+            <div class="content-pad">
+
+                <!-- 三合一信息卡：兼容性评价 + 游玩时长 + 云存档 -->
+                <div class="info-card">
+                    <!-- 顶部 header：PC游戏引擎（无右侧文字，点击区域在下方兼容性评价处） -->
+                    <div class="info-card-hdr">
+                        <div class="ic-hdr-left">
+                            <i class="fas fa-desktop"></i>
+                            PC游戏引擎
+                        </div>
+                    </div>
+                    <!-- 主体：兼容性结论 + 游玩时长 + 云存档 -->
+                    <div class="info-card-body">
+                        <!-- 兼容性等级区（点击跳转页面） -->
+                        <div class="info-compat" id="openCompatibilityReviews" role="button" tabindex="0" onclick="openCompatPage()">
+                            <div class="ic-main">
+                                <!-- 标签 + 箭头 -->
+                                <div class="ic-compat-label">兼容性评价&nbsp;<i class="fas fa-chevron-right" style="font-size:8px;color:rgba(255,255,255,0.35);vertical-align:middle;"></i></div>
+                                <!-- 有数据态：可玩性等级 -->
+                                <div id="entryHasData">
+                                    <div class="ic-level-row">
+                                        <span class="ic-level-pill level-basic" id="entryLevel">基本可玩</span>
+                                    </div>
+                                </div>
+                                <!-- 无数据态（隐藏） -->
+                                <div id="entryNoData" class="ic-empty" style="display:none;">
+                                    <i class="fas fa-gamepad ic-icon" style="display:block; margin-bottom:4px;"></i>
+                                    暂无玩家兼容性反馈
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 游玩时长 + 云存档 -->
+                        <div class="info-sub-row">
+                            <div class="info-time">
+                                <div class="ic-val-label">游玩时长</div>
+                                <i class="far fa-clock ic-icon"></i>
+                                <div class="ic-val">139.3 小时</div>
+                            </div>
+                            <div class="info-cloud">
+                                <div class="ic-val-label">云存档</div>
+                                <i class="fas fa-cloud ic-icon" style="color:#6fffa8;"></i>
+                                <div class="ic-val">已是最新</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="currentAppliedSolution" class="current-applied-solution" hidden></div>
+
+                <!-- 游戏介绍 -->
+                <div class="section-header">游戏介绍</div>
+                <div class="intro-lead">
+                    洛圣都，一座充满活力与罪恶的城市。三位不同背景的罪犯——迈克尔、特雷弗和富兰克林，将联手策划一系列精密抢劫行动，挑战洛圣都乃至整个圣安地列斯的权贵与黑帮。超过60小时的主线剧情，以及几乎无尽的开放世界探索内容。
+                </div>
+                <div class="rich-img media-wireframe" role="img" aria-label="游戏介绍图片占位"><span class="media-wireframe-label">介绍图片</span></div>
+                <div class="rich-img media-wireframe" role="img" aria-label="游戏场景图片占位"><span class="media-wireframe-label">场景图片</span></div>
+
+                <div style="text-align:center; color:#444; font-size:12px; margin-top:40px;">- 到底了 -</div>
+            </div>
+        </div>
+
+        <!-- ===== 右列（横屏信息区） ===== -->
+        <div class="col-right" id="colRight">
+
+            <!-- 详情子面板 -->
+            <div id="detailPanel">
+                <div class="status-bar">
+                    <i class="fas fa-signal"></i>
+                    <i class="fas fa-wifi"></i>
+                    <i class="fas fa-battery-full"></i>
+                    <span>9:41</span>
+                </div>
+                <div class="game-meta">
+                    <div class="title-block">
+                        <div class="game-title">侠盗猎车手5</div>
+                        <div class="game-subtitle">Grand Theft Auto V</div>
+                    </div>
+                    <div class="rating-capsule">
+                        <div class="rc-left"><i class="fas fa-star" style="color:#6fffa8; font-size:10px;"></i>&nbsp;玩家评价: 特别好评</div>
+                        <div class="rc-right">97%</div>
+                    </div>
+                    <div class="tags-group">
+                        <div class="tag-hot"><i class="fas fa-fire"></i> 热门榜 TOP 3</div>
+                        <div class="tag-normal">开放世界</div>
+                        <div class="tag-normal">动作冒险</div>
+                        <div class="tag-normal">多人联机</div>
+                    </div>
+                    <div class="action-buttons-group">
+                        <div class="btn-menu" id="menuBtn" onclick="toggleMenu(event)">
+                            <i class="fas fa-th-large" style="color:#aaa; font-size:17px;"></i>
+                            <div class="menu-popup" id="menuPopup">
+                                <div class="menu-item" onclick="handleMenuClick('PC游戏设置')"><i class="fas fa-gamepad"></i> PC游戏设置</div>
+                                <div class="menu-item" onclick="handleMenuClick('添加到桌面')"><i class="fas fa-desktop"></i> 添加到桌面</div>
+                                <div class="menu-item" onclick="handleMenuClick('卸载游戏')">
+                                    <i class="fas fa-trash-alt text-danger"></i>
+                                    <span class="text-danger">卸载游戏</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="startGameLandscapeButton" class="btn-start-game" type="button" onclick="startGame()">启动游戏</button>
+                    </div>
+                    <div class="dev-info-list">
+                        <div class="dev-row"><span class="dev-label">开发商</span><span class="dev-val">Rockstar Games</span></div>
+                        <div class="dev-row"><span class="dev-label">发行日期</span><span class="dev-val">2015 年 4 月 14 日</span></div>
+                        <div class="dev-row"><span class="dev-label">年龄评级</span><span class="dev-val">18+</span></div>
+                        <div class="dev-row"><span class="dev-label">语言</span><span class="dev-val">中文、英文</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横版 PC游戏引擎卡（横铺满底部） -->
+            <div class="ls-engine-card">
+                <div class="info-card-hdr ls-engine-hdr">
+                    <div class="ic-hdr-left">
+                        <i class="fas fa-desktop"></i>
+                        PC游戏引擎
+                    </div>
+                </div>
+                <div class="info-card-body">
+                    <div class="info-compat" onclick="openCompatPage()">
+                        <div class="ic-main">
+                            <div class="ic-compat-label">兼容性评价&nbsp;<i class="fas fa-chevron-right" style="font-size:8px;color:rgba(255,255,255,0.35);vertical-align:middle;"></i></div>
+                            <div id="entryHasDataLs">
+                                <div class="ic-level-row">
+                                    <span class="ic-level-pill level-basic" id="entryLevelLs">基本可玩</span>
+                                </div>
+                            </div>
+                            <div id="entryNoDataLs" class="ic-empty" style="display:none;">
+                                    <i class="fas fa-gamepad ic-icon" style="display:block; margin-bottom:4px;"></i>
+                                    暂无玩家兼容性反馈
+                                </div>
+                        </div>
+                    </div>
+                    <div class="info-sub-row">
+                        <div class="info-time">
+                            <div class="ic-val-label">游玩时长</div>
+                            <i class="far fa-clock ic-icon"></i>
+                            <div class="ic-val">139.3 小时</div>
+                        </div>
+                        <div class="info-cloud">
+                            <div class="ic-val-label">云存档</div>
+                            <i class="fas fa-cloud ic-icon" style="color:#6fffa8;"></i>
+                            <div class="ic-val">已是最新</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 横屏兼容性面板（已废弃，改用统一弹窗，保留空壳） -->
+            <div class="compat-panel" id="compatPanelLs"></div>
+        </div>
+
+        <!-- 竖屏底部栏 -->
+        <div class="bottom-bar" id="bottomBar">
+            <button id="startGameButton" class="btn-start-game" type="button" onclick="startGame()">启动游戏</button>
+        </div>
+
+    </div><!-- /inner -->
+
+    <div id="runtimeStage" class="runtime-stage" hidden aria-label="游戏运行环境">
+        <div id="runtimeDeviceFrame" class="runtime-device-frame">
+            <div class="runtime-device-screen">
+                <section id="launchLayer" class="journey-layer" hidden aria-label="游戏启动中">
+                    <div class="launch-spinner" aria-hidden="true"></div>
+                    <strong>正在启动游戏</strong>
+                </section>
+                <section id="gameplayLayer" class="gameplay-layer" hidden aria-label="游戏运行中">
+                    <div id="gameplayWireframe" class="gameplay-wireframe media-wireframe" role="img" aria-label="横屏游戏画面占位">
+                        <span class="media-wireframe-label">横屏游戏画面</span>
+                    </div>
+                    <div class="gameplay-runtime">本次游玩 <span id="sessionRuntime">18:42</span></div>
+                    <button id="exitGameButton" class="game-exit-button" type="button" onclick="openExitGameConfirm()">退出游戏</button>
+                    <div id="exitGameConfirm" class="exit-confirm" hidden>
+                        <div class="exit-confirm-card">
+                            <strong>退出游戏？</strong>
+                            <p>当前游戏进度将按游戏自身规则保存。</p>
+                            <div class="exit-confirm-actions">
+                                <button type="button" onclick="closeExitGameConfirm()">取消</button>
+                                <button id="confirmExitGameButton" type="button" onclick="confirmExitGame()">退出游戏</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- 竖屏兼容性全屏面板（已废弃） -->
+    <div class="compat-panel-pt" id="compatPanelPt"></div>
+
+    <!-- ===== 兼容性评价全屏页面（从右滑入） ===== -->
+    <div class="compat-page" id="compatPage" style="display:none;">
+        <div class="compat-page-hdr">
+            <div class="compat-page-back" onclick="closeCompatPage()">
+                <i class="fas fa-chevron-left" style="font-size:13px;"></i>
+            </div>
+            <div class="compat-page-title">玩家兼容性评价</div>
+        </div>
+        <div class="compat-page-body">
+            <div class="compat-overview">
+                <div class="ov-summary">
+                    <div class="ov-level-big level-text-basic" id="ovLevelLs">基本可玩</div>
+                    <div class="ov-count" id="ovCountLs">10 条玩家评价</div>
+                </div>
+                <div class="dist-bars" id="distBarsLs"></div>
+            </div>
+            <div class="compat-toolbar">
+                <div class="compat-chips" id="chipsLs">
+                    <div class="chip active" data-view="device" onclick="setView('device',this,'ls')">同配置</div>
+                    <div class="chip" data-view="all" onclick="setView('all',this,'ls')">全部</div>
+                    <div class="chip" data-view="support" onclick="setView('support',this,'ls')">支持最多</div>
+                    <div class="chip" data-view="mine" onclick="setView('mine',this,'ls')">我的</div>
+                </div>
+                <div class="btn-feedback" id="manualReviewButton" onclick="openFeedbackModal({source:'manual'})">我要评价</div>
+            </div>
+            <div class="compat-list" id="listLs"></div>
+            <div class="load-more" id="loadMoreLs" style="display:none;" onclick="loadMore('ls')">加载更多</div>
+            <div class="compat-empty" id="emptyLs" style="display:none;">
+                <strong id="reviewEmptyTitle">暂无评价</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 复用现有启动方案详情的完整只读结构 -->
+    <section id="solutionDetailPage" class="solution-detail-page" hidden aria-label="本次启动配置详情">
+        <header class="solution-detail-header">
+            <button id="solutionDetailBack" class="flow-back" type="button" aria-label="返回评价列表" onclick="closeSolutionDetail()">‹</button>
+            <div class="flow-title">本次启动配置</div>
+            <button id="refreshSolutionDetail" class="solution-refresh" type="button" aria-label="刷新方案详情" onclick="reloadSolutionDetail()">↻</button>
+        </header>
+        <div id="solutionDetailBody" class="solution-detail-body">
+            <div id="solutionDetailState" class="solution-detail-state" hidden></div>
+            <div id="solutionDetailContent">
+                <h2 id="solutionDetailSchemeName"></h2>
+                <div id="solutionDetailGpu" class="solution-gpu-tag"></div>
+                <div id="solutionShareSummary" class="solution-trust-summary"></div>
+                <div id="solutionConfigGroups"></div>
+            </div>
+        </div>
+        <div id="solutionDetailActions" class="flow-actions solution-detail-actions">
+            <div id="solutionApplyResult" class="solution-apply-result" aria-live="polite" hidden>
+                <div id="solutionApplyReason" class="solution-action-message" hidden></div>
+                <div id="solutionCopyReason" class="solution-action-message" hidden></div>
+            </div>
+            <div class="solution-action-buttons">
+                <button id="applySolutionButton" class="primary" type="button" onclick="applyCurrentSolution()">应用</button>
+                <button id="copySolutionButton" type="button" onclick="copyCurrentSolution()">复制</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 分享弹窗 -->
+    <div id="shareOverlay" class="share-overlay" onclick="closeShareModal(event)">
+        <div class="share-modal" onclick="event.stopPropagation()">
+            <div class="share-header">
+                <div class="share-title">分享至</div>
+                <i class="fas fa-times share-close" onclick="closeShareModal(event)"></i>
+            </div>
+            <div class="share-grid">
+                <div class="share-option" onclick="handleShare('微信')"><div class="share-icon-circle"><i class="fab fa-weixin"></i></div><span>微信</span></div>
+                <div class="share-option" onclick="handleShare('朋友圈')">
+                    <div class="share-icon-circle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+                            <path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83m13.79-4l-5.74 9.94" stroke-width="2"></path>
+                        </svg>
+                    </div>
+                    <span>朋友圈</span>
+                </div>
+                <div class="share-option" onclick="handleShare('QQ')"><div class="share-icon-circle"><i class="fab fa-qq"></i></div><span>QQ</span></div>
+                <div class="share-option" onclick="handleShare('微博')"><div class="share-icon-circle"><i class="fab fa-weibo"></i></div><span>微博</span></div>
+                <div class="share-option" onclick="handleShare('X')"><div class="share-icon-circle"><i class="fab fa-x-twitter"></i></div><span>X</span></div>
+                <div class="share-option" onclick="handleShare('Facebook')"><div class="share-icon-circle"><i class="fab fa-facebook-f"></i></div><span>Facebook</span></div>
+                <div class="share-option" onclick="handleShare('Discord')"><div class="share-icon-circle"><i class="fab fa-discord"></i></div><span>Discord</span></div>
+                <div class="share-option" onclick="handleShare('复制链接')"><div class="share-icon-circle"><i class="fas fa-link"></i></div><span>复制链接</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 反馈弹窗 -->
+    <div id="modalFeedback" class="modal-mask" data-entry-source="manual" onclick="closeFeedbackOnMask(event)">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="feedbackModalTitle" onclick="event.stopPropagation()">
+            <div class="modal-hdr">
+                <div class="modal-hdr-title" id="feedbackModalTitle">兼容性评价</div>
+                <div class="modal-x" onclick="closeFeedbackModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="fb-row">
+                    <div class="fb-lbl">兼容性<span class="fb-lbl-device" id="fbDeviceInline">（设备：Pixel 9 Pro · Android 15 · Adreno 750）</span></div>
+                    <div class="fb-tags-wrap" id="fbTypeWrap" role="group" aria-label="兼容性">
+                        <button type="button" class="fb-tag" data-type="perfect" aria-pressed="false">完美兼容</button>
+                        <button type="button" class="fb-tag" data-type="basic" aria-pressed="false">基本可玩</button>
+                        <button type="button" class="fb-tag" data-type="partial" aria-pressed="false">部分兼容</button>
+                        <button type="button" class="fb-tag" data-type="unplayable" aria-pressed="false">不可玩</button>
+                    </div>
+                </div>
+                <div class="fb-divider"></div>
+                <div class="fb-row" style="margin-bottom:0;">
+                    <div class="fb-lbl" id="feedbackNoteLabel">补充说明（选填）</div>
+                    <div>
+                        <textarea class="fb-textarea" id="fbEditor" placeholder="详细描述遇到的问题或体验（选填，最多200字）" maxlength="200" style="height:80px;"></textarea>
+                        <div id="feedbackImageLimit" style="margin:10px 0 6px;color:var(--muted);font-size:11px;">最多上传9张图片</div>
+                        <div class="fb-media-upload" id="fbMediaList"></div>
+                    </div>
+                </div>
+                <section id="fbSolutionSection" class="fb-solution-section" hidden>
+                    <div class="fb-divider"></div>
+                    <div id="fbSolutionContent" class="fb-row"></div>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeFeedbackModal()">取消</button>
+                <button class="btn-submit" onclick="submitFeedback()">提交评价</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 复用现有“复制并保存方案”命名确认流程 -->
+    <div id="copySolutionDialog" class="modal-mask" hidden onclick="closeCopySolutionDialog(event)">
+        <div class="modal-box copy-solution-box" role="dialog" aria-modal="true" aria-labelledby="copySolutionDialogTitle" onclick="event.stopPropagation()">
+            <div class="modal-hdr">
+                <div id="copySolutionDialogTitle" class="modal-hdr-title">复制并保存方案</div>
+                <button class="modal-x" type="button" aria-label="关闭" onclick="closeCopySolutionDialog()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="flow-copy">方案将保存到“我的方案”中。</p>
+                <input id="copySolutionName" class="copy-solution-input" maxlength="30" aria-label="方案名称">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" type="button" onclick="closeCopySolutionDialog()">取消</button>
+                <button id="confirmCopySolutionButton" class="btn-submit" type="button" onclick="confirmCopyCurrentSolution()">确认复制</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 举报弹窗 -->
+    <div id="modalReport" class="modal-mask" onclick="closeReportOnMask(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-hdr">
+                <div class="modal-hdr-title">举报内容</div>
+                <div class="modal-x" onclick="closeReportModal()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">被举报内容</div>
+                <div id="reportSnippet" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px;color:rgba(255,255,255,0.8);font-size:13px;line-height:1.6;margin-bottom:16px;"></div>
+                <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">选择原因</div>
+                <div class="fb-tags-wrap" style="margin-bottom:14px;">
+                    <span class="fb-tag rr" onclick="selectReason(this)">辱骂攻击</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">广告引流</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">恶意刷分</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">与游戏无关</span>
+                    <span class="fb-tag rr" onclick="selectReason(this)">其他</span>
+                </div>
+                <textarea class="fb-textarea" id="reportNote" placeholder="补充说明（选填）" style="height:80px;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeReportModal()">取消</button>
+                <button class="btn-submit" onclick="submitReport()">提交举报</button>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /shell -->
+</div><!-- /phone-frame -->
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+//  数据层 — localStorage
+// ============================================================
+const LS_KEY = 'gh_compat_feedbacks_gta5_v12';
+const LS_REPORTED = 'gh_compat_reported_gta5_v12';
+const LS_LIKED = 'gh_compat_liked_gta5_v12';
+const REVIEW_SNAPSHOTS_KEY = 'gh_review_snapshots_v1';
+const REVIEW_SNAPSHOT_DISPLAY_NAME = '本次启动配置';
+const SEED_DATA_REVISION_KEY = 'gh_compat_seed_revision_gta5_v12';
+const SEED_DATA_REVISION = 'guest-states-v1';
+const REVIEW_SNAPSHOT_DIMENSIONS = Object.freeze({
+    gameId: 'gta5',
+    platform: 'android',
+    gpuModel: 'Adreno 750',
+    runtimeArchitecture: 'arm64',
+    engineVersion: 'demo-engine-v1',
+    schemaVersion: '1',
+    canonicalizerVersion: '1'
+});
+
+function createSeedSolutionConfigGroups() {
+    return [
+        {
+            key: 'general',
+            label: '通用',
+            items: [
+                { key: 'env', label: '环境变量', description: '配置容器环境变量，匹配特定程序需求', valueType: 'text', displayValue: '未配置' },
+                { key: 'args', label: '启动参数', description: '添加程序启动参数，用于启用特定功能或解决兼容性问题', valueType: 'text', displayValue: '-dx11' },
+                { key: 'exe_path', label: '启动文件路径（仅展示）', description: '选择要运行的游戏或程序的 .exe 文件路径', valueType: 'text', displayValue: '未配置' }
+            ]
+        },
+        {
+            key: 'compatibility',
+            label: '兼容性',
+            items: [
+                { key: 'wine_ver', label: '兼容层', description: '选择 Wine 版本，不同版本的兼容性支持程度不同', valueType: 'text', displayValue: 'proton10.0-arm64x-2' },
+                { key: 'dinput', label: 'Dinput 函数库', description: '决定 dinput.dll 和 dinput8.dll 优先使用游戏自带还是 Wine 内置版本', valueType: 'text', displayValue: '优先原装' },
+                { key: 'skip_video', label: '跳过音视频解码', description: '用于处理部分游戏启动视频的兼容问题', valueType: 'boolean', displayValue: '禁用' },
+                { key: 'surface', label: '表面格式', description: '影响图形表面兼容性', valueType: 'text', displayValue: 'R8G8B8A8' },
+                { key: 'audio_drv', label: '音频驱动', description: '控制容器音频输出', valueType: 'text', displayValue: 'PulseAudio' },
+                { key: 'dxvk', label: 'DXVK 版本', description: '将 DirectX 转译为 Vulkan', valueType: 'text', displayValue: '2.3（异步编译）' },
+                { key: 'vkd3d', label: 'VKD3D 版本', description: '将 DirectX 12 转译为 Vulkan', valueType: 'text', displayValue: '2.11.1' },
+                { key: 'cpu_trans', label: 'CPU 转译器', description: '负责 x86 到 ARM64 指令转译', valueType: 'text', displayValue: 'FEX-Emu' },
+                { key: 'cpu_core', label: 'CPU 核心限制', description: '控制运行时可使用的核心数量', valueType: 'text', displayValue: '不限制' },
+                { key: 'vram', label: '显存限制', description: '设置容器显存上限', valueType: 'text', displayValue: '4096 MB' }
+            ]
+        },
+        {
+            key: 'dependencies',
+            label: '组件依赖',
+            items: [
+                { key: 'cjkfonts', label: 'CJK 字体组件', description: '为游戏提供中日韩字体', valueType: 'boolean', displayValue: '已启用' }
+            ]
+        },
+        {
+            key: 'steam',
+            label: 'Steam',
+            items: [
+                { key: 'steam_input_exp', label: 'Steam Input（实验性）', description: '通过 Steam 输入层运行手柄配置', valueType: 'boolean', displayValue: '已启用' }
+            ]
+        }
+    ];
+}
+
+function cloneSolutionConfigGroups(groups) {
+    return Array.isArray(groups) ? JSON.parse(JSON.stringify(groups)) : [];
+}
+
+const SEED_REVIEW_SNAPSHOTS = Object.freeze({
+    review_snapshot_s1: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s1',
+        reviewId: 's1',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
+        status: 'available',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_adreno750_stable_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'Pixel用户_洛圣都',
+        playSessionId: 'seed_session_s1',
+        durationSeconds: 1122,
+        sharedAt: '2025-04-28T10:30:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: { canApply: true, applyDisabledReason: '', canCopy: true, copyDisabledReason: '' }
+    }),
+    review_snapshot_s2: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s2',
+        reviewId: 's2',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
+        status: 'available',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_galaxy_audio_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'Galaxy用户_富兰克林',
+        playSessionId: 'seed_session_s2',
+        durationSeconds: 965,
+        sharedAt: '2025-04-25T09:18:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: { canApply: true, applyDisabledReason: '', canCopy: true, copyDisabledReason: '' }
+    }),
+    review_snapshot_s4: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s4',
+        reviewId: 's4',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
+        status: 'deprecated',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_legacy_graphics_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'OnePlus_Trevor',
+        playSessionId: 'seed_session_s4',
+        durationSeconds: 863,
+        sharedAt: '2025-04-20T16:44:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: {
+            canApply: false,
+            applyDisabledReason: '方案已不可用',
+            canCopy: false,
+            copyDisabledReason: '方案已不可用'
+        }
+    }),
+    review_snapshot_s6: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s6',
+        reviewId: 's6',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
+        status: 'available',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_low_star_residual_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: '华为用户_特雷弗',
+        playSessionId: 'seed_session_s6',
+        durationSeconds: 731,
+        sharedAt: '2025-04-15T11:20:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: { canApply: true, applyDisabledReason: '', canCopy: true, copyDisabledReason: '' }
+    }),
+    review_snapshot_s8: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s8',
+        reviewId: 's8',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
+        status: 'invalid',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_invalid_guest_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'ROG玩家_老崔',
+        playSessionId: 'seed_session_s8',
+        durationSeconds: 1286,
+        sharedAt: '2025-04-10T08:15:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: { canApply: false, applyDisabledReason: '方案已不可用', canCopy: false, copyDisabledReason: '方案已不可用' }
+    }),
+    review_snapshot_s9: Object.freeze({
+        reviewSnapshotId: 'review_snapshot_s9',
+        reviewId: 'foreign-review',
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
+        status: 'available',
+        gameId: 'gta5',
+        platform: 'android',
+        gpuModel: 'Adreno 750',
+        gpu: { id: 'adreno-750', displayName: 'Adreno 750' },
+        runtimeArchitecture: 'arm64',
+        engineVersion: 'demo-engine-v1',
+        schemaVersion: '1',
+        canonicalizerVersion: '1',
+        configHash: 'cfg_foreign_owner_v1',
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: 'iQOO玩家_尼克',
+        playSessionId: 'seed_session_s9',
+        durationSeconds: 1540,
+        sharedAt: '2025-04-08T13:40:00.000Z',
+        configGroups: createSeedSolutionConfigGroups(),
+        actions: { canApply: true, applyDisabledReason: '', canCopy: true, copyDisabledReason: '' }
+    })
+});
+
+function getReportedSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_REPORTED) || '[]')); } catch(e) { return new Set(); }
+}
+function saveReportedSet(s) { localStorage.setItem(LS_REPORTED, JSON.stringify([...s])); }
+
+function getLikedSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(LS_LIKED) || '[]')); } catch(e) { return new Set(); }
+}
+function saveLikedSet(s) { localStorage.setItem(LS_LIKED, JSON.stringify([...s])); }
+const MY_UID = 'me_demo_user';
+
+const AVATARS = Array(7).fill('');
+
+const SEEDS = [
+    { id:'s1', uid:'u1', name:'Pixel用户_洛圣都', avatar:AVATARS[0], device:'Pixel 9 Pro · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'画面超级流畅，GTA线上也没有任何问题，手柄支持完美。', html:'画面<b>超级流畅</b>，GTA线上也没有任何问题，手柄支持完美。', date:'2025-04-28', likes:24, official:true, reviewState:'valid', reviewSnapshotId:'review_snapshot_s1', durationSeconds:1122 },
+    { id:'s2', uid:'u2', name:'Galaxy用户_富兰克林', avatar:AVATARS[1], device:'Samsung Galaxy S25 Ultra · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['完美兼容'], text:'整体体验非常好，主线剧情流畅，偶尔有轻微音效延迟但不影响游玩。', html:'整体体验非常好，主线剧情流畅，偶尔有<i>轻微音效延迟</i>但不影响游玩。', date:'2025-04-25', likes:17, reviewState:'valid', reviewSnapshotId:'review_snapshot_s2', durationSeconds:965 },
+    { id:'s3', uid:'u3', name:'小米用户_迈克尔', avatar:AVATARS[2], device:'Xiaomi 15 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.0.5', stars:5, tags:['完美兼容'], text:'启动过程很顺畅，进入游戏后画面稳定，手柄操作也没有异常。', date:'2025-04-22', likes:31 },
+    { id:'s4', uid:'u4', name:'OnePlus_Trevor', avatar:AVATARS[3], device:'OnePlus 13 · Android 15', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.5', stars:3, tags:['基本可玩'], text:'网络波动时会明显卡顿，手柄偶尔失灵需要重连，希望后续优化。', date:'2025-04-20', likes:8, reviewState:'unavailable', reviewSnapshotId:'review_snapshot_s4', durationSeconds:863 },
+    { id:'s5', uid:'u5', name:'OPPO用户_洛圣都警察', avatar:AVATARS[4], device:'OPPO Find X8 Pro · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.0.3', stars:4, tags:['完美兼容'], text:'剧情向玩家强烈推荐，云游戏方式省了100多G的存储空间，赞！', html:'剧情向玩家<b>强烈推荐</b>，云游戏方式省了100多G的存储空间，赞！', date:'2025-04-18', likes:12 },
+    { id:'s6', uid:'u6', name:'华为用户_特雷弗', avatar:AVATARS[5], device:'Huawei Mate 70 Pro · HarmonyOS 5', gpu:'Adreno 750', memoryGB:12, appVersion:'v6.0.2', stars:2, tags:['有部分问题'], text:'GTA在线模式进服务器时容易闪退，已经发生三次了，希望能修复。', date:'2025-04-15', likes:5, reviewState:'none', reviewSnapshotId:'review_snapshot_s6', durationSeconds:731 },
+    { id:'s7', uid:'u7', name:'vivo用户_市民', avatar:AVATARS[6], device:'vivo X200 Ultra · Android 15', gpu:'Dimensity 9400', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！强烈推荐。', html:'完全没想到手机上能这么流畅跑GTA5，感谢盖世！<u>强烈推荐</u>。', date:'2025-04-12', likes:43 },
+    { id:'s8', uid:'u8', name:'ROG玩家_老崔', avatar:'', device:'ROG Phone 9 · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:4, tags:['完美兼容'], text:'画面和操作都很稳定，连续游玩没有明显掉帧。', date:'2025-04-10', likes:9, reviewState:'unavailable', reviewSnapshotId:'review_snapshot_s8', durationSeconds:1286 },
+    { id:'s9', uid:'u9', name:'iQOO玩家_尼克', avatar:'', device:'iQOO 13 · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'启动和游玩体验正常，手柄按键映射准确。', date:'2025-04-08', likes:14, reviewState:'valid', reviewSnapshotId:'review_snapshot_s9', durationSeconds:1540 },
+    { id:'s10', uid:'u10', name:'已隐藏玩家', avatar:'', device:'RedMagic 10 Pro · Android 15', gpu:'Adreno 750', memoryGB:16, appVersion:'v6.1.0', stars:5, tags:['完美兼容'], text:'这条评价已被后台隐藏，不应出现在 C 端。', date:'2025-04-06', likes:2, hidden:true }
+];
+
+function cloneSeedValue(value) {
+    return JSON.parse(JSON.stringify(value));
+}
+
+function migrateSeedDataIfNeeded() {
+    if (localStorage.getItem(SEED_DATA_REVISION_KEY) === SEED_DATA_REVISION) return;
+
+    let storedFeedbacks = [];
+    let storedSnapshots = {};
+    try {
+        const parsedFeedbacks = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+        if (Array.isArray(parsedFeedbacks)) storedFeedbacks = parsedFeedbacks;
+    } catch(e) {}
+    try {
+        const parsedSnapshots = JSON.parse(localStorage.getItem(REVIEW_SNAPSHOTS_KEY) || '{}');
+        if (parsedSnapshots && !Array.isArray(parsedSnapshots) && typeof parsedSnapshots === 'object') {
+            storedSnapshots = parsedSnapshots;
+        }
+    } catch(e) {}
+
+    const seedFeedbacksById = new Map(SEEDS.map(review => [review.id, review]));
+    const migratedFeedbacks = [];
+    const migratedSeedIds = new Set();
+    storedFeedbacks.forEach(review => {
+        const seed = review && seedFeedbacksById.get(review.id);
+        if (!seed) {
+            migratedFeedbacks.push(review);
+            return;
+        }
+        if (migratedSeedIds.has(seed.id)) return;
+        migratedFeedbacks.push(cloneSeedValue(seed));
+        migratedSeedIds.add(seed.id);
+    });
+    SEEDS.forEach(seed => {
+        if (migratedSeedIds.has(seed.id)) return;
+        migratedFeedbacks.push(cloneSeedValue(seed));
+        migratedSeedIds.add(seed.id);
+    });
+
+    const migratedSnapshots = {};
+    Object.entries(storedSnapshots).forEach(([reviewSnapshotId, snapshot]) => {
+        migratedSnapshots[reviewSnapshotId] = cloneSeedValue(
+            SEED_REVIEW_SNAPSHOTS[reviewSnapshotId] || snapshot
+        );
+    });
+    Object.entries(SEED_REVIEW_SNAPSHOTS).forEach(([reviewSnapshotId, snapshot]) => {
+        if (Object.prototype.hasOwnProperty.call(migratedSnapshots, reviewSnapshotId)) return;
+        migratedSnapshots[reviewSnapshotId] = cloneSeedValue(snapshot);
+    });
+
+    try {
+        localStorage.setItem(LS_KEY, JSON.stringify(migratedFeedbacks));
+        localStorage.setItem(REVIEW_SNAPSHOTS_KEY, JSON.stringify(migratedSnapshots));
+        localStorage.setItem(SEED_DATA_REVISION_KEY, SEED_DATA_REVISION);
+    } catch(e) {}
+}
+
+function getFeedbacks() {
+    migrateSeedDataIfNeeded();
+    try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    localStorage.setItem(LS_KEY, JSON.stringify(SEEDS));
+    return [...SEEDS];
+}
+
+function getVisibleFeedbacks() {
+    return getFeedbacks().filter(review => review && review.hidden !== true && review.deleted !== true);
+}
+
+function saveFeedbacks(list) {
+    localStorage.setItem(LS_KEY, JSON.stringify(list));
+}
+
+const SOLUTION_CONFIG_WHITELIST = Object.freeze({
+    general: Object.freeze(['env', 'args', 'exe_path']),
+    compatibility: Object.freeze([
+        'wine_ver', 'dinput', 'skip_video', 'surface', 'audio_drv',
+        'dxvk', 'vkd3d', 'cpu_trans', 'cpu_core', 'vram'
+    ]),
+    dependencies: Object.freeze(['cjkfonts']),
+    steam: Object.freeze(['steam_input_exp'])
+});
+const SOLUTION_CONFIG_LIMITS = Object.freeze({
+    maxBytes: 8192,
+    groupLabel: 32,
+    itemLabel: 48,
+    description: 160,
+    displayValue: 512
+});
+
+function containsLocalAbsolutePath(value) {
+    const text = String(value || '');
+    return /file:\/\//i.test(text)
+        || /(?:^|[\s"'=])(?:[a-z]:[\\/]|\\\\)/i.test(text)
+        || /(?:^|[\s"'=])\/(?:Users|home|var|tmp|private|storage|sdcard|mnt|data)\//i.test(text);
+}
+
+function isBoundedSnapshotText(value, maxLength, allowEmpty = false) {
+    if (typeof value !== 'string') return false;
+    const normalized = value.trim();
+    if (!allowEmpty && !normalized) return false;
+    return value.length <= maxLength && !containsLocalAbsolutePath(value);
+}
+
+function getUtf8ByteLength(value) {
+    return new TextEncoder().encode(String(value || '')).length;
+}
+
+function normalizeSolutionConfigGroups(groups) {
+    if (!Array.isArray(groups) || groups.length === 0) return null;
+    const seenGroups = new Set();
+    const normalizedGroups = [];
+    for (const group of groups) {
+        if (!group || typeof group !== 'object' || Array.isArray(group)) return null;
+        const groupKey = typeof group.key === 'string' ? group.key : '';
+        const allowedItems = SOLUTION_CONFIG_WHITELIST[groupKey];
+        if (!groupKey || !allowedItems || seenGroups.has(groupKey)) return null;
+        if (!isBoundedSnapshotText(group.label, SOLUTION_CONFIG_LIMITS.groupLabel)) return null;
+        if (!Array.isArray(group.items) || group.items.length === 0) return null;
+        seenGroups.add(groupKey);
+        const allowedItemSet = new Set(allowedItems);
+        const seenItems = new Set();
+        const normalizedItems = [];
+        for (const item of group.items) {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+            const itemKey = typeof item.key === 'string' ? item.key : '';
+            if (!itemKey || !allowedItemSet.has(itemKey) || seenItems.has(itemKey)) return null;
+            if (!isBoundedSnapshotText(item.label, SOLUTION_CONFIG_LIMITS.itemLabel)) return null;
+            if (!isBoundedSnapshotText(item.description, SOLUTION_CONFIG_LIMITS.description, true)) return null;
+            if (!['text', 'boolean', 'number'].includes(item.valueType)) return null;
+            if (item.displayValue === undefined || item.displayValue === null) return null;
+            const displayValue = String(item.displayValue);
+            if (!isBoundedSnapshotText(displayValue, SOLUTION_CONFIG_LIMITS.displayValue, true)) return null;
+            seenItems.add(itemKey);
+            normalizedItems.push({
+                key: itemKey,
+                label: item.label,
+                description: item.description,
+                valueType: item.valueType,
+                displayValue
+            });
+        }
+        normalizedGroups.push({ key: groupKey, label: group.label, items: normalizedItems });
+    }
+    if (getUtf8ByteLength(JSON.stringify(normalizedGroups)) > SOLUTION_CONFIG_LIMITS.maxBytes) return null;
+    return normalizedGroups;
+}
+
+function cloneReviewSnapshot(record) {
+    return record ? JSON.parse(JSON.stringify(record)) : null;
+}
+
+function getReviewSnapshots() {
+    migrateSeedDataIfNeeded();
+    const raw = localStorage.getItem(REVIEW_SNAPSHOTS_KEY);
+    if (raw === null) {
+        const seeds = Object.fromEntries(Object.entries(SEED_REVIEW_SNAPSHOTS)
+            .map(([reviewSnapshotId, record]) => [reviewSnapshotId, cloneReviewSnapshot(record)]));
+        localStorage.setItem(REVIEW_SNAPSHOTS_KEY, JSON.stringify(seeds));
+        return seeds;
+    }
+    try {
+        const parsed = JSON.parse(raw);
+        if (parsed && !Array.isArray(parsed) && typeof parsed === 'object') return parsed;
+    } catch (error) {}
+    return {};
+}
+
+function saveReviewSnapshots(snapshots) {
+    localStorage.setItem(REVIEW_SNAPSHOTS_KEY, JSON.stringify(snapshots || {}));
+}
+
+function findReviewSnapshot(reviewSnapshotId) {
+    if (!reviewSnapshotId) return null;
+    return cloneReviewSnapshot(getReviewSnapshots()[reviewSnapshotId] || null);
+}
+
+function createReviewSnapshotId(reviewId) {
+    return 'review_snapshot_' + encodeURIComponent(String(reviewId));
+}
+
+function buildReviewSnapshot(reviewId, source) {
+    if (!reviewId || !source?.configHash || !source?.playSessionId) return null;
+    const configGroups = normalizeSolutionConfigGroups(source.configGroups);
+    if (!configGroups) return null;
+    const reviewSnapshotId = createReviewSnapshotId(reviewId);
+    const dimensions = { ...REVIEW_SNAPSHOT_DIMENSIONS, ...source };
+    const gpuModel = String(dimensions.gpuModel || '');
+    return {
+        reviewSnapshotId,
+        reviewId,
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
+        status: 'available',
+        gameId: String(dimensions.gameId || ''),
+        platform: String(dimensions.platform || ''),
+        gpuModel,
+        gpu: {
+            id: gpuModel ? gpuModel.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '',
+            displayName: gpuModel
+        },
+        runtimeArchitecture: String(dimensions.runtimeArchitecture || ''),
+        engineVersion: String(dimensions.engineVersion || ''),
+        schemaVersion: String(dimensions.schemaVersion || ''),
+        canonicalizerVersion: String(dimensions.canonicalizerVersion || ''),
+        configHash: String(dimensions.configHash),
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: String(source.reviewAuthorDisplayName || '我'),
+        playSessionId: String(source.playSessionId),
+        durationSeconds: Math.max(0, Number(source.durationSeconds || 0)),
+        sharedAt: new Date().toISOString(),
+        configGroups,
+        actions: {
+            canApply: true,
+            applyDisabledReason: '',
+            canCopy: true,
+            copyDisabledReason: ''
+        }
+    };
+}
+
+function persistReviewSnapshot(snapshot) {
+    if (!snapshot?.reviewSnapshotId || !snapshot?.reviewId) return false;
+    const snapshots = getReviewSnapshots();
+    if (snapshots[snapshot.reviewSnapshotId]) return false;
+    snapshots[snapshot.reviewSnapshotId] = cloneReviewSnapshot(snapshot);
+    saveReviewSnapshots(snapshots);
+    return true;
+}
+
+function createReviewSnapshot(reviewId, source) {
+    const snapshots = getReviewSnapshots();
+    const existing = Object.values(snapshots).find(item => item?.reviewId === reviewId);
+    if (existing) return cloneReviewSnapshot(existing);
+    const snapshot = buildReviewSnapshot(reviewId, source);
+    if (!snapshot || !persistReviewSnapshot(snapshot)) return null;
+    return snapshot;
+}
+
+function deleteReviewSnapshot(reviewSnapshotId, reviewId) {
+    if (!reviewSnapshotId || !reviewId) return false;
+    const snapshots = getReviewSnapshots();
+    const snapshot = snapshots[reviewSnapshotId];
+    if (!snapshot || snapshot.reviewId !== reviewId) return false;
+    delete snapshots[reviewSnapshotId];
+    saveReviewSnapshots(snapshots);
+    return true;
+}
+
+function resolveReviewSnapshot(review) {
+    return review?.reviewSnapshotId ? findReviewSnapshot(review.reviewSnapshotId) : null;
+}
+
+// ============================================================
+//  统计计算
+// ============================================================
+function calcStats(list) {
+    const dist = {5:0,4:0,3:0,2:0,1:0};
+    const levels = { perfect:0, basic:0, partial:0, unplayable:0 };
+    let total = 0;
+    list.forEach(f => { dist[f.stars] = (dist[f.stars]||0)+1; total += f.stars; levels[reviewLevel(f)]++; });
+    if (!list.length) return { avg: '—', count: 0, dist, levels };
+    return { avg: (total/list.length).toFixed(1), count: list.length, dist, levels };
+}
+
+function starsSVG(score, size) {
+    return [1,2,3,4,5].map(i => {
+        const fill = i <= Math.round(score) ? '#f5c518' : 'rgba(255,255,255,0.15)';
+        return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${fill}" style="display:inline-block;flex-shrink:0;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+    }).join('');
+}
+
+// ============================================================
+//  入口卡片
+// ============================================================
+function refreshEntryCard() {
+    const list = getVisibleFeedbacks();
+    const s = calcStats(list);
+    const hasData = document.getElementById('entryHasData');
+    const noData  = document.getElementById('entryNoData');
+    const hasDataLs = document.getElementById('entryHasDataLs');
+    const noDataLs  = document.getElementById('entryNoDataLs');
+    if (s.count) {
+        const level = overallLevel(s.levels);
+        hasData.style.display = 'block';
+        noData.style.display  = 'none';
+        const levelEl = document.getElementById('entryLevel');
+        if (levelEl) { levelEl.textContent = TYPE_LABELS[level]; levelEl.className = 'ic-level-pill level-' + level; }
+        if (hasDataLs) {
+            hasDataLs.style.display = 'block';
+            noDataLs.style.display  = 'none';
+            const levelLsEl = document.getElementById('entryLevelLs');
+            if (levelLsEl) { levelLsEl.textContent = TYPE_LABELS[level]; levelLsEl.className = 'ic-level-pill level-' + level; }
+        }
+    } else {
+        hasData.style.display = 'none';
+        noData.style.display  = 'block';
+        if (hasDataLs) {
+            hasDataLs.style.display = 'none';
+            noDataLs.style.display  = 'block';
+        }
+    }
+}
+
+// ============================================================
+//  面板渲染
+// ============================================================
+let viewMode = 'device';
+const CURRENT_DEVICE = 'Pixel 9 Pro';
+const CURRENT_GPU = 'Adreno 750';
+let forceSameConfigEmpty = false;
+const PAGE = 5;
+const pages = { ls: 1, pt: 1 };
+
+function refreshPanel(side) {
+    const list = getVisibleFeedbacks();
+    const s = calcStats(list);
+
+    // 概览（按可玩性等级，而非星级）
+    const ovLevelEl = document.getElementById(side === 'ls' ? 'ovLevelLs' : 'ovLevelPt');
+    if (ovLevelEl) {
+        if (s.count) {
+            const level = overallLevel(s.levels);
+            ovLevelEl.textContent = TYPE_LABELS[level];
+            ovLevelEl.className = 'ov-level-big level-text-' + level;
+        } else {
+            ovLevelEl.textContent = '暂无评价';
+            ovLevelEl.className = 'ov-level-big';
+        }
+    }
+    const ovCountEl = document.getElementById(side === 'ls' ? 'ovCountLs' : 'ovCountPt');
+    if (ovCountEl) ovCountEl.textContent = s.count ? `${s.count} 条玩家评价` : '暂无评价';
+
+    const distEl = document.getElementById(side === 'ls' ? 'distBarsLs' : 'distBarsPt');
+    if (s.count) {
+        const mx = Math.max(...Object.values(s.levels), 1);
+        distEl.innerHTML = LEVEL_ORDER.map(type => {
+            const cnt = s.levels[type] || 0;
+            const pct = Math.round(cnt / mx * 100);
+            const color = LEVEL_COLORS[type];
+            return `<div class="dist-row"><div class="dist-lbl" style="width:56px;text-align:left;color:${color};">${TYPE_LABELS[type]}</div><div class="dist-track"><div class="dist-fill" style="width:${pct}%;background:${color};"></div></div><div class="dist-cnt">${cnt}</div></div>`;
+        }).join('');
+    } else {
+        distEl.innerHTML = '';
+    }
+
+    // 筛选
+    let filtered = list;
+    if (viewMode === 'device') {
+        filtered = forceSameConfigEmpty ? [] : list.filter(f => f.gpu === CURRENT_GPU);
+        if (!filtered.length) {
+            viewMode = 'all';
+            pages[side] = 1;
+            filtered = list;
+            document.querySelectorAll(side === 'ls' ? '#chipsLs .chip' : '#chipsPt .chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.view === 'all');
+            });
+        }
+    }
+    else if (viewMode === 'support') {
+        const likedSet = getLikedSet();
+        filtered = list
+            .map(feedback => ({ feedback }))
+            .sort((left, right) => Number(Boolean(right.feedback.official)) - Number(Boolean(left.feedback.official))
+                || ((Number(right.feedback.likes) || 0) + (likedSet.has(right.feedback.id) ? 1 : 0))
+                    - ((Number(left.feedback.likes) || 0) + (likedSet.has(left.feedback.id) ? 1 : 0))
+                || String(right.feedback.date || '').localeCompare(String(left.feedback.date || ''))
+                || String(right.feedback.id || '').localeCompare(String(left.feedback.id || '')))
+            .map(({ feedback }) => feedback);
+    }
+    else if (viewMode === 'mine') filtered = list.filter(f => f.uid === MY_UID);
+    // 官方置顶
+    if (viewMode !== 'support') {
+        filtered = [...filtered.filter(f => f.official), ...filtered.filter(f => !f.official)];
+    }
+
+    const shown = filtered.slice(0, pages[side] * PAGE);
+    const listEl = document.getElementById(side === 'ls' ? 'listLs' : 'listPt');
+    const loadEl = document.getElementById(side === 'ls' ? 'loadMoreLs' : 'loadMorePt');
+    const emptyEl = document.getElementById(side === 'ls' ? 'emptyLs' : 'emptyPt');
+
+    if (!filtered.length) {
+        const emptyTitle = emptyEl.querySelector('strong');
+        if (emptyTitle) emptyTitle.textContent = viewMode === 'mine' ? '暂无我的评价' : '暂无评价';
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+        loadEl.style.display = 'none';
+    } else {
+        emptyEl.style.display = 'none';
+        listEl.innerHTML = shown.map(renderItem).join('');
+        loadEl.style.display = shown.length < filtered.length ? 'flex' : 'none';
+    }
+}
+
+function formatDuration(seconds) {
+    const totalSeconds = Math.max(0, Math.floor(Number(seconds || 0)));
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainder = String(totalSeconds % 60).padStart(2, '0');
+    return minutes + '分' + remainder + '秒';
+}
+
+function canRenderReviewSolution(review, snapshot) {
+    return ['perfect', 'basic'].includes(reviewLevel(review))
+        && Boolean(snapshot)
+        && snapshot.status === 'available'
+        && snapshot.reviewId === review.id
+        && snapshot.reviewSnapshotId === review.reviewSnapshotId;
+}
+
+function renderReviewSolution(review) {
+    const snapshot = resolveReviewSnapshot(review);
+    if (!canRenderReviewSolution(review, snapshot)) return '';
+    return '<button class="review-solution-card" type="button" data-action="open-review-solution" aria-label="打开' + REVIEW_SNAPSHOT_DISPLAY_NAME + '"><span class="review-solution-heading"><strong>' + REVIEW_SNAPSHOT_DISPLAY_NAME + '</strong><b aria-hidden="true">›</b></span><span class="review-solution-meta">本次游玩 ' + formatDuration(snapshot.durationSeconds) + '</span></button>';
+}
+
+function handleReviewSolutionAction(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('button[data-action="open-review-solution"]');
+    if (!button) return;
+    const item = button.closest('.compat-item');
+    const list = button.closest('#listLs, #listPt');
+    const reviewId = item?.dataset.feedbackId || '';
+    const review = getVisibleFeedbacks().find(candidate => candidate.id === reviewId);
+    const snapshot = resolveReviewSnapshot(review);
+    if (!canRenderReviewSolution(review, snapshot)) {
+        if (list) refreshPanel(list.id === 'listPt' ? 'pt' : 'ls');
+        return;
+    }
+    openSolutionDetail(snapshot.reviewSnapshotId);
+}
+
+function bindReviewSolutionActions() {
+    ['listLs', 'listPt'].forEach(listId => {
+        const list = document.getElementById(listId);
+        if (!list || list.dataset.reviewSolutionBound === 'true') return;
+        list.addEventListener('click', handleReviewSolutionAction);
+        list.dataset.reviewSolutionBound = 'true';
+    });
+}
+
+function renderItem(f) {
+    const level = reviewLevel(f);
+    const levelTag = `<div class="ci-level level-${level}">${TYPE_LABELS[level]}</div>`;
+    const tags = (f.tags||[]).filter(t => !LABEL_TO_TYPE[t]).map(t => `<span class="ci-tag">${t}</span>`).join('');
+    const snippet = (f.text||'').slice(0,40) + ((f.text||'').length>40?'…':'');
+    const esc = s => s.replace(/'/g,"\\'");
+    const likedSet = getLikedSet();
+    const isLiked = likedSet.has(f.id);
+    const likeCount = (f.likes || 0) + (isLiked ? 1 : 0);
+
+    // 富文本内容
+    const content = f.html ? f.html : (f.text ? f.text : '');
+
+    // 媒体展示（最多9张，3列宫格，只显示图片）
+    const mediaHtml = (f.media && f.media.length) ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:8px;">
+        ${f.media.slice(0,9).filter(m => m.type !== 'video').map(() =>
+            '<div class="media-wireframe" style="width:100%;aspect-ratio:1;border-radius:6px;"><span class="media-wireframe-label">评价图片</span></div>'
+        ).join('')}
+    </div>` : '';
+
+    // 官方角标
+    const officialBadge = f.official ? `<span style="background:#1677ff;color:#fff;font-size:8px;border-radius:3px;padding:1px 4px;margin-left:4px;vertical-align:middle;">官方</span>` : '';
+
+    // 置顶标识
+    const pinnedTag = f.official ? `<span style="font-size:11px;color:#69b1ff;margin-right:6px;">官方置顶</span>` : '';
+
+    // 更多菜单
+    const moreMenu = f.uid === MY_UID
+        ? `<div style="position:relative;display:inline-block;">
+            <div class="ci-more-btn" onclick="toggleMoreMenu(event,'more-${f.id}')">⋯</div>
+            <div class="ci-more-menu" id="more-${f.id}" style="display:none;">
+                <button type="button" class="ci-more-item" onclick="closeMoreMenu('more-${f.id}');editMyReview('${f.id}')">编辑</button>
+                <div class="ci-more-item" style="color:#ff4d4f;" onclick="closeMoreMenu('more-${f.id}');deleteMyReview('${f.id}')">删除</div>
+            </div>
+          </div>`
+        : `<div style="position:relative;display:inline-block;">
+            <div class="ci-more-btn" onclick="toggleMoreMenu(event,'more-${f.id}')">⋯</div>
+            <div class="ci-more-menu" id="more-${f.id}" style="display:none;">
+                <div class="ci-more-item" onclick="closeMoreMenu('more-${f.id}');openReportModal('${f.id}','${esc(snippet)}')">举报</div>
+            </div>
+          </div>`;
+
+    const reviewState = f.reviewState || (f.stars < 3 ? 'none' : 'unlinked');
+    return `<div class="compat-item" id="ci-${f.id}" data-feedback-id="${f.id}" data-review-state="${reviewState}" data-owner="${f.uid === MY_UID ? 'me' : 'other'}">
+        <div class="ci-hdr">
+            <div class="ci-avatar review-avatar-wireframe media-wireframe" aria-hidden="true"></div>
+            <div class="ci-meta">
+                <div class="ci-name">${pinnedTag}${f.name}${officialBadge}</div>
+                <div class="ci-device">${f.device}</div>
+                ${f.gpu ? `<div class="ci-device">GPU：${f.gpu}${f.memoryGB ? ' · 运行内存：' + f.memoryGB + 'GB' : ''}</div>` : ''}
+            </div>
+            ${moreMenu}
+        </div>
+        ${levelTag}
+        ${tags ? `<div class="ci-tags">${tags}</div>` : ''}
+        ${content ? `<div class="ci-text">${content}</div>` : ''}
+        ${mediaHtml}
+        ${renderReviewSolution(f)}
+        <div class="ci-date">${f.date}${f.appVersion ? `<span style="margin-left:8px;opacity:.55;">${f.appVersion}</span>` : ''}</div>
+        <div class="ci-footer">
+            <div class="ci-like-btn${isLiked?' liked':''}" id="like-${f.id}" onclick="toggleLike('${f.id}',${f.likes||0})">
+                <svg viewBox="0 0 24 24" width="13" height="13"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+                支持&nbsp;<span id="like-count-${f.id}">${likeCount}</span>
+            </div>
+        </div>
+    </div>`;
+}
+
+function toggleMoreMenu(e, menuId) {
+    e.stopPropagation();
+    const menu = document.getElementById(menuId);
+    if (!menu) return;
+    const isOpen = menu.style.display !== 'none';
+    // 关闭所有已打开的菜单
+    document.querySelectorAll('.ci-more-menu').forEach(m => m.style.display = 'none');
+    if (!isOpen) menu.style.display = 'block';
+}
+function closeMoreMenu(menuId) {
+    const menu = document.getElementById(menuId);
+    if (menu) menu.style.display = 'none';
+}
+// 点击空白关闭所有更多菜单
+document.addEventListener('click', function() {
+    document.querySelectorAll('.ci-more-menu').forEach(m => m.style.display = 'none');
+});
+
+function previewMedia(url) {
+    // 简单的图片预览，实际可以做成全屏弹窗
+    window.open(url, '_blank');
+}
+
+function loadMore(side) {
+    pages[side]++;
+    refreshPanel(side);
+}
+
+function setView(mode, el, side) {
+    viewMode = mode;
+    forceSameConfigEmpty = false;
+    pages[side] = 1;
+    el.parentElement.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    refreshPanel(side);
+}
+
+// ============================================================
+//  面板开关
+// ============================================================
+function openCompatPanel() {
+    const isLs = document.getElementById('shell').classList.contains('ls');
+    if (isLs) {
+        refreshPanel('ls');
+        document.getElementById('compatPanelLs').classList.add('active');
+    } else {
+        refreshPanel('pt');
+        document.getElementById('compatPanelPt').classList.add('active');
+    }
+}
+
+function closeCompatPanel() {
+    document.getElementById('compatPanelLs').classList.remove('active');
+    document.getElementById('compatPanelPt').classList.remove('active');
+    viewMode = 'device';
+    pages.ls = 1; pages.pt = 1;
+    // reset chips
+    document.querySelectorAll('.compat-chips .chip').forEach((c,i) => c.classList.toggle('active', i===0));
+}
+
+function openCompatPage() {
+    const page = document.getElementById('compatPage');
+    if (!page) return;
+    page.style.display = 'flex';
+    requestAnimationFrame(() => page.classList.add('show'));
+    refreshPanel('ls');
+}
+
+function closeCompatPage() {
+    const page = document.getElementById('compatPage');
+    if (!page) return;
+    page.classList.remove('show');
+    setTimeout(() => { page.style.display = 'none'; }, 350);
+    viewMode = 'device';
+    pages.ls = 1;
+    document.querySelectorAll('#chipsLs .chip').forEach((c, i) => c.classList.toggle('active', i === 0));
+}
+
+// ============================================================
+//  反馈弹窗
+// ============================================================
+let fbStarVal = 0;
+let fbMediaFiles = [];
+let editingId = null;
+let selectedCompatType = '';
+let shareSessionRequested = false;
+
+const journeyState = {
+    stage: 'detail',
+    appliedSolutionId: '',
+    appliedSolutionName: '',
+    appliedConfigHash: '',
+    appliedSolutionRecord: null,
+    playSessionId: '',
+    startedAt: 0,
+    sessionSnapshot: {
+        ...REVIEW_SNAPSHOT_DIMENSIONS,
+        configHash: 'cfg_local_default_v1',
+        profileName: '本次启动方案',
+        durationSeconds: 1122,
+        playSessionId: 'play_demo_recent_success',
+        configGroups: createSeedSolutionConfigGroups()
+    }
+};
+
+const REVIEW_DRAFT_KEY = 'gh_compat_review_v12_draft';
+const TYPE_BY_STAR = { 1: 'unplayable', 2: 'partial', 3: 'basic', 4: 'perfect', 5: 'perfect' };
+const STAR_BY_TYPE = { unplayable: 1, partial: 2, basic: 3, perfect: 5 };
+const TYPE_LABELS = { unplayable: '不可玩', partial: '部分兼容', basic: '基本可玩', perfect: '完美兼容' };
+// 可玩性等级：顺序由好到差，用于概览分布与“整体等级”推导
+const LEVEL_ORDER = ['perfect', 'basic', 'partial', 'unplayable'];
+const LEVEL_COLORS = { perfect: '#6fffa8', basic: '#4db4ff', partial: '#ffb454', unplayable: '#ff6b6b' };
+const LABEL_TO_TYPE = { '完美兼容': 'perfect', '基本可玩': 'basic', '部分兼容': 'partial', '有部分问题': 'partial', '不可玩': 'unplayable' };
+
+// 单条评价的可玩性等级：优先字段，其次标签，最后回退星级映射
+function reviewLevel(f) {
+    if (f && f.compatType && TYPE_LABELS[f.compatType]) return f.compatType;
+    const tag = (f && f.tags || []).find(t => LABEL_TO_TYPE[t]);
+    if (tag) return LABEL_TO_TYPE[tag];
+    return TYPE_BY_STAR[f && f.stars] || 'basic';
+}
+
+// 整体等级：取数量最多的等级，并列时优先更好的等级
+function overallLevel(levels) {
+    let best = LEVEL_ORDER[0], bestCount = -1;
+    LEVEL_ORDER.forEach(type => {
+        const c = (levels && levels[type]) || 0;
+        if (c > bestCount) { bestCount = c; best = type; }
+    });
+    return best;
+}
+const INVITE_CONFIG = { globalDays: 7, unreviewedDays: 7, reviewUpdateDays: 30, maxPerGameGpu: 0 };
+const inviteDemoState = {
+    globalLastInviteAt: null,
+    byGameGpu: {
+        'gta5|Adreno 750': { lastInviteAt: null, lastReviewAt: null, exposures: 0 },
+        'hades2|Adreno 750': { lastInviteAt: null, lastReviewAt: null, exposures: 0 }
+    }
+};
+
+function execCmd(cmd) {
+    if (cmd === 'createLink') {
+        const url = prompt('请输入链接地址:', '');
+        if (url) document.execCommand(cmd, false, url);
+    } else {
+        document.execCommand(cmd, false, null);
+    }
+}
+
+function addMedia() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (fbMediaFiles.length >= 9) { showToast('最多上传9张图片'); return; }
+        fbMediaFiles.push({ type: 'image', name: file.name });
+        renderMediaList();
+    };
+    input.click();
+}
+
+function removeMedia(idx) {
+    fbMediaFiles.splice(idx, 1);
+    renderMediaList();
+}
+
+function renderMediaList() {
+    const list = document.getElementById('fbMediaList');
+    const items = fbMediaFiles.map((m, i) => `
+        <div class="fb-media-item media-wireframe">
+            <span class="media-wireframe-label">评价图片</span>
+            <div class="fb-media-remove" onclick="removeMedia(${i})">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+        </div>
+    `).join('');
+    const addBtn = fbMediaFiles.length < 9 ? `
+        <div class="fb-media-add" onclick="addMedia()">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        </div>
+    ` : '';
+    list.innerHTML = items + addBtn;
+}
+
+function feedbackDraftKey() {
+    return editingId === null ? REVIEW_DRAFT_KEY : REVIEW_DRAFT_KEY + ':edit:' + encodeURIComponent(editingId);
+}
+
+// 设备信息作为一行文案，跟在“兼容性”标题旁
+function renderFbDevice() {
+    const el = document.getElementById('fbDeviceInline');
+    if (!el) return;
+    let device = CURRENT_DEVICE + ' · Android 15';
+    if (editingId !== null) {
+        const item = getFeedbacks().find(x => x.id === editingId);
+        if (item && item.device) device = item.device;
+    }
+    el.textContent = '（设备：' + device + '）';
+}
+
+function saveFeedbackDraft() {
+    const editor = document.getElementById('fbEditor');
+    localStorage.setItem(feedbackDraftKey(), JSON.stringify({
+        stars: fbStarVal,
+        type: selectedCompatType,
+        text: editor ? editor.value : '',
+        media: fbMediaFiles,
+        shareSessionRequested
+    }));
+}
+
+function restoreFeedbackDraft() {
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(feedbackDraftKey()) || 'null'); } catch (error) { draft = null; }
+    fbStarVal = Number(draft?.stars) || 0;
+    selectedCompatType = (draft?.type && TYPE_LABELS[draft.type]) ? draft.type : (TYPE_BY_STAR[fbStarVal] || '');
+    fbStarVal = STAR_BY_TYPE[selectedCompatType] || 0;
+    fbMediaFiles = Array.isArray(draft?.media) ? draft.media : [];
+    shareSessionRequested = Boolean(draft?.shareSessionRequested);
+    document.getElementById('fbEditor').value = draft?.text || '';
+    renderCompatTypes();
+    renderFbDevice();
+    renderMediaList();
+    renderFeedbackSolution();
+}
+
+function closeFeedbackModal(options = {}) {
+    if (options.preserveDraft !== false) saveFeedbackDraft();
+    document.getElementById('modalFeedback').classList.remove('show');
+}
+
+function openFeedbackModal(options = {}) {
+    const source = options.source === 'proactive' ? 'proactive' : 'manual';
+    const modal = document.getElementById('modalFeedback');
+    editingId = options.editingId || null;
+    modal.dataset.entrySource = source;
+    document.getElementById('feedbackModalTitle').textContent = source === 'proactive'
+        ? '这次游戏体验怎么样？'
+        : '兼容性评价';
+    if (!options.keepCurrentState) restoreFeedbackDraft();
+    else {
+        renderCompatTypes();
+        renderFbDevice();
+        renderMediaList();
+        renderFeedbackSolution();
+    }
+    modal.classList.add('show');
+    if (source === 'proactive') recordInviteExposure(options.gameKey || 'gta5|Adreno 750');
+}
+
+function routeSessionResult(result, session = {}) {
+    closeFeedbackModal({ preserveDraft: true });
+    if (result !== 'normal') return;
+    openFeedbackModal({
+        source: 'proactive',
+        gameKey: 'gta5|Adreno 750',
+        playSessionId: session.playSessionId || journeyState.playSessionId
+    });
+}
+
+function setJourneyStage(stage) {
+    journeyState.stage = stage;
+    document.body.dataset.journeyStage = stage;
+    document.getElementById('runtimeStage').hidden = stage !== 'launching' && stage !== 'gameplay';
+    document.getElementById('launchLayer').hidden = stage !== 'launching';
+    document.getElementById('gameplayLayer').hidden = stage !== 'gameplay';
+}
+
+function startGame() {
+    journeyState.playSessionId = 'play_' + Date.now();
+    journeyState.startedAt = Date.now();
+    const sourceRecord = journeyState.appliedSolutionRecord || journeyState.sessionSnapshot;
+    journeyState.sessionSnapshot = {
+        gameId: sourceRecord.gameId,
+        platform: sourceRecord.platform,
+        gpuModel: sourceRecord.gpuModel,
+        runtimeArchitecture: sourceRecord.runtimeArchitecture,
+        engineVersion: sourceRecord.engineVersion,
+        schemaVersion: sourceRecord.schemaVersion,
+        canonicalizerVersion: sourceRecord.canonicalizerVersion,
+        configHash: sourceRecord.configHash,
+        profileName: journeyState.appliedSolutionName || '本次启动方案',
+        durationSeconds: 0,
+        playSessionId: journeyState.playSessionId,
+        configGroups: cloneSolutionConfigGroups(sourceRecord.configGroups)
+    };
+    setJourneyStage('launching');
+    window.setTimeout(() => setJourneyStage('gameplay'), 700);
+}
+
+function openExitGameConfirm() {
+    document.getElementById('exitGameConfirm').hidden = false;
+}
+
+function closeExitGameConfirm() {
+    document.getElementById('exitGameConfirm').hidden = true;
+}
+
+function confirmExitGame() {
+    closeExitGameConfirm();
+    journeyState.sessionSnapshot.durationSeconds = 1122;
+    setJourneyStage('detail');
+    setOrient('pt');
+    routeSessionResult('normal', {
+        playSessionId: journeyState.playSessionId
+    });
+}
+
+function recordInviteExposure(gameKey) {
+    const state = inviteDemoState.byGameGpu[gameKey];
+    if (!state) return;
+    const now = Date.now();
+    state.lastInviteAt = now;
+    state.exposures += 1;
+    inviteDemoState.globalLastInviteAt = now;
+    renderInviteDemoState();
+}
+
+function renderInviteDemoState(message = '') {
+    const a = inviteDemoState.byGameGpu['gta5|Adreno 750'];
+    const b = inviteDemoState.byGameGpu['hades2|Adreno 750'];
+    const base = '全平台 30 分钟门槛 · 全局间隔 ' + INVITE_CONFIG.globalDays + ' 天 · A 已曝光 ' + a.exposures + ' 次 · B 已曝光 ' + b.exposures + ' 次';
+    const target = document.getElementById('demoInviteState');
+    if (target) target.textContent = message ? base + '。' + message : base;
+}
+
+function closeFeedbackOnMask(e) {
+    if (e.target === document.getElementById('modalFeedback')) closeFeedbackModal();
+}
+
+document.querySelectorAll('#fbTypeWrap [data-type]').forEach(button => {
+    button.addEventListener('click', () => setCompatType(button.dataset.type));
+});
+
+function setRating(value) {
+    fbStarVal = Number(value) || 0;
+    // 兼容性为主选项：用户先选兼容性，再单独调整评分；未选兼容性时按星级回填
+    if (!selectedCompatType) selectedCompatType = TYPE_BY_STAR[fbStarVal] || '';
+    if (fbStarVal < 3) {
+        shareSessionRequested = false;
+    }
+    renderCompatTypes();
+    renderFeedbackSolution();
+    saveFeedbackDraft();
+}
+
+function setCompatType(type) {
+    selectedCompatType = type;
+    setRating(STAR_BY_TYPE[type] || 0);
+}
+
+function renderCompatTypes() {
+    document.querySelectorAll('#fbTypeWrap [data-type]').forEach(button => {
+        const active = button.dataset.type === selectedCompatType;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+    });
+}
+
+function renderFeedbackSolution() {
+    const section = document.getElementById('fbSolutionSection');
+    const content = document.getElementById('fbSolutionContent');
+    const existingReview = editingId === null
+        ? null
+        : getFeedbacks().find(item => item.id === editingId);
+    const hasExistingSnapshot = Boolean(existingReview?.reviewSnapshotId && findReviewSnapshot(existingReview.reviewSnapshotId));
+    const hasCurrentSession = Boolean(journeyState.sessionSnapshot?.configHash)
+        && Boolean(journeyState.sessionSnapshot?.playSessionId);
+    const canShare = fbStarVal >= 3 && (hasExistingSnapshot || hasCurrentSession);
+    if (!canShare) {
+        section.hidden = true;
+        content.innerHTML = '';
+        shareSessionRequested = false;
+        return;
+    }
+    section.hidden = false;
+    content.innerHTML = `<label class="fb-solution-toggle">
+        <input id="shareSessionCheckbox" type="checkbox" ${shareSessionRequested ? 'checked' : ''} onchange="toggleSessionShare(this.checked)">
+        <span class="fb-solution-copy">
+            <strong>分享我的启动方案和本次运行时长</strong>
+        </span>
+    </label>`;
+}
+
+function toggleSessionShare(checked) {
+    shareSessionRequested = Boolean(checked);
+    saveFeedbackDraft();
+}
+
+function finishReviewSubmission(savedReviewId) {
+    refreshEntryCard();
+    openCompatPage();
+    const mineChip = document.querySelector('#chipsLs [data-view="mine"]');
+    if (mineChip) setView('mine', mineChip, 'ls');
+    window.requestAnimationFrame(() => {
+        document.querySelector(`[data-feedback-id="${savedReviewId}"]`)?.scrollIntoView({ block: 'center' });
+    });
+}
+
+function submitFeedback() {
+    if (!selectedCompatType) { showToast('请先选择兼容性'); return; }
+    fbStarVal = STAR_BY_TYPE[selectedCompatType] || 0;
+    const tags = [TYPE_LABELS[selectedCompatType]];
+    const text = document.getElementById('fbEditor').value.trim();
+    const list = getFeedbacks();
+    const existingIndex = editingId === null ? -1 : list.findIndex(item => item.id === editingId);
+    const existingReview = existingIndex >= 0 ? list[existingIndex] : null;
+    if (editingId !== null && !existingReview) {
+        showToast('评价不存在或已删除');
+        return;
+    }
+    const savedReviewId = existingReview?.id || ('u_' + Date.now());
+    const wantsShare = fbStarVal >= 3 && shareSessionRequested;
+    const existingSnapshot = existingReview?.reviewSnapshotId
+        ? findReviewSnapshot(existingReview.reviewSnapshotId)
+        : null;
+    let snapshot = wantsShare ? existingSnapshot : null;
+    const pendingSnapshot = wantsShare && !snapshot
+        ? buildReviewSnapshot(savedReviewId, {
+            ...journeyState.sessionSnapshot,
+            reviewAuthorDisplayName: existingReview?.name || '我'
+        })
+        : null;
+    const reviewSnapshotId = snapshot?.reviewSnapshotId || '';
+    const reviewState = snapshot
+        ? (snapshot.status === 'available' ? 'valid' : 'unavailable')
+        : (fbStarVal < 3 ? 'none' : 'unlinked');
+    const reviewChanges = {
+        stars: fbStarVal,
+        tags,
+        text,
+        html: '',
+        media: fbMediaFiles,
+        compatType: selectedCompatType,
+        reviewSnapshotId,
+        durationSeconds: snapshot?.durationSeconds || 0,
+        reviewState
+    };
+    if (existingReview) {
+        list[existingIndex] = { ...existingReview, ...reviewChanges };
+    } else {
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        list.unshift({
+            id: savedReviewId,
+            uid: MY_UID,
+            name: '我',
+            avatar: AVATARS[0],
+            device: 'Pixel 9 Pro · Android 15',
+            gpu: 'Adreno 750',
+            memoryGB: 12,
+            ...reviewChanges,
+            likes: 0,
+            appVersion: 'v6.1.2',
+            date: dateStr
+        });
+    }
+
+    try {
+        saveFeedbacks(list);
+    } catch (error) {
+        showToast('评价保存失败，请稍后重试');
+        return;
+    }
+
+    if (existingSnapshot && !wantsShare) {
+        try {
+            if (!deleteReviewSnapshot(existingSnapshot.reviewSnapshotId, existingReview.id)) {
+                throw new Error('snapshot-delete-rejected');
+            }
+        } catch (error) {
+            try { saveFeedbacks(getFeedbacks().map(item => item.id === existingReview.id ? existingReview : item)); } catch (rollbackError) {}
+            showToast('暂时无法取消分享，请稍后重试');
+            return;
+        }
+    }
+
+    let shareFailed = wantsShare && !snapshot && !pendingSnapshot;
+    if (pendingSnapshot) {
+        try {
+            if (!persistReviewSnapshot(pendingSnapshot)) throw new Error('snapshot-save-rejected');
+            const linkedList = getFeedbacks();
+            const linkedIndex = linkedList.findIndex(item => item.id === savedReviewId);
+            if (linkedIndex < 0) throw new Error('review-link-missing');
+            linkedList[linkedIndex] = {
+                ...linkedList[linkedIndex],
+                reviewSnapshotId: pendingSnapshot.reviewSnapshotId,
+                durationSeconds: pendingSnapshot.durationSeconds,
+                reviewState: 'valid'
+            };
+            saveFeedbacks(linkedList);
+            snapshot = pendingSnapshot;
+        } catch (error) {
+            try { deleteReviewSnapshot(pendingSnapshot.reviewSnapshotId, savedReviewId); } catch (rollbackError) {}
+            shareFailed = true;
+        }
+    }
+
+    localStorage.removeItem(feedbackDraftKey());
+    closeFeedbackModal({ preserveDraft: false });
+    finishReviewSubmission(savedReviewId);
+    if (shareFailed) {
+        showToast(existingReview ? '评价已更新，方案分享失败' : '评价已提交，方案分享失败');
+    } else {
+        showToast(existingReview ? '评价已更新！' : '评价提交成功，感谢你的反馈！');
+    }
+}
+
+// ============================================================
+//  我的评价 — 删除 / 编辑
+// ============================================================
+function deleteMyReview(id) {
+    if (!confirm('确定要删除这条评价吗？')) return;
+    if (!confirm('删除后无法恢复，确认删除？')) return;
+    const feedbacks = getFeedbacks();
+    const removed = feedbacks.find(item => item.id === id);
+    const list = feedbacks.filter(x => x.id !== id);
+    try {
+        saveFeedbacks(list);
+    } catch (error) {
+        showToast('评价删除失败，请稍后重试');
+        return;
+    }
+    if (removed?.reviewSnapshotId) {
+        try {
+            if (!deleteReviewSnapshot(removed.reviewSnapshotId, removed.id)) {
+                throw new Error('snapshot-delete-rejected');
+            }
+        } catch (error) {
+            try { saveFeedbacks(feedbacks); } catch (rollbackError) {}
+            showToast('评价删除失败，请稍后重试');
+            return;
+        }
+    }
+    refreshEntryCard();
+    if (document.getElementById('compatPage').classList.contains('show')) refreshPanel('ls');
+    showToast('评价已删除');
+}
+
+function editMyReview(id) {
+    const item = getFeedbacks().find(x => x.id === id);
+    if (!item || item.uid !== MY_UID) return;
+    editingId = id;
+    if (localStorage.getItem(feedbackDraftKey())) {
+        openFeedbackModal({ source: 'manual', editingId: id });
+        return;
+    }
+    fbStarVal = item.stars || 0;
+    selectedCompatType = reviewLevel(item);
+    fbStarVal = STAR_BY_TYPE[selectedCompatType] || 0;
+    shareSessionRequested = Boolean(item.reviewSnapshotId);
+    fbMediaFiles = item.media ? [...item.media] : [];
+    document.getElementById('fbEditor').value = item.text || '';
+    renderMediaList();
+    renderCompatTypes();
+    renderFbDevice();
+    renderFeedbackSolution();
+    openFeedbackModal({ source: 'manual', editingId: id, keepCurrentState: true });
+}
+
+// ============================================================
+//  举报弹窗
+// ============================================================
+function openReportModal(id, snippet) {
+    const reportedSet = getReportedSet();
+    if (reportedSet.has(id)) { showToast('您已举报过该评价'); return; }
+    document.getElementById('reportSnippet').textContent = snippet;
+    document.getElementById('reportNote').value = '';
+    document.querySelectorAll('.rr').forEach(t => t.classList.remove('active'));
+    document.getElementById('modalReport')._targetId = id;
+    document.getElementById('modalReport').classList.add('show');
+}
+function closeReportModal() { document.getElementById('modalReport').classList.remove('show'); }
+function closeReportOnMask(e) { if (e.target === document.getElementById('modalReport')) closeReportModal(); }
+function selectReason(el) { document.querySelectorAll('.rr').forEach(t => t.classList.remove('active')); el.classList.add('active'); }
+function submitReport() {
+    const modal = document.getElementById('modalReport');
+    const id = modal._targetId;
+    if (id) {
+        const s = getReportedSet();
+        s.add(id);
+        saveReportedSet(s);
+        const btn = document.querySelector(`#ci-${id} .ci-report-btn`);
+        if (btn) { btn.textContent = '已举报'; btn.classList.add('reported'); }
+    }
+    closeReportModal();
+    showToast('举报已提交，感谢反馈');
+}
+
+function toggleLike(id, baseLikes) {
+    const s = getLikedSet();
+    const isLiked = s.has(id);
+    if (isLiked) { s.delete(id); } else { s.add(id); }
+    saveLikedSet(s);
+    const el = document.getElementById(`like-${id}`);
+    const countEl = document.getElementById(`like-count-${id}`);
+    if (!el || !countEl) return;
+    const newLiked = !isLiked;
+    el.classList.toggle('liked', newLiked);
+    const newCount = baseLikes + (newLiked ? 1 : 0);
+    countEl.textContent = newCount;
+}
+
+// ============================================================
+//  Toast
+// ============================================================
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    const detailPage = document.getElementById('solutionDetailPage');
+    const detailActions = document.getElementById('solutionDetailActions');
+    let bottomOffset = 80;
+    if (detailPage && !detailPage.hidden && detailActions) {
+        const actionsRect = detailActions.getBoundingClientRect();
+        bottomOffset = Math.max(bottomOffset, window.innerHeight - actionsRect.top + 12);
+    }
+    t.style.setProperty('--toast-bottom', `${bottomOffset}px`);
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ============================================================
+//  横竖屏切换
+// ============================================================
+function setOrient(mode) {
+    const shell = document.getElementById('shell');
+    shell.className = 'shell ' + mode;
+    document.getElementById('phoneFrame').className = 'phone-frame ' + mode;
+    closeCompatPage();
+}
+
+// ============================================================
+//  视频控制
+// ============================================================
+const video = document.getElementById('gameHeroWireframe');
+const gallery = document.getElementById('gameGalleryWireframe');
+const playBtn = document.getElementById('playPauseBtn');
+const progressBar = document.getElementById('progressBar');
+let mediaPlaying = true;
+let mediaMuted = true;
+
+function switchMedia(type) {
+    if (type === 'video') {
+        video.classList.remove('hidden'); gallery.classList.add('hidden');
+        document.getElementById('tabVideo').classList.add('active');
+        document.getElementById('tabGallery').classList.remove('active');
+        mediaPlaying = true; updatePlayIcon(true);
+    } else {
+        video.classList.add('hidden'); gallery.classList.remove('hidden');
+        document.getElementById('tabVideo').classList.remove('active');
+        document.getElementById('tabGallery').classList.add('active');
+        mediaPlaying = false; updatePlayIcon(false);
+    }
+}
+
+function togglePlay() {
+    mediaPlaying = !mediaPlaying;
+    updatePlayIcon(mediaPlaying);
+}
+
+function updatePlayIcon(p) {
+    playBtn.className = p ? 'fas fa-pause play-pause-center' : 'fas fa-play play-pause-center';
+    playBtn.style.opacity = p ? '' : '1';
+}
+
+function seekVideo(e) {
+    const r = e.currentTarget.getBoundingClientRect();
+    progressBar.style.width = Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)) + '%';
+}
+
+function toggleMute() {
+    mediaMuted = !mediaMuted;
+    document.getElementById('muteBtn').className = mediaMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+}
+
+// ============================================================
+//  菜单 & 分享
+// ============================================================
+function toggleMenu(event) {
+    event.stopPropagation();
+    const popup = document.getElementById('menuPopup');
+    const visible = popup.style.display === 'flex';
+    document.querySelectorAll('.menu-popup').forEach(p => p.style.display = 'none');
+    if (!visible) popup.style.display = 'flex';
+}
+function closeMenu() { document.getElementById('menuPopup').style.display = 'none'; }
+function handleMenuClick(action) { alert('执行操作：' + action); closeMenu(); }
+
+function openShareModal(event) {
+    if (event) event.stopPropagation();
+    closeMenu();
+    document.getElementById('shareOverlay').classList.add('show');
+}
+function closeShareModal(event) {
+    if (event) event.stopPropagation();
+    document.getElementById('shareOverlay').classList.remove('show');
+}
+function handleShare(platform) {
+    if (platform === '复制链接') {
+        const url = window.location.href;
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(() => alert('链接已复制：' + url)).catch(() => fallbackCopy(url));
+        } else { fallbackCopy(url); }
+    } else { alert('正在跳转至：' + platform); }
+    closeShareModal();
+}
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); alert('链接已复制'); } catch(e) { alert('复制失败，请手动复制'); }
+    document.body.removeChild(ta);
+}
+
+// ============================================================
+//  方案详情与应用：复用现有能力的离线状态模拟
+// ============================================================
+let solutionApplicationMode = 'exact';
+let currentDetailSolution = null;
+let currentDetailRecord = null;
+let currentDetailSolutionId = '';
+let solutionDetailScenario = 'ready';
+let pendingAuxiliaryConfirmation = false;
+const COPIED_SOLUTIONS_KEY = 'gh_copied_solutions_v1';
+const SUPPORTED_SOLUTION_SCHEMA_VERSIONS = new Set(['1']);
+
+function findSolutionById(reviewSnapshotId) {
+    return findReviewSnapshot(reviewSnapshotId);
+}
+
+const SOLUTION_IDENTITY_FIELDS = Object.freeze([
+    'reviewId',
+    'gameId',
+    'platform',
+    'gpuModel',
+    'runtimeArchitecture',
+    'engineVersion',
+    'schemaVersion',
+    'canonicalizerVersion',
+    'configHash'
+]);
+
+function isSolutionDetailRecordConsistent(requestedReviewSnapshotId, metadata, record) {
+    if (!requestedReviewSnapshotId || !metadata || !record) return false;
+    if (metadata.reviewSnapshotId !== requestedReviewSnapshotId
+        || record.reviewSnapshotId !== requestedReviewSnapshotId) return false;
+    return SOLUTION_IDENTITY_FIELDS.every(field => String(metadata[field] ?? '') === String(record[field] ?? ''));
+}
+
+function loadSolutionDetailSources(reviewSnapshotId) {
+    const record = findSolutionById(reviewSnapshotId);
+    return {
+        metadata: cloneReviewSnapshot(record),
+        record: record?.reviewSnapshotId === reviewSnapshotId ? cloneReviewSnapshot(record) : null
+    };
+}
+
+function getSolutionActionsForRecord(record) {
+    const unavailable = !record || record.status !== 'available';
+    return {
+        canApply: !unavailable,
+        applyDisabledReason: unavailable ? '方案已不可用' : '',
+        canCopy: !unavailable,
+        copyDisabledReason: unavailable ? '方案已不可用' : ''
+    };
+}
+
+function getEffectiveSolutionActions(record) {
+    const serverActions = record?.actions || getSolutionActionsForRecord(record);
+    const deviceActions = {
+        canApply: solutionApplicationMode !== 'hard',
+        applyDisabledReason: solutionApplicationMode === 'hard'
+            ? '当前设备 GPU 或运行架构不兼容，无法应用。'
+            : '',
+        canCopy: true,
+        copyDisabledReason: ''
+    };
+    const serverCanApply = Boolean(serverActions.canApply);
+    const serverCanCopy = Boolean(serverActions.canCopy);
+    return {
+        canApply: serverCanApply && deviceActions.canApply,
+        applyDisabledReason: !serverCanApply
+            ? String(serverActions.applyDisabledReason || '方案已不可用')
+            : String(deviceActions.applyDisabledReason || ''),
+        canCopy: serverCanCopy && deviceActions.canCopy,
+        copyDisabledReason: !serverCanCopy
+            ? String(serverActions.copyDisabledReason || '方案已不可用')
+            : String(deviceActions.copyDisabledReason || '')
+    };
+}
+
+function getCurrentSolutionDetailActions() {
+    const detailPage = document.getElementById('solutionDetailPage');
+    if (!detailPage
+        || detailPage.hidden
+        || solutionDetailScenario !== 'ready'
+        || !currentDetailSolutionId
+        || currentDetailSolution?.status !== 'available'
+        || currentDetailRecord?.status !== 'available'
+        || !isSolutionDetailRecordConsistent(currentDetailSolutionId, currentDetailSolution, currentDetailRecord)) {
+        return { canApply: false, applyDisabledReason: '', canCopy: false, copyDisabledReason: '' };
+    }
+    return getEffectiveSolutionActions(currentDetailRecord);
+}
+
+function buildSolutionDetailViewModel(record) {
+    if (!record || record.status !== 'available') return null;
+    if (!SUPPORTED_SOLUTION_SCHEMA_VERSIONS.has(String(record.schemaVersion || ''))) {
+        throw new Error('方案字段版本无法解析');
+    }
+    const configGroups = normalizeSolutionConfigGroups(record.configGroups);
+    if (!configGroups) throw new Error('方案配置正文缺失或包含非白名单字段');
+    const actions = getEffectiveSolutionActions(record);
+    return {
+        reviewSnapshotId: record.reviewSnapshotId,
+        reviewId: record.reviewId,
+        solutionName: REVIEW_SNAPSHOT_DISPLAY_NAME,
+        status: record.status,
+        gameId: record.gameId,
+        platform: record.platform,
+        gpu: { displayName: record.gpu?.displayName || record.gpuModel || '' },
+        runtimeArchitecture: record.runtimeArchitecture,
+        engineVersion: record.engineVersion,
+        schemaVersion: record.schemaVersion,
+        canonicalizerVersion: record.canonicalizerVersion,
+        configHash: record.configHash,
+        sourceType: 'review_snapshot',
+        reviewAuthorDisplayName: String(record.reviewAuthorDisplayName || ''),
+        playSessionId: record.playSessionId,
+        durationSeconds: Number(record.durationSeconds || 0),
+        configGroups,
+        actions: {
+            canApply: Boolean(actions.canApply),
+            applyDisabledReason: String(actions.applyDisabledReason || ''),
+            canCopy: Boolean(actions.canCopy),
+            copyDisabledReason: String(actions.copyDisabledReason || '')
+        }
+    };
+}
+
+function escapeSolutionText(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[character]);
+}
+
+function renderSolutionShareSummary(viewModel) {
+    const author = viewModel.reviewAuthorDisplayName || '匿名玩家';
+    return author + ' · 本次游玩 ' + formatDuration(viewModel.durationSeconds);
+}
+
+function renderSolutionConfigGroups(groups) {
+    return groups.map(group => `
+        <section class="solution-config-section" data-config-group="${escapeSolutionText(group.key)}">
+            <h3 class="solution-config-title">${escapeSolutionText(group.label)}</h3>
+            <div class="solution-config-card">
+                ${group.items.map(item => `
+                    <div class="solution-config-row" data-config-key="${escapeSolutionText(item.key)}">
+                        <div>
+                            <div class="solution-config-label">${escapeSolutionText(item.label)}</div>
+                            ${item.description ? `<div class="solution-config-description">${escapeSolutionText(item.description)}</div>` : ''}
+                        </div>
+                        <div class="solution-config-value">${escapeSolutionText(item.displayValue || '未配置')}</div>
+                    </div>`).join('')}
+            </div>
+        </section>`).join('');
+}
+
+function setSolutionActionMessages({ applyMessage = '', copyMessage = '' } = {}) {
+    const result = document.getElementById('solutionApplyResult');
+    const applyReason = document.getElementById('solutionApplyReason');
+    const copyReason = document.getElementById('solutionCopyReason');
+    const applyButton = document.getElementById('applySolutionButton');
+    const copyButton = document.getElementById('copySolutionButton');
+    applyReason.textContent = applyMessage;
+    copyReason.textContent = copyMessage;
+    applyReason.hidden = !applyMessage;
+    copyReason.hidden = !copyMessage;
+    result.hidden = !applyMessage && !copyMessage;
+    if (applyMessage) applyButton.setAttribute('aria-describedby', 'solutionApplyReason');
+    else applyButton.removeAttribute('aria-describedby');
+    if (copyMessage) copyButton.setAttribute('aria-describedby', 'solutionCopyReason');
+    else copyButton.removeAttribute('aria-describedby');
+}
+
+function setSolutionDetailActions({ canApply = false, canCopy = false, applyDisabledReason = '', copyDisabledReason = '' } = {}) {
+    const applyButton = document.getElementById('applySolutionButton');
+    const copyButton = document.getElementById('copySolutionButton');
+    applyButton.disabled = !canApply;
+    copyButton.disabled = !canCopy;
+    applyButton.title = applyDisabledReason || '';
+    copyButton.title = copyDisabledReason || '';
+    setSolutionActionMessages({
+        applyMessage: applyDisabledReason,
+        copyMessage: copyDisabledReason
+    });
+}
+
+function renderSolutionDetailState(scenario = solutionDetailScenario) {
+    const state = document.getElementById('solutionDetailState');
+    const content = document.getElementById('solutionDetailContent');
+    const applyButton = document.getElementById('applySolutionButton');
+    const showState = (message, retry = false) => {
+        state.hidden = false;
+        state.innerHTML = '<p>' + escapeSolutionText(message) + '</p>'
+            + (retry ? '<button id="retrySolutionDetailButton" type="button" onclick="reloadSolutionDetail()">重新加载</button>' : '');
+        content.hidden = true;
+        document.getElementById('solutionConfigGroups').innerHTML = '';
+        applyButton.textContent = '应用';
+        setSolutionDetailActions();
+    };
+
+    pendingAuxiliaryConfirmation = false;
+    applyButton.textContent = '应用';
+    if (scenario === 'loading') return showState('正在加载方案详情');
+    if (scenario === 'load-error') return showState('加载失败，请重新加载', true);
+    if (scenario === 'invalid'
+        || (currentDetailSolution && currentDetailSolution.status !== 'available')
+        || (!currentDetailSolution && !currentDetailRecord)) {
+        return showState('方案已不可用');
+    }
+    if (!currentDetailRecord) return showState('方案配置异常，暂时无法使用');
+
+    let viewModel;
+    try {
+        viewModel = buildSolutionDetailViewModel(currentDetailRecord);
+    } catch (error) {
+        console.warn('方案详情数据异常：', error.message);
+        return showState('方案配置异常，暂时无法使用');
+    }
+    if (!viewModel) return showState('方案已不可用');
+
+    state.hidden = true;
+    state.textContent = '';
+    content.hidden = false;
+    document.getElementById('solutionDetailSchemeName').textContent = viewModel.solutionName;
+    const gpu = document.getElementById('solutionDetailGpu');
+    gpu.textContent = viewModel.gpu.displayName ? 'GPU：' + viewModel.gpu.displayName : '';
+    gpu.hidden = !viewModel.gpu.displayName;
+    document.getElementById('solutionShareSummary').textContent = renderSolutionShareSummary(viewModel);
+    document.getElementById('solutionConfigGroups').innerHTML = renderSolutionConfigGroups(viewModel.configGroups);
+    setSolutionDetailActions(viewModel.actions);
+}
+
+function openSolutionDetail(reviewSnapshotId) {
+    currentDetailSolutionId = reviewSnapshotId;
+    const sources = loadSolutionDetailSources(reviewSnapshotId);
+    currentDetailSolution = sources.metadata;
+    currentDetailRecord = sources.record;
+    pendingAuxiliaryConfirmation = false;
+    closeCopySolutionDialog();
+    document.getElementById('solutionDetailPage').hidden = false;
+    document.getElementById('solutionDetailBody').scrollTop = 0;
+    renderSolutionDetailState(solutionDetailScenario);
+}
+
+function reloadSolutionDetail() {
+    solutionDetailScenario = 'ready';
+    if (!currentDetailSolutionId) return;
+    const sources = loadSolutionDetailSources(currentDetailSolutionId);
+    currentDetailSolution = sources.metadata;
+    currentDetailRecord = sources.record;
+    renderSolutionDetailState('ready');
+}
+
+function closeSolutionDetail() {
+    document.getElementById('solutionDetailPage').hidden = true;
+    closeCopySolutionDialog();
+    currentDetailSolution = null;
+    currentDetailRecord = null;
+    currentDetailSolutionId = '';
+    pendingAuxiliaryConfirmation = false;
+}
+
+function applyCurrentSolution() {
+    const actions = getCurrentSolutionDetailActions();
+    if (!actions.canApply) return;
+    const button = document.getElementById('applySolutionButton');
+    if (solutionApplicationMode === 'auxiliary' && !pendingAuxiliaryConfirmation) {
+        pendingAuxiliaryConfirmation = true;
+        setSolutionActionMessages({
+            applyMessage: '检测到分辨率等辅助信息差异，请再次确认应用。',
+            copyMessage: actions.copyDisabledReason
+        });
+        button.textContent = '确认应用';
+        return;
+    }
+    const appliedSolution = cloneReviewSnapshot(currentDetailRecord);
+    journeyState.appliedSolutionId = appliedSolution.reviewSnapshotId;
+    journeyState.appliedSolutionName = REVIEW_SNAPSHOT_DISPLAY_NAME;
+    journeyState.appliedConfigHash = appliedSolution.configHash;
+    journeyState.appliedSolutionRecord = appliedSolution;
+    const applied = document.getElementById('currentAppliedSolution');
+    applied.textContent = '当前方案：' + REVIEW_SNAPSHOT_DISPLAY_NAME;
+    applied.hidden = false;
+    closeSolutionDetail();
+    closeCompatPage();
+    setJourneyStage('detail');
+    showToast('方案已应用');
+}
+
+function copyCurrentSolution() {
+    if (!getCurrentSolutionDetailActions().canCopy) return;
+    const dialog = document.getElementById('copySolutionDialog');
+    const input = document.getElementById('copySolutionName');
+    input.value = REVIEW_SNAPSHOT_DISPLAY_NAME + ' - 副本';
+    dialog.hidden = false;
+    dialog.classList.add('show');
+    window.requestAnimationFrame(() => {
+        input.focus();
+        input.select();
+    });
+}
+
+function getCopiedSolutions() {
+    try {
+        const copies = JSON.parse(localStorage.getItem(COPIED_SOLUTIONS_KEY) || '[]');
+        return Array.isArray(copies) ? copies : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function closeCopySolutionDialog(event) {
+    const dialog = document.getElementById('copySolutionDialog');
+    if (!dialog || (event && event.target !== dialog)) return;
+    dialog.classList.remove('show');
+    dialog.hidden = true;
+}
+
+function confirmCopyCurrentSolution() {
+    const dialog = document.getElementById('copySolutionDialog');
+    if (!dialog
+        || dialog.hidden
+        || !dialog.classList.contains('show')
+        || !getCurrentSolutionDetailActions().canCopy) return;
+    const input = document.getElementById('copySolutionName');
+    const name = input.value.trim() || REVIEW_SNAPSHOT_DISPLAY_NAME + ' - 副本';
+    const copies = getCopiedSolutions();
+    copies.push({
+        id: 'copy_' + Date.now(),
+        sourceReviewSnapshotId: currentDetailRecord.reviewSnapshotId,
+        name,
+        configGroups: cloneSolutionConfigGroups(currentDetailRecord.configGroups),
+        cloudShared: false
+    });
+    localStorage.setItem(COPIED_SOLUTIONS_KEY, JSON.stringify(copies));
+    closeCopySolutionDialog();
+    showToast('复制成功，正在前往“启动方案”');
+}
+
+function setApplicationMode(mode) {
+    solutionApplicationMode = ['exact', 'auxiliary', 'hard'].includes(mode) ? mode : 'exact';
+    if (document.getElementById('solutionDetailPage').hidden || !currentDetailSolutionId) return;
+    renderSolutionDetailState(solutionDetailScenario);
+}
+
+function showSameConfigEmptyScenario() {
+    closeFeedbackModal({ preserveDraft: true });
+    forceSameConfigEmpty = true;
+    viewMode = 'device';
+    pages.ls = 1;
+    document.querySelectorAll('#chipsLs .chip').forEach(chip => chip.classList.toggle('active', chip.textContent.trim() === '同配置'));
+    openCompatPage();
+    refreshPanel('ls');
+}
+
+function simulateGlobalCooldown() {
+    const a = inviteDemoState.byGameGpu['gta5|Adreno 750'];
+    const b = inviteDemoState.byGameGpu['hades2|Adreno 750'];
+    a.exposures = 1;
+    a.lastInviteAt = Date.now();
+    b.exposures = 0;
+    inviteDemoState.globalLastInviteAt = a.lastInviteAt;
+    return JSON.parse(JSON.stringify({ config: INVITE_CONFIG, ...inviteDemoState }));
+}
+
+function resetJourney() {
+    Object.assign(journeyState, {
+        stage: 'detail',
+        appliedSolutionId: '',
+        appliedSolutionName: '',
+        appliedConfigHash: '',
+        appliedSolutionRecord: null,
+        playSessionId: '',
+        startedAt: 0,
+        sessionSnapshot: {
+            ...REVIEW_SNAPSHOT_DIMENSIONS,
+            configHash: 'cfg_local_default_v1',
+            profileName: '本次启动方案',
+            durationSeconds: 1122,
+            playSessionId: 'play_demo_recent_success',
+            configGroups: createSeedSolutionConfigGroups()
+        }
+    });
+    const applied = document.getElementById('currentAppliedSolution');
+    applied.textContent = '';
+    applied.hidden = true;
+    closeExitGameConfirm();
+    setJourneyStage('detail');
+    setOrient('pt');
+}
+
+function bindCompatibilityV12Demo() {
+    setApplicationMode('exact');
+    setJourneyStage('detail');
+    setOrient('pt');
+    bindReviewSolutionActions();
+    window.compatibilityDemo = Object.freeze({
+        getInviteState: () => JSON.parse(JSON.stringify(inviteDemoState)),
+        getReviewSnapshots: () => JSON.parse(JSON.stringify(getReviewSnapshots())),
+        createReviewSnapshotForTest: (reviewId, snapshot) => cloneReviewSnapshot(createReviewSnapshot(reviewId, snapshot)),
+        deleteReviewSnapshot,
+        getCopiedSolutions: () => JSON.parse(JSON.stringify(getCopiedSolutions())),
+        getSessionSnapshot: () => JSON.parse(JSON.stringify(journeyState.sessionSnapshot)),
+        setSessionSnapshot: snapshot => {
+            journeyState.sessionSnapshot = { ...journeyState.sessionSnapshot, ...snapshot };
+            return JSON.parse(JSON.stringify(journeyState.sessionSnapshot));
+        },
+        setSolutionDetailScenario: scenario => {
+            solutionDetailScenario = ['ready', 'loading', 'load-error', 'invalid'].includes(scenario)
+                ? scenario
+                : 'ready';
+        },
+        simulateGlobalCooldown,
+        setApplicationMode,
+        showSameConfigEmpty: showSameConfigEmptyScenario,
+        resetJourney
+    });
+}
+
+// ============================================================
+//  初始化
+// ============================================================
+refreshEntryCard();
+bindCompatibilityV12Demo();
+</script>
+</body>
+</html>
