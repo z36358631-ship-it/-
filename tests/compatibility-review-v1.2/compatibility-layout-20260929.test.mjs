@@ -32,7 +32,7 @@ test('兼容性单选提交、编辑、旧草稿恢复及概览左右布局', as
     const bars = await page.locator('#distBarsLs').boundingBox();
     assert.ok(bars.x >= summary.x + summary.width, '结论和条数应在分布左侧');
     assert.equal(await page.locator('#distBarsLs .dist-row').count(), 4);
-    await page.click('#manualReviewButton');
+    await page.evaluate(() => window.openFeedbackModal({ source: 'proactive', playSessionId: window.compatibilityDemo.getSessionSnapshot().playSessionId }));
     await page.click('#modalFeedback .btn-submit');
     assert.ok(await page.locator('#modalFeedback').evaluate(el => el.classList.contains('show')));
     for (const type of ['unplayable', 'partial', 'basic', 'perfect']) {
@@ -57,7 +57,7 @@ test('兼容性单选提交、编辑、旧草稿恢复及概览左右布局', as
     assert.equal(edited.text, '只修改文字');
     await page.evaluate(() => localStorage.setItem('gh_compat_review_v12_draft', JSON.stringify({ type: 'basic', stars: 1, text: '旧草稿', shareSessionRequested: true })));
     await page.click('#manualReviewButton');
-    assert.equal(await page.locator('#shareSessionCheckbox').isChecked(), true);
+    assert.equal(await page.locator('#shareSessionCheckbox').count(), 0, '手动重开旧草稿不能带回已结束会话的分享权限');
     await page.click('#fbTypeWrap [data-type="partial"]');
     assert.equal(await page.locator('#fbSolutionSection').isVisible(), false);
     await page.click('#modalFeedback .btn-submit');

@@ -60,14 +60,13 @@ function assertNoRemoteRequests(requests, contract) {
   assert.deepEqual(requests, [], `${contract} 不应产生远程请求`);
 }
 
-async function openManualReview(page, stars = 5) {
-  await page.click('#openCompatibilityReviews');
-  await page.click('#manualReviewButton');
+async function openCurrentSessionReview(page, stars = 5) {
+  await page.evaluate(() => window.openFeedbackModal({ source: 'proactive', playSessionId: window.compatibilityDemo.getSessionSnapshot().playSessionId }));
   await page.click(`#fbTypeWrap [data-type="${({ 1: "unplayable", 2: "partial", 3: "basic", 4: "perfect", 5: "perfect" })[stars]}"]`);
 }
 
 async function submitSharedReview(page, { stars = 5, text = '本次游玩流畅，配置可供参考。' } = {}) {
-  await openManualReview(page, stars);
+  await openCurrentSessionReview(page, stars);
   await page.fill('#fbEditor', text);
   if (stars >= 3) {
     await requireOne(page, '#shareSessionCheckbox', '分享本次启动配置');
@@ -258,8 +257,7 @@ test('A 游戏曝光后全局 7 天冷却阻断 B 游戏且不增加 B 曝光', 
 test('四类兼容性单选，无评分入口；部分兼容与不可玩不显示分享', async () => {
   const { page, errors } = await openDemo(cDemo, 'C 端');
   try {
-    await page.click('#openCompatibilityReviews');
-    await page.click('#manualReviewButton');
+    await openCurrentSessionReview(page, 5);
     assert.equal(await page.locator('#fbStarsWrap').count(), 0);
     for (const [type, label, visible] of [
       ['unplayable', '不可玩', false], ['partial', '部分兼容', false],
@@ -396,7 +394,7 @@ test('快照配置总大小超限时不上传且不阻断评价提交', async ()
 test('评价保存失败时不创建孤儿快照', async () => {
   const { page, errors } = await openDemo(cDemo, 'C 端');
   try {
-    await openManualReview(page, 5);
+    await openCurrentSessionReview(page, 5);
     await page.check('#shareSessionCheckbox');
     const before = await page.evaluate(() => ({
       reviewCount: window.getFeedbacks().length,
@@ -920,7 +918,7 @@ test('快照正文缺失、版本异常或 ID 不一致时禁用操作且不展�
   }
 });
 
-test('服务端动作禁用原因在打开与刷新后保持可见', async () => {
+test('服务端动作禁用原因在再次打开详情后保持可见，且无常驻刷新', async () => {
   const { page, errors } = await openDemo(cDemo, 'C 端');
   try {
     await page.evaluate(() => {
@@ -937,7 +935,8 @@ test('服务端动作禁用原因在打开与刷新后保持可见', async () =>
     assert.equal(await page.locator('#copySolutionButton').isDisabled(), true);
     assert.match(await page.locator('#solutionApplyReason').innerText(), /停止应用/);
     assert.match(await page.locator('#solutionCopyReason').innerText(), /停止复制/);
-    await page.click('#refreshSolutionDetail');
+    assert.equal(await page.locator('#refreshSolutionDetail').count(), 0);
+    await page.evaluate(() => window.openSolutionDetail('review_snapshot_s1'));
     assert.match(await page.locator('#solutionApplyReason').innerText(), /停止应用/);
     assert.match(await page.locator('#solutionCopyReason').innerText(), /停止复制/);
     assertNoPageErrors(errors, '快照动作状态');
