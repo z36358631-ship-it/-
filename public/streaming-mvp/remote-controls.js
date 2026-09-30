@@ -3,7 +3,9 @@ const remoteWindows=[{id:'doc',title:'项目讨论记录 — 文档',label:'文�
 function remoteText(){return s.activeWindow==='ai'?(s.aiText||''):s.activeWindow==='code'?(s.codeText||''):s.doc;}
 function writeRemote(text){if(s.view)return;if(s.activeWindow==='ai')s.aiText=text;else if(s.activeWindow==='code')s.codeText=text;else s.doc=text;}
 function remoteWindow(){if(s.mode==='game')return gamePreview();const w=remoteWindows.find(w=>w.id===s.activeWindow)||remoteWindows[0];return '<div class="remote-window"><div class="windowbar">'+esc(s.quickOpenedApp?s.quickOpenedApp+' — 远端应用示意':w.title)+'</div><div class="menubar"><span>文件</span><span>编辑</span><span>查看</span></div>'+(w.id==='ai'?'<div class="ai-empty">AI 工具页面<small>在电脑的浏览器中继续提问</small></div>':'')+'<textarea aria-label="电脑文档" class="doc" placeholder="'+(w.id==='ai'?'输入问题；本原型不会提交或生成回答':'点击此处输入')+'" '+(s.view?'readonly':'')+'>'+esc(remoteText())+'</textarea></div>';}
-function imeKeyboard(){return '<div class="ime"><input id="remote-input" aria-label="远程输入" autocomplete="off" value="'+esc(s.imeBuffer||'')+'" placeholder="点击输入文字" '+(s.view?'readonly':'')+'><div class="ime-rows">'+(s.numbers?['1234567890','@#%&*-+=','.,?!/']:['qwertyuiop','asdfghjkl','zxcvbnm']).map((row,i)=>'<div class="ime-row">'+(i===2?btn('⇧','ime-shift','modifier'):'')+[...row].map(k=>btn(s.shift?k.toUpperCase():k,'key:'+(s.shift?k.toUpperCase():k))).join('')+(i===2?btn('⌫','key:Backspace','modifier'):'')+'</div>').join('')+'<div class="ime-row">'+btn(s.numbers?'ABC':'123','ime-numbers','modifier')+btn('空格','key:Space','space')+btn('换行','key:Enter','modifier')+'</div></div><div class="ime-bottom">'+btn('长文本输入','panel:text','ghost')+'<small>输入到当前窗口</small></div></div>';}
+function imeKeyboard(){return '<div class="ime"><textarea id="remote-input" aria-label="远程输入" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="点击输入文字，使用系统键盘" '+(s.view?'readonly':'')+'>'+esc(s.imeBuffer||'')+'</textarea><div class="ime-bottom">'+btn('长文本输入','panel:text','ghost')+'<small>使用手机系统输入法</small></div></div>';}
+function focusRemoteInput(){if(!s.view&&s.keyboard==='输入法'&&s.panel==='keyboard')document.querySelector('#remote-input')?.focus();}
+
 function windowPanel(){return '<div class="row spread"><h3>电脑上已打开的窗口</h3>'+ib('收起面板','panel-close','close')+'</div><div class="office-windows">'+(s.previewEmptyWindows?'<div class="blank"><h3>暂无打开的窗口</h3><p>可先在电脑桌面打开应用。</p></div>':remoteWindows.map(w=>'<button data-action="window:'+w.id+'" class="office-window '+((s.activeWindow||'doc')===w.id?'active':'')+'">'+icon(w.icon)+'<span>'+w.title+'<small>'+w.label+'</small></span></button>').join(''))+'</div><div class="office-actions">'+btn('长文本输入','panel:text','','keyboard')+btn('显示桌面','office-desktop','','monitor')+'</div><small>没有找到需要的窗口？在电脑桌面打开应用。</small>';}
 function textPanel(){const w=remoteWindows.find(w=>w.id===(s.activeWindow||'doc'));return '<div class="row spread"><h3>长文本输入</h3>'+ib('收起面板','panel-close','close')+'</div><p class="text-target">当前窗口：'+w.title+'</p><textarea id="office-draft" aria-label="长文本草稿" class="inputbox" placeholder="在这里编辑，再输入到电脑">'+esc(s.textDraft||'')+'</textarea><p class="draft-hint">先在远程窗口中定位输入框。仅输入文字，不自动提交。</p>'+btn('输入到电脑','write-draft','primary').replace('<button','<button '+(s.view?'disabled':''))+(s.view?'<small>仅观看模式不能输入</small>':'')+'<small>收起后保留本次草稿</small>';}
 const mouseSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 2v7M6 10h12"/></svg>';
@@ -11,6 +13,11 @@ function floatingMouse(){if(s.platform==='mac'||s.view)return '';const p=s.mouse
 function controlAction(a){const [k,v]=a.split(':');
  if(s.view&&(k==='key'||k==='computer-key'||k==='windows'||k==='desktop'||k==='office-desktop'||k==='window'||k==='write-draft'||k==='panel'&&['keyboard','text','windows'].includes(v)))return true;
  if(k==='computer-key')return computerKeyAction(v);
+ if(k==='computer-combo'){if(s.view)return true;s.computerCombo=!s.computerCombo;s.computerModifiers=[];render();return true;}
+ if(k==='computer-page'){s.computerKeyPage=Number(v)===1?1:0;render();return true;}
+ if(k==='set'&&v==='keyboard'){s.computerModifiers=[];s.imeBuffer='';s.keyboard=a.split(':')[2]==='电脑键盘'?'电脑键盘':'输入法';render();focusRemoteInput();return true;}
+ if(k==='panel'&&v==='keyboard'){s.computerModifiers=[];s.panel=s.panel==='keyboard'?'':'keyboard';s.imeBuffer='';render();focusRemoteInput();return true;}
+ if(k==='key')s.imeBuffer='';
  if(['toggle-view','panel-close','rotate','exit','exit-confirm'].includes(k)){s.computerModifiers=[];cancelRemoteGestures();}
  if(['quicklaunch','open-files','apps-permission'].includes(k)){
   if(!device().online||device().blocked){toast(!device().online?'设备已离线，无法操作':'该设备不允许被控');return true;}
@@ -56,35 +63,32 @@ function commitIme(value){if(s.view)return;const old=s.imeBuffer||'';writeRemote
 function previewMode(mode){clearTimeout(powerTimer);clearTimeout(connectTimer);if(s.page!=='session'){applyState('session');}s.mode=mode;s.review=false;s.modal='';s.panel='';s.desktop=false;s.mouseOpen=false;s.mouseMenu=false;s.mapping=mode==='game';s.activeWindow=mode==='office'?'ai':'doc';render();}
 function gamePreview(){return '<div class="game-preview"><img src="'+HOME_MEDIA.gta+'" alt="游戏场景预览"><div><small>游戏操作预览</small><h2>继续电脑上的游戏</h2><p>键盘、鼠标与按键映射</p></div></div>';}
 
-// Standard 104-key groups. Key effects are local demonstrations, never host input.
-const computerKeyGroups=[
- ['功能键',['Esc',...Array.from({length:12},(_,i)=>'F'+(i+1)),'PrintScreen','ScrollLock','Pause']],
- ['主键区',['Backquote','1','2','3','4','5','6','7','8','9','0','Minus','Equal','Backspace','Tab','Q','W','E','R','T','Y','U','I','O','P','BracketLeft','BracketRight','Backslash','CapsLock','A','S','D','F','G','H','J','K','L','Semicolon','Quote','Enter','Shift','Z','X','C','V','B','N','M','Comma','Period','Slash','ShiftRight','Ctrl','Win','Alt','Space','AltRight','WinRight','ContextMenu','CtrlRight']],
- ['导航键',['Insert','Home','PageUp','Delete','End','PageDown','ArrowUp','ArrowLeft','ArrowDown','ArrowRight']],
- ['数字键盘',['NumLock','NumpadDivide','NumpadMultiply','NumpadSubtract','Numpad7','Numpad8','Numpad9','NumpadAdd','Numpad4','Numpad5','Numpad6','Numpad1','Numpad2','Numpad3','NumpadEnter','Numpad0','NumpadDecimal']]
-];
-const computerKeyLabels={Backquote:'`',Minus:'-',Equal:'=',BracketLeft:'[',BracketRight:']',Backslash:'\\',Semicolon:';',Quote:"'",Comma:',',Period:'.',Slash:'/',ShiftRight:'Shift',CtrlRight:'Ctrl',WinRight:'Win',AltRight:'Alt',Space:'空格',ContextMenu:'菜单',ArrowUp:'↑',ArrowLeft:'←',ArrowDown:'↓',ArrowRight:'→',NumpadDivide:'/',NumpadMultiply:'*',NumpadSubtract:'-',NumpadAdd:'+',NumpadEnter:'Enter',NumpadDecimal:'.'};
-function computerKeyLabel(key){return computerKeyLabels[key]||key.replace(/^Numpad/,'');}
-function computerModifier(key){return key.replace(/Right$/,'');}
+// Two compact pages; all keyboard effects remain local demonstrations.
+const computerKeyPages=[[
+ ['Minus','Equal','BracketLeft','BracketRight','Backslash','Semicolon','Quote','Comma','Period','Slash'],
+ [...'1234567890'],[...'QWERTYUIOP'],[...'ASDFGHJKL','Backspace'],[...'ZXCVBNM','Space','Enter']
+],[['Esc','Tab','Backquote','PrintScreen','ScrollLock','Pause'],['F1','F2','F3','Insert','Home','PageUp'],['F4','F5','F6','Delete','End','PageDown'],['F7','F8','F9','CapsLock','ArrowUp',null],['F10','F11','F12','ArrowLeft','ArrowDown','ArrowRight']]];
+const computerKeyGroups=[['keys',computerKeyPages.flat(2).filter(Boolean).concat(['Ctrl','Shift','Alt','Win'])]];
+const computerKeyLabels={Backquote:'`',Minus:'-',Equal:'=',BracketLeft:'[',BracketRight:']',Backslash:'\\',Semicolon:';',Quote:"'",Comma:',',Period:'.',Slash:'/',Space:'空格',ArrowUp:'↑',ArrowLeft:'←',ArrowDown:'↓',ArrowRight:'→'};
+function computerKeyLabel(key){return computerKeyLabels[key]||key;}
+function computerModifier(key){return key;}
+function computerModifierLabel(key){return device().os==='macOS'?({Ctrl:'Control',Shift:'Shift',Alt:'Option',Win:'⌘'}[key]||computerKeyLabel(key)):computerKeyLabel(key);}
 function computerKeyboard(){
- const mods=s.computerModifiers||[],widths={Backspace:2,Tab:1.5,Backslash:1.5,CapsLock:1.75,Enter:2.25,Shift:2.25,ShiftRight:2.75,Ctrl:1.25,Win:1.25,Alt:1.25,Space:6.25,AltRight:1.25,WinRight:1.25,ContextMenu:1.25,CtrlRight:1.25};
- const labels={PrintScreen:'PrtSc',ScrollLock:'Scroll',PageUp:'PgUp',PageDown:'PgDn',CapsLock:'Caps',Backspace:'⌫',NumLock:'Num',ContextMenu:'菜单'};
- const keyButton=(key,extra='')=>'<button data-action="computer-key:'+key+'"'+(s.view?' disabled':'')+(['Ctrl','Alt','Shift','Win'].includes(computerModifier(key))?' aria-pressed="'+mods.includes(computerModifier(key))+'"':'')+' class="computer-key '+(mods.includes(computerModifier(key))?'active ':'')+extra+'" style="--key-width:'+(widths[key]||1)+'" aria-label="'+key+'">'+esc(labels[key]||computerKeyLabel(key))+'</button>';
- const main=computerKeyGroups[1][1],rows=[main.slice(0,14),main.slice(14,28),main.slice(28,41),main.slice(41,53),main.slice(53)];
- return '<div class="computer-keyboard"><div class="computer-keyboard-scroll" tabindex="0" aria-label="完整电脑键盘，可左右滚动"><div class="computer-keyboard-board">'
- +'<div class="computer-function-row">'+computerKeyGroups[0][1].slice(0,13).map(k=>keyButton(k)).join('')+'</div>'
- +'<div class="computer-system-row">'+computerKeyGroups[0][1].slice(13).map(k=>keyButton(k)).join('')+'</div>'
- +'<div class="computer-main-keys">'+rows.map(row=>'<div class="computer-key-row">'+row.map(k=>keyButton(k)).join('')+'</div>').join('')+'</div>'
- +'<div class="computer-navigation-keys"><div class="computer-navigation-six">'+computerKeyGroups[2][1].slice(0,6).map(k=>keyButton(k)).join('')+'</div><div class="computer-arrows">'+computerKeyGroups[2][1].slice(6).map(k=>keyButton(k,k==='ArrowUp'?'arrow-up':'')).join('')+'</div></div>'
- +'<div class="computer-number-keys">'+computerKeyGroups[3][1].map(k=>keyButton(k,k==='NumpadAdd'?'number-add':k==='NumpadEnter'?'number-enter':k==='Numpad0'?'number-zero':'')).join('')+'</div>'
- +'</div></div><p class="computer-key-status" role="status">'+esc(s.view?'仅观看模式不能输入':mods.length?'已选 '+mods.join(' + ')+'，点击下一键组合':s.lastRemoteKey?'已模拟：'+s.lastRemoteKey+'（未发送至电脑）':'左右滑动查看完整键盘。点选 Ctrl、Alt、Shift 后组合下一键；再次点选取消。')+'</p></div>';
+ const mods=s.computerModifiers||[],page=s.computerKeyPage===1?1:0,dual={Minus:'_ −',Equal:'+ =',BracketLeft:'{ [',BracketRight:'} ]',Backslash:'| \\',Semicolon:': ;',Quote:'" \'',Comma:'< ,',Period:'> .',Slash:'? /'};
+ const key=(k,modifier=false)=>!k?'<span class="computer-key-empty"></span>':'<button data-action="computer-key:'+k+'"'+(s.view?' disabled':'')+(modifier?' aria-pressed="'+mods.includes(k)+'"':'')+' class="computer-key '+(mods.includes(k)?'active ':'')+(['Space','Enter'].includes(k)?'key-wide':'')+'" aria-label="'+k+'">'+esc(modifier?computerModifierLabel(k):dual[k]||({Backspace:'⌫',Backquote:'~ `',PrintScreen:'PrtScr',ScrollLock:'ScrLK',Delete:'Del',CapsLock:'Caps',PageUp:'PgUp',PageDown:'PgDn'}[k]||computerKeyLabel(k)))+'</button>';
+ return '<div class="computer-keyboard"><div class="computer-modifiers"><label class="computer-combo"><input type="checkbox" data-action="computer-combo" '+(s.computerCombo?'checked ':'')+(s.view?'disabled':'')+'>组合键模式</label><div class="computer-modifier-keys">'+['Ctrl','Shift','Alt','Win'].map(k=>key(k,true)).join('')+'</div></div><div class="computer-key-pages" data-key-page="'+page+'" aria-label="电脑键盘第 '+(page+1)+' 页">'+computerKeyPages[page].map(row=>'<div class="computer-key-row">'+row.map(k=>key(k)).join('')+'</div>').join('')+'</div><div class="computer-key-pagination">'+[0,1].map(i=>'<button aria-label="键盘第 '+(i+1)+' 页" aria-pressed="'+(page===i)+'" class="'+(page===i?'active':'')+'" data-action="computer-page:'+i+'"><span></span></button>').join('')+'</div></div>';
 }
+let computerSwipe=null,computerSuppressClickUntil=0;
+document.addEventListener('pointerdown',e=>{const area=e.target.closest('.computer-key-pages');if(area)computerSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,area};});
+document.addEventListener('pointerup',e=>{const d=computerSwipe;if(!d||d.id!==e.pointerId)return;computerSwipe=null;const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.5){computerSuppressClickUntil=Date.now()+500;controlAction('computer-page:'+(dx<0?1:0));}},true);
+document.addEventListener('pointercancel',()=>computerSwipe=null);
+document.addEventListener('click',e=>{if(Date.now()<computerSuppressClickUntil&&e.target.closest('.computer-key-pages')){e.preventDefault();e.stopImmediatePropagation();}},true);
 function computerKeyAction(key){
  if(!computerKeyGroups.some(([,keys])=>keys.includes(key)))return true;
  if(s.view){s.computerModifiers=[];return true;}
- const modifier=computerModifier(key),mods=s.computerModifiers||(s.computerModifiers=[]);
- if(['Ctrl','Alt','Shift','Win'].includes(modifier)){s.computerModifiers=mods.includes(modifier)?mods.filter(m=>m!==modifier):[...mods,modifier];render();return true;}
- s.lastRemoteKey=[...mods,computerKeyLabel(key)].join('+');s.computerModifiers=[];
+ s.imeBuffer='';const modifier=computerModifier(key),mods=s.computerModifiers||(s.computerModifiers=[]);
+ if(['Ctrl','Alt','Shift','Win'].includes(modifier)){if(!s.computerCombo){s.lastRemoteKey=computerModifierLabel(key);s.computerModifiers=[];render();return true;}s.computerModifiers=mods.includes(modifier)?mods.filter(m=>m!==modifier):s.computerCombo?[...mods,modifier]:[modifier];render();return true;}
+ s.lastRemoteKey=[...mods.map(computerModifierLabel),computerKeyLabel(key)].join('+');s.computerModifiers=[];
  let text=remoteText(),next=text;const doc=$('.doc'),start=doc?.selectionStart??text.length,end=doc?.selectionEnd??start;
  const insert=value=>text.slice(0,start)+value+text.slice(end);
  if(mods.includes('Ctrl')){
