@@ -2278,11 +2278,13 @@ function overallLevel(average) {
     if (average === null || !Number.isFinite(Number(average)) || average < 1 || average > 5) return null;
     return average >= 4 ? 'perfect' : average >= 3 ? 'basic' : average >= 2 ? 'partial' : 'unplayable';
 }
-// 7/7/30仅为演示参数；评审未确认上线值，生产由服务端统一裁决。
-const INVITE_CONFIG = { globalDays: 7, unreviewedDays: 7, reviewUpdateDays: 30, maxPerGameGpu: 0 };
+// 仅保留一套用户全局邀评频控；天数、次数和统计窗口由服务端下发。
+// 7 天仅为 Demo 演示值，不是上线默认值。
+const INVITE_CONFIG = { globalDays: 7, maxExposures: 0 };
 const completedInviteSessions = new Set();
 const inviteDemoState = {
     globalLastInviteAt: null,
+    globalExposures: 0,
     byGameGpu: {
         'gta5|Adreno 750': { lastInviteAt: null, lastReviewAt: null, exposures: 0 },
         'hades2|Adreno 750': { lastInviteAt: null, lastReviewAt: null, exposures: 0 }
@@ -2446,11 +2448,7 @@ function getInviteEligibility(result, session = {}) {
     const now = session.now ?? Date.now();
     const day = 86400000;
     if (inviteDemoState.globalLastInviteAt !== null && now - inviteDemoState.globalLastInviteAt < INVITE_CONFIG.globalDays * day) return reject('global-cooldown');
-    const state = inviteDemoState.byGameGpu[gameKey];
-    const reviewed = session.reviewed ?? getFeedbacks().some(f => f.uid === MY_UID && f.gpu === gpu && gameId === 'gta5');
-    const days = reviewed ? INVITE_CONFIG.reviewUpdateDays : INVITE_CONFIG.unreviewedDays;
-    if (state?.lastInviteAt !== null && state?.lastInviteAt !== undefined && now - state.lastInviteAt < days * day) return reject('game-cooldown');
-    if (INVITE_CONFIG.maxPerGameGpu > 0 && (state?.exposures || 0) >= INVITE_CONFIG.maxPerGameGpu) return reject('limit');
+    if (INVITE_CONFIG.maxExposures > 0 && inviteDemoState.globalExposures >= INVITE_CONFIG.maxExposures) return reject('global-limit');
     return { allowed: true, gameKey };
 }
 
@@ -2509,6 +2507,7 @@ function recordInviteExposure(gameKey) {
     state.lastInviteAt = now;
     state.exposures += 1;
     inviteDemoState.globalLastInviteAt = now;
+    inviteDemoState.globalExposures += 1;
     renderInviteDemoState();
 }
 

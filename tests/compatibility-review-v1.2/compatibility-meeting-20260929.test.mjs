@@ -56,13 +56,12 @@ test('评审：小数平均分、跨GPU、当次分享、邀评资格和服务�
         crash:eligibility('crash'),
         priority:eligibility('normal',{higherPriorityModal:true}),
         recent:eligibility('normal',{now:now+8*day,reviewed:false,entry:'recent'}),
-        reviewed:eligibility('normal',{now:now+8*day,reviewed:true}),
-        afterMonth:eligibility('normal',{now:now+31*day,reviewed:true})
+        afterGlobalCooldown:eligibility('normal',{now:now+8*day,reviewed:true})
       };
     });
-    for(const key of ['otherGpu','otherGame','noId','noCapability','offline','guest','short','crash','priority','reviewed'])assert.equal(gates[key].allowed,false,key);
+    for(const key of ['otherGpu','otherGame','noId','noCapability','offline','guest','short','crash','priority'])assert.equal(gates[key].allowed,false,key);
     assert.equal(gates.recent.allowed,true);
-    assert.equal(gates.afterMonth.allowed,true);
+    assert.equal(gates.afterGlobalCooldown.allowed,true);
 
     await page.evaluate(()=>{
       const snapshots=getReviewSnapshots();
