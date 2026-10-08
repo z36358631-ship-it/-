@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "ace8d410-139e-40e8-ba54-ab645b45ad20",
   "requirementId": "GUANWANGGAID-25",
-  "revision": 102,
+  "revision": 120,
   "status": "passed",
   "createdAt": "2026-09-24T02:04:42.4962469Z",
-  "updatedAt": "2026-10-08T09:21:53.4799124Z",
+  "updatedAt": "2026-10-08T10:19:39.0421111Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
   "cardHash": "65E663C2D670E3960C2D5C933398498306755271E32A9A18459534D310FE6CA0",
   "contract": {
@@ -23,22 +23,24 @@
       "required": true,
       "dependsOn": [],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
-          "sha256": "3931268B77889379B2C9DE089E409E49D11ED0808FC3AFDCCCC6BA3DF518664C"
+          "sha256": "A411641E063CC2A12771A4EB93027C854255799BB8C24505C9F36737D2DFA99F"
         }
       ],
       "outputs": [],
       "evidence": [
         "tools/check-mac-photo-layout.mjs",
         "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json",
-        "public/prd/compatibility-review-v1.2/m05-photo-1.png",
-        "public/prd/compatibility-review-v1.2/m06-photo-2.png",
-        "public/prd/compatibility-review-v1.2/m07-photo-3.png"
+        "public/prd/compatibility-review-v1.2/m08-portrait-1.png",
+        "public/prd/compatibility-review-v1.2/m09-portrait-2.png",
+        "public/prd/compatibility-review-v1.2/m10-portrait-3.png",
+        "public/prd/compatibility-review-v1.2/m11-mixed-2.png",
+        "public/prd/compatibility-review-v1.2/m12-mixed-3.png"
       ],
-      "validation": "用户要求Mac评价增加1、2、3张图片展示，最多3张；按当前Mac范围落实。",
+      "validation": "用户要求补齐Mac横图、竖图和混排；每条最多3张。",
       "error": null,
       "reviewer": "Codex"
     },
@@ -50,22 +52,24 @@
         "S1"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
-          "sha256": "3931268B77889379B2C9DE089E409E49D11ED0808FC3AFDCCCC6BA3DF518664C"
+          "sha256": "A411641E063CC2A12771A4EB93027C854255799BB8C24505C9F36737D2DFA99F"
         }
       ],
       "outputs": [],
       "evidence": [
         "tools/check-mac-photo-layout.mjs",
         "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json",
-        "public/prd/compatibility-review-v1.2/m05-photo-1.png",
-        "public/prd/compatibility-review-v1.2/m06-photo-2.png",
-        "public/prd/compatibility-review-v1.2/m07-photo-3.png"
+        "public/prd/compatibility-review-v1.2/m08-portrait-1.png",
+        "public/prd/compatibility-review-v1.2/m09-portrait-2.png",
+        "public/prd/compatibility-review-v1.2/m10-portrait-3.png",
+        "public/prd/compatibility-review-v1.2/m11-mixed-2.png",
+        "public/prd/compatibility-review-v1.2/m12-mixed-3.png"
       ],
-      "validation": "读取Mac生成器、现有单图2/3规则、上传与缓存逻辑；沿用已有游戏截图及裁切。",
+      "validation": "沿用已有Mac线框、配置卡、原图预览及数量上限，读取图片与缓存逻辑。",
       "error": null,
       "reviewer": "Codex"
     },
@@ -77,22 +81,24 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
-          "sha256": "3931268B77889379B2C9DE089E409E49D11ED0808FC3AFDCCCC6BA3DF518664C"
+          "sha256": "A411641E063CC2A12771A4EB93027C854255799BB8C24505C9F36737D2DFA99F"
         }
       ],
       "outputs": [],
       "evidence": [
         "tools/check-mac-photo-layout.mjs",
         "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json",
-        "public/prd/compatibility-review-v1.2/m05-photo-1.png",
-        "public/prd/compatibility-review-v1.2/m06-photo-2.png",
-        "public/prd/compatibility-review-v1.2/m07-photo-3.png"
+        "public/prd/compatibility-review-v1.2/m08-portrait-1.png",
+        "public/prd/compatibility-review-v1.2/m09-portrait-2.png",
+        "public/prd/compatibility-review-v1.2/m10-portrait-3.png",
+        "public/prd/compatibility-review-v1.2/m11-mixed-2.png",
+        "public/prd/compatibility-review-v1.2/m12-mixed-3.png"
       ],
-      "validation": "调整数量上限、两列排版、默认案例与缓存兼容，同步Mac PRD规则和群MD；Android范围不变。",
+      "validation": "补齐8种数量与方向组合，真实尺寸识别混排，更新PRD和群同步图文。",
       "error": null,
       "reviewer": "Codex"
     },
@@ -104,22 +110,24 @@
         "S3"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
-          "sha256": "3931268B77889379B2C9DE089E409E49D11ED0808FC3AFDCCCC6BA3DF518664C"
+          "sha256": "A411641E063CC2A12771A4EB93027C854255799BB8C24505C9F36737D2DFA99F"
         }
       ],
       "outputs": [],
       "evidence": [
         "tools/check-mac-photo-layout.mjs",
         "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json",
-        "public/prd/compatibility-review-v1.2/m05-photo-1.png",
-        "public/prd/compatibility-review-v1.2/m06-photo-2.png",
-        "public/prd/compatibility-review-v1.2/m07-photo-3.png"
+        "public/prd/compatibility-review-v1.2/m08-portrait-1.png",
+        "public/prd/compatibility-review-v1.2/m09-portrait-2.png",
+        "public/prd/compatibility-review-v1.2/m10-portrait-3.png",
+        "public/prd/compatibility-review-v1.2/m11-mixed-2.png",
+        "public/prd/compatibility-review-v1.2/m12-mixed-3.png"
       ],
-      "validation": "沿用用户确认的Mac线框和现有评价卡信息顺序，图片位于正文下方、配置卡上方。",
+      "validation": "保留现有Mac评价卡信息顺序与灰阶线框；图片在正文下、配置卡上。",
       "error": null,
       "reviewer": "Codex"
     },
@@ -132,22 +140,24 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
-          "sha256": "3931268B77889379B2C9DE089E409E49D11ED0808FC3AFDCCCC6BA3DF518664C"
+          "sha256": "A411641E063CC2A12771A4EB93027C854255799BB8C24505C9F36737D2DFA99F"
         }
       ],
       "outputs": [],
       "evidence": [
         "tools/check-mac-photo-layout.mjs",
         "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json",
-        "public/prd/compatibility-review-v1.2/m05-photo-1.png",
-        "public/prd/compatibility-review-v1.2/m06-photo-2.png",
-        "public/prd/compatibility-review-v1.2/m07-photo-3.png"
+        "public/prd/compatibility-review-v1.2/m08-portrait-1.png",
+        "public/prd/compatibility-review-v1.2/m09-portrait-2.png",
+        "public/prd/compatibility-review-v1.2/m10-portrait-3.png",
+        "public/prd/compatibility-review-v1.2/m11-mixed-2.png",
+        "public/prd/compatibility-review-v1.2/m12-mixed-3.png"
       ],
-      "validation": "生成独立Mac及三端Demo，补齐1/2/3张案例、上传校验和三张PRD配图。",
+      "validation": "Mac与整合Demo生成完成，新增5张PRD配图，横向流程图同步。",
       "error": null,
       "reviewer": "Codex"
     },
@@ -159,22 +169,24 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
-          "sha256": "3931268B77889379B2C9DE089E409E49D11ED0808FC3AFDCCCC6BA3DF518664C"
+          "sha256": "A411641E063CC2A12771A4EB93027C854255799BB8C24505C9F36737D2DFA99F"
         }
       ],
       "outputs": [],
       "evidence": [
         "tools/check-mac-photo-layout.mjs",
         "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json",
-        "public/prd/compatibility-review-v1.2/m05-photo-1.png",
-        "public/prd/compatibility-review-v1.2/m06-photo-2.png",
-        "public/prd/compatibility-review-v1.2/m07-photo-3.png"
+        "public/prd/compatibility-review-v1.2/m08-portrait-1.png",
+        "public/prd/compatibility-review-v1.2/m09-portrait-2.png",
+        "public/prd/compatibility-review-v1.2/m10-portrait-3.png",
+        "public/prd/compatibility-review-v1.2/m11-mixed-2.png",
+        "public/prd/compatibility-review-v1.2/m12-mixed-3.png"
       ],
-      "validation": "本地1/2/3图在1440/900/600宽度、原图预览、超限拒绝、移除补图、编辑、缓存保留检查通过；三端切换回归通过。",
+      "validation": "8种排版在1440/900/600宽度通过，原图预览、混排上传重载、超限、编辑及旧缓存检查通过，三端切换回归通过。",
       "error": null,
       "reviewer": "Codex"
     },
@@ -186,22 +198,24 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
-          "sha256": "3931268B77889379B2C9DE089E409E49D11ED0808FC3AFDCCCC6BA3DF518664C"
+          "sha256": "A411641E063CC2A12771A4EB93027C854255799BB8C24505C9F36737D2DFA99F"
         }
       ],
       "outputs": [],
       "evidence": [
         "tools/check-mac-photo-layout.mjs",
         "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json",
-        "public/prd/compatibility-review-v1.2/m05-photo-1.png",
-        "public/prd/compatibility-review-v1.2/m06-photo-2.png",
-        "public/prd/compatibility-review-v1.2/m07-photo-3.png"
+        "public/prd/compatibility-review-v1.2/m08-portrait-1.png",
+        "public/prd/compatibility-review-v1.2/m09-portrait-2.png",
+        "public/prd/compatibility-review-v1.2/m10-portrait-3.png",
+        "public/prd/compatibility-review-v1.2/m11-mixed-2.png",
+        "public/prd/compatibility-review-v1.2/m12-mixed-3.png"
       ],
-      "validation": "人工审查m05、m06、m07截图，横图2/3和两/三列均正确，正文、设备时间、配置卡与支持举报无重叠。",
+      "validation": "人工查看单竖图、两三张竖图及混排截图，布局稳定、图片完整；PRD结构及图片地址校验通过。",
       "error": null,
       "reviewer": "Codex"
     },
@@ -216,28 +230,33 @@
         "S7"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\GUANWANGGAID-25-compatibility-review-v1-2.md",
-          "sha256": "3931268B77889379B2C9DE089E409E49D11ED0808FC3AFDCCCC6BA3DF518664C"
+          "sha256": "A411641E063CC2A12771A4EB93027C854255799BB8C24505C9F36737D2DFA99F"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\【PRD】《盖世游戏》兼容性评价改版V1.2需求.md",
-          "sha256": "C178684E4B39F0D2BA551081C22C268790A82BD019D4ACB02988FE2DF14182D4"
+          "sha256": "F5148F6CCCB0DA5F2F434F01CE95A7B55A72D904C4F7561D0A66A3A9160EF8AE"
         },
         {
           "path": "C:\\Users\\z3635\\官网改动\\prd\\兼容性评价改版V1.2-飞书群同步功能点.md",
-          "sha256": "6003DDFA1FE0D5C212A1470C7F629CB7AFB2DAD98ECCF3F30764C6A5D4417ED4"
+          "sha256": "77A9D2720C3EABCF5E6377F3E4F68F74D76DF5F129879AD3927AFD69C3DD0780"
+        },
+        {
+          "path": "C:\\Users\\z3635\\官网改动\\previews\\compatibility-review-v1.2\\index.html",
+          "sha256": "DA8615599638A81591BF2CDB0EA9CEB108E073E88C5F453ED44690DDBEB55276"
         }
       ],
       "outputs": [],
       "evidence": [
-        "test-results/compatibility-review-v1.2/2026-10-08/online-mac-photos.json",
-        "test-results/compatibility-review-v1.2/2026-10-08/public-photo-images.json",
-        "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json"
+        "test-results/compatibility-review-v1.2/2026-10-08/online.json",
+        "test-results/compatibility-review-v1.2/2026-10-08/public-images.json",
+        "test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json",
+        "test-results/compatibility-review-v1.2/2026-10-08/online-mac-orientations.png"
       ],
-      "validation": "Mac 1/2/3张排版、上传3张上限、交互、本地三端回归及人工审图通过；原在线地址发布且三个宽度验证通过，PRD和群MD一致，22张图片HTTP200且SHA256匹配；飞书实际转存未验证。",
+      "validation": "Mac 8种图片排版及真实混排上传重载、本地三端回归与人工审图通过；原地址已发布并验证三个宽度、原比例预览及三端交互。PRD和群MD已同步，27张固定版本图片HTTP200且SHA256一致；飞书实际转存未验证。",
       "error": null,
       "reviewer": "Codex"
     }
