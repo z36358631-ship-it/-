@@ -14,6 +14,7 @@ try{
  await page.screenshot({path:prefix+'m01-detail.png',fullPage:true});
  await page.click('#macCompatibilityEntry');
  assert.deepEqual(await page.getByRole('tab').allTextContents(),['全部','同配置','支持最多','我的']);
+ for(const metadata of await page.locator('.review-topline .device').allTextContents())assert.match(metadata,/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
  const first=page.locator('.review').first();
  const conclusion=await first.locator('.review-conclusion').boundingBox(),metadata=await first.locator('.device').boundingBox(),identity=await first.locator('.review-head').boundingBox();
  assert.ok(metadata.x>conclusion.x+conclusion.width && identity.y>conclusion.y+conclusion.height);
@@ -33,5 +34,15 @@ try{
  await page.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));await page.screenshot({path:prefix+'m04-snapshot.png'});
  await page.getByRole('button',{name:'关闭',exact:true}).click();
  await page.click('#macBackToDetail');assert.ok(await page.locator('#macCompatibilityEntry').isVisible());
+ const originalDate=await page.evaluate(()=>macCompatibilityDemo.getReviews().find(r=>r.id==='m3').date);
+ await page.evaluate(()=>macCompatibilityDemo.openCompose('m3'));await page.fill('#macDescription','编辑保留发表时间');await page.click('#macSubmit');
+ assert.equal(await page.evaluate(()=>macCompatibilityDemo.getReviews().find(r=>r.id==='m3').date),originalDate);
+ await page.evaluate(()=>macCompatibilityDemo.setDeviceChip('Apple M5'));await page.click('#macWriteReview');await page.click('[data-type="basic"]');await page.click('#macSubmit');
+ const newDate=await page.evaluate(()=>macCompatibilityDemo.getReviews().find(r=>r.chip==='Apple M5').date);
+ assert.match(newDate,/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+ assert.ok(Math.abs(Date.now()-new Date(newDate.replace(' ','T')).getTime())<5000);
+ await page.evaluate(()=>{const reviews=macCompatibilityDemo.getReviews();for(const r of reviews)if(r.id==='m1')r.date=r.date.slice(0,10);localStorage.setItem('gh-compatibility-mac-v12',JSON.stringify(reviews))});
+ await page.reload();await page.click('#macCompatibilityEntry');
+ assert.equal(await page.evaluate(()=>macCompatibilityDemo.getReviews().find(r=>r.id==='m1').date),'2026-10-07 14:54:26');
  assert.deepEqual(errors,[]);console.log('PASS: right-column placement, filter order, toolbar placement, compose, snapshot, return; no page errors');
 }finally{await browser.close()}
