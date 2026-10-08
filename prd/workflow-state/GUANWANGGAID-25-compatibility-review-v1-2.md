@@ -65,3 +65,11 @@
 - 源码及图片提交 36de8c491；Pages 提交 a31899041 已发布至原地址。在线核验 1440／900／600 宽度下时间完整、无横向溢出或卡片内重叠、无脚本错误；19 张 PRD 图片 HTTP 200 且与本地 SHA-256 一致。证据：test-results/compatibility-review-v1.2/2026-10-08/online-mac-time.json、online-mac-time.png、public-time-images.json。
 - 后续副描述修订：Mac 详情入口与概览的整体结论下方补回对应说明；完美兼容为“适应良好，体验几乎完美流畅。”，其他三类使用 PRD 3.1.8 定义的文案。无评价时不显示，筛选不改变整体结论及副描述。
 - 副描述源码及图片提交 27fa67ee8，Pages 提交 a16fcd7cc 已发布至原地址；四类文案与无评价状态本地检查通过，在线验证三个宽度和筛选稳定性通过。配图及在线证据：test-results/compatibility-review-v1.2/2026-10-08/online-mac-description.json、online-mac-description.png、public-description-images.json。
+
+## 2026-10-08 Mac 图片数量与排版
+
+- Mac 图片上限确定为 3 张：单张横图占内容宽度 2/3，2 张同一行两列，3 张同一行三列；原图预览与配置卡位置保留。Android 图片规则仍按已有需求。
+- 默认同配置列表增加 1／2／3 张示例，旧 Demo 缓存补入案例并保留个人评价；新图片资源为已有游戏截图的裁切。
+- 上传满 3 张隐藏添加入口，移除后恢复；超限选图不加入，旧草稿超限需移除多余图片后保存，原内容不丢失。
+- 1440／900／600 宽度下排版、图片加载与预览，以及新增、超限、移除、编辑、缓存更新检查通过；三端切换回归通过。证据：tools/check-mac-photo-layout.mjs、test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json；三张新配图 m05-photo-1.png、m06-photo-2.png、m07-photo-3.png。
+- 源码及图片提交 4be80a12a，Pages 提交 40d9c71c7；PRD 和群同步 MD 按 Mac 上限 3 张更新，图片总数为 22 张。公开验证结果见本轮 online-mac-photos.json 和 public-photo-images.json。

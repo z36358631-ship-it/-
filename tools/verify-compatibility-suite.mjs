@@ -8,10 +8,13 @@ const b=await chromium.launch({headless:true,executablePath:'C:/Program Files/Go
 try{
  const p=await b.newPage({viewport:{width:1440,height:1000}});const errors=[];
  p.on('pageerror',e=>errors.push(e.message));
- const url='https://z36358631-ship-it.github.io/-/previews/compatibility-review-v1.2/index.html?platform=mac&v=22e2d075e&t='+Date.now();
+ const url='https://z36358631-ship-it.github.io/-/previews/compatibility-review-v1.2/index.html?platform=mac&t='+Date.now();
  const response=await p.goto(url,{waitUntil:'load',timeout:45000});assert.equal(response.status(),200);
  assert.equal(await p.getByRole('tab').count(),3);
- await p.click('#macCompatibilityEntry');await p.click('#macWriteReview');
+ await p.click('#macCompatibilityEntry');
+ for(const [id,count] of [['m1',1],['m7',2],['m8',3]])assert.equal(await p.locator('.review[data-review="'+id+'"] .photos img').count(),count);
+ await p.click('#macWriteReview');
+ assert.match(await p.locator('.dialog').innerText(),/最多 3 张/);
  assert.ok(await p.locator('#macDescription').isVisible());await p.evaluate(()=>macClose());
  await p.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));
  assert.equal(await p.locator('#macApplyConfig').isDisabled(),true);
@@ -32,6 +35,6 @@ try{
    return{file,status:200,type:'image/png',sha256:hash(bytes)};
   }));checks.push(...group);fs.writeFileSync(out+'/public-images.json',JSON.stringify(checks,null,2));
  }
- assert.equal(checks.length,19);fs.writeFileSync(out+'/public-images.json',JSON.stringify(checks,null,2));
- console.log('Public three-tab demo PASS; 19 images HTTP200 and SHA256 match');
+ assert.equal(checks.length,22);fs.writeFileSync(out+'/public-images.json',JSON.stringify(checks,null,2));
+ console.log('Public three-tab demo PASS; 22 images HTTP200 and SHA256 match');
 }finally{await b.close();}
