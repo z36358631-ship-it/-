@@ -63,3 +63,5 @@
 - 旧 Demo 示例缓存补齐时间，保留已保存的评价内容及操作状态。
 - 本地检查覆盖完整时间、新建提交、编辑保留时间和示例缓存更新，三端切换回归通过。
 - 源码及图片提交 36de8c491；Pages 提交 a31899041 已发布至原地址。在线核验 1440／900／600 宽度下时间完整、无横向溢出或卡片内重叠、无脚本错误；19 张 PRD 图片 HTTP 200 且与本地 SHA-256 一致。证据：test-results/compatibility-review-v1.2/2026-10-08/online-mac-time.json、online-mac-time.png、public-time-images.json。
+- 后续副描述修订：Mac 详情入口与概览的整体结论下方补回对应说明；完美兼容为“适应良好，体验几乎完美流畅。”，其他三类使用 PRD 3.1.8 定义的文案。无评价时不显示，筛选不改变整体结论及副描述。
+- 副描述源码及图片提交 27fa67ee8，Pages 提交 a16fcd7cc 已发布至原地址；四类文案与无评价状态本地检查通过，在线验证三个宽度和筛选稳定性通过。配图及在线证据：test-results/compatibility-review-v1.2/2026-10-08/online-mac-description.json、online-mac-description.png、public-description-images.json。
