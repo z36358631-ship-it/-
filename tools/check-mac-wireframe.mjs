@@ -11,9 +11,11 @@ try{
  const entry=await page.locator('#macCompatibilityEntry').boundingBox(), info=await page.locator('.detail-info').boundingBox(),media=await page.locator('.detail-media').boundingBox();
  assert.ok(entry.x>media.x+media.width && entry.y>=info.y+info.height);
  assert.ok(!/条|★/.test(await page.locator('#macCompatibilityEntry').innerText()));
+ assert.equal(await page.locator('#macCompatibilityEntry .compat-description').innerText(),'适应良好，体验几乎完美流畅。');
  await page.screenshot({path:prefix+'m01-detail.png',fullPage:true});
  await page.click('#macCompatibilityEntry');
  assert.deepEqual(await page.getByRole('tab').allTextContents(),['全部','同配置','支持最多','我的']);
+ assert.equal(await page.locator('.summary .compat-description').innerText(),'适应良好，体验几乎完美流畅。');
  for(const metadata of await page.locator('.review-topline .device').allTextContents())assert.match(metadata,/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
  const first=page.locator('.review').first();
  const conclusion=await first.locator('.review-conclusion').boundingBox(),metadata=await first.locator('.device').boundingBox(),identity=await first.locator('.review-head').boundingBox();
@@ -44,5 +46,12 @@ try{
  await page.evaluate(()=>{const reviews=macCompatibilityDemo.getReviews();for(const r of reviews)if(r.id==='m1')r.date=r.date.slice(0,10);localStorage.setItem('gh-compatibility-mac-v12',JSON.stringify(reviews))});
  await page.reload();await page.click('#macCompatibilityEntry');
  assert.equal(await page.evaluate(()=>macCompatibilityDemo.getReviews().find(r=>r.id==='m1').date),'2026-10-07 14:54:26');
+ for(const [type,description] of [['perfect','适应良好，体验几乎完美流畅。'],['basic','可以正常游玩，可能存在轻微问题。'],['partial','部分功能或场景存在兼容性问题。'],['unplayable','无法正常启动或游玩。']]){
+  await page.evaluate(type=>{for(const r of macReviews)r.type=type;macRender()},type);
+  assert.equal(await page.locator('.summary .compat-description').innerText(),description);
+  await page.click('#macBackToDetail');assert.equal(await page.locator('#macCompatibilityEntry .compat-description').innerText(),description);
+  await page.click('#macCompatibilityEntry');
+ }
+ await page.evaluate(()=>{macReviews=[];macRender()});assert.equal(await page.locator('.summary .compat-description').count(),0);
  assert.deepEqual(errors,[]);console.log('PASS: right-column placement, filter order, toolbar placement, compose, snapshot, return; no page errors');
 }finally{await browser.close()}
