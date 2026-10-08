@@ -7,11 +7,11 @@
 ## 文件与执行
 
 - [x] 读取 Mac端demo/mac端租号功能/游戏详情改动.html 与 Mac端租号功能-标注版.html，记录真实图和详情骨架。
-- [ ] 新增 demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-Mac端demo.html；独立桌面 DOM、离线图片、四类评价及快照交互。
-- [ ] tools/build-compatibility-suite.mjs 打包三份 HTML 到整合 Demo 及 previews/compatibility-review-v1.2/index.html；切换时清理监听器与定时器、隔离脚本作用域，不用 iframe。
-- [ ] 浏览器检查各端入口、切换往返、Mac 新增编辑删除、筛选、图片、配置动作和无网打开，捕获脚本错误及实际截图。
-- [ ] 更新 PRD 中 Mac 页面、配图、群同步 MD 与状态卡，注明本轮修改日期。
-- [ ] 仅提交本任务文件至隔离工作区，main 保存源文件和图片，master 更新原公开地址。验证线上三 Tab 和图片可访问。
+- [x] 新增 demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-Mac端demo.html；独立桌面 DOM、离线图片、四类评价及快照交互。
+- [x] tools/build-compatibility-suite.mjs 打包三份 HTML 到整合 Demo 及 previews/compatibility-review-v1.2/index.html；切换时清理监听器与定时器、隔离脚本作用域，不用 iframe。
+- [x] 浏览器检查各端入口、切换往返、Mac 新增编辑删除、筛选、图片、配置动作和无网打开，捕获脚本错误及实际截图。
+- [x] 更新 PRD 中 Mac 页面、配图、群同步 MD 与状态卡，注明本轮修改日期。
+- [x] 仅提交本任务文件至隔离工作区，main 保存源文件和图片，master 更新原公开地址。验证线上三 Tab 和图片可访问。
 
 ## 验收约束
 
