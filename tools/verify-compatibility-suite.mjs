@@ -1,10 +1,11 @@
-import {chromium} from 'playwright-core';
+import {chromium,request} from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 const out='test-results/compatibility-review-v1.2/2026-10-08';
 fs.mkdirSync(out,{recursive:true});
 const b=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+const assetRequest=await request.newContext({proxy:process.env.COMPATIBILITY_IMAGE_PROXY?{server:process.env.COMPATIBILITY_IMAGE_PROXY}:undefined});
 try{
  const p=await b.newPage({viewport:{width:1440,height:1000}});const errors=[];
  p.on('pageerror',e=>errors.push(e.message));
@@ -12,7 +13,27 @@ try{
  const response=await p.goto(url,{waitUntil:'load',timeout:45000});assert.equal(response.status(),200);
  assert.equal(await p.getByRole('tab').count(),3);
  await p.click('#macCompatibilityEntry');
- for(const [id,count] of [['m1',1],['m7',2],['m8',3]])assert.equal(await p.locator('.review[data-review="'+id+'"] .photos img').count(),count);
+ const cases=[['m1',1,'landscape'],['m7',2,'landscape'],['m8',3,'landscape'],['m9',1,'portrait'],['m10',2,'portrait'],['m11',3,'portrait'],['m12',2,'mixed'],['m13',3,'mixed']];
+ for(const width of [1440,900,600]){
+  await p.setViewportSize({width,height:1000});
+  assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  for(const [id,count,layout] of cases){
+   const gallery=p.locator('.review[data-review="'+id+'"] .photos');
+   assert.equal(await gallery.locator('img').count(),count);
+   await p.waitForFunction(id=>[...document.querySelectorAll('.review[data-review="'+id+'"] .photos img')].every(i=>i.complete&&i.naturalWidth>0),id);
+   assert.equal(await gallery.getAttribute('data-layout'),layout);
+   assert.ok(await gallery.locator('img').evaluateAll(items=>items.every(i=>getComputedStyle(i).objectFit==='contain')));
+   const orientations=await gallery.locator('img').evaluateAll(items=>items.map(i=>i.naturalWidth<i.naturalHeight?'portrait':'landscape'));
+   if(layout==='mixed')assert.equal(new Set(orientations).size,2);else assert.ok(orientations.every(o=>o===layout));
+  }
+ }
+ await p.setViewportSize({width:1440,height:1000});
+ await p.locator('.review[data-review="m13"] .photos button').last().click();
+ assert.equal(await p.locator('.image-caption').innerText(),'3 / 3');
+ await p.waitForFunction(()=>{const i=document.querySelector('.image-dialog img');return i.complete&&i.naturalWidth>0});
+ assert.ok(await p.locator('.image-dialog img').evaluate(i=>{const r=i.getBoundingClientRect();return Math.abs(r.width/r.height-i.naturalWidth/i.naturalHeight)<.01}));
+ await p.screenshot({path:out+'/online-mac-orientations.png'});
+ await p.getByRole('button',{name:'关闭图片',exact:true}).click();
  await p.click('#macWriteReview');
  assert.match(await p.locator('.dialog').innerText(),/最多 3 张/);
  assert.ok(await p.locator('#macDescription').isVisible());await p.evaluate(()=>macClose());
@@ -23,18 +44,28 @@ try{
  await p.getByRole('tab',{name:'Android 端',exact:true}).click();await p.waitForTimeout(450);await p.click('#openCompatibilityReviews');await p.click('#manualReviewButton');
  assert.ok(await p.locator('#modalFeedback.show').isVisible());
  assert.deepEqual(errors,[]);
- fs.writeFileSync(out+'/online.json',JSON.stringify({url,status:'PASS',tabs:3,macCompose:true,crossChipDisabled:true,androidCompose:true,admin:true,errors},null,2));
+ fs.writeFileSync(out+'/online.json',JSON.stringify({url,status:'PASS',tabs:3,macPhotoCases:cases.length,orientations:['landscape','portrait','mixed'],viewportWidths:[1440,900,600],originalRatioPreview:true,uploadLimit:3,macCompose:true,crossChipDisabled:true,androidCompose:true,admin:true,errors},null,2));
  const text=fs.readFileSync('prd/【PRD】《盖世游戏》兼容性评价改版V1.2需求.md','utf8');
  const urls=[...new Set([...text.matchAll(/!\[[^\]]*\]\((https:\/\/[^)]+)\)/g)].map(m=>m[1]))];
+ assert.equal(urls.length,27);
+ const checkpoint=out+'/public-images.json';
+ const previous=fs.existsSync(checkpoint)?JSON.parse(fs.readFileSync(checkpoint,'utf8')):[];
+ const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
  const checks=[];
- for(let i=0;i<urls.length;i++){
-  const group=await Promise.all(urls.slice(i,i+1).map(async url=>{
-   const response=await p.request.get(url,{timeout:45000,maxRetries:3});assert.equal(response.status(),200,url);assert.match(response.headers()['content-type'],/image\/png/);
-   const bytes=await response.body();const file=url.split('/').pop();const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
-   assert.equal(hash(bytes),hash(fs.readFileSync('public/prd/compatibility-review-v1.2/'+file)),file);
-   return{file,status:200,type:'image/png',sha256:hash(bytes)};
-  }));checks.push(...group);fs.writeFileSync(out+'/public-images.json',JSON.stringify(checks,null,2));
+ for(const url of urls){
+  const file=url.split('/').pop(),expected=hash(fs.readFileSync('public/prd/compatibility-review-v1.2/'+file));
+  const saved=previous.find(c=>c.url===url&&c.sha256===expected&&c.status===200);
+  if(saved){checks.push(saved);continue}
+  for(let attempt=1;attempt<=3;attempt++){
+   try{
+    const response=await assetRequest.get(url,{timeout:15000,maxRetries:2});assert.equal(response.status(),200,url);assert.match(response.headers()['content-type'],/image\/png/);
+    const bytes=await response.body();assert.equal(hash(bytes),expected,file);
+    checks.push({url,file,status:200,type:'image/png',sha256:hash(bytes)});break;
+   }catch(error){if(attempt===3)throw error}
+  }
+  fs.writeFileSync(checkpoint,JSON.stringify(checks,null,2));
+  console.log('Public image PASS: '+file);
  }
- assert.equal(checks.length,22);fs.writeFileSync(out+'/public-images.json',JSON.stringify(checks,null,2));
- console.log('Public three-tab demo PASS; 22 images HTTP200 and SHA256 match');
-}finally{await b.close();}
+ assert.equal(checks.length,27);fs.writeFileSync(checkpoint,JSON.stringify(checks,null,2));
+ console.log('Public three-tab demo PASS; 8 photo cases and 27 images HTTP200 and SHA256 match');
+}finally{await assetRequest.dispose();await b.close();}

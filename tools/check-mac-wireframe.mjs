@@ -24,7 +24,7 @@ try{
  assert.ok(support.x<report.x && Math.abs(support.y-report.y)<5);
  const tabs=await page.locator('.tabs').boundingBox(),write=await page.locator('#macWriteReview').boundingBox();
  assert.ok(Math.abs(tabs.y-write.y)<10 && write.x>tabs.x+tabs.width);
- await page.screenshot({path:prefix+'m02-reviews.png',fullPage:true});
+ await page.screenshot({path:prefix+'m02-reviews.png'});
  await page.click('#macWriteReview');await page.screenshot({path:prefix+'m03-compose.png'});
  await page.getByRole('button',{name:'关闭',exact:true}).click();
  await first.getByRole('button',{name:'举报',exact:true}).click();
