@@ -7618,8 +7618,8 @@
 
     // SEED mock数据（带uid/phone/appVersion/pinned）
     (function injectCompatSeedData() {
-        // 强制用新格式数据覆盖（清除旧格式缓存）
-        localStorage.removeItem(COMPAT_FEEDBACK_KEY);
+        // 三端切换时保留已完成的隐藏、恢复和删除操作。
+        if (localStorage.getItem(COMPAT_FEEDBACK_KEY) !== null) return;
         const now = Date.now();
         const seeds = [
             { id:'cf1', uid:'UID_10001', name:'Pixel用户_洛圣都', phone:'13988888888', gameId:'gta5', gameName:'GTA V', clientType:'mobile', device:'Pixel 9 Pro · Android 15', appVersion:'v6.1.0', stars:5, tags:['完美兼容'], content:'画面超级流畅，手柄支持完美。', supportCount:24, hidden:false, pinned:true, createdAt:new Date(now-864e5).toISOString(), snapshot:{ reviewSnapshotId:'review_snapshot_cf1', reviewId:'cf1', solutionName:REVIEW_SNAPSHOT_DISPLAY_NAME, status:'available', durationSeconds:1122, sharedAt:'2026-09-12 14:32' } },

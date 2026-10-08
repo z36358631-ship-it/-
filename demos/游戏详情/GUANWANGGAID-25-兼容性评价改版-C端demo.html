@@ -2222,7 +2222,7 @@ function closeCompatPage() {
     const page = document.getElementById('compatPage');
     if (!page) return;
     page.classList.remove('show');
-    setTimeout(() => { page.style.display = 'none'; }, 350);
+    setTimeout(() => { if (!page.classList.contains('show')) page.style.display = 'none'; }, 350);
     viewMode = 'device';
     pages.ls = 1;
     document.querySelectorAll('#chipsLs .chip').forEach(c => c.classList.toggle('active', c.dataset.view === viewMode));

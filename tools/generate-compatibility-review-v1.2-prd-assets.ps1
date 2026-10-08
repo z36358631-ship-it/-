@@ -70,6 +70,9 @@ $assetMap = [ordered]@{
 
 $flowFileName = 'flow-compatibility-review-v1.2.png'
 $expectedFileNames = @($assetMap.Values) + $flowFileName + @('c11-photo-review.png', 'c12-multi-photo-review.png')
+$macImages = @('m01-detail.png', 'm02-reviews.png', 'm03-compose.png', 'm04-snapshot.png')
+$existingMacImages = @($macImages | Where-Object { Test-Path -LiteralPath (Join-Path $outputDirectory $_) })
+$expectedFileNames += $existingMacImages
 
 foreach ($sourceFileName in $assetMap.Keys) {
     $sourcePath = Join-Path $sourceDirectory $sourceFileName
@@ -235,6 +238,10 @@ finally {
     }
 }
 
+if ($existingMacImages.Count -eq 4) {
+    python -X utf8 (Join-Path $PSScriptRoot 'build-compatibility-suite-flow.py')
+    if ($LASTEXITCODE -ne 0) { throw 'Mac flow generation failed.' }
+}
 $outputFiles = Get-ChildItem -LiteralPath $outputDirectory -Filter '*.png' -File | Sort-Object Name
 if ($outputFiles.Count -ne $expectedFileNames.Count) {
     throw "Expected $($expectedFileNames.Count) PNG files but found $($outputFiles.Count)."
