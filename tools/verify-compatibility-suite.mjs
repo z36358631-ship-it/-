@@ -2,7 +2,7 @@ import {chromium,request} from 'playwright-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-const out='test-results/compatibility-review-v1.2/2026-10-08';
+const out='test-results/compatibility-review-v1.2/2026-10-09';
 fs.mkdirSync(out,{recursive:true});
 const b=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
 const assetRequest=await request.newContext({proxy:process.env.COMPATIBILITY_IMAGE_PROXY?{server:process.env.COMPATIBILITY_IMAGE_PROXY}:undefined});
@@ -22,12 +22,22 @@ try{
    assert.equal(await gallery.locator('img').count(),count);
    await p.waitForFunction(id=>[...document.querySelectorAll('.review[data-review="'+id+'"] .photos img')].every(i=>i.complete&&i.naturalWidth>0),id);
    assert.equal(await gallery.getAttribute('data-layout'),layout);
-   assert.ok(await gallery.locator('img').evaluateAll(items=>items.every(i=>getComputedStyle(i).objectFit==='contain')));
+   assert.ok(await gallery.locator('img').evaluateAll((items,fit)=>items.every(i=>getComputedStyle(i).objectFit===fit),count>1?'cover':'contain'));
+   if(count>1){
+    const geometry=await gallery.evaluate(e=>{const r=e.getBoundingClientRect(),gap=parseFloat(getComputedStyle(e).columnGap);return{width:r.width,x:r.x,gap}});
+    const cellWidth=(geometry.width-geometry.gap*2)/3;
+    const boxes=await gallery.locator('button').evaluateAll(items=>items.map(i=>{const r=i.getBoundingClientRect();return{width:r.width,height:r.height,y:r.y,right:r.right}}));
+    assert.ok(boxes.every(r=>Math.abs(r.width-cellWidth)<1&&Math.abs(r.height-cellWidth)<1&&Math.abs(r.y-boxes[0].y)<1));
+    assert.ok(Math.abs(boxes.at(-1).right-geometry.x-(count*cellWidth+(count-1)*geometry.gap))<1);
+    if(count===2)assert.ok(geometry.x+geometry.width-boxes.at(-1).right>=cellWidth-1);
+   }
    const orientations=await gallery.locator('img').evaluateAll(items=>items.map(i=>i.naturalWidth<i.naturalHeight?'portrait':'landscape'));
    if(layout==='mixed')assert.equal(new Set(orientations).size,2);else assert.ok(orientations.every(o=>o===layout));
   }
  }
  await p.setViewportSize({width:1440,height:1000});
+ await p.locator('.review[data-review="m12"]').screenshot({path:out+'/online-mac-two-photo-grid.png'});
+ await p.locator('.review[data-review="m13"]').screenshot({path:out+'/online-mac-three-photo-grid.png'});
  await p.locator('.review[data-review="m13"] .photos button').last().click();
  assert.equal(await p.locator('.image-caption').innerText(),'3 / 3');
  await p.waitForFunction(()=>{const i=document.querySelector('.image-dialog img');return i.complete&&i.naturalWidth>0});
@@ -44,7 +54,7 @@ try{
  await p.getByRole('tab',{name:'Android 端',exact:true}).click();await p.waitForTimeout(450);await p.click('#openCompatibilityReviews');await p.click('#manualReviewButton');
  assert.ok(await p.locator('#modalFeedback.show').isVisible());
  assert.deepEqual(errors,[]);
- fs.writeFileSync(out+'/online.json',JSON.stringify({url,status:'PASS',tabs:3,macPhotoCases:cases.length,orientations:['landscape','portrait','mixed'],viewportWidths:[1440,900,600],originalRatioPreview:true,uploadLimit:3,macCompose:true,crossChipDisabled:true,androidCompose:true,admin:true,errors},null,2));
+ fs.writeFileSync(out+'/online.json',JSON.stringify({url,status:'PASS',tabs:3,macPhotoCases:cases.length,orientations:['landscape','portrait','mixed'],viewportWidths:[1440,900,600],fixedThreeColumns:true,twoPhotosLeaveThirdCellEmpty:true,uniformSquareThumbnails:true,multiPhotoFit:'cover',originalRatioPreview:true,uploadLimit:3,macCompose:true,crossChipDisabled:true,androidCompose:true,admin:true,errors},null,2));
  const text=fs.readFileSync('prd/【PRD】《盖世游戏》兼容性评价改版V1.2需求.md','utf8');
  const urls=[...new Set([...text.matchAll(/!\[[^\]]*\]\((https:\/\/[^)]+)\)/g)].map(m=>m[1]))];
  assert.equal(urls.length,27);

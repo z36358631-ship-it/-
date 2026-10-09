@@ -4,6 +4,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
+const out='test-results/compatibility-review-v1.2/2026-10-09';
+fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
@@ -21,13 +23,20 @@ try{
    assert.equal(await gallery.getAttribute('data-layout'),layout);
    const orientations=await images.evaluateAll(items=>items.map(i=>i.naturalWidth<i.naturalHeight?'portrait':'landscape'));
    if(layout==='mixed')assert.deepEqual([...new Set(orientations)].sort(),['landscape','portrait']);else assert.ok(orientations.every(o=>o===layout));
-   assert.ok(await images.evaluateAll(items=>items.every(i=>getComputedStyle(i).objectFit==='contain')));
-   const boxes=await gallery.locator('button').evaluateAll(items=>items.map(i=>{const r=i.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,right:r.right}}));
+   assert.ok(await images.evaluateAll((items,fit)=>items.every(i=>getComputedStyle(i).objectFit===fit),count>1?'cover':'contain'));
+   const boxes=await gallery.locator('button').evaluateAll(items=>items.map(i=>{const r=i.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right}}));
    const container=await gallery.boundingBox();
    assert.ok(boxes.every(b=>Math.abs(b.y-boxes[0].y)<1&&Math.abs(b.width-boxes[0].width)<1&&b.right<=container.x+container.width+1));
    if(count===1&&layout==='landscape'){const content=await article.evaluate(e=>e.clientWidth-parseFloat(getComputedStyle(e).paddingLeft)-parseFloat(getComputedStyle(e).paddingRight));assert.ok(Math.abs(container.width/content-2/3)<.02)}
-   if(layout==='portrait')assert.ok((await gallery.locator('button').first().boundingBox()).height>boxes[0].width);
-   if(count>1)assert.ok(boxes[1].x>boxes[0].right);
+   if(count===1&&layout==='portrait')assert.ok(boxes[0].height>boxes[0].width);
+   if(count>1){
+    const gap=await gallery.evaluate(e=>parseFloat(getComputedStyle(e).columnGap));
+    const cellWidth=(container.width-gap*2)/3;
+    assert.ok(boxes.every(b=>Math.abs(b.width-cellWidth)<1&&Math.abs(b.height-cellWidth)<1));
+    assert.ok(boxes[1].x>boxes[0].right);
+    assert.ok(Math.abs(boxes.at(-1).right-container.x-(cellWidth*count+gap*(count-1)))<1);
+    if(count===2)assert.ok(container.x+container.width-boxes.at(-1).right>=cellWidth-1);
+   }
   }
  }
  await page.setViewportSize({width:1440,height:1000});
@@ -69,7 +78,7 @@ try{
  assert.equal(restored.filter(r=>['m7','m8','m9','m10','m11','m12','m13'].includes(r.id)).length,7);
  assert.equal(restored.find(r=>r.id==='m3').text,'已保存的个人评价');
  assert.deepEqual(errors,[]);
- const result={status:'PASS',counts:[1,2,3],orientations:['landscape','portrait','mixed'],cases:cases.length,viewportWidths:[1440,900,600],originalRatioPreview:true,uploadLimit:3,removeAndEdit:true,cachedDataPreserved:true,errors};
- fs.writeFileSync('test-results/compatibility-review-v1.2/2026-10-08/mac-photo-layout.json',JSON.stringify(result,null,2));
+ const result={status:'PASS',counts:[1,2,3],orientations:['landscape','portrait','mixed'],cases:cases.length,viewportWidths:[1440,900,600],fixedThreeColumns:true,twoPhotosLeaveThirdCellEmpty:true,uniformSquareThumbnails:true,multiPhotoFit:'cover',singlePhotoFit:'contain',originalRatioPreview:true,uploadLimit:3,removeAndEdit:true,cachedDataPreserved:true,errors};
+ fs.writeFileSync(out+'/mac-photo-layout.json',JSON.stringify(result,null,2));
  console.log(JSON.stringify(result));
 }finally{await browser.close()}
