@@ -39,7 +39,8 @@ test('整合离线 Demo 三端切换、Android草稿和后台回归',async()=>{
   await page.evaluate(()=>macClose());
   await page.evaluate(()=>window.macCompatibilityDemo.openSnapshot('m2'));
   assert.equal(await page.locator('#macApplyConfig').isDisabled(),true);
-  assert.equal(await page.locator('#macCopyConfig').isDisabled(),false);
+  assert.equal(await page.locator('#macCopyConfig').count(),0);
+  assert.deepEqual(await page.locator('.dialog-actions button').allTextContents(),['应用配置']);
   await page.evaluate(()=>macClose());
   fs.mkdirSync('test-results/compatibility-review-v1.2/2026-10-08',{recursive:true});
   await page.screenshot({path:'test-results/compatibility-review-v1.2/2026-10-08/suite-mac.png',fullPage:true});

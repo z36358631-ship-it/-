@@ -2,10 +2,9 @@ import {chromium} from 'playwright-core';
 import {pathToFileURL} from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import {constants} from 'node:fs';
 import assert from 'node:assert/strict';
 
-const evidenceDir=path.resolve('test-results/compatibility-review-v1.2/2026-10-09-mac-parameters');
+const evidenceDir=path.resolve('test-results/compatibility-review-v1.2/2026-10-09-mac-direct-apply');
 const demoPath=path.resolve('demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-Mac端demo.html');
 const baselinePath=path.resolve('.codex-worktrees/compatibility-review-final-main/demos/游戏详情/GUANWANGGAID-25-兼容性评价改版-Mac端demo.html');
 const publicSnapshot=path.resolve('public/prd/compatibility-review-v1.2/m04-snapshot.png');
@@ -20,18 +19,8 @@ const expectedFields=[
  ['openGL','切换 OpenGL','builtin'],
  ['moltenVK','切换 MoltenVK','builtin']
 ];
-const evidence={status:'RUNNING',date:'2026-10-09',parameterCount:9,groupCount:3,scope:'Environment variables and launch arguments removed from display, copy and apply',demo:demoPath,checks:[],responsive:[],errors:[]};
+const evidence={status:'RUNNING',date:'2026-10-09',parameterCount:9,groupCount:3,scope:'One Apply Configuration button; direct application without copy or confirmation; exact success status 将在下次启动生效',demo:demoPath,checks:[],responsive:[],errors:[]};
 await fs.mkdir(evidenceDir,{recursive:true});
-// Keep the previous eleven-field evidence as superseded evidence, not as current validation.
-try{
- const prior=JSON.parse(await fs.readFile(path.join(evidenceDir,'snapshot-parameters.json'),'utf8'));
- if(prior.parameterCount!==9){
-  for(const file of await fs.readdir(evidenceDir))if(file!=='baseline.png'&&!file.includes('superseded-11')&&(file.endsWith('.png')||file==='snapshot-parameters.json')){
-   const archived=file.replace(/\.(png|json)$/,'.superseded-11.$1');
-   try{await fs.copyFile(path.join(evidenceDir,file),path.join(evidenceDir,archived),constants.COPYFILE_EXCL)}catch(error){if(error.code!=='EEXIST')throw error}
-  }
- }
-}catch(error){if(error.code!=='ENOENT')throw error}
 const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
 let context;
 function passed(name,details={}){evidence.checks.push({name,status:'PASS',...details})}
@@ -57,6 +46,16 @@ async function assertRemovedFieldsInvisible(page){
 async function installParameters(page,parameters,id='m1'){
  await page.evaluate(({parameters,id})=>{macReviews.find(r=>r.id===id).snapshot.parameters=parameters;macCompatibilityDemo.openSnapshot(id)},{parameters,id});
 }
+async function assertSingleDirectAction(page){
+ assert.deepEqual(await page.locator('.dialog-actions button').allTextContents(),['应用配置']);
+ assert.equal(await page.getByRole('heading',{name:'配置详情',exact:true}).count(),1);
+ assert.equal(await page.getByRole('button',{name:/复制|确认应用/}).count(),0);
+}
+async function assertAppliedStatus(page){
+ await assertSingleDirectAction(page);
+ assert.equal(await page.locator('#macSnapshotResult').innerText(),'将在下次启动生效');
+ assert.equal(await page.getByRole('dialog').count(),1);
+}
 
 try{
  context=await browser.newContext({viewport:{width:1440,height:1100}});
@@ -67,7 +66,7 @@ try{
  await page.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));
  try{await fs.access(path.join(evidenceDir,'baseline.png'))}catch{await page.screenshot({path:path.join(evidenceDir,'baseline.png'),fullPage:true})}
  const oldReviews=await page.evaluate(()=>macCompatibilityDemo.getReviews());
- passed('original baseline preserved',{file:'baseline.png',currentEvidence:false});
+ passed('pre-direct-apply baseline preserved',{file:'baseline.png',currentEvidence:false});
  await page.goto(pathToFileURL(demoPath).href);
  await page.evaluate(()=>macCompatibilityDemo.reset());
  await page.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));
@@ -75,23 +74,28 @@ try{
  assert.deepEqual(await page.locator('.snapshot-parameter dt').allTextContents(),expectedFields.map(([,label])=>label));
  for(const [key,,value] of expectedFields)assert.equal(await valueOf(page,key),value,key+' screenshot value');
  await assertRemovedFieldsInvisible(page);
+ await assertSingleDirectAction(page);
  passed('nine user-visible labels, three group order and screenshot values',{fields:expectedFields.map(([,label,value])=>({label,value}))});
  assert.equal(await page.locator('#macApplyConfig').isDisabled(),true);
- assert.equal(await page.locator('#macCopyConfig').isEnabled(),true);
  assert.match(await page.locator('.notice.warn').innerText(),/当前芯片与配置芯片不同/);
  const pristineCross=await getSnapshot(page,'m2');
  await installParameters(page,{...pristineCross.parameters,environmentVariables:[{name:'LEGACY',value:'HIDDEN_ENV_VALUE'}],launchArguments:'HIDDEN_LAUNCH_VALUE'},'m2');
  await assertRemovedFieldsInvisible(page);
  const originalCross=await getSnapshot(page,'m2');
- await page.click('#macCopyConfig');
- const copiedCross=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-local-schemes')).find(r=>r.sourceReviewId==='m2'));
- assert.deepEqual(copiedCross.parameters,withoutRemovedFields(originalCross).parameters);
+ await page.locator('#macApplyConfig').evaluate(button=>button.click());
+ await page.evaluate(()=>macApply('m2'));
  assert.deepEqual(await getSnapshot(page,'m2'),originalCross);
  assert.equal(await page.evaluate(()=>localStorage.getItem('gh-mac-active-scheme')),null);
- passed('cross-chip view/copy keeps the nine included parameters, excludes both removed legacy fields, preserves source and cannot apply');
+ passed('cross-chip details keep nine fields and reason, disabled click and direct invocation cannot apply or modify source');
  await page.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));
  await assertNoOverflow(page);
  await page.screenshot({path:path.join(evidenceDir,'snapshot-cross-chip.png'),fullPage:true});
+ await page.evaluate(()=>macCompatibilityDemo.openSnapshot('m1'));
+ await assertSingleDirectAction(page);
+ assert.equal(await page.locator('#macApplyConfig').isEnabled(),true);
+ assert.equal(await page.locator('#macSnapshotResult').innerText(),'');
+ await page.evaluate(()=>document.activeElement?.blur());
+ await page.screenshot({path:path.join(evidenceDir,'snapshot-same-chip.png'),fullPage:true});
  await page.screenshot({path:publicSnapshot,fullPage:true});
 
  for(const width of [1440,900,600]){
@@ -100,9 +104,9 @@ try{
   const metrics=await assertNoOverflow(page);
   await page.getByRole('button',{name:'关闭',exact:true}).scrollIntoViewIfNeeded();
   assert.ok(await page.getByRole('button',{name:'关闭',exact:true}).isVisible());
-  await page.getByRole('button',{name:'复制到本地',exact:true}).scrollIntoViewIfNeeded();
-  const actionRect=await page.locator('#macCopyConfig').boundingBox();
-  assert.ok(actionRect.y>=0&&actionRect.y+actionRect.height<=900,'copy action remains reachable');
+  await page.getByRole('button',{name:'应用配置',exact:true}).scrollIntoViewIfNeeded();
+  const actionRect=await page.locator('#macApplyConfig').boundingBox();
+  assert.ok(actionRect.y>=0&&actionRect.y+actionRect.height<=900,'apply action remains reachable');
   assert.ok(await page.locator('#macApplyConfig').isVisible());
   await page.screenshot({path:path.join(evidenceDir,'snapshot-cross-chip-'+width+'.png'),fullPage:true});
   await page.getByRole('button',{name:'关闭',exact:true}).click();
@@ -135,26 +139,39 @@ try{
  passed('long recorded version value remains complete, wraps and is HTML-safe; removed legacy fields stay invisible',{versionCharacters:nonempty.compatibilityLayer.length});
 
  const sourceMatch=await getSnapshot(page,'m1');
- await page.click('#macCopyConfig');
- const copiedMatch=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-local-schemes')).find(r=>r.sourceReviewId==='m1'));
- assert.deepEqual(copiedMatch.parameters,withoutRemovedFields(sourceMatch).parameters);
- assert.deepEqual(await getSnapshot(page,'m1'),sourceMatch);
  assert.ok(await page.locator('#macApplyConfig').isEnabled());
+ await page.locator('#macApplyConfig').scrollIntoViewIfNeeded();
+ await page.evaluate(()=>{window.__preApplyDialog=document.querySelector('.dialog');window.__preApplyScroll=window.__preApplyDialog.scrollTop});
+ await page.evaluate(()=>{window.__originalSetItem=Storage.prototype.setItem;window.__applyWriteCount=0;Storage.prototype.setItem=function(key,value){if(key==='gh-mac-active-scheme')window.__applyWriteCount++;return window.__originalSetItem.call(this,key,value)}});
  await page.click('#macApplyConfig');
- assert.equal(await page.getByRole('heading',{name:'应用配置',exact:true}).count(),1);
- assert.equal(await page.evaluate(()=>localStorage.getItem('gh-mac-active-scheme')),null,'confirmation does not apply yet');
- await page.getByRole('button',{name:'取消',exact:true}).click();
- assert.equal(await page.evaluate(()=>localStorage.getItem('gh-mac-active-scheme')),null,'cancel leaves current scheme alone');
- await page.click('#macApplyConfig');
- await page.getByRole('button',{name:'确认应用',exact:true}).click();
+ await assertAppliedStatus(page);
+ assert.equal(await page.evaluate(()=>document.querySelector('.dialog')===window.__preApplyDialog),true,'direct apply does not replace the details dialog');
+ assert.equal(await page.evaluate(()=>document.querySelector('.dialog').scrollTop),await page.evaluate(()=>window.__preApplyScroll),'direct apply preserves dialog scroll');
+ assert.equal(await page.evaluate(()=>window.__applyWriteCount),1,'one click persists once');
+ await page.evaluate(()=>{Storage.prototype.setItem=window.__originalSetItem;delete window.__originalSetItem});
  const applied=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-active-scheme')));
  assert.deepEqual(applied,withoutRemovedFields(sourceMatch));
  assert.deepEqual(await getSnapshot(page,'m1'),sourceMatch);
- passed('matching-chip copy/apply keeps the nine included values, omits removed legacy fields, requires confirmation and does not modify the snapshot');
- // Capture the normal matched-chip example separately from the deliberately long unsafe test strings.
+ assert.equal(await page.evaluate(()=>localStorage.getItem('gh-mac-local-schemes')),null,'direct apply does not create a copied local scheme');
+ passed('matching-chip one click applies nine included values with exact success status, no copy or confirmation, unchanged source and dialog');
+ // Simulate a write failure while a prior successfully applied configuration exists.
  await page.setViewportSize({width:1440,height:1100});
  await installParameters(page,pristineCross.parameters);
- await page.screenshot({path:path.join(evidenceDir,'snapshot-same-chip.png'),fullPage:true});
+ const retrySource=await getSnapshot(page,'m1');
+ await page.evaluate(()=>{window.__originalSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='gh-mac-active-scheme')throw new DOMException('Injected storage failure','QuotaExceededError');return window.__originalSetItem.call(this,key,value)}});
+ await page.click('#macApplyConfig');
+ assert.equal(await page.locator('#macSnapshotResult').innerText(),'应用失败，请重试');
+ await assertSingleDirectAction(page);
+ assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-active-scheme'))),applied,'failed write leaves prior active configuration unchanged');
+ assert.deepEqual(await getSnapshot(page,'m1'),retrySource,'failed write leaves source unchanged');
+ await page.screenshot({path:path.join(evidenceDir,'snapshot-storage-failure.png'),fullPage:true});
+ await page.evaluate(()=>{Storage.prototype.setItem=window.__originalSetItem;delete window.__originalSetItem});
+ await page.click('#macApplyConfig');
+ await assertAppliedStatus(page);
+ assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-active-scheme'))),withoutRemovedFields(retrySource));
+ assert.deepEqual(await getSnapshot(page,'m1'),retrySource);
+ await page.screenshot({path:path.join(evidenceDir,'snapshot-applied.png'),fullPage:true});
+ passed('storage failure keeps prior active configuration and source, displays retry error, and one click succeeds after storage is restored');
 
  const oldSeed=oldReviews.find(r=>r.id==='m1');
  const cancelled=oldReviews.find(r=>r.id==='m3');
@@ -180,21 +197,18 @@ try{
  assert.equal(await valueOf(page,'avx'),'未记录');
  await assertRemovedFieldsInvisible(page);
  const partialSource=await getSnapshot(page,'m2');
- await page.evaluate(()=>{localStorage.removeItem('gh-mac-local-schemes');localStorage.removeItem('gh-mac-active-scheme')});
- await page.click('#macCopyConfig');
- const copiedPartial=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-local-schemes')).find(r=>r.sourceReviewId==='m2'));
- assert.deepEqual(copiedPartial.parameters,{steamInput:true,compatibilityLayer:'user-selected-version'},'copy neither fills missing included fields nor carries removed legacy fields');
+ await page.evaluate(()=>localStorage.removeItem('gh-mac-active-scheme'));
  await page.evaluate(()=>{macCompatibilityDemo.setDeviceChip('Apple M3 Pro');macCompatibilityDemo.openSnapshot('m2')});
  await page.click('#macApplyConfig');
- await page.getByRole('button',{name:'确认应用',exact:true}).click();
+ await assertAppliedStatus(page);
  const appliedPartial=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-active-scheme')));
  assert.deepEqual(appliedPartial,withoutRemovedFields(partialSource),'apply neither fills missing included fields nor carries removed legacy fields');
  assert.deepEqual(await getSnapshot(page,'m2'),partialSource,'source retains historical fields unmodified');
  passed('old demo seed migration fills absent parameters only; text, support, cancellation and existing partial parameters preserved');
  assert.deepEqual(evidence.errors,[]);
  evidence.status='PASS';
- passed('legacy partial snapshots copy/apply only existing included values, do not fill missing values and retain removed fields in immutable source');
- console.log('PASS: Mac nine snapshot parameters / three groups; removed legacy fields excluded from display/copy/apply; responsive display and cache preservation');
+ passed('legacy partial snapshots directly apply only existing included values, do not fill missing values and retain removed fields in immutable source');
+ console.log('PASS: Mac direct application with one button and exact success status; nine parameters / three groups; storage recovery, responsive display and cache preservation');
 }catch(error){
  evidence.status='FAIL';evidence.failure={message:error.message,stack:error.stack};
  console.error(error.stack);process.exitCode=1;
