@@ -49,9 +49,9 @@ try{
  assert.ok(await p.locator('#macDescription').isVisible());await p.evaluate(()=>macClose());
  await p.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));
  assert.equal(await p.locator('#macApplyConfig').isDisabled(),true);
- assert.deepEqual(await p.locator('.snapshot-group h3').allTextContents(),['Steam','通用','兼容性','图形']);
- assert.deepEqual(await p.locator('.snapshot-parameter dt').allTextContents(),['Steam Input（实验性）','环境变量','启动参数','兼容层','同步模式','跳过音视频解码','手柄兼容模式','AVX 指令集','切换图形栈','切换 OpenGL','切换 MoltenVK']);
- assert.deepEqual(await p.locator('.snapshot-parameter dd').allTextContents(),['关闭','未设置','未设置','wine-proton_11.0','MSync','关闭','开启','关闭','gptk-3.0-3','builtin','builtin']);
+ assert.deepEqual(await p.locator('.snapshot-group h3').allTextContents(),['Steam','兼容性','图形']);
+ assert.deepEqual(await p.locator('.snapshot-parameter dt').allTextContents(),['Steam Input（实验性）','兼容层','同步模式','跳过音视频解码','手柄兼容模式','AVX 指令集','切换图形栈','切换 OpenGL','切换 MoltenVK']);
+ assert.deepEqual(await p.locator('.snapshot-parameter dd').allTextContents(),['关闭','wine-proton_11.0','MSync','关闭','开启','关闭','gptk-3.0-3','builtin','builtin']);
  await p.click('#macCopyConfig');
  assert.deepEqual(await p.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-local-schemes')).find(s=>s.sourceReviewId==='m2').parameters),await p.evaluate(()=>macCompatibilityDemo.getReviews().find(r=>r.id==='m2').snapshot.parameters));
  await p.screenshot({path:out+'/online-mac.png'});
@@ -59,7 +59,7 @@ try{
  await p.getByRole('tab',{name:'Android 端',exact:true}).click();await p.waitForTimeout(450);await p.click('#openCompatibilityReviews');await p.click('#manualReviewButton');
  assert.ok(await p.locator('#modalFeedback.show').isVisible());
  assert.deepEqual(errors,[]);
- fs.writeFileSync(out+'/online.json',JSON.stringify({url,status:'PASS',tabs:3,macPhotoCases:cases.length,orientations:['landscape','portrait','mixed'],viewportWidths:[1440,900,600],fixedThreeColumns:true,twoPhotosLeaveThirdCellEmpty:true,uniformSquareThumbnails:true,multiPhotoFit:'cover',originalRatioPreview:true,uploadLimit:3,macCompose:true,macSnapshotParameters:11,macSnapshotGroups:4,copyPreservesSnapshotParameters:true,crossChipDisabled:true,androidCompose:true,admin:true,errors},null,2));
+ fs.writeFileSync(out+'/online.json',JSON.stringify({url,status:'PASS',tabs:3,macPhotoCases:cases.length,orientations:['landscape','portrait','mixed'],viewportWidths:[1440,900,600],fixedThreeColumns:true,twoPhotosLeaveThirdCellEmpty:true,uniformSquareThumbnails:true,multiPhotoFit:'cover',originalRatioPreview:true,uploadLimit:3,macCompose:true,macSnapshotParameters:9,macSnapshotGroups:3,copyPreservesSnapshotParameters:true,crossChipDisabled:true,androidCompose:true,admin:true,errors},null,2));
  const text=fs.readFileSync('prd/【PRD】《盖世游戏》兼容性评价改版V1.2需求.md','utf8');
  const urls=[...new Set([...text.matchAll(/!\[[^\]]*\]\((https:\/\/[^)]+)\)/g)].map(m=>m[1]))];
  assert.equal(urls.length,27);

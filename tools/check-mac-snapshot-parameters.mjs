@@ -2,6 +2,7 @@ import {chromium} from 'playwright-core';
 import {pathToFileURL} from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import {constants} from 'node:fs';
 import assert from 'node:assert/strict';
 
 const evidenceDir=path.resolve('test-results/compatibility-review-v1.2/2026-10-09-mac-parameters');
@@ -10,8 +11,6 @@ const baselinePath=path.resolve('.codex-worktrees/compatibility-review-final-mai
 const publicSnapshot=path.resolve('public/prd/compatibility-review-v1.2/m04-snapshot.png');
 const expectedFields=[
  ['steamInput','Steam Input（实验性）','关闭'],
- ['environmentVariables','环境变量','未设置'],
- ['launchArguments','启动参数','未设置'],
  ['compatibilityLayer','兼容层','wine-proton_11.0'],
  ['synchronizationMode','同步模式','MSync'],
  ['skipVideoDecoding','跳过音视频解码','关闭'],
@@ -21,8 +20,18 @@ const expectedFields=[
  ['openGL','切换 OpenGL','builtin'],
  ['moltenVK','切换 MoltenVK','builtin']
 ];
-const evidence={status:'RUNNING',date:'2026-10-09',demo:demoPath,checks:[],responsive:[],errors:[]};
+const evidence={status:'RUNNING',date:'2026-10-09',parameterCount:9,groupCount:3,scope:'Environment variables and launch arguments removed from display, copy and apply',demo:demoPath,checks:[],responsive:[],errors:[]};
 await fs.mkdir(evidenceDir,{recursive:true});
+// Keep the previous eleven-field evidence as superseded evidence, not as current validation.
+try{
+ const prior=JSON.parse(await fs.readFile(path.join(evidenceDir,'snapshot-parameters.json'),'utf8'));
+ if(prior.parameterCount!==9){
+  for(const file of await fs.readdir(evidenceDir))if(file!=='baseline.png'&&!file.includes('superseded-11')&&(file.endsWith('.png')||file==='snapshot-parameters.json')){
+   const archived=file.replace(/\.(png|json)$/,'.superseded-11.$1');
+   try{await fs.copyFile(path.join(evidenceDir,file),path.join(evidenceDir,archived),constants.COPYFILE_EXCL)}catch(error){if(error.code!=='EEXIST')throw error}
+  }
+ }
+}catch(error){if(error.code!=='ENOENT')throw error}
 const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
 let context;
 function passed(name,details={}){evidence.checks.push({name,status:'PASS',...details})}
@@ -39,6 +48,12 @@ async function assertNoOverflow(page){
  return metrics;
 }
 async function getSnapshot(page,id){return page.evaluate(id=>macCompatibilityDemo.getReviews().find(r=>r.id===id).snapshot,id)}
+function withoutRemovedFields(snapshot){const copy=structuredClone(snapshot);delete copy.parameters.environmentVariables;delete copy.parameters.launchArguments;return copy}
+async function assertRemovedFieldsInvisible(page){
+ assert.equal(await page.locator('[data-parameter="environmentVariables"], [data-parameter="launchArguments"]').count(),0);
+ assert.deepEqual(await page.locator('.snapshot-group h3').allTextContents(),['Steam','兼容性','图形']);
+ assert.ok(!/环境变量|启动参数|HIDDEN_ENV_VALUE|HIDDEN_LAUNCH_VALUE/.test(await page.locator('.dialog').innerText()));
+}
 async function installParameters(page,parameters,id='m1'){
  await page.evaluate(({parameters,id})=>{macReviews.find(r=>r.id===id).snapshot.parameters=parameters;macCompatibilityDemo.openSnapshot(id)},{parameters,id});
 }
@@ -47,29 +62,33 @@ try{
  context=await browser.newContext({viewport:{width:1440,height:1100}});
  const page=await context.newPage();
  page.on('pageerror',error=>evidence.errors.push(error.message));
- // Preserve a view of the prior published/source version before testing the new details.
+ // Read a prior version for the migration fixture; preserve the already captured baseline image.
  await page.goto(pathToFileURL(baselinePath).href);
  await page.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));
- await page.screenshot({path:path.join(evidenceDir,'baseline.png'),fullPage:true});
+ try{await fs.access(path.join(evidenceDir,'baseline.png'))}catch{await page.screenshot({path:path.join(evidenceDir,'baseline.png'),fullPage:true})}
  const oldReviews=await page.evaluate(()=>macCompatibilityDemo.getReviews());
- passed('baseline captured',{file:'baseline.png'});
+ passed('original baseline preserved',{file:'baseline.png',currentEvidence:false});
  await page.goto(pathToFileURL(demoPath).href);
  await page.evaluate(()=>macCompatibilityDemo.reset());
  await page.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));
- assert.deepEqual(await page.locator('.snapshot-group h3').allTextContents(),['Steam','通用','兼容性','图形']);
+ assert.deepEqual(await page.locator('.snapshot-group h3').allTextContents(),['Steam','兼容性','图形']);
  assert.deepEqual(await page.locator('.snapshot-parameter dt').allTextContents(),expectedFields.map(([,label])=>label));
  for(const [key,,value] of expectedFields)assert.equal(await valueOf(page,key),value,key+' screenshot value');
- passed('eleven user-visible labels, group order, screenshot values and explicit empty values',{fields:expectedFields.map(([,label,value])=>({label,value}))});
+ await assertRemovedFieldsInvisible(page);
+ passed('nine user-visible labels, three group order and screenshot values',{fields:expectedFields.map(([,label,value])=>({label,value}))});
  assert.equal(await page.locator('#macApplyConfig').isDisabled(),true);
  assert.equal(await page.locator('#macCopyConfig').isEnabled(),true);
  assert.match(await page.locator('.notice.warn').innerText(),/当前芯片与配置芯片不同/);
+ const pristineCross=await getSnapshot(page,'m2');
+ await installParameters(page,{...pristineCross.parameters,environmentVariables:[{name:'LEGACY',value:'HIDDEN_ENV_VALUE'}],launchArguments:'HIDDEN_LAUNCH_VALUE'},'m2');
+ await assertRemovedFieldsInvisible(page);
  const originalCross=await getSnapshot(page,'m2');
  await page.click('#macCopyConfig');
  const copiedCross=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-local-schemes')).find(r=>r.sourceReviewId==='m2'));
- assert.deepEqual(copiedCross.parameters,originalCross.parameters);
+ assert.deepEqual(copiedCross.parameters,withoutRemovedFields(originalCross).parameters);
  assert.deepEqual(await getSnapshot(page,'m2'),originalCross);
  assert.equal(await page.evaluate(()=>localStorage.getItem('gh-mac-active-scheme')),null);
- passed('cross-chip view/copy preserves all parameters and cannot apply');
+ passed('cross-chip view/copy keeps the nine included parameters, excludes both removed legacy fields, preserves source and cannot apply');
  await page.evaluate(()=>macCompatibilityDemo.openSnapshot('m2'));
  await assertNoOverflow(page);
  await page.screenshot({path:path.join(evidenceDir,'snapshot-cross-chip.png'),fullPage:true});
@@ -88,7 +107,7 @@ try{
   await page.screenshot({path:path.join(evidenceDir,'snapshot-cross-chip-'+width+'.png'),fullPage:true});
   await page.getByRole('button',{name:'关闭',exact:true}).click();
   assert.equal(await page.getByRole('dialog').count(),0);
-  evidence.responsive.push({width,...metrics,closeAndActionsReachable:true});
+  evidence.responsive.push({requestedViewportWidth:width,...metrics,closeAndActionsReachable:true});
  }
  passed('1440/900/600 dialogs remain in viewport, scroll vertically as needed, actions and close are reachable');
 
@@ -97,19 +116,15 @@ try{
  for(const [key]of expectedFields)assert.equal(await valueOf(page,key),'未记录',key+' missing');
  await installParameters(page,null);
  for(const [key]of expectedFields)assert.equal(await valueOf(page,key),'未记录',key+' null parameter container');
- const invalids={steamInput:'false',skipVideoDecoding:0,controllerCompatibility:null,avx:'true',environmentVariables:null,launchArguments:42,compatibilityLayer:null,synchronizationMode:1,graphicsTranslation:{},openGL:false,moltenVK:[]};
+ const invalids={steamInput:'false',skipVideoDecoding:0,controllerCompatibility:null,avx:'true',compatibilityLayer:null,synchronizationMode:1,graphicsTranslation:{},openGL:false,moltenVK:[]};
  await installParameters(page,invalids);
  for(const [key]of expectedFields)assert.equal(await valueOf(page,key),'未记录',key+' malformed value');
- for(const environmentVariables of [[null],[{name:'VALID',value:1}],[{name:'',value:'valid'}],[{name:'VALID'}]]){
-  await installParameters(page,{...originalCross.parameters,environmentVariables});
-  assert.equal(await valueOf(page,'environmentVariables'),'未记录','malformed environment row');
- }
  passed('missing/null/malformed values display 未记录, including booleans that must not become 关闭');
 
- const nonempty={...originalCross.parameters,steamInput:true,environmentVariables:[{name:'WINEDEBUG',value:'-all'},{name:'CUSTOM_<img src=x onerror="window.__snapshotXss=1">',value:'<script>window.__snapshotXss=2</script>&"\n第二行'}],launchArguments:'--config="'+('非常长的参数片段<svg onload="window.__snapshotXss=3">&'.repeat(75))+'"\n--second-line=true'};
+ const nonempty={...originalCross.parameters,steamInput:true,compatibilityLayer:'wine-test-'+('非常长的版本片段<svg onload="window.__snapshotXss=3">&'.repeat(75))+'\n完整第二行'};
  await installParameters(page,nonempty);
- assert.equal(await valueOf(page,'environmentVariables'),nonempty.environmentVariables.map(item=>item.name+'='+item.value).join('\n'));
- assert.equal(await valueOf(page,'launchArguments'),nonempty.launchArguments);
+ assert.equal(await valueOf(page,'compatibilityLayer'),nonempty.compatibilityLayer);
+ await assertRemovedFieldsInvisible(page);
  assert.equal(await valueOf(page,'steamInput'),'开启');
  assert.equal(await page.locator('.snapshot-parameter dd img, .snapshot-parameter dd script, .snapshot-parameter dd svg').count(),0);
  assert.equal(await page.evaluate(()=>window.__snapshotXss),undefined);
@@ -117,12 +132,12 @@ try{
   await page.setViewportSize({width,height:900});
   await assertNoOverflow(page);
  }
- passed('environment name/value rows and long arguments remain complete, wrap, and are HTML-safe',{argumentCharacters:nonempty.launchArguments.length,environmentRows:nonempty.environmentVariables.length});
+ passed('long recorded version value remains complete, wraps and is HTML-safe; removed legacy fields stay invisible',{versionCharacters:nonempty.compatibilityLayer.length});
 
  const sourceMatch=await getSnapshot(page,'m1');
  await page.click('#macCopyConfig');
  const copiedMatch=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-local-schemes')).find(r=>r.sourceReviewId==='m1'));
- assert.deepEqual(copiedMatch.parameters,sourceMatch.parameters);
+ assert.deepEqual(copiedMatch.parameters,withoutRemovedFields(sourceMatch).parameters);
  assert.deepEqual(await getSnapshot(page,'m1'),sourceMatch);
  assert.ok(await page.locator('#macApplyConfig').isEnabled());
  await page.click('#macApplyConfig');
@@ -133,12 +148,12 @@ try{
  await page.click('#macApplyConfig');
  await page.getByRole('button',{name:'确认应用',exact:true}).click();
  const applied=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-active-scheme')));
- assert.deepEqual(applied,sourceMatch);
+ assert.deepEqual(applied,withoutRemovedFields(sourceMatch));
  assert.deepEqual(await getSnapshot(page,'m1'),sourceMatch);
- passed('matching-chip copy/apply keeps all eleven source values, requires confirmation and does not modify the snapshot');
+ passed('matching-chip copy/apply keeps the nine included values, omits removed legacy fields, requires confirmation and does not modify the snapshot');
  // Capture the normal matched-chip example separately from the deliberately long unsafe test strings.
  await page.setViewportSize({width:1440,height:1100});
- await installParameters(page,originalCross.parameters);
+ await installParameters(page,pristineCross.parameters);
  await page.screenshot({path:path.join(evidenceDir,'snapshot-same-chip.png'),fullPage:true});
 
  const oldSeed=oldReviews.find(r=>r.id==='m1');
@@ -147,7 +162,7 @@ try{
  delete oldSeed.snapshot.parameters;
  oldSeed.text='用户已编辑的评价，升级时不能改写';oldSeed.likes=73;oldSeed.supported=true;
  delete cancelled.snapshot;
- existing.snapshot.parameters={steamInput:true,compatibilityLayer:'user-selected-version'};
+ existing.snapshot.parameters={steamInput:true,compatibilityLayer:'user-selected-version',environmentVariables:[{name:'LEGACY',value:'HIDDEN_ENV_VALUE'}],launchArguments:'HIDDEN_LAUNCH_VALUE'};
  const external={...structuredClone(oldSeed),id:'user-existing-without-parameters',name:'真实用户示例'};
  oldReviews.push(external);
  await page.evaluate(reviews=>localStorage.setItem('gh-compatibility-mac-v12',JSON.stringify(reviews)),oldReviews);
@@ -155,7 +170,7 @@ try{
  const migrated=await page.evaluate(()=>macCompatibilityDemo.getReviews());
  const restored=migrated.find(r=>r.id==='m1');
  assert.equal(restored.text,oldSeed.text);assert.equal(restored.likes,73);assert.equal(restored.supported,true);
- assert.deepEqual(restored.snapshot.parameters,originalCross.parameters);
+ assert.deepEqual(restored.snapshot.parameters,pristineCross.parameters);
  assert.equal(Object.hasOwn(migrated.find(r=>r.id==='m3'),'snapshot'),false,'cancelled share remains cancelled');
  assert.deepEqual(migrated.find(r=>r.id==='m2').snapshot.parameters,existing.snapshot.parameters,'existing incomplete parameters not overwritten by demo defaults');
  assert.equal(Object.hasOwn(migrated.find(r=>r.id===external.id).snapshot,'parameters'),false,'non-seed historical snapshot not filled with sample values');
@@ -163,10 +178,23 @@ try{
  assert.equal(await valueOf(page,'steamInput'),'开启');
  assert.equal(await valueOf(page,'compatibilityLayer'),'user-selected-version');
  assert.equal(await valueOf(page,'avx'),'未记录');
+ await assertRemovedFieldsInvisible(page);
+ const partialSource=await getSnapshot(page,'m2');
+ await page.evaluate(()=>{localStorage.removeItem('gh-mac-local-schemes');localStorage.removeItem('gh-mac-active-scheme')});
+ await page.click('#macCopyConfig');
+ const copiedPartial=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-local-schemes')).find(r=>r.sourceReviewId==='m2'));
+ assert.deepEqual(copiedPartial.parameters,{steamInput:true,compatibilityLayer:'user-selected-version'},'copy neither fills missing included fields nor carries removed legacy fields');
+ await page.evaluate(()=>{macCompatibilityDemo.setDeviceChip('Apple M3 Pro');macCompatibilityDemo.openSnapshot('m2')});
+ await page.click('#macApplyConfig');
+ await page.getByRole('button',{name:'确认应用',exact:true}).click();
+ const appliedPartial=await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-active-scheme')));
+ assert.deepEqual(appliedPartial,withoutRemovedFields(partialSource),'apply neither fills missing included fields nor carries removed legacy fields');
+ assert.deepEqual(await getSnapshot(page,'m2'),partialSource,'source retains historical fields unmodified');
  passed('old demo seed migration fills absent parameters only; text, support, cancellation and existing partial parameters preserved');
  assert.deepEqual(evidence.errors,[]);
  evidence.status='PASS';
- console.log('PASS: Mac snapshot parameters, data preservation, copy/apply, responsive display and legacy cache migration');
+ passed('legacy partial snapshots copy/apply only existing included values, do not fill missing values and retain removed fields in immutable source');
+ console.log('PASS: Mac nine snapshot parameters / three groups; removed legacy fields excluded from display/copy/apply; responsive display and cache preservation');
 }catch(error){
  evidence.status='FAIL';evidence.failure={message:error.message,stack:error.stack};
  console.error(error.stack);process.exitCode=1;
