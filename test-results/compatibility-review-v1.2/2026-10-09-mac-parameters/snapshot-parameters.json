@@ -1,0 +1,132 @@
+{
+  "status": "PASS",
+  "date": "2026-10-09",
+  "parameterCount": 9,
+  "groupCount": 3,
+  "scope": "Environment variables and launch arguments removed from display, copy and apply",
+  "demo": "C:\\Users\\z3635\\官网改动\\demos\\游戏详情\\GUANWANGGAID-25-兼容性评价改版-Mac端demo.html",
+  "checks": [
+    {
+      "name": "original baseline preserved",
+      "status": "PASS",
+      "file": "baseline.png",
+      "currentEvidence": false
+    },
+    {
+      "name": "nine user-visible labels, three group order and screenshot values",
+      "status": "PASS",
+      "fields": [
+        {
+          "label": "Steam Input（实验性）",
+          "value": "关闭"
+        },
+        {
+          "label": "兼容层",
+          "value": "wine-proton_11.0"
+        },
+        {
+          "label": "同步模式",
+          "value": "MSync"
+        },
+        {
+          "label": "跳过音视频解码",
+          "value": "关闭"
+        },
+        {
+          "label": "手柄兼容模式",
+          "value": "开启"
+        },
+        {
+          "label": "AVX 指令集",
+          "value": "关闭"
+        },
+        {
+          "label": "切换图形栈",
+          "value": "gptk-3.0-3"
+        },
+        {
+          "label": "切换 OpenGL",
+          "value": "builtin"
+        },
+        {
+          "label": "切换 MoltenVK",
+          "value": "builtin"
+        }
+      ]
+    },
+    {
+      "name": "cross-chip view/copy keeps the nine included parameters, excludes both removed legacy fields, preserves source and cannot apply",
+      "status": "PASS"
+    },
+    {
+      "name": "1440/900/600 dialogs remain in viewport, scroll vertically as needed, actions and close are reachable",
+      "status": "PASS"
+    },
+    {
+      "name": "missing/null/malformed values display 未记录, including booleans that must not become 关闭",
+      "status": "PASS"
+    },
+    {
+      "name": "long recorded version value remains complete, wraps and is HTML-safe; removed legacy fields stay invisible",
+      "status": "PASS",
+      "versionCharacters": 3466
+    },
+    {
+      "name": "matching-chip copy/apply keeps the nine included values, omits removed legacy fields, requires confirmation and does not modify the snapshot",
+      "status": "PASS"
+    },
+    {
+      "name": "old demo seed migration fills absent parameters only; text, support, cancellation and existing partial parameters preserved",
+      "status": "PASS"
+    },
+    {
+      "name": "legacy partial snapshots copy/apply only existing included values, do not fill missing values and retain removed fields in immutable source",
+      "status": "PASS"
+    }
+  ],
+  "responsive": [
+    {
+      "requestedViewportWidth": 1440,
+      "x": 380,
+      "y": 66.609375,
+      "width": 680,
+      "height": 766.78125,
+      "viewportWidth": 1440,
+      "viewportHeight": 900,
+      "clientWidth": 678,
+      "scrollWidth": 678,
+      "clientHeight": 765,
+      "scrollHeight": 765,
+      "closeAndActionsReachable": true
+    },
+    {
+      "requestedViewportWidth": 900,
+      "x": 110,
+      "y": 66.609375,
+      "width": 680,
+      "height": 766.78125,
+      "viewportWidth": 900,
+      "viewportHeight": 900,
+      "clientWidth": 678,
+      "scrollWidth": 678,
+      "clientHeight": 765,
+      "scrollHeight": 765,
+      "closeAndActionsReachable": true
+    },
+    {
+      "requestedViewportWidth": 600,
+      "x": 24,
+      "y": 72.609375,
+      "width": 552,
+      "height": 754.78125,
+      "viewportWidth": 600,
+      "viewportHeight": 900,
+      "clientWidth": 550,
+      "scrollWidth": 550,
+      "clientHeight": 753,
+      "scrollHeight": 753,
+      "closeAndActionsReachable": true
+    }
+  ],
+  "errors": []
+}
