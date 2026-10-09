@@ -41,6 +41,12 @@ test('整合离线 Demo 三端切换、Android草稿和后台回归',async()=>{
   assert.equal(await page.locator('#macApplyConfig').isDisabled(),true);
   assert.equal(await page.locator('#macCopyConfig').count(),0);
   assert.deepEqual(await page.locator('.dialog-actions button').allTextContents(),['应用配置']);
+  await page.evaluate(()=>window.macCompatibilityDemo.openSnapshot('m1'));
+  await page.click('#macApplyConfig');
+  assert.equal(await page.locator('#macDialogTitle').innerText(),'配置详情');
+  assert.equal(await page.locator('#macSnapshotResult').innerText(),'将在下次启动生效');
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('gh-mac-active-scheme'))),await page.evaluate(()=>window.macCompatibilityDemo.getReviews().find(r=>r.id==='m1').snapshot));
+  assert.equal(await page.getByRole('button',{name:'确认应用',exact:true}).count(),0);
   await page.evaluate(()=>macClose());
   fs.mkdirSync('test-results/compatibility-review-v1.2/2026-10-08',{recursive:true});
   await page.screenshot({path:'test-results/compatibility-review-v1.2/2026-10-08/suite-mac.png',fullPage:true});
