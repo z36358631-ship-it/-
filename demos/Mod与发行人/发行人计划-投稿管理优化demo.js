@@ -33,11 +33,11 @@ let hasReviewPermission=true;
 tasks.forEach(t=>{t.startsAt='2026-10-01 10:00:00';t.endsAt=t.id==='1046'||t.id==='1040'?'2026-10-28 17:00:00':'2026-10-12 17:00:00';});
 let filter={uid:'',taskId:'',platform:'',status:''};
 let preview=null,feedback=null,activeSubmissionId=null,activeModal=null,uploadGeneration=0;
-let screen='list',importContext=null,inputMode='file',pasteDraft='';
+let screen='list',importContext=null,pasteDraft='',fileName='';
 const selectedIds=new Set(),linkResults=new Map();
 const importAudit=[];
 const pendingRequests=new Map();
-const csvHeaders=['投稿ID','任务ID','任务名称','投稿人UID','投稿人昵称','平台','内容ID','点赞数','任务开始时间','任务结束时间'];
+const csvHeaders=['投稿ID','任务ID','任务名称','投稿人UID','投稿人昵称','平台','内容ID','视频链接','点赞数','任务开始时间','任务结束时间'];
 const banner='作品仍须人工审核：通过只预留预算，不立即发奖。按赞模式由运营确认截止点赞后统一结算；旧固定奖励模式单独保留。平台数据不自动抓取。';
 function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function taskFor(item){return tasks.find(t=>t.id===item.taskId);}
@@ -63,26 +63,37 @@ function operationTask(){return selectedIds.size?selectionTask():tasks.find(t=>t
 function toggleRow(id,checked){checked?selectedIds.add(id):selectedIds.delete(id);render();}
 function toggleAll(checked){visibleRows().forEach(v=>checked?selectedIds.add(v.id):selectedIds.delete(v.id));render();}
 function render(){
-  if(screen==='input'){renderImportInput();return;}if(screen==='preview'){renderPreviewPage();return;}
+  if(screen==='import'){renderImportPage();return;}
   const task=tasks.find(t=>t.id===filter.taskId),opTask=operationTask(),rows=visibleRows();
   const count=selectedIds.size||(opTask?submissions.filter(v=>v.taskId===opTask.id).length:0);
   document.getElementById('content').innerHTML='<div class="panel-head"><h1>'+ (task?'任务投稿 · '+escapeHtml(task.name):'投稿管理')+'</h1><button onclick="refreshList()">刷新</button></div><div class="panel-body">'+alertBox(banner)+
   '<div class="filter-row"><div class="filter-field uid"><label for="uid-filter">投稿人 UID</label><input id="uid-filter" value="'+escapeHtml(filter.uid)+'"></div><div class="filter-field task"><label for="task-filter">任务 ID</label><input id="task-filter" value="'+escapeHtml(filter.taskId)+'" list="task-options" placeholder="输入或选择任务 ID"><datalist id="task-options">'+tasks.map(t=>'<option value="'+t.id+'">'+escapeHtml(t.name)+'</option>').join('')+'</datalist></div><div class="filter-field inline"><label for="platform-filter">平台</label><select id="platform-filter"><option value="">全部</option>'+['douyin','bilibili','kuaishou','xiaohongshu'].map(p=>'<option '+(filter.platform===p?'selected':'')+'>'+p+'</option>').join('')+'</select></div><div class="filter-field inline"><label for="status-filter">状态</label><select id="status-filter"><option value="">全部</option>'+['待人工审核','合格','驳回','已结算'].map(s=>'<option '+(filter.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div><button class="primary" onclick="queryList()">查询投稿</button></div>'+
-  '<div class="batch-actions"><div><span class="batch-title">'+(opTask?escapeHtml(opTask.id+' · '+opTask.name):'单任务批量操作')+'</span><span class="batch-caption">已选 '+selectedIds.size+' 条'+(selectedIds.size&&!opTask?' · 勾选跨任务，请保留一个任务':'')+'</span></div><div class="actions"><button id="export-button" '+(!opTask?'disabled':'')+' onclick="exportTask()">导出'+(selectedIds.size?'选中 '+count:'全部 '+count)+' 条</button><button id="import-button" class="primary" '+(!opTask?'disabled':'')+' onclick="openImport()">导入点赞'+(opTask?' · '+(selectedIds.size?'选中':'全部')+' '+count+' 条':'')+'</button><button id="reject-button" class="danger" '+(!selectedIds.size?'disabled':'')+' onclick="openReject([...selectedIds])">批量驳回'+(selectedIds.size?' '+selectedIds.size+' 条':'')+'</button></div><div class="batch-note">未勾选时导出选定任务全部稿件；勾选后仅操作所选稿件。筛选变更会清空勾选。文件与粘贴使用同一10列格式，仅修改点赞数；任务开始/结束时间为只读任务配置。</div></div>'+(feedback?alertBox(feedback.text,feedback.error?'error':'success'):'')+
-  '<div class="table-wrap"><table class="data-table" id="submission-table"><colgroup>'+[48,82,82,195,110,120,100,250,155,75,110,130].map(w=>'<col style="width:'+w+'px">').join('')+'</colgroup><thead><tr><th><input id="select-all" type="checkbox" aria-label="全选当前结果" '+(rows.length&&rows.every(v=>selectedIds.has(v.id))?'checked':'')+' onchange="toggleAll(this.checked)"></th>'+['投稿 ID','任务 ID','任务名称','投稿人 UID','投稿人昵称','平台','内容 ID','奖励金额（盖世币）','预留','状态','操作'].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(v=>'<tr><td><input type="checkbox" aria-label="勾选投稿 '+v.id+'" '+(selectedIds.has(v.id)?'checked':'')+' onchange="toggleRow(\''+v.id+'\',this.checked)"></td><td>'+v.id+'</td><td><button class="link-button" onclick="openTask(\''+v.taskId+'\')">'+v.taskId+'</button></td><td><span class="ellipsis" title="'+escapeHtml(taskFor(v).name)+'">'+escapeHtml(taskFor(v).name)+'</span></td><td>'+v.uid+'</td><td>'+escapeHtml(v.nickname)+'</td><td>'+v.platform+'</td><td><span class="ellipsis" title="'+escapeHtml(v.contentId)+'">'+escapeHtml(v.contentId)+'</span></td><td>'+v.reward+'</td><td>'+v.reserved+'</td><td>'+tag(v.status)+'</td><td><button onclick="openDrawer(\''+v.id+'\')">详情/审核</button></td></tr>').join('')+(rows.length?'':'<tr><td colspan="12" class="empty-state">暂无符合条件的投稿</td></tr>')+'</tbody></table></div><p class="source-note">本地评审演示，操作刷新即重置，不连接真实后台。任务名称、昵称、开始/结束时间均为示例；#735 尚未到 2026-10-28 点赞截止，可选任务 1044 演示录入。</p></div>';
+  '<div class="batch-actions"><div><span class="batch-title">'+(opTask?escapeHtml(opTask.id+' · '+opTask.name):'稿件操作')+'</span><span class="batch-caption">已选 '+selectedIds.size+' 条'+(selectedIds.size&&!opTask?' · 勾选跨任务，暂不可导出':'')+'</span></div><div class="actions"><button id="export-button" '+(!opTask?'disabled':'')+' onclick="exportTask()">导出'+(selectedIds.size?'选中 '+count:'全部 '+count)+' 条</button><button id="import-button" class="primary" onclick="openImport()">导入点赞</button><button id="reject-button" class="danger" '+(!selectedIds.size?'disabled':'')+' onclick="openReject([...selectedIds])">批量驳回'+(selectedIds.size?' '+selectedIds.size+' 条':'')+'</button></div><div class="batch-note">勾选用于导出与批量驳回。导入无需勾选，按文件或粘贴内容匹配稿件。</div></div>'+(feedback?alertBox(feedback.text,feedback.error?'error':'success'):'')+
+  '<div class="table-wrap"><table class="data-table" id="submission-table"><colgroup>'+[48,82,82,195,110,120,100,250,260,155,75,110,130].map(w=>'<col style="width:'+w+'px">').join('')+'</colgroup><thead><tr><th><input id="select-all" type="checkbox" aria-label="全选当前结果" '+(rows.length&&rows.every(v=>selectedIds.has(v.id))?'checked':'')+' onchange="toggleAll(this.checked)"></th>'+['投稿 ID','任务 ID','任务名称','投稿人 UID','投稿人昵称','平台','内容 ID','视频链接','奖励金额（盖世币）','预留','状态','操作'].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(v=>'<tr><td><input type="checkbox" aria-label="勾选投稿 '+v.id+'" '+(selectedIds.has(v.id)?'checked':'')+' onchange="toggleRow(\''+v.id+'\',this.checked)"></td><td>'+v.id+'</td><td><button class="link-button" onclick="openTask(\''+v.taskId+'\')">'+v.taskId+'</button></td><td><span class="ellipsis" title="'+escapeHtml(taskFor(v).name)+'">'+escapeHtml(taskFor(v).name)+'</span></td><td>'+v.uid+'</td><td>'+escapeHtml(v.nickname)+'</td><td>'+v.platform+'</td><td><span class="ellipsis" title="'+escapeHtml(v.contentId)+'">'+escapeHtml(v.contentId)+'</span></td><td><span class="ellipsis" title="'+escapeHtml(v.link)+'">'+escapeHtml(v.link||'—')+'</span></td><td>'+v.reward+'</td><td>'+v.reserved+'</td><td>'+tag(v.status)+'</td><td><button onclick="openDrawer(\''+v.id+'\')">详情/审核</button></td></tr>').join('')+(rows.length?'':'<tr><td colspan="13" class="empty-state">暂无符合条件的投稿</td></tr>')+'</tbody></table></div><p class="source-note">本地评审演示，操作刷新即重置，不连接真实后台。任务名称、昵称、开始/结束时间均为示例；#735 尚未到 2026-10-28 点赞截止，可选任务 1044 演示录入。</p></div>';
 }
 function resetSelection(){selectedIds.clear();preview=null;feedback=null;importContext=null;screen='list';uploadGeneration++;}
 function queryList(){filter={uid:document.getElementById('uid-filter').value.trim(),taskId:document.getElementById('task-filter').value.trim(),platform:document.getElementById('platform-filter').value,status:document.getElementById('status-filter').value};resetSelection();render();}
 function refreshList(){resetSelection();render();}
 function openTask(id){filter={uid:'',taskId:id,platform:'',status:''};resetSelection();render();}
 function csvCell(value){let text=String(value??'');if(/^[=+\-@\t\r]/.test(text))text="'"+text;return '"'+text.replace(/"/g,'""')+'"';}
-function exportRow(item){const task=taskFor(item);return [item.id,item.taskId,task.name,item.uid,item.nickname,item.platform,item.contentId,item.likes??'',task.startsAt,task.endsAt];}
+function exportRow(item){const task=taskFor(item);return [item.id,item.taskId,task.name,item.uid,item.nickname,item.platform,item.contentId,item.link,item.likes??'',task.startsAt,task.endsAt];}
 function buildCsv(taskId,ids=null){return '\ufeff'+[csvHeaders,...submissions.filter(v=>v.taskId===taskId&&(!ids||ids.includes(v.id))).map(exportRow)].map(row=>row.map(csvCell).join(',')).join('\r\n');}
 function exportTask(){const task=operationTask();if(!task)return;const url=URL.createObjectURL(new Blob([buildCsv(task.id,selectedIds.size?[...selectedIds]:null)],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='任务'+task.id+'-稿件点赞.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function openImport(){const task=operationTask();if(!task)return;importContext={taskId:task.id,ids:selectedIds.size?[...selectedIds]:submissions.filter(v=>v.taskId===task.id).map(v=>v.id),selected:!!selectedIds.size};pasteDraft='';preview=null;inputMode='file';screen='input';uploadGeneration++;closeDrawer();render();}
-function importScope(){return '任务 '+importContext.taskId+' · '+(importContext.selected?'选中':'全部')+' '+importContext.ids.length+' 条';}
-function switchInput(mode){pasteDraft=document.getElementById('paste-data')?.value||pasteDraft;inputMode=mode;render();}
-function renderImportInput(){document.getElementById('content').innerHTML='<div class="panel-head"><h1>导入点赞</h1><button onclick="cancelImport()">返回投稿管理</button></div><div class="panel-body">'+alertBox(importScope()+'；此范围已固定。导入后先预览，确认前不写入。')+'<div class="input-tabs"><button class="'+(inputMode==='file'?'primary':'')+'" onclick="switchInput(\'file\')">选择文件</button><button class="'+(inputMode==='paste'?'primary':'')+'" onclick="switchInput(\'paste\')">粘贴数据</button></div><p>列顺序：'+csvHeaders.join('、')+'。仅点赞数可修改；日期按北京时间 YYYY-MM-DD HH:mm:ss。</p>'+(inputMode==='file'?'<div class="upload-area"><label for="csv-file">选择导出的 CSV UTF-8 文件</label><input type="file" id="csv-file" accept=".csv" onchange="readFile(this)"><p class="hint">选择文件后进入独立预览页，核对当前值与导入值。</p></div>':'<label for="paste-data">一行一条稿件记录</label><textarea id="paste-data" rows="10" placeholder="粘贴 CSV 或从 Excel 复制的制表符分隔数据；可包含模板表头">'+escapeHtml(pasteDraft)+'</textarea><p class="hint">使用导出文件的相同列顺序；支持带表头或不带表头。</p><button id="preview-paste" class="primary" onclick="previewPaste()">校验并预览</button>')+'</div>';}
+
+function openImport(){importContext={};pasteDraft='';fileName='';preview=null;screen='import';uploadGeneration++;closeDrawer();render();}
+function previewScope(){return preview?.taskId?'任务 '+preview.taskId+' · '+preview.rows.length+' 条记录':'按输入中的任务 ID 匹配稿件';}
+function renderImportPage(){
+  document.getElementById('content').innerHTML='<div class="panel-head"><h1>导入点赞</h1><button onclick="cancelImport()">返回投稿管理</button></div><div class="panel-body">'+alertBox('无需勾选稿件。选择文件或粘贴数据，下方预览后确认；每次只导入一个任务。')+'<div class="import-inputs"><section class="import-input-card"><h2>选择文件</h2><label for="csv-file">CSV UTF-8 文件</label><input type="file" id="csv-file" accept=".csv" onchange="readFile(this)"><p id="chosen-file" class="hint">'+escapeHtml(fileName||'选择文件后自动校验')+'</p></section><section class="import-input-card"><h2>粘贴数据</h2><label for="paste-data">一行一条记录</label><textarea id="paste-data" rows="4" oninput="invalidateInput()" placeholder="粘贴 CSV 或 Excel 复制的表格，可带表头或不带表头">'+escapeHtml(pasteDraft)+'</textarea><button id="preview-paste" onclick="previewPaste()">校验并预览</button></section></div><p class="hint template-order">'+csvHeaders.join('、')+'。仅修改点赞数，视频链接保留原文。</p><section id="import-preview" class="import-preview"><div class="import-preview-head"><h2>导入预览</h2><span id="preview-source" class="muted"></span></div><div id="preview-content" class="import-preview-body"></div><div class="import-preview-actions"><button onclick="cancelImport()">取消</button><button id="confirm-import" class="primary" disabled onclick="confirmImport()">确认导入</button></div></section></div>';
+  renderInlinePreview();
+}
+function renderInlinePreview(){
+  const source=document.getElementById('preview-source'),body=document.getElementById('preview-content'),button=document.getElementById('confirm-import');if(!body)return;
+  source.textContent=preview?previewScope()+' · '+preview.source+(preview.fileName?' · '+preview.fileName:''):'';
+  button.disabled=!preview||preview.errors.length>0||!preview.changes.length;button.textContent=preview?'确认导入 '+preview.changes.length+' 条':'确认导入';
+  if(!preview){body.innerHTML='<div class="empty-state">选择文件或粘贴数据后，在这里查看预览</div>';return;}
+  body.innerHTML='<div class="preview-summary"><strong>'+preview.changes.length+' 条待更新</strong> · '+preview.skips+' 条跳过 · '+preview.errors.length+' 条错误</div><p class="hint">确认后以导入值更新，请核对当前点赞。再次输入会替换本次预览。</p>'+(preview.errors.length?alertBox(preview.errors.join('；'),'error'):'')+'<div class="table-wrap"><table class="data-table preview-table"><thead><tr>'+['数据行','投稿 ID','当前点赞','导入点赞','校验结果'].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+preview.rows.map(r=>'<tr><td>'+r.line+'</td><td>'+escapeHtml(r.id)+'</td><td>'+(r.old==null?'未录入':r.old)+'</td><td>'+escapeHtml(r.next)+'</td><td>'+escapeHtml(r.outcome)+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function invalidateInput(){pasteDraft=document.getElementById('paste-data').value;uploadGeneration++;preview=null;renderInlinePreview();}
 
 // 解析带引号、换行和双引号转义的 CSV；拒绝不闭合引号和格式歧义。
 function parseCsv(text,separator=','){
@@ -102,44 +113,58 @@ function parseCsv(text,separator=','){
 
 function itemSnapshot(item){return JSON.stringify([exportRow(item),item.version,item.mode,item.status,taskFor(item).status,taskFor(item).statsAt,item.reward,item.reserved,hasLikesPermission]);}
 function parseDelimited(text,delimiter=','){return parseCsv(text,delimiter);}
-function validateCsv(text,taskId,ids=null,source='文件导入',allowNoHeader=false){
-  const result={taskId,rows:[],errors:[],changes:[],skips:0,source,ids:ids?[...ids]:null};let data;
-  try{const first=text.replace(/^\ufeff/,'').split(/\r?\n/)[0];data=parseDelimited(text,first.includes('\t')?'\t':',');}catch(e){result.errors.push(e.message);return result;}
+function inputDelimiter(text){
+  let quoted=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){i++;continue;}quoted=!quoted;continue;}
+    if(!quoted){if(c==='\t')return '\t';if(c==='\r'||c==='\n')break;}
+  }return ',';
+}
+
+function validateCsv(text,taskId=null,ids=null,source='文件导入',allowNoHeader=false){
+  const result={taskId,rows:[],errors:[],changes:[],skips:0,source};let data;
+  try{data=parseDelimited(text,inputDelimiter(text));}catch(e){result.errors.push(e.message);return result;}
   if(!data.length){result.errors.push('没有稿件记录');return result;}
   const header=JSON.stringify(data[0])===JSON.stringify(csvHeaders);
-  if(!header&&!allowNoHeader){result.errors.push('表头与10列导出模板不一致');return result;}
-  if(!header&&data[0].some(v=>csvHeaders.includes(v))){result.errors.push('表头与10列导出模板不一致');return result;}
+  if(!header&&!allowNoHeader){result.errors.push('表头与11列导出模板不一致');return result;}
+  if(!header&&data[0].some(v=>csvHeaders.includes(v))){result.errors.push('表头与11列导出模板不一致');return result;}
   const records=header?data.slice(1):data;if(!records.length){result.errors.push('没有稿件记录');return result;}
+  if(!taskId){const taskIds=[...new Set(records.filter(row=>row.length===11).map(row=>row[1]))];if(taskIds.length===1)result.taskId=taskIds[0];else if(taskIds.length>1)result.errors.push('一次只能导入一个任务，请拆分数据');}
   const seen=new Set();records.forEach((row,index)=>{
     const line=index+(header?2:1);let error='',item=null,likes=null;
-    if(row.length!==10)error='每行须为10列，与模板顺序一致';
-    else if(row[1]!==taskId)error='稿件不属于当前任务';
-    else if(ids&&!ids.includes(row[0]))error='稿件超出此次导入范围';
+    if(row.length!==11)error='每行须为11列，与模板顺序一致';
+    else if(!result.taskId||row[1]!==result.taskId)error='数据混入其他任务';
+    else if(!tasks.some(t=>t.id===result.taskId))error='任务 ID 不存在';
     else if(seen.has(row[0]))error='同一投稿 ID 重复出现';
-    else{seen.add(row[0]);item=submissions.find(v=>v.id===row[0]&&v.taskId===taskId);
-      if(!item)error='投稿 ID 不存在';
+    else{seen.add(row[0]);item=submissions.find(v=>v.id===row[0]&&v.taskId===result.taskId);
+      if(!item)error='投稿 ID 不存在或不属于该任务';
       else{const current=exportRow(item).map(v=>String(v??''));
-        if(row.some((v,i)=>i!==7&&v!==current[i]&&v!==csvCell(current[i]).slice(1,-1).replace(/""/g,'"')))error='身份信息或任务时间已变化，请重新导出';
-        else if(row[7].trim()===''){result.skips++;result.rows.push({line,id:item.id,old:item.likes,next:'跳过',outcome:'跳过（未填写点赞）'});return;}
-        else if(!/^\d+$/.test(row[7].trim())||!Number.isSafeInteger(Number(row[7])))error='点赞数须为有效非负整数';
-        else{likes=Number(row[7]);if(likes===item.likes){result.skips++;result.rows.push({line,id:item.id,old:item.likes,next:likes,outcome:'跳过（数据未修改）'});return;}error=eligibility(item);if(!error)result.changes.push({id:item.id,likes,old:item.likes,snapshot:itemSnapshot(item)});}
+        if(row.some((v,i)=>i!==8&&v!==current[i]&&v!==csvCell(current[i]).slice(1,-1).replace(/""/g,'"')))error='身份、原视频链接或任务时间不一致，请重新导出';
+        else if(row[8].trim()===''){result.skips++;result.rows.push({line,id:item.id,old:item.likes,next:'跳过',outcome:'跳过（未填写点赞）'});return;}
+        else if(!/^\d+$/.test(row[8].trim())||!Number.isSafeInteger(Number(row[8])))error='点赞数须为有效非负整数';
+        else{likes=Number(row[8]);if(likes===item.likes){result.skips++;result.rows.push({line,id:item.id,old:item.likes,next:likes,outcome:'跳过（数据未修改）'});return;}error=eligibility(item);if(!error)result.changes.push({id:item.id,likes,old:item.likes,snapshot:itemSnapshot(item)});}
       }
     }
     if(error)result.errors.push('第 '+line+' 行：'+error);
-    result.rows.push({line,id:row[0]||'—',old:item?.likes,next:likes??row[7]??'—',outcome:error||'待更新'});
+    result.rows.push({line,id:row[0]||'—',old:item?.likes,next:likes??row[8]??'—',outcome:error||'待更新'});
   });return result;
 }
-async function readFile(input){const file=input.files[0];if(!file||!importContext)return;const generation=++uploadGeneration,scope=structuredClone(importContext);try{if(!/\.csv$/i.test(file.name))throw Error('仅支持 CSV UTF-8 文件');const text=new TextDecoder('utf-8',{fatal:true}).decode(await file.arrayBuffer());if(generation!==uploadGeneration)return;preview=validateCsv(text,scope.taskId,scope.ids,'文件导入');preview.fileName=file.name;}catch(e){if(generation!==uploadGeneration)return;preview={taskId:scope.taskId,rows:[],errors:[e.message.includes('encoded')?'文件不是 UTF-8 编码，请另存 CSV UTF-8':e.message],changes:[],skips:0,source:'文件导入',fileName:file.name};}screen='preview';render();}
-function previewPaste(){pasteDraft=document.getElementById('paste-data').value;preview=validateCsv(pasteDraft,importContext.taskId,importContext.ids,'文本粘贴',true);screen='preview';render();}
-function renderPreviewPage(){document.getElementById('content').innerHTML='<div class="panel-head"><h1>导入预览</h1><button onclick="backToInput()">返回修改</button></div><div class="panel-body">'+alertBox(importScope()+' · '+preview.source+(preview.fileName?' · '+preview.fileName:''))+'<div class="preview-summary"><strong>'+preview.changes.length+' 条待更新</strong> · '+preview.skips+' 条跳过 · '+preview.errors.length+' 条错误；确认前未写入。</div>'+alertBox('请逐条核对当前点赞与导入点赞。文件不含版本号，不能自动判断上传前的数据是否陈旧；确认后以导入值更新。','warning')+(preview.errors.length?alertBox(preview.errors.join('；'),'error'):'')+'<div class="table-wrap"><table class="data-table preview-table"><thead><tr>'+['文件行','投稿 ID','当前点赞','导入点赞','校验结果'].map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+preview.rows.map(r=>'<tr><td>'+r.line+'</td><td>'+escapeHtml(r.id)+'</td><td>'+(r.old==null?'未录入':r.old)+'</td><td>'+escapeHtml(r.next)+'</td><td>'+escapeHtml(r.outcome)+'</td></tr>').join('')+'</tbody></table></div><div class="preview-footer"><button onclick="cancelImport()">取消导入</button><button id="confirm-import" class="primary" '+(preview.errors.length||!preview.changes.length?'disabled':'')+' onclick="confirmImport()">确认导入 '+preview.changes.length+' 条</button></div><p class="hint">仅写入人工截止点赞及操作记录，不改变审核状态、预留或已发奖励。任务统计时间段只读，原点赞截止条件仍有效。</p></div>';}
-function backToInput(){preview=null;screen='input';uploadGeneration++;render();}
+async function readFile(input){
+  if(!importContext)return;const file=input.files[0];
+  if(!file){uploadGeneration++;fileName='';preview=null;document.getElementById('chosen-file').textContent='选择文件后自动校验';renderInlinePreview();return;}
+  pasteDraft=document.getElementById('paste-data').value;const generation=++uploadGeneration;fileName=file.name;preview=null;renderInlinePreview();document.getElementById('chosen-file').textContent=fileName+' · 正在校验';
+  try{if(!/\.csv$/i.test(file.name))throw Error('仅支持 CSV UTF-8 文件');const text=new TextDecoder('utf-8',{fatal:true}).decode(await file.arrayBuffer());if(generation!==uploadGeneration||screen!=='import')return;preview=validateCsv(text,null,null,'文件导入');preview.fileName=file.name;}
+  catch(e){if(generation!==uploadGeneration||screen!=='import')return;preview={taskId:null,rows:[],errors:[e.message.includes('encoded')?'文件不是 UTF-8 编码，请另存 CSV UTF-8':e.message],changes:[],skips:0,source:'文件导入',fileName:file.name};}
+  document.getElementById('chosen-file').textContent=fileName;renderInlinePreview();
+}
+function previewPaste(){pasteDraft=document.getElementById('paste-data').value;uploadGeneration++;preview=validateCsv(pasteDraft,null,null,'文本粘贴',true);renderInlinePreview();}
 function cancelImport(){preview=null;importContext=null;screen='list';uploadGeneration++;render();}
 function confirmImport(){
   if(!preview||preview.errors.length||!preview.changes.length)return;const oldPreview=preview;
-  const conflict=!importContext||oldPreview.taskId!==importContext.taskId||oldPreview.changes.some(c=>{const v=submissions.find(v=>v.id===c.id);return !v||!importContext.ids.includes(c.id)||itemSnapshot(v)!==c.snapshot||eligibility(v);});
-  if(conflict){preview.errors.push('稿件、权限或任务状态已变化，未更新任何数据，请返回修改后重新预览。');screen='preview';render();return;}
+  const conflict=!importContext||oldPreview.changes.some(c=>{const v=submissions.find(v=>v.id===c.id);return !v||v.taskId!==oldPreview.taskId||itemSnapshot(v)!==c.snapshot||eligibility(v);});
+  if(conflict){preview.errors.push('稿件、权限或任务状态已变化，未更新任何数据，请重新校验。');renderInlinePreview();return;}
   const at=nowBeijing();oldPreview.changes.forEach(c=>{const item=submissions.find(v=>v.id===c.id);item.likes=c.likes;item.likesBasis=oldPreview.source+'（仅操作来源）';item.recordedAt=at;item.version++;const audit={type:'批量录入截止点赞',source:oldPreview.source,operator:operatorUID,at,old:c.old,next:c.likes,basis:item.likesBasis,version:item.version};item.history.push(audit);importAudit.push({taskId:item.taskId,id:item.id,...audit});});
-  feedback={text:'已更新 '+oldPreview.changes.length+' 条，跳过 '+oldPreview.skips+' 条；审核状态、预留及已发奖励保持不变。',error:false};preview=null;screen='list';importContext=null;render();
+  feedback={text:'已更新 '+oldPreview.changes.length+' 条，跳过 '+oldPreview.skips+' 条；审核状态、预留及已发奖励保持不变。',error:false};preview=null;screen='list';importContext=null;uploadGeneration++;render();
 }
 
 function rejectionEligibility(item){
