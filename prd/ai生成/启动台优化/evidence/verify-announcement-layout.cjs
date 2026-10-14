@@ -1,0 +1,80 @@
+const {chromium}=require('playwright-core');
+const fs=require('fs');
+const path=require('path');
+const assert=require('assert/strict');
+const {pathToFileURL}=require('url');
+(async()=>{
+ const root=path.resolve(__dirname,'..');
+ const b=await chromium.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
+ const p=await b.newPage({deviceScaleFactor:2});
+ const errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.goto(pathToFileURL(path.join(root,'dock.html')).href);
+ const results=[];
+ for(const [width,height] of [[1680,1120],[1366,900],[820,1180],[390,844]]){
+  await p.setViewportSize({width,height});await p.locator('#replay').click();
+  await p.waitForFunction(()=>JSON.parse(localStorage.getItem('gamehub-launchpad-demo-v2')).notificationRead);
+  assert.equal(await p.locator('#announcementMask').isVisible(),true);
+  assert.equal(await p.locator('#announcementMask').evaluate(n=>getComputedStyle(n).backgroundColor),'rgba(5, 6, 10, 0.6)');
+  const r=await p.locator('#announcement').evaluate(card=>{
+   const c=card.getBoundingClientRect(),s=document.querySelector('#stage').getBoundingClientRect();
+   return {contained:c.left>=s.left&&c.right<=s.right&&c.top>=s.top&&c.bottom<=s.bottom,noOverflow:document.documentElement.scrollWidth<=innerWidth,clipped:card.scrollHeight>card.clientHeight};
+  });
+  assert.deepEqual(r,{contained:true,noOverflow:true,clipped:false});results.push({width,height,...r});
+  await p.locator('#stage').screenshot({path:path.join(__dirname,`announcement-${width}.png`),animations:'disabled'});
+  await p.locator('#announcementSettings').click();
+  assert.equal(await p.locator('#announcementMask').isVisible(),false);
+  assert.equal(await p.locator('#clientDockToggle').getAttribute('aria-checked'),'false');
+  assert.equal(await p.locator('#stage').evaluate(n=>n.classList.contains('in-launchpad')),false);
+  assert.equal(await p.locator('#dockIcon').isVisible(),false);
+  assert.equal(await p.locator('#settingsEntryGuide').isVisible(),true);
+  await p.keyboard.press('Tab');assert.equal(await p.evaluate(()=>document.activeElement.id),'closeSettingsEntryGuide');
+  await p.keyboard.press('Tab');assert.equal(await p.evaluate(()=>document.activeElement.id),'clientDockToggle');
+  const coachFits=await p.locator('#settingsEntryCoach').evaluate(n=>{const c=n.getBoundingClientRect(),s=document.querySelector('#stage').getBoundingClientRect();return c.left>=s.left&&c.right<=s.right&&c.top>=s.top&&c.bottom<=s.bottom});
+  assert.equal(coachFits,true);
+  await p.locator('#settingsEntryTitle').click();assert.equal(await p.locator('#settingsEntryGuide').isVisible(),true);
+  assert.equal(await p.locator('#launchpadSettingsRow').evaluate(n=>getComputedStyle(n).outlineStyle),'solid');
+  await p.locator('#stage').screenshot({path:path.join(__dirname,`highlight-${width}.png`),animations:'disabled'});
+  await p.locator('#settingsShadeTop').click({position:{x:12,y:12}});
+  assert.equal(await p.locator('#settingsEntryGuide').isVisible(),false);
+  assert.equal(await p.locator('#clientSettingsModal').isVisible(),true);
+  assert.equal(await p.locator('#launchpadSettingsRow').evaluate(n=>n.classList.contains('targeted')),false);
+  assert.equal(await p.locator('#clientDockToggle').getAttribute('aria-checked'),'false');
+  await p.locator('#replay').click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('gamehub-launchpad-demo-v2')).notificationRead);
+  await p.locator('#announcementTitle').click();assert.equal(await p.locator('#announcement').isVisible(),true);
+  await p.locator('#announcementMask').click({position:{x:12,y:12}});
+  assert.equal(await p.locator('#announcement').isVisible(),false);assert.equal(await p.locator('#announcementMask').isVisible(),false);
+  await p.reload();assert.equal(await p.locator('#announcement').isVisible(),false);
+ }
+ await p.setViewportSize({width:1680,height:1120});
+ await p.evaluate(()=>{
+  localStorage.setItem('gamehub-launchpad-demo-v2',JSON.stringify({dockEnabled:true,activated:true,usageGuide:'completed',enableGuide:'completed'}));
+ });await p.reload();
+ assert.equal(await p.locator('#dockIcon').isVisible(),true);assert.equal(await p.locator('#announcement').isVisible(),true);
+ await p.locator('#announcementSettings').click();assert.equal(await p.locator('#clientDockToggle').getAttribute('aria-checked'),'true');assert.equal(await p.locator('#clientEnableHelp').evaluate(n=>n.classList.contains('guided')),true);
+ await p.evaluate(()=>{
+  localStorage.setItem('gamehub-launchpad-demo-v2',JSON.stringify({dockEnabled:false,activated:false,usageGuide:'unseen',notificationRead:false}));
+ });await p.reload();
+ // 模拟通知尚未实际曝光而先进入设置：清除已读后直接打开当前设置页。
+ await p.evaluate(()=>{state.notificationRead=false;persist();clientSettings()});
+ await p.waitForFunction(()=>JSON.parse(localStorage.getItem('gamehub-launchpad-demo-v2')).notificationRead);
+ assert.equal(await p.locator('[data-discovery-dot]:not([hidden])').count(),0);
+ await p.locator('#replay').click();await p.locator('#announcementSettings').click();
+ await p.locator('#simulation').selectOption('add_fail');await p.locator('#clientDockToggle').click();
+ await p.waitForFunction(()=>document.querySelector('#clientError').classList.contains('show'));
+ assert.equal(await p.locator('#clientDockToggle').getAttribute('aria-checked'),'false');
+ assert.equal(await p.locator('#launchpadSettingsRow').evaluate(n=>n.classList.contains('targeted')),true);
+ assert.equal(await p.locator('#dockIcon').isVisible(),false);
+ await p.keyboard.press('Escape');assert.equal(await p.locator('#launchpadSettingsRow').evaluate(n=>n.classList.contains('targeted')),false);
+ assert.equal(await p.locator('#announcementMask').isVisible(),false);
+ assert.equal(await p.locator('#settingsEntryGuide').isVisible(),false);assert.equal(await p.locator('#clientSettingsModal').isVisible(),true);
+ await p.locator('#replay').click();await p.locator('#announcementSettings').click();await p.locator('#closeSettingsEntryGuide').click();
+ assert.equal(await p.locator('#settingsEntryGuide').isVisible(),false);assert.equal(await p.locator('#clientSettingsModal').isVisible(),true);
+ await p.locator('#replay').click();await p.locator('#announcementSettings').click();await p.locator('#clientDockToggle').click();
+ await p.waitForFunction(()=>JSON.parse(localStorage.getItem('gamehub-launchpad-demo-v2')).dockEnabled);
+ assert.equal(await p.locator('#settingsEntryGuide').isVisible(),false);
+ await p.waitForFunction(()=>document.querySelector('#stage').classList.contains('in-launchpad'));
+ assert.deepEqual(errors,[]);
+ fs.writeFileSync(path.join(__dirname,'announcement-layout-verification.json'),JSON.stringify({status:'PASS',checks:results,backdrop:'PASS',defaultOff:'PASS',failureKeepsHighlight:'PASS',existingPreference:'PASS',settingsExposure:'PASS',blankDismissal:'PASS',insideClick:'PASS',settingsCoach:'PASS',escapeAndClose:'PASS',enableTransition:'PASS',scriptErrors:errors,time:new Date().toISOString()},null,2));
+ console.log('PASS four viewports, blank dismissal, card click isolation, settings coach, Esc/close, failed add and enable transition');
+ await b.close();
+})().catch(e=>{console.error(e);process.exit(1)});
