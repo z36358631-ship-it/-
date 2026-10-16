@@ -35,9 +35,8 @@
    <button type="button" class="nav-item" data-source="game" data-route="P02-12" data-label="捆绑包组合管理"><span class="nav-index">10</span>捆绑包组合管理</button>
    <button type="button" class="nav-item" data-source="game" data-route="P02-13" data-label="促销活动监控"><span class="nav-index">11</span>促销活动监控</button>
    <button type="button" class="nav-item" data-source="game" data-route="P02-14" data-label="发布记录"><span class="nav-index">12</span>发布记录</button>
-   <button type="button" class="nav-item" data-source="game" data-route="P02-15" data-label="发布任务管理"><span class="nav-index">13</span>发布任务管理</button>
-   <button type="button" class="nav-item" data-source="game" data-route="P02-16" data-label="线上版本与回滚"><span class="nav-index">14</span>线上版本与回滚</button>
-   <button type="button" class="nav-item" data-source="operations" data-route="P01-11" data-label="CDK兑换记录"><span class="nav-index">25</span>CDK兑换记录</button>
+   <button type="button" class="nav-item" data-source="game" data-route="P02-16" data-label="线上版本与回滚"><span class="nav-index">13</span>线上版本与回滚</button>
+   <button type="button" class="nav-item" data-source="operations" data-route="P01-11" data-label="CDK兑换记录"><span class="nav-index">14</span>CDK兑换记录</button>
    <div class="nav-group">支付管理</div>
    <button type="button" class="nav-item" data-source="payment" data-route="overview" data-label="经营总览"><span class="nav-index">15</span>经营总览</button>
    <button type="button" class="nav-item" data-source="payment" data-route="orders" data-label="订单管理"><span class="nav-index">16</span>订单管理</button>
@@ -255,8 +254,10 @@
     show(target.dataset.source,target.dataset.route,target.dataset.label);
   });
   const initial=location.hash.match(/^#ops\/(operations|game|payment|commerce)\/([A-Za-z0-9-]+)$/);
+  const removedReleaseTaskTab=initial?.[1]==='game'&&initial[2]==='P02-15';
+  if(removedReleaseTaskTab) initial[2]='P02-14';
   const target=initial&&navItems.find(item=>item.dataset.source===initial[1]&&item.dataset.route===initial[2]);
-  if(target)show(target.dataset.source,target.dataset.route,target.dataset.label,{writeHash:false});
+  if(target)show(target.dataset.source,target.dataset.route,target.dataset.label,{writeHash:removedReleaseTaskTab});
   else show('developer','P02-01','完整开发者平台',{writeHash:false});
 })();
 </script>
