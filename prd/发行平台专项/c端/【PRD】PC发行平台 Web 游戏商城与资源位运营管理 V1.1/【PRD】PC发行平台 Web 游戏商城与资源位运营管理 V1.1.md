@@ -6,6 +6,7 @@
 |---|---|---|---|
 | 2026/9/28 | Web 商城、购买与三端资源位运营需求 | V1.1 | 原稿未记录 |
 | 2026/10/16 | 同步账号地区、共用 UID、Stripe 和手柄入口；网页暂不做 CDKey 兑换；全文精简并合并重复规则 | V1.2 | 郑群超 |
+| 2026/10/19 | 增加商城订单查询与用户退款申请处理的运营文档和入口索引 | V1.2 | 郑群超 |
 
 **备注：** 搜2026.10.16修改。
 
@@ -329,5 +330,6 @@
 | 当前 Web 原型 | [公开 Demo](https://z36358631-ship-it.github.io/-/public/prd/guanwanggaid-58-web-20261019/)；c端目录《GameFusion-Web-独立原型.html》 | 网页前台及资源运营；本地模拟不代表服务已接入 |
 | 旧 Web 参考 | [GameFusion Web](https://tims9527.github.io/ghp-7m4k2q9x/oooa/webduan.html) | 历史页面来源，不作为本轮地区、账号和支付规则 |
 | 客户端规则 | c端目录《GameFusion-桌面客户端-macOS-Windows-评审修订版.html》及对应 PRD | 共享账号、地区、权益和 Stripe；网页不搬客户端库／任务／兑换 |
+| 商城订单与退款申请处理 | 运营后台PRD目录《12-商城订单查询与退款申请处理PRD.md》；[退款审核](https://z36358631-ship-it.github.io/-/previews/developer-platform/#ops/payment/refunds) | 订单查询、用户申请审核和原路退款结果处理；不提供运营主动退款。 |
 
 页面内置游戏、支付、安装和唤起状态用于原型演示；页面标注仅供评审，不属于玩家功能。正式结果须通过账号、交易、权益和客户端联调确认。飞书图片转存未验证。
