@@ -10,7 +10,7 @@ $platformEvidence=[IO.Path]::GetFullPath((Join-Path $platformRoot $EvidenceDirec
 New-Item -ItemType Directory -Force -Path $platformEvidence | Out-Null
 $platformDestination='previews/developer-platform'
 $platformImageDestination='public/prd/developer-platform'
-$platformSource='prd/发行平台专项/完整开发者与运营管理平台-合并版.html'
+$platformSource='prd/发行平台专项/c端/完整开发者与运营管理平台-合并版.html'
 if($Phase -eq 'assets'){
   if($VerifiedSha256 -notmatch '^[a-fA-F0-9]{64}$' -or (Get-FileHash -LiteralPath $platformSource).Hash -ne $VerifiedSha256){throw '提供与已验收源文件一致的SHA256后再发布。'}
   New-Item -ItemType Directory -Force -Path $platformDestination | Out-Null
