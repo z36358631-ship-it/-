@@ -2,6 +2,6 @@
 
 [打开 Demo](https://z36358631-ship-it.github.io/-/public/prd/guanwanggaid-58-web-20261019/) · [阅读 PRD](review-prd.md)
 
-D17 网页规则同步；D18 两份 PRD 全文精简。网页无 CDKey 兑换，保留手柄开发中入口。26 张配图引用固定 Git 提交，逐项来源见 screenshot-manifest.json。
+D20：统一登录入口验证后分流，新用户确认 IP 推荐地区，可更正；已有账号保持 UID 和地区。国内手机号、微信／QQ，海外邮箱、Google／Apple，均有盖世游戏 App 二维码入口。Web 保留出生日期和年龄声明。
 
-原型含本地状态；真实账号、支付、退款、权益及硬件服务未接入。飞书转存未验证。
+当前为本地交互原型，真实账号、三方和 App 扫码服务未接入。图片来源见 screenshot-manifest.json；飞书转存未验证。
