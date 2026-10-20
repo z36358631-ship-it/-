@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=path.dirname(fileURLToPath(import.meta.url));
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const data=p=>'data:'+(/\.png$/i.test(p)?'image/png':/\.webp$/i.test(p)?'image/webp':'font/woff2')+';base64,'+fs.readFileSync(path.join(root,p)).toString('base64');
+const manifest=JSON.parse(read('asset-manifest.json'));
+const assets=Object.fromEntries(manifest.map(a=>[a.name,data(a.file)]));
+const js=["shell","guide","guide-posts","guide-model","guide-reader","guide-governance","guide-studio"].map(n=>read('src/'+n+'.js')).join('\n');
+const css=["shell","guide","guide-reader","guide-studio","guide-governance"].map(n=>read('src/'+n+'.css')).join('\n');
+const payload=JSON.stringify({assets,facts:[],evidenceImages:[],provenance:manifest,validation:null,defaultRoute:'guide',allowedRoutes:['guide']}).replace(/<\//g,'<\\/');
+const html='<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世游戏 · 共建攻略 Demo</title><style>@font-face{font-family:GameHubSource;src:url('+data('assets/source-subset.woff2')+') format("woff2");font-weight:100 900;font-display:swap}\n'+css+'</style></head><body>'+read('body.html')+'<script>window.DEMO_DATA='+payload+';</script><script>'+js.replace(/<\/script/gi,'<\\/script')+'\nGH.start();</script></body></html>';
+fs.writeFileSync(path.join(root,'index.html'),html);console.log(JSON.stringify({bytes:Buffer.byteLength(html),assets:manifest.length}));
