@@ -1,0 +1,658 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世游戏 · 攻略站共建 PRD V1.0</title><style>
+:root{color-scheme:light;font:16px/1.85 system-ui,"Microsoft YaHei",sans-serif;color:#20252b;background:#f6f8fb}*{box-sizing:border-box}body{margin:0}a{color:#0c638b;text-underline-offset:3px}header{background:#fff;border-bottom:1px solid #dce2ea;padding:18px 30px;position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;gap:16px;align-items:center}header strong{font-size:17px}header nav{display:flex;gap:20px;font-size:14px}.layout{max-width:1460px;margin:auto;display:grid;grid-template-columns:210px minmax(0,1fr);gap:35px;padding:32px 24px}.toc{position:sticky;top:100px;height:fit-content;display:flex;flex-direction:column;gap:10px;font-size:14px}.toc a{padding:7px 12px;text-decoration:none;border-left:2px solid #d6dfe8}main{max-width:1160px;min-width:0;background:#fff;border:1px solid #e1e7ee;border-radius:10px;padding:36px 42px}h1{font-size:30px;line-height:1.45;margin:0 0 25px}h2{font-size:24px;border-bottom:2px solid #e6edf3;padding-bottom:12px;margin:50px 0 23px;scroll-margin-top:100px}h3{font-size:20px;margin:34px 0 18px;scroll-margin-top:100px}p{margin:15px 0}table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.75}th,td{border:1px solid #dce4eb;padding:10px 13px;vertical-align:top;text-align:left}th{background:#edf3f8;font-weight:600}tbody tr:nth-child(even){background:#fafcfe}.table-scroll{overflow-x:auto;margin:20px 0}td:first-child{min-width:90px}code{font:13px/1.7 ui-monospace,Consolas,monospace;background:#eef2f6;padding:2px 4px;overflow-wrap:anywhere}.image-link{display:block;text-align:center;margin:28px auto 8px;background:#f3f6fa;border:1px solid #e1e7ed;border-radius:6px;padding:12px}.image-link img{display:block;max-width:100%;height:auto;max-height:1500px;object-fit:contain;margin:auto}.image-link+p:has(em){font-size:13px;line-height:1.7;color:#596773;margin-top:8px}ul{padding-left:24px}footer{font-size:13px;color:#647080;margin:35px 0 5px}strong{font-weight:650}@media(max-width:1000px){.layout{grid-template-columns:1fr;padding:16px;gap:15px}.toc{position:static;display:flex;flex-direction:row;flex-wrap:wrap}.toc a{padding:3px 8px}main{padding:24px}header{position:static;padding:15px;flex-wrap:wrap}h1{font-size:25px}h2{font-size:22px}.table-scroll{width:100%}table{min-width:650px}}@media print{header,.toc{display:none}.layout{display:block;padding:0}main{border:0;padding:0;max-width:none}h2,h3{break-after:avoid}tr,img{break-inside:avoid}}
+</style></head><body><header><strong>盖世游戏 · 攻略站共建 PRD V1.0</strong><nav><a href="../../../previews/community-guide/">打开 Demo</a><a href="guide-prd.md">Markdown 原稿</a></nav></header><div class="layout"><aside class="toc" aria-label="文档目录"><a href="#chapter-1">一、需求概述</a><a href="#chapter-2">二、产品流程</a><a href="#chapter-3">三、页面与功能说明</a><a href="#chapter-4">四、支持要求</a><a href="#chapter-5">五、待确认项</a><a href="#chapter-6">六、参考资料</a></aside><main><h1>【PRD】《盖世游戏》攻略站共建</h1>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>修订日期</th>
+<th>修订内容</th>
+<th>版本</th>
+<th>修订人</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-10-21</td>
+<td>按当前攻略站整理首页、阅读、共建编辑、精编申请、配置与治理规则</td>
+<td>V1.0 评审稿</td>
+<td>郑群超</td>
+</tr>
+</tbody></table></div>
+<p>备注：无。</p>
+<h2 id="chapter-1">一、需求概述</h2>
+<h3>1.1 背景介绍</h3>
+<p>玩家查询同一游戏的新手攻略、载具参数、资产资料和版本信息时，目前主要通过社区帖子搜索和收藏留存资料；分散帖子由各作者维护，资料更新后也难以同步。攻略站将可共同维护的资料整理成分类入口和固定模板，保留玩家原帖的作者与互动。玩家可以浏览和更正公共资料；精编负责组织内容、维护结构与处理申请。</p>
+<h3>1.2 需求范围</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>范围</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>产品</td>
+<td>App 社区游戏圈内攻略站，覆盖竖屏、掌机横屏；配套内容工作台用于词条、配置及治理。当前 GTA V 页面为示例。社区热点、私信由各自需求维护。其他主频道仅沿用现有导航语境。</td>
+</tr>
+<tr>
+<td>业务</td>
+<td>公共资料与作者原帖分别维护；覆盖分类和检索、六类模板、单篇及批量编辑、保存与历史、精编申请、角色和黑名单、固定 HTML 模板访问授权、已发布数据核对。公共资料保存成功后直接生效。</td>
+</tr>
+<tr>
+<td>运营</td>
+<td>精编维护栏目、Tab、分类快捷入口、字段、内容关联和权限，审核初级精编申请。游戏资料、时效、图片许可由内容运营核实；示例价格和配图不作为真实游戏事实。</td>
+</tr>
+</tbody></table></div>
+<p>本稿供页面与规则评审，描述已确认的页面行为及当前演示规则。图中的账户、角色、审核、评论、写入均为本地会话数据，刷新后重置。正式登录、服务端鉴权、持久化及接口属于接入依赖，具体缺口见第五章；不能用演示结果认定这些能力已经实现，也不能将本稿当作已完成接口定稿。</p>
+<h3>1.3 术语解释</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>术语</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>公共词条</td>
+<td>所有人阅读、按权限共同维护的资料；保存后生成修订号，保留编辑历史。</td>
+</tr>
+<tr>
+<td>实体</td>
+<td>载具、武器、资产等一条结构化资料；数据表、图鉴和图册可以引用同一实体。</td>
+</tr>
+<tr>
+<td>玩家原帖</td>
+<td>归属原作者的社区帖子；收录或关联不改变作者，不开放公共词条编辑。</td>
+</tr>
+<tr>
+<td>初级／高级精编</td>
+<td>初级可创建和组织内容、批量维护实体；高级另可删除、排序、管理字段与身份。具体权限见3.8。</td>
+</tr>
+<tr>
+<td>字段方案</td>
+<td>一组实体字段的名称、类型、必填规则、枚举及公开展示列、筛选项。</td>
+</tr>
+</tbody></table></div>
+<h2 id="chapter-2">二、产品流程</h2>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/product-flow.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/product-flow.png" alt="攻略共建流程" loading="lazy"></a></p>
+<p><em>图2-1：玩家从攻略站进入阅读或编辑；保存成功直接更新公开资料。申请初级精编另走申请与审核，组织配置成功后同步读端，数据核对发生在发布后。</em></p>
+<h2 id="chapter-3">三、页面与功能说明</h2>
+<h3>3.1 App：攻略首页与分类</h3>
+<p>入口位于社区游戏圈的游戏攻略区域。进入攻略后显示当前游戏、搜索、编辑身份入口、资料分类、四栏资料、玩家攻略以及收藏攻略站、共建贡献记录和发布动态入口。上下文频道与主导航沿用现有页面；进入独立资料页后收起主导航，返回时恢复攻略上下文。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/home-portrait.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/home-portrait.png" alt="攻略首页" loading="lazy"></a></p>
+<p><em>图3-1：顶部搜索与“成为编辑”；下方分类快捷入口与资料栏目。</em></p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/home-content.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/home-content.png" alt="首页栏目" loading="lazy"></a></p>
+<p><em>图3-2：首页滚动内容。默认依次为资产与生意 Banner、抢劫任务上图下文、载具左图右文、常用检索文字，各类型只展示一栏。长图仅展开滚动区域取图。</em></p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/home-landscape.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/home-landscape.png" alt="横屏首页" loading="lazy"></a></p>
+<p><em>图3-3：掌机横屏沿用同一分类和内容，布局按横屏配置展示。</em></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>展示与默认</th>
+<th>操作及结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索</td>
+<td>首页搜索栏；横屏侧栏也提供搜索入口。</td>
+<td>点击进入检索页，规则见3.2。</td>
+</tr>
+<tr>
+<td>编辑身份入口</td>
+<td>普通用户显示“成为编辑”；待审显示“申请审核中”；驳回显示“申请未通过”；已有精编身份显示“精编工作台”。</td>
+<td>均先进入身份／申请页，根据实际身份显示可用操作，见3.5。申请不限制普通用户编辑已有资料。</td>
+</tr>
+<tr>
+<td>资料分类</td>
+<td>按配置顺序每页8个；多页显示分页点，首尾不循环。当前有16个分类栏目。</td>
+<td>点击进入栏目或指定公共词条；支持触摸滑动、鼠标拖动、分页点、键盘左右及Home/End切换。返回首页保留本会话页码。</td>
+</tr>
+<tr>
+<td>四栏资料</td>
+<td>固定顺序为资产与生意、抢劫任务、载具、常用检索。默认数量Tab分别为1、1—4、1—2、1—4，共11个；每栏默认第一个可见Tab。</td>
+<td>点击数量Tab重排同一组内容，不替换资料集合；点击公共资料进入独立阅读页，点击玩家攻略打开作者原帖。横竖屏保留选中Tab，返回保留滚动位置。</td>
+</tr>
+<tr>
+<td>玩家攻略</td>
+<td>显示攻略原帖与作者。</td>
+<td>点击原帖阅读；普通发布见3.4。收录原帖不转为公共词条。</td>
+</tr>
+<tr>
+<td>收藏与贡献记录</td>
+<td>攻略站收藏入口及共建贡献记录入口。</td>
+<td>收藏切换本会话状态。贡献记录按时间倒序展示当前仍存在词条的成功修改修订；预览、取消、失败不计入，新建初始版本及已删除词条当前不在列表展示。</td>
+</tr>
+</tbody></table></div>
+<p>当前模型共16个栏目、45个Tab，其中43个有命名，其余栏目通过分类进入。后台栏目排序改变分类及配置顺序；首页四栏使用上述固定顺序，新建栏目不会自动插入首页。默认去重不等于后台全局互斥：精编仍能将不同栏目或Tab配置为相同组件。</p>
+<p>栏目卡图依次取内容封面、正文首图、图册首图、引用实体首图、栏目兜底图；文字组件不显示图片。没有有效图时显示“暂无对应资料图片”。栏目被隐藏后，指向它的分类入口不展示；公共词条目标不存在时也不展示。栏目不可见时显示“此栏目当前未展示，请返回查看其他分类。”；空栏目显示“暂时没有收录内容”；没有可见分类显示“当前没有展示的分类”。</p>
+<h3>3.2 App：全站检索与分类结果</h3>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/category.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/category.png" alt="资料分类" loading="lazy"></a></p>
+<p><em>图3-4：载具分类页，显示当前栏目内容与数量Tab；其他分类使用相同入口规则。</em></p>
+<p>检索输入后实时筛选公共资料与玩家原帖，去除首尾空格、忽略大小写；多个空格分词时须全部命中。检索范围为标题、摘要、适用范围、作者、实体字段值、正文文本块和原帖正文；列表项、引用出处尚无统一的全字段递归检索。结果标识“共建资料”或“作者 · 玩家攻略帖”，点击进入对应对象。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>条件</th>
+<th>页面显示</th>
+<th>操作与恢复</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>未输入关键词</td>
+<td>“输入关键词查找攻略与共建资料”</td>
+<td>输入关键词后展示匹配结果。</td>
+</tr>
+<tr>
+<td>有匹配项</td>
+<td>“找到 X 条内容”及结果列表</td>
+<td>改词实时刷新；返回恢复阅读上下文。</td>
+</tr>
+<tr>
+<td>无匹配项</td>
+<td>“没有匹配结果，请尝试更短关键词。”</td>
+<td>删除或缩短关键词后重新检索。</td>
+</tr>
+</tbody></table></div>
+<p>当前检索为本地全量过滤，没有热搜、搜索历史、服务端分页或加载失败状态。正式检索的数据范围、分页与失败恢复未定，阻塞范围见第五章。</p>
+<h3>3.3 App：公共资料阅读、互动与历史</h3>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/detail-portrait.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/detail-portrait.png" alt="独立词条" loading="lazy"></a></p>
+<p><em>图3-5：独立词条的标题、适用范围、修订信息、目录和正文；顶部收藏、编辑历史可操作。</em></p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/detail-landscape.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/detail-landscape.png" alt="横屏词条" loading="lazy"></a></p>
+<p><em>图3-6：横屏独立阅读页，保留资料内容和返回，不显示主导航。</em></p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/templates.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/templates.png" alt="六类资料" loading="lazy"></a></p>
+<p><em>图3-7：图文指南、数据表、图片资料库、实体、图册、版本索引，各使用当前实际模板。</em></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>模板</th>
+<th>展示内容</th>
+<th>操作与边界</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图文指南</td>
+<td>标题、摘要、范围、修订号、编辑者与时间、默认展开的篇内目录、正文。正文支持段落、小标题、图片、提示、列表、引用、外链、表格和关联资料。</td>
+<td>点击目录定位小标题并将焦点移至目标。外链只接受http(s)，在新页打开。</td>
+</tr>
+<tr>
+<td>数据表</td>
+<td>按字段方案显示实体列，摘要收在可展开的“资料说明”。</td>
+<td>表格可横向滚动；点击名称进入实体。未提供字段显示“未提供”。</td>
+</tr>
+<tr>
+<td>图片资料库</td>
+<td>使用同一批实体，卡片固定展示图片、名称、类型、制造商或位置、价格、版本；卡片字段不跟随数据表公开列配置变化。</td>
+<td>点卡片进入实体；价格或版本缺失显示“价格未提供”“版本未提供”。</td>
+</tr>
+<tr>
+<td>实体</td>
+<td>展示字段方案内全部字段和补充正文。</td>
+<td>从表格、图鉴或图册进入；自动汇总引用它的表格、图鉴、图册与人工关联资料。同一实体保存后各处引用同步。</td>
+</tr>
+<tr>
+<td>图册</td>
+<td>按配置顺序显示大图、序号／总数、说明及可选关联实体。</td>
+<td>点击图片打开大图层；上一张／下一张不循环，首尾禁用；支持左右键、Esc关闭、Tab焦点约束，关闭恢复来源图片按钮焦点。</td>
+</tr>
+<tr>
+<td>版本索引</td>
+<td>显示名称、日期、当期／历史、关联文章标题。</td>
+<td>点击进入独立文章；至少一篇文章，允许0或1项标为当期。</td>
+</tr>
+</tbody></table></div>
+<p>数据表与图鉴可按实体全部字段值检索，同时使用多个精确枚举筛选，条件取交集；选项只从本页非空实际值产生。默认按实体引用顺序展示，排序选项取公开展示列中的数字字段，未知值排在后面。页面显示结果数／总数；无结果显示“没有符合条件的资料”。点击“清除条件”同时清除关键词、筛选和排序。本会话按词条分别保留条件；隐藏展示列只移除数据表对应列，不改变图鉴固定卡片字段；隐藏筛选项移除对应筛选控件，均不删除实体原值。</p>
+<p>正常、建设中、暂停维护的资料均可阅读。建设中显示“现有内容不代表完整资料集”；暂停维护显示“请先核对时效；现有说明仍可阅读”。对象不存在时显示“资料不可用”或“资料不存在或已不可用”，可返回选择其他资料。</p>
+<p>公共词条可收藏、发表评论、展开分享文本。评论最多500字，空白提交显示“请输入评论内容”；成功清空输入，在列表加入“我／刚刚”。分享当前仅展示标题与<code>gamehub://guide/id</code>，不能当作外部转发成功。互动均为会话演示，真实账号与服务端接口待接入。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/history.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/history.png" alt="词条历史" loading="lazy"></a></p>
+<p><em>图3-8：按修订显示编辑者、时间和修改说明，可只读查看旧版。</em></p>
+<p>编辑历史展示每个修订的作者、时间、修改说明。编辑信息取当前显示修订对应的作者与时间，缺少有效记录显示“暂无编辑记录”；旧版使用该旧修订的信息。打开旧版后隐藏编辑、评论、分享、收藏操作，可点“回到当前版本”；查看旧版不改变公开内容，没有回滚入口。正文最新编辑时间使用北京时间，历史列表当前使用浏览器时区，统一时间要求见第五章。</p>
+<h3>3.4 App：作者原帖与发布</h3>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/original-post.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/original-post.png" alt="玩家攻略原帖" loading="lazy"></a></p>
+<p><em>图3-9：作者原帖保留作者、关注与互动，不提供公共词条编辑历史。</em></p>
+<p>从首页玩家攻略、检索结果或词条“更多攻略帖”进入原帖。关注按作者切换，点赞与收藏按原帖切换并更新本地计数；评论为当前会话内容。原帖转发仅静态呈现，当前不可操作。公共词条最多关联24篇有效且不重复的玩家原帖。</p>
+<p>点击发布动态进入既有攻略发布表单，沿用当前游戏GTA5及攻略语境。标题和正文必填，去除空白后校验，标题最多160字、正文最多20000字。校验失败保留输入并显示错误；发布成功生成作者“我”的原帖，进入原帖详情并清空发布输入。帖子进入玩家攻略列表，是否收录到栏目由精编配置决定。返回／取消保留本会话发布草稿。当前没有新增图片上传、标签选择、发布审核队列或通知。</p>
+<h3>3.5 App：成为编辑与申请状态</h3>
+<p>普通用户可直接更正已有公共资料正文与数据。申请初级精编用于增加创建词条、批量维护和组织栏目能力，不能将申请通过作为普通编辑的前置。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/application-form.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/application-form.png" alt="申请表单" loading="lazy"></a></p>
+<p><em>图3-10：申请说明必填，页面说明普通编辑与初级精编的能力差异。</em></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>规则</th>
+<th>操作结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>申请说明</td>
+<td>未申请或已驳回显示；去首尾空白后1—200字，输入框最多200字。驳回后预填上次说明。</td>
+<td>输入时清除旧错误。提交校验失败保留说明并显示错误；成功生成待审申请，清当前输入草稿，显示已提交说明。</td>
+</tr>
+<tr>
+<td>提交申请</td>
+<td>普通身份、未被限制、没有待审申请时可提交。</td>
+<td>待审不显示重复提交表单；已有精编身份不重复申请；受限账号不能提交。</td>
+</tr>
+<tr>
+<td>返回</td>
+<td>返回攻略来源位置。</td>
+<td>未提交内容只在当前会话保留；刷新不持久。</td>
+</tr>
+</tbody></table></div>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/application-pending.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/application-pending.png" alt="申请审核中" loading="lazy"></a></p>
+<p><em>图3-11：提交后显示审核中与申请说明，不重复提交。</em></p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/application-rejected.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/application-rejected.png" alt="申请未通过" loading="lazy"></a></p>
+<p><em>图3-12：驳回显示原因，补充说明后可重新提交。</em></p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/application-approved.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/application-approved.png" alt="申请已通过" loading="lazy"></a></p>
+<p><em>图3-13：申请通过显示初级精编和工作台入口。</em></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>显示与操作</th>
+<th>结果与恢复</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>待审核</td>
+<td>“申请审核中”，显示已提交说明，无重复提交按钮。</td>
+<td>高级精编处理后状态更新。当前没有真实通知、处理时限承诺。</td>
+</tr>
+<tr>
+<td>已驳回</td>
+<td>“申请未通过”、驳回原因、“补充申请说明后可重新提交”。</td>
+<td>重提创建新申请，保留旧申请处理记录，不覆盖旧结果。</td>
+</tr>
+<tr>
+<td>已通过且身份有效</td>
+<td>“已成为精编”、当前初级／高级身份、“进入精编工作台”。</td>
+<td>点击时再次检查当前角色和限制状态，按实际身份进入工作台；申请通过只授予初级，不自动成为高级。</td>
+</tr>
+<tr>
+<td>已通过后撤销精编身份</td>
+<td>当前实际角色变为普通，首页恢复“成为编辑”。</td>
+<td>允许重新申请；不能凭历史通过记录继续进入。已经打开工作台的实时撤权尚需正式鉴权接入。</td>
+</tr>
+<tr>
+<td>黑名单限制</td>
+<td>“当前账号暂不能提交申请或进入精编工作台。”，无申请表单。</td>
+<td>解除限制后按实际角色和申请状态恢复。受限账号的待审申请不能通过。</td>
+</tr>
+</tbody></table></div>
+<h3>3.6 内容工作台：编辑、保存与版本冲突</h3>
+<p>入口为词条编辑或精编工作台的“编辑与配置”。内容目录按标题与模板名过滤，选中词条后显示字段、正文编辑区及读端预览。普通用户和初级精编可维护内容，高级精编可维护指定结构；权限见3.8。切换对象分别保留各词条会话草稿，预览和切换都不提交。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-edit.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-edit.png" alt="词条编辑" loading="lazy"></a></p>
+<p><em>图3-14：左侧选择资料，中间编辑，右侧使用读端渲染器预览；未保存标为当前草稿。</em></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>输入对象</th>
+<th>内容与校验</th>
+<th>权限及结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基础字段</td>
+<td>标题必填≤160字、摘要≤1000、范围≤160、来源≤2000；修改说明必填≤120。</td>
+<td>普通／初级可改标题、摘要、内容；范围、维护状态与来源由高级维护。已有词条的模板和字段方案对所有角色固定，改模板须另建词条。</td>
+</tr>
+<tr>
+<td>实体字段</td>
+<td>名称、类型、版本为当前方案必填项；文本≤2000，数字须为非负有限数，未知可留空；枚举须来自配置选项。</td>
+<td>标题与实体名称联动；同时输入两个不同值时拒绝。普通用户可创建和编辑实体；删除仅高级。</td>
+</tr>
+<tr>
+<td>正文块</td>
+<td>最多100块、块标识唯一；段落／标题／提示≤20000字；列表1—100项、每项非空≤2000；引用正文必填≤20000、出处≤1000。</td>
+<td>支持添加、修改、删除和排序。保存时校验整篇，任一无效不写入。</td>
+</tr>
+<tr>
+<td>图片、表格与外链</td>
+<td>仅选登记图片，说明≤2000，支持居中填充／完整显示；正文表格至少一表头，表头≤200，单元格≤2000，行列一致；界面至少保留1行1列。外链文字必填≤2000，地址必填≤2000且为http(s)。</td>
+<td>当前无文件上传服务。图片内容及顺序可修改，图册项标识和关联实体由高级维护；不能填入任意图片地址。</td>
+</tr>
+<tr>
+<td>关联资料与版本</td>
+<td>公共关联对象须存在、不能重复或指向自己；原帖最多24个。图册至少1图且标识唯一；版本索引至少1个article，目标唯一，名称≤160、日期格式YYYY-MM-DD、当期最多1项。</td>
+<td>普通／初级可改版本名称和日期，不能改关联文章／当期标记；高级可调整结构关联。日期当前仅检查格式，日历有效性未校验。</td>
+</tr>
+</tbody></table></div>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/detail-saved.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/detail-saved.png" alt="保存后阅读" loading="lazy"></a></p>
+<p><em>图3-15：填写修改说明并保存成功后，返回阅读能看到新摘要和修订信息。</em></p>
+<p>保存时同时检查当前权限、对象存在、编辑基准版本、字段结构、修改说明及内容变化。全部满足才写入下一修订，公开阅读与历史同步；无需保存前审核。没有变化显示“内容没有变化，未生成新版本”。权限不足、对象已删除或校验失败均保留输入，公开版本与历史不变；已删除显示“当前资料已删除，请从目录选择已有资料或新建词条”。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-failed.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-failed.png" alt="保存失败" loading="lazy"></a></p>
+<p><em>图3-16：通过现有异常演示开关触发保存失败，公开版本不变，草稿保留。</em></p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-conflict.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-conflict.png" alt="编辑冲突" loading="lazy"></a></p>
+<p><em>图3-17：并发更新后保存被拒，展示最新公开内容与当前草稿对照。</em></p>
+<p>版本冲突时不覆盖别人的新版本，保留当前输入供核对。点击“舍弃当前草稿，载入最新版本”会丢弃草稿、以最新内容重新编辑；不做自动合并。取消修改恢复公开版本，不写历史。返回阅读时检查当前词条或当前模式待保存内容，提供“保留草稿并返回／舍弃并返回／继续编辑”三个选择；保留或舍弃只作用于当前对象或模式，其他词条草稿仍留在本会话。切换到无修改对象后返回，不会逐一检查目录内全部草稿。保留仅指本会话，刷新不持久。</p>
+<p>“新建固定模板词条”按权限提供六类模板，普通用户只可新建实体；实体、表格、图鉴须选字段方案，标题与创建说明必填。创建成功立即形成初始修订1并进入编辑，不自动加首页入口。当前新建会复制同类结构及示例，正式内容初始化方式见第五章；表格／图鉴初始引用同方案全部实体，缺少article时不能新建版本索引。</p>
+<p>对象标识须字母开头，只含字母、数字、下划线和短横线，最多100字符，不能使用post-前缀；已有或曾删除的标识不得复用。创建失败保留表单且不新增内容。</p>
+<p>删除须满足角色权限和当前版本，填写不超过120字删除说明；当前工作台自动生成说明、没有二次确认界面。仍被词条、实体列表、图册、版本、正文关联块、任一Tab或分类快捷入口引用时禁止删除，并列出引用来源。删除成功移出公开目录，保留删除历史和占用标识；当前没有撤销入口，删除历史也无可见列表入口。</p>
+<h3>3.7 内容工作台：批量数据、栏目与字段配置</h3>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-batch.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-batch.png" alt="批量维护" loading="lazy"></a></p>
+<p><em>图3-18：选择同一字段方案的两个实体、勾选统一修改字段，预览逐条差异后再保存。</em></p>
+<p>初级／高级精编选择一个字段方案后，可勾选1—100个不同的既有实体，并至少勾选一个统一修改字段；未勾字段保留原值。切换方案清除对象选择、字段、说明与差异预览。填写修改说明（必填≤120字）并点击“预览批量差异”，逐条显示旧／新值；没有预览不能保存，任何对象选择、字段或输入值变化都使预览失效。</p>
+<p>保存时校验整批权限、版本、字段、引用与失败响应。任一条失败整批不写入、不写历史；成功只对有变化的条目各增一修订，清空批量选择和草稿，无变化条目不生成版本。名称修改与标题同步，不改变实体身份。冲突后点“保留批量填写，载入最新数据”，重载仍存在对象的最新基线、去掉已删除对象，保留字段值与说明，关闭差异预览；须重新预览后保存。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-config.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-config.png" alt="栏目配置" loading="lazy"></a></p>
+<p><em>图3-19：选择栏目、Tab、横竖屏组件与数量，收录公共资料或玩家原帖。</em></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>配置对象</th>
+<th>输入与限制</th>
+<th>生效及读端表现</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>栏目</td>
+<td>当前1—40个，名称必填≤80，使用登记封面，至少一个可见栏目。新配置标识采用custom-前缀，字母开头且只含字母数字_-、≤100字符。</td>
+<td>初级可新增、改名、隐藏、改布局／收录；高级另可删除、排序。四栏首页固定顺序不随后台排序变化，见3.1。</td>
+</tr>
+<tr>
+<td>Tab</td>
+<td>每栏1—40个，名称必填≤80，标识全局唯一；可见栏目至少一个可见Tab。每Tab可收录0—24个不同且有效的公共词条或玩家原帖。</td>
+<td>勾选顺序形成内容顺序，空Tab允许保存；当前无单独条目拖拽排序控件。最后一个Tab不能删除。</td>
+</tr>
+<tr>
+<td>布局与数量</td>
+<td>文字／上图下文每行1—4，左图右文每行1—2，Banner固定1。横竖屏可分别选；Tab可继承栏目或独立设置。</td>
+<td>更改布局将数量收敛至允许范围，保存后读端按对应方向展示。默认首页每类一次，后台未强制组件类型互斥。</td>
+</tr>
+<tr>
+<td>分类快捷入口</td>
+<td>当前1—64个，至少一个可见且可打开；名称≤80，封面为登记素材；可指向栏目或公共词条，不指向原帖。</td>
+<td>栏目目标名称／封面可空，继承栏目；公共词条须有独立标题和封面。隐藏目标栏目时入口自动隐藏。初级可新增／修改，高级可删除／排序。</td>
+</tr>
+</tbody></table></div>
+<p>删除栏目如被分类入口引用，须先修改或删除引用入口；最后一个栏目、最后一个分类入口不可删除。新增栏目默认配置不会自动展示到首页固定四栏。以上数量为当前Demo规则，正式业务上限待确认。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-schema.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/studio-schema.png" alt="字段配置" loading="lazy"></a></p>
+<p><em>图3-20：展示列、枚举筛选项与新增选填字段。</em></p>
+<p>高级精编可维护字段方案的数据表公开列、筛选项，并新增选填字段。公开列不改变图鉴固定卡片字段。模型支持1—24个方案、每方案1—40个不同字段；当前界面提供已有方案，不提供新建方案、删除字段、修改旧字段类型或旧枚举入口。字段标识字母开头，模型≤100字符，当前输入框对新字段名与标识均限80字符；类型为文本／数字／单选。单选1—100个非空且不重复选项，单项模型≤2000字，当前选项输入框总长≤2000字。</p>
+<p>已有方案及字段必须保留，不能改标识、类型或必填性，新字段只能选填；name保留为必填文本且必须公开。筛选只可选已有单选字段。隐藏列／筛选不删实体值，配置不可使任何现有对象失效。</p>
+<p>配置编辑只修改草稿。填写必填≤120字保存说明，按当前配置修订号检查，无变化不生成版本；成功整份生效并修订号加1，读端使用新配置。失败保持旧配置，保留输入；冲突展示最新／草稿配置对照，载入最新会舍弃当前配置草稿；取消恢复公开配置。</p>
+<h3>3.8 内容工作台：权限与治理</h3>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/governance-permissions.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/governance-permissions.png" alt="权限总览" loading="lazy"></a></p>
+<p><em>图3-21：当前角色权限矩阵；顶部身份切换用于演示，正式权限由服务端判断。</em></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>普通用户</th>
+<th>初级精编</th>
+<th>高级精编</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>阅读／预览、编辑已有资料内容、创建／编辑实体</td>
+<td>允许</td>
+<td>允许</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>新建／删除非实体词条</td>
+<td>不允许</td>
+<td>允许</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>批量维护实体</td>
+<td>不允许</td>
+<td>允许</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>删除实体</td>
+<td>不允许</td>
+<td>不允许</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>新增／编辑栏目、Tab、分类入口</td>
+<td>不允许</td>
+<td>允许</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>删除／排序栏目、Tab、分类入口</td>
+<td>不允许</td>
+<td>不允许</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>字段配置、身份／黑名单／模板授权／精编申请审核</td>
+<td>不允许</td>
+<td>不允许</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>核对已发布数据</td>
+<td>不允许</td>
+<td>允许</td>
+<td>允许</td>
+</tr>
+</tbody></table></div>
+<p>只读体验身份只浏览和预览，不能写入。权限总览各身份均可见，其他页签按权限展示；切到无权身份时返回权限总览。不得因隐藏按钮而省略正式服务端的进入与提交校验。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/governance-roles.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/governance-roles.png" alt="身份管理" loading="lazy"></a></p>
+<p><em>图3-22：为已登记账号设置普通、初级或高级身份；至少保留一名高级精编。</em></p>
+<p>高级精编在身份管理选择登记账号及目标角色。角色未变化时提示无变化；最后一名高级不能被降级，须先设另一名高级。当前治理修改账号资料与工作台顶部演示身份独立，未形成真实登录账号的实时撤权链路。</p>
+<p>黑名单仅高级可操作，选择已登记且未受限账号，填写去空白后1—200字原因；重复加入拒绝。列表显示账号、原因和移出入口；移出不存在记录时显示“该账号已移出黑名单。”。当前受限演示写入主体不能保存公共资料／配置，保留高级治理的解除入口。申请账号受限时另行禁止申请、工作台入口及固定模板预览；此限制不能推导成帖子发布、评论、点赞等全社区封禁。</p>
+<p>固定HTML模板权限按账号允许或取消访问，无变化拒绝重复操作。选择验证账号点击“验证并预览”，须已授权且未受限，否则显示拒绝原因；成功展示固定安全资料卡片。当前没有任意HTML上传、编辑或执行能力。</p>
+<p>数据审核面向已经发布的公共对象各修订，默认待核对；可按标题、修改说明、贡献者检索，按全部／待核对／已核对／需修正筛选，显示匹配数／总数。初级和高级可标记：已核对的原因选填≤200，需修正的原因必填1—200；完全相同结果重复提交被拒绝。处理仅记录意见，不撤销公开版本，不成为保存前置，也没有自动回滚。</p>
+<p><a class="image-link" href="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/governance-review.png" target="_blank" rel="noopener"><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@22fe9a0e17c9ed2a45e5c706910319c2726f8ef3/public/prd/community-guide-20261020/images/governance-review.png" alt="精编审核" loading="lazy"></a></p>
+<p><em>图3-23：高级精编查看待审说明并处理申请，前台状态同步见3.5。</em></p>
+<p>精编申请仅高级可审核。无申请显示空态；待审项显示申请说明及通过／驳回操作。通过前检查目标存在且不在黑名单，授予初级身份，已有高级身份不降级；驳回须填1—200字原因。处理后显示结果，不允许重复处理，不发送真实通知。申请状态和身份结果必须同时成功写入，正式接口事务方案见第五章。</p>
+<h2 id="chapter-4">四、支持要求</h2>
+<h3>4.1 状态、权限与业务数据</h3>
+<p>公共资料、配置和批量保存应使用编辑基准修订号检查并发。预览、取消、失败和冲突不增加公开修订；成功响应必须包含最终公开修订，读取到新版本才可认定读端已同步。正式服务须统一申请、编辑、治理的真实账号标识，进入与每次提交重新检查角色和限制状态。撤权／封禁后的未提交草稿恢复方式待确认，不因演示选择器可切换而放行线上写入。</p>
+<p>普通资料修改与修改说明、修订历史一起保存；批量提交整批成功或整批失败；配置整份校验后生效；申请处理结果与身份授予一致。重复点击、超时重试不能生成重复申请／修订。接口、幂等键、失败查询与事务实现尚未提供，阻塞正式写入接入。</p>
+<p>删除保留历史及标识，当前无撤销或删除历史浏览。媒体登记素材和示意图片只用于方案评审，正式内容需核实来源与许可。正文外链只接受http(s)，文本转义呈现；不开放任意HTML执行。文件上传、存储、大小及格式未定义，当前使用登记素材选择。</p>
+<p>横竖屏使用同一资料、身份、草稿与所选Tab；仅组件、列数和布局按方向配置。不得旋转后丢失已输入文字、重新提交申请或生成修订。列表、表格、大图保持各自滚动与焦点规则。当前本地资料全量呈现，正式分页、性能指标和请求失败的恢复需在接口确定后补齐。</p>
+<h3>4.2 数据要求</h3>
+<p>数据结论：<strong>新增</strong>攻略站核心链路采集。以下为建议接入口径，事件名及公共参数尚未与现有社区数据规范对齐，不表示Demo已上报。公共社区关注、点赞、收藏与发帖沿用既有事件，需提供原规范确认复用，避免重复采集。</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>页面／类型</th>
+<th>触发与成功</th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>guide_page_view</td>
+<td>首页／分类／词条，新增</td>
+<td>页面内容成功展示时一次；同一页面实例重绘、旋转不重复。失败请求不记成功浏览。</td>
+<td>page_type、game_id、object_id、orientation</td>
+</tr>
+<tr>
+<td>guide_search</td>
+<td>检索，新增</td>
+<td>本次关键词完成查询并展示结果时；实时输入须按一次查询标识去重，防抖窗口待对齐。</td>
+<td>game_id、result_count、request_id</td>
+</tr>
+<tr>
+<td>guide_save_result</td>
+<td>单篇／批量／配置，新增</td>
+<td>收到确定成功或确定失败后上报；成功以服务端提交和修订结果为准，超时未知不写成功。每请求每终态一次。</td>
+<td>save_type、result、error_code、request_id、object_id、revision、affected_count</td>
+</tr>
+<tr>
+<td>guide_editor_apply_result</td>
+<td>初级精编申请，新增</td>
+<td>服务端确认申请生成／拒绝提交时，每次请求一次。</td>
+<td>result、error_code、request_id、application_id</td>
+</tr>
+<tr>
+<td>guide_editor_review_result</td>
+<td>申请审核，新增</td>
+<td>服务端确认审核完成，结果与角色写入一致时，每条申请每次处理请求一次。</td>
+<td>result、error_code、request_id、application_id、decision</td>
+</tr>
+<tr>
+<td>guide_config_open</td>
+<td>工作台配置，新增</td>
+<td>有权限且配置成功载入时一次；无权限不记成功进入。</td>
+<td>game_id、request_id</td>
+</tr>
+</tbody></table></div>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型／必填</th>
+<th>说明</th>
+<th>枚举／示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>page_type</td>
+<td>string／浏览必填</td>
+<td>已展示页面类别</td>
+<td>home＝首页；category＝分类；entry＝公共词条；post＝玩家原帖</td>
+</tr>
+<tr>
+<td>game_id</td>
+<td>string／浏览、搜索、配置进入必填</td>
+<td>业务游戏标识，不能使用示例文案代替正式标识</td>
+<td>示例gta5，正式编码待对齐</td>
+</tr>
+<tr>
+<td>object_id</td>
+<td>string／分类、词条、原帖浏览必填，单篇保存必填</td>
+<td>对象的正式业务标识；首页省略，批量／配置不填伪对象</td>
+<td>示例article-beginner</td>
+</tr>
+<tr>
+<td>orientation</td>
+<td>string／浏览必填</td>
+<td>展示时方向</td>
+<td>portrait＝竖屏；landscape＝横屏</td>
+</tr>
+<tr>
+<td>result_count</td>
+<td>int／搜索必填</td>
+<td>查询返回并展示的匹配数，含0</td>
+<td>示例0、12</td>
+</tr>
+<tr>
+<td>request_id</td>
+<td>string／结果事件、搜索、配置进入必填</td>
+<td>本次请求标识，同次重试复用；生成方与格式待接口确认</td>
+<td>示例req_20261021_001</td>
+</tr>
+<tr>
+<td>save_type</td>
+<td>string／保存必填</td>
+<td>本次写入范围</td>
+<td>entry＝单篇；batch＝批量实体；config＝栏目与字段配置</td>
+</tr>
+<tr>
+<td>result</td>
+<td>string／结果事件必填</td>
+<td>已确定提交结果</td>
+<td>success＝已成功提交；failed＝已确定未提交。请求未知不伪填终态</td>
+</tr>
+<tr>
+<td>error_code</td>
+<td>string／failed必填</td>
+<td>服务端稳定错误码；具体编码表待接口对齐</td>
+<td>示例VERSION_CONFLICT，示例非既有正式编码</td>
+</tr>
+<tr>
+<td>revision</td>
+<td>int／单篇或配置保存成功必填</td>
+<td>服务端提交后的公开修订号，批量各对象修订保留在业务结果</td>
+<td>示例2</td>
+</tr>
+<tr>
+<td>affected_count</td>
+<td>int／保存成功必填</td>
+<td>实际产生新修订的对象数，配置成功按1计</td>
+<td>示例1、2；无变化不计保存成功</td>
+</tr>
+<tr>
+<td>application_id</td>
+<td>string／申请成功、审核结果必填</td>
+<td>服务端申请标识；申请提交失败且未生成时省略</td>
+<td>示例application_001</td>
+</tr>
+<tr>
+<td>decision</td>
+<td>string／审核必填</td>
+<td>审核执行的动作</td>
+<td>approve＝通过授予初级；reject＝驳回并记录原因</td>
+</tr>
+</tbody></table></div>
+<p>正文、搜索关键词、申请说明、审核原因不作为上述事件参数采集。用户标识、平台与客户端版本使用已有公共参数，须先提供现行规范。核心观察口径为成功阅读、确定成功写入、申请提交及审核结果，不能把按钮点击、预览或未知响应计作业务成功；转化分母、统计窗口和目标值尚未确认。</p>
+<h2 id="chapter-5">五、待确认项</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>建议或条件式选项</th>
+<th>影响</th>
+<th>阻塞范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>正式账户及撤权链路</td>
+<td>统一真实actorId，服务端每次写入复核；明确撤权后草稿如何保留。当前申请主体与公共编辑演示主体不同。</td>
+<td>精编申请、黑名单、已打开工作台的权限，不能视作已联调。</td>
+<td>阻塞真实权限与限制能力接入；不阻塞本地页面评审。</td>
+</tr>
+<tr>
+<td>接口、幂等与原子写入</td>
+<td>明确单篇／批量／配置版本检查，申请与身份事务、未知响应查询和重复提交规则。</td>
+<td>直接生效、整批不部分写入、重复申请／修订。</td>
+<td>阻塞全部正式写入联调及超时恢复。</td>
+</tr>
+<tr>
+<td>首页运营范围</td>
+<td>当前采用固定四代表栏目，后台排序只改分类。若要求后台自由决定首页范围和顺序，须另行确认映射与互斥规则。</td>
+<td>新栏目是否上首页、同类组件重复及运营预期。</td>
+<td>阻塞“任意配置首页”能力；固定四栏方案可评审。</td>
+</tr>
+<tr>
+<td>新建内容与数量上限</td>
+<td>确认正式上限及新建初始化策略，建议不复制未经核实示例值；本文数值按当前Demo记录。</td>
+<td>新建实体／词条及批量、栏目、字段的输入约束。</td>
+<td>阻塞正式创建初始化与限额定稿。</td>
+</tr>
+<tr>
+<td>草稿和删除历史</td>
+<td>明确是否要求跨刷新／跨设备草稿、删除审计查询和保留期限；当前仅会话草稿、无删除历史入口／撤销。</td>
+<td>编辑恢复和审计查询，不扩写未确认页面。</td>
+<td>阻塞相应持久化与审计要求定稿。</td>
+</tr>
+<tr>
+<td>时间与日期</td>
+<td>建议统一北京时间并使用服务端时间；确认历史时区、版本日期日历合法性及UTC日期边界。</td>
+<td>最新编辑、修订列表、新建版本及原帖日期。</td>
+<td>阻塞正式时间展示口径。</td>
+</tr>
+<tr>
+<td>内容及素材</td>
+<td>确认游戏对象数据、维护责任、登记素材授权；如需上传，再确定格式、大小、存储、失败恢复。</td>
+<td>图鉴／图册／资产及载具内容，当前示意图不能当准确实拍。</td>
+<td>阻塞正式内容和媒体上线。</td>
+</tr>
+<tr>
+<td>搜索与数据接入</td>
+<td>确认服务端搜索范围、分页、失败恢复；对齐4.2事件编码、公共参数、去重及统计窗口。</td>
+<td>真实检索、数据报表与转化计算。</td>
+<td>阻塞相应接口与埋点开发定稿；不阻塞本地全量演示。</td>
+</tr>
+<tr>
+<td>申请运营与外部分享</td>
+<td>明确审核资格、时限、是否通知，以及正式分享承接。当前无这些服务。</td>
+<td>运营承诺、真实通知与分享完成判定。</td>
+<td>阻塞相应服务承诺和接入，不扩展现有页面。</td>
+</tr>
+</tbody></table></div>
+<h2 id="chapter-6">六、参考资料</h2>
+<ul>
+<li><a href="https://z36358631-ship-it.github.io/-/previews/community-guide/">攻略站在线Demo</a>：D023当前攻略方案，全部互动为本地演示；公开版以同类示意配图替换五张私有研究照片。</li>
+<li><a href="https://github.com/z36358631-ship-it/-/tree/c483e2f0db5fb602d4f23cf9ae082ad02103f919/previews/community-guide">攻略站源码与构建说明</a>：与本稿页面对应的独立攻略源码，不含热点与私信。</li>
+<li>本稿配图来自上述公开版本实际页面，版本固定在图链提交。游戏价格、版本资料与图片均需按第五章核实。</li>
+</ul>
+<footer>源码提交 c483e2f0db5fb602d4f23cf9ae082ad02103f919；图片固定于独立图集提交 22fe9a0e17c9ed2a45e5c706910319c2726f8ef3。点击图片可查看原图。本文含明确待确认项；本地渲染不代表已导入飞书。</footer></main></div></body></html>
