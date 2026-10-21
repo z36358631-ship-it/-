@@ -4,8 +4,9 @@
 |---|---|---|---|
 | 2026-10-21 | 按当前攻略站整理首页、阅读、共建编辑、精编申请、配置与治理规则 | V1.0 评审稿 | 郑群超 |
 | 2026-10-21 | 更新版块与项目确认、词条编辑及批量删除、多语言、登录与权限治理、阅读和贡献记录 | V1.1 评审稿 | 郑群超 |
+| 2026-10-22 | 后台百科列表补充分区ID展示 | V1.1 评审稿 | 郑群超 |
 
-备注：搜2026.10.21修改；本轮更新可搜索“项目草稿”“管理多语言”“批量删除”“百科编辑范围”“贡献分”。
+备注：搜2026.10.22修改；本轮更新可搜索“分区ID”。
 
 ## 一、需求概述
 
@@ -36,7 +37,7 @@
 
 ## 二、产品流程
 
-![攻略共建流程](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/product-flow.png)
+![攻略共建流程](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/product-flow.png)
 
 *图2-1：玩家进入攻略站阅读，前往网页后台编辑并保存；保存成功更新公开资料及历史。精编申请独立审核；首页项目先确认进入配置草稿，再保存配置生效。*
 
@@ -46,15 +47,15 @@
 
 入口位于社区游戏圈的“攻略站”Tab。进入后显示当前游戏、搜索、编辑身份入口、资料分类、四栏资料、玩家攻略以及收藏攻略站、共建贡献记录和发布动态入口。上下文频道与主导航沿用现有页面；进入独立资料页后收起主导航，返回时恢复攻略上下文。
 
-![攻略首页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/home-portrait.png)
+![攻略首页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/home-portrait.png)
 
 *图3-1：顶部搜索与“成为编辑”；下方分类快捷入口与资料栏目。*
 
-![首页栏目](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/home-content.png)
+![首页栏目](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/home-content.png)
 
 *图3-2：首页滚动内容。默认依次为资产与生意 Banner、抢劫任务上图下文、载具左图右文、常用检索文字，各类型只展示一栏。长图仅展开滚动区域取图。*
 
-![横屏首页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/home-landscape.png)
+![横屏首页](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/home-landscape.png)
 
 *图3-3：掌机横屏沿用同一分类和内容，布局按横屏配置展示。*
 
@@ -73,7 +74,7 @@
 
 ### 3.2 App：全站检索与分类结果
 
-![资料分类](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/category.png)
+![资料分类](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/category.png)
 
 *图3-4：载具分类页，显示当前栏目内容与数量Tab；其他分类使用相同入口规则。*
 
@@ -89,15 +90,15 @@
 
 ### 3.3 App：公共资料阅读、互动与历史
 
-![独立词条](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/detail-portrait.png)
+![独立词条](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/detail-portrait.png)
 
 *图3-5：独立词条显示标题、适用范围、最新编辑时间和正文；底部提供赞、收藏、评论及更多操作。*
 
-![横屏词条](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/detail-landscape.png)
+![横屏词条](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/detail-landscape.png)
 
 *图3-6：横屏独立阅读页，保留资料内容和返回，不显示主导航。*
 
-![六类资料](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/templates.png)
+![六类资料](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/templates.png)
 
 *图3-7：图文指南、数据表、图片资料库、实体、图册、版本索引，各使用当前实际模板。*
 
@@ -116,7 +117,7 @@
 
 公共词条底部提供赞、收藏、评论及“…”入口；赞和收藏可取消，按同一账号与词条去重。评论最多500字，空白提交显示“请输入评论内容”；成功清空输入，在列表加入“我／刚刚”。互动均为会话演示，真实账号与服务端接口待接入。
 
-![词条更多操作](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/reader-more.png)
+![词条更多操作](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/reader-more.png)
 
 *图3-8：点击“…”从底部弹出更多操作，国内与海外显示各自分享渠道。*
 
@@ -126,7 +127,7 @@
 
 ### 3.4 App：作者原帖与发布
 
-![玩家攻略原帖](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/original-post.png)
+![玩家攻略原帖](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/original-post.png)
 
 *图3-9：作者原帖保留作者、关注与互动，不提供公共词条编辑历史。*
 
@@ -138,7 +139,7 @@
 
 在允许普通用户编辑的百科，普通用户可按当前权限更正已有公共资料正文与数据。申请初级精编用于增加默认创建词条、批量维护和组织栏目能力，申请通过不是普通编辑的前置；后台是否允许进入仍按该百科编辑范围判断。
 
-![申请表单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/application-form.png)
+![申请表单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/application-form.png)
 
 *图3-10：申请页显示权限对照与申请表单，填写联系方式和贡献计划等信息。*
 
@@ -149,15 +150,15 @@
 | 提交申请 | 普通身份、未被限制、没有待审申请时可提交。 | 待审不显示重复提交表单；已有精编身份不重复申请；受限账号不能提交。 |
 | 返回 | 返回攻略来源位置。 | 未提交内容只在当前会话保留；刷新不持久。 |
 
-![申请审核中](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/application-pending.png)
+![申请审核中](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/application-pending.png)
 
 *图3-11：提交后显示审核中与申请说明，不重复提交。*
 
-![申请未通过](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/application-rejected.png)
+![申请未通过](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/application-rejected.png)
 
 *图3-12：驳回显示原因，补充说明后可重新提交。*
 
-![申请已通过](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/application-approved.png)
+![申请已通过](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/application-approved.png)
 
 *图3-13：申请通过显示初级精编和工作台入口。*
 
@@ -173,21 +174,21 @@
 
 #### 3.6.1 登录与百科列表
 
-![后台扫码登录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/login.png)
+![后台扫码登录](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/login.png)
 
 *图3-14：顶部使用盖世游戏图标及百科名称，左侧为介绍，右侧为App扫码登录。*
 
 登录页保留扫码登录及中文／English选择。中文登录进入国内社区，English登录进入海外社区；登录地区在本次会话固定，海外后台可另切中文或英语界面。标题旁不再显示“网页编辑后台”，选择器旁不显示“语言”文字，左侧介绍不重复显示百科名称，登录框不显示“返回攻略站”。“下载盖世游戏 APP”中的“盖世游戏 APP”为蓝色下划线链接，点击在新页打开盖世游戏官网。当前二维码仅用于本地演示，真实扫码登录状态由正式服务提供。
 
-![百科列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/wiki-list.png)
+![百科列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/wiki-list.png)
 
 *图3-15：登录后先选择可访问的百科，列表显示图标、名称、ID和词条数。*
 
-百科列表按当前地区与账号可访问范围展示盖世游戏、GTA 5、Steam、黑神话：悟空。搜索输入最多80字，按名称或ID实时过滤；无匹配显示“没有匹配的百科”，没有可访问对象显示“暂无可访问的百科”。列表与侧栏不再重复显示“国内社区”或“海外社区”标识。点击百科后进入该百科，侧栏提供首页配置、词条配置、编辑记录、权限与审核，按账号实际权限展示可进入菜单；可返回百科列表。当前百科、内容语言、词条、首页配置及权限均按地区和百科隔离，不跨百科写入。
+百科列表按当前地区与账号可访问范围展示盖世游戏、GTA 5、Steam、黑神话：悟空。每行显示百科名称、分区ID和词条数。搜索输入最多80字，按名称或ID实时过滤；无匹配显示“没有匹配的百科”，没有可访问对象显示“暂无可访问的百科”。列表与侧栏不再重复显示“国内社区”或“海外社区”标识。点击百科后进入该百科，侧栏提供首页配置、词条配置、编辑记录、权限与审核，按账号实际权限展示可进入菜单；可返回百科列表。当前百科、内容语言、词条、首页配置及权限均按地区和百科隔离，不跨百科写入。
 
 #### 3.6.2 词条列表与删除
 
-![词条列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/entry-list.png)
+![词条列表](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/entry-list.png)
 
 *图3-16：列表提供搜索、新建、单条编辑／删除和批量选择。*
 
@@ -201,7 +202,7 @@
 
 #### 3.6.3 词条编辑与高级选项
 
-![词条编辑](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/entry-editor.png)
+![词条编辑](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/entry-editor.png)
 
 *图3-17：词条名和替代名位于顶部，正文默认使用宽富文本编辑区；阅读效果按需打开。*
 
@@ -209,7 +210,7 @@
 
 正文默认占满可用编辑宽度，工具栏提供小标题、字号、粗体、斜体、下划线、清除格式、链接、图片、视频及已有五类共用组件；列表、引用、表格等已有正文内容继续维护。模板类型不因编辑模式变化。数据表、图鉴、实体、图册和版本索引继续显示各自结构字段，不因改为富文本界面丢失已有数据。
 
-![HTML编辑](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/entry-html.png)
+![HTML编辑](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/entry-html.png)
 
 *图3-18：点击HTML编辑模式后修改同一篇正文，切回富文本时保留可支持的内容。*
 
@@ -223,7 +224,7 @@
 | 图片、表格与外链 | 图片可选登记素材、填写最多2048字的有效http(s)图片地址或上传PNG／JPG／WebP／GIF，单图最大2 MB；说明最多2000字。表头最多200字、单元格最多2000字、行列一致，界面至少保留1行1列；外链文字必填最多2000字，正文链接地址最多2000字。 | 无效图片或读取失败保留现有草稿并提示错误，不能带着无效图片保存。上传仅为本地会话读取，正式存储待接入。 |
 | 关联资料与版本 | 公共关联对象须存在、不能重复或指向自己；原帖最多24个。图册至少1图；版本索引至少1篇文章，目标唯一，名称最多160字，日期格式为YYYY-MM-DD，当期最多1项。 | 普通／初级可改版本名称和日期；关联文章、当期标记与图册结构由高级维护。日期当前只检查格式，日历有效性待正式接入明确。 |
 
-![高级选项](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/entry-advanced.png)
+![高级选项](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/entry-advanced.png)
 
 *图3-19：正文下方提供帖子内容获取、参考资料和四项声明。*
 
@@ -246,7 +247,7 @@
 
 #### 3.6.4 管理多语言
 
-![多语言设置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/languages.png)
+![多语言设置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/languages.png)
 
 *图3-20：默认语言固定必选，左侧勾选可用语言，右侧管理已选语言。*
 
@@ -258,7 +259,7 @@
 
 #### 3.6.5 后台编辑记录
 
-![后台历史快照](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/history.png)
+![后台历史快照](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/history.png)
 
 *图3-21：后台历史详情使用白底深色文字，正文、表格和关联帖可读，只读查看不产生写入。*
 
@@ -266,7 +267,7 @@
 
 ### 3.7 网页后台：首页配置与模板数据
 
-![批量维护](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/studio-batch.png)
+![批量维护](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/studio-batch.png)
 
 *图3-22：选择同一字段方案的两个实体、勾选统一修改字段，预览逐条差异后再保存。*
 
@@ -274,13 +275,13 @@
 
 保存时校验整批权限、版本、字段、引用与失败响应。任一条失败整批不写入、不写历史；成功只对有变化的条目各增一修订，清空批量选择和草稿，无变化条目不生成版本。名称修改与标题同步，不改变实体身份。冲突后点“保留批量填写，载入最新数据”，重载仍存在对象的最新基线、去掉已删除对象，保留字段值与说明，关闭差异预览；须重新预览后保存。
 
-![栏目配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/studio-config.png)
+![栏目配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/studio-config.png)
 
 *图3-23：左侧连续展示首页版块和项目，点击齿轮后在右侧编辑版块。*
 
 首页配置左侧为连续可编辑画布，右侧为当前选中版块、分类或项目的操作区。版块齿轮直接打开版块名称、类型、横竖屏每行数量及对应预览；原首页金刚图也可编辑这些内容，保留原项目的跳转目标。没有选中项目时不显示空的“编辑版块”说明框代替表单。版块名称必填，最多80字；搜索版块输入不限制长度，按当前输入实时过滤。
 
-![项目草稿](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/item-draft.png)
+![项目草稿](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/item-draft.png)
 
 *图3-24：点击添加项目后，右侧先填写项目名称、分类、类型、配图和绑定词条，确认后才加入左侧。*
 
@@ -297,13 +298,13 @@
 | 类型与每行数量 | 金刚图、纯文字、上图下文每行1—4个，左图右文每行1—2个，Banner每行固定1个；横竖屏分别配置。 | 切换类型后每行数量收敛到允许范围；不新增显示开关或其他状态配置。保存后读端使用相应方向的布局。 |
 | 分类快捷入口 | 当前最多64个，名称最多80字；目标为有效栏目或公共词条，不指向原帖。栏目目标可继承栏目名称及配图；词条目标须填写独立名称及配图。 | 按配置顺序展示，隐藏或失效目标不展示；首页画布允许删除整组原首页金刚图，使快捷入口为空。新增／编辑和删除／排序分别受当前百科权限控制。 |
 
-![删除版块确认](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/section-delete.png)
+![删除版块确认](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/section-delete.png)
 
 *图3-25：删除按钮打开居中确认弹窗，正文显示当前版块名称。*
 
 点击版块删除按钮后打开居中弹窗，标题为“删除版块”，正文为“确定删除‘版块名’吗？”。点击“取消”或按Esc关闭弹窗，版块不变；点击“确认删除”再次检查权限及关联，校验通过才从配置草稿移除。被分类入口引用的栏目须先修改或删除引用；画布允许删除最后一个版块或整组原首页金刚图。扩展配置表单的逐项删除仍保留至少一个栏目、一个快捷入口的保护，不能将该保护视为所有删除入口的统一规则。最终读端变更仍以整页保存配置成功为准。
 
-![字段配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/studio-schema.png)
+![字段配置](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/studio-schema.png)
 
 *图3-26：展示列、枚举筛选项与新增选填字段。*
 
@@ -315,7 +316,7 @@
 
 ### 3.8 网页后台：权限与审核
 
-![权限总览](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/governance-permissions.png)
+![权限总览](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/governance-permissions.png)
 
 *图3-27：权限总览显示当前百科三种身份的权限，可勾选后保存。*
 
@@ -334,29 +335,29 @@
 
 高级精编或运营管理员可在权限总览勾选上述八项权限，每行分别设置普通、初级、高级三个身份。点击“保存修改”后仅当前地区、当前百科生效；点击“取消修改”恢复已保存值。编辑范围、当前角色、账号限制及操作权限必须同时满足，不能因勾选某项权限跨过百科访问限制。保存时至少保留一个有可用成员的身份管理角色，不能把全部身份管理权限取消；无权限、跨百科或无效配置均不改原值。只读体验身份不能写入，正式服务还须在进入与提交时校验账号及范围。
 
-![编辑范围抽屉](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/policy-drawer.png)
+![编辑范围抽屉](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/policy-drawer.png)
 
 *图3-28：点击百科编辑范围的“编辑”，从右侧滑入浮层，原列表留在下方。*
 
 权限总览下方显示当前百科和“所有人可编辑／仅精编可编辑”。点击“编辑”从右侧向左展开操作抽屉：所有人可编辑表示普通用户、精编可进入，再按各自操作权限执行；仅精编可编辑只允许精编及管理员进入。公开阅读始终开放。点击“保存修改”成功后关闭抽屉并回到原列表，未改变选项时也关闭；保存失败保留输入及抽屉。点击“取消”、关闭或按Esc不提交。更改范围不影响其他地区或百科。
 
-![身份管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/governance-roles.png)
+![身份管理](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/governance-roles.png)
 
 *图3-29：成员列表进入详情，选择普通、初级或高级身份。*
 
 有身份管理权限的账号从成员列表进入详情，选择目标角色后点击“保存身份”。未变化时显示“身份没有变化。”；有变化时先打开居中二次确认弹窗，显示账号及原身份、目标身份。点击“取消”、关闭或按Esc不改变身份；点击“确认调整”重新检查权限及账号当前身份，条件有效才保存。至少保留一名未受限、具有身份管理权限的成员，不能通过降级或加入黑名单使管理入口无人可用。正式登录账号的撤权及已打开页面恢复仍需服务端接入。
 
-![身份调整确认](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/identity-confirm.png)
+![身份调整确认](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/identity-confirm.png)
 
 *图3-30：身份变化在弹窗中再次确认，不在详情表单上方插入确认区。*
 
-![手动添加黑名单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/blacklist.png)
+![手动添加黑名单](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/blacklist.png)
 
 *图3-31：账号UID可手动输入，已有账号仅提供匹配建议。*
 
 有黑名单管理权限的账号点击“加入黑名单”，手动输入账号UID；不要求只能从既有账号下拉选择，合法但未在演示账号列表中的UID也可加入。UID去首尾空格后1—100位，以字母或数字开头，其余仅字母、数字、下划线或短横线；原因必填，去首尾空格后1—200字。重复加入、无效UID、原因无效、或操作会使身份管理员不可用时拒绝并保留输入。成功返回列表，显示账号、原因及详情入口；详情可移出，目标已移出时显示“该账号已移出黑名单。”。受限账号仍可按百科访问范围浏览网页后台，页面提示限制写入，不可提交公共资料、配置或申请；该限制不代表帖子发布、评论、点赞等全社区封禁。
 
-![精编审核](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/governance-review.png)
+![精编审核](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/governance-review.png)
 
 *图3-32：申请列表进入详情，查看申请字段并通过或驳回。*
 
@@ -364,7 +365,7 @@
 
 ### 3.9 App：百科贡献与编辑历史
 
-![百科贡献](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@936a174affc626cfc322a9ffe2678e1955e6b4a9/public/prd/community-guide-20261020/images/contribution.png)
+![百科贡献](https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@b12e0765bb543972806f55090c6580f87422596a/public/prd/community-guide-20261020/images/contribution.png)
 
 *图3-33：贡献页分为百科贡献和编辑历史，贡献榜显示Top 30及计分明细。*
 
