@@ -9,13 +9,15 @@ const GH=window.GH={modules:{},orientation:'portrait',current:'guide',route:'gui
 GH.openGuideStudio=(id,mode='edit')=>{if(!allowed.includes('guide')||!GH.guideStudio)return;GH.workspace='author';GH.current='guide';GH.route='guide';GH.guideStudio.open(id,mode);render();};
 function moduleForRoute(route){return ['hotspots','recommendation'].includes(route)?'discovery':route}
 function switchRoute(route){if(!allowed.includes(route))return;GH.workspace='demo';GH.route=route;GH.current=moduleForRoute(route);const m=GH.modules[GH.current];if(m){if(route==='hotspots')m.scenario('hot');}render();}
-function navMarkup(){return navItems.map(([icon,label])=>`<div class="${icon==='community'?'active':''}">${GH.icon(icon,26)}<span>${label}</span></div>`).join('')}
+function personalPage(){return GH.current==='guide'&&['profile','favorites'].includes(GH.modules.guide?.inspect?.().view)}
+function navMarkup(){const active=personalPage()?'profile':'community';return navItems.map(([icon,label])=>`<div class="${icon===active?'active':''}" ${icon==='profile'?'data-guide-profile role="button" tabindex="0" aria-label="我的"':''}>${GH.icon(icon,26)}<span>${label}</span></div>`).join('')}
 function baseline(){return `<div class="baseline" data-component-id="community-baseline"><div class="b-status"><span>12:31 ···</span><img src="${GH.asset('icon-status')}" alt="网络与电量"></div><div class="b-tabs" data-component-id="C-TAB"><span>关注</span><b>游戏圈</b></div><div class="b-icons">${GH.icon('search',29)}${GH.icon('bell',29)}${GH.icon('device',29)}</div><div class="b-circles"><b>全部</b><span>GTA 5</span><span>Steam</span><span>黑神话：悟空</span></div><article class="b-feed" data-component-id="D-COMMUNITY"><div class="b-author"><img src="${GH.asset('avatarOfficial')}" alt="盖世游戏官方"><div><strong>盖世游戏官方 <i class="b-official">官方</i></strong><small>1天前</small></div><img class="b-more" src="${GH.asset('icon-more')}" alt=""></div><h3 class="b-post-title">【福利活动】分享你的能玩方案和宝藏游戏，赢取好礼</h3><div class="b-body">《盖世游戏》社区正式上线啦！我们准备了两个长期活动，邀请大家一起把社区变成真正有用、好逛、能解决问题的玩家社区。无论你是解决了某款游戏的 PC 引擎设置</div><span class="b-topic">#GameHub</span><div class="b-media"><img src="${GH.asset('postCover')}" alt="方案分享配图"><img src="${GH.asset('postCover2')}" alt="游戏分享配图"></div>${baselineActions([10,6,8,1])}</article><article class="b-feed second"><div class="b-author"><div style="width:calc(47 * var(--b));height:calc(47 * var(--b));border-radius:50%;background:#080809;flex:none"></div><div><strong>lamp</strong><small>2天前</small></div><img class="b-more" src="${GH.asset('icon-more')}" alt=""></div><h3 class="b-post-title">有没有什么视觉小说推荐</h3><div class="b-body">最好是兼容和秒进的，很多游戏都要加载好长一会</div>${baselineActions([8,5,22,0])}</article><img class="b-plus" src="${GH.asset('icon-plus')}" alt="发布"><div class="b-nav" data-component-id="C-NAV-P">${navItems.map(([icon,label])=>`<div class="${icon==='community'?'active':''}">${GH.icon(icon,35)}${label}</div>`).join('')}</div></div>`}
 function baselineActions(nums){return `<div class="b-actions">${['like','save','comment','share'].map((name,i)=>`<span>${GH.icon(name,20)}${nums[i]}</span>`).join('')}</div>`}
 GH.baseline=baseline;
 let initialized=false;
 function render(){
  const work=document.querySelector('.workbench');if(!work)return;
+ document.title=GH.workspace==='author'?'盖世游戏百科 · 编辑后台':'盖世游戏 · 社区三期交互 Demo';
  work.classList.toggle('landscape-workbench',GH.orientation==='landscape'&&GH.workspace==='demo');
  work.classList.toggle('author-workbench',GH.workspace==='author');
  document.querySelectorAll('[data-route]').forEach(b=>b.classList.toggle('active',GH.workspace==='demo'&&b.dataset.route===GH.route));
@@ -23,7 +25,7 @@ function render(){
  const module=GH.modules[GH.current];
  const titles={guide:['GTA V 攻略百科','目录检索 · 词条阅读 · 编辑与历史'],hotspots:['社区热点','热点列表 · 圈内热点'],messages:['点对点私信','互关不限条数 · 未互关每轮一条'],recommendation:['帖子个性化推荐','兴趣相关内容 · 关闭与反馈 · 冷启动']};
  const title=titles[GH.route]||[module?.title||'社区三期',module?.subtitle||''];
- document.querySelector('#view-title').textContent=GH.workspace==='demo'?title[0]:({author:'攻略内容工作台',facts:'页面来源',components:'组件对照',evidence:'验证证据'}[GH.workspace]||'社区三期');
+ document.querySelector('#view-title').textContent=GH.workspace==='demo'?title[0]:({author:'盖世游戏百科',facts:'页面来源',components:'组件对照',evidence:'验证证据'}[GH.workspace]||'社区三期');
  document.querySelector('#view-subtitle').textContent=GH.workspace==='demo'?title[1]:GH.workspace==='author'?'资料共用 · 玩家填内容 · 管理员配置结构':'原稿证据与实现分开记录';
  document.querySelector('.view-switch').hidden=GH.workspace!=='demo';
  document.querySelectorAll('[data-orientation]').forEach(b=>b.classList.toggle('active',b.dataset.orientation===GH.orientation));
@@ -36,6 +38,8 @@ function render(){
   const detailPage=GH.current==='guide'&&module?.navigationMode?.()==='detail';
   stage.innerHTML=`<div class="stage-label"><b>APP 交互演示</b><span>${GH.orientation==='portrait'?'竖屏 / 402 × 715':'掌机横屏 / 874 × 393'}</span></div><div class="device ${GH.orientation}${detailPage?' detail-page':''}" data-navigation-mode="${detailPage?'detail':'root'}" data-component-id="${GH.orientation==='portrait'?'C-SHELL-P':'C-SHELL-L'}"><div class="device-status"><span>12:31</span>${GH.icon('status',53)}</div>${detailPage?'':`<div class="landscape-nav" data-component-id="C-NAV-L"><span>主页</span><span class="active">社区</span><span>排行榜</span><span>游戏库</span><span>我的</span><div class="nav-status">12:31 ${GH.icon('status',48)}</div></div>`}<div id="module-host">${module?.render?.()||'<div class="empty-state">模块正在准备</div>'}</div>${detailPage?'':`<div class="portrait-nav" data-component-id="C-NAV-P">${navMarkup()}</div>`}</div><div class="stage-caption">交互与内容均为本地演示。以历史社区实机为基线，新增状态为方案设计。<br>左侧切换模块，右侧切换演示场景；不会向真实用户发送消息。</div>`;
   const host=document.querySelector('#module-host');module?.bind?.(host);
+  stage.querySelectorAll('.landscape-nav>span').forEach((item,index)=>item.classList.toggle('active',index===(personalPage()?4:1)));
+  stage.querySelectorAll('[data-guide-profile],.landscape-nav>span:last-of-type').forEach(button=>{const openProfile=()=>{if(!allowed.includes('guide'))return;GH.current='guide';GH.route='guide';GH.modules.guide?.scenario('profile');GH.render();};button.onclick=openProfile;button.onkeydown=event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();openProfile();}};});
   if(focusKey){const next=document.getElementById(focusKey);next?.focus({preventScroll:true});if(next?.setSelectionRange&&sel!==undefined)try{next.setSelectionRange(sel,sel)}catch{}}
  }else if(GH.workspace==='author'){
   stage.innerHTML=GH.guideStudio?.render?.()||'<div class="empty-state">内容工作台加载失败</div>';

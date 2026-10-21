@@ -1,0 +1,60 @@
+.gre-editor{border:1px solid #dce0eb;border-radius:6px;background:#fff;color:#292d3b;min-width:0;overflow:hidden;letter-spacing:0}
+.gre-editor *{box-sizing:border-box;letter-spacing:0}
+.gre-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:5px 8px;background:#f3f3f3;border-bottom:1px solid #d8d8d8;position:sticky;top:0;z-index:2}
+.gre-format-tools{display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-width:0}.gre-format-tools[hidden],.gre-surface[hidden],.gre-html-source[hidden]{display:none!important}.gre-mode-switch{display:flex;gap:3px;margin-left:auto;flex:none}.gre-mode-switch button[aria-pressed=true]{background:#292929!important;color:#fff!important;border-color:#292929!important}.gre-html-source{display:block;width:100%;max-width:100%;min-width:0;min-height:480px;resize:vertical;margin:0!important;padding:20px!important;border:0!important;border-radius:0!important;background:#252a32!important;color:#eff1f4!important;font:13px/1.8 Consolas,monospace!important;white-space:pre;tab-size:2;overflow:auto;outline:none}
+.gre-toolbar button,.gre-toolbar select{height:32px;min-width:32px;width:auto!important;margin:0!important;padding:4px 9px!important;border:1px solid #d9ddeb!important;border-radius:4px!important;color:#45495c!important;background:#fff!important;font-size:13px!important;line-height:20px!important;box-shadow:none!important}
+.gre-toolbar button{display:inline-flex;align-items:center;justify-content:center;flex:none}
+.gre-toolbar button:hover:not(:disabled){border-color:#8270d6!important;background:#f1eefb!important}
+.gre-toolbar .gre-mode-switch button[aria-pressed=true]:hover:not(:disabled){border-color:#292929!important;background:#292929!important;color:#fff!important}
+.gre-toolbar button:disabled,.gre-panel-actions button:disabled{opacity:.45;cursor:not-allowed}
+.gre-toolbar button svg{width:16px;height:16px}
+.gre-toolbar-separator{height:22px;border-left:1px solid #dce0eb;margin:0 4px}
+.gre-surface{min-height:420px;padding:22px 26px;outline:none;line-height:1.85;font-size:16px;overflow-wrap:anywhere;background:#fff;color:#292d3b}
+.gre-surface:focus{box-shadow:inset 0 0 0 2px #d8d0f4}
+.gre-surface p,.gre-surface h2,.gre-surface blockquote,.gre-surface aside,.gre-surface ul,.gre-surface ol{margin:0 0 16px;padding:0;color:inherit;background:transparent;border-radius:0}
+.gre-surface h2{font-size:21px;font-weight:600;line-height:1.5;margin-top:24px}
+.gre-surface>h2:first-child{margin-top:0}
+.gre-surface ul,.gre-surface ol{padding-left:25px}
+.gre-surface li{display:list-item;margin:3px 0}
+.gre-surface blockquote{padding:8px 14px;border-left:3px solid #a6a0b6;color:#606575;background:#fafafd}
+.gre-surface aside{padding:12px 14px;border:1px solid #d8e5ef;background:#f2f8fb;color:#36546b}
+.gre-surface a{color:#6250b9;text-decoration:underline}
+.gre-surface figure{display:block;position:relative;padding:12px;margin:18px 0;border:1px solid #e0e4ed;border-radius:4px;background:#fafbfe;color:#333849;min-width:0}
+.gre-surface figure:focus-within,.gre-surface figure:focus{outline:2px solid #b9adea;outline-offset:1px}
+.gre-surface figure>img,.gre-surface figure>video{display:block;max-width:100%;width:auto;max-height:360px;margin:auto;border-radius:3px;background:#e9ebf0}
+.gre-surface figure>video{width:100%;aspect-ratio:16/9;object-fit:contain}
+.gre-surface figcaption{font-size:13px;color:#73798c;text-align:center;margin-top:8px}
+.gre-atom-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:10px;border-top:1px solid #e2e5ee;padding-top:8px}
+.gre-editor .gre-atom-actions button,.gre-editor .gre-item-actions button,.gre-editor .gre-panel-actions button,.gre-editor [data-re-item-add],.gre-editor .gre-panel-heading button{width:auto;min-height:30px;margin:0;padding:4px 10px;font-size:12px;color:#605580;background:#fff;border:1px solid #d9ddeb;border-radius:4px;line-height:20px}
+.gre-component-preview{display:grid;gap:8px;padding:12px}
+.gre-component-preview span{font-size:14px;font-weight:400}
+.gre-surface .gr-config-entry{background:#fff;color:#3c4152;border-color:#dfe3ed;border-radius:4px;cursor:default}
+.gre-surface .gr-no-photo{background:#eceef4;color:#858b9c}
+.gre-surface .gr-layout-banner .gr-config-entry{background:#353640;color:#fff;border-color:#52545e}
+.gre-surface .gr-layout-banner .gr-config-copy strong{color:#fff}
+.gre-table-scroll{overflow:auto;max-width:100%}
+.gre-table-scroll table{width:100%;border-collapse:collapse;background:#fff;font-size:14px}
+.gre-table-scroll th,.gre-table-scroll td{padding:8px 10px;border:1px solid #dfe4ee;text-align:left;white-space:normal}
+.gre-table-scroll th{background:#f2f4f9}
+.gre-footer{display:flex;justify-content:space-between;padding:9px 14px;border-top:1px solid #e4e7ef;background:#fafbfe;color:#8a8fa1;font-size:12px}
+.gre-feedback{font-size:12px;color:#5a7162;padding:0 14px;background:#f7fbf8;overflow-wrap:anywhere}
+.gre-feedback:not(:empty){padding-top:8px;padding-bottom:8px;border-bottom:1px solid #e4e7ef}
+.gre-feedback.is-error{color:#a23843;background:#fff3f3}
+.gre-insert-panel{padding:16px;background:#f8f9fd;border-bottom:1px solid #dfe3ed;max-height:540px;overflow:auto}
+.gre-insert-panel[hidden]{display:none}
+.gre-panel-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-size:14px}
+.gre-panel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.gre-editor .gre-field{display:grid;gap:6px;margin:0 0 12px;font-size:12px;min-width:0;color:#656b7c}
+.gre-editor .gre-field span{line-height:18px}
+.gre-editor .gre-field input,.gre-editor .gre-field select,.gre-editor .gre-field textarea{width:100%;max-width:100%;min-width:0;margin:0;padding:7px 9px;min-height:34px;border:1px solid #d9dfeb;border-radius:4px;background:#fff;color:#353a4c;font-size:13px;font-family:inherit;line-height:20px}
+.gre-editor .gre-field input[type=file]{padding:5px;font-size:12px}
+.gre-editor .gre-field textarea{min-height:100px;resize:vertical}
+.gre-note{font-size:12px!important;line-height:1.7!important;color:#858b9e!important;margin:7px 0!important}
+.gre-panel-error{color:#a23843!important;font-size:12px!important;line-height:1.7;min-height:0;margin:8px 0!important}
+.gre-panel-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.gre-editor .gre-panel-actions button:last-child{background:#7160c7;color:#fff;border-color:#7160c7}
+.gre-component-items{display:grid;gap:10px;margin-bottom:12px}
+.gre-component-items>article{padding:10px 0;border-bottom:1px solid #e1e5ee;background:transparent;border-radius:0}
+.gre-item-actions{display:flex;gap:6px;justify-content:flex-end}
+.gre-image-state{display:flex;align-items:center;gap:10px;margin:0 0 12px}.gre-image-state img{width:80px;height:52px;object-fit:cover;border-radius:3px}.gre-image-state button{width:auto!important;padding:5px 10px!important}
+@media(max-width:800px){.gre-surface{padding:16px;min-height:360px}.gre-toolbar{padding:8px;gap:4px}.gre-toolbar button,.gre-toolbar select{padding:4px 6px!important}.gre-toolbar-separator{display:none}.gre-panel-grid{grid-template-columns:1fr}.gre-insert-panel{padding:12px}.gre-footer{gap:10px;flex-wrap:wrap}}

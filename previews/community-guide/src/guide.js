@@ -1,6 +1,32 @@
 (function () {
   'use strict';
   const GH = window.GH;
+  // Shared by the current reader, homepage entries and editor previews.
+  GH.guideComponentRender=function(component,{preview=false,orientation=GH.orientation,recordId='',showTitle=true,allowPosts=false,allowSections=false,tabId=''}={}){
+    const store=GH.guideStore,escape=value=>GH.esc(String(value??''));
+    const layouts=['shortcuts','text','image-top','image-left','banner'];
+    const layout=layouts.includes(component?.layout)?component.layout:'image-top';
+    const columns=component?.columns||{},limit=layout==='banner'?1:layout==='image-left'?2:4;
+    const count=direction=>Math.max(1,Math.min(limit,Math.floor(Number(columns[direction])||1)));
+    const direction=orientation==='landscape'?'landscape':'portrait',textList=layout==='text'&&count(direction)===1;
+    const context=store?.context?.()||{region:'mainland',sectionId:'gta5'};
+    const rows=(component?.items||[]).filter(item=>item&&(item.targetType==='external'||typeof item.targetId==='string'&&item.targetId!==recordId)).map(item=>{
+      if(item.targetType==='external')return !store?.linkError(item.url)?{item,target:{id:item.id,title:item.title,url:item.url},kind:'external'}:null;
+      if(allowSections&&item.targetType==='section'){const section=store?.sections().find(section=>section.id===item.targetId&&section.visible!==false);return section?{item,target:section,kind:'section'}:null;}
+      const target=store?.get(item.targetId);
+      if(target&&(!store.inContext||store.inContext(target)))return {item,target,kind:'record'};
+      const post=allowPosts&&context.region==='mainland'&&context.sectionId==='gta5'&&GH.guidePosts?.get(item.targetId);
+      return post?{item,target:post,kind:'post'}:null;
+    }).filter(Boolean);
+    const grid=`<div class="gr-config-entries gr-layout-${layout}" data-gr-layout="${layout}" ${tabId?`data-gr-tab-entries="${escape(tabId)}"`:''} data-gr-columns="${count(direction)}" data-gr-columns-portrait="${count('portrait')}" data-gr-columns-landscape="${count('landscape')}" style="--gr-columns-portrait:${count('portrait')};--gr-columns-landscape:${count('landscape')}">${rows.map(({item,target,kind})=>{
+      const title=String(item.title||target.title||''),src=store.assetSrc?.(item.cover)||'';
+      const picture=src?`<img class="${layout==='shortcuts'?'':'gr-config-image'}" src="${escape(src)}" alt="${escape(title)}" loading="lazy">`:'<div class="gr-no-photo">暂无对应资料图片</div>';
+      const external=kind==='external',tag=external?'a':'button';
+      const action=preview?'tabindex="-1" aria-disabled="true"':external?`href="${escape(target.url)}" target="_blank" rel="noopener noreferrer" data-gr-external`:kind==='section'?`data-gr-category="${escape(target.id)}"`:kind==='post'?`data-gr-post="${escape(target.id)}"`:`data-guide-open="${escape(target.id)}"`;
+      return `<${tag} ${external?'':'type="button"'} class="gr-config-entry" data-gr-entry="${escape(target.id)}" data-gr-component-item="${escape(item.id||target.id)}" ${action} aria-label="${escape(title)}">${layout==='shortcuts'?`<span class="gr-category-image">${picture}</span>`:layout==='text'?'':picture}${textList?'<span class="gr-text-list-dot" aria-hidden="true"></span>':''}<span class="gr-config-copy"><strong>${escape(title)}</strong></span>${layout==='banner'?'<span class="gr-banner-arrow" aria-hidden="true">›</span>':textList?'<span class="gr-text-list-arrow" aria-hidden="true">›</span>':''}</${tag}>`;
+    }).join('')||'<div class="gr-empty" data-gr-empty="entries">暂时没有收录内容</div>'}</div>`;
+    return showTitle?`<section class="gr-inline-component" data-gr-component="${escape(component?.id||'')}">${component?.title?`<h2>${escape(component.title)}</h2>`:''}${grid}</section>`:grid;
+  };
   let title = 'GTA5 增强版小白入坑指南';
   const original = '先确认游戏版本\n本条目适用于 GTA V 增强版的 Online 模式。传承版和故事模式请先确认对应说明，不直接套用本条目的步骤。\n\n进入线上模式\n先完成游戏内的新手引导，再根据当前任务提示继续游玩。遇到无法进入游戏的问题，请在求助区说明版本与报错。\n\n第一次创建角色\n创建前先确认所选角色和游戏模式。涉及角色资产的操作，执行前请阅读游戏内提示。';
   const extra = '\n\n补充：切换模式前先保存\n从故事模式切换前，先确认已完成当前进度的保存，再返回菜单选择 Online。两种模式的任务进度分别查看。';
