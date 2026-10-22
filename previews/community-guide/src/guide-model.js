@@ -56,26 +56,10 @@
   const entity = (id,title,schemaId,values,asset) => base(id,title,'entity',{schemaId,values,blocks:[...(asset?[pic(id+'-image',asset,'资料配图')]:[]),p(id+'-note','请核对适用版本，获取条件以游戏内说明为准。')]});
   const recordSeeds = [
     base('article-beginner','GTA5 增强版小白入坑指南','article',{summary:'先核对版本与模式，再按步骤查找适用资料。',blocks:[h('intro-version','先确认版本与模式'),p('intro-text','增强版、传承版与故事模式不能直接套用同一套操作说明。请在游玩前核对当前版本，记录所处任务和报错。'),pic('intro-image','wiki-launch','游戏内容配图，帮助识别阅读场景'),h('intro-online','进入线上模式'),p('intro-online-text','先完成游戏内新手引导，再按照当前任务提示继续。遇到无法进入游戏的问题，说明平台、版本和完整报错。'),{id:'intro-table',type:'table',headers:['查找问题','建议提供的信息'],rows:[['任务卡住','任务名、模式、当前步骤'],['运行异常','设备、版本、错误提示']]},{id:'intro-related',type:'related',text:'继续查找',ids:['table-vehicles','table-weapons','gallery-assets']}]}),
-    base('table-vehicles','载具一览','table',{schemaId:'vehicle',entityIds:['entity-horus','entity-ignus','entity-comet'],blocks:[p('vehicle-note','点击载具名称查看详细参数。')]}),
-    base('table-weapons','武器一览','table',{schemaId:'weapon',entityIds:['entity-combat-mg','entity-pistol','entity-carbine'],blocks:[p('weapon-note','点击武器名称，对比弹容、解锁条件和获取方式。')]}),
-    base('gallery-vehicles','载具图片资料库','gallery',{schemaId:'vehicle',entityIds:['entity-horus','entity-ignus','entity-comet'],blocks:[p('vehicle-gallery-note','浏览载具图片，点击名称查看参数与获取方式。')]}),
-    base('gallery-assets','在线模式资产','gallery',{schemaId:'asset',entityIds:['entity-apartment','entity-office','entity-nightclub'],blocks:[p('asset-gallery-note','按资产类型和区域查找房产，查看位置与获取方式。')]}),
-    base('album-pegassi','佩嘉西载具图册','album',{summary:'浏览佩嘉西载具图片，点击名称查看详细资料。',items:[{id:'pegassi-horus',entityId:'entity-horus',asset:'wiki-horus-photo',caption:'荷鲁斯'},{id:'pegassi-ignus',entityId:'entity-ignus',asset:'wiki-ignus-photo',caption:'伊格纳斯追逐'}],relatedIds:['album-assets','table-vehicles'],blocks:[p('pegassi-note','查看载具外观，点击名称了解适用版本与获取方式。')]}),
-    base('album-assets','房产图册','album',{items:[{id:'asset-tongva',entityId:'entity-apartment',asset:'wiki-tongva-photo',caption:'通瓦房产'},{id:'asset-richman',entityId:'entity-office',asset:'wiki-richman-photo',caption:'里奇曼别墅'}],relatedIds:['album-pegassi','gallery-assets']}),
-    base('version-index','版本资料','version',{children:[{id:'article-update-current',label:'当期版本资料',date:'2026-10-20',current:true},{id:'article-update-old',label:'历史版本资料',date:'2026-10-15',current:false}],blocks:[p('versions-note','按版本查找资料，阅读前请确认所用版本。')]}),
     base('article-update-current','当期版本资料','article',{blocks:[pic('update-img','wiki-updates','版本资料'),h('update-title','阅读前先核对适用范围'),p('update-body','查看适用平台、版本和游玩模式，再选择对应攻略。不同版本的内容与操作可能存在差异。')]}),
     base('article-update-old','历史版本资料','article',{blocks:[pic('old-update-img','wiki-weekly','历史版本资料'),p('old-update-body','历史内容用于对照，不表示奖励仍可领取或活动仍可参加。')]}),
     base('article-paused-map','点位地图 · 暂停维护说明','article',{status:'paused',blocks:[{id:'paused-notice',type:'callout',text:'当前为暂停维护说明，页面不提供交互地图或位置保存。'},p('paused-body','请按当前游戏与版本自行核实可用资料，不将历史地图说明当成正在运行的地图工具。')]}),
     base('article-building','角色资料','article',{status:'building',blocks:[{id:'building-notice',type:'callout',text:'资料仍在整理，现有内容可以阅读。'},p('building-body','角色资料正在整理，请按适用模式查找已有内容。')]}),
-    entity('entity-horus','荷鲁斯','vehicle',{name:'荷鲁斯',category:'超级跑车',manufacturer:'佩嘉西',price:1900000,version:'增强版 / 传承版',acquisition:'游戏内载具网站；以当前游戏为准'},'wiki-horus-photo'),
-    entity('entity-ignus','伊格纳斯追逐','vehicle',{name:'伊格纳斯追逐',category:'超级跑车',manufacturer:'佩嘉西',price:2765000,version:'增强版 / 传承版',acquisition:'请在游戏内查看获取条件'},'wiki-ignus-photo'),
-    entity('entity-comet','彗星','vehicle',{name:'彗星',category:'跑车',manufacturer:'菲斯特',price:100000,version:'传承版',acquisition:'请在游戏内查看当前在售情况'}),
-    entity('entity-combat-mg','战斗机枪','weapon',{name:'战斗机枪',category:'机枪',ammo:'普通弹药',capacity:100,price:14800,level:80,version:'增强版 / 传承版',acquisition:'游戏内获取方式，具体条件以当前版本为准'},'wiki-weapon'),
-    entity('entity-pistol','手枪','weapon',{name:'手枪',category:'手枪',ammo:'普通弹药',capacity:12,price:2500,level:1,version:'增强版 / 传承版',acquisition:'请在游戏内查看获取条件'},'wiki-weapon'),
-    entity('entity-carbine','卡宾步枪','weapon',{name:'卡宾步枪',category:'步枪',ammo:'普通弹药',capacity:30,price:13000,level:42,version:'增强版',acquisition:'请在游戏内查看获取条件'},'wiki-weapon'),
-    entity('entity-apartment','通瓦房产','asset',{name:'通瓦房产',category:'豪宅',location:'通瓦山',price:200000,version:'增强版 / 传承版',acquisition:'游戏内网站，当前价格以游戏内显示为准'},'wiki-tongva-photo'),
-    entity('entity-office','里奇曼别墅','asset',{name:'里奇曼别墅',category:'豪宅',location:'里奇曼',price:1000000,version:'增强版 / 传承版',acquisition:'游戏内网站，当前价格以游戏内显示为准'},'wiki-richman-photo'),
-    entity('entity-nightclub','好麦坞宅邸','asset',{name:'好麦坞宅邸',category:'豪宅',location:'好麦坞',price:1700000,version:'增强版',acquisition:'游戏内网站，当前价格以游戏内显示为准'},'wiki-vinewood-photo')
   ];
   const article = (id,title,parts,extra={}) => base(id,title,'article',{blocks:parts.flatMap((part,i)=>[h(id+'-h'+i,part[0]),p(id+'-p'+i,part[1])]),...extra});
   recordSeeds.push(
@@ -132,10 +116,21 @@
   );
   // Preserve original taxonomy while using a small, honestly labelled curated set.
   const curated = {'b-0':['article-help','article-sources'],'b-1':['version-index','article-update-current'],'b-2':['article-beginner','article-career'],'b-3':['table-vehicles','gallery-assets','table-weapons','article-paused-map','article-career','article-clothes'],'b-4':['gallery-assets','album-assets'],'b-5':['article-heist'],'b-6':['article-heist'],'b-7':['table-vehicles','gallery-vehicles','album-pegassi'],'b-8':['article-collection'],'b-9':['table-weapons','entity-combat-mg'],'b-10':['article-achievement'],'b-11':['article-beginner','article-help'],'b-12':['article-story'],'b-13':['article-character'],'b-14':['article-gang'],'b-15':['article-sources','article-collection']};
-  const sectionSeeds = taxonomy.map((section) => ({id:section.id,title:section.title,status:section.status,tabs:section.tabs.map((tab,index) => {
+    {
+    const valid=new Set(recordSeeds.map(r=>r.id));
+    const keep=ids=>(ids||[]).filter(id=>valid.has(id));
+    recordSeeds.forEach(r=>{
+      if(r.blocks)r.blocks.forEach(b=>{if(b.type==='related')b.ids=keep(b.ids);});
+      if(r.entityIds)r.entityIds=keep(r.entityIds);
+      if(r.relatedIds)r.relatedIds=keep(r.relatedIds);
+      if(r.children)r.children=r.children.filter(c=>valid.has(c.id));
+      if(r.items)r.items=r.items.map(it=>(it.entityId&&!valid.has(it.entityId))?{...it,entityId:undefined}:it);
+    });
+  }
+const sectionSeeds = taxonomy.map((section) => ({id:section.id,title:section.title,status:section.status,tabs:section.tabs.map((tab,index) => {
     const ids=curated[section.id];
     const ordered=[ids[index%ids.length],...ids.filter(id=>id!==ids[index%ids.length])];
-    const entries=ordered.map(recordId=>({recordId,label:recordSeeds.find(r=>r.id===recordId).title}));
+    const entries=ordered.map(recordId=>recordSeeds.find(r=>r.id===recordId)).filter(Boolean).map(r=>({recordId:r.id,label:r.title}));
     return {id:tab.id,label:tab.label,entries};
   })}));
   const configSeed = {revision:1,table:{vehicle:{columns:['name','category','manufacturer','price','version','acquisition'],filters:['category','manufacturer','version']},weapon:{columns:['name','category','capacity','ammo','price','level','version','acquisition'],filters:['category','version']},asset:{columns:['name','category','location','price','version'],filters:['category','location','version']}},portal:sectionSeeds.map(s=>({sectionId:s.id,title:s.title,visible:true,layout:['b-5','b-6','b-14'].includes(s.id)?'list':'cards'}))};
@@ -215,8 +210,8 @@
     return targetId?[{id:'shortcut-'+entry.sectionId,title:entry.title,cover:entry.cover||'',visible:true,targetType:'record',targetId}]:[];
   });
   configSeed.shortcuts=shortcutSeeds(configSeed);
-  recordSeeds.find(r=>r.id==='article-beginner').relatedPostIds=['post-first-trip'];
-  recordSeeds.find(r=>r.id==='table-vehicles').relatedPostIds=['post-vehicle-choice'];
+  {const r=recordSeeds.find(x=>x.id==='article-beginner');if(r)r.relatedPostIds=['post-first-trip'];}
+  {const r=recordSeeds.find(x=>x.id==='table-vehicles');if(r)r.relatedPostIds=['post-vehicle-choice'];}
   const contentLanguages=['zh-CN','en','ru','pt-BR','ja','hi'];
   let currentLanguage='zh-CN', translationWorking=false;
   let records, config, histories, tombstones;
