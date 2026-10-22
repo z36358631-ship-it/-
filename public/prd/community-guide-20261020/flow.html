@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>攻略站共建 · 分步流程图</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:28px 20px 60px;background:#eef2f8;color:#1f2937;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.65}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-size:26px;font-weight:600;margin:0 0 6px}
+.sub{font-size:14px;color:#6b7280;margin:0 0 26px}
+.band{background:#fff;border-radius:16px;padding:22px 22px 8px;margin-bottom:26px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+.band-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.dot{width:10px;height:10px;border-radius:50%}
+.band h2{font-size:19px;font-weight:600;margin:0}
+.band .tag{font-size:12px;color:#6b7280;margin-left:auto}
+.band .lead{font-size:13.5px;color:#4b5563;margin:4px 0 18px}
+.step{display:flex;gap:18px;padding:18px 0;border-top:1px solid #edf1f6}
+.step:first-of-type{border-top:0}
+.num{flex:0 0 26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.body{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-start}
+.txt{flex:1 1 340px;min-width:0;max-width:540px}
+.body h3{font-size:15px;font-weight:600;margin:0 0 4px}
+.body p{font-size:13.5px;color:#4b5563;margin:0 0 12px}
+.body ul{font-size:13px;color:#6b7280;margin:0 0 12px;padding-left:18px}
+.body ul li{margin:2px 0}
+.shots{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;flex:0 0 auto;max-width:100%}
+.shots.wide{flex:1 1 100%}
+.shots figure{margin:0;background:#f7f9fc;border:1px solid #e5eaf2;border-radius:10px;padding:8px;max-width:100%}
+.shots img{display:block;max-width:100%;height:auto;border-radius:6px}
+.phone figure{max-width:286px}
+.phone img{max-height:514px;width:auto}
+.wide figure{width:100%;max-width:740px}
+.mini figure{max-width:214px}
+.tall figure{max-width:286px;max-height:514px;overflow-y:auto}
+.tall img{width:100%;max-height:none}
+figcaption{font-size:11.5px;color:#9aa3b0;margin-top:6px;text-align:center}
+.flowline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f7f9fc;border:1px dashed #cfd8e6;border-radius:10px;padding:12px 14px;margin:2px 0 18px;font-size:13px;color:#374151}
+.flowline b{color:#2563eb;font-weight:600}
+.arrow{color:#9aa3b0}
+.note{background:#fff8e6;border-left:3px solid #f0b429;border-radius:6px;padding:10px 14px;font-size:13px;color:#6b5200;margin:6px 0 16px}
+@media(max-width:720px){.step{flex-direction:column;gap:8px}.phone figure{max-width:100%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>攻略站共建 · 分步流程图</h1>
+<p class="sub">上：消费端 App 怎么查阅　·　下：生产端网页后台怎么生成　·　截图取自本轮 Demo 实际页面</p>
+
+<div class="band">
+<div class="band-head"><span class="dot" style="background:#7c3aed"></span><h2>一、消费端（App）：内容怎么查阅</h2><span class="tag">普通用户 · 精编</span></div>
+<p class="lead">从社区进入攻略站，靠分类挑资料、靠检索找资料，读完后互动，贡献累计到贡献榜。</p>
+
+<div class="flowline"><b>进入攻略站</b><span class="arrow">→</span><b>首页挑栏目</b><span class="arrow">→</span><b>分类或检索</b><span class="arrow">→</span><b>打开资料阅读</b><span class="arrow">→</span><b>互动与贡献</b></div>
+
+<div class="step"><div class="num">1</div><div class="body"><div class="txt">
+<h3>进入攻略站首页</h3>
+<p>社区游戏圈「攻略站」Tab 进入。顶部是当前游戏名、搜索和编辑身份入口；入口按身份显示「成为编辑」「申请审核中」「申请未通过」「精编工作台」。</p>
+</div><div class="shots phone"><figure><img src="./images/home-portrait.png" alt="攻略站首页"><figcaption>首页顶部：搜索、身份入口、分类入口</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">2</div><div class="body"><div class="txt">
+<h3>往下滑看四栏资料</h3>
+<p>四个固定栏目依次是资产与生意、抢劫任务、载具、常用检索，每栏可用数量 Tab 切换同一组内容的排列。点公共资料进阅读页，点玩家攻略进原帖。</p>
+</div><div class="shots tall"><figure><img src="./images/home-content.png" alt="首页栏目"><figcaption>首页长截图，可在框内滚动</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">3</div><div class="body"><div class="txt">
+<h3>点分类进栏目页</h3>
+<p>每页 8 个分类、分页点首尾不循环，当前 16 个分类。进栏目页后按数量 Tab 看同一组内容，左右切换不换资料集合。</p>
+</div><div class="shots phone"><figure><img src="./images/category.png" alt="分类页"><figcaption>载具分类页与数量 Tab</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">4</div><div class="body"><div class="txt">
+<h3>打开资料阅读页</h3>
+<p>显示标题、适用范围、最新编辑时间与正文，底部是赞、收藏、评论和「…」。横屏进独立阅读页时收起主导航，返回恢复攻略上下文。</p>
+</div><div class="shots phone"><figure><img src="./images/detail-portrait.png" alt="词条阅读"><figcaption>图文指南竖屏阅读</figcaption></figure><figure><img src="./images/detail-landscape.png" alt="横屏阅读"><figcaption>掌机横屏阅读</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">5</div><div class="body"><div class="txt">
+<h3>六类资料用不同结构展示</h3>
+<p>图文指南看正文；数据表按字段方案出列并可横向滚动；图片资料库用卡片；实体页汇总所有引用它的资料；图册支持大图浏览；版本索引区分当期与历史。</p>
+</div><div class="shots"><figure style="width:100%;max-width:720px"><img src="./images/templates.png" alt="六类资料"><figcaption>图文指南 · 数据表 · 图片资料库 · 实体 · 图册 · 版本索引</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">6</div><div class="body"><div class="txt">
+<h3>数据表、图册、版本索引的细节</h3>
+<p>数据表摘要收进可展开的「资料说明」；图册大图层支持左右键与 Esc，首尾不循环；版本索引至少一篇文章，允许 0 或 1 项标为当期。</p>
+</div><div class="shots mini"><figure><img src="./images/template-table.png" alt="数据表"><figcaption>数据表</figcaption></figure><figure><img src="./images/template-gallery.png" alt="图册"><figcaption>图册</figcaption></figure><figure><img src="./images/template-version.png" alt="版本索引"><figcaption>版本索引</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">7</div><div class="body"><div class="txt">
+<h3>互动与分享</h3>
+<p>赞和收藏可取消并按账号去重，评论最多 500 字。点「…」弹出分享菜单，国内给微信、朋友圈、QQ、微博，海外给 WhatsApp、Facebook、X、Telegram。</p>
+</div><div class="shots phone"><figure><img src="./images/reader-more.png" alt="分享菜单"><figcaption>底部更多操作与分享渠道</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">8</div><div class="body"><div class="txt">
+<h3>看这条资料被谁改过</h3>
+<p>阅读页的编辑历史按修订列出作者、时间和修改说明。打开旧版后只能读，隐藏编辑与写入类互动，可点「回到当前版本」。</p>
+</div><div class="shots phone"><figure><img src="./images/reader-history.png" alt="阅读侧编辑历史"><figcaption>修订列表与只读快照</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">9</div><div class="body"><div class="txt">
+<h3>读作者原帖</h3>
+<p>玩家攻略打开的是作者原帖，保留作者、关注与互动，不提供公共词条的编辑历史。一个公共词条最多关联 24 篇有效且不重复的原帖。</p>
+</div><div class="shots phone"><figure><img src="./images/original-post.png" alt="作者原帖"><figcaption>原帖详情与作者信息</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">10</div><div class="body"><div class="txt">
+<h3>申请成为精编</h3>
+<p>点「成为编辑」进申请页，填联系方式、贡献计划，选 Wiki 使用情况、编写经验与外文能力。申请不是普通用户改资料的前置条件，只用于拿到新建词条、批量维护和组织栏目的能力。</p>
+</div><div class="shots phone"><figure><img src="./images/application-form.png" alt="申请表"><figcaption>权限对照与申请表单</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">11</div><div class="body"><div class="txt">
+<h3>提交后看状态</h3>
+<p>待审核不显示重复提交；驳回显示原因并预填上次内容，可补充后重提；通过后显示当前身份和「进入精编工作台」。</p>
+</div><div class="shots phone"><figure><img src="./images/application-pending.png" alt="审核中"><figcaption>审核中</figcaption></figure><figure><img src="./images/application-approved.png" alt="已通过"><figcaption>已通过</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">12</div><div class="body"><div class="txt">
+<h3>看贡献榜与自己的编辑记录</h3>
+<p>首页「贡献榜」进贡献页，默认百科贡献 Tab，Top 30 按贡献分排序；切到编辑历史看每条修订，点贡献者名称可筛选其记录。</p>
+</div><div class="shots phone"><figure><img src="./images/contribution.png" alt="贡献榜"><figcaption>百科贡献与计分明细</figcaption></figure><figure><img src="./images/contribution-history.png" alt="贡献页编辑历史"><figcaption>编辑历史 Tab</figcaption></figure></div>
+</div></div>
+</div>
+
+<div class="band">
+<div class="band-head"><span class="dot" style="background:#2563eb"></span><h2>二、生产端（网页后台）：内容怎么生成</h2><span class="tag">精编 · 高级精编 · 运营</span></div>
+<p class="lead">扫码登录选百科，先在词条配置把资料写出来，再到首页配置决定它在 App 里的位置，保存后整份生效、读端取最新修订。</p>
+
+<div class="flowline"><b>扫码登录</b><span class="arrow">→</span><b>选百科</b><span class="arrow">→</span><b>词条配置</b><span class="arrow">→</span><b>首页配置</b><span class="arrow">→</span><b>保存生效</b></div>
+
+<div class="step"><div class="num">13</div><div class="body"><div class="txt">
+<h3>扫码登录</h3>
+<p>顶部是百科图标与名称，右侧用 App 扫码。中文登录进国内社区，English 进海外社区，登录地区本次会话固定。</p>
+</div><div class="shots wide"><figure><img src="./images/login.png" alt="登录页"><figcaption>扫码登录与中英切换</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">14</div><div class="body"><div class="txt">
+<h3>选一个百科进去</h3>
+<p>列表按地区和账号可访问范围展示，每行给出百科名称、分区 ID 和词条数。进去后侧栏只有首页配置、词条配置、编辑记录、权限与审核四项，按实际权限显示。</p>
+</div><div class="shots wide"><figure><img src="./images/wiki-list.png" alt="百科列表"><figcaption>百科列表与分区 ID</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">15</div><div class="body"><div class="txt">
+<h3>看词条列表</h3>
+<p>列表给 ID、名称、更新时间和操作，搜索按 ID、名称、替代名匹配。勾选框只对当前身份可删的对象可用，点批量删除先在弹窗里确认数量和名称。</p>
+</div><div class="shots wide"><figure><img src="./images/entry-list.png" alt="词条列表"><figcaption>列表、搜索与批量选择</figcaption></figure><figure><img src="./images/bulk-delete.png" alt="批量删除"><figcaption>批量删除确认弹窗</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">16</div><div class="body"><div class="txt">
+<h3>新建或编辑词条</h3>
+<p>点「＋新建词条」直接建一条并进编辑态，标题默认「未命名词条」，页面标题是「编辑词条」。顶部填词条名和替代名，正文用宽幅富文本，工具栏有小标题、字号、粗体、斜体、下划线、清除格式、链接、图片、视频和五类共用组件。</p>
+</div><div class="shots wide"><figure><img src="./images/entry-editor.png" alt="词条编辑"><figcaption>词条名、替代名与宽幅正文</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">17</div><div class="body"><div class="txt">
+<h3>需要时切 HTML 模式</h3>
+<p>富文本和 HTML 共用同一份草稿，切回来保留可支持的内容。源码最多 400 万字符，只接受已支持的正文结构与安全链接，遇到不支持的写法保留输入并拦截保存。</p>
+</div><div class="shots wide"><figure><img src="./images/entry-html.png" alt="HTML 编辑"><figcaption>HTML 源码模式</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">18</div><div class="body"><div class="txt">
+<h3>补内容：从帖子取、加声明</h3>
+<p>输入帖子 ID 可把该帖正文和封面追加到草稿末尾，不覆盖原正文。添加声明提供四项复选，可任意组合，预览与阅读都会显示已选内容。</p>
+</div><div class="shots wide"><figure><img src="./images/entry-advanced.png" alt="高级选项"><figcaption>帖子获取与四项声明</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">19</div><div class="body"><div class="txt">
+<h3>查这条词条的编辑历史</h3>
+<p>标题右侧「基于 vN」旁边就是「编辑历史」，点开是就地弹窗，只列这条词条的修订，点查看打开该修订的只读快照，关掉回到编辑页。</p>
+</div><div class="shots wide"><figure><img src="./images/history.png" alt="编辑历史"><figcaption>本词条修订列表</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">20</div><div class="body"><div class="txt">
+<h3>保存与冲突处理</h3>
+<p>保存时检查权限、对象是否存在、基准版本和实际变化，没变化不生成新版本。遇到版本冲突不覆盖新公开版，可「舍弃当前草稿，载入最新版本」；取消编辑恢复公开版、不写历史。</p>
+</div><div class="shots wide"><figure><img src="./images/detail-saved.png" alt="保存后读端"><figcaption>保存后读端即为最新修订</figcaption></figure><figure><img src="./images/studio-conflict.png" alt="版本冲突"><figcaption>版本冲突对照</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">21</div><div class="body"><div class="txt">
+<h3>海外登录时配多语言</h3>
+<p>词条与首页配置上方是内容语言 Tab，「管理多语言」只在海外登录出现。左侧勾可用语言、右侧管理已选语言，默认语言必选不可移除，移除某种语言只隐藏 Tab，内容与草稿都保留。</p>
+</div><div class="shots wide"><figure><img src="./images/languages.png" alt="管理多语言"><figcaption>六种语言与已选列表</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">22</div><div class="body"><div class="txt">
+<h3>到首页配置决定它在哪出现</h3>
+<p>左侧是连续可编辑的画布，右侧是当前选中版块、分类或项目的操作区。点版块齿轮改名称、类型和横竖屏每行数量，右侧同时给出预览。</p>
+</div><div class="shots wide"><figure><img src="./images/studio-config.png" alt="首页配置"><figcaption>画布与右侧版块操作区</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">23</div><div class="body"><div class="txt">
+<h3>添加一个项目并绑定词条</h3>
+<p>点「添加项目」先在右侧填名称、分类、类型、配图，绑定词条可手动输入，按标题、替代名或 ID 给建议；输入与已有标题精确匹配就复用，不匹配时点「确定」才用输入内容新建一条空正文词条。点「确定」后才加入左侧画布。</p>
+</div><div class="shots wide"><figure><img src="./images/item-draft.png" alt="项目草稿"><figcaption>项目草稿与绑定词条</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">24</div><div class="body"><div class="txt">
+<h3>删版块、分类、内容项都要确认</h3>
+<p>三类删除都先弹居中确认弹窗，取消或按 Esc 都不生效，点「确认删除」才校验权限和引用。被分类入口引用的栏目要先改或去掉引用。</p>
+</div><div class="shots wide"><figure><img src="./images/section-delete.png" alt="删除版块确认"><figcaption>删除版块确认弹窗</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">25</div><div class="body"><div class="txt">
+<h3>配字段方案与批量维护</h3>
+<p>模板数据页维护数据表的公开列、筛选项和新增选填字段；已有方案与字段必须保留，不能改标识、类型或必填性。批量维护可选 1—100 个实体，勾统一修改字段后先预览逐条差异再保存，任一条失败整批不写入。</p>
+</div><div class="shots wide"><figure><img src="./images/studio-schema.png" alt="字段方案"><figcaption>字段方案与公开列</figcaption></figure><figure><img src="./images/studio-batch.png" alt="批量维护"><figcaption>批量维护与差异预览</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">26</div><div class="body"><div class="txt">
+<h3>最后填说明并整份保存</h3>
+<p>右侧没有未确认项目时才允许整页保存。填必填的保存说明（最多 120 字），按当前配置修订号检查，成功整份生效、修订号加 1，读端随即使用新配置。</p>
+</div><div class="shots wide"><figure><img src="./images/studio-saved.png" alt="配置保存"><figcaption>保存成功提示</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">27</div><div class="body"><div class="txt">
+<h3>管权限：谁能做什么</h3>
+<p>权限总览是八项默认权限乘三种身份的矩阵，每行末尾可「编辑」，标题右侧可「＋新建权限项」，填类别、操作名称和用户身份。下方还能改这个百科的编辑范围：所有人可编辑，还是仅精编可编辑。</p>
+</div><div class="shots wide"><figure><img src="./images/governance-permissions.png" alt="权限总览"><figcaption>权限矩阵与新建权限项</figcaption></figure><figure><img src="./images/policy-drawer.png" alt="编辑范围"><figcaption>编辑范围抽屉</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">28</div><div class="body"><div class="txt">
+<h3>管人和黑名单</h3>
+<p>成员详情里「调整身份」只给初级精编、高级精编、取消初级精编、取消高级精编，改前弹框确认。黑名单可填账号 UID 或登录账号，填一个即可；受限账号能浏览后台但不能写入。</p>
+</div><div class="shots wide"><figure><img src="./images/governance-roles.png" alt="身份管理"><figcaption>成员身份</figcaption></figure><figure><img src="./images/blacklist.png" alt="黑名单"><figcaption>加入黑名单</figcaption></figure></div>
+</div></div>
+
+<div class="step"><div class="num">29</div><div class="body"><div class="txt">
+<h3>审精编申请</h3>
+<p>待审核记录的操作列直接是查看、通过、拒绝。通过弹框确认后授予初级身份；拒绝要填 1—200 字原因。处理完状态更新，不可重复处理。</p>
+</div><div class="shots wide"><figure><img src="./images/governance-review.png" alt="精编审核"><figcaption>申请列表与通过、拒绝</figcaption></figure></div>
+</div></div>
+
+<div class="note">两端的关系：生产端保存一次，公共资料库就多一个公开修订；消费端读的始终是最新修订。读者在阅读页点「词条有误」可复制该词条的网页后台地址，回到生产端继续改。</div>
+</div>
+</div>
+</body>
+</html>
