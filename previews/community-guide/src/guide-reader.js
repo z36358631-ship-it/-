@@ -114,9 +114,11 @@
     const count=layoutColumns(layout,columns,orientation==='landscape'?'landscape':'portrait');
     return `<section class="gr-curated gr-home-section" data-gr-home-section="${esc(id)}" data-gr-curated-section="${esc(id)}" data-gr-home-layout="${layout}" data-gr-home-variant="${layout}-${count}"><div class="gr-home-section-heading"><h2>${esc(section.title)}</h2></div>${localTabs(section,tab,{preview})}${configuredEntries(section,tab,{preview,orientation,maxRows:['b-5','b-7','b-3'].includes(id)?2:0})}</section>`;
   }
-  function homeContent(config=M.config(),{preview=false}={}){
-    const rows=M.list().filter(r=>inCurrentContext(r));
-    return `<div class="gr-home-list"><div class="gr-home-list-head"><h2>攻略资料</h2><span>共 ${rows.length} 条</span></div>${rows.map(r=>`<button type="button" class="gr-search-result" ${preview?'tabindex="-1"':`data-guide-open="${esc(r.id)}"`}><small>共建资料</small><strong>${esc(displayTitle(r.title))}</strong><span>${esc(r.summary||'')}</span></button>`).join('')||'<div class="gr-empty">暂无攻略资料</div>'}</div>`;
+  function homeContent(config=M.config(),{preview=false,orientation=GH.orientation,selectedTabs={}}={}){
+    const sections=M.sections(config),options={preview,orientation,selectedTabs};
+    if(config.homeOrder)return `<div class="gr-home-sections gr-home-ordered">${config.homeOrder.map(id=>id==='legacy-shortcuts'?categoryBlock(config,{preview,orientation}):homeSection(sections.find(section=>section.id===id),options)).join('')}</div>`;
+    const order=seedCommunity()?['b-4','b-5','b-7','b-3',...sections.filter(section=>!/^b-\d+$/.test(section.id)).map(section=>section.id)]:sections.map(section=>section.id);
+    return categoryBlock(config,{preview,orientation})+`<div class="gr-home-sections">${order.map(id=>homeSection(sections.find(section=>section.id===id),options)).join('')}</div>`;
   }
   GH.guideHomePreview=(config,{orientation='portrait',selectedTabs={}}={})=>`<div class="gr-portal-preview ${orientation==='landscape'?'gr-landscape':''}" data-gr-preview="home">${homeContent(config,{preview:true,orientation,selectedTabs})}</div>`;
   GH.guidePortalPreview=function(config,{orientation='portrait',sectionId,tabId}={}){

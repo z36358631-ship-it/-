@@ -55,7 +55,7 @@
   const base = (id,title,template,extra={}) => ({id,title,template,summary:'',revision:1,scope:'增强版 / Online',status:'ready',blocks:[],sourceNote,...extra});
   const entity = (id,title,schemaId,values,asset) => base(id,title,'entity',{schemaId,values,blocks:[...(asset?[pic(id+'-image',asset,'资料配图')]:[]),p(id+'-note','请核对适用版本，获取条件以游戏内说明为准。')]});
   const recordSeeds = [
-    base('article-beginner','GTA5 增强版小白入坑指南','article',{summary:'先核对版本与模式，再按步骤查找适用资料。',blocks:[h('intro-version','先确认版本与模式'),p('intro-text','增强版、传承版与故事模式不能直接套用同一套操作说明。请在游玩前核对当前版本，记录所处任务和报错。'),pic('intro-image','wiki-launch','游戏内容配图，帮助识别阅读场景'),h('intro-online','进入线上模式'),p('intro-online-text','先完成游戏内新手引导，再按照当前任务提示继续。遇到无法进入游戏的问题，说明平台、版本和完整报错。'),{id:'intro-table',type:'table',headers:['查找问题','建议提供的信息'],rows:[['任务卡住','任务名、模式、当前步骤'],['运行异常','设备、版本、错误提示']]},{id:'intro-related',type:'related',text:'继续查找',ids:['table-vehicles','table-weapons','gallery-assets']}]}),
+    base('article-beginner','GTA5 增强版小白入坑指南','article',{summary:'先核对版本与模式，再按步骤查找适用资料。',blocks:[h('intro-version','先确认版本与模式'),p('intro-text','增强版、传承版与故事模式不能直接套用同一套操作说明。请在游玩前核对当前版本，记录所处任务和报错。'),pic('intro-image','wiki-launch','游戏内容配图，帮助识别阅读场景'),h('intro-online','进入线上模式'),p('intro-online-text','先完成游戏内新手引导，再按照当前任务提示继续。遇到无法进入游戏的问题，说明平台、版本和完整报错。'),{id:'intro-table',type:'table',headers:['查找问题','建议提供的信息'],rows:[['任务卡住','任务名、模式、当前步骤'],['运行异常','设备、版本、错误提示']]},{id:'intro-related',type:'related',text:'继续查找',ids:['article-career','article-collection','article-career']}]}),
     base('article-update-current','当期版本资料','article',{blocks:[pic('update-img','wiki-updates','版本资料'),h('update-title','阅读前先核对适用范围'),p('update-body','查看适用平台、版本和游玩模式，再选择对应攻略。不同版本的内容与操作可能存在差异。')]}),
     base('article-update-old','历史版本资料','article',{blocks:[pic('old-update-img','wiki-weekly','历史版本资料'),p('old-update-body','历史内容用于对照，不表示奖励仍可领取或活动仍可参加。')]}),
     base('article-paused-map','点位地图 · 暂停维护说明','article',{status:'paused',blocks:[{id:'paused-notice',type:'callout',text:'当前为暂停维护说明，页面不提供交互地图或位置保存。'},p('paused-body','请按当前游戏与版本自行核实可用资料，不将历史地图说明当成正在运行的地图工具。')]}),
@@ -115,12 +115,13 @@
     ],{status:'building',scope:'故事模式 / 组织资料'})
   );
   // Preserve original taxonomy while using a small, honestly labelled curated set.
-  const curated = {'b-0':['article-help','article-sources'],'b-1':['version-index','article-update-current'],'b-2':['article-beginner','article-career'],'b-3':['table-vehicles','gallery-assets','table-weapons','article-paused-map','article-career','article-clothes'],'b-4':['gallery-assets','album-assets'],'b-5':['article-heist'],'b-6':['article-heist'],'b-7':['table-vehicles','gallery-vehicles','album-pegassi'],'b-8':['article-collection'],'b-9':['table-weapons','entity-combat-mg'],'b-10':['article-achievement'],'b-11':['article-beginner','article-help'],'b-12':['article-story'],'b-13':['article-character'],'b-14':['article-gang'],'b-15':['article-sources','article-collection']};
+  const curated = {'b-0':['article-help','article-sources'],'b-1':['article-beginner','article-update-current'],'b-2':['article-heist','article-story'],'b-3':['article-career','article-clothes'],'b-4':['article-career','article-update-current'],'b-5':['article-update-current','article-update-old'],'b-6':['article-sources','article-paused-map'],'b-7':['article-collection','article-achievement'],'b-8':['article-story','article-beginner'],'b-9':['article-heist','article-character'],'b-10':['article-achievement','article-collection'],'b-11':['article-story','article-clothes'],'b-12':['article-character','article-gang'],'b-13':['article-gang','article-character'],'b-14':['article-sources','article-help'],'b-15':['article-help','article-sources']};
+  Object.keys(curated).forEach(k=>{curated[k]=[...new Set(curated[k])];});
     {
     const valid=new Set(recordSeeds.map(r=>r.id));
     const keep=ids=>(ids||[]).filter(id=>valid.has(id));
     recordSeeds.forEach(r=>{
-      if(r.blocks)r.blocks.forEach(b=>{if(b.type==='related')b.ids=keep(b.ids);});
+      if(r.blocks)r.blocks.forEach(b=>{if(b.type==='related')b.ids=[...new Set(keep(b.ids).filter(id=>id!==r.id))];});
       if(r.entityIds)r.entityIds=keep(r.entityIds);
       if(r.relatedIds)r.relatedIds=keep(r.relatedIds);
       if(r.children)r.children=r.children.filter(c=>valid.has(c.id));
@@ -165,11 +166,11 @@ const sectionSeeds = taxonomy.map((section) => ({id:section.id,title:section.tit
     ['b-15','text',4,['article-sources','article-collection','article-career','article-clothes']],
     ['b-11','image-top',1,['post-first-trip','article-beginner']],
     ['b-2','image-top',2,['post-first-trip','article-beginner']],
-    ['b-9','image-top',3,['table-weapons','entity-combat-mg','article-career']],
-    ['b-4','image-top',4,['gallery-assets','album-assets','article-career','article-update-current']],
-    ['b-7','image-left',1,['table-vehicles']],
-    ['b-3','image-left',2,['table-vehicles','table-weapons']],
-    ['b-8','image-left',3,['article-collection','article-clothes','article-achievement']],
+    ['b-9','image-top',3,['article-collection','article-achievement']],
+    ['b-4','image-top',4,['article-career','article-update-current']],
+    ['b-7','image-left',1,['article-beginner','article-career']],
+    ['b-3','image-left',2,['article-beginner','article-collection']],
+    ['b-8','image-left',3,['article-collection','article-achievement','article-sources']],
     ['b-12','image-left',4,['article-story','article-character','article-gang','article-achievement']],
     ['b-1','banner',1,['article-update-current']]
   ];
@@ -178,7 +179,7 @@ const sectionSeeds = taxonomy.map((section) => ({id:section.id,title:section.tit
   for(const entry of configSeed.portal)if(entry.layout==='image-left')entry.columns={portrait:Math.min(2,entry.columns.portrait),landscape:Math.min(2,entry.columns.landscape)};
   const assetPortal=configSeed.portal.find(p=>p.sectionId==='b-4');
   assetPortal.layout='banner';assetPortal.columns={portrait:1,landscape:1};
-  assetPortal.tabEntries[assetPortal.tabs[0].id]=['gallery-assets','album-assets'];
+  assetPortal.tabEntries[assetPortal.tabs[0].id]=['article-career'];
   const heistPortal=configSeed.portal.find(p=>p.sectionId==='b-5');
   heistPortal.title='抢劫任务';heistPortal.layout='image-top';heistPortal.columns={portrait:3,landscape:3};
   heistPortal.tabEntries[heistPortal.tabs[0].id]=['article-heist','post-first-trip','article-career'];
@@ -191,12 +192,12 @@ const sectionSeeds = taxonomy.map((section) => ({id:section.id,title:section.tit
     ['b-15','text',4,['article-sources','article-collection','article-career','article-clothes']],
     ['b-11','image-top',4,['post-first-trip','article-beginner','article-help','article-career']],
     ['b-2','image-top',4,['post-first-trip','article-beginner','article-career','article-help']],
-    ['b-9','image-top',4,['table-weapons','entity-combat-mg','article-career','article-sources']],
-    ['b-4','banner',1,['gallery-assets','album-assets']],
-    ['b-7','image-left',2,['table-vehicles','gallery-vehicles','album-pegassi','post-vehicle-choice']],
-    ['b-8','image-left',2,['article-collection','article-clothes','article-achievement']],
+    ['b-9','image-top',4,['article-collection','article-achievement','article-help']],
+    ['b-4','banner',1,['article-career','article-update-current']],
+    ['b-7','image-left',2,['article-beginner','article-career','article-clothes']],
+    ['b-8','image-left',2,['article-collection','article-achievement','article-sources']],
     ['b-12','image-left',2,['article-story','article-character','article-gang','article-achievement']],
-    ['b-1','banner',1,['version-index','article-update-current']]
+    ['b-1','banner',1,['article-update-current']]
   ];
   countSections.forEach(([id,layout,max,ids])=>{
     const entry=configSeed.portal.find(p=>p.sectionId===id),original=sectionSeeds.find(s=>s.id===id).tabs;
@@ -211,7 +212,7 @@ const sectionSeeds = taxonomy.map((section) => ({id:section.id,title:section.tit
   });
   configSeed.shortcuts=shortcutSeeds(configSeed);
   {const r=recordSeeds.find(x=>x.id==='article-beginner');if(r)r.relatedPostIds=['post-first-trip'];}
-  {const r=recordSeeds.find(x=>x.id==='table-vehicles');if(r)r.relatedPostIds=['post-vehicle-choice'];}
+  {const r=recordSeeds.find(x=>x.id==='article-career');if(r)r.relatedPostIds=['post-vehicle-choice'];}
   const contentLanguages=['zh-CN','en','ru','pt-BR','ja','hi'];
   let currentLanguage='zh-CN', translationWorking=false;
   let records, config, histories, tombstones;
