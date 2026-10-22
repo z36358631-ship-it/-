@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1240px;
+    padding: 28px 32px 24px;
+    background: #ffffff;
+    color: #1b1d22;
+    font-family: "MiSans VF", "MiSans", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -.2px; }
+  h1 span { color: #0f8f63; }
+  .sub { margin-top: 6px; color: #6b7280; font-size: 12.5px; line-height: 19px; }
+  .path { display: flex; align-items: flex-start; gap: 10px; margin-top: 22px; }
+  .step { width: 214px; }
+  .shot {
+    height: 372px;
+    overflow: hidden;
+    border: 1px solid #d8dbe2;
+    border-radius: 14px;
+    background: #0b0c0e;
+  }
+  .shot img { width: 100%; display: block; }
+  .shot.wide img { width: 214px; }
+  .label { margin-top: 8px; font-size: 12px; line-height: 17px; color: #2b2f36; }
+  .label b { display: block; font-size: 12px; font-weight: 650; }
+  .label span { color: #6b7280; }
+  .arrow {
+    flex: none;
+    margin-top: 170px;
+    color: #b9bfc9;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .card {
+    width: 250px;
+    margin-top: 4px;
+    padding: 16px 16px 14px;
+    border: 1px solid #e3b34a;
+    border-radius: 14px;
+    background: #fffaef;
+  }
+  .card b { font-size: 13px; color: #8a5a00; }
+  .card ul { margin: 8px 0 0 16px; color: #3f434b; font-size: 12px; line-height: 19px; }
+  .foot {
+    margin-top: 18px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #f5f6f8;
+    color: #4b5059;
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .foot b { color: #1b1d22; }
+</style>
+</head>
+<body>
+  <h1>路径 C｜查询页分享 → 站外只读查询页 <span>· V1.9 新增</span></h1>
+  <p class="sub">分享的是固定查询页链接（不带筛选条件）；站外页只做查询与结果浏览，复制分享码与应用配置仍在 App 内完成。</p>
+
+  <div class="path">
+    <div class="step">
+      <div class="shot"><img src="P05-query-share-entry.png" alt="查询页分享入口"></div>
+      <div class="label"><b>① 兼容性查询页</b><span>右上角新增分享按钮，点击直接拉起通用分享</span></div>
+    </div>
+    <div class="arrow">›</div>
+    <div class="step">
+      <div class="shot"><img src="P06-share-sheet.png" alt="通用分享面板"></div>
+      <div class="label"><b>② 通用分享面板</b><span>微信 / 朋友圈 / QQ / 微博 / 复制链接，内容为固定站外链接</span></div>
+    </div>
+    <div class="arrow">›</div>
+    <div class="step">
+      <div class="shot"><img src="W01-outside-query-portrait.png" alt="站外只读查询页"></div>
+      <div class="label"><b>③ 站外只读查询页</b><span>浏览器直接打开，不识别机型、不复制分享码</span></div>
+    </div>
+    <div class="arrow">›</div>
+    <div class="card">
+      <b>④ 接收者下一步</b>
+      <ul>
+        <li>查到的记录可看兼容状态与平均帧率</li>
+        <li>需要应用配置时，按页面引导打开或下载盖世游戏</li>
+        <li>站外页不写剪贴板、不改动本机配置</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="foot"><b>边界：</b>分享链接固定、不携带游戏／机型／兼容性条件；站外页与 App 内使用同一数据源与同一排序口径，但筛选条件各自独立。机型识别依赖 App Bridge，站外页默认“全部机型”，由用户自行选择。</p>
+</body>
+</html>
