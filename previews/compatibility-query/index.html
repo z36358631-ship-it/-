@@ -322,11 +322,17 @@
     }
     .share-cancel:hover { color: #fff; }
     .web-page {
-      min-height: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       background: #0b0c0e;
     }
+    .web-scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; }
+    .web-scroll::-webkit-scrollbar { display: none; }
+    .web-open-app { padding: 0 14px 16px; }
+    .web-open-app button { width: 100%; min-height: 44px; border: 1px solid #33353a; border-radius: 12px; color: var(--text-secondary); font-size: 14px; }
     .browser-bar {
       display: flex;
       align-items: center;
@@ -435,7 +441,9 @@
       font-size: 12px;
     }
     .web-cta {
-      margin-top: auto;
+      flex: none;
+      position: relative;
+      z-index: 2;
       padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
       border-top: 1px solid #232428;
       background: #101114;
@@ -443,7 +451,7 @@
     .web-cta button { display: block; width: 100%; min-height: 44px; border-radius: 12px; font-size: 14px; font-weight: 560; }
     .web-cta-primary { background: var(--brand-gold); color: #17130a; }
     .web-cta-secondary { margin-top: 8px; border: 1px solid #33353a; color: var(--text-secondary); }
-    .web-cta > p { margin-top: 8px; color: var(--text-muted); font-size: 11px; line-height: 17px; text-align: center; }
+    .web-cta > p { margin-top: 6px; color: var(--text-muted); font-size: 11px; line-height: 17px; text-align: center; }
     .web-hint { margin-top: 8px; color: var(--brand-green); font-size: 12px; text-align: center; }
     .filter-panel {
       margin-top: 20px;
@@ -3744,7 +3752,7 @@
 
     function renderWebLanding() {
       const records = resultRecords();
-      return '<div class="web-page">' +
+      return '<div class="web-page"><div class="web-scroll" data-web-scroll>' +
         '<div class="browser-bar">' +
           '<span class="browser-lock" aria-hidden="true">🔒</span>' +
           '<span class="browser-url">' + esc(OUTSIDE_QUERY_URL) + '</span>' +
@@ -3764,12 +3772,11 @@
             ? '<div class="web-cards">' + records.map(renderWebRecordCard).join("") + '</div>'
             : '<div class="web-empty"><p>暂无符合条件的兼容记录</p>' +
               '<button class="web-empty-clear" data-clear-filters type="button">清空筛选</button></div>') +
-          (state.web.cta ? '<p class="web-hint" aria-live="polite">' + esc(state.web.cta) + '</p>' : '') +
         '</section>' +
-        '<footer class="web-cta">' +
-          '<button class="web-cta-primary" data-web-cta="open" type="button">打开盖世游戏应用配置</button>' +
-          '<button class="web-cta-secondary" data-web-cta="download" type="button">下载盖世游戏</button>' +
-          '<p>站外页不提供复制分享码与应用配置，需要在 App 内兼容性查询页操作。</p>' +
+        '<div class="web-open-app"><button data-web-cta="open" type="button">打开盖世游戏应用配置</button></div></div>' +
+        '<footer class="web-cta" aria-label="下载盖世游戏">' +
+          '<button class="web-cta-primary" data-web-cta="download" type="button">下载盖世游戏</button>' +
+          (state.web.cta ? '<div class="web-hint" aria-live="polite">' + esc(state.web.cta) + '</div>' : '') +
         '</footer>' +
       '</div>';
     }
