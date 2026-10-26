@@ -1,0 +1,20 @@
+/* 右上主窗口按钮独立于远控窗口左上的交通灯按钮。 */
+.mac-app-window-actions{display:flex;align-items:center;gap:3px;margin-left:9px;padding-left:10px;border-left:1px solid #dfe7ef;position:relative;z-index:120;flex-shrink:0}
+.sr-client .mac-app-window-actions button{width:31px;min-width:31px;height:30px;min-height:30px;padding:6px;border-radius:5px;color:#526d87;background:transparent}
+.sr-client .mac-app-window-actions button svg{width:16px;height:16px}
+.sr-client .mac-app-window-actions button:hover{background:#e5edf7}
+.sr-client .mac-app-window-actions [data-action=mac-app-close]:hover{background:#dc4550;color:#fff}
+.sr-client .mac-app-window-actions button:focus-visible{outline:2px solid #1671d9;outline-offset:1px}
+.mac-remote-title .mac-app-window-actions{border-color:#53606f;margin-left:3px;padding-left:5px}
+.sr-client .mac-remote-title .mac-app-window-actions button{color:#d4dce7}
+.sr-client .mac-remote-title .mac-app-window-actions button:hover{background:#3b4c60}
+.sr-client .mac-remote-title .mac-app-window-actions [data-action=mac-app-close]:hover{background:#dc4550;color:#fff}
+.sr-client .sr-local.sr-settings-entry{padding-top:14px;padding-bottom:0}
+.sr-client .sr-local.sr-settings-entry button{margin:0;min-height:38px}
+.sr-client .sr-local.sr-settings-entry button.selected{background:#dfedfc;color:#1976df}
+.sr-client .mac-close-window-panel{margin-bottom:14px}
+.sr-client #mac-close-window-mode{min-width:160px;background:#fff;border:1px solid #d6e1ed;border-radius:7px;color:#344d67;padding:8px 10px;cursor:pointer;font-size:13px}
+.sr-client #mac-close-window-mode:focus-visible{outline:2px solid #1671d9;outline-offset:2px}
+.mac-window-placeholder{width:min(1180px,calc(100vw - 32px));min-height:680px;flex-shrink:0}
+.mac-window-review .primary{background:#1976df;color:white}
+@media(max-width:1500px){.mac-window-suspended{flex-direction:column-reverse}.mac-window-placeholder{min-height:300px}}
