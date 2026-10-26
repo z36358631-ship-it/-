@@ -1,15 +1,16 @@
 // Native-style More and Account menus, reusing the existing Mac workspace.
 const macPersonal={menu:''};
-function macPersonalMenu(){if(!standaloneMac.signed||!macPersonal.menu)return '';if(macPersonal.menu==='account')return '<section class="personal-dropdown mac-account-popover" aria-label="个人账号"><h3>个人账号</h3><div class="row"><span class="personal-avatar" role="img" aria-label="账户头像">'+icon('user')+'</span><div class="grow"><strong>盖世玩家</strong><small>'+esc(standaloneMac.accountIdentity||'盖世演示账号')+'</small></div></div><div class="mac-account-logout">'+remoteSupportRow('退出登录','sr-logout','power')+'</div></section>';return '<nav class="personal-dropdown mac-more-menu" aria-label="更多菜单">'+remoteSupportRow('连接教程','mac-more:guide','monitor')+remoteSupportRow('帮助中心','mac-support:help','info')+remoteUpdateRow('mac')+remoteSupportRow('关于','mac-support:about','info')+'</nav>';}
+function macPersonalMenu(){if(!standaloneMac.signed||!macPersonal.menu)return '';if(macPersonal.menu==='account')return '<section class="personal-dropdown mac-account-popover" aria-label="个人账号"><h3>个人账号</h3><div class="row"><span class="personal-avatar" role="img" aria-label="账户头像">'+icon('user')+'</span><div class="grow"><div class="personal-nickname-row"><strong>盖世玩家</strong>'+btn('退出登录','sr-logout','personal-inline-logout')+'</div><small>'+esc(standaloneMac.accountIdentity||'盖世演示账号')+'</small></div></div></section>';return '<nav class="personal-dropdown mac-more-menu" aria-label="更多菜单">'+remoteSupportRow('连接教程','mac-more:guide','monitor')+remoteSupportRow('帮助中心','mac-support:help','info')+remoteUpdateRow('mac')+remoteSupportRow('关于','mac-support:about','info')+'</nav>';}
 remoteMacTitle=function(){return '<header class="sr-titlebar">'+remoteMark()+'<strong>盖世远程</strong><div class="grow"></div>'+(standaloneMac.signed?'<button class="ghost mac-account-entry" data-action="mac-account" aria-label="账户" aria-expanded="'+(macPersonal.menu==='account')+'">'+icon('user')+'<span>账户</span></button><button class="ghost mac-more-entry" data-action="mac-more-toggle" aria-expanded="'+(macPersonal.menu==='more')+'">更多'+icon('chevron')+'</button>':'')+'</header>';};
 const macPersonalRender=renderMac;
-renderMac=function(){macPersonalRender();document.body.classList.add('remote-light');const shell=document.querySelector('.sr-client');if(shell&&s.page!=='session')shell.insertAdjacentHTML('beforeend',macPersonalMenu());};
+renderMac=function(){macPersonalRender();document.body.classList.add('remote-light');const shell=document.querySelector('.sr-client');if(shell){if(s.page!=='session')shell.insertAdjacentHTML('beforeend',macPersonalMenu());shell.insertAdjacentHTML('beforeend',remoteUpdateModal('mac'));document.querySelector('.sr-demo-note')?.insertAdjacentHTML('beforeend',remoteUpdateReview());}};
 const macPersonalFinish=remoteMacFinish;
 remoteMacFinish=function(method='code'){const a=standaloneMac;if(!a.consent||a.signed)return false;const record=a.challenge?RemoteQrDemo.get(a.challenge.id):null;a.accountIdentity=method==='qr'?(record?.account||'盖世扫码账号'):method==='google'?'Google 演示账号':a.credential?(a.region==='overseas'?a.credential.replace(/^(.{2}).*(@.*)$/,'$1***$2'):a.credential.slice(0,3)+'****'+a.credential.slice(-4)):'盖世演示账号';if(record&&method!=='qr')RemoteQrDemo.update(record.id,'cancelled');macPersonal.menu='';return macPersonalFinish();};
 const macPersonalBaseWelcome=remoteMacWelcome;
 remoteMacWelcome=function(){if(s.macSupportPublic)return remoteSupportPage(s.macSupportPublic,'mac');return macPersonalBaseWelcome();};
 const macPersonalAction=action;
 action=function(value){
+ if(remoteUpdateAction(value,'mac'))return;
  if(!['mac-support:update','mac-support:check'].includes(value))remoteUpdateCancel();
  if(value==='mac-account'||value==='mac-more-toggle'){if(!standaloneMac.signed){macPersonal.menu='';return;}const key=value==='mac-account'?'account':'more';macPersonal.menu=macPersonal.menu===key?'':key;render();return;}
  if(value==='mac-avatar')return;
@@ -19,8 +20,8 @@ action=function(value){
  if(value==='sr-logout'||value.startsWith('sr-state:')||value==='sr-open-login'){macPersonal.menu='';s.macSupportPublic='';}
  return macPersonalAction(value);
 };
-document.addEventListener('click',e=>{if(macPersonal.menu&&!e.target.closest('.personal-dropdown,.mac-account-entry,.mac-more-entry')){macPersonal.menu='';render();}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&macPersonal.menu){macPersonal.menu='';render();}});
+document.addEventListener('click',e=>{if(macPersonal.menu&&!e.target.closest('.personal-dropdown,.mac-account-entry,.mac-more-entry,.remote-update-overlay')){macPersonal.menu='';render();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&macPersonal.menu&&!document.querySelector('.remote-update-overlay')){macPersonal.menu='';render();}});
 render();
 
 function macObserveDemoQr(){const a=standaloneMac,c=a.challenge;if(a.signed||!c)return;const r=RemoteQrDemo.get(c.id);if(!r)return;if(r.state==='scanned'&&a.qr==='waiting'&&remoteMacChallengeValid(c.id)){a.qr='pending';render();}else if(r.state==='confirmed'&&remoteMacChallengeValid(c.id)){RemoteQrDemo.update(c.id,'completed');remoteMacFinish('qr');}else if(['cancelled','expired','failed'].includes(r.state)&&a.qr!==r.state){a.qr=r.state;a.challenge=null;render();}}

@@ -1,21 +1,20 @@
 const {chromium}=require('C:/Users/z3635/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-(async()=>{
- const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
- const errors=[],checks=[];const p=await browser.newPage({viewport:{width:390,height:844}});p.on('pageerror',e=>errors.push(e.message));
- const url='file:///'+path.join(__dirname,'mobile.html').replaceAll('\\','/');const click=a=>p.locator('[data-action="'+a+'"]').first().click();
- try{
-  await p.goto(url+'?state=profile');assert.deepEqual(await p.locator('.personal-row strong').allTextContents(),['帮助中心','检查更新','关于','退出登录']);
-  assert.equal(await p.locator('.personal-account-card button,.personal-account-card [data-action],.personal-account-card .grow+svg,[data-action=mobile-settings-open]').count(),0);
-  await p.locator('.personal-avatar').click();assert.equal(await p.locator('.personal-account-popover').count(),0);
-  await p.locator('.mobile-independent-shell').screenshot({path:path.join(__dirname,'assets','simplify-mobile-profile.png')});
-  await click('mobile-support:update');assert.equal(await p.evaluate(()=>s.page),'mobile-profile');assert.equal(await p.locator('.update-inline-row').isDisabled(),true);const request=await p.evaluate(()=>remoteSupportState.updateGeneration);await p.evaluate(()=>action('mobile-support:update'));assert.equal(await p.evaluate(()=>remoteSupportState.updateGeneration),request);
-  await p.waitForFunction(()=>remoteSupportState.update==='done');assert.match(await p.locator('.update-inline-result').innerText(),/无可用更新/);assert.equal(await p.evaluate(()=>s.page),'mobile-profile');
-  await click('mobile-support:update');await click('mobile-tab:devices');await p.waitForTimeout(600);await click('mobile-tab:profile');assert.equal(await p.locator('.update-inline-result').innerText(),'');
-  await click('mobile-support:about');assert.equal(await p.locator('.support-about .personal-row').count(),4);await click('mobile-personal-back');assert.equal(await p.evaluate(()=>s.page),'mobile-profile');
-  await click('mobile-support:update');await click('mobile-logout');await p.waitForTimeout(600);assert.equal(await p.locator('.mobile-login').count(),1);assert.equal(await p.evaluate(()=>remoteSupportState.update),'idle');assert.equal(await p.locator('.update-inline-result').count(),0);
-  await p.goto(url+'?state=settings');assert.equal(await p.evaluate(()=>s.page),'mobile-profile');assert.equal(await p.getByRole('heading',{name:'设置',exact:true}).count(),0);
-  checks.push('我的四项直接入口/静态账号无箭头与点击/原地更新禁重/离页和退出取消旧结果/关于返回我的/旧设置地址转我的');
-  assert.deepEqual(errors,[]);fs.writeFileSync(path.join(__dirname,'personal-simplify-test-report.json'),JSON.stringify({pass:true,checks,errors},null,2));console.log(JSON.stringify({pass:true,checks,errors}));
- }finally{await browser.close();}
-})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});const errors=[],checks=[];
+try{for(const host of ['mobile','mac']){
+const p=await browser.newPage({viewport:host==='mac'?{width:1600,height:1100}:{width:390,height:1050}});p.on('pageerror',e=>errors.push(e.message));
+const base='file:///'+path.join(__dirname,host+'.html').replaceAll('\\','/');const click=a=>p.locator('[data-action="'+a+'"]').first().click();
+await p.goto(base+'?state='+ (host==='mac'?'list':'profile'));if(host==='mac')await click('mac-more-toggle');
+assert.equal(await p.locator('.update-inline-row>svg').count(),2);const before=await p.evaluate(()=>s.page);
+await click(host+'-support:update');assert(await p.locator('.update-inline-row').isDisabled());const generation=await p.evaluate(()=>remoteSupportState.updateGeneration);await p.evaluate(h=>action(h+'-support:update'),host);assert.equal(await p.evaluate(()=>remoteSupportState.updateGeneration),generation);
+await p.waitForSelector('.remote-update-dialog');assert.equal(await p.evaluate(()=>s.page),before);assert.equal(await p.locator('.remote-update-dialog h2').innerText(),'有新的版本发布');assert.equal(await p.locator('.remote-update-primary').innerText(),'下载并重启更新');assert.equal(await p.locator('.update-inline-result').count(),0);
+const box=await p.locator('.remote-update-dialog').boundingBox(),shell=await p.locator(host==='mac'?'.sr-client':'.mobile-independent-shell').boundingBox();assert(box.x>=shell.x&&box.x+box.width<=shell.x+shell.width+1);assert(box.y>=shell.y&&box.y+box.height<=shell.y+shell.height+1);
+await p.locator(host==='mac'?'.sr-client':'.mobile-independent-shell').screenshot({path:path.join(__dirname,'assets','standalone-'+host+'-update.png')});
+await p.keyboard.press('Tab');assert.equal(await p.evaluate(()=>document.activeElement.dataset.action),'remote-update:later');await p.keyboard.press('Escape');assert.equal(await p.locator('.remote-update-dialog').count(),0);
+await click('remote-update:scenario-latest');if(host==='mac'&&!await p.locator('.mac-more-menu').count())await click('mac-more-toggle');await click(host+'-support:update');await p.waitForFunction(()=>s.toast==='已是最新版本');assert.equal(await p.locator('.remote-update-dialog').count(),0);
+await click('remote-update:scenario-available');if(host==='mac'&&!await p.locator('.mac-more-menu').count())await click('mac-more-toggle');await click(host+'-support:update');await p.waitForSelector('.remote-update-dialog');await click('remote-update:download');assert(await p.locator('.remote-update-primary').isDisabled());await p.waitForFunction(()=>s.toast==='更新演示完成');assert.equal(await p.locator('.remote-update-dialog').count(),0);
+if(host==='mac'){if(!await p.locator('.mac-more-menu').count())await click('mac-more-toggle');}await click(host+'-support:update');await p.evaluate(h=>action(h==='mac'?'remote-settings':'mobile-tab:devices'),host);await p.waitForTimeout(550);assert.equal(await p.evaluate(()=>remoteSupportState.update),'idle');assert.equal(await p.locator('.remote-update-dialog').count(),0);
+if(host==='mac'){await click('mac-account');assert.equal(await p.locator('.personal-nickname-row [data-action=sr-logout]').count(),1);assert.equal(await p.locator('.mac-account-logout').count(),0);await click('sr-logout');assert.equal(await p.locator('#sr-credential').count(),1);assert.equal(await p.locator('.sr-scannable-qr svg').count(),1);assert.equal(await p.locator('#sr-consent').isChecked(),false);assert.equal(await p.locator('.sr-first-guide').count(),0);await click('sr-region:overseas');assert.equal(await p.locator('#sr-credential').getAttribute('type'),'email');assert.equal(await p.locator('[data-action=sr-google]').count(),1);}
+else{await click('mobile-tab:profile');assert.equal(await p.locator('.personal-nickname-row [data-action=mobile-logout]').count(),1);assert.deepEqual(await p.locator('.personal-row strong').allTextContents(),['帮助中心','检查更新','关于']);assert.equal(await p.locator('.personal-logout').count(),0);await p.locator('.personal-avatar').click();assert.equal(await p.locator('.personal-account-popover').count(),0);await click('mobile-support:update');await click('mobile-logout');await p.waitForTimeout(550);assert.equal(await p.locator('.mobile-login').count(),1);assert.equal(await p.evaluate(()=>remoteSupportState.update),'idle');}
+checks.push(host+': 更新箭头/禁重/通知样式与边界/焦点与Esc/最新Toast/下载模拟/离页取消/昵称退出/登录回归');await p.close();}
+assert.deepEqual(errors,[]);fs.writeFileSync(path.join(__dirname,'personal-simplify-test-report.json'),JSON.stringify({pass:true,checks,errors},null,2));console.log(JSON.stringify({pass:true,checks,errors}));}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
