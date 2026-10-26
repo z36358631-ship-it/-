@@ -5,7 +5,7 @@ const path=require('node:path');
  const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
  const page=await browser.newPage({viewport:{width:1100,height:1120}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
-const click=async a=>{const raw=v=>page.locator('[data-action="'+v+'"]').first().click();if(a.startsWith('device:')&&await page.locator('[data-action="'+a+'"]').count()===0)await raw('mobile-tab:devices');if(a==='mobile-logout'&&await page.locator('[data-action="mobile-logout"]').count()===0)await raw('mobile-tab:profile');return raw(a);};
+const click=async a=>{const raw=v=>page.locator('[data-action="'+v+'"]').first().click();if(a.startsWith('device:')&&await page.locator('[data-action="'+a+'"]').count()===0)await raw('mobile-tab:devices');if(a==='mobile-logout'&&await page.locator('[data-action="mobile-logout"]').count()===0)await raw('mobile-tab:profile');await raw(a);if(a==='mobile-logout'){assert.equal(await page.locator('.remote-logout-dialog').count(),1);await raw('remote-logout:confirm');}};
  const login=async phone=>{await page.locator('#mobile-agreement').check();await page.locator('#mobile-phone').fill(phone);await click('mobile-sms');assert.equal(await page.locator('.mobile-login-error.is-success').count(),1);await page.locator('#mobile-code').fill('123456');await click('mobile-login-submit');};
  const logout=async()=>{await click('gpt-back');await click('back');await click('mobile-tab:profile');await click('mobile-logout');};
  try{

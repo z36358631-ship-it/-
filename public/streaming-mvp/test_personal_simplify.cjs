@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});const errors=[],checks=[];
 try{for(const host of ['mobile','mac']){
 const p=await browser.newPage({viewport:host==='mac'?{width:1600,height:1100}:{width:390,height:1050}});p.on('pageerror',e=>errors.push(e.message));
-const base='file:///'+path.join(__dirname,host+'.html').replaceAll('\\','/');const click=a=>p.locator('[data-action="'+a+'"]').first().click();
+const base='file:///'+path.join(__dirname,host+'.html').replaceAll('\\','/');const click=async a=>{await p.locator('[data-action="'+a+'"]').first().click();if(['mobile-logout','sr-logout'].includes(a)){assert.equal(await p.locator('.remote-logout-dialog').count(),1);await p.locator('[data-action="remote-logout:confirm"]').click();}};
 await p.goto(base+'?state='+ (host==='mac'?'list':'profile'));if(host==='mac')await click('mac-more-toggle');
 assert.equal(await p.locator('.update-inline-row>svg').count(),2);const before=await p.evaluate(()=>s.page);
 await click(host+'-support:update');assert(await p.locator('.update-inline-row').isDisabled());const generation=await p.evaluate(()=>remoteSupportState.updateGeneration);await p.evaluate(h=>action(h+'-support:update'),host);assert.equal(await p.evaluate(()=>remoteSupportState.updateGeneration),generation);

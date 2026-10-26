@@ -12,7 +12,7 @@ function mobileInvalidateAuthorization(){mobileAuth.generation++;clearTimeout(mo
 function mobileInlineMessage(){return '<p class="mobile-login-error'+(mobileAuth.error==='验证码已发送。'?' is-success':'')+'" role="status">'+esc(mobileAuth.error)+'</p>';}
 function mobileAgreement(){const names=['用户协议','隐私协议',...(mobileOverseas()?[]:['中国移动认证服务协议'])];return '<div class="mobile-agreement"><input type="checkbox" id="mobile-agreement" aria-label="同意登录协议"'+(mobileAuth.agreed?' checked':'')+'><div><label for="mobile-agreement">我已阅读并同意</label>'+names.map((name,i)=>(i?'、':'')+'<button type="button" class="mobile-protocol-link" data-action="mobile-protocol:'+i+'">《'+name+'》</button>').join('')+'</div></div>';}
 function mobileProtocolPreview(){if(!mobileAuth.protocol)return '';return '<div class="modal-shade mobile-protocol-shade"><section class="dialog mobile-protocol-dialog" role="dialog" aria-modal="true" aria-labelledby="mobile-protocol-title"><div class="row spread"><h2 id="mobile-protocol-title">'+esc(mobileAuth.protocol)+'</h2>'+ib('关闭协议预览','mobile-protocol-close','close')+'</div><p>正式协议待接入</p><p>此处仅预览协议入口。正式 URL、协议正文及适用主体尚未提供，Demo 不展示或编造条款。</p>'+btn('返回登录','mobile-protocol-close','primary')+'</section></div>';}
-function mobileRequireAgreement(){if(mobileAuth.agreed)return true;mobileAuth.error='请先阅读并同意相关协议。';render();return false;}
+function mobileRequireAgreement(){if(mobileAuth.agreed)return true;mobileAuth.error='请先勾选协议';render();return false;}
 function mobileReadCredentials(){if($('#mobile-phone'))mobileAuth.phone=$('#mobile-phone').value.trim();if($('#mobile-email'))mobileAuth.email=$('#mobile-email').value.trim();if($('#mobile-code'))mobileAuth.code=$('#mobile-code').value.trim();}
 function mobileValidIdentity(){return mobileOverseas()?mobileAuth.email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mobileAuth.email):/^1\d{10}$/.test(mobileAuth.phone);}
 function mobileClearAccountState(){
@@ -62,7 +62,7 @@ action=function(a){const[k,v]=a.split(':');
   mobileAuth.authTimer=setTimeout(()=>{if(generation!==mobileAuth.generation||region!==mobileAuth.region||s.page!=='gamehub-authorize'||!mobileAuth.agreed)return;mobileCompleteLogin(true);},650);return;
  }
  if(k==='mobile-sms'){
-  mobileReadCredentials();if(!mobileRequireAgreement())return;
+  mobileReadCredentials();
   if(!mobileValidIdentity()){mobileAuth.error=mobileOverseas()?'请输入正确的邮箱。':'请输入正确的手机号。';render();return;}
   mobileAuth.sent=true;mobileAuth.sentFor=mobileIdentity();mobileAuth.error='验证码已发送。';render();return;
  }

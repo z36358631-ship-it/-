@@ -18,7 +18,7 @@ function remoteScanClose(cancel=true){if(cancel&&remoteScanState.id&&remoteScanS
 function remoteScanPage(){
  const t=remoteScanState;
  const header='<header class="head remote-scan-head">'+ib('关闭扫一扫','remote-scan-close','back')+'<h1>扫一扫</h1></header>';
- if(t.phase==='confirm')return header+'<main class="content remote-scan-confirm"><div class="remote-scan-mark">'+icon('monitor')+'</div><h2>登录电脑端盖世远程</h2><p>请确认这是你本人发起的电脑登录</p><div class="remote-scan-account"><span>当前盖世账号</span><strong>'+esc(mobileMaskedPhone(mobileAuth.accountPhone))+'</strong></div><p class="remote-scan-helper">确认仅用于登录，不会自动连接或控制电脑。</p>'+btn('确认登录','remote-scan-confirm','primary remote-scan-primary')+btn('取消登录','remote-scan-cancel','ghost remote-scan-primary')+'</main>';
+ if(t.phase==='confirm')return header+'<main class="content remote-scan-confirm"><div class="remote-scan-mark">'+icon('monitor')+'</div><h2>登录电脑端盖世远程</h2><p>请确认这是你本人发起的电脑登录</p><div class="remote-scan-account"><span>当前盖世账号</span><strong>'+esc(mobileMaskedPhone(mobileAuth.accountPhone))+'</strong></div><p class="remote-scan-helper">确认仅用于登录，不会自动连接或控制电脑。</p><p class="remote-scan-error" role="status">'+esc(t.error)+'</p>'+btn('确认登录','remote-scan-confirm','primary remote-scan-primary')+btn('取消登录','remote-scan-cancel','ghost remote-scan-primary')+'</main>';
  if(t.phase==='done')return header+'<main class="content remote-scan-confirm"><div class="remote-scan-mark">'+icon('check')+'</div><h2>已确认本次登录</h2><p>请返回电脑查看登录结果</p><p class="remote-scan-helper">本次为演示授权，真实跨设备登录待接入账号服务。</p>'+btn('完成','remote-scan-done','primary remote-scan-primary')+'</main>';
  return header+'<main class="content remote-scan-camera"><p>扫描电脑端盖世远程登录二维码</p><div class="remote-scan-viewfinder"><video id="remote-scan-video" autoplay muted playsinline aria-label="扫码摄像头预览"></video><span class="remote-scan-corners" aria-hidden="true"></span>'+(!t.stream?'<span class="remote-scan-camera-label">'+icon('screen')+'<span>将电脑登录二维码放入框内</span></span>':'')+'</div><p class="remote-scan-error" role="status">'+esc(t.error)+'</p>'+btn(t.phase==='error'?'重新扫一扫':t.stream?'关闭摄像头':'开启摄像头',t.stream?'remote-scan-camera-off':'remote-scan-camera','primary remote-scan-primary')+'<p class="remote-scan-helper">摄像头需你授权；二维码仅在本地识别，不上传画面。</p></main>';
 }
@@ -48,7 +48,8 @@ function remoteScanConfirm(){
  if(!remoteScanActive()||remoteScanState.phase!=='confirm')return;
  const record=RemoteQrDemo.get(remoteScanState.id);
  if(!record||record.state!=='scanned'||record.region!==mobileAuth.region){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}
- RemoteQrDemo.update(record.id,'confirmed',mobileMaskedPhone(mobileAuth.accountPhone));remoteScanState.phase='done';render();
+ if(!record.consent){remoteScanState.error='请先勾选协议';render();return;}
+ const confirmed=RemoteQrDemo.update(record.id,'confirmed',mobileMaskedPhone(mobileAuth.accountPhone));if(!confirmed){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}remoteScanState.error='';remoteScanState.phase='done';render();
 }
 const remoteScanBaseClear=mobileClearAccountState;
 mobileClearAccountState=function(){if(remoteScanState.phase==='confirm')RemoteQrDemo.update(remoteScanState.id,'cancelled');remoteScanReset();return remoteScanBaseClear();};

@@ -5,7 +5,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
  const errors=[],checks=[];let server;
  const newPage=async(viewport={width:1100,height:1100})=>{const p=await browser.newPage({viewport});p.on('pageerror',e=>errors.push(e.message));return p;};
  const url=name=>'file:///'+path.join(__dirname,name).replaceAll('\\','/');
- const click=(p,a)=>p.locator('[data-action="'+a+'"]').first().click();
+ const click=async(p,a)=>{await p.locator('[data-action="'+a+'"]').first().click();if(['mobile-logout','sr-logout'].includes(a)){assert.equal(await p.locator('.remote-logout-dialog').count(),1);await p.locator('[data-action="remote-logout:confirm"]').click();}};
  const shot=(p,n,sel='.mobile-independent-shell')=>p.locator(sel).first().screenshot({path:path.join(__dirname,'assets','standalone-'+n+'.png')});
  try{
  const p=await newPage({width:390,height:1050});await p.goto(url('mobile.html')+'?state=list');

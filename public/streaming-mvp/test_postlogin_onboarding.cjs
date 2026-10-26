@@ -6,7 +6,7 @@ const assert=require('node:assert/strict'),path=require('node:path');
  try{
   for(const [method,dismiss] of [['phone','skip'],['email','close'],['qr','complete'],['google','escape']]){
    const context=await browser.newContext({viewport:{width:1510,height:1020}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-   const act=a=>page.evaluate(a=>action(a),a);
+   const act=async a=>{if(a==='sr-logout'){await page.locator('[data-action=mac-account]').click();await page.locator('[data-action=sr-logout]').click();assert.equal(await page.locator('.remote-logout-dialog').count(),1);await page.locator('[data-action="remote-logout:confirm"]').click();return;}return page.evaluate(a=>action(a),a);};
    await page.goto(url);await page.evaluate(()=>{localStorage.setItem('standalone-remote-mac-onboarding-v1','seen');localStorage.removeItem('standalone-remote-mac-postlogin-onboarding-v2');});await page.reload();
    assert.equal(await page.locator('.sr-first-guide').count(),0);assert.equal(await page.locator('[data-action=sr-onboard-review]').count(),0);await act('sr-onboard-review');assert.equal(await page.locator('.sr-first-guide').count(),0);
    const login=async()=>{

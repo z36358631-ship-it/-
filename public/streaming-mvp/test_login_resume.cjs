@@ -5,7 +5,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
  const page=await browser.newPage({viewport:{width:1600,height:1100}}),errors=[],checks=[];
  page.on('pageerror',e=>errors.push(e.message));
  const base='file:///'+path.join(__dirname,'mac.html').replaceAll('\\','/');
- const act=a=>page.evaluate(a=>action(a),a);
+ const act=async a=>{await page.evaluate(a=>action(a),a);if(a==='sr-logout'){assert.equal(await page.locator('.remote-logout-dialog').count(),1);await page.locator('[data-action="remote-logout:confirm"]').click();}};
  const id=()=>page.evaluate(()=>standaloneMac.challenge.id);
  const state=key=>page.evaluate(key=>RemoteQrDemo.get(key)?.state,key);
  try{
@@ -16,10 +16,10 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
    assert.equal(await page.locator('.mac-account-entry,.mac-more-entry,.personal-dropdown').count(),0);
    const download=page.getByRole('link',{name:'盖世游戏 App 官网下载'});
    assert.equal(await download.getAttribute('href'),'https://gamehub.xiaoji.com/'+(region==='overseas'?'en/':'zh-cn/'));
-   const before=await id();assert.equal(await state(before),'blocked');
+   const before=await id();assert.equal(await state(before),'waiting');
    await act('sr-qr-scan:'+before);await act('sr-qr-confirm:'+before);await act('sr-qr-success:'+before);
-   assert.equal(await page.evaluate(()=>standaloneMac.signed),false);
-   await page.locator('#sr-consent').check();const current=await id();assert.notEqual(current,before);assert.equal(await state(before),'cancelled');
+   assert.equal(await page.evaluate(()=>standaloneMac.signed),false);assert.equal(await page.locator('.sr-login-error').innerText(),'请先勾选协议');assert.equal(await state(before),'scanned');
+   await page.locator('#sr-consent').check();const current=await id();assert.equal(current,before);assert.equal(await state(before),'scanned');
    await act('sr-qr-scan:'+current);await page.locator('#sr-consent').uncheck();assert.equal(await state(current),'cancelled');
    await page.locator('#sr-consent').check();await act('sr-qr-confirm:'+current);await act('sr-qr-success:'+current);assert.equal(await page.evaluate(()=>standaloneMac.signed),false);
    const ok=await id();await act('sr-qr-scan:'+ok);await act('sr-qr-confirm:'+ok);await act('sr-qr-success:'+ok);
@@ -31,7 +31,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
   await page.locator('#sr-consent').check();old=await id();await act('sr-welcome');assert.equal(await state(old),'cancelled');
   await page.locator('#sr-consent').check();old=await id();await act('sr-open-login');assert.equal(await state(old),'cancelled');
   const preview=await id();await page.evaluate(key=>{const r=RemoteQrDemo.get(key);r.expiresAt=Date.now()-1;localStorage.setItem(RemoteQrDemo.prefix+key,JSON.stringify(r));macObserveDemoQr();},preview);
-  assert.equal(await page.locator('[data-qr-state=expired]').count(),1);await act('sr-qr-refresh');assert.equal(await page.locator('.sr-scannable-qr svg').count(),1);assert.equal(await state(await id()),'blocked');
+  assert.equal(await page.locator('[data-qr-state=expired]').count(),1);await act('sr-qr-refresh');assert.equal(await page.locator('.sr-scannable-qr svg').count(),1);assert.equal(await state(await id()),'waiting');
   checks.push('切区、首页/登录页切换、展示码过期及未勾协议刷新');
   await page.goto(base+'?state=login');await page.locator('#sr-consent').check();await page.locator('#sr-credential').fill('13800138000');
   const qrAccount=await id();await page.evaluate(key=>{RemoteQrDemo.update(key,'confirmed','139****9000');macObserveDemoQr();},qrAccount);
