@@ -48,7 +48,51 @@ body{background:#000;display:flex;flex-direction:column;align-items:center;min-h
 /* Mobile save protection and environment-aware prototype */
 .ctrl-btns{flex-wrap:wrap;justify-content:center;max-width:1000px}.demo-data-note{max-width:850px;text-align:center;line-height:1.6}.demo-settings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:12px;font-size:11px}.demo-settings label{color:#999;display:flex;align-items:center;gap:5px}.demo-settings select{max-width:230px}.mobile-scope{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:7px 16px 2px;color:#bbb}.mobile-scope span{color:#bbb}.mobile-scope button,.help-link{background:none;border:0;color:var(--primary);font-size:11px;cursor:pointer}.mobile-scope-tip{padding:4px 16px 5px;color:var(--sub);font-size:10px;line-height:1.5}.compatibility-note{color:#c4aa77;font-size:9px;margin:4px 0 6px}.mobile-metadata .dm-row{gap:14px;padding:7px 0;align-items:flex-start}.mobile-metadata .dm-row .l{flex-shrink:0}.mobile-metadata .dm-row>span:last-child{text-align:right;line-height:1.5}.mobile-info-note{font-size:11px;color:var(--sub);line-height:1.6;margin:8px 0}.help-link{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 0 0;border-top:1px solid var(--border)}.d-buy:disabled{opacity:.45;cursor:not-allowed}.mobile-help{position:absolute;inset:0;z-index:390;background:var(--bg);display:flex;flex-direction:column}.mobile-help[hidden]{display:none}.mobile-help-tabs{display:flex;gap:10px;padding:8px 16px 14px;border-bottom:1px solid var(--border)}.mobile-help-tabs button{border:0;border-radius:16px;background:var(--card);padding:8px 16px;color:var(--sub);font-size:12px;cursor:pointer}.mobile-help-tabs button.active{background:#fff;color:#111}.mobile-help-body{overflow:auto;flex:1;padding:0 16px 20px}.mobile-help-body details{border-bottom:1px solid var(--border);padding:16px 0}.mobile-help-body summary{font-size:13px;line-height:1.5;cursor:pointer}.mobile-help-body p{font-size:12px;line-height:1.8;color:#aaa;padding:12px 0 0}.backup-note{color:var(--sub);font-size:10px;padding:4px 16px 8px;line-height:1.5}.backup-empty{padding:15px 16px;color:var(--sub);font-size:11px}.backup-row{margin:6px 16px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:10px}.backup-row>div{flex:1;min-width:0}.backup-row strong{font-size:12px;font-weight:500;display:block;overflow-wrap:anywhere}.backup-row small{display:block;color:var(--sub);font-size:10px;margin-top:5px}.backup-row button{padding:8px 14px;background:#ffffff12;border:0;border-radius:8px;font-size:12px;cursor:pointer}.mobile-file-actions{display:flex;gap:12px;margin:9px 0 14px}.mobile-file-actions button{padding:9px 12px;border:1px solid var(--border);background:var(--card);border-radius:8px;font-size:11px;cursor:pointer}.mobile-file-status{color:var(--sub);font-size:11px;line-height:1.6;margin:8px 0}.mobile-env-readonly{background:var(--card);border-radius:8px;padding:10px;font-size:11px;color:var(--sub);line-height:1.7}.modal-box{max-height:90%;overflow:auto}.landscape .mobile-help-body{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;align-content:start}.landscape .mobile-help-body details{align-self:start}.landscape .mobile-help-tabs{padding:3px 16px 8px}.landscape .mobile-scope-tip{padding-bottom:2px}.ig-panel .mobile-scope{padding:8px;font-size:10px}.ig-panel .backup-row{margin:5px 8px}.ig-panel .mobile-metadata{margin:8px}.landscape .consign-body{padding:12px 20px}
 @media(max-width:480px){body{padding:12px 0}#app.portrait{width:100vw;max-width:390px;height:calc(100dvh - 190px);min-height:560px;border-radius:24px;box-shadow:none}.ctrl-btns{gap:6px}.ctrl-btn{padding:7px 10px}.demo-settings{gap:6px}.demo-data-note{padding:0 12px;font-size:10px}}
-.save-choice{width:100%;padding:11px;background:#171a20;color:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;color-scheme:dark}#cVersionField[hidden]{display:none}</style></head><body>
+.save-choice{width:100%;padding:11px;background:#171a20;color:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;color-scheme:dark}#cVersionField[hidden]{display:none}/* Reuses the current app shell, colors and typography. */
+.catalog-view{position:absolute;inset:0;z-index:290;background:var(--bg);display:flex;flex-direction:column;min-height:0}
+.catalog-view[hidden]{display:none}
+#globalSaveSearch{z-index:340}
+.catalog-view .top-bar{min-height:50px;padding:10px 16px}
+.catalog-view .top-bar .title{font-size:17px}
+.catalog-search-trigger,.catalog-back,.catalog-search-clear{border:0;background:none;cursor:pointer;flex-shrink:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+.catalog-search-trigger svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.catalog-back{font-size:27px;width:20px}
+.catalog-search-clear{font-size:20px;color:var(--sub);width:22px}
+.catalog-search-input{min-width:0;flex:1;border:1px solid var(--border);background:#ffffff08;border-radius:9px;padding:9px 11px;font-size:12px;outline:none}
+.catalog-search-input:focus{border-color:var(--primary)}
+.catalog-tabs{display:flex;gap:24px;padding:0 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.catalog-tabs button{position:relative;border:0;background:none;color:var(--sub);padding:11px 0 13px;font-size:14px;cursor:pointer}
+.catalog-tabs button.active{color:var(--text);font-weight:600}
+.catalog-tabs button.active:after{content:'';position:absolute;bottom:0;left:50%;width:22px;height:3px;background:var(--primary);border-radius:2px;transform:translateX(-50%)}
+.catalog-scope{font-size:11px;color:var(--sub);padding:13px 16px 3px;flex-shrink:0}
+.catalog-scroll{flex:1;min-height:0;overflow:auto;padding-bottom:20px}
+.catalog-game{width:calc(100% - 32px);margin:12px 16px 0;padding:0 0 12px;border:0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:none;text-align:left;cursor:pointer;min-width:0}
+.catalog-game>img{width:100px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0}
+.catalog-game-text{flex:1;min-width:0}
+.catalog-game-text strong{display:block;font-size:14px;font-weight:500;line-height:1.5;overflow-wrap:anywhere}
+.catalog-game-text small{display:block;margin-top:7px;color:var(--sub);font-size:11px}
+.catalog-chevron{font-size:22px;color:#777}
+.save-card{display:flex;flex-direction:column;min-width:0}
+.save-card .sc-body{display:flex;flex-direction:column;flex:1;min-width:0}
+.save-card .sc-title{min-height:2.6em;line-height:1.3}
+.save-card .catalog-author{min-height:13px;line-height:13px}
+.save-card .save-stats{margin-top:auto;margin-bottom:0;padding-top:4px}
+.ig-catalog-card{display:flex;flex-direction:column;min-width:0}
+.ig-catalog-body{display:flex;flex-direction:column;flex:1;min-width:0}
+.ig-catalog-title{min-height:2.6em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.ig-catalog-author{min-height:13px;margin-bottom:5px}
+.ig-catalog-body .save-stats{margin-top:auto;margin-bottom:0;padding-top:3px}
+.catalog-result-game{font-size:10px;line-height:1.4;color:var(--primary);margin:1px 0 5px}
+.landscape .catalog-scroll{padding-bottom:12px}
+.landscape #catalogGames,.landscape #globalSaveResults:has(>.catalog-game){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;padding:0 6px 14px}
+.landscape .catalog-game{width:calc(100% - 24px);margin:10px 12px 0;padding-bottom:10px}
+.landscape .catalog-game>img{width:96px;height:61px}
+.landscape .catalog-view .top-bar{min-height:42px;padding-top:6px;padding-bottom:6px}
+.landscape .catalog-tabs button{padding-top:7px;padding-bottom:9px}
+.landscape .catalog-scope{padding-top:8px}
+
+.draft-save{border:0;background:none;color:var(--primary);font-size:12px;margin-left:auto;padding:10px;cursor:pointer}.draft-status{color:var(--primary);font-size:11px;line-height:1.7;margin-bottom:10px;overflow-wrap:anywhere}.draft-status:empty{display:none}.draft-row{display:flex;width:calc(100% - 32px);margin:7px 16px;padding:13px;background:var(--card);border:1px solid var(--border);border-radius:10px;align-items:center;gap:12px;text-align:left;cursor:pointer}.draft-row>span:first-child{flex:1;min-width:0}.draft-row strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500}.draft-row small{display:block;font-size:10px;color:var(--sub);margin-top:6px}.draft-row>span:last-child{font-size:11px;color:var(--primary);flex-shrink:0}.draft-exit{position:absolute;inset:0;z-index:450;background:#0009;display:flex;align-items:center;justify-content:center;padding:24px}.draft-exit[hidden]{display:none}.draft-dialog{width:100%;max-width:320px;padding:22px;background:#1b1d23;border:1px solid var(--border);border-radius:18px;text-align:center}.draft-dialog h3{font-size:17px;margin:0 0 12px}.draft-dialog p{font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:18px}.draft-dialog button{display:block;width:100%;border:0;border-radius:10px;padding:12px;margin-top:8px;background:#ffffff0b;font-size:13px;cursor:pointer}.draft-dialog button:first-of-type{background:var(--primary);color:#151515}.landscape .draft-dialog{padding:14px 22px}.landscape .draft-dialog p{margin-bottom:10px}
+</style></head><body>
 <div class="ctrl-btns"><button class="ctrl-btn" onclick="toggleOrient()">↔ 横竖屏</button><button class="ctrl-btn" onclick="enterIngame()">🎮 游戏中模式</button><select class="region-control" aria-label="演示分享地区" onchange="shareRegion=this.value;renderSaveShare()"><option value="cn">国内</option><option value="global">海外</option></select></div>
 <div class="demo-settings"><label>演示游戏来源<select id="demoEnv" class="region-control" onchange="changeMobileEnv(this.value)"><option value="import">自己导入</option><option value="steam">Steam 登录下载</option><option value="cloud">云游戏</option></select></label><label>演示场景<select id="demoFault" class="region-control" onchange="changeMobileFault(this.value)"><option value="normal">正常</option><option value="missing">未发现存档</option><option value="permission">文件访问失败</option><option value="storage">存储空间不足</option><option value="backup">备份失败</option><option value="apply">应用失败</option><option value="empty">没有原存档</option></select></label><label><span id="mobileSyncLabel">云同步</span><select id="demoSync" class="region-control" onchange="mobileSync=this.value;closeModal()"></select></label><button class="ctrl-btn" onclick="mobileDemoApprove()">模拟审核通过</button></div><div class="demo-data-note">网页演示：环境、检测、备份恢复与审核均为模拟；选择的文件不上传、不改写。刷新后重置。</div>
 <div id="app" class="portrait"><div class="top-bar"><span class="back" onclick="showToast('返回')">‹</span><span class="title">GTA V</span></div><div class="tabs"><div class="tab" onclick="showToast('详情')">详情</div><div class="tab" onclick="showToast('社区')">社区</div><div class="tab active">存档</div></div><div class="sub-tabs"><div class="stab active" onclick="switchSub('plaza',this)">存档广场</div><div class="stab" onclick="switchSub('mine',this)">我的存档</div></div><div id="mobileScope"></div><div class="market-tools" id="plazaTools"></div><div class="scroll"><div id="sec-plaza" class="save-grid"></div><div id="sec-mine" style="display:none"></div></div>
@@ -182,4 +226,233 @@ autoSaves=mobileContext().auto;used=mobileContext().used;activeIdx=mobileContext
 function toggleSaveVersion(){var known=document.getElementById("cVersionMode").value==="specified";document.getElementById("cVersionField").hidden=!known;document.getElementById("cVersionError").textContent=""}
 
 renderPlaza();renderMine();renderMarketTools();openSharedSave();
+</script><script>
+/* Inject after the mobile prototype. All records are local demonstration data. */
+(function () {
+  'use strict';
+  if (window.gameCatalog) return;
+  var app = document.getElementById('app');
+  var searchIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>';
+  var libraryTab = 'plaza', currentTab = 'plaza', gameReturn = 'library';
+  var libraryScroll = {plaza:0,mine:0};
+  var searchState = { query: '', tab: 'saves', origin: 'library', game: 'gta-v', gameTab: 'plaza', scroll: 0 };
+  var searchDetail = false;
+  window.activeGameKey = 'gta-v';
+  var gta = {id:'gta-v',title:'GTA V',cover:makeCover('GTA V','游戏存档示例','#63422a','#101a2d'),saves:saves,consignSaves:consignSaves,mobileContexts:mobileContexts};
+  function createGame(id, title, colors, records, prefix) {
+    var game = {id:id,title:title,cover:makeCover(title,'游戏存档示例',colors[0],colors[1]),saves:[],consignSaves:[],mobileContexts:{}};
+    records.forEach(function (record, i) {
+      var cover = makeCover(title,record[0]+' · 示例',colors[0],colors[1]);
+      game.saves.push({id:i+1,gameKey:id,title:record[0],source:i===0?'official':'player',author:i===0?'盖世官方':record[1],type:'进度存档',desc:'演示数据：'+record[0]+'。请核对游戏版本、DLC 与 MOD 要求后使用。',size:(8.2+i*2.1).toFixed(1)+' MB',cover:cover,imgs:[cover],downloads:record[2],publishedAt:new Date(Date.now()-(i+1)*86400000).toISOString(),environments:record[3],platformNote:'Steam',versionNote:'未确认',dlcNote:'作者未说明',modNote:'作者未说明'});
+    });
+    ['cloud','steam','import'].forEach(function(env) {
+      game.mobileContexts[env]={auto:[{name:prefix+'_autosave.dat',size:'8.2 MB',time:'2026-10-27 09:30',source:'auto',gameKey:id}],used:new Set(),active:-1,backups:[],current:{name:title+' · 当前进度',active:-1,gameKey:id},located:true,files:[]};
+    });
+    return game;
+  }
+  window.gameCatalog = [gta,
+    createGame('cyberpunk-2077','赛博朋克 2077',['#685e28','#182b3e'],[['主线通关 · 夜之城探索','夜城旅人',1826,['cloud','steam','import']],['支线任务全完成','V的收藏',960,['steam','import']],['序章完成 · 自由探索','夜城旅人',326,['steam']]],'cyberpunk'),
+    createGame('black-myth-wukong','黑神话：悟空',['#705331','#202824'],[['一周目通关 · 全地图探索','山中行者',2360,['cloud','steam','import']],['第二章起始 · 黄风岭','取经人',864,['steam','import']],['全成就收集进度','天命人',1250,['cloud','steam']]],'wukong')
+  ];
+  window.getActiveGame = function () {return gameCatalog.find(function(g){return g.id===activeGameKey})};
+  function captureGame() {
+    var game=getActiveGame(),ctx=mobileContext();
+    ctx.auto=autoSaves;ctx.used=used;ctx.active=activeIdx;
+    game.saves=saves;game.consignSaves=consignSaves;game.mobileContexts=mobileContexts;
+  }
+  function selectGame(id) {
+    var game=gameCatalog.find(function(g){return g.id===id});
+    if(!game||mobileBusy)return false;
+    captureGame();
+    if(id!==activeGameKey) {
+      closeModal();closeDetail();closeSaveShare();closeConsign();closeMobileHelp();
+      document.getElementById('ingame').classList.remove('show');
+      mobileFileEpoch++;
+      activeGameKey=id;saves=game.saves;consignSaves=game.consignSaves;mobileContexts=game.mobileContexts;
+      autoSaves=mobileContext().auto;used=mobileContext().used;activeIdx=mobileContext().active;
+      mobileContext().located=mobileFault!=='missing';
+      if(mobileFault==='empty')mobileContext().current=null;
+      marketState.query='';marketState.range='all';marketState.start='';marketState.end='';searchOpen=false;
+      mobilePending=null;pendingUseIdx=null;
+    }
+    app.querySelector(':scope > .top-bar .title').textContent=game.title;
+    mobileUpdateScope();
+    return true;
+  }
+  window.mobileEligible=function(s){return !!(s&&s.gameKey===activeGameKey&&Array.isArray(s.environments)&&s.environments.includes(mobileEnv)&&!s.incompatible)};
+  function eligibleFor(game,s){return !!(s&&s.gameKey===game.id&&Array.isArray(s.environments)&&s.environments.includes(mobileEnv)&&!s.incompatible)}
+  function publicEntries(game) {
+    return game.saves.map(function(s,i){return {save:s,index:i,type:'system',game:game}}).filter(function(e){return !e.save.status||e.save.status==='on'}).concat(game.consignSaves.map(function(s,i){return {save:s,index:i,type:'consign-guest',game:game}}).filter(function(e){return e.save.status==='on'})).filter(function(e){return eligibleFor(game,e.save)});
+  }
+  function draftCount(game){return typeof window.getGameDraftCount==='function'?window.getGameDraftCount(game.id,mobileEnv):0}
+  function mineCount(game) {var c=game.mobileContexts[mobileEnv];return c.auto.length+c.used.size+c.backups.length+game.consignSaves.filter(function(s){return !s.originEnvironment||s.originEnvironment===mobileEnv}).length}
+  function gameMarkup(game,tab,fromSearch) {
+    var count=tab==='mine'?mineCount(game):publicEntries(game).length;
+    return '<button class="catalog-game" data-game-id="'+game.id+'" onclick="'+(fromSearch?'catalogOpenGameResult':'openGameSaves')+'(\''+game.id+'\',\''+tab+'\')"><img src="'+game.cover+'" alt=""><span class="catalog-game-text"><strong>'+escapeText(game.title)+'</strong><small>'+count+' 份'+(tab==='mine'?'我的存档':'可用存档')+(tab==='mine'&&draftCount(game)?' · '+draftCount(game)+' 份草稿':'')+'</small></span><span class="catalog-chevron" aria-hidden="true">›</span></button>';
+  }
+  var library=document.createElement('section');library.id='libraryView';library.className='catalog-view';
+  library.innerHTML='<header class="top-bar"><span class="title">云存档</span><button class="catalog-search-trigger" aria-label="全局搜索" onclick="openGlobalSaveSearch()">'+searchIcon+'</button></header><nav class="catalog-tabs" aria-label="存档入口"><button data-tab="plaza" onclick="showSaveLibrary(\'plaza\')">存档广场</button><button data-tab="mine" onclick="showSaveLibrary(\'mine\')">我的存档</button></nav><div id="catalogScope" class="catalog-scope"></div><div class="catalog-scroll" id="catalogGames"></div>';
+  app.appendChild(library);
+  var search=document.createElement('section');search.id='globalSaveSearch';search.className='catalog-view';search.hidden=true;
+  search.innerHTML='<header class="top-bar"><button class="catalog-back" aria-label="返回" onclick="closeGlobalSaveSearch()">‹</button><input id="globalSaveQuery" class="catalog-search-input" aria-label="搜索游戏或存档" placeholder="搜索游戏或存档" oninput="if(!event.isComposing&&!this.dataset.composing)setGlobalSaveQuery(this.value)"><button class="catalog-search-clear" aria-label="清空搜索" onclick="setGlobalSaveQuery(\'\');document.getElementById(\'globalSaveQuery\').focus()">×</button></header><nav class="catalog-tabs" aria-label="搜索类型"><button data-tab="games" onclick="setGlobalSaveTab(\'games\')">游戏</button><button data-tab="saves" onclick="setGlobalSaveTab(\'saves\')">存档</button></nav><div class="catalog-scope" id="globalSearchScope"></div><div class="catalog-scroll" id="globalSaveResults"></div>';
+  app.appendChild(search);
+  var globalInput=document.getElementById('globalSaveQuery');
+  globalInput.addEventListener('compositionstart',function(){this.dataset.composing='1'});
+  globalInput.addEventListener('compositionend',function(){delete this.dataset.composing;setGlobalSaveQuery(this.value)});
+  function rememberLibraryScroll(){if(!library.hidden)libraryScroll[libraryTab]=document.getElementById('catalogGames').scrollTop}
+  document.getElementById('catalogGames').addEventListener('scroll',rememberLibraryScroll);
+  window.renderSaveLibrary=function(){
+    captureGame();
+    library.querySelectorAll('[data-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.tab===libraryTab)});
+    document.getElementById('catalogScope').textContent=mobileLabels[mobileEnv];
+    var games=libraryTab==='mine'?gameCatalog.filter(function(g){return mineCount(g)>0||draftCount(g)>0}):gameCatalog;
+    document.getElementById('catalogGames').innerHTML=games.length?games.map(function(g){return gameMarkup(g,libraryTab,false)}).join(''):'<div class="market-empty">当前环境暂无我的存档</div>';
+    document.getElementById('catalogGames').scrollTop=libraryScroll[libraryTab];
+  };
+  window.showSaveLibrary=function(tab){
+    if(mobileBusy)return;
+    rememberLibraryScroll();
+    libraryTab=tab==='mine'?'mine':'plaza';searchDetail=false;closeDetail();closeModal();closeConsign();closeSaveShare();closeMobileHelp();
+    document.getElementById('ingame').classList.remove('show');search.hidden=true;library.hidden=false;gameReturn='library';renderSaveLibrary();
+  };
+  window.openGameSaves=function(id,tab){
+    rememberLibraryScroll();
+    if(!selectGame(id))return;
+    currentTab=tab==='mine'?'mine':'plaza';gameReturn='library';search.hidden=true;library.hidden=true;searchDetail=false;
+    refreshAll();switchSub(currentTab,app.querySelectorAll(':scope > .sub-tabs .stab')[currentTab==='mine'?1:0]);
+    app.querySelector(':scope > .scroll').scrollTop=0;
+  };
+  window.catalogBackFromGame=function(){if(gameReturn==='search'){search.hidden=false;library.hidden=true;renderGlobalSaveSearch()}else showSaveLibrary(libraryTab)};
+  var top=app.querySelector(':scope > .top-bar');top.querySelector('.back').setAttribute('onclick','catalogBackFromGame()');
+  top.insertAdjacentHTML('beforeend','<button class="catalog-search-trigger" aria-label="全局搜索" onclick="openGlobalSaveSearch()">'+searchIcon+'</button>');
+  var baseSwitchSub=window.switchSub;
+  window.switchSub=function(tab,el){currentTab=tab;baseSwitchSub(tab,el)};
+  window.openGlobalSaveSearch=function(){
+    rememberLibraryScroll();
+    searchState.origin=library.hidden?'game':'library';searchState.game=activeGameKey;searchState.gameTab=currentTab;searchState.tab='saves';searchState.scroll=0;searchDetail=false;
+    search.hidden=false;renderGlobalSaveSearch();document.getElementById('globalSaveQuery').focus();
+  };
+  window.closeGlobalSaveSearch=function(){
+    searchDetail=false;search.hidden=true;
+    if(searchState.origin==='library')showSaveLibrary(libraryTab);
+    else {openGameSaves(searchState.game,searchState.gameTab);gameReturn='library'}
+  };
+  window.setGlobalSaveQuery=function(value){searchState.query=value;searchState.scroll=0;document.getElementById('globalSaveQuery').value=value;renderGlobalSaveSearch()};
+  window.setGlobalSaveTab=function(tab){searchState.tab=tab==='games'?'games':'saves';searchState.scroll=0;renderGlobalSaveSearch()};
+  window.renderGlobalSaveSearch=function(){
+    captureGame();
+    search.querySelectorAll('[data-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.tab===searchState.tab)});
+    document.getElementById('globalSaveQuery').value=searchState.query;
+    document.getElementById('globalSearchScope').textContent=mobileLabels[mobileEnv];
+    var q=searchState.query.trim().toLocaleLowerCase(),root=document.getElementById('globalSaveResults');
+    if(searchState.tab==='games') {
+      var games=gameCatalog.filter(function(g){return g.title.toLocaleLowerCase().includes(q)});
+      root.innerHTML=games.length?games.map(function(g){return gameMarkup(g,'plaza',true)}).join(''):'<div class="market-empty">未找到相关游戏</div>';
+    } else {
+      var entries=gameCatalog.flatMap(publicEntries).filter(function(e){return (e.save.title+' '+e.game.title).toLocaleLowerCase().includes(q)}).sort(function(a,b){var ak=knownDownloads(a.save),bk=knownDownloads(b.save);if(ak!==bk)return ak?-1:1;if(ak&&a.save.downloads!==b.save.downloads)return b.save.downloads-a.save.downloads;var at=dateTime(a.save.publishedAt),bt=dateTime(b.save.publishedAt);if(at!==bt)return at===null?1:bt===null?-1:bt-at;return gameCatalog.indexOf(a.game)-gameCatalog.indexOf(b.game)||a.index-b.index});
+      root.innerHTML=entries.length?'<div class="save-grid">'+entries.map(function(e){var s=e.save;return '<article class="save-card" tabindex="0" role="button" data-game-id="'+e.game.id+'" onclick="catalogOpenSaveResult(\''+e.game.id+'\','+e.index+',\''+e.type+'\')" onkeydown="if(event.key===\'Enter\')this.click()">'+renderSaveCover(s,true)+'<div class="sc-body"><div class="sc-title">'+escapeText(s.title)+'</div><div class="catalog-result-game">'+escapeText(e.game.title)+'</div><div class="sc-meta catalog-author">'+(s.source==='official'?'&nbsp;':escapeText(s.author||'玩家'))+'</div>'+renderSaveStats(s)+'</div></article>'}).join('')+'</div>':'<div class="market-empty">'+(q?'未找到相关存档':'当前环境暂无适配存档')+'</div>';
+    }
+    root.scrollTop=searchState.scroll;
+  };
+  window.catalogOpenGameResult=function(id,tab){searchState.scroll=document.getElementById('globalSaveResults').scrollTop;openGameSaves(id,tab);gameReturn='search'};
+  window.catalogOpenSaveResult=function(id,index,type){
+    searchState.scroll=document.getElementById('globalSaveResults').scrollTop;
+    openGameSaves(id,'plaza');gameReturn='search';search.hidden=false;searchDetail=true;openDetail(index,type);
+  };
+  var baseCloseDetail=window.closeDetail;
+  window.closeDetail=function(){baseCloseDetail();if(searchDetail){searchDetail=false;search.hidden=false;renderGlobalSaveSearch()}};
+  var baseRenderPlaza=window.renderPlaza;
+  window.renderPlaza=function(){baseRenderPlaza();document.querySelectorAll('#sec-plaza .sc-body').forEach(function(body){if(!body.querySelector('.sc-meta')){var author=document.createElement('div');author.className='sc-meta catalog-author';author.innerHTML='&nbsp;';var stats=body.querySelector('.save-stats');body.insertBefore(author,stats)}else body.querySelector('.sc-meta').classList.add('catalog-author')})};
+  var baseRenderIgPlaza=window.renderIgPlaza;
+  window.renderIgPlaza=function(skip){baseRenderIgPlaza(skip);document.querySelectorAll('#igBody .ig-plaza-grid > [data-save-key]').forEach(function(card){
+    card.classList.add('ig-catalog-card');var body=card.lastElementChild;body.classList.add('ig-catalog-body');body.firstElementChild.classList.add('ig-catalog-title');var stats=body.querySelector('.save-stats'),author=body.lastElementChild;
+    if(author!==stats)author.classList.add('ig-catalog-author');if(stats)body.appendChild(stats);
+  })};
+  var baseRenderMine=window.renderMine;
+  window.renderMine=function(){
+    baseRenderMine();var root=document.getElementById('sec-mine'),heading=Array.from(root.querySelectorAll('.section-label')).find(function(el){return el.textContent.startsWith('我的发布（')});if(!heading)return;
+    var grid=heading.nextElementSibling,count=0;
+    grid.querySelectorAll('.save-card').forEach(function(card){var match=(card.getAttribute('onclick')||'').match(/openDetail\((\d+)/),s=match&&consignSaves[Number(match[1])];if(s&&(!s.originEnvironment||s.originEnvironment===mobileEnv))count++;else card.remove()});
+    heading.firstChild.textContent='我的发布（当前环境 '+count+' 条 · 共 '+consignSaves.length+'/4）';
+    if(!count)grid.innerHTML='<div class="market-empty">当前环境暂无发布存档</div>';
+  };
+  var baseRefresh=window.refreshAll;
+  window.refreshAll=function(){baseRefresh();captureGame();if(!library.hidden)renderSaveLibrary();if(!search.hidden)renderGlobalSaveSearch()};
+  var baseChangeEnv=window.changeMobileEnv;
+  window.changeMobileEnv=function(value){if(mobileBusy)return;searchDetail=false;baseChangeEnv(value);captureGame();renderSaveLibrary();if(!search.hidden)renderGlobalSaveSearch()};
+  var basePrepare=window.mobilePrepare,baseConfirm=window.modalConfirm;
+  window.mobilePrepare=function(kind,index){basePrepare(kind,index);if(mobilePending)mobilePending.gameKey=activeGameKey};
+  window.modalConfirm=function(){if(mobilePending&&mobilePending.gameKey!==activeGameKey){closeModal();return}baseConfirm();captureGame()};
+  var baseSubmit=window.submitConsign;
+  window.submitConsign=function(){var count=consignSaves.length;baseSubmit();if(consignSaves.length>count){consignSaves.slice(count).forEach(function(s){s.gameKey=activeGameKey});captureGame();refreshAll()}};
+  var baseOpenShare=window.openSaveShare,baseRenderShare=window.renderSaveShare;
+  window.openSaveShare=function(index,type){baseOpenShare(index,type);if(shareTarget){shareTarget.gameKey=activeGameKey;shareTarget.gameTitle=getActiveGame().title;renderSaveShare()}};
+  window.renderSaveShare=function(){baseRenderShare();if(shareTarget){var small=document.querySelector('#sharePreview small');if(small)small.textContent=(shareTarget.gameTitle||getActiveGame().title)+' · '+(shareTarget.save.author||'玩家')+' · 免费存档'}};
+  window.shareLocalUrl=function(){var url=new URL(location.href),params=new URLSearchParams();params.set('game',shareTarget.gameKey||activeGameKey);params.set('save',shareTarget.type==='system'?'system-'+shareTarget.save.id:'published-'+shareTarget.index);url.hash=params.toString();return url.href};
+  window.shareSaveChannel=async function(channel){
+    if(shareBusy||!shareTargetAvailable())return;var status=document.getElementById('shareStatus');shareBusy=true;
+    try{if(channel==='link'){await navigator.clipboard.writeText(shareLocalUrl());status.textContent='链接已复制'}else if(window.GameHubShare&&typeof window.GameHubShare.share==='function'){status.textContent='正在打开分享应用';var s=shareTarget.save,result=await window.GameHubShare.share({channel:channel,title:s.title,description:(shareTarget.gameTitle||getActiveGame().title)+' · 免费存档',image:s.cover,url:shareLocalUrl()});status.textContent=result&&result.status==='success'?'分享完成':result&&result.status==='cancel'?'已取消分享':'未完成分享，请重试'}else status.textContent='当前为网页演示，请在盖世游戏客户端打开'+shareChannels[shareRegion].find(function(c){return c[0]===channel})[1]+'分享'}catch(e){status.textContent=channel==='link'?'复制失败，请重试':'分享未完成，请重试'}finally{shareBusy=false}
+  };
+  window.openSavePoster=async function(){
+    if(!shareTargetAvailable())return;var target=shareTarget,s=target.save,canvas=document.createElement('canvas');canvas.width=720;canvas.height=1000;var ctx=canvas.getContext('2d');
+    ctx.fillStyle='#101114';ctx.fillRect(0,0,720,1000);ctx.fillStyle='#d4b473';ctx.font='bold 34px Arial';ctx.fillText('GameHub',40,65);ctx.font='22px Arial';ctx.fillStyle='#ddd';ctx.fillText('盖世游戏 · 免费存档',40,108);
+    try{var img=await new Promise(function(resolve,reject){var im=new Image();im.onload=function(){resolve(im)};im.onerror=reject;im.src=s.cover});var ratio=Math.min(640/img.width,360/img.height),w=img.width*ratio,h=img.height*ratio;ctx.drawImage(img,40+(640-w)/2,150+(360-h)/2,w,h)}catch(e){document.getElementById('shareStatus').textContent='分享图生成失败，请重试';return}
+    if(shareTarget!==target)return;
+    ctx.fillStyle='#fff';ctx.font='bold 34px Arial';posterLines(ctx,s.title,40,560,640,48,3);ctx.fillStyle='#aaa';ctx.font='24px Arial';posterLines(ctx,(target.gameTitle||getActiveGame().title)+' · '+(s.author||'玩家'),40,730,640,34,2);ctx.strokeStyle='#333';ctx.beginPath();ctx.moveTo(40,820);ctx.lineTo(680,820);ctx.stroke();ctx.fillStyle='#d4b473';ctx.font='28px Arial';ctx.fillText('打开盖世游戏，查看并使用存档',40,882);ctx.fillStyle='#999';ctx.font='20px Arial';ctx.fillText('存档分享 · 免费使用',40,936);document.getElementById('posterImage').src=canvas.toDataURL('image/png');document.getElementById('posterStatus').textContent='';document.getElementById('posterOverlay').hidden=false;document.getElementById('posterBack').focus();
+  };
+  window.openSharedSave=function(){
+    var params=new URLSearchParams(location.hash.slice(1)),key=params.get('save');if(!key)return;
+    var id=params.get('game')||'gta-v',game=gameCatalog.find(function(g){return g.id===id});if(!game)return;
+    var system=key.match(/^system-(?:gta(?:-v)?-)?(\d+)$/),published=key.match(/^published-(\d+)$/),index=-1,type='system';
+    if(system)index=game.saves.findIndex(function(s){return s.id===Number(system[1])});
+    if(published){index=Number(published[1]);type='consign-guest';if(!game.consignSaves[index]||game.consignSaves[index].status!=='on')return}
+    if(index<0)return;openGameSaves(id,'plaza');closeSaveShare();openDetail(index,type);
+  };
+  window.addEventListener('hashchange',window.openSharedSave);
+  document.addEventListener('keydown',function(e){if(e.key!=='Escape'||!document.getElementById('shareOverlay').hidden||!document.getElementById('posterOverlay').hidden||!document.getElementById('mobileHelp').hidden||document.getElementById('modal').classList.contains('show')||document.getElementById('consignPage').classList.contains('show'))return;if(document.getElementById('detailPage').classList.contains('show'))closeDetail();else if(!search.hidden)closeGlobalSaveSearch()});
+  showSaveLibrary('plaza');openSharedSave();
+})();
+
+/* Local publishing drafts; never persist the selected game-save bytes. */
+(function(){
+  'use strict';
+  var key='gamehub-save-drafts-v1',records=[],sessions={},current=null,baseline='',submitting=false,exitAction=null,reauthorize=false;
+  var page=document.getElementById('consignPage'),app=document.getElementById('app');
+  try{var loaded=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(loaded))records=loaded.filter(function(d){return d&&typeof d.id==='string'&&typeof d.gameKey==='string'&&Array.isArray(d.images)})}catch(e){}
+  page.querySelector('.top-bar').insertAdjacentHTML('beforeend','<button class="draft-save" onclick="savePublishDraft(false)">保存草稿</button>');
+  page.querySelector('.consign-body').insertAdjacentHTML('afterbegin','<div id="draftStatus" class="draft-status" role="status"></div>');
+  var exit=document.createElement('div');exit.id='draftExit';exit.className='draft-exit';exit.hidden=true;
+  exit.innerHTML='<div class="draft-dialog" role="dialog" aria-modal="true" aria-labelledby="draftExitTitle"><h3 id="draftExitTitle">保存到草稿箱？</h3><p>本次编辑尚未保存，可保存后继续编辑。</p><button onclick="savePublishDraft(true)">保存草稿</button><button onclick="discardDraftChanges()">不保存</button><button onclick="continueDraftEditing()">继续编辑</button></div>';app.appendChild(exit);
+  function val(id){return document.getElementById(id).value}
+  function selected(){var el=document.querySelector('input[name="cf"]:checked');if(!el)return null;var n=el.value,source=n.indexOf('manual-')===0?mobileContext().files[Number(n.slice(7))]:autoSaves[Number(n)];return source?{value:n,name:source.name,size:source.size}:null}
+  function snapshot(){return {title:val('cTitle'),desc:val('cDesc'),platform:val('cPlatform'),versionMode:val('cVersionMode'),version:val('cVersion'),images:consignImages.slice(),file:selected()}}
+  function signature(){return JSON.stringify(snapshot())}
+  function dirty(){return page.classList.contains('show')&&signature()!==baseline}
+  function message(text){document.getElementById('draftStatus').textContent=text}
+  function update(){renderMine();if(window.renderSaveLibrary)renderSaveLibrary()}
+  function persist(next){try{localStorage.setItem(key,JSON.stringify(next));records=next;return true}catch(e){message('本机草稿保存失败，请释放存储空间后重试。当前编辑内容已保留。');return false}}
+  window.getGameDraftCount=function(game,env){return records.filter(function(d){return d.gameKey===game&&d.environment===env}).length};
+  var baseMine=window.renderMine;
+  window.renderMine=function(){baseMine();var items=records.filter(function(d){return d.gameKey===activeGameKey&&d.environment===mobileEnv}).sort(function(a,b){return b.updatedAt-a.updatedAt});var section=document.createElement('section');section.className='draft-section';section.innerHTML='<div class="section-label">草稿箱（'+items.length+'）</div><div class="backup-note">仅保存在本机，未提交审核</div>'+items.map(function(d){return '<button class="draft-row" data-draft-id="'+escapeText(d.id)+'"><span><strong>'+escapeText(d.title.trim()||'未命名草稿')+'</strong><small>'+new Date(d.updatedAt).toLocaleString('zh-CN',{hour12:false})+'</small></span><span>继续编辑 ›</span></button>'}).join('')+(items.length?'':'<div class="backup-empty">暂无草稿</div>');section.querySelectorAll('[data-draft-id]').forEach(function(b){b.onclick=function(){editPublishDraft(b.dataset.draftId)}});document.getElementById('sec-mine').prepend(section)};
+  function reset(){consignImageVersion++;consignImages=[];document.getElementById('cTitle').value='';document.getElementById('cDesc').value='';document.getElementById('cPlatform').value=mobileEnv==='steam'?'Steam':'不清楚';document.getElementById('cVersionMode').value='unknown';document.getElementById('cVersion').value='';toggleSaveVersion();message('');reauthorize=false;current=null}
+  function gameLabel(){page.querySelectorAll('.fg').forEach(function(f){var l=f.querySelector('label');if(l&&l.textContent==='关联游戏')l.nextElementSibling.textContent=getActiveGame().title+'（当前游戏）'})}
+  var baseOpen=window.openConsign,baseClose=window.closeConsign,baseSubmit=window.submitConsign;
+  window.openConsign=function(){reset();baseOpen();gameLabel();baseline=signature()};
+  function finish(){exit.hidden=true;baseClose();exitAction=null;reset();update()}
+  window.closeConsign=function(){if(submitting){baseClose();return}if(!page.classList.contains('show'))return;if(dirty()){exitAction=null;exit.hidden=false;exit.querySelector('button').focus()}else finish()};
+  window.continueDraftEditing=function(){exit.hidden=true;exitAction=null};
+  window.discardDraftChanges=function(){var action=exitAction;finish();if(action)action()};
+  window.savePublishDraft=function(close){if(consignImageBusy){message('图片处理中，请稍后保存。');return}var draft=Object.assign(snapshot(),{id:current||('draft-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)),gameKey:activeGameKey,environment:mobileEnv,updatedAt:Date.now()});if(reauthorize&&current){var prev=records.find(function(d){return d.id===current});draft.file=prev?prev.file:null}var next=records.filter(function(d){return d.id!==draft.id}).concat(draft);if(!persist(next)){exit.hidden=true;return}current=draft.id;sessions[current]=reauthorize?null:selected();baseline=signature();message('已保存到本机草稿箱');update();if(close){var action=exitAction;finish();if(action)action()}};
+  window.editPublishDraft=function(id){var d=records.find(function(x){return x.id===id&&x.gameKey===activeGameKey&&x.environment===mobileEnv});if(!d)return;openConsign();current=d.id;document.getElementById('cTitle').value=d.title;document.getElementById('cDesc').value=d.desc;document.getElementById('cPlatform').value=d.platform;document.getElementById('cVersionMode').value=d.versionMode;document.getElementById('cVersion').value=d.version;consignImages=d.images.slice();toggleSaveVersion();renderConsignImages();updateConsignText(document.getElementById('cTitle'),40,false);updateConsignText(document.getElementById('cDesc'),500,false);var ref=sessions[id];document.querySelectorAll('input[name="cf"]').forEach(function(el){el.checked=!!ref&&el.value===ref.value});if(ref&&JSON.stringify(selected())!==JSON.stringify(ref))ref=null;if(!ref){document.querySelectorAll('input[name="cf"]').forEach(function(el){el.checked=false});reauthorize=true;message(d.file?'原文件：'+d.file.name+'。请重新选择存档文件后提交。':'请选择本次要提交的存档文件。')}baseline=signature();page.querySelector('.consign-body').scrollTop=0};
+  page.addEventListener('change',function(e){if(e.target.matches('input[name="cf"]')){reauthorize=false;message('')}});
+  var baseFile=window.mobileFileSelected;
+  window.mobileFileSelected=async function(input){await baseFile(input);if(page.classList.contains('show')&&selected()){reauthorize=false;message('')}};
+  window.submitConsign=function(){if(reauthorize){message('请重新选择存档文件后提交。');return}var oldId=current,n=consignSaves.length;submitting=true;try{baseSubmit()}finally{submitting=false}if(consignSaves.length>n){if(oldId){var next=records.filter(function(d){return d.id!==oldId});if(!persist(next))message('已提交审核，但本机草稿清理失败。');delete sessions[oldId]}reset();baseline='';update()}};
+  ['changeMobileEnv','openGameSaves','showSaveLibrary'].forEach(function(name){var base=window[name];window[name]=function(){var args=arguments,context=this,action=function(){base.apply(context,args)};if(page.classList.contains('show')&&dirty()){exitAction=action;exit.hidden=false;document.getElementById('demoEnv').value=mobileEnv;return}if(page.classList.contains('show'))finish();return action()}});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!exit.hidden){e.preventDefault();e.stopImmediatePropagation();continueDraftEditing()}else if(e.key==='Escape'&&page.classList.contains('show')){e.preventDefault();e.stopImmediatePropagation();closeConsign()}},true);
+  window.addEventListener('beforeunload',function(e){if(dirty()){e.preventDefault();e.returnValue=''}});
+  document.querySelector('.demo-data-note').textContent='网页演示：环境、检测、备份恢复与审核为模拟；游戏文件不上传、不改写。发布草稿保存在本机，其他演示数据刷新后重置。';
+  update();
+})();
+
 </script></body></html>
