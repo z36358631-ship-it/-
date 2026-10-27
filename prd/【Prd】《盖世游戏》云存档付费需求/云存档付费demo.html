@@ -284,7 +284,7 @@ window.homeNavIcons=["data:image/webp;base64,UklGRswGAABXRUJQVlA4TL8GAAAvN8AMAGc
     return true;
   }
   window.mobileEligible=function(s){return !!(s&&s.gameKey===activeGameKey&&Array.isArray(s.environments)&&s.environments.includes(mobileEnv)&&!s.incompatible)};
-  function eligibleFor(game,s){return !!(s&&s.gameKey===game.id&&Array.isArray(s.environments)&&s.environments.includes(mobileEnv)&&!s.incompatible)}
+  function eligibleFor(game,s){return !!(s&&s.gameKey===game.id&&Array.isArray(s.environments)&&s.environments.includes(mobileEnv)&&!s.incompatible&&(!window.steamVersionEligible||steamVersionEligible(game,s)))}
   function publicEntries(game) {
     return game.saves.map(function(s,i){return {save:s,index:i,type:'system',game:game}}).filter(function(e){return !e.save.status||e.save.status==='on'}).concat(game.consignSaves.map(function(s,i){return {save:s,index:i,type:'consign-guest',game:game}}).filter(function(e){return e.save.status==='on'})).filter(function(e){return eligibleFor(game,e.save)});
   }
@@ -465,6 +465,51 @@ window.homeNavIcons=["data:image/webp;base64,UklGRswGAABXRUJQVlA4TL8GAAAvN8AMAGc
   window.addEventListener('beforeunload',function(e){if(dirty()){e.preventDefault();e.returnValue=''}});
   document.querySelector('.demo-data-note').textContent='网页演示：环境、检测、备份恢复与审核为模拟；游戏文件不上传、不改写。发布草稿保存在本机，其他演示数据刷新后重置。';
   update();
+})();
+
+/* Build identifiers below are demonstration fixtures, not real Steam game versions. */
+(function(){
+  'use strict';
+  gameCatalog.forEach(function(game,gi){
+    game.steamDemoBuilds={current:String(10002+gi*1000),previous:String(10001+gi*1000),unmatched:String(10999+gi*1000)};
+    game.steamInstalledBuild=game.steamDemoBuilds.current;
+    var steamSaves=game.saves.filter(function(s){return s.environments.includes('steam')});
+    steamSaves.forEach(function(s,i){s.steamBuildIds=[i===steamSaves.length-1?game.steamDemoBuilds.previous:game.steamDemoBuilds.current]});
+  });
+  window.steamVersionEligible=function(game,save){return mobileEnv!=='steam'||!!(game&&game.steamInstalledBuild&&Array.isArray(save.steamBuildIds)&&save.steamBuildIds.includes(game.steamInstalledBuild))};
+  var baseEligible=window.mobileEligible;
+  window.mobileEligible=function(s){return baseEligible(s)&&steamVersionEligible(getActiveGame(),s)};
+  function emptyMessage(){return getActiveGame().steamInstalledBuild?'暂无适配当前安装版本的存档':'暂未读取到游戏版本，请重试后查看存档'}
+  function hasVersionMatch(){return saves.concat(consignSaves.filter(function(s){return s.status==='on'})).some(function(s){return mobileEligible(s)})}
+  function scopeText(){return getActiveGame().steamInstalledBuild?'已按当前安装版本筛选':'暂未读取到游戏版本，请重试后查看存档'}
+  var controls=document.createElement('label');controls.id='steamBuildDemo';
+  controls.innerHTML='当前游戏安装版本（模拟）<select id="demoSteamBuild" class="region-control" onchange="changeSteamDemoBuild(this.value)"><option value="current">版本 A</option><option value="previous">版本 B</option><option value="unmatched">无适配版本</option><option value="unknown">读取失败</option></select>';
+  document.querySelector('.demo-settings').appendChild(controls);
+  function updateControls(){controls.style.display=mobileEnv==='steam'?'flex':'none';var game=getActiveGame(),key=Object.keys(game.steamDemoBuilds).find(function(k){return game.steamDemoBuilds[k]===game.steamInstalledBuild})||'unknown';document.getElementById('demoSteamBuild').value=key}
+  window.changeSteamDemoBuild=function(value){var game=getActiveGame();game.steamInstalledBuild=game.steamDemoBuilds[value]||null;closeModal();closeDetail();closeSaveShare();mobileUpdateScope();refreshAll()};
+  var baseScope=window.mobileUpdateScope;
+  window.mobileUpdateScope=function(){baseScope();updateControls();if(mobileEnv==='steam')document.querySelector('#mobileScope .mobile-scope-tip').textContent=scopeText()};
+  var basePlaza=window.renderPlaza;
+  window.renderPlaza=function(){basePlaza();if(mobileEnv==='steam'){document.querySelectorAll('#sec-plaza .compatibility-note').forEach(function(el){el.remove()});if(!getActiveGame().steamInstalledBuild||!hasVersionMatch())document.getElementById('sec-plaza').innerHTML='<div class="market-empty">'+emptyMessage()+'</div>'}};
+  var baseIgPlaza=window.renderIgPlaza;
+  window.renderIgPlaza=function(skip){baseIgPlaza(skip);if(mobileEnv==='steam'){document.querySelector('#igBody .mobile-scope span').textContent='Steam 登录下载 · '+scopeText();if(!getActiveGame().steamInstalledBuild||!hasVersionMatch())document.getElementById('igBody').innerHTML='<div class="market-empty">'+emptyMessage()+'</div>'}};
+  var baseMetadata=window.mobileMetadata;
+  window.mobileMetadata=function(s){var h=baseMetadata(s);if(mobileEnv!=='steam')return h;var root=document.createElement('div');root.innerHTML=h;root.querySelectorAll('.dm-row').forEach(function(row){if(row.firstElementChild.textContent==='游戏版本'){row.firstElementChild.textContent='版本匹配';row.lastElementChild.textContent=steamVersionEligible(getActiveGame(),s)?'已匹配当前安装版本':getActiveGame().steamInstalledBuild?'当前安装版本不适用':'未读取到当前安装版本'}});root.querySelector('.mobile-info-note').textContent='版本匹配不包含 DLC、MOD 依赖；请核对以上要求，使用前仍会备份当前进度。';return root.innerHTML};
+  var baseDetail=window.openDetail;
+  window.openDetail=function(index,type){baseDetail(index,type);if(mobileEnv!=='steam')return;var kind=type||'system',s=kind==='system'?saves[index]:consignSaves[index];if(!s||kind==='consign')return;var valid=mobileEligible(s),msg=valid?'版本已匹配':emptyMessage();document.querySelectorAll('#dInfo .dm-row').forEach(function(row){if(row.firstElementChild.textContent==='状态')row.lastElementChild.textContent=msg});if(!valid){var b=document.getElementById('dBuy');b.disabled=true;b.textContent='当前版本不可用'}document.querySelector('#detailPage .tip').textContent=valid?'版本已匹配，使用前备份当前进度':msg};
+  var basePrepare=window.mobilePrepare;
+  window.mobilePrepare=function(kind,index){if(kind==='use'&&mobileEnv==='steam'&&!steamVersionEligible(getActiveGame(),saves[index]||{})){mobileNotice('当前版本不可用',emptyMessage());return}basePrepare(kind,index);if(kind==='use'&&mobileEnv==='steam'&&mobilePending)document.getElementById('mDesc').textContent=document.getElementById('mDesc').textContent.replace('版本、DLC、MOD可能影响读取，请先查看作者说明。','已匹配当前安装版本，请核对 DLC、MOD 要求。')};
+  var baseFiles=window.renderMobileFiles;
+  window.renderMobileFiles=function(){baseFiles();if(mobileEnv==='steam')document.getElementById('mobilePublishEnv').textContent='Steam 登录下载 · '+(getActiveGame().steamInstalledBuild?'已读取当前安装版本（模拟），随提交记录；适用范围仍需审核':'暂未读取当前安装版本；可填写作者声明后提交审核')};
+  var baseSubmit=window.submitConsign;
+  window.submitConsign=function(){var n=consignSaves.length,build=mobileEnv==='steam'?getActiveGame().steamInstalledBuild:null;baseSubmit();if(consignSaves.length>n)consignSaves.slice(n).forEach(function(s){s.submittedSteamBuild=build;s.steamBuildIds=[]})};
+  var baseApprove=window.mobileDemoApprove;
+  window.mobileDemoApprove=function(){var pending=consignSaves.find(function(s){return s.status==='pending'});if(pending&&pending.originEnvironment==='steam'&&!getActiveGame().steamInstalledBuild){showToast('未读取到版本，不能模拟完成 Steam 版本验证');return}baseApprove();if(pending&&pending.status==='on'&&pending.originEnvironment==='steam'){pending.steamBuildIds=[getActiveGame().steamInstalledBuild];refreshAll()}};
+  var baseLibrary=window.renderSaveLibrary,baseSearch=window.renderGlobalSaveSearch;
+  window.renderSaveLibrary=function(){baseLibrary();if(mobileEnv==='steam')document.getElementById('catalogScope').textContent='Steam 登录下载 · 按各游戏已安装版本筛选'};
+  window.renderGlobalSaveSearch=function(){baseSearch();if(mobileEnv==='steam')document.getElementById('globalSearchScope').textContent='Steam 登录下载 · 按各游戏已安装版本筛选'};
+  mobileFaq.use[0][1]='Steam 登录下载按实际安装版本匹配已验证存档；未读取到版本或暂无匹配时不展示可用存档。自己导入和云游戏沿用各自的环境筛选。DLC、MOD 要求仍需在详情核对。';
+  mobileUpdateScope();refreshAll();
 })();
 
 </script></body></html>
