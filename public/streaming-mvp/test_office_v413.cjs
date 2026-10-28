@@ -27,8 +27,11 @@ async function login(p,side){
   await p.locator('#sr-credential').fill('13600008000');await click(p,'sr-send-code');await p.locator('#sr-code').fill('123456');
   await p.locator('#sr-account-form button[type=submit]').click();assert.equal(await p.evaluate(()=>standaloneMac.signed),false);
   await p.locator('#sr-consent').check();await p.locator('#sr-account-form button[type=submit]').click();
-  if(await p.locator('.sr-first-guide').count())await click(p,'sr-onboard-skip');
+
  }
+ await p.waitForFunction(()=>s.page==='usage-choice');
+ await shot(p,side,'usage-choice');await click(p,'usage-choice:other');
+ if(side==='mac'&&await p.locator('.sr-first-guide').count())await click(p,'sr-onboard-skip');
  await p.waitForFunction(()=>s.page==='list');
  assert.deepEqual(await p.evaluate(()=>devices.map(d=>({id:d.id,online:d.online,busy:!!d.busy,blocked:!!d.blocked}))),[
   {id:'win',online:true,busy:false,blocked:false},{id:'work',online:true,busy:true,blocked:false},{id:'phone',online:true,busy:false,blocked:false},{id:'mac',online:false,busy:false,blocked:true},{id:'off',online:false,busy:false,blocked:false}
@@ -87,7 +90,7 @@ async function mobileFlow(p){
  await click(p,'office-thread:work:codex:plan');await click(p,'takeover-confirm');await p.waitForFunction(()=>s.page==='session'&&!s.modal);await click(p,'office-back');assert.equal((await state(p)).page,'office-ai');
  await click(p,'mobile-tab:devices');await click(p,'device:win');await click(p,'connect');await p.waitForFunction(()=>s.page==='session'&&!s.modal);assert.equal(await p.locator('.office-stream').getAttribute('data-capture'),'desktop');await click(p,'office-back');assert.equal((await state(p)).page,'detail');await shot(p,'mobile','detail-office');
  report.checks.push('mobile：离线/禁控拦截，占用取消和确认分支，设备详情默认全桌面并返回详情');
- await invoke(p,'mobile-tab:profile');await click(p,'mobile-logout');await click(p,'remote-logout:confirm');await p.locator('#mobile-phone').fill('13900009000');await click(p,'mobile-sms');await p.locator('#mobile-code').fill('123456');await p.locator('#mobile-agreement').check();await click(p,'mobile-login-submit');await click(p,'mobile-tab:ai');await click(p,'office-native:win:codex:plan');assert(!(await p.locator('.office-native-messages').innerText()).includes(nativeMessage));assert(!(await p.locator('.office-native-messages').innerText()).includes(remoteMessage));
+ await invoke(p,'mobile-tab:profile');await click(p,'mobile-logout');await click(p,'remote-logout:confirm');await p.locator('#mobile-phone').fill('13900009000');await click(p,'mobile-sms');await p.locator('#mobile-code').fill('123456');await p.locator('#mobile-agreement').check();await click(p,'mobile-login-submit');assert.equal((await state(p)).page,'usage-choice');await click(p,'usage-choice:office');await click(p,'mobile-tab:ai');await click(p,'office-native:win:codex:plan');assert(!(await p.locator('.office-native-messages').innerText()).includes(nativeMessage));assert(!(await p.locator('.office-native-messages').innerText()).includes(remoteMessage));
  report.checks.push('mobile：退出后换账号，不继承上一账号远端/原生演示消息');return uid;
 }
 async function mobileToolFlow(p){
