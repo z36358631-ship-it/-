@@ -7,7 +7,7 @@ const root=__dirname,results=[],errors=[],remote=[];
 let browser,page;
 const state=()=>page.evaluate(()=>window.demo.getState());
 const api=(name,arg)=>page.evaluate(([n,a])=>window.demo[n](a),[name,arg]);
-const action=name=>page.locator('#screen [data-action="'+name+'"]:not([inert] *)').first().click();
+const action=name=>page.locator(name==='library'?'#screen [data-action="library"]:not([inert] *),#screen [data-action="hide-preparation"]':'#screen [data-action="'+name+'"]:not([inert] *)').first().click();
 const outer=async name=>{await api('setReviewOpen',true);const el=page.locator('#rail [data-action="'+name+'"]');if(!await el.isVisible())await page.locator('#rail details summary').click();await el.click();await api('setReviewOpen',false)};
 const choose=async value=>page.locator('#screen [data-action="landing-select"][data-landing="'+value+'"]').click();
 async function consent(mode='window'){await page.locator('#screen [data-mode="'+mode+'"]').click();await page.locator('#remember').check();await page.locator('#consent').check();await action('confirm-mode')}
