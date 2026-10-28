@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "runId": "90d9c718-41b9-4e77-9025-3ebb1f6a72d9",
+  "requirementId": "LOCAL-20261028",
+  "revision": 60,
+  "status": "in_progress",
+  "createdAt": "2026-10-28T01:57:53.1230318Z",
+  "updatedAt": "2026-10-28T04:36:52.2112526Z",
+  "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20261028-steam-integration.md",
+  "cardHash": "D4026427D0AFE759C0DB74E935F805C6762903E2EC962357ECD9B4F8D05509F1",
+  "contract": {
+    "goal": "",
+    "inScope": [],
+    "outOfScope": [],
+    "inputs": [],
+    "deliverables": [],
+    "changes": []
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "type": "requirement-resolution",
+      "required": true,
+      "dependsOn": [],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [],
+      "validation": "索引无已有同名需求，创建LOCAL-20261028-steam-integration",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S2",
+      "type": "fact-recovery",
+      "required": true,
+      "dependsOn": [
+        "S1"
+      ],
+      "status": "passed",
+      "attempt": 1,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "outputs/steam-integration-20261028/experience/体验记录.md",
+        "outputs/steam-integration-20261028/apk-analysis/静态核查.md"
+      ],
+      "validation": "已读用户材料并完成可达范围体验，运行时受阻明确记录",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S3",
+      "type": "change-compilation",
+      "required": true,
+      "dependsOn": [
+        "S2"
+      ],
+      "status": "passed",
+      "attempt": 3,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "C:/Users/z3635/官网改动/outputs/steam-integration-20261028/免责声明.md",
+        "C:/Users/z3635/官网改动/outputs/steam-integration-20261028/方案与功能清单.md"
+      ],
+      "validation": "最新用户声明与登录确认覆盖模式协议；最小化球语义已确认",
+      "error": null,
+      "reviewer": null
+    },
+    {
+      "id": "S4",
+      "type": "page-baseline",
+      "required": true,
+      "dependsOn": [
+        "S3"
+      ],
+      "status": "passed",
+      "attempt": 3,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "C:\\Users\\z3635\\官网改动\\outputs\\steam-integration-20261028\\来源与范围.md"
+      ],
+      "validation": "线上设置截图基线与模式、登录、声明横竖布局已复核",
+      "error": null,
+      "reviewer": "root与产品经理交叉复核"
+    },
+    {
+      "id": "S5",
+      "type": "artifact-execution",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S4"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "C:\\Users\\z3635\\官网改动\\outputs\\steam-integration-20261028\\Steam接入PRD-Draft.md"
+      ],
+      "validation": "Demo、流程图、PRD评审稿及源码已同步",
+      "error": null,
+      "reviewer": "root与产品经理交叉复核"
+    },
+    {
+      "id": "S6",
+      "type": "machine-validation",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "C:\\Users\\z3635\\官网改动\\outputs\\steam-integration-20261028\\验证记录.json"
+      ],
+      "validation": "29项交互及全文、单行、流程通过；PRD0错误、12图公网通过",
+      "error": null,
+      "reviewer": "root与产品经理交叉复核"
+    },
+    {
+      "id": "S7",
+      "type": "professional-review",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 5,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "C:\\Users\\z3635\\官网改动\\outputs\\steam-integration-20261028\\prd-quality-notes.md"
+      ],
+      "validation": "产品经理逐页规则审查与主代理横竖视觉复核；真实接入/法务边界保留",
+      "error": null,
+      "reviewer": "root与产品经理交叉复核"
+    },
+    {
+      "id": "S8",
+      "type": "consistency-delivery",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "running",
+      "attempt": 5,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [],
+      "validation": null,
+      "error": null,
+      "reviewer": null
+    }
+  ]
+}
