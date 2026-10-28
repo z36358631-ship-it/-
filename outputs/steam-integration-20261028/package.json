@@ -5,8 +5,10 @@
   "description": "Steam integration offline review demo and PRD assets",
   "scripts": {
     "build": "node build-demo.mjs && node build-flowcharts.mjs",
-    "test": "node verify-demo.cjs && node verify-legal-copy.cjs && node verify-consent-inline.cjs && node verify-flow.cjs",
+    "test": "node verify-demo.cjs && node verify-legal-copy.cjs && node verify-consent-inline.cjs && node verify-flow.cjs && node verify-fixtures.cjs",
     "capture": "node capture-prd.cjs"
   },
-  "devDependencies": { "playwright-core": "1.61.1" }
+  "devDependencies": {
+    "playwright-core": "1.61.1"
+  }
 }
