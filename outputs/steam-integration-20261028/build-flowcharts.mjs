@@ -13,13 +13,51 @@ function chart({title,subtitle,height,nodes,edges,notes}){
  for(let i=0;i<notes.length;i++)out+=`<text class="note" x="60" y="${height-80+i*26}">${esc(notes[i])}</text>`;
  return (out+'</svg>').replaceAll('id="arrow"',`id="arrow-${title.slice(0,2)}"`).replaceAll('url(#arrow)',`url(#arrow-${title.slice(0,2)})`);
 }
-const first=chart({title:'01 进入 Steam：模式、协议与扫码登录',subtitle:'旧版已登录也须首次确认 · 准备弹窗仅状态、进度和操作 · 实际登录成功才进入',height:2560,nodes:[
-{x:690,y:165,text:'游戏库 → Steam 入口',type:'end'},
+function withLaunchSources(c){
+ const dy=450;
+ c.nodes=c.nodes.map(n=>({...n,y:n.y+dy}));
+ c.edges=c.edges.map(e=>({...e,d:e.d.replace(/M(\d+) (\d+)/g,(_,x,y)=>`M${x} ${+y+dy}`).replace(/V(\d+)/g,(_,y)=>`V${+y+dy}`),y:e.y===undefined?undefined:e.y+dy}));
+ c.height=3300;
+ c.title='01 启动与进入：落地页、统一门禁和游戏目标';
+ c.subtitle='未设置：竖屏主页、横屏游戏库 · 显式选择优先 · PC游戏目标跨准备及登录保留';
+ c.nodes.unshift(
+  {x:255,y:165,text:'APP 冷启动',type:'end',w:340},
+  {x:255,y:290,text:'本次落地为 Steam？',type:'decision',w:380},
+  {x:255,y:440,text:'主页 / 社区 / 游戏库\n未设置时：竖屏主页、横屏游戏库',type:'end',w:390},
+  {x:690,y:165,text:'游戏库 Steam 卡片\n登录后显示昵称 + 头像',w:380},
+  {x:1110,y:165,text:'PC 游戏启动 / 导入成功\n仅当前已接入 PC 游戏范围',w:380}
+ );
+ c.edges.unshift(
+  {d:'M255 200 V241'},
+  {d:'M255 339 V405',label:'否',x:280,y:378},
+  {d:'M445 290 H690 V580',label:'是：仍执行必要条件',x:745,y:430},
+  {d:'M690 200 V580'},
+  {d:'M1110 200 V615 H880',label:'保留游戏目标',x:1120,y:430}
+ );
+ c.nodes.push(
+  {x:1110,y:2590,text:'承接指定 PC 游戏\n发起实际游戏运行请求',w:380},
+  {x:1110,y:2760,text:'实际运行结果？',type:'decision',w:380},
+  {x:1110,y:2940,text:'进入目标游戏',type:'end',w:380},
+  {x:690,y:2940,text:'失败：保留目标，可明确重试\n取消：停止本次自动继续',type:'error',w:390}
+ );
+ c.edges.push(
+  {d:'M1300 1050 H1340 V2500 H690 V2555',label:'复用会话后继续本次目标',x:1135,y:2482},
+  {d:'M880 2590 H920',label:'有游戏目标',x:902,y:2565},
+  {d:'M1110 2625 V2711'},
+  {d:'M1110 2809 V2905',label:'成功',x:1140,y:2860},
+  {d:'M920 2760 H900 V2940 H885',label:'失败',x:928,y:2860},
+  {d:'M690 2975 V3060 H1340 V2590 H1300',label:'用户明确重试',x:1110,y:3040}
+ );
+ c.notes=['冷启动未设置与旧版缺字段均按启动时方向；设置只有主页、社区、游戏库、Steam四项。旋转当前页面不跳转。','新方案/协议、模式、组件及登录共用门禁；导入成功不等于Steam权益或游戏运行成功。取消不会在下次普通进入时自动启动。','资料昵称头像不取登录账号字符串；Demo仅模拟落地、资料与运行结果，真实认证、文件导入及游戏运行仍需联调。'];
+ return c;
+}
+const first=chart(withLaunchSources({title:'01 进入 Steam：模式、协议与扫码登录',subtitle:'旧版已登录也须首次确认 · 准备弹窗仅状态、进度和操作 · 实际登录成功才进入',height:2560,nodes:[
+{x:690,y:165,text:'统一进入 Steam\n保留本次来源与游戏目标',type:'end'},
 {x:690,y:290,text:'新方案和当前声明已确认？',type:'decision',w:380},
 {x:255,y:440,text:'模式选择 + 记忆开关 + 协议勾选\n首次未勾选，继续禁用',w:390},
 {x:255,y:600,text:'勾选后继续\n保存模式、声明版本及新流程确认',w:390},
 {x:1110,y:440,text:'本方案有效会话可恢复？',type:'decision',w:380},
-{x:1110,y:600,text:'恢复原 Steam 页面与模式\n仅适用已完成新方案的再次进入',type:'end',w:380},
+{x:1110,y:600,text:'复用本方案会话与原模式\n有新游戏目标则继续该目标',type:'end',w:380},
 {x:690,y:760,text:'确定本次启动模式\n首次新方案按所选模式启动',w:380},
 {x:255,y:760,text:'未记忆模式 → 选择页\n已确认协议可回显；取消不保存',w:380},
 {x:690,y:920,text:'组件可用且已准备？',type:'decision',w:380},
@@ -35,7 +73,7 @@ const first=chart({title:'01 进入 Steam：模式、协议与扫码登录',subt
 {x:255,y:1880,text:'已扫码：等待手机确认\n扫码本身不算登录成功',w:380},
 {x:690,y:1880,text:'原生认证结果\n扫码或账号密码，两路径只进入一次',type:'decision',w:400},
 {x:1110,y:1880,text:'登录失败\n保留输入及原目标，可重试',type:'error',w:380},
-{x:690,y:2140,text:'Steam 界面可用\n进入库或原目标',type:'steam',w:380},
+{x:690,y:2140,text:'Steam 界面可用\n进入库或继续指定游戏目标',type:'steam',w:380},
 {x:690,y:2310,text:'返回盖世游戏\n保留本方案会话，不注销',type:'end',w:380},
 ],edges:[
 {d:'M690 200 V241'},
@@ -68,10 +106,10 @@ const first=chart({title:'01 进入 Steam：模式、协议与扫码登录',subt
 {d:'M690 1755 V1831',label:'账号密码登录',x:778,y:1807},
 {d:'M890 1880 H920',label:'失败',x:903,y:1858},
 {d:'M1110 1845 V1720 H880',label:'重试',x:1095,y:1701},
-{d:'M690 1929 V2105',label:'实际成功',x:740,y:2020},
+{d:'M690 1929 V2105',label:'实际成功：更新昵称头像',x:740,y:2020},
 {d:'M690 2175 V2275'},
-],notes:['旧版首次接入不能凭已登录或记忆模式跳过；继续后按本次模式启动新界面，有效登录态保留。','未勾选不能继续；取消不保存本次更改；声明全文只读往返保留选择，登录页不再重复勾选。','Demo 二维码仅为模拟；原生扫码、账号迁移、游戏运行及输入仍须联调。']});
-const second=chart({title:'02 使用中：返回、设置与原生能力承接',subtitle:'Steam 与盖世模式独立 · 最小化球不改变 Steam 页面 · 球无关闭及开关',height:1350,nodes:[
+],notes:['旧版首次接入不能凭已登录或记忆模式跳过；继续后按本次模式启动新界面，有效登录态保留。','未勾选不能继续；取消不保存本次更改；声明全文只读往返保留选择，登录页不再重复勾选。','Demo 二维码仅为模拟；原生扫码、账号迁移、游戏运行及输入仍须联调。']}));
+const second=chart({title:'02 使用中：返回、设置与原生能力承接',subtitle:'Steam 与盖世模式独立 · 最小化球不改变 Steam 页面 · 球无关闭及开关',height:1580,nodes:[
  {x:690,y:175,text:'Steam 窗口式 / 大屏式界面',type:'steam',w:360},
  {x:275,y:340,text:'好友 / 消息通知',w:320},
  {x:690,y:340,text:'游戏库 → 启动游戏',w:320},
@@ -87,6 +125,10 @@ const second=chart({title:'02 使用中：返回、设置与原生能力承接',
  {x:275,y:1035,text:'下次新启动应用新偏好\n恢复已有会话仍沿用当前模式',type:'end',w:360},
  {x:1105,y:1035,text:'菜单 → 最小化悬浮球\n球缩成小图标，Steam页面不变',type:'end',w:340},
  {x:1105,y:1155,text:'点击小图标\n恢复常规球并展开菜单',type:'end',w:340},
+ {x:275,y:1200,text:'通用设置 → 启动后进入\n主页 / 社区 / 游戏库 / Steam',w:380},
+ {x:275,y:1350,text:'下次冷启动生效\n未设置：竖屏主页、横屏游戏库',type:'end',w:380},
+ {x:690,y:1110,text:'首次Steam库：启动页轻提示\n准备 / 登录 / 游戏启动中不展示',w:380},
+ {x:690,y:1350,text:'知道了 → 收起提示\n去设置或知道了均记录已处理',type:'end',w:380},
 ],edges:[
  {d:'M510 175 H275 V305'}, {d:'M690 210 V305'}, {d:'M870 175 H1105 V305'},
  {d:'M275 375 V445'}, {d:'M1105 375 V445'},
@@ -101,6 +143,10 @@ const second=chart({title:'02 使用中：返回、设置与原生能力承接',
  {d:'M275 780 V850'}, {d:'M275 920 V1000'},
  {d:'M1265 175 H1320 V1035 H1275',label:'悬浮球菜单',x:1283,y:941},
  {d:'M1105 1070 V1120'},
+ {d:'M95 885 H45 V1200 H85'},
+ {d:'M275 1235 V1315'},
+ {d:'M690 1145 V1315'},
+ {d:'M500 1110 H475 V1200 H465',label:'去设置',x:480,y:1166},
 ],notes:['Demo 仅演示路由和状态：不发送真实消息、不登录真实账号、不下载真实组件、不启动真实游戏。','账号与下载迁移、组件更新、手柄输入、原生页面内 View 覆盖及游戏启动桥接均需单独联调验收。']});
 fs.writeFileSync(path.join(root,'首次进入流程.svg'),first);
 fs.writeFileSync(path.join(root,'返回与设置流程.svg'),second);

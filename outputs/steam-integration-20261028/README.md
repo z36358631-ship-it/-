@@ -1,6 +1,6 @@
 # 盖世游戏 Steam 接入评审包
 
-打开 `Steam接入Demo.html` 即可离线使用。右下角“演示”展开悬浮面板，可直接切换39个状态；面板可收起。
+打开 `Steam接入Demo.html` 即可离线使用。右下角“演示”展开悬浮面板，可直接切换48个状态；面板可收起。
 
 ## 当前流程
 
@@ -12,15 +12,19 @@
 - 竖屏上扫码、下账号密码；横屏左右排列。二维码仅为演示，不可真实登录。
 - 悬浮球最小化只缩成图标，不关闭Steam；无关闭和设置开关。
 
+- 启动后进入可选主页、社区、游戏库、Steam；未设置（含旧版缺字段）竖屏主页、横屏游戏库，保存后下次冷启动生效。用演示面板“模拟重新打开 App”验证。
+- 已接入PC及已导入游戏通过Steam模式承接原目标；实际回执前不算运行成功。
+- Steam成功登录后卡片显示昵称头像；首次Steam库轻提示可直达启动页设置。
+
 ## 文件
 
-- `Steam接入PRD-Draft.md`：V1.3评审稿。
+- `Steam接入PRD-Draft.md`：V1.4评审稿。
 - `用户流程图.html`：完整进入/返回流程，附SVG和PNG。
 - `方案与功能清单.md`、`免责声明.md`、`交付说明.md`：规则、用户原文及验证边界。
-- `build-demo.mjs`、`login-view.mjs`、`demo-states.mjs`：构建、登录视图和演示状态源。
+- `build-demo.mjs`、`login-view.mjs`、`demo-states.mjs`、`host-entry.mjs`：构建、登录、演示状态与启动落地源。
 
 ## 重建与检查
 
-在本目录执行 `npm ci`、`npm run build`、`npm test`。需要Node.js和已有Chrome；可用 `CHROME_PATH` 指定浏览器路径。`npm run capture` 重新截图。
+在本目录执行 `npm install`、`npm run build`、`npm test`。需要Node.js和已有Chrome；可用 `CHROME_PATH` 指定浏览器路径。`npm run capture` 重新截图。
 
 所有构建输入位于本目录。Demo不调用真实登录、下载、消息或游戏服务；输入仅内存保存。真实APK在当前MuMu环境启动受阻，原生运行、迁移、输入和法务文本仍需核对。
