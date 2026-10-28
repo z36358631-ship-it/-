@@ -576,11 +576,56 @@ App 扫码登录|Scan with an App
 登录同一盖世账号，或使用盖世远程或盖世游戏 App 扫码登录。|Use the same GameHub account, or scan with GameHub Remote or GameHub App to log in.
 被控电脑需开启「允许同账号控制本设备」，Mac 还需允许屏幕录制和辅助功能；支持局域网与公网连接，电脑需保持开机、联网。|Allow control by the same account on the host. On Mac, also allow Screen Recording and Accessibility. Local and internet connections are supported; keep the computer powered on and online.
 `.trim().split('\n').map(line=>line.split('|'))));
+ Object.assign(dictionary,Object.fromEntries(`
+AI 会话|AI sessions
+AI 会话列表|AI sessions
+电脑|Computers
+找到电脑上的任务，打开对应应用继续工作。|Find a task on your computer and continue in its app.
+搜索AI会话|Search AI sessions
+搜索会话、应用或电脑|Search sessions, apps or computers
+未允许被控|Control not allowed
+没有找到相关会话|No matching sessions
+暂无 AI 会话|No AI sessions
+换个关键词，或清空搜索。|Try another keyword or clear the search.
+电脑连接后，可查看已识别的应用会话。|Connect your computer to view detected app sessions.
+查看我的设备|View my devices
+选择串流画面|Choose stream source
+关闭画面选择|Close source picker
+全桌面|Entire desktop
+显示电脑完整桌面|Show the entire desktop
+应用窗口|App windows
+仅显示此应用窗口|Show only this app window
+暂无打开的窗口，可返回桌面打开应用。|No open windows. Return to the desktop to open an app.
+此窗口已关闭或不可用|This window is closed or unavailable
+切换到其他窗口，或返回桌面打开应用。|Switch windows or return to the desktop to open an app.
+返回全桌面|Return to desktop
+代码编辑器|Code editor
+关闭远端窗口|Close remote window
+最小化远控|Minimize remote session
+缩小|Zoom out
+放大|Zoom in
+适应窗口|Fit to window
+当前无法继续远控|Remote control is unavailable
+设备已离线，请在电脑上线后重试。|The computer is offline. Try again when it is online.
+该电脑未允许被控，请在电脑设置中开启权限。|Enable remote control in this computer's settings.
+此设备暂不支持远程控制。|Remote control is not supported on this device.
+关闭输入|Close input
+先定位电脑应用的输入框，仅输入文字，不自动发送。|Focus an input in the remote app. Insert text without sending.
+AI 办公交互演示|AI office interaction demo
+会话与窗口为本地样例。会话识别、定位和真实串流待接入验证；手机原生 AI 对话需继续技术调研。|Sessions and windows are local samples. Detection, navigation and streaming require integration; native mobile chat needs further technical research.
+模拟暂无会话|Simulate no sessions
+恢复会话样例|Restore sample sessions
+模拟无打开窗口|Simulate no open windows
+恢复窗口样例|Restore sample windows
+手机原生对话|Native mobile chat
+手机对话|Mobile chat
+（待继续技术调研，方案待确定）|(Further technical research required; solution to be determined)
+`.trim().split('\n').map(line=>line.split('|'))));
  const skip='.rlc-user-content,.rlc-key,script,style,textarea,option:not([value]),[contenteditable],#remote-language-toolbar,.device-name,.computer-item strong,.mac-host-name strong,.mac-path-value,.personal-nickname-row strong,.mobile-auth-account strong,.remote-scan-account strong,.mac-account-popover small,.file-name,.mac-file-name,.file-item-name,.file-item h3,.app-file-picker-list strong,.office-window>span,.quick-installed .grow,.mac-file-pane:nth-child(2) .mac-file-device strong,.mac-file-path,.mac-file-task-table tbody td:first-child,.mac-file-task-table tbody td:nth-child(4),.mac-file-task-table tbody td:nth-child(5),.remote-window,.gpt-workspace,.game-scene';
  let language='zh',observer,scheduled=false;
  try{language=localStorage.getItem(key)==='en'?'en':'zh';}catch{}
  const requested=new URL(location.href).searchParams.get('lang');if(['zh','en'].includes(requested))language=requested;
- function translate(value){const text=value.trim();let result=dictionary[text];
+ function translate(value){const text=value.trim();let result=dictionary[text];if(result===undefined&&/^\d+ 个会话$/.test(text))result=text.replace(' 个会话',' sessions');if(result===undefined&&text.startsWith('串流画面 · '))result='Stream source · '+(text.endsWith('全桌面')?'Entire desktop':'App window');
   if(result===undefined){const count=text.match(/^(\d+) 台电脑$/);if(count)result=count[1]+' computers';}
   if(result===undefined){const group=text.match(/^([▾▸] )?(在线|离线)设备（(\d+)）$/);if(group)result=(group[1]||'')+(group[2]==='在线'?'Online':'Offline')+' devices ('+group[3]+')';}
   if(result===undefined&&text.startsWith('盖世账号 · '))result='GameHub account · '+text.slice('盖世账号 · '.length);
@@ -609,12 +654,12 @@ App 扫码登录|Scan with an App
  function textNode(node){if(ignored(node))return;let record=originals.get(node);if(!record||node.data!==record.rendered)record={source:node.data,rendered:node.data};const target=language==='en'?translate(record.source):record.source;if(node.data!==target)node.data=target;record.rendered=target;originals.set(node,record);}
  function elementAttributes(element){if(ignored(element)&&element.tagName!=='TEXTAREA')return;let records=attributes.get(element);if(!records){records={};attributes.set(element,records);}for(const name of ['title','aria-label','placeholder','alt']){const value=element.getAttribute(name);if(value===null)continue;let record=records[name];if(!record||value!==record.rendered)record={source:value,rendered:value};const target=language==='en'?translate(record.source):record.source;if(value!==target)element.setAttribute(name,target);record.rendered=target;records[name]=record;}}
  function refresh(){const root=document.getElementById('app');if(!root)return;observer?.disconnect();const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);let node;while((node=walker.nextNode())){if(node.nodeType===Node.TEXT_NODE)textNode(node);else elementAttributes(node);}document.documentElement.lang=language==='en'?'en':'zh-CN';document.title=language==='en'?'GameHub Remote · '+(typeof DEFAULT_PLATFORM!=='undefined'&&DEFAULT_PLATFORM==='mac'?'Desktop':'Mobile')+' Demo':'盖世远程 · '+(typeof DEFAULT_PLATFORM!=='undefined'&&DEFAULT_PLATFORM==='mac'?'独立电脑客户端':'独立移动 App')+' Demo';document.querySelectorAll('[data-remote-language]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.remoteLanguage===language)));observer?.observe(root,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['title','aria-label','placeholder','alt']});}
- function setLanguage(next){if(!['zh','en'].includes(next))return;language=next;try{localStorage.setItem(key,next);}catch{}try{const url=new URL(location.href);url.searchParams.set('lang',next);history.replaceState(history.state,'',url);}catch{}refresh();}
+ function setLanguage(next){if(!['zh','en'].includes(next))return;language=next;try{localStorage.setItem(key,next);}catch{}try{const url=new URL(location.href);url.searchParams.set('lang',next);history.replaceState(history.state,'',url);}catch{}refresh();window.dispatchEvent(new Event('remote-language-change'));}
  const toolbar=document.createElement('nav');toolbar.id='remote-language-toolbar';toolbar.className='remote-language-toolbar';toolbar.setAttribute('aria-label','界面语言 / Interface language');toolbar.innerHTML='<span>界面语言 / Language</span><div role="group" aria-label="中文 / English"><button type="button" data-remote-language="zh" lang="zh-CN">中文</button><button type="button" data-remote-language="en" lang="en">English</button></div>';document.body.insertBefore(toolbar,document.getElementById('app'));
  toolbar.addEventListener('pointerdown',event=>event.preventDefault());
  document.addEventListener('click',event=>{const button=event.target.closest?.('[data-remote-language]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();setLanguage(button.dataset.remoteLanguage);},true);
  observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;refresh();});});
  window.RemoteLanguage={get current(){return language;},set:setLanguage,refresh,translate};
  window.addEventListener('storage',event=>{if(event.key===key&&['zh','en'].includes(event.newValue)){language=event.newValue;refresh();}});
- refresh();
+ refresh();window.dispatchEvent(new Event('remote-language-change'));
 })();
