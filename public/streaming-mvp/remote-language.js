@@ -2,6 +2,30 @@
 (()=>{
  const key='gamehub-remote-demo-language',originals=new WeakMap(),attributes=new WeakMap();
  const dictionary=Object.fromEntries(`
+在线会话|Online sessions
+离线会话|Offline sessions
+暂无在线会话|No online sessions
+暂无离线会话|No offline sessions
+连接指引|Connection guide
+查看连接指引|View connection guide
+收起连接指引|Hide connection guide
+两端登录同一盖世账号|Sign in to the same GameHub account on both devices
+手机或主控电脑与被控电脑均安装盖世远程。|Install GameHub Remote on both devices.
+电脑开启被控权限|Enable remote control on the computer
+允许同账号远控，并完成系统屏幕录制与辅助功能授权。|Allow remote control and grant screen recording and accessibility permissions.
+在电脑上打开 AI 客户端|Open an AI client on the computer
+打开 VS Code、Claude 或 WorkBuddy，并创建或继续一个会话。|Open VS Code, Claude or WorkBuddy, then start or resume a session.
+在电脑上打开 VS Code、Claude 或 WorkBuddy，并创建会话。|Open VS Code, Claude or WorkBuddy on your computer and start a session.
+正在加载会话|Loading sessions
+正在获取电脑上的会话列表。|Retrieving sessions from the computer.
+会话加载失败|Could not load sessions
+暂时无法获取会话，请稍后重试。|Sessions are unavailable. Try again later.
+尚未连接电脑|No computer connected
+先在电脑上安装盖世远程，登录同一盖世账号。|Install GameHub Remote on the computer and sign in to the same account.
+找到电脑上的任务，打开对应应用继续工作。|Find tasks on your computer and open the app to continue.
+清空搜索|Clear search
+缺省态：无设备|Default: no devices
+穷举态：完整示例|All example states
 盖世远程|GameHub Remote
 盖世游戏|GameHub
 盖世游戏 App|GameHub App
