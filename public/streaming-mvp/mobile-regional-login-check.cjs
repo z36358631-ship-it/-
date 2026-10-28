@@ -37,7 +37,7 @@ const click=async a=>{const raw=v=>page.locator('[data-action="'+v+'"]').first()
   await send('13800138000');await fillCode();await consent().uncheck();
   assert.deepEqual(await page.evaluate(()=>({sent:mobileAuth.sent,code:mobileAuth.code,pending:mobileAuth.pending})),{sent:false,code:'',pending:false});
   await consent().check();await fillCode();await click('mobile-login-submit');assert.equal(await state(),'login');assert.match(await page.locator('.mobile-login-error').innerText(),/先获取验证码/);
-  await send('13800138000');await page.locator('#mobile-code').fill('111111');await click('mobile-login-submit');assert.match(await page.locator('.mobile-login-error').innerText(),/验证码错误/);
+  await send('13800138000');await page.locator('#mobile-code').fill('12345');await click('mobile-login-submit');assert.match(await page.locator('.mobile-login-error').innerText(),/验证码错误/);
   await fillCode();await click('mobile-login-submit');assert.equal(await state(),'list');await click('mobile-tab:profile');assert.match(await page.locator('.personal-account-card').innerText(),/138\*{4}8000/);await click('mobile-logout');assert.equal(await consent().isChecked(),false);
   await page.evaluate(()=>mobilePreview('not-installed'));await consent().check();await click('mobile-gamehub-open');assert.equal(await state(),'login');assert.match(await page.locator('.mobile-login-error').innerText(),/未安装/);await send('13800138000');await fillCode();await click('mobile-login-submit');assert.equal(await state(),'list');
   await goto();await openApp();await shot('03-app-authorize');await click('mobile-auth-confirm');await page.waitForTimeout(750);assert.equal(await state(),'list');

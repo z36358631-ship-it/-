@@ -412,7 +412,7 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 模拟拒绝|Simulate permission denied
 模拟扫描电脑登录码|Simulate scanning desktop login code
 系统权限结果模拟：|Simulated system permission result:
-演示验证码：123456。未调用短信、邮箱或 Google 接口；无需输入真实资料。|Demo code: 123456. SMS, email and Google services are not connected. Do not enter real personal data.
+演示验证码：任意6位数字。未调用短信、邮箱或 Google 接口；无需输入真实资料。|Demo code: any 6 digits. SMS, email and Google services are not connected. Do not enter real personal data.
 未接真实登录、扫码、系统权限及远控接口。二维码可供本地 Demo 扫描；真实跨设备授权待接入账号服务。|Login, QR authorization, system permissions and remote access are simulated. QR codes work between local demo pages; real cross-device authorization requires an account service.
 扫码流程演示 · 真实异机登录待接账号服务|QR login demo · Real cross-device login requires an account service
 `.trim().split('\n').map(line=>line.split('|')));
@@ -558,7 +558,7 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 设备|Devices
 登录与设备评审状态|Login and device preview states
 评审地区|Preview region
-验证码示例：123456；地区切换仅用于评审，协议正式内容待接入|Demo code: 123456. Region switching is for review only. Official agreements are not connected.
+演示验证码：任意6位数字；地区切换仅用于评审，协议正式内容待接入|Demo code: any 6 digits. Region switching is for review only. Official agreements are not connected.
 
 App 扫码登录|Scan with an App
 使用盖世远程或|Use GameHub Remote or
