@@ -2,6 +2,7 @@
 (()=>{
  const key='gamehub-remote-demo-language',originals=new WeakMap(),attributes=new WeakMap();
  const dictionary=Object.fromEntries(`
+会话与窗口为本地样例。默认将会话 ID 传至电脑，打开对应的 VS Code、Claude 或 WorkBuddy；保留手机适配的直接对话界面，根据技术方案确定，技术支持后实现。会话识别、定位和真实串流待接入验证。|Sessions and windows are local examples. By default, send the session ID to the computer and open VS Code, Claude or WorkBuddy. Keep the phone-adapted direct chat design and implement it if the technical solution supports it. Session detection, navigation and streaming still require integration.
 在线会话|Online sessions
 离线会话|Offline sessions
 暂无在线会话|No online sessions

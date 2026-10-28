@@ -3586,7 +3586,7 @@ writeRemote=function(value){if(s.platform!=='mac')return romBaseWrite(value);if(
 const romBaseTextPanel=textPanel;
 textPanel=function(){if(s.platform!=='mac')return romBaseTextPanel();const id=remoteOfficeMac.capture==='desktop'?romStore().desktopApp:remoteOfficeMac.capture;return '<div class="row spread"><h3>长文本输入</h3>'+ib('关闭输入','panel-close','close')+'</div><p>当前窗口：'+romWindowName(id)+'</p><textarea id="office-draft" aria-label="长文本草稿" class="inputbox" maxlength="2000"'+(s.view?' readonly':'')+'>'+esc(s.textDraft||'')+'</textarea><p>先定位电脑应用的输入框，仅输入文字，不自动发送。</p>'+btn('输入到电脑','write-draft','primary').replace('<button','<button'+(s.view||!['vscode','claude','workbuddy','editor'].includes(id)?' disabled':''));};
 const romBaseReview=remoteMacReview;
-remoteMacReview=function(){const enabled=standaloneMac.signed;const demos=[['default','缺省态：无设备'],['all','穷举态：完整样例'],['no-sessions','无会话'],['loading','加载中'],['error','加载失败'],['offline','全部离线'],['blocked','未允许被控'],['busy','设备占用']];const button=(label,act)=>btn(label,act,'ghost').replace('<button','<button'+(enabled?'':' disabled'));return romBaseReview().replace('</aside>','<section class="rom-review-note"><strong>AI 办公交互演示</strong><p>会话与窗口为本地样例。VS Code、Claude、WorkBuddy会话识别、定位和真实串流待接入验证；手机原生 AI 对话需继续技术调研。</p><div class="sr-review-actions rom-demo-states" aria-label="AI会话缺省与穷举状态">'+demos.map(([id,label])=>button(label,'rom:demo:'+id)).join('')+(remoteOfficeMac.listState==='loading'?button('模拟加载完成','rom:load-complete'):'')+(enabled&&s.page==='session'?button('模拟无打开窗口','rom:no-windows')+button('恢复窗口样例','rom:restore-windows'):'')+'</div></section></aside>');};
+remoteMacReview=function(){const enabled=standaloneMac.signed;const demos=[['default','缺省态：无设备'],['all','穷举态：完整样例'],['no-sessions','无会话'],['loading','加载中'],['error','加载失败'],['offline','全部离线'],['blocked','未允许被控'],['busy','设备占用']];const button=(label,act)=>btn(label,act,'ghost').replace('<button','<button'+(enabled?'':' disabled'));return romBaseReview().replace('</aside>','<section class="rom-review-note"><strong>AI 办公交互演示</strong><p>会话与窗口为本地样例。默认将会话 ID 传至电脑，打开对应的 VS Code、Claude 或 WorkBuddy；保留手机适配的直接对话界面，根据技术方案确定，技术支持后实现。会话识别、定位和真实串流待接入验证。</p><div class="sr-review-actions rom-demo-states" aria-label="AI会话缺省与穷举状态">'+demos.map(([id,label])=>button(label,'rom:demo:'+id)).join('')+(remoteOfficeMac.listState==='loading'?button('模拟加载完成','rom:load-complete'):'')+(enabled&&s.page==='session'?button('模拟无打开窗口','rom:no-windows')+button('恢复窗口样例','rom:restore-windows'):'')+'</div></section></aside>');};
 
 const romBaseClear=remoteMacClearRuntime;
 remoteMacClearRuntime=function(){romClear();return romBaseClear();};
@@ -3686,6 +3686,7 @@ if(params.get('state')==='ai-sessions')remoteMacPreview('ai-sessions');else rend
 (()=>{
  const key='gamehub-remote-demo-language',originals=new WeakMap(),attributes=new WeakMap();
  const dictionary=Object.fromEntries(`
+会话与窗口为本地样例。默认将会话 ID 传至电脑，打开对应的 VS Code、Claude 或 WorkBuddy；保留手机适配的直接对话界面，根据技术方案确定，技术支持后实现。会话识别、定位和真实串流待接入验证。|Sessions and windows are local examples. By default, send the session ID to the computer and open VS Code, Claude or WorkBuddy. Keep the phone-adapted direct chat design and implement it if the technical solution supports it. Session detection, navigation and streaming still require integration.
 在线会话|Online sessions
 离线会话|Offline sessions
 暂无在线会话|No online sessions
