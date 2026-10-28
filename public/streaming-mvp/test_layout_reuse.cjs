@@ -1,0 +1,21 @@
+const {chromium}=require('C:/Users/z3635/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const fs=require('fs'),path=require('path'),assert=require('assert/strict');
+const out=path.join(__dirname,'review/v410');fs.mkdirSync(out,{recursive:true});
+let browser;const report={pass:false,checks:[],errors:[]};
+(async()=>{
+ browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+ const page=await browser.newPage({viewport:{width:1100,height:1150}});page.on('pageerror',e=>report.errors.push(e.message));
+ const base=process.env.REMOTE_BASE_URL?process.env.REMOTE_BASE_URL+'/mobile.html':'file:///'+path.join(__dirname,'mobile.html').replaceAll('\\','/');
+ await page.goto(base+'?state=session&lang=zh');
+ const before=await page.evaluate(()=>({page:s.page,device:s.device,keys:gameVirtualKeys(),storage:{...localStorage}}));
+ await page.locator('[data-action="panel:operation"]').click();await page.locator('[data-action="virtual-key-layout"]').click();
+ const content=await page.locator('.rlc-overlay').innerText();for(const text of ['复用盖世游戏现有','排行','自定义','图标管理器','适合当前游戏的布局','全部布局','编辑与云分享：复用现有流程'])assert(content.includes(text));
+ assert.equal(await page.locator('.rlc-overlay input,.rlc-tabs,.rlc-canvas').count(),0);assert.equal(await page.locator('.rlc-wire-tools button:disabled').count(),3);
+ await page.locator('.mobile-independent-shell').screenshot({path:path.join(out,'layout-reuse.png')});
+ await page.locator('[data-remote-language=en]').click();await page.waitForTimeout(100);assert.match(await page.locator('.rlc-overlay').innerText(),/Reuse GameHub/);await page.locator('[data-remote-language=zh]').click();await page.waitForTimeout(100);
+ await page.locator('[data-action="rlc:close"]').click();assert.equal(await page.locator('.rlc-overlay').count(),0);
+ const after=await page.evaluate(()=>({page:s.page,device:s.device,keys:gameVirtualKeys(),storage:{...localStorage}}));assert.equal(after.page,before.page);assert.equal(after.device,before.device);assert.equal(after.keys,before.keys);for(const k of new Set([...Object.keys(before.storage),...Object.keys(after.storage)]))if(k.startsWith('gamehub-remote-layout'))assert.equal(after.storage[k],before.storage[k]);
+ await page.evaluate(()=>{s.gameActive=true;s.gamePhase='playing';s.platform='landscape';render();action('virtual-key-layout');});await page.locator('.mobile-independent-shell').screenshot({path:path.join(out,'layout-reuse-landscape.png')});assert.equal(await page.locator('.rlc-overlay').evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.keyboard.press('Escape');assert.equal(await page.locator('.rlc-overlay').count(),0);
+ await page.evaluate(()=>{s.view=true;action('mapping-plan');});assert.equal(await page.locator('.rlc-overlay').count(),0);
+ report.checks=['截图既有模块结构及复用标注','无独立编辑/发布/导入表单或存储写入','返回与Esc保留会话和原按键，观看模式无编辑入口','中英及竖横屏线框展示'];assert.deepEqual(report.errors,[]);report.pass=true;
+})().catch(e=>{report.failure=e.stack;process.exitCode=1}).finally(async()=>{await browser?.close();fs.writeFileSync(path.join(out,process.env.REMOTE_BASE_URL?'reuse-online-report.json':'reuse-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));});
