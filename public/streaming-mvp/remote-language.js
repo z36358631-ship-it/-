@@ -559,8 +559,24 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 登录与设备评审状态|Login and device preview states
 评审地区|Preview region
 验证码示例：123456；地区切换仅用于评审，协议正式内容待接入|Demo code: 123456. Region switching is for review only. Official agreements are not connected.
+
+App 扫码登录|Scan with an App
+使用盖世远程或|Use GameHub Remote or
+盖世版本过低|Older GameHub version
+盖世游戏 App 版本过低，请更新后重试，或使用其他方式登录。|Your GameHub App version is too old. Update it and try again, or use another login method.
+更新盖世游戏 App|Update GameHub App
+注销账号|Delete account
+注销账号页面待接入，正式版本将打开盖世账号注销流程。|The account deletion page is not connected in this demo. The released app will open the GameHub account deletion process.
+手机和电脑使用同一盖世账号，支持局域网与公网连接。|Use the same GameHub account on your phone and computer. Local and internet connections are supported.
+手机和电脑登录同一盖世账号，支持局域网与公网连接。|Log in with the same GameHub account on your phone and computer. Local and internet connections are supported.
+电脑可使用盖世远程或盖世游戏 App 扫码登录。|Scan with GameHub Remote or GameHub App to log in on the computer.
+电脑需保持开机、联网，并允许远程控制。|Keep the computer powered on, connected to the internet, and allow remote control.
+检查两端网络是否可用，确认电脑允许远程控制后返回设备列表刷新。|Check both internet connections and allow remote control on the computer, then refresh the device list.
+手机可使用盖世远程或盖世游戏 App 扫码；盖世远程在「我的」右上角进入「扫一扫」。|Scan with GameHub Remote or GameHub App. In GameHub Remote, open Scan at the top right of Me.
+登录同一盖世账号，或使用盖世远程或盖世游戏 App 扫码登录。|Use the same GameHub account, or scan with GameHub Remote or GameHub App to log in.
+被控电脑需开启「允许同账号控制本设备」，Mac 还需允许屏幕录制和辅助功能；支持局域网与公网连接，电脑需保持开机、联网。|Allow control by the same account on the host. On Mac, also allow Screen Recording and Accessibility. Local and internet connections are supported; keep the computer powered on and online.
 `.trim().split('\n').map(line=>line.split('|'))));
- const skip='script,style,textarea,option:not([value]),[contenteditable],#remote-language-toolbar,.device-name,.computer-item strong,.mac-host-name strong,.mac-path-value,.personal-nickname-row strong,.mobile-auth-account strong,.remote-scan-account strong,.mac-account-popover small,.file-name,.mac-file-name,.file-item-name,.file-item h3,.app-file-picker-list strong,.office-window>span,.quick-installed .grow,.mac-file-pane:nth-child(2) .mac-file-device strong,.mac-file-path,.mac-file-task-table tbody td:first-child,.mac-file-task-table tbody td:nth-child(4),.mac-file-task-table tbody td:nth-child(5),.remote-window,.gpt-workspace,.game-scene';
+ const skip='.rlc-user-content,.rlc-key,script,style,textarea,option:not([value]),[contenteditable],#remote-language-toolbar,.device-name,.computer-item strong,.mac-host-name strong,.mac-path-value,.personal-nickname-row strong,.mobile-auth-account strong,.remote-scan-account strong,.mac-account-popover small,.file-name,.mac-file-name,.file-item-name,.file-item h3,.app-file-picker-list strong,.office-window>span,.quick-installed .grow,.mac-file-pane:nth-child(2) .mac-file-device strong,.mac-file-path,.mac-file-task-table tbody td:first-child,.mac-file-task-table tbody td:nth-child(4),.mac-file-task-table tbody td:nth-child(5),.remote-window,.gpt-workspace,.game-scene';
  let language='zh',observer,scheduled=false;
  try{language=localStorage.getItem(key)==='en'?'en':'zh';}catch{}
  const requested=new URL(location.href).searchParams.get('lang');if(['zh','en'].includes(requested))language=requested;

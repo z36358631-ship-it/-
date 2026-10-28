@@ -49,7 +49,7 @@ function remoteScanConfirm(){
  const record=RemoteQrDemo.get(remoteScanState.id);
  if(!record||record.state!=='scanned'||record.region!==mobileAuth.region){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}
  if(!record.consent){remoteScanState.error='请先勾选协议';render();return;}
- const confirmed=RemoteQrDemo.update(record.id,'confirmed',mobileMaskedPhone(mobileAuth.accountPhone));if(!confirmed){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}remoteScanState.error='';remoteScanState.phase='done';render();
+ const confirmed=RemoteQrDemo.update(record.id,'confirmed',mobileMaskedPhone(mobileAuth.accountPhone),remoteAccountUid(mobileAuth.accountPhone,mobileAuth.region));if(!confirmed){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}remoteScanState.error='';remoteScanState.phase='done';render();
 }
 const remoteScanBaseClear=mobileClearAccountState;
 mobileClearAccountState=function(){if(remoteScanState.phase==='confirm')RemoteQrDemo.update(remoteScanState.id,'cancelled');remoteScanReset();return remoteScanBaseClear();};
