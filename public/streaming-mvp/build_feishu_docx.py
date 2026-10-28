@@ -158,7 +158,7 @@ def add_block(node):
                 if c.text is None: add_block(c)
 
 # Intro for the import target.
-title=doc.add_paragraph(style='Title'); title.add_run('盖世远程独立客户端与移动 App PRD V4.7')
+title=doc.add_paragraph(style='Title'); title.add_run('盖世远程独立客户端与移动 App PRD V4.8')
 intro=doc.add_paragraph(); intro.add_run('飞书导入版：').bold=True; intro.add_run('本文件已将 PRD 中的本地截图直接内嵌到 Word 文档。请将本 DOCX 文件直接导入飞书，图片不依赖本地 assets 文件夹。')
 
 for child in main.children:
@@ -175,7 +175,7 @@ for table in doc.tables:
         for cell in row.cells:
             for para in cell.paragraphs:
                 for run in para.runs: run.font.name='Microsoft YaHei'; run._element.rPr.rFonts.set(qn('w:eastAsia'),'Microsoft YaHei')
-doc.core_properties.title='盖世远程独立客户端与移动 App PRD V4.7'
+doc.core_properties.title='盖世远程独立客户端与移动 App PRD V4.8'
 doc.core_properties.subject='飞书导入版，图片已内嵌'
 doc.core_properties.author='盖世远程产品团队'
 doc.save(OUT)
