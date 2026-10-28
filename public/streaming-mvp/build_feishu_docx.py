@@ -12,7 +12,7 @@ import zipfile, re, hashlib, json
 
 ROOT = Path(__file__).resolve().parent
 HTML = ROOT / 'prd.html'
-OUT = ROOT / '盖世远程PRD-V4.11-Word图片内嵌版.docx'
+OUT = ROOT / '盖世远程PRD-V4.12-Word图片内嵌版.docx'
 
 class Node:
     def __init__(self, tag=None, attrs=None, parent=None, text=None):
@@ -158,7 +158,7 @@ def add_block(node):
                 if c.text is None: add_block(c)
 
 # Intro for the import target.
-title=doc.add_paragraph(style='Title'); title.add_run('盖世远程独立客户端与移动 App PRD V4.11')
+title=doc.add_paragraph(style='Title'); title.add_run('盖世远程独立客户端与移动 App PRD V4.12')
 intro=doc.add_paragraph(); intro.add_run('飞书导入版：').bold=True; intro.add_run('本文件已将 PRD 中的本地截图直接内嵌到 Word 文档。请将本 DOCX 文件直接导入飞书，图片不依赖本地 assets 文件夹。')
 
 for child in main.children:
@@ -175,7 +175,7 @@ for table in doc.tables:
         for cell in row.cells:
             for para in cell.paragraphs:
                 for run in para.runs: run.font.name='Microsoft YaHei'; run._element.rPr.rFonts.set(qn('w:eastAsia'),'Microsoft YaHei')
-doc.core_properties.title='盖世远程独立客户端与移动 App PRD V4.11'
+doc.core_properties.title='盖世远程独立客户端与移动 App PRD V4.12'
 doc.core_properties.subject='飞书导入版，图片已内嵌'
 doc.core_properties.author='盖世远程产品团队'
 doc.save(OUT)
@@ -225,3 +225,4 @@ assert len(saved.inline_shapes)==source_image_count, 'Image references lost duri
 report={'output':str(OUT),'status':'content-check-passed','headingCount':len(saved_headings),'pageHeadingCount':sum(n.tag=='h4' and text_of(n).startswith(('3.1.','3.2.')) for n in main.children),'sourceHeadingOrderPreserved':True,'tableCount':len(saved.tables),'cellsChecked':checked_cells,'allCellTextPreserved':True,'boldLabelsPreserved':True,'sectionLabels':label_counts,'imageReferences':len(saved.inline_shapes),'embeddedMediaCount':len(media),'mediaFiles':media,'documentHasDrawing':b'<w:drawing' in document_xml,'size':OUT.stat().st_size,'feishuImport':'not-tested-this-revision'}
 (ROOT/'feishu-docx-check.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False))
+
