@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "90d9c718-41b9-4e77-9025-3ebb1f6a72d9",
   "requirementId": "LOCAL-20261028",
-  "revision": 119,
-  "status": "passed",
+  "revision": 131,
+  "status": "in_progress",
   "createdAt": "2026-10-28T01:57:53.1230318Z",
-  "updatedAt": "2026-10-28T07:50:59.0857273Z",
+  "updatedAt": "2026-10-28T13:41:18.1005120Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20261028-steam-integration.md",
   "cardHash": "D4026427D0AFE759C0DB74E935F805C6762903E2EC962357ECD9B4F8D05509F1",
   "contract": {
@@ -58,15 +58,15 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 6,
+      "attempt": 7,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
         "outputs/steam-integration-20261028/实现计划.md"
       ],
-      "validation": "用户明确默认方向、升级兜底、落地页设置、游戏统一Steam承接、昵称头像卡片；保留最新Logo和默认窗口",
+      "validation": "D-012已记录；沿用用户批准范围",
       "error": null,
-      "reviewer": null
+      "reviewer": "root"
     },
     {
       "id": "S4",
@@ -76,16 +76,15 @@
         "S3"
       ],
       "status": "passed",
-      "attempt": 7,
+      "attempt": 8,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "C:/Users/z3635/AppData/Local/Temp/codex-clipboard-9d05a1c7-2f7c-4257-8866-09b5d0b32bc7.png",
-        "outputs\\steam-integration-20261028\\assets\\gamehub-logo.svg"
+        "outputs/steam-integration-20261028/来源与范围.md"
       ],
-      "validation": "最新用户主页截图覆盖旧竖屏基线；线上设置分组沿用。新增四选项和默认方向规则已确认。",
+      "validation": "用户截图为修改基线，账号管理与开发者选项仅占位",
       "error": null,
-      "reviewer": null
+      "reviewer": "root"
     },
     {
       "id": "S5",
@@ -96,13 +95,15 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 10,
+      "attempt": 11,
       "inputHashes": [],
       "outputs": [],
-      "evidence": [],
-      "validation": "D-011局部视觉修订：隐藏声明滚动条、删除底部返回；保留正文和左上返回，PRD和图3a同步",
+      "evidence": [
+        "outputs/steam-integration-20261028/Steam接入Demo.html"
+      ],
+      "validation": "后台准备、圆圈X、当前模式及缩放、51状态已实现，PRD流程同步",
       "error": null,
-      "reviewer": null
+      "reviewer": "root"
     },
     {
       "id": "S6",
@@ -112,16 +113,15 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 10,
+      "attempt": 11,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs\\steam-integration-20261028\\只读声明复验.json",
-        "outputs\\steam-integration-20261028\\PRD图片校验.txt"
+        "outputs/steam-integration-20261028/后台准备与会话控制验证.json"
       ],
-      "validation": "定点检查声明原文、模式及设置返回与输入保留通过；PRD结构0错误及16图通过；无业务逻辑变化未重复全量回归",
+      "validation": "36+17+12交互和102横竖状态通过，声明原文单行与流程通过",
       "error": null,
-      "reviewer": null
+      "reviewer": "root"
     },
     {
       "id": "S7",
@@ -131,13 +131,13 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 10,
+      "attempt": 11,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs\\steam-integration-20261028\\prd-assets\\08-legal.png"
+        "outputs/steam-integration-20261028/prd-assets/05-bubble.png"
       ],
-      "validation": "已审图及当前预览滚动检查，目标滚动条和底部按钮移除，正文可滚动",
+      "validation": "主代理及测试员工完成横竖菜单、150%滚动、准备与流程审图",
       "error": null,
       "reviewer": "root"
     },
@@ -151,14 +151,12 @@
         "S6",
         "S7"
       ],
-      "status": "passed",
-      "attempt": 10,
+      "status": "running",
+      "attempt": 11,
       "inputHashes": [],
       "outputs": [],
-      "evidence": [
-        "outputs\\steam-integration-20261028\\交付说明.md"
-      ],
-      "validation": "源码与新图a6d6d513e已推送；PRD引用新图，当前预览已刷新，记录同步完成",
+      "evidence": [],
+      "validation": null,
       "error": null,
       "reviewer": null
     }
