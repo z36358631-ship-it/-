@@ -15,6 +15,7 @@ const assert=require('node:assert/strict');
     assert.equal(await page.getByText('One more step',{exact:true}).count(),0);
     assert.equal(await page.title(),'Steam 接入方案');
     assert.equal(await page.locator('#summary tbody tr').count(),5);
+    assert.equal(await page.locator('.feature-rules li').count(),13);
     assert.equal(await page.locator('.decisions').count(),0);
     assert(await page.locator('main img').count()>10);
     assert.deepEqual(await page.locator('main img').evaluateAll(images=>images.filter(x=>!x.complete||!x.naturalWidth).map(x=>x.alt)),[]);
@@ -38,7 +39,7 @@ const assert=require('node:assert/strict');
     assert(await page.locator('.prepare-modal').isVisible());
     await page.screenshot({path:path.join(__dirname,'screenshots/77-Pages准备无收起.png')});
     assert.deepEqual(errors,[]);
-    fs.writeFileSync(path.join(__dirname,'Pages在线验证.json'),JSON.stringify({review,demo,reviewStatus:200,noInterstitial:true,embeddedImages:'passed',reviewToDemo:'passed',refreshStartsLibrary:'passed',clickSteamOpensFirstMode:'passed',refreshResetsConsent:'passed',preparationHasNoCollapse:'passed',scriptErrors:errors},null,2));
+    fs.writeFileSync(path.join(__dirname,'Pages在线验证.json'),JSON.stringify({review,demo,reviewStatus:200,featureRules:13,noInterstitial:true,embeddedImages:'passed',reviewToDemo:'passed',refreshStartsLibrary:'passed',clickSteamOpensFirstMode:'passed',refreshResetsConsent:'passed',preparationHasNoCollapse:'passed',scriptErrors:errors},null,2));
     console.log('Pages direct render, images, demo navigation and refresh PASS');
   }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
