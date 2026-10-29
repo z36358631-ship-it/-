@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世远程 PRD V4.18 评审稿</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#202a36;font:16px/1.8 -apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif}header{padding:18px 30px;background:#182738;display:flex;gap:24px;flex-wrap:wrap}header a{color:white;text-decoration:none}main{max-width:1240px;padding:35px 28px 90px;margin:auto}h1{font-size:30px}h2{margin-top:48px;font-size:25px}h3{margin-top:34px;font-size:21px}h4{margin-top:30px;font-size:19px}table{border-collapse:collapse;width:100%;background:white;margin:18px 0;font-size:14px}th,td{border:1px solid #d9e0e8;padding:12px 14px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eaf0f7}td:first-child{min-width:130px}td img{display:block;max-width:100%;max-height:520px;object-fit:contain;object-position:left;margin:10px 0}img{max-width:100%;height:auto}a{color:#1562a3}em{color:#657387}blockquote{background:white;padding:8px 20px;border-left:3px solid #70a7d7}code{background:#edf1f7}main>p:has(img){background:white;padding:16px}@media(max-width:700px){main{padding:20px 14px}table{display:block;overflow:auto}}</style></head><body><header><a href="index.html">盖世远程</a><a href="mobile.html">手机 Demo</a><a href="mac.html">电脑 Demo</a><a href="review.html">方案与界面流程图</a></header><main><h1>【PRD】盖世远程独立客户端与移动 App</h1>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世远程 PRD V4.19 评审稿</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#202a36;font:16px/1.8 -apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif}header{padding:18px 30px;background:#182738;display:flex;gap:24px;flex-wrap:wrap}header a{color:white;text-decoration:none}main{max-width:1240px;padding:35px 28px 90px;margin:auto}h1{font-size:30px}h2{margin-top:48px;font-size:25px}h3{margin-top:34px;font-size:21px}h4{margin-top:30px;font-size:19px}table{border-collapse:collapse;width:100%;background:white;margin:18px 0;font-size:14px}th,td{border:1px solid #d9e0e8;padding:12px 14px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eaf0f7}td:first-child{min-width:130px}td img{display:block;max-width:100%;max-height:520px;object-fit:contain;object-position:left;margin:10px 0}img{max-width:100%;height:auto}a{color:#1562a3}em{color:#657387}blockquote{background:white;padding:8px 20px;border-left:3px solid #70a7d7}code{background:#edf1f7}main>p:has(img){background:white;padding:16px}@media(max-width:700px){main{padding:20px 14px}table{display:block;overflow:auto}}</style></head><body><header><a href="index.html">盖世远程</a><a href="mobile.html">手机 Demo</a><a href="mac.html">电脑 Demo</a><a href="review.html">方案与界面流程图</a></header><main><h1>【PRD】盖世远程独立客户端与移动 App</h1>
 <h2>修订记录</h2>
 <table>
 <thead>
@@ -117,6 +117,12 @@
 <td>V4.18-Draft</td>
 <td>产品</td>
 </tr>
+<tr>
+<td>2026/10/29</td>
+<td>双端会话改为设备Tab与AI分组平铺，状态前置，区分对话气泡与客户端入口；补齐六种状态，窗口串流单独选择</td>
+<td>V4.19-Draft</td>
+<td>产品</td>
+</tr>
 </tbody></table>
 <p><strong>备注：</strong> 搜2026.10.29修改。历史修订仅供追溯，以正文为准。配图来自Demo，真实服务接入及技术未决见第五章。</p>
 <h2>一、文档概述</h2>
@@ -216,12 +222,12 @@
 </tr>
 <tr>
 <td>功能概述</td>
-<td>办公从AI主题进入对应电脑软件，默认传入会话标识；非办公从设备进入桌面。手机底部为AI会话/我的设备/我的，电脑侧栏为AI会话/我的设备/设置。远控支持全桌面/窗口切换；手机直接对话、图片与语音保留演示，待技术调研；触屏模式待选型实测。 /2026.10.29修改</td>
+<td>办公列表按设备筛选并按AI分组，主题提供对话气泡与客户端两个入口，默认传会话标识打开电脑软件；非办公从设备进入桌面。手机底部为AI会话/我的设备/我的，电脑侧栏为AI会话/我的设备/设置。远控支持全桌面/窗口切换；手机直接对话、图片与语音保留演示，待技术调研；触屏模式待选型实测。 /2026.10.29修改</td>
 </tr>
 </tbody></table>
 <h3>2.2 产品流程</h3>
-<p><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/product-flow.png" alt="双端主产品流程"></p>
-<p><em>图2-1：登录后选择场景，再选AI主题或电脑。目标在线且权限、网络、占用条件满足，首帧可用后进入电脑画面；退出回原入口。电脑首次引导在场景选择后显示，手机直接对话待技术方案确定。 /2026.10.29修改</em></p>
+<p><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@f835cadb4e76eb0e39b8795ce46179f7446855d2/public/prd/remote-v419/product-flow-v419.png" alt="双端主产品流程"></p>
+<p><em>图2-1：登录后选择场景，再选AI主题或电脑。目标在线且权限、网络、占用条件满足，首帧可用后进入电脑画面；退出回原入口。电脑首次引导在场景选择后显示，对话气泡进入适配预览演示，直接对话待技术方案确定。 /2026.10.29修改</em></p>
 <h2>三、功能需求</h2>
 <h3>3.1 移动端功能需求</h3>
 <h4>3.1.1 登录页</h4>
@@ -333,7 +339,7 @@
 </thead>
 <tbody><tr>
 <td>功能简介</td>
-<td>按电脑、软件及具体主题查找原有AI任务。</td>
+<td>按电脑筛选AI会话，查看状态并选择对话或打开客户端。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>场景描述</td>
@@ -345,17 +351,65 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/mobile-sessions.png" alt="AI会话列表"><br><em>图3-A3：ChatGPT工作区/文件夹下的具体会话。</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/mobile-sessions-claude.png" alt="Claude最近的"><br><em>图3-A3a：Claude直接列最近会话，无文件夹。</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/mobile-sessions-workbuddy.png" alt="WorkBuddy任务列表"><br><em>图3-A3b：WorkBuddy任务主题与更新时间。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 顶部显示连接指引和AI账号入口；按电脑在线/离线分组，显示会话数量，忙碌、禁控另加标签。<br>2. 电脑、软件、分组和主题在同页展开。软件组头显示ChatGPT、Claude、WorkBuddy对应图标、名称及该电脑软件的脱敏账号。默认展开首台在线电脑的首个软件及分组，其余可折叠。<br>3. ChatGPT保留原工作区/文件夹/主题框架，主题显示标题及相对更新时间；Claude标题为“最近的”，直接列会话，无文件夹；WorkBuddy显示“任务（数量）”、主题及更新时间。无文件夹的主题归入会话。<br>4. 演示使用晴川记账、旅途清单等虚构项目。主题右侧显示预览与对话，离线或禁控时改为查看历史。<br><strong>交互说明：</strong><br>1. 点击分组展开/收起。点击具体主题，将其会话标识传给所属电脑，打开对应AI软件并进入软件电脑画面；软件和文件夹不作为具体会话。<br>2. 连接前核对在线、权限、占用和网络。离线不连接，禁控提示开启权限，忙碌时确认接管；取消不影响原控制。首帧可显示且会话可用才算成功。<br>3. 展开连接指引，说明两端同账号登录、电脑在线并开启远控、打开支持的AI客户端建立会话；展开/收起不连接。<br>4. 返回保留展开路径；最近主题和草稿按盖世账号、电脑、软件、AI账号分别保存，切回不跳首条。点击预览与对话进入手机适配演示；查看历史不授予发送权限。 /2026.10.29修改</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@f835cadb4e76eb0e39b8795ce46179f7446855d2/public/prd/remote-v419/standalone-mobile-office-sessions-v419.png" alt="AI会话列表"><br><em>图3-A3：全部会话按AI连续排列，状态在标题左侧，两个入口位于右侧。</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@f835cadb4e76eb0e39b8795ce46179f7446855d2/public/prd/remote-v419/standalone-mobile-office-device-sessions-v419.png" alt="设备下的AI会话"><br><em>图3-A3a：设备Tab保留会话标题与数量，不重复显示设备在线栏。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 顶部保留AI账号入口，设备Tab显示“全部”和各台电脑名称。全部Tab标题为“全部会话（数量）”，设备Tab为“会话（数量）”，数量按当前范围统计；设备Tab不另放连接指引卡或设备在线栏。<br>2. 会话按ChatGPT、Claude、WorkBuddy连续分组，各组名称旁只显示一次软件图标。不再逐级展开电脑、软件、文件夹；列表只放AI会话。<br>3. 每条只有一个标题，左侧显示状态，时间在标题下方；右侧依次为对话气泡和“›”，两图标相对整条会话垂直居中，不显示副标题、摘要或重复软件图标。状态样式见下表。<br>4. 列表不展示文件夹不改变会话归属；每条仍对应原电脑、软件、AI账号及会话标识。同一软件下多个主题排在一起，示例使用虚构内容。<br><strong>交互说明：</strong><br>1. 点击设备Tab切换范围，不发起连接；切回列表保留当前Tab和位置。<br>2. 点击对话气泡，进入对应主题的手机预览与对话演示；离线或禁控时只查看已存历史，不授予发送权限。手机直接对话仍待继续技术调研，方案待确定。<br>3. 点击“›”，将会话标识传给所属电脑，打开对应AI软件并进入该软件电脑画面。连接前核对在线、权限、占用和网络；离线不连接，禁控提示开启权限，忙碌须确认接管，取消不影响原控制。首帧可显示且会话可用才算成功。<br>4. 最近主题、草稿及未读按盖世账号、电脑、软件、AI账号和具体主题隔离；查看该主题后清除其未读标记，不影响其他主题。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
-<td>当前具体主题在所属电脑的对应AI软件中打开；返回后仍可定位原列表。</td>
+<td>气泡打开所选主题的预览与对话，或“›”打开所属电脑的对应客户端；返回仍定位原列表。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 无电脑显示“暂无已连接的电脑”，无会话显示“暂无 AI 会话”，均保留连接指引；加载显示“正在获取会话”，失败显示“暂时无法获取会话”“请检查网络后重试。”及重试入口。<br>2. 离线只能读已存历史，不能发送、传图或实时预览。正式数量、排序、同时间顺序、分页及刷新能力待软件读取方案核对。<br>3. 壳外提供缺省态、穷举态、无会话、加载、失败、全部离线、禁控、忙碌，以及手机预览与对话/预览已关闭的演示按钮；不是产品设置，不能绕过登录。 /2026.10.29修改</td>
+<td>1. 无电脑显示“暂无已连接的电脑”，无会话显示“暂无 AI 会话”，空态保留连接指引；加载显示“正在获取会话”，失败显示“暂时无法获取会话”“请检查网络后重试。”及重试入口。<br>2. 离线只能读已存历史，不能发送、传图或实时预览；电脑可用性与任务状态分别判断。分组内排序、同时间顺序、分页及刷新能力待软件读取方案核对。<br>3. 壳外提供缺省态、穷举态、无会话、加载、失败、全部离线、禁控、忙碌，以及手机预览与对话/预览已关闭按钮；穷举态展示六种会话状态。评审按钮不属于产品设置，不能绕过登录。 /2026.10.29修改</td>
 </tr>
 </tbody></table>
+<p><strong>会话状态</strong></p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>显示</th>
+<th>条件与变化</th>
+<th>操作说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>运行中</td>
+<td>深灰旋转圆环</td>
+<td>当前任务仍在执行；结束后按实际结果更新。</td>
+<td>查看不停止任务。</td>
+</tr>
+<tr>
+<td>待输入</td>
+<td>蓝色“待输入”标签</td>
+<td>客户端等待用户补充内容；提交后按客户端结果更新。</td>
+<td>从气泡或客户端入口继续处理。</td>
+</tr>
+<tr>
+<td>待批准</td>
+<td>绿色“待批准”标签</td>
+<td>客户端等待用户授权操作；处理后按客户端结果更新。</td>
+<td>状态标签不代替批准按钮。</td>
+</tr>
+<tr>
+<td>任务失败</td>
+<td>红色圆圈i</td>
+<td>客户端返回失败；查看原因后按实际处理结果更新。</td>
+<td>打开主题不自动记为成功。</td>
+</tr>
+<tr>
+<td>有未读内容</td>
+<td>蓝点</td>
+<td>有未查看的新内容；打开对应主题内容后移除蓝点。</td>
+<td>未读不等于任务完成。</td>
+</tr>
+<tr>
+<td>空闲／已结束且已读</td>
+<td>无标记</td>
+<td>无待处理任务且内容已读。</td>
+<td>两个入口仍保留。</td>
+</tr>
+</tbody></table>
+<p>任务状态与未读分别判断，查看内容只清除未读，不改变运行、失败、待输入或待批准；真实状态读取、组合显示与同步方式待技术核对。 /2026.10.29修改</p>
 <h4>3.1.5 我的设备与连接教程</h4>
 <table>
 <thead>
@@ -467,7 +521,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/mobile-session.png" alt="移动远控"><br><em>图3-7 移动远控</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 画面保持原比例，可选全桌面、当前AI软件、浏览器或文档窗口；仅远控会话可旋转屏幕。<br>2. 浅色悬浮工具默认收起，点击展开键盘、选择窗口、全桌面、旋转和操作；长按空白或握柄可拖动。<br><strong>交互说明：</strong><br>1. 展开、收起或切面板不结束会话、不重连。操作面板切开关保留滚动位置，其他面板从顶部显示。<br>2. 悬浮鼠标限于可见范围，可移至右侧和底部黑区；拖动不扩大画面、不触发点击。<br>3. 仅观看禁用键鼠、文本、远端窗口写操作、传图及显示设置；保留窗口选择、只读预览/放大、退出、声音和恢复控制。恢复控制后才能输入；普通重连不继承上次仅观看。<br>4. 退出直接断开并回发起的AI列表、手机适配页或设备详情，不加确认，远端程序继续运行。切窗口不跳首条主题，回软件恢复该电脑/软件/AI账号最近主题；声音、显示调整以远端确认结果为准。 /2026.10.29修改</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/mobile-session.png" alt="移动远控"><br><em>图3-7 移动远控</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@f835cadb4e76eb0e39b8795ce46179f7446855d2/public/prd/remote-v419/standalone-mobile-window-picker-v419.png" alt="选择串流窗口"><br><em>图3-7a：选择全桌面或单个窗口，不按AI会话分类。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 窗口串流独立于AI会话列表，展示电脑全部可串流窗口，包括全桌面、浏览器、文件、文档及AI软件；不是AI会话列表。画面保持原比例，仅远控会话可旋转屏幕。<br>2. 浅色悬浮工具默认收起，点击展开键盘、选择窗口、全桌面、旋转和操作；长按空白或握柄可拖动。<br><strong>交互说明：</strong><br>1. 展开、收起或切面板不结束会话、不重连。操作面板切开关保留滚动位置，其他面板从顶部显示。<br>2. 悬浮鼠标限于可见范围，可移至右侧和底部黑区；拖动不扩大画面、不触发点击。<br>3. 仅观看禁用键鼠、文本、远端窗口写操作、传图及显示设置；保留窗口选择、只读预览/放大、退出、声音和恢复控制。恢复控制后才能输入；普通重连不继承上次仅观看。<br>4. 退出直接断开并回发起的AI列表、手机适配页或设备详情，不加确认，远端程序继续运行。切窗口不跳首条主题，回软件恢复该电脑/软件/AI账号最近主题；声音、显示调整以远端确认结果为准。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -515,7 +569,7 @@
 </tr>
 <tr>
 <td>场景描述</td>
-<td>从AI会话次级预览与对话/查看历史，或串流中的手机适配入口进入。</td>
+<td>点击AI会话右侧的对话气泡，或从串流中的手机适配入口进入。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>输入／前置条件</td>
@@ -949,7 +1003,7 @@
 </thead>
 <tbody><tr>
 <td>功能简介</td>
-<td>按电脑、软件及具体主题查找原有AI任务。</td>
+<td>按电脑筛选AI会话，查看状态并选择对话或打开客户端。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>场景描述</td>
@@ -961,17 +1015,65 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/desktop-sessions.png" alt="AI会话列表"><br><em>图3-A4：电脑与软件分组内展示主题，Claude使用“最近的”。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 顶部显示连接指引和AI账号入口。列表按电脑在线/离线分组，显示会话数；忙碌、禁控单独标记。 /2026.10.29修改<br>2. 同页展开电脑、软件、分组及主题；软件组头显示图标、名称和该电脑的脱敏AI账号。ChatGPT替换原图标和名称，保留工作区/文件夹层级；Claude、WorkBuddy图标不变。默认展开首台在线电脑的首个软件及分组，其余可折叠。 /2026.10.29修改<br>3. ChatGPT工作区下显示标题及相对更新时间；Claude以“最近的”直接列会话，无文件夹；WorkBuddy显示“任务（数量）”、主题及更新时间。无文件夹的主题归入会话。使用晴川记账、旅途清单等虚构项目。 /2026.10.29修改<br><strong>交互说明：</strong><br>1. 点击分组展开/收起；点击具体主题，传入会话标识并打开该电脑对应AI软件画面。软件、文件夹本身不作为主题。 /2026.10.29修改<br>2. 连接前检查在线、权限、占用及网络；离线不连接，禁控提示先开权限，忙碌须确认接管，取消不影响原控制。首帧可显示且会话可用才算成功。 /2026.10.29修改<br>3. 展开连接指引，说明两端同账号登录、电脑在线并开启远控、打开支持的AI客户端建立会话；不发起连接。 /2026.10.29修改<br>4. 搜索电脑、软件、工作区/文件夹及主题，去首尾空格、忽略英文大小写，按连续关键词匹配并展开命中路径。Demo最多100字符，超出不再输入；清空恢复列表，不保存搜索词。正式长度、排序及范围待核对。返回保留展开路径；按盖世账号、电脑、软件和AI账号记忆最近主题与草稿，切回恢复。 /2026.10.29修改</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@f835cadb4e76eb0e39b8795ce46179f7446855d2/public/prd/remote-v419/standalone-mac-office-sessions-v419.png" alt="电脑AI会话列表"><br><em>图3-A4：设备Tab筛选、AI分组及状态前置，右侧为对话气泡和客户端入口。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 顶部保留AI账号入口，设备Tab显示“全部”和各台电脑名称。全部Tab标题为“全部会话（数量）”，设备Tab为“会话（数量）”，数量按当前范围统计；设备Tab不另放连接指引卡或设备在线栏。<br>2. 会话按ChatGPT、Claude、WorkBuddy连续分组，各组名称旁只显示一次软件图标。不再逐级展开电脑、软件、文件夹；列表只放AI会话。<br>3. 每条只有一个标题，左侧显示状态，时间在标题下方；右侧依次为对话气泡和“›”，两图标相对整条会话垂直居中，不显示副标题、摘要或重复软件图标。状态样式见下表。<br>4. 列表不展示文件夹不改变会话归属；每条仍对应原电脑、软件、AI账号及会话标识。同一软件下多个主题排在一起，示例使用虚构内容。<br><strong>交互说明：</strong><br>1. 点击设备Tab筛选；搜索保留电脑、软件及主题匹配，去首尾空格、忽略英文大小写。Demo最多100字符，超出不再输入；清空恢复当前设备范围，不保存搜索词。正式搜索范围与长度待核对。<br>2. 点击对话气泡，预览对应主题并进入适配对话演示；真实消息读取与直聊待技术方案确定。点击“›”，传入会话标识并打开所属电脑的对应AI软件画面。<br>3. 连接前检查在线、权限、占用和网络；离线不连接，禁控提示先开权限，忙碌须确认接管，取消不影响原控制。首帧可显示且会话可用才算成功。<br>4. 返回保留Tab、搜索及列表位置。按盖世账号、电脑、软件、AI账号和主题隔离最近主题、草稿及未读；查看只清除该主题未读，不改写任务执行状态。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
-<td>当前具体主题在所属电脑的对应AI软件中打开；返回后仍可定位原列表。</td>
+<td>气泡打开所选主题预览与对话，或“›”打开所属电脑的对应客户端；返回仍定位原列表。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 无电脑显示“尚未连接电脑”，无会话显示“暂无 AI 会话”，均保留连接指引；搜索无结果显示“没有找到相关会话”及清空搜索。加载显示“正在加载会话”“正在获取电脑上的会话列表。”；失败显示“会话加载失败”“暂时无法获取会话，请稍后重试。”及重试。<br>2. 离线主题不能连接；电脑端不提供手机适配历史入口。数量、排序、同时间顺序、分页及刷新待真实软件读取方案确认，示例顺序不作为正式规则。<br>3. 外部评审工具提供缺省态、穷举态、无会话、加载、失败、全部离线、禁控、忙碌，手机另有预览与对话/预览已关闭；不属于正式设置，不能绕过登录。 /2026.10.29修改</td>
+<td>1. 无电脑显示“尚未连接电脑”，无会话显示“暂无 AI 会话”，空态保留连接指引；搜索无结果显示“没有找到相关会话”及清空搜索。加载显示“正在加载会话”“正在获取电脑上的会话列表。”；失败显示“会话加载失败”“暂时无法获取会话，请稍后重试。”及重试。<br>2. 电脑离线或禁控时，对话气泡和“›”均拦截；与手机可只读已存历史不同。忙碌仍须确认接管，不能因AI任务已结束而连接。分组内排序、同时间顺序、分页及刷新待真实软件读取方案确认。<br>3. 外部评审工具提供缺省态、穷举态、无会话、加载、失败、全部离线、禁控和忙碌；穷举态包含六种会话状态。评审工具不属于产品设置，不能绕过登录。 /2026.10.29修改</td>
 </tr>
 </tbody></table>
+<p><strong>会话状态</strong></p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>显示</th>
+<th>条件与变化</th>
+<th>操作说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>运行中</td>
+<td>深灰旋转圆环</td>
+<td>当前任务仍在执行；结束后按实际结果更新。</td>
+<td>查看不停止任务。</td>
+</tr>
+<tr>
+<td>待输入</td>
+<td>蓝色“待输入”标签</td>
+<td>客户端等待用户补充内容；提交后按客户端结果更新。</td>
+<td>从气泡或客户端入口继续处理。</td>
+</tr>
+<tr>
+<td>待批准</td>
+<td>绿色“待批准”标签</td>
+<td>客户端等待用户授权操作；处理后按客户端结果更新。</td>
+<td>状态标签不代替批准按钮。</td>
+</tr>
+<tr>
+<td>任务失败</td>
+<td>红色圆圈i</td>
+<td>客户端返回失败；查看原因后按实际处理结果更新。</td>
+<td>打开主题不自动记为成功。</td>
+</tr>
+<tr>
+<td>有未读内容</td>
+<td>蓝点</td>
+<td>有未查看的新内容；打开对应主题内容后移除蓝点。</td>
+<td>未读不等于任务完成。</td>
+</tr>
+<tr>
+<td>空闲／已结束且已读</td>
+<td>无标记</td>
+<td>无待处理任务且内容已读。</td>
+<td>两个入口仍保留。</td>
+</tr>
+</tbody></table>
+<p>任务状态与未读分别判断，查看内容只清除未读，不改变运行、失败、待输入或待批准；真实状态读取、组合显示与同步方式待技术核对。 /2026.10.29修改</p>
 <h4>3.2.5 我的设备与连接教程</h4>
 <table>
 <thead>
@@ -1127,7 +1229,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/desktop-session.png" alt="电脑远控"><br><em>图3-18 电脑远控</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 远控窗口独立于设备工作区，控制中心提供显示、声音、观看、会话及文件；使用本机键鼠，无手机软键盘或悬浮鼠标。<br>2. 默认打开所选主题对应AI软件画面；ChatGPT保留原窗口框架，Claude、WorkBuddy显示各自侧栏与内容。可切全桌面/应用窗口，切回软件恢复最近主题。 /2026.10.29修改<br><strong>交互说明：</strong><br>1. 收起控制中心不结束连接；仅观看拦截写操作，恢复控制后可输入。<br>2. 退出结束连接并返回来源AI列表或设备详情，远端程序继续运行。显示/质量调整以远端确认结果为准。 /2026.10.29修改</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/desktop-session.png" alt="电脑远控"><br><em>图3-18 电脑远控</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 远控窗口独立于设备工作区，控制中心提供显示、声音、观看、会话及文件；使用本机键鼠，无手机软键盘或悬浮鼠标。<br>2. 从客户端入口连接时打开所选主题对应AI软件画面；ChatGPT保留原窗口框架，Claude、WorkBuddy显示各自侧栏与内容。窗口选择独立于AI会话列表，显示全桌面、浏览器、文件、文档及AI软件等可串流窗口；切回软件恢复最近主题。 /2026.10.29修改<br><strong>交互说明：</strong><br>1. 收起控制中心不结束连接；仅观看拦截写操作，恢复控制后可输入。<br>2. 退出结束连接并返回来源AI列表或设备详情，远端程序继续运行。显示/质量调整以远端确认结果为准。 /2026.10.29修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -1588,7 +1690,7 @@
 </tr>
 <tr>
 <td>AI会话、账号读取与定位</td>
-<td>验证ChatGPT工作区/主题、Claude最近会话、WorkBuddy任务的读取、定位和切账号。默认传会话标识打开电脑软件；添加账号时ChatGPT/Claude打开软件，WorkBuddy拉起登录页。启动/前置、登录页唤起、登录状态及ChatGPT实际分组均待验证。</td>
+<td>验证三款软件的主题、任务状态、未读、账号读取及定位；列表按设备Tab和AI分组展示，不以软件原文件夹为层级。默认传会话标识打开电脑软件；添加账号时ChatGPT/Claude打开软件，WorkBuddy拉起登录页。软件启动/前置、登录页唤起、状态组合、读取失败与跨端已读同步均待验证。</td>
 <td>双端列表、主题定位及账号切换。</td>
 <td>三款软件真实适配。 /2026.10.29修改</td>
 </tr>
