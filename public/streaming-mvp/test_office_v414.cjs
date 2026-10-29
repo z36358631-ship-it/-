@@ -86,7 +86,7 @@ async function appFlows(p,side){
  report.checks.push(side+'：VS Code/Claude/WorkBuddy各有桌面结构和真实输入；默认会话进入远端应用，观看禁写，缺省/全量恢复不清草稿，桌面/浏览器切换及来源返回');
 }
 async function mobilePreview(p){
- await click(p,'office-demo:preview');assert.equal((await st(p)).page,'office-native');const native=p.locator('.office-native-preview');assert.equal(await native.getAttribute('data-preview-state'),'ready');
+ await click(p,'office-demo:preview');await click(p,'office-preview-kind:web');assert.equal((await st(p)).page,'office-native');const native=p.locator('.office-native-preview');assert.equal(await native.getAttribute('data-preview-state'),'ready');
  const draft='V414 原生未发送草稿';await p.locator('#office-native-input').fill(draft);const context=await p.evaluate(()=>({app:RemoteOfficeMobile.state.app,thread:RemoteOfficeMobile.state.thread,device:s.device}));
  const a=await native.boundingBox(),b=await p.locator('.office-native-messages').boundingBox(),c=await p.locator('#office-native-form').boundingBox();assert(a.y+a.height<=b.y+2);assert(b.y+b.height<=c.y+2);
  await click(p,'office-preview-tab:1');assert.equal(await p.locator('.office-preview-content').getAttribute('data-preview-tab'),'1');await click(p,'office-preview-toggle');assert.equal(await p.locator('.office-preview-content').count(),0);assert.equal(await p.locator('#office-native-input').inputValue(),draft);await click(p,'office-preview-toggle');await shot(p,'mobile','native-preview');

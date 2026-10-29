@@ -4,12 +4,12 @@ const romThreads=[
  {id:'win-vscode',device:'win',app:'vscode',folder:'晴川记账',folderEn:'Clearbrook Ledger',title:'新增月度预算提醒',titleEn:'Add monthly budget reminders',summary:'设置预算阈值与提醒时机',summaryEn:'Set budget thresholds and reminder timing',time:'刚刚',timeEn:'Just now'},
  {id:'win-ledger-filter',device:'win',app:'vscode',folder:'晴川记账',folderEn:'Clearbrook Ledger',title:'优化账单筛选',titleEn:'Improve transaction filters',summary:'按日期和收支分类筛选',summaryEn:'Filter by date and transaction category',time:'20分钟前',timeEn:'20 min ago'},
  {id:'win-travel-export',device:'win',app:'vscode',folder:'旅途清单',folderEn:'Journey Checklist',title:'导出行程为 PDF',titleEn:'Export an itinerary as PDF',summary:'检查行程导出的分页效果',summaryEn:'Review pagination in itinerary exports',time:'昨天',timeEn:'Yesterday'},
- {id:'win-claude',device:'win',app:'claude',folder:'内容工作室',folderEn:'Content Studio',title:'整理春季活动文案',titleEn:'Organize spring campaign copy',summary:'梳理活动介绍和页面文案',summaryEn:'Refine campaign introductions and page copy',time:'1小时前',timeEn:'1 hour ago'},
- {id:'win-content-faq',device:'win',app:'claude',folder:'内容工作室',folderEn:'Content Studio',title:'补充常见问题说明',titleEn:'Expand frequently asked questions',summary:'核对读者疑问与解释',summaryEn:'Review reader questions and explanations',time:'昨天',timeEn:'Yesterday'},
+ {id:'win-claude',device:'win',app:'claude',title:'整理春季活动文案',titleEn:'Organize spring campaign copy',summary:'梳理活动介绍和页面文案',summaryEn:'Refine campaign introductions and page copy',time:'1小时前',timeEn:'1 hour ago'},
+ {id:'win-content-faq',device:'win',app:'claude',title:'补充常见问题说明',titleEn:'Expand frequently asked questions',summary:'核对读者疑问与解释',summaryEn:'Review reader questions and explanations',time:'昨天',timeEn:'Yesterday'},
  {id:'work-workbuddy',device:'work',app:'workbuddy',folder:'任务',folderEn:'Tasks',title:'汇总本周项目进度',titleEn:'Summarize weekly project progress',summary:'整理里程碑与后续事项',summaryEn:'Organize milestones and next steps',time:'今天',timeEn:'Today'},
  {id:'work-task-catalog',device:'work',app:'workbuddy',folder:'任务',folderEn:'Tasks',title:'归档活动素材',titleEn:'Archive campaign assets',summary:'按用途归档图文素材',summaryEn:'Organize images and copy by purpose',time:'昨天',timeEn:'Yesterday'},
  {id:'work-task-stats',device:'work',app:'workbuddy',folder:'任务',folderEn:'Tasks',title:'校验数据统计口径',titleEn:'Validate metric definitions',summary:'核对统计周期和计数规则',summaryEn:'Check reporting periods and counting rules',time:'2天前',timeEn:'2 days ago'},
- {id:'mac-claude',device:'mac',app:'claude',folder:'内容工作室',folderEn:'Content Studio',title:'复核帮助中心文案',titleEn:'Review help center copy',summary:'核对指引与说明内容',summaryEn:'Review instructions and explanations',time:'3天前',timeEn:'3 days ago'}
+ {id:'mac-claude',device:'mac',app:'claude',title:'复核帮助中心文案',titleEn:'Review help center copy',summary:'核对指引与说明内容',summaryEn:'Review instructions and explanations',time:'3天前',timeEn:'3 days ago'}
 ];
 const romL=(zh,en)=>document.documentElement.lang==='en'?en:zh;
 const romTitle=x=>x?romL(x.title,x.titleEn||x.title):'';
@@ -50,7 +50,7 @@ function romSessions(){
   const firstApp=computerRows[0]?.app;
   const software=['vscode','claude','workbuddy'].filter(app=>computerRows.some(x=>x.app===app)).map(app=>{
    const appRows=computerRows.filter(x=>x.app===app),folders=[...new Set(appRows.map(x=>x.folder||'会话'))];
-   const folderHtml=folders.map((folder,index)=>{
+   const folderHtml=app==='claude'?'<section class="rom-recent-list"><h3>'+romL('最近的','Recents')+'</h3><div class="rom-theme-list">'+appRows.map(romSessionRow).join('')+'</div></section>':folders.map((folder,index)=>{
     const themes=appRows.filter(x=>(x.folder||'会话')===folder),isTasks=app==='workbuddy';
     const label=romFolder(themes[0]);
     const heading=icon(isTasks?'grid':'folder')+'<strong>'+esc(label)+'</strong><span class="rom-tree-count">'+themes.length+'</span>'+icon('chevron');
@@ -70,6 +70,7 @@ function romSessions(){
 }
 function romRemoteTopics(app,selected){
  const rows=romThreads.filter(x=>x.device===s.device&&x.app===app),folders=[...new Set(rows.map(x=>x.folder||'会话'))];
+ if(app==='claude')return '<div class="rom-remote-topics rom-remote-recent"><h4>'+romL('最近的','Recents')+'</h4>'+rows.map(x=>'<button class="rom-remote-topic '+(x.id===selected?'selected':'')+'" data-action="rom:thread:'+x.id+'"'+(s.view?' disabled':'')+'><strong>'+esc(romTitle(x))+'</strong><small>'+esc(romTime(x))+'</small></button>').join('')+'</div>';
  return '<div class="rom-remote-topics">'+folders.map(folder=>{const themes=rows.filter(x=>(x.folder||'会话')===folder);return '<details class="rom-remote-folder" open><summary>'+icon(app==='workbuddy'?'grid':'folder')+'<span>'+esc(romFolder(themes[0]))+'</span><small>'+themes.length+'</small></summary>'+(app!=='workbuddy'?'<small class="rom-remote-theme-label">'+romL('会话','Sessions')+'</small>':'')+themes.map(x=>'<button class="rom-remote-topic '+(x.id===selected?'selected':'')+'" data-action="rom:thread:'+x.id+'"'+(s.view?' disabled':'')+'><strong>'+esc(romTitle(x))+'</strong><small>'+esc(romTime(x))+'</small></button>').join('')+'</details>';}).join('')+'</div>';
 }
 function romDemoState(state){
@@ -105,7 +106,7 @@ function romRemoteApp(id){
   if(id==='vscode'){
    content='<div class="rom-vscode-menubar"><span>文件</span><span>编辑</span><span>选择</span><span>查看</span><span>终端</span><span>帮助</span></div><div class="rom-vscode-workspace"><aside class="rom-vscode-activity">'+icon('file')+icon('search')+icon('copy')+icon('settings')+'</aside><aside class="rom-vscode-explorer"><strong>资源管理器</strong><h4>REMOTE-WORKSPACE</h4><span>'+icon('folder')+' src</span><span class="rom-tree-item selected">'+icon('file')+' main.js</span><span class="rom-tree-item">'+icon('file')+' styles.css</span><span>'+icon('file')+' package.json</span><span>'+icon('file')+' README.md</span></aside><div class="rom-vscode-editor"><div class="rom-code-tabs"><span>main.js</span><small>src / main.js</small></div><textarea id="rom-code" class="rom-code" aria-label="VS Code远端编辑器" maxlength="10000"'+readonly+'>'+esc(store.code)+'</textarea><div class="rom-terminal"><strong>终端</strong><p>workspace &gt; npm run dev</p><p>Local: http://localhost:3000</p></div></div><section class="rom-vscode-chat">'+romRemoteTopics(id,activeThread?.id)+chat+'</section></div><footer class="rom-vscode-status"><span>main</span><span>JavaScript</span><span>UTF-8</span></footer>';
   }else if(id==='claude'){
-   content='<div class="rom-app-layout rom-claude-workspace"><aside class="rom-remote-sidebar rom-claude-history"><strong>Claude</strong><span>'+icon('chat')+' 会话</span><span>'+icon('folder')+' 项目</span>'+romRemoteTopics(id,activeThread?.id)+'</aside>'+chat+'</div>';
+   content='<div class="rom-app-layout rom-claude-workspace"><aside class="rom-remote-sidebar rom-claude-history"><strong>Claude</strong><span>'+icon('chat')+' 会话</span>'+romRemoteTopics(id,activeThread?.id)+'</aside>'+chat+'</div>';
   }else{
    content='<div class="rom-app-layout rom-workbuddy-workspace"><aside class="rom-remote-sidebar rom-workbuddy-nav"><strong>WorkBuddy</strong><span>'+icon('grid')+' 工作台</span><span>'+icon('folder')+' 文件</span>'+romRemoteTopics(id,activeThread?.id)+'</aside><div class="rom-workbuddy-main"><header class="rom-workbuddy-project"><strong>'+esc(title)+'</strong><small>当前任务工作区</small></header><div class="rom-workbuddy-columns"><section class="rom-task-workspace"><h3>任务步骤</h3><div>'+icon('check')+' 整理任务资料</div><div>'+icon('check')+' 核对任务内容</div><div>'+icon('clock')+' 复查当前结果</div><h3>工作区文件</h3><article>'+icon('file')+' 任务清单.md</article><article>'+icon('file')+' 任务说明.md</article></section>'+chat+'</div></div></div>';
   }

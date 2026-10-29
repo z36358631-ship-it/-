@@ -9,9 +9,9 @@ async function pick(p,target){const [chooser]=await Promise.all([p.waitForEvent(
 try{
  const base=process.env.REMOTE_BASE_URL||'file:///'+__dirname.replaceAll('\\','/');await p.goto(base+'/mobile.html?state=ai-sessions&lang=zh');
  await click(p,'office-demo:preview');await pick(p,'attachment');assert.equal(await p.locator('.phone-media-drafts img').count(),1);
- await p.locator('#office-native-input').fill('按图片修改界面');await click(p,'office-native-send');assert.equal(await p.locator('.phone-media-message img').count(),1);assert.equal(await p.locator('.phone-media-drafts img').count(),0);assert.match(await p.locator('.office-native-messages').innerText(),/按图片修改界面/);
+ await p.locator('#office-native-input').fill('按图片修改界面');await click(p,'office-native-send');assert.equal(await p.locator('.office-native-messages .phone-media-message img').count(),1);assert.equal(await p.locator('.phone-media-drafts img').count(),0);assert.match(await p.locator('.office-native-messages').innerText(),/按图片修改界面/);
  await pick(p,'attachment');await p.locator('[data-action^="phone-media:remove:"]').click();assert.equal(await p.locator('.phone-media-drafts img').count(),0);
- await pick(p,'attachment');await click(p,'office-native-send');assert.equal(await p.locator('.phone-media-message img').count(),2);
+ await pick(p,'attachment');await click(p,'office-native-send');assert.equal(await p.locator('.office-native-messages .phone-media-message img').count(),2);
  report.checks.push('原生对话选图、缩略图、移除、图文一起发送、仅图片发送');
  await pick(p,'clipboard');assert.equal(await p.locator('.phone-media-clipboard img').count(),1);await click(p,'phone-media:paste');assert.equal(await p.locator('.phone-media-drafts img').count(),1);
  await p.locator('[data-action^="phone-media:remove:"]').click();await click(p,'phone-media:clipboard');
