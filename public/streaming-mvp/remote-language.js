@@ -2,7 +2,7 @@
 (()=>{
  const key='gamehub-remote-demo-language',originals=new WeakMap(),attributes=new WeakMap();
  const dictionary=Object.fromEntries(`
-会话与窗口为本地样例。默认将会话 ID 传至电脑，打开对应的 VS Code、Claude 或 WorkBuddy；保留手机适配的直接对话界面，根据技术方案确定，技术支持后实现。会话识别、定位和真实串流待接入验证。|Sessions and windows are local examples. By default, send the session ID to the computer and open VS Code, Claude or WorkBuddy. Keep the phone-adapted direct chat design and implement it if the technical solution supports it. Session detection, navigation and streaming still require integration.
+会话与窗口为本地样例。默认将会话 ID 传至电脑，打开对应的 ChatGPT、Claude 或 WorkBuddy；保留手机适配的直接对话界面，根据技术方案确定，技术支持后实现。会话识别、定位和真实串流待接入验证。|Sessions and windows are local examples. By default, send the session ID to the computer and open ChatGPT, Claude or WorkBuddy. Keep the phone-adapted direct chat design and implement it if the technical solution supports it. Session detection, navigation and streaming still require integration.
 在线会话|Online sessions
 离线会话|Offline sessions
 暂无在线会话|No online sessions
@@ -15,8 +15,8 @@
 电脑开启被控权限|Enable remote control on the computer
 允许同账号远控，并完成系统屏幕录制与辅助功能授权。|Allow remote control and grant screen recording and accessibility permissions.
 在电脑上打开 AI 客户端|Open an AI client on the computer
-打开 VS Code、Claude 或 WorkBuddy，并创建或继续一个会话。|Open VS Code, Claude or WorkBuddy, then start or resume a session.
-在电脑上打开 VS Code、Claude 或 WorkBuddy，并创建会话。|Open VS Code, Claude or WorkBuddy on your computer and start a session.
+打开 ChatGPT、Claude 或 WorkBuddy，并创建或继续一个会话。|Open ChatGPT, Claude or WorkBuddy, then start or resume a session.
+在电脑上打开 ChatGPT、Claude 或 WorkBuddy，并创建会话。|Open ChatGPT, Claude or WorkBuddy on your computer and start a session.
 正在加载会话|Loading sessions
 正在获取电脑上的会话列表。|Retrieving sessions from the computer.
 会话加载失败|Could not load sessions

@@ -65,19 +65,19 @@ async function restrictions(p, side) {
   for (const [mode, message] of [['offline', /离线/], ['blocked', /权限|被控/], ['busy', /被控|控制/]]) {
     await click(p, v.demo + mode); await manage(p, side); const before = await snapshot(p);
     await click(p, 'ai-account:switch:secondary'); assert.equal((await snapshot(p)).stores['win|vscode'].active, before.stores['win|vscode'].active); assert.match(await p.locator('.ai-account-notice').innerText(), message);
-    await click(p, 'ai-account:add'); assert.equal(await p.locator(selector('ai-account:open')).isDisabled(), true); await invoke(p, 'ai-account:open'); assert.equal(await p.evaluate(() => s.page), 'ai-accounts');
+    await click(p, 'ai-account:add'); assert.equal(await p.evaluate(() => s.page), 'ai-accounts'); assert.equal(await p.locator('.ai-account-guide').count(), 0); assert.match(await p.locator('.ai-account-notice').innerText(), message); await invoke(p, 'ai-account:open'); assert.equal(await p.evaluate(() => s.page), 'ai-accounts');
     await invoke(p, 'ai-account:complete'); assert.equal((await snapshot(p)).stores['win|vscode'].accounts.length, before.stores['win|vscode'].accounts.length); await shot(p, side, mode + '-blocked');
   }
   await click(p, v.demo + 'all'); report.checks.push(side + '：offline/blocked/busy均阻止切换、打开客户端及模拟登录完成');
 }
 async function addAndLanguage(p, side) {
-  await manage(p, side); await click(p, 'ai-account:add'); await shot(p, side, 'add-guide'); await click(p, 'ai-account:open'); await p.waitForFunction(() => s.page === 'session');
+  await manage(p, side); await click(p, 'ai-account:add'); await p.waitForFunction(() => s.page === 'session'); assert.equal(await p.locator('.ai-account-guide').count(), 0); await shot(p, side, 'add-client-opened');
   assert.equal(await p.locator('.ai-account-review').count(), 1); await click(p, 'ai-account:complete'); assert.equal(await p.evaluate(() => s.page), 'ai-accounts');
   assert.equal(await p.locator('.ai-account-row[data-account="added-3"]').count(), 1); await click(p, 'ai-account:switch:added-3'); assert.equal((await snapshot(p)).stores['win|vscode'].active, 'added-3');
   await openSession(p, side); assert.match(JSON.stringify(await contents(p, side)), /de\*\*\*1@example.com/); assert.equal(await p.locator(variants[side].input).inputValue(), '');
   await manage(p, side); await p.locator('[data-remote-language="en"]').click(); assert.match(await p.locator('.ai-account-head h1').innerText(), /AI accounts/); assert.match(await p.locator('.ai-account-description').innerText(), /Manage client accounts/); assert.match(await p.locator('.ai-account-current').innerText(), /Current/); await shot(p, side, 'accounts-en');
   await p.locator('[data-remote-language="zh"]').click(); assert.match(await p.locator('.ai-account-head h1').innerText(), /AI 账号/); await shot(p, side, 'added-account-zh');
-  report.checks.push(side + '：添加→打开客户端→外侧模拟登录完成→added-3可切换，呈现独立账号会话；中英文界面验证');
+  report.checks.push(side + '：添加直接打开电脑客户端→外侧模拟登录完成→added-3可切换，呈现独立账号会话；中英文界面验证');
 }
 async function logout(p, side) {
   await invoke(p, side === 'mobile' ? 'mobile-logout' : 'sr-logout'); await click(p, 'remote-logout:confirm');
