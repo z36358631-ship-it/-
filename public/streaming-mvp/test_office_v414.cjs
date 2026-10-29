@@ -1,3 +1,4 @@
+async function revealAncestors(locator){await locator.evaluate(el=>{for(let a=el.parentElement;a;a=a.parentElement)if(a.tagName==='DETAILS')a.open=true;});}
 // V4.14 independent acceptance. Run after the supervisor rebuilds mobile.html/mac.html.
 const {chromium}=require('C:/Users/z3635/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert=require('node:assert/strict');
@@ -13,7 +14,7 @@ const demoStates=['default','all','no-sessions','loading','error','offline','blo
 let browser;
 const source=file=>process.env.REMOTE_BASE_URL?process.env.REMOTE_BASE_URL.replace(/\/$/,'')+'/'+file:'file:///'+path.join(__dirname,file).replaceAll('\\','/');
 const selector=action=>'[data-action="'+action+'"]';
-const click=(p,a)=>p.locator(selector(a)).first().click();
+const click=async(p,a)=>{const target=p.locator(selector(a)).first();await revealAncestors(target);await target.click();};
 const invoke=(p,a)=>p.evaluate(value=>action(value),a);
 const st=p=>p.evaluate(()=>({page:s.page,modal:s.modal,device:s.device,view:!!s.view,game:!!s.gameActive}));
 const signed=(p,side)=>p.evaluate(side=>side==='mobile'?mobileAuth.loggedIn:standaloneMac.signed,side);
@@ -57,7 +58,7 @@ async function demoMatrix(p,side){
  await click(p,v.demo+'default');assert.equal(await p.locator(v.cards).count(),0);assert.match(await p.locator(empty).innerText(),/电脑/);await shot(p,side,'default-no-devices');
  // Empty states may expand guidance automatically; its actual toggle remains operable.
  await click(p,guide);if(!await p.locator(guideBody).count())await click(p,guide);assert.equal(await p.locator(guideBody+' li').count(),3);
- await click(p,v.demo+'all');await grouped(p,side);assert.equal(await p.locator(v.cards).count(),side==='mobile'?12:4);assert.equal(await p.locator(v.cards+' .remote-ai-icon').count(),side==='mobile'?12:4);assert(await p.locator(v.cards+' .remote-ai-icon').evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>0&&img.src.startsWith('data:'))));for(const name of ['VS Code','Claude','WorkBuddy'])assert(await p.locator(v.cards+' .remote-ai-icon[alt="'+name+'"]').count()>0);await shot(p,side,'grouped-sessions');
+ await click(p,v.demo+'all');await grouped(p,side);assert.equal(await p.locator(v.cards).count(),side==='mobile'?32:9);const software=side==='mobile'?'.office-software-group':'.rom-software-group';assert.equal(await p.locator(software+' .remote-ai-icon').count(),await p.locator(software).count());assert(await p.locator(software+' .remote-ai-icon').evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>0&&img.src.startsWith('data:'))));for(const name of ['VS Code','Claude','WorkBuddy'])assert(await p.locator(software+' .remote-ai-icon[alt="'+name+'"]').count()>0);await shot(p,side,'grouped-sessions');
  await click(p,guide);if(!await p.locator(guideBody).count())await click(p,guide);assert.equal(await p.locator(guideBody+' li').count(),3);await shot(p,side,'connection-guide');
  await click(p,v.demo+'no-sessions');assert.equal(await p.locator(v.cards).count(),0);assert.match(await p.locator(empty).innerText(),/暂无.*会话/);
  await click(p,v.demo+'loading');assert.equal(await p.locator(side==='mobile'?'.office-list-loading':'.rom-list-loading').count(),1);assert.equal(await p.locator(v.cards).count(),0);await shot(p,side,'loading');

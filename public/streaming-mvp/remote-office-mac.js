@@ -1,37 +1,82 @@
 /* AI办公一期电脑端适配：仅浏览器DOM串流演示，不调用AI或远控服务。 */
-const remoteOfficeMac={origin:'detail',capture:'desktop',thread:'',query:'',empty:false,notice:'',guide:false,demo:'all',listState:'ready',devices:{}};
+const remoteOfficeMac={origin:'detail',capture:'desktop',thread:'',query:'',empty:false,notice:'',guide:false,demo:'all',listState:'ready',treeOpen:{},devices:{}};
 const romThreads=[
- {id:'win-vscode',device:'win',app:'vscode',title:'远程工作台原型',summary:'检查页面效果与交互细节',time:'今天 15:20'},
- {id:'win-claude',device:'win',app:'claude',title:'接口与异常处理',summary:'继续处理接口返回和错误提示',time:'今天 14:42'},
- {id:'work-workbuddy',device:'work',app:'workbuddy',title:'产品介绍页',summary:'检查网页排版',time:'今天 11:30'},
- {id:'mac-claude',device:'mac',app:'claude',title:'需求文档整理',summary:'整理功能说明与待确认项',time:'昨天 18:10'}
+ {id:'win-vscode',device:'win',app:'vscode',folder:'晴川记账',folderEn:'Clearbrook Ledger',title:'新增月度预算提醒',titleEn:'Add monthly budget reminders',summary:'设置预算阈值与提醒时机',summaryEn:'Set budget thresholds and reminder timing',time:'刚刚',timeEn:'Just now'},
+ {id:'win-ledger-filter',device:'win',app:'vscode',folder:'晴川记账',folderEn:'Clearbrook Ledger',title:'优化账单筛选',titleEn:'Improve transaction filters',summary:'按日期和收支分类筛选',summaryEn:'Filter by date and transaction category',time:'20分钟前',timeEn:'20 min ago'},
+ {id:'win-travel-export',device:'win',app:'vscode',folder:'旅途清单',folderEn:'Journey Checklist',title:'导出行程为 PDF',titleEn:'Export an itinerary as PDF',summary:'检查行程导出的分页效果',summaryEn:'Review pagination in itinerary exports',time:'昨天',timeEn:'Yesterday'},
+ {id:'win-claude',device:'win',app:'claude',folder:'内容工作室',folderEn:'Content Studio',title:'整理春季活动文案',titleEn:'Organize spring campaign copy',summary:'梳理活动介绍和页面文案',summaryEn:'Refine campaign introductions and page copy',time:'1小时前',timeEn:'1 hour ago'},
+ {id:'win-content-faq',device:'win',app:'claude',folder:'内容工作室',folderEn:'Content Studio',title:'补充常见问题说明',titleEn:'Expand frequently asked questions',summary:'核对读者疑问与解释',summaryEn:'Review reader questions and explanations',time:'昨天',timeEn:'Yesterday'},
+ {id:'work-workbuddy',device:'work',app:'workbuddy',folder:'任务',folderEn:'Tasks',title:'汇总本周项目进度',titleEn:'Summarize weekly project progress',summary:'整理里程碑与后续事项',summaryEn:'Organize milestones and next steps',time:'今天',timeEn:'Today'},
+ {id:'work-task-catalog',device:'work',app:'workbuddy',folder:'任务',folderEn:'Tasks',title:'归档活动素材',titleEn:'Archive campaign assets',summary:'按用途归档图文素材',summaryEn:'Organize images and copy by purpose',time:'昨天',timeEn:'Yesterday'},
+ {id:'work-task-stats',device:'work',app:'workbuddy',folder:'任务',folderEn:'Tasks',title:'校验数据统计口径',titleEn:'Validate metric definitions',summary:'核对统计周期和计数规则',summaryEn:'Check reporting periods and counting rules',time:'2天前',timeEn:'2 days ago'},
+ {id:'mac-claude',device:'mac',app:'claude',folder:'内容工作室',folderEn:'Content Studio',title:'复核帮助中心文案',titleEn:'Review help center copy',summary:'核对指引与说明内容',summaryEn:'Review instructions and explanations',time:'3天前',timeEn:'3 days ago'}
 ];
+const romL=(zh,en)=>document.documentElement.lang==='en'?en:zh;
+const romTitle=x=>x?romL(x.title,x.titleEn||x.title):'';
+const romFolder=x=>romL(x.folder||'会话',x.folderEn||'Sessions');
+const romTime=x=>romL(x.time||'刚刚',x.timeEn||'Just now');
 const romApps=[{id:'vscode',name:'VS Code',icon:'file'},{id:'claude',name:'Claude',icon:'chat'},{id:'workbuddy',name:'WorkBuddy',icon:'grid'},{id:'browser',name:'浏览器',icon:'monitor'},{id:'editor',name:'代码编辑器',icon:'file'}];
 function romAppIcon(id){return typeof remoteAiIcon==='function'?remoteAiIcon(id):icon(romApps.find(a=>a.id===id)?.icon||'chat');}
-function romStore(){return remoteOfficeMac.devices[s.device] ||= {closed:[],drafts:{},messages:{},browserTab:'preview',code:'// 项目工作区\nconst title = "Remote workspace";\n\n// 在这里继续编辑电脑上的文件。'};}
-function romThread(){return romThreads.find(x=>x.id===remoteOfficeMac.thread&&x.device===s.device);}
-function romDraftKey(id){return romThread()?.app===id?romThread().id:romThreads.find(x=>x.device===s.device&&x.app===id)?.id||id;}
+function romStore(){return remoteOfficeMac.devices[s.device] ||= {closed:[],drafts:{},messages:{},recentThreads:{},browserTab:'preview',code:'// 项目工作区\nconst title = "Remote workspace";\n\n// 在这里继续编辑电脑上的文件。'};}
+// 每台电脑、每个软件与其当前 AI 账号分别记住最近主题。/2026.10.29修改
+function romRecentKey(app){return app+'|'+(window.RemoteAiAccounts?.active?.(s.device,app)||'primary');}
+function romRecentThread(app){const rows=romThreads.filter(x=>x.device===s.device&&x.app===app);if(!rows.length)return;const saved=(romStore().recentThreads||{})[romRecentKey(app)];return rows.find(x=>x.id===saved)||rows[0];}
+function romSelectThread(app,explicit=''){
+ const selected=explicit?romThreads.find(x=>x.id===explicit&&x.device===s.device&&x.app===app):romRecentThread(app);
+ remoteOfficeMac.thread=selected?.id||'';
+ if(selected)(romStore().recentThreads||={})[romRecentKey(app)]=selected.id;
+ return selected;
+}
+function romThread(){const app=remoteOfficeMac.capture==='desktop'?romStore().desktopApp:remoteOfficeMac.capture;return romRecentThread(app);}
+function romDraftKey(id){return romRecentThread(id)?.id||id;}
 function romWindowName(id){return romApps.find(x=>x.id===id)?.name||'全桌面';}
 function romAvailable(){const store=romStore();return s.previewEmptyWindows?[]:romApps.filter(x=>!store.closed.includes(x.id));}
-function romClear(){Object.assign(remoteOfficeMac,{origin:'detail',capture:'desktop',thread:'',query:'',empty:false,notice:'',guide:false,demo:'all',listState:'ready',devices:{}});}
+function romClear(){Object.assign(remoteOfficeMac,{origin:'detail',capture:'desktop',thread:'',query:'',empty:false,notice:'',guide:false,demo:'all',listState:'ready',treeOpen:{},devices:{}});}
 function romDenied(){const d=device();return !d?'暂无可连接的电脑。':!d.online?'设备已离线，请在电脑上线后重试。':d.blocked?'该电脑未允许被控，请在电脑设置中开启权限。':isUnsupportedDevice(d)?'此设备暂不支持远程控制。':'';}
 function romGuide(){return '<section class="rom-connect-guide" id="rom-connect-guide"><h3>连接指引</h3><ol><li><strong>两端登录同一盖世账号</strong><p>手机或主控电脑与被控电脑均安装盖世远程。</p></li><li><strong>电脑开启被控权限</strong><p>允许同账号远控，并完成系统屏幕录制与辅助功能授权。</p></li><li><strong>在电脑上打开 AI 客户端</strong><p>打开 VS Code、Claude 或 WorkBuddy，并创建或继续一个会话。</p></li></ol></section>';}
+// 同页展开电脑、软件、文件夹与主题会话。/2026.10.29修改
+function romTreeDetails(key,cls,summary,body,open=false,attrs=''){
+ const expanded=remoteOfficeMac.query.trim()||((remoteOfficeMac.treeOpen||{})[key]??open);
+ return '<details class="'+cls+'" data-rom-tree="'+esc(key)+'" '+attrs+(expanded?' open':'')+'><summary>'+summary+'</summary>'+body+'</details>';
+}
+function romSessionRow(x){return '<button class="rom-session-card" data-action="rom:open:'+x.id+'"><span class="rom-session-copy"><strong>'+esc(romTitle(x))+'</strong><small>'+esc(romTime(x))+'</small></span>'+icon('chevron')+'</button>';}
 function romSessions(){
- const noDevices=s.empty||!devices.some(d=>!isUnsupportedDevice(d));
- const rows=(remoteOfficeMac.empty||noDevices)?[]:romThreads.filter(x=>devices.some(d=>d.id===x.device)&&[x.title,x.summary,romWindowName(x.app),devices.find(d=>d.id===x.device)?.name].join(' ').toLowerCase().includes(remoteOfficeMac.query.toLowerCase()));
- const card=x=>{const d=devices.find(d=>d.id===x.device);return '<button class="rom-session-card" data-action="rom:open:'+x.id+'"><span class="rom-app-icon">'+romAppIcon(x.app)+'</span><span class="rom-session-copy"><span class="rom-session-heading"><strong>'+esc(x.title)+'</strong><small>'+esc(x.time)+'</small></span><span class="rom-session-summary">'+esc(x.summary)+'</span><span class="rom-session-meta"><span>'+romWindowName(x.app)+'</span><span>'+esc(d.name)+'</span><span class="'+(d.online?'rom-online':'rom-offline')+'">'+(d.online?'在线':'离线')+'</span>'+(d.blocked?'<span class="rom-status-tag">未允许被控</span>':'')+(d.busy?'<span class="rom-status-tag">正在被控</span>':'')+'</span></span>'+icon('chevron')+'</button>';};
- const groups=[['online','在线会话',true],['offline','离线会话',false]].map(([key,label,online])=>{const group=rows.filter(x=>!!devices.find(d=>d.id===x.device)?.online===online);return '<section class="rom-session-group" data-status="'+key+'"><h2>'+label+' <span data-count="'+group.length+'">'+group.length+'</span></h2><div class="rom-session-group-list">'+(group.length?group.map(card).join(''):'<p class="rom-group-empty">暂无'+label+'</p>')+'</div></section>';}).join('');
+ const supported=devices.filter(d=>!isUnsupportedDevice(d));
+ const noDevices=s.empty||!supported.length,q=remoteOfficeMac.query.trim().toLowerCase();
+ const rows=(remoteOfficeMac.empty||noDevices)?[]:romThreads.filter(x=>supported.some(d=>d.id===x.device)&&[x.title,x.titleEn,x.summary,x.summaryEn,x.folder,x.folderEn,romWindowName(x.app),supported.find(d=>d.id===x.device)?.name].join(' ').toLowerCase().includes(q));
+ const firstOnline=supported.find(d=>d.online&&rows.some(x=>x.device===d.id))?.id;
+ const renderComputer=d=>{
+  const computerRows=rows.filter(x=>x.device===d.id);
+  const firstApp=computerRows[0]?.app;
+  const software=['vscode','claude','workbuddy'].filter(app=>computerRows.some(x=>x.app===app)).map(app=>{
+   const appRows=computerRows.filter(x=>x.app===app),folders=[...new Set(appRows.map(x=>x.folder||'会话'))];
+   const folderHtml=folders.map((folder,index)=>{
+    const themes=appRows.filter(x=>(x.folder||'会话')===folder),isTasks=app==='workbuddy';
+    const label=romFolder(themes[0]);
+    const heading=icon(isTasks?'grid':'folder')+'<strong>'+esc(label)+'</strong><span class="rom-tree-count">'+themes.length+'</span>'+icon('chevron');
+    return romTreeDetails('folder|'+d.id+'|'+app+'|'+folder,'rom-folder-group'+(isTasks?' rom-task-group':''),heading,'<div class="rom-theme-list">'+(!isTasks?'<p class="rom-theme-label">'+romL('会话','Sessions')+'</p>':'')+themes.map(romSessionRow).join('')+'</div>',d.id===firstOnline&&app===firstApp&&index===0);
+   }).join('');
+   return romTreeDetails('app|'+d.id+'|'+app,'rom-software-group','<span class="rom-app-icon">'+romAppIcon(app)+'</span><span class="rom-software-meta"><strong>'+romWindowName(app)+'</strong></span><span class="rom-tree-count">'+appRows.length+'</span>'+icon('chevron'),'<div class="rom-software-folders">'+folderHtml+'</div>',d.id===firstOnline&&app===firstApp,'data-device="'+d.id+'" data-app="'+app+'"');
+  }).join('');
+  const status=!d.online?romL('离线','Offline'):d.blocked?romL('未允许被控','Control disabled'):d.busy?romL('正在被控','In use'):romL('在线','Online');
+  return romTreeDetails('computer|'+d.id,'rom-computer-group',icon('monitor')+'<span class="rom-computer-copy"><strong class="device-name">'+esc(d.name)+'</strong><small>'+esc(d.os)+' · <span class="'+(d.online?'rom-online':'rom-offline')+'">'+status+'</span></small></span><span class="rom-tree-count">'+computerRows.length+'</span>'+icon('chevron'),'<div class="rom-computer-software">'+software+'</div>',d.id===firstOnline,'data-device="'+d.id+'"');
+ };
+ const groups=[['online','在线会话','Online sessions',true],['offline','离线会话','Offline sessions',false]].map(([key,zh,en,online])=>{const group=rows.filter(x=>!!supported.find(d=>d.id===x.device)?.online===online),computers=supported.filter(d=>!!d.online===online&&group.some(x=>x.device===d.id));return '<section class="rom-session-group" data-status="'+key+'"><h2>'+romL(zh,en)+' <span data-count="'+group.length+'">'+group.length+'</span></h2><div class="rom-session-group-list">'+(group.length?computers.map(renderComputer).join(''):'<p class="rom-group-empty">'+romL('暂无'+zh,'No '+en.toLowerCase())+'</p>')+'</div></section>';}).join('');
  let body=groups;
  if(remoteOfficeMac.listState==='loading')body='<div class="blank rom-list-loading" role="status">'+icon('refresh')+'<h2>正在加载会话</h2><p>正在获取电脑上的会话列表。</p></div>';
  else if(remoteOfficeMac.listState==='error')body='<div class="blank rom-list-error" role="alert">'+icon('warning')+'<h2>会话加载失败</h2><p>暂时无法获取会话，请稍后重试。</p>'+btn('重试','rom:retry','primary')+'</div>';
  else if(!rows.length)body='<div class="blank rom-list-empty">'+icon('chat')+'<h2>'+(remoteOfficeMac.query?'没有找到相关会话':noDevices?'尚未连接电脑':'暂无 AI 会话')+'</h2><p>'+(remoteOfficeMac.query?'换个关键词，或清空搜索。':noDevices?'先在电脑上安装盖世远程，登录同一盖世账号。':'在电脑上打开 VS Code、Claude 或 WorkBuddy，并创建会话。')+'</p>'+btn(remoteOfficeMac.query?'清空搜索':'查看连接指引',remoteOfficeMac.query?'rom:clear-query':'rom:guide','primary')+'</div>';
- return '<header class="head"><h1>AI 会话</h1><span class="muted">'+(remoteOfficeMac.listState==='ready'?rows.length+' 个会话':'')+'</span>'+btn(remoteOfficeMac.guide?'收起连接指引':'连接指引','rom:guide','ghost').replace('<button','<button aria-expanded="'+remoteOfficeMac.guide+'" aria-controls="rom-connect-guide"')+'</header><main class="content rom-sessions"><div class="rom-list-intro"><p>找到电脑上的任务，打开对应应用继续工作。</p><label class="rom-search">'+icon('search')+'<input id="rom-search" type="search" maxlength="100" aria-label="搜索AI会话" placeholder="搜索会话、应用或电脑" value="'+esc(remoteOfficeMac.query)+'"></label></div>'+(remoteOfficeMac.guide?romGuide():'')+'<p class="rom-inline-notice" role="status">'+esc(remoteOfficeMac.notice)+'</p><div class="rom-session-list">'+body+'</div></main>';
+ return '<header class="head"><h1>AI 会话</h1><span class="muted">'+(remoteOfficeMac.listState==='ready'?rows.length+' 个会话':'')+'</span>'+btn(remoteOfficeMac.guide?'收起连接指引':'连接指引','rom:guide','ghost').replace('<button','<button aria-expanded="'+remoteOfficeMac.guide+'" aria-controls="rom-connect-guide"')+'</header><main class="content rom-sessions"><div class="rom-list-intro"><p>'+romL('按电脑、软件和文件夹找到主题，继续对应会话。','Find a topic by computer, client and folder to continue its session.')+'</p><label class="rom-search">'+icon('search')+'<input id="rom-search" type="search" maxlength="100" aria-label="'+romL('搜索AI会话','Search AI sessions')+'" placeholder="'+romL('搜索主题、文件夹、软件或电脑','Search topics, folders, clients or computers')+'" value="'+esc(remoteOfficeMac.query)+'"></label></div>'+(remoteOfficeMac.guide?romGuide():'')+'<p class="rom-inline-notice" role="status">'+esc(remoteOfficeMac.notice)+'</p><div class="rom-session-list">'+body+'</div></main>';
+}
+function romRemoteTopics(app,selected){
+ const rows=romThreads.filter(x=>x.device===s.device&&x.app===app),folders=[...new Set(rows.map(x=>x.folder||'会话'))];
+ return '<div class="rom-remote-topics">'+folders.map(folder=>{const themes=rows.filter(x=>(x.folder||'会话')===folder);return '<details class="rom-remote-folder" open><summary>'+icon(app==='workbuddy'?'grid':'folder')+'<span>'+esc(romFolder(themes[0]))+'</span><small>'+themes.length+'</small></summary>'+(app!=='workbuddy'?'<small class="rom-remote-theme-label">'+romL('会话','Sessions')+'</small>':'')+themes.map(x=>'<button class="rom-remote-topic '+(x.id===selected?'selected':'')+'" data-action="rom:thread:'+x.id+'"'+(s.view?' disabled':'')+'><strong>'+esc(romTitle(x))+'</strong><small>'+esc(romTime(x))+'</small></button>').join('')+'</details>';}).join('')+'</div>';
 }
 function romDemoState(state){
  if(!['default','all','no-sessions','loading','error','offline','blocked','busy'].includes(state))return;
  clearTimeout(connectTimer);s.modal='';s.panel='';s.macConnected=false;s.macMaximized=false;resetMacNetwork();
  devices=state==='default'?[]:structuredClone(initialDevices);s.empty=state==='default';s.loading=false;s.error='';s.device=devices[0]?.id||'win';s.page='office-sessions';
- remoteOfficeMac.demo=state;remoteOfficeMac.listState=['loading','error'].includes(state)?state:'ready';remoteOfficeMac.empty=state==='no-sessions';remoteOfficeMac.query='';remoteOfficeMac.notice='';remoteOfficeMac.thread='';remoteOfficeMac.capture='desktop';
+ remoteOfficeMac.treeOpen={};remoteOfficeMac.demo=state;remoteOfficeMac.listState=['loading','error'].includes(state)?state:'ready';remoteOfficeMac.empty=state==='no-sessions';remoteOfficeMac.query='';remoteOfficeMac.notice='';remoteOfficeMac.thread='';remoteOfficeMac.capture='desktop';
  if(state==='offline')devices.forEach(d=>{d.online=false;d.busy=false;});
  if(state==='blocked')Object.assign(devices.find(d=>d.id==='win'),{online:true,blocked:true,busy:false});
  if(state==='busy')Object.assign(devices.find(d=>d.id==='win'),{online:true,blocked:false,busy:true});
@@ -48,7 +93,7 @@ quickApps=function(){s.quickAppsByDevice ||= {};const current=s.quickAppsByDevic
 gptQuickLaunch=function(){const disabled=!device().online||device().blocked;return '<div class="gpt-quick-row">'+quickApps().map(id=>{const a=romApps.find(x=>x.id===id);return '<button class="gpt-quick rom-quick" data-action="rom:app:'+id+'"'+(disabled?' disabled':'')+'>'+romAppIcon(a.id)+'<span>'+a.name+'</span></button>';}).join('')+btn('添加应用','quicklaunch','gpt-add','plus')+'</div>';};
 function romCapturePicker(){return '<section class="rom-capture-picker" aria-label="选择串流画面"><div class="row spread"><h3>选择串流画面</h3>'+ib('关闭画面选择','rom:picker-close','close')+'</div><button class="rom-capture-option '+(remoteOfficeMac.capture==='desktop'?'selected':'')+'" data-action="rom:capture:desktop">'+icon('monitor')+'<span><strong>全桌面</strong><small>显示电脑完整桌面</small></span></button><h4>应用窗口</h4>'+(romAvailable().length?romAvailable().map(a=>'<button class="rom-capture-option '+(remoteOfficeMac.capture===a.id?'selected':'')+'" data-action="rom:capture:'+a.id+'">'+romAppIcon(a.id)+'<span><strong>'+a.name+'</strong><small>仅显示此应用窗口</small></span>'+(remoteOfficeMac.capture===a.id?icon('check'):'')+'</button>').join(''):'<p class="rom-empty-windows">暂无打开的窗口，可返回桌面打开应用。</p>')+'</section>';}
 function romChat(id,title,key,store,readonly,disabled){
- const texts={vscode:['检查远程工作台原型，整理需要调整的代码。','已打开项目文件。可以在编辑器查看当前代码，并在右侧继续讨论实现。'],claude:['继续检查接口与异常处理。','已整理接口返回和错误处理思路。可以继续核对具体场景。'],workbuddy:['整理产品介绍页的任务和交付物。','已整理任务步骤，工作区保留了页面稿和项目资料。']};
+ const texts={vscode:[romL('继续处理“'+title+'”。','Continue working on “'+title+'”.'),romL('已打开对应项目文件。可以查看当前代码，并继续此主题的讨论。','The project files are open. Review the code and continue this topic.')],claude:[romL('继续讨论“'+title+'”。','Continue discussing “'+title+'”.'),romL('已保留当前文件夹与主题的讨论内容，可以继续核对具体说明。','The folder and topic context are preserved. Continue reviewing the details.')],workbuddy:[romL('继续任务“'+title+'”。','Continue the task “'+title+'”.'),romL('已保留当前任务的工作区与产物，可以继续核对执行步骤。','The task workspace and outputs are preserved. Continue reviewing the steps.')]};
  const intro=texts[id],messages=store.messages[key]||[];
  return '<div class="rom-remote-chat"><header><strong>'+esc(title)+'</strong><span>'+({vscode:'AI 助手',claude:'会话',workbuddy:'任务对话'}[id])+'</span></header><div class="rom-transcript" tabindex="0" aria-label="远端应用会话内容"><div class="rom-human">'+intro[0]+'</div><div class="rom-agent"><strong>'+romWindowName(id)+'</strong><p>'+intro[1]+'</p><p>浏览器中保留了页面预览，切换串流画面即可检查效果。</p><ul><li>检查页面与导航。</li><li>核对输入和按钮状态。</li><li>继续处理当前工作区。</li></ul></div>'+messages.map(x=>'<div class="rom-human">'+esc(x)+'</div>').join('')+'</div><div class="rom-composer"><textarea id="rom-compose" maxlength="2000" aria-label="远端应用输入" placeholder="在电脑应用中输入"'+readonly+'>'+esc(store.drafts[key]||'')+'</textarea><button data-action="rom:send"'+disabled+'>'+icon('chevron')+'<span>发送</span></button></div></div>';
 }
@@ -56,18 +101,18 @@ function romRemoteApp(id){
  const a=romApps.find(x=>x.id===id),store=romStore(),thread=romThread();if(!a)return '';
  const disabled=s.view?' disabled':'',readonly=s.view?' readonly':'';let content='';
  if(['vscode','claude','workbuddy'].includes(id)){
-  const activeThread=thread?.app===id?thread:romThreads.find(x=>x.device===s.device&&x.app===id),title=activeThread?.title||'新的工作区',key=activeThread?.id||id,chat=romChat(id,title,key,store,readonly,disabled);
+  const activeThread=romRecentThread(id),title=romTitle(activeThread)||romL('新的工作区','New workspace'),key=activeThread?.id||id,chat=romChat(id,title,key,store,readonly,disabled);
   if(id==='vscode'){
-   content='<div class="rom-vscode-menubar"><span>文件</span><span>编辑</span><span>选择</span><span>查看</span><span>终端</span><span>帮助</span></div><div class="rom-vscode-workspace"><aside class="rom-vscode-activity">'+icon('file')+icon('search')+icon('copy')+icon('settings')+'</aside><aside class="rom-vscode-explorer"><strong>资源管理器</strong><h4>REMOTE-WORKSPACE</h4><span>'+icon('folder')+' src</span><span class="rom-tree-item selected">'+icon('file')+' main.js</span><span class="rom-tree-item">'+icon('file')+' styles.css</span><span>'+icon('file')+' package.json</span><span>'+icon('file')+' README.md</span></aside><div class="rom-vscode-editor"><div class="rom-code-tabs"><span>main.js</span><small>src / main.js</small></div><textarea id="rom-code" class="rom-code" aria-label="VS Code远端编辑器" maxlength="10000"'+readonly+'>'+esc(store.code)+'</textarea><div class="rom-terminal"><strong>终端</strong><p>workspace &gt; npm run dev</p><p>Local: http://localhost:3000</p></div></div><section class="rom-vscode-chat">'+chat+'</section></div><footer class="rom-vscode-status"><span>main</span><span>JavaScript</span><span>UTF-8</span></footer>';
+   content='<div class="rom-vscode-menubar"><span>文件</span><span>编辑</span><span>选择</span><span>查看</span><span>终端</span><span>帮助</span></div><div class="rom-vscode-workspace"><aside class="rom-vscode-activity">'+icon('file')+icon('search')+icon('copy')+icon('settings')+'</aside><aside class="rom-vscode-explorer"><strong>资源管理器</strong><h4>REMOTE-WORKSPACE</h4><span>'+icon('folder')+' src</span><span class="rom-tree-item selected">'+icon('file')+' main.js</span><span class="rom-tree-item">'+icon('file')+' styles.css</span><span>'+icon('file')+' package.json</span><span>'+icon('file')+' README.md</span></aside><div class="rom-vscode-editor"><div class="rom-code-tabs"><span>main.js</span><small>src / main.js</small></div><textarea id="rom-code" class="rom-code" aria-label="VS Code远端编辑器" maxlength="10000"'+readonly+'>'+esc(store.code)+'</textarea><div class="rom-terminal"><strong>终端</strong><p>workspace &gt; npm run dev</p><p>Local: http://localhost:3000</p></div></div><section class="rom-vscode-chat">'+romRemoteTopics(id,activeThread?.id)+chat+'</section></div><footer class="rom-vscode-status"><span>main</span><span>JavaScript</span><span>UTF-8</span></footer>';
   }else if(id==='claude'){
-   content='<div class="rom-app-layout rom-claude-workspace"><aside class="rom-remote-sidebar rom-claude-history"><strong>Claude</strong><span>'+icon('chat')+' 会话</span><span>'+icon('folder')+' 项目</span><small>最近会话</small><div class="rom-remote-thread">'+esc(title)+'</div><span class="rom-history-item">页面结构讨论</span><span class="rom-history-item">项目说明整理</span><div class="rom-claude-project"><small>当前项目</small><strong>远程工作台</strong></div></aside>'+chat+'</div>';
+   content='<div class="rom-app-layout rom-claude-workspace"><aside class="rom-remote-sidebar rom-claude-history"><strong>Claude</strong><span>'+icon('chat')+' 会话</span><span>'+icon('folder')+' 项目</span>'+romRemoteTopics(id,activeThread?.id)+'</aside>'+chat+'</div>';
   }else{
-   content='<div class="rom-app-layout rom-workbuddy-workspace"><aside class="rom-remote-sidebar rom-workbuddy-nav"><strong>WorkBuddy</strong><span>'+icon('grid')+' 工作台</span><span>'+icon('folder')+' 文件</span><small>最近任务</small><div class="rom-remote-thread">'+esc(title)+'</div><span class="rom-history-item">需求整理</span><span class="rom-history-item">页面检查</span></aside><div class="rom-workbuddy-main"><header class="rom-workbuddy-project"><strong>'+esc(title)+'</strong><small>当前任务工作区</small></header><div class="rom-workbuddy-columns"><section class="rom-task-workspace"><h3>任务步骤</h3><div>'+icon('check')+' 整理页面内容</div><div>'+icon('check')+' 生成介绍页初稿</div><div>'+icon('clock')+' 检查交互效果</div><h3>工作区文件</h3><article>'+icon('file')+' 产品介绍.html</article><article>'+icon('file')+' 任务说明.md</article></section>'+chat+'</div></div></div>';
+   content='<div class="rom-app-layout rom-workbuddy-workspace"><aside class="rom-remote-sidebar rom-workbuddy-nav"><strong>WorkBuddy</strong><span>'+icon('grid')+' 工作台</span><span>'+icon('folder')+' 文件</span>'+romRemoteTopics(id,activeThread?.id)+'</aside><div class="rom-workbuddy-main"><header class="rom-workbuddy-project"><strong>'+esc(title)+'</strong><small>当前任务工作区</small></header><div class="rom-workbuddy-columns"><section class="rom-task-workspace"><h3>任务步骤</h3><div>'+icon('check')+' 整理任务资料</div><div>'+icon('check')+' 核对任务内容</div><div>'+icon('clock')+' 复查当前结果</div><h3>工作区文件</h3><article>'+icon('file')+' 任务清单.md</article><article>'+icon('file')+' 任务说明.md</article></section>'+chat+'</div></div></div>';
   }
  }else if(id==='browser'){
   content='<div class="rom-browser-bar"><span>'+icon('lock')+' localhost / workspace</span></div><div class="rom-browser-tabs">'+btn('页面预览','rom:browser:preview',store.browserTab==='preview'?'selected':'').replace('<button','<button'+disabled)+btn('项目说明','rom:browser:readme',store.browserTab==='readme'?'selected':'').replace('<button','<button'+disabled)+'</div><div class="rom-browser-page" tabindex="0"><small>REMOTE WORKSPACE</small><h1>'+(store.browserTab==='preview'?'让工作继续':'项目说明')+'</h1><p>'+(store.browserTab==='preview'?'你的项目、文件与应用，始终留在自己的电脑上。':'这是当前工作区的页面预览，点击页签可查看不同内容。')+'</p><div class="rom-preview-cards"><article><h3>任务进展</h3><p>检查最近修改与页面效果。</p></article><article><h3>项目文件</h3><p>继续处理原有工作区。</p></article></div><h2>当前页面</h2><p>在电脑上打开的浏览器窗口中查看内容。滚动此区域可继续阅读。</p><p>桌面与应用窗口可以随时切换，切换捕获画面不会关闭应用。</p><div class="rom-preview-footer">页面预览</div></div>';
  }else{content='<div class="rom-editor-bar">workspace / main.js</div><textarea id="rom-code" class="rom-code" aria-label="远端代码编辑器" maxlength="10000"'+readonly+'>'+esc(store.code)+'</textarea>';}
- return '<section class="rom-remote-app rom-client-'+id+'" data-remote-app="'+id+'"><header class="rom-windowbar"><span>'+romAppIcon(a.id)+a.name+(thread?.app===id?' · '+esc(thread.title):'')+'</span>'+ib('关闭远端窗口','rom:close-window','close').replace('<button','<button'+disabled)+'</header>'+content+'</section>';
+ return '<section class="rom-remote-app rom-client-'+id+'" data-remote-app="'+id+'"><header class="rom-windowbar"><span>'+romAppIcon(a.id)+a.name+(thread?.app===id?' · '+esc(romTitle(thread)):'')+'</span>'+ib('关闭远端窗口','rom:close-window','close').replace('<button','<button'+disabled)+'</header>'+content+'</section>';
 }
 
 function romSurface(){const capture=remoteOfficeMac.capture,available=romAvailable(),store=romStore();if(capture!=='desktop'&&!available.some(x=>x.id===capture))return '<div class="rom-unavailable">'+icon('screen')+'<h2>此窗口已关闭或不可用</h2><p>切换到其他窗口，或返回桌面打开应用。</p>'+btn('选择串流画面','rom:picker','primary')+btn('返回全桌面','rom:capture:desktop','ghost')+'</div>';if(capture!=='desktop')return romRemoteApp(capture);const active=available.find(x=>x.id===store.desktopApp);return '<div class="rom-desktop"><div class="rom-desktop-shortcuts">'+romApps.map(a=>'<button data-action="rom:desktop-app:'+a.id+'"'+(s.view?' disabled':'')+'>'+romAppIcon(a.id)+'<span>'+a.name+'</span></button>').join('')+'</div>'+(active?'<div class="rom-desktop-window">'+romRemoteApp(active.id)+'</div>':'<div class="rom-desktop-caption"><strong>'+esc(device().name)+'</strong><span>桌面</span></div>')+'<footer class="rom-desktop-taskbar">'+romApps.map(a=>'<button aria-label="打开'+a.name+'" data-action="rom:desktop-app:'+a.id+'"'+(s.view?' disabled':'')+'>'+romAppIcon(a.id)+'</button>').join('')+'</footer></div>';}
@@ -92,7 +137,7 @@ renderMac=function(){s.gameActive=false;s.mapping=false;s.virtualPad=false;s.mod
 function romOpen(app,threadId='',origin='detail'){
  if(!romApps.some(x=>x.id===app))return;const denied=romDenied();if(denied){remoteOfficeMac.notice=denied;if(s.page==='office-sessions')render();else toast(denied);return;}
  const pending=threadId?'rom:open:'+threadId:'rom:app:'+app;if(device().busy){s.pendingAction=pending;s.modal='takeover';render();return;}
- remoteOfficeMac.origin=origin;remoteOfficeMac.capture=app;remoteOfficeMac.thread=threadId;remoteOfficeMac.notice='';romStore().closed=romStore().closed.filter(x=>x!==app);s.previewEmptyWindows=false;s.view=false;s.modal='';s.panel='';s.gameActive=false;s.mapping=false;s.gptDesktop=false;s.mode='office';requestConnection('control');
+ remoteOfficeMac.origin=origin;remoteOfficeMac.capture=app;romSelectThread(app,threadId);remoteOfficeMac.notice='';romStore().closed=romStore().closed.filter(x=>x!==app);s.previewEmptyWindows=false;s.view=false;s.modal='';s.panel='';s.gameActive=false;s.mapping=false;s.gptDesktop=false;s.mode='office';requestConnection('control');
 }
 const romBaseAction=action;
 action=function(value){
@@ -115,14 +160,15 @@ action=function(value){
   if(s.page!=='session')return;
   if(kind==='picker'){s.panel=s.panel==='rom-capture'?'':'rom-capture';render();return;}
   if(kind==='picker-close'){s.panel='';render();return;}
-  if(kind==='capture'){if(arg!=='desktop'&&!romAvailable().some(x=>x.id===arg))return;remoteOfficeMac.capture=arg;s.remoteZoom=1;s.panel='';render();return;}
+  if(kind==='capture'){if(arg!=='desktop'&&!romAvailable().some(x=>x.id===arg))return;remoteOfficeMac.capture=arg;romSelectThread(arg==='desktop'?romStore().desktopApp:arg);s.remoteZoom=1;s.panel='';render();return;}
   if(kind==='zoom'){s.remoteZoom=arg==='reset'?1:Math.max(1,Math.min(2,(s.remoteZoom||1)+(arg==='in'?.25:-.25)));render();return;}
   if(kind==='no-windows'||kind==='restore-windows'){s.previewEmptyWindows=kind==='no-windows';if(kind==='restore-windows')romStore().closed=[];s.panel='rom-capture';render();return;}
   if(s.view||romDenied())return;
-  if(kind==='desktop-app'){if(!romApps.some(x=>x.id===arg))return;romStore().closed=romStore().closed.filter(x=>x!==arg);s.previewEmptyWindows=false;romStore().desktopApp=arg;render();return;}
+  if(kind==='desktop-app'){if(!romApps.some(x=>x.id===arg))return;romStore().closed=romStore().closed.filter(x=>x!==arg);s.previewEmptyWindows=false;romStore().desktopApp=arg;romSelectThread(arg);render();return;}
+  if(kind==='thread'){const t=romThreads.find(x=>x.id===arg&&x.device===s.device);const app=remoteOfficeMac.capture==='desktop'?romStore().desktopApp:remoteOfficeMac.capture;if(!t||t.app!==app||romStore().closed.includes(app))return;romSelectThread(t.app,t.id);render();return;}
   if(kind==='close-window'){const app=remoteOfficeMac.capture==='desktop'?romStore().desktopApp:remoteOfficeMac.capture;if(!app)return;if(!romStore().closed.includes(app))romStore().closed.push(app);if(remoteOfficeMac.capture==='desktop')romStore().desktopApp='';render();return;}
   if(kind==='browser'){if(['preview','readme'].includes(arg))romStore().browserTab=arg;render();return;}
-  if(kind==='send'){const app=remoteOfficeMac.capture==='desktop'?romStore().desktopApp:remoteOfficeMac.capture;if(!['vscode','claude','workbuddy'].includes(app)||romStore().closed.includes(app))return;const key=romThread()?.app===app?romThread().id:romThreads.find(x=>x.device===s.device&&x.app===app)?.id||app;const text=(romStore().drafts[key]||'').trim();if(!text)return;(romStore().messages[key] ||= []).push(text);romStore().drafts[key]='';render();document.querySelector('.rom-transcript')?.scrollTo(0,1e6);return;}
+  if(kind==='send'){const app=remoteOfficeMac.capture==='desktop'?romStore().desktopApp:remoteOfficeMac.capture;if(!['vscode','claude','workbuddy'].includes(app)||romStore().closed.includes(app))return;const key=romDraftKey(app);const text=(romStore().drafts[key]||'').trim();if(!text)return;(romStore().messages[key] ||= []).push(text);romStore().drafts[key]='';render();document.querySelector('.rom-transcript')?.scrollTo(0,1e6);return;}
   return;
  }
  if(['connect','watch'].includes(value)){remoteOfficeMac.origin='detail';remoteOfficeMac.capture='desktop';remoteOfficeMac.thread='';}
@@ -134,8 +180,9 @@ action=function(value){
  if(s.page==='session'&&(s.view||romDenied())&&/^(key:|computer-key:|write-draft|mac-app:|window:|mouse-|ime-)/.test(value))return;
  return romBaseAction(value);
 };
-document.addEventListener('input',e=>{if(!standaloneMac.signed)return;if(e.target.id==='rom-search'){remoteOfficeMac.query=e.target.value;const start=e.target.selectionStart;render();const input=document.getElementById('rom-search');input?.focus();try{input?.setSelectionRange(start,start);}catch{}return;}if(s.page!=='session'||s.view||romDenied())return;const store=romStore(),app=remoteOfficeMac.capture==='desktop'?store.desktopApp:remoteOfficeMac.capture;if(e.target.id==='rom-compose'){const key=romThread()?.app===app?romThread().id:romThreads.find(x=>x.device===s.device&&x.app===app)?.id||app;store.drafts[key]=e.target.value;}if(e.target.id==='rom-code')store.code=e.target.value;});
+document.addEventListener('input',e=>{if(!standaloneMac.signed)return;if(e.target.id==='rom-search'){remoteOfficeMac.query=e.target.value;const start=e.target.selectionStart;render();const input=document.getElementById('rom-search');input?.focus();try{input?.setSelectionRange(start,start);}catch{}return;}if(s.page!=='session'||s.view||romDenied())return;const store=romStore(),app=remoteOfficeMac.capture==='desktop'?store.desktopApp:remoteOfficeMac.capture;if(e.target.id==='rom-compose'){const key=romDraftKey(app);store.drafts[key]=e.target.value;}if(e.target.id==='rom-code')store.code=e.target.value;});
+document.addEventListener('toggle',event=>{const el=event.target;if(!el?.isConnected||!el.matches?.('details[data-rom-tree]')||remoteOfficeMac.query.trim()||s.page!=='office-sessions')return;(remoteOfficeMac.treeOpen||={})[el.dataset.romTree]=el.open;},true);
 window.RemoteOfficeMac={state:remoteOfficeMac,threads:romThreads,apps:romApps,snapshot:()=>structuredClone(remoteOfficeMac)};
-window.addEventListener('remote-language-change',()=>{if(s.page==='usage-choice')render();});
+window.addEventListener('remote-language-change',()=>{if(['usage-choice','office-sessions','session'].includes(s.page))render();});
 if(params.get('state')==='ai-sessions')remoteMacPreview('ai-sessions');else render();
 

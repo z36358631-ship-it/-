@@ -1,3 +1,4 @@
+async function revealAncestors(locator){await locator.evaluate(el=>{for(let a=el.parentElement;a;a=a.parentElement)if(a.tagName==='DETAILS')a.open=true;});}
 // Independent AI-account acceptance. Local sample accounts only; never signs in to an AI service.
 const { chromium } = require('C:/Users/z3635/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert = require('node:assert/strict');
@@ -6,7 +7,7 @@ const path = require('node:path');
 const out = process.env.ACCOUNTS_TEST_OUT || path.join(__dirname, 'review/v414/accounts-local');
 const report = { pass: false, checks: [], errors: [], screenshots: [], scope: '本地交互样例账号、会话/文字/图片隔离，不证明真实 AI 登录或远程账号集成。' };
 const selector = a => `[data-action="${a}"]`;
-const click = (p, a) => p.locator(selector(a)).first().click();
+const click = async(p, a) => {const target=p.locator(selector(a)).first();await revealAncestors(target);await target.click();};
 const invoke = (p, a) => p.evaluate(a => action(a), a);
 const snapshot = p => p.evaluate(() => RemoteAiAccounts.snapshot());
 const source = file => process.env.REMOTE_BASE_URL ? process.env.REMOTE_BASE_URL.replace(/\/$/, '') + '/' + file : 'file:///' + path.join(__dirname, file).replaceAll('\\', '/');

@@ -1,8 +1,9 @@
+async function revealAncestors(locator){await locator.evaluate(el=>{for(let a=el.parentElement;a;a=a.parentElement)if(a.tagName==='DETAILS')a.open=true;});}
 const {chromium}=require('C:/Users/z3635/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const out=process.env.MEDIA_TEST_OUT||path.join(__dirname,'review/v414/media-local');fs.mkdirSync(out,{recursive:true});
 const report={pass:false,checks:[],errors:[],screenshots:[]};
-const click=(p,a)=>p.locator('[data-action="'+a+'"]').first().click();
+const click=async(p,a)=>{const target=p.locator('[data-action="'+a+'"]').first();await revealAncestors(target);await target.click();};
 async function pick(p,target){const [chooser]=await Promise.all([p.waitForEvent('filechooser'),click(p,'phone-media:pick:'+target)]);await chooser.setFiles(path.join(__dirname,'assets/ai-icons/vscode.png'));}
 (async()=>{const b=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});const p=await b.newPage({viewport:{width:390,height:1050}});p.on('pageerror',e=>report.errors.push(e.message));
 try{
