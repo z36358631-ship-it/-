@@ -7,7 +7,7 @@ const root=__dirname,results=[],errors=[],remote=[];
 let browser,page;
 const state=()=>page.evaluate(()=>window.demo.getState());
 const api=(name,arg)=>page.evaluate(([n,a])=>window.demo[n](a),[name,arg]);
-const action=name=>page.locator(name==='library'?'#screen [data-action="library"]:not([inert] *),#screen [data-action="hide-preparation"]':'#screen [data-action="'+name+'"]:not([inert] *)').first().click();
+const action=name=>page.locator('#screen [data-action="'+name+'"]:not([inert] *)').first().click();
 const outer=async name=>{await api('setReviewOpen',true);const el=page.locator('#rail [data-action="'+name+'"]');if(!await el.isVisible())await page.locator('#rail details summary').click();await el.click();await api('setReviewOpen',false)};
 const choose=async value=>page.locator('#screen [data-action="landing-select"][data-landing="'+value+'"]').click();
 async function consent(mode='window'){await page.locator('#screen [data-mode="'+mode+'"]').click();await page.locator('#remember').check();await page.locator('#consent').check();await action('confirm-mode')}
@@ -66,9 +66,9 @@ async function test(name,fn){
   await test('准备失败及登录失败保留游戏目标，重试后恢复目标',async()=>{
     await api('setScenario','prepare');await hostGame('hades');await consent();await api('advance');await api('advance');await api('advance');assert.equal((await state()).stage,'prepareError');assert.equal((await state()).pendingGame,'hades');await api('setScenario','normal');await action('download-control');await ready();await login('password',false);assert.equal((await state()).page,'login');assert.equal((await state()).pendingGame,'hades');assert.equal((await state()).pref.account,null);assert.equal(await page.locator('#loginPassword').inputValue(),'private_password');await action('submit-login');await outer('login-success');assert.equal((await state()).game,'hades');assert.equal((await state()).gameStatus,'waiting');assert.equal((await state()).launchCount,1);
   });
-  await test('模式取消与准备收起清理游戏目标，普通Steam入口不串游戏',async()=>{
+  await test('模式及登录取消清理游戏目标，普通Steam入口不串游戏',async()=>{
     await hostGame('hades');await action('library');assert.equal((await state()).pendingGame,null);assert.equal((await state()).autoLaunch,false);await action('enter-steam');await consent();await ready();await login();assert.equal((await state()).steamPage,'library');assert.equal((await state()).gameStatus,'idle');assert.equal((await state()).launchCount,0);
-    await api('reset');await hostGame('elden');await consent();await action('library');assert.equal((await state()).pendingGame,null);await action('enter-steam');await ready();await login();assert.equal((await state()).steamPage,'library');assert.equal((await state()).launchCount,0);
+    await api('reset');await hostGame('elden');await consent();await ready();await action('library');assert.equal((await state()).pendingGame,null);await action('enter-steam');await ready();await login();assert.equal((await state()).steamPage,'library');assert.equal((await state()).launchCount,0);
   });
   await test('有效登录账号从盖世游戏卡直接启动目标且仍等待回执',async()=>{
     await api('loadFixture','library-account');await hostGame('hades');const s=await state();assert.equal(s.page,'steam');assert.equal(s.game,'hades');assert.equal(s.steamPage,'detail');assert.equal(s.gameStatus,'waiting');assert.equal(s.launchCount,1);await shot('55-盖世游戏直达Steam启动中');await outer('game-fail');assert.equal((await state()).gameStatus,'error');await action('launch-game');assert.equal((await state()).launchCount,2);await outer('game-success');assert.equal((await state()).gameStatus,'ack');

@@ -1,26 +1,18 @@
 {
   "date": "2026-10-28",
   "artifact": "Steam接入Demo.html",
-  "scope": "离线模拟：后台准备与当前会话控制；不代表SDK、系统后台保活或真实游戏运行验证",
+  "scope": "离线模拟：不可收起的准备弹窗与当前会话控制；不代表SDK或真实游戏运行验证",
   "results": [
     {
-      "name": "下载收起继续进行，切到首页后完成仍留首页",
+      "name": "正常准备全阶段无收起暂停按钮，Esc和背景不可关闭",
       "status": "passed"
     },
     {
-      "name": "校验准备与启动时收起，完成都不强跳",
+      "name": "准备失败只有重试，恢复后留在准备流程",
       "status": "passed"
     },
     {
-      "name": "后台断网保存进度，重入显示原错误，恢复后续传",
-      "status": "passed"
-    },
-    {
-      "name": "后台准备失败可恢复且不会重新下载",
-      "status": "passed"
-    },
-    {
-      "name": "后台任务反复打开关闭复用进度且不产生游戏自动启动",
+      "name": "下载进度持续增长，准备完成后进入登录",
       "status": "passed"
     },
     {
@@ -54,6 +46,6 @@
   ],
   "scriptErrors": [],
   "remoteRequests": [],
-  "passed": 12,
+  "passed": 10,
   "failed": 0
 }
