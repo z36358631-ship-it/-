@@ -14,8 +14,8 @@ import zipfile, re, hashlib, json, argparse, urllib.parse
 ROOT = Path(__file__).resolve().parent
 ap=argparse.ArgumentParser()
 ap.add_argument('--html',default='prd.html')
-ap.add_argument('--out',default='盖世远程PRD-V4.19-Word图片内嵌版.docx')
-ap.add_argument('--version',default='V4.19')
+ap.add_argument('--out',default='盖世远程PRD-V4.20-Word图片内嵌版.docx')
+ap.add_argument('--version',default='V4.20')
 ap.add_argument('--image-map')
 ap.add_argument('--report',default='feishu-docx-check.json')
 args=ap.parse_args()
@@ -138,6 +138,8 @@ def render_cell(cell, node):
         para=cell.paragraphs[0] if not used else cell.add_paragraph();used=True
         para.paragraph_format.space_after=Pt(1.5)
         inline(para,chunk,in_cell=max(0.3,cell.width.inches-0.21))
+        if '点击“开启”才显示通知权限演示' in para.text:
+            para.paragraph_format.keep_together=True
         has_img=any(n.tag=='img' for n in chunk)
         if has_img or para.text.strip() in ('图示：','详细说明：','展示说明：','交互说明：'):
             para.paragraph_format.keep_with_next=True
@@ -216,6 +218,13 @@ for border in list(doc.element.xpath('.//w:pBdr')):border.getparent().remove(bor
 doc.core_properties.title='盖世远程独立客户端与移动 App PRD '+args.version
 doc.core_properties.subject='飞书导入版，图片已内嵌'
 doc.core_properties.author='盖世远程产品团队'
+# Keep the required final paragraph after a table from producing a blank page.
+if doc.paragraphs and not doc.paragraphs[-1].text.strip():
+    tail=doc.paragraphs[-1]
+    tail.paragraph_format.space_before=Pt(0)
+    tail.paragraph_format.space_after=Pt(0)
+    tail.paragraph_format.line_spacing=Pt(1)
+    tail.add_run().font.size=Pt(1)
 doc.save(OUT)
 
 # Verify the saved file against every source heading and table cell.

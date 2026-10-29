@@ -1,0 +1,44 @@
+// 通知交互验收：模拟事件及系统卡片，不证明真实服务送达。
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {pathToFileURL}=require('node:url');
+const {chromium}=require('C:/Users/z3635/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const out=process.env.NOTIFICATION_TEST_OUT||path.join(__dirname,'review/prd-v420/notifications');
+const report={pass:false,checks:[],errors:[]};
+const sel=a=>'[data-action='+JSON.stringify(a)+']';
+async function invoke(p,a){await p.evaluate(a=>action(a),a);}
+const snapshot=p=>p.evaluate(()=>RemoteNotifications.snapshot());
+async function emit(p,type,target,id,extra={}){return p.evaluate(({type,target,id,extra})=>RemoteNotifications.emit({type,target,id,...extra}),{type,target,id,extra});}
+(async()=>{fs.mkdirSync(out,{recursive:true});const b=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});try{
+for(const side of ['mobile','mac']){
+ const p=await b.newPage({viewport:{width:1450,height:1150}});p.on('pageerror',e=>report.errors.push(side+': '+e.message));p.setDefaultTimeout(12000);
+ const shell=side==='mobile'?'.mobile-independent-shell':'.sr-client';
+ const base=process.env.REMOTE_BASE_URL?process.env.REMOTE_BASE_URL.replace(/\/$/,'')+'/'+side+'.html':pathToFileURL(path.join(__dirname,side+'.html')).href;
+ await p.goto(base+'?lang=zh');
+ assert.equal(await p.locator('.rn-entry').count(),0);
+ if(side==='mobile'){
+  await p.locator('#mobile-phone').fill('13600008000');await p.locator(sel('mobile-sms')).click();await p.locator('#mobile-code').fill('846201');await p.locator('#mobile-agreement').check();await p.locator(sel('mobile-login-submit')).click();
+ }else{
+  await p.locator('#sr-credential').fill('13600008000');await p.locator(sel('sr-send-code')).click();await p.locator('#sr-code').fill('846201');await p.locator('#sr-consent').check();await p.locator('#sr-account-form button[type=submit]').click();
+ }
+ await p.waitForFunction(()=>s.page==='usage-choice');await invoke(p,'usage-choice:office');if(side==='mac'&&await p.locator('.sr-first-guide').count())await invoke(p,'sr-onboard-skip');
+ async function check(name,fn){await fn();report.checks.push({side,name,pass:true});}
+ async function shot(name){await p.locator(shell).screenshot({path:path.join(out,side+'-'+name+'.png'),animations:'disabled'});}
+ await check('登录入口与初始四类历史消息，不补Push',async()=>{const x=await snapshot(p);assert.equal(x.items.length,4);assert.equal(x.unread,3);assert.equal(x.push,null);assert.equal(x.permission.status,'default');assert.equal(await p.locator('.rn-entry').count(),1);await shot('entry');});
+ const target=await p.evaluate(()=>RemoteNotificationAdapter.targets()[0]);
+ await p.locator('.rn-entry').click();
+ await check('站内信全部/未读、四种类型与标已读',async()=>{assert.equal(await p.locator('.rn-message').count(),4);assert.equal(await p.locator('.rn-center h1').innerText(),'消息通知');await invoke(p,'rn:filter:unread');assert.equal(await p.locator('.rn-message').count(),3);await invoke(p,'rn:read-all');assert.equal((await snapshot(p)).unread,0);assert.equal(await p.locator('.rn-message').count(),0);await invoke(p,'rn:demo:all');await invoke(p,'rn:filter:all');await shot('inbox');});
+ await check('主动授权可拒绝，不影响站内信',async()=>{await invoke(p,'rn:request');assert.equal(await p.locator('[role=dialog][aria-labelledby=rn-permission-title]').count(),1);await invoke(p,'rn:permission:denied');assert.equal((await snapshot(p)).items.length,4);await invoke(p,'rn:help');assert.match(await p.locator('.rn-help').innerText(),/系统设置/);});
+ await check('同一事件去重；过期盖世账号事件丢弃',async()=>{const before=(await snapshot(p)).items.length;assert(await emit(p,'completed',target,'unique-event'));assert.equal(await emit(p,'completed',target,'unique-event'),false);assert.equal((await snapshot(p)).items.length,before+1);assert.equal(await emit(p,'completed',target,'stale-event',{owner:'another-owner'}),false);assert.equal((await snapshot(p)).items.length,before+1);});
+ await check('成功预览对应主题后清通知未读',async()=>{const rec=(await snapshot(p)).items.find(x=>x.eventId==='unique-event');await invoke(p,'rn:target:'+rec.id+':preview');assert.equal((await snapshot(p)).open,false);assert.equal(await p.evaluate(()=>RemoteNotificationAdapter.current().thread),target.thread);assert.equal((await snapshot(p)).items.find(x=>x.id===rec.id).read,true);});
+ await check('前台正在看的主题不重复Push',async()=>{await invoke(p,'rn:permission:granted');await emit(p,'completed',target,'foreground-event');const x=await snapshot(p);assert.equal(x.push,null);assert.equal(x.items.find(x=>x.eventId==='foreground-event').read,true);});
+ await check('后台Push只通用文案，点击定位电脑客户端',async()=>{await invoke(p,'rn:background');await emit(p,'needs-approval',target,'background-event');let x=await snapshot(p);assert(x.push);assert.equal(x.items.find(x=>x.eventId==='background-event').read,false);const text=await p.locator('.rn-push').innerText();assert(text.includes('待批准'));assert(!text.includes(target.title));assert(!text.includes(target.deviceName));await shot('push');await p.locator(sel('rn:push-open')).click();await p.waitForFunction(()=>s.page==='session'&&!s.modal);assert.equal(await p.evaluate(()=>RemoteNotificationAdapter.current().thread),target.thread);x=await snapshot(p);assert.equal(x.items.find(x=>x.eventId==='background-event').read,true);assert.equal(x.push,null);await shot('client');});
+ await check('拒绝系统权限与关闭应用提醒均仅入站内信',async()=>{await invoke(p,'rn:background');await invoke(p,'rn:permission:denied');await emit(p,'error',target,'blocked-event');assert.equal((await snapshot(p)).push,null);assert((await snapshot(p)).items.some(x=>x.eventId==='blocked-event'));await invoke(p,'rn:permission:granted');await invoke(p,'rn:toggle');await emit(p,'error',target,'disabled-event');assert.equal((await snapshot(p)).push,null);await invoke(p,'rn:foreground');});
+ await check('失效目标与跨AI账号点击拦截且保留未读',async()=>{await emit(p,'error',{...target,thread:'missing-topic'},'missing-event');let rec=(await snapshot(p)).items.find(x=>x.eventId==='missing-event');await invoke(p,'rn:target:'+rec.id+':client');assert.equal((await snapshot(p)).open,true);assert.equal((await snapshot(p)).items.find(x=>x.id===rec.id).read,false);assert(await p.locator('.rn-notice').isVisible());await emit(p,'error',{...target,aiAccount:'different-ai'},'ai-mismatch-event');rec=(await snapshot(p)).items.find(x=>x.eventId==='ai-mismatch-event');await invoke(p,'rn:target:'+rec.id+':client');assert.match(await p.locator('.rn-notice').innerText(),/账号/);assert.equal((await snapshot(p)).items.find(x=>x.id===rec.id).read,false);});
+ await check('加载、错误恢复和空态',async()=>{await invoke(p,'rn:demo:loading');assert.match(await p.locator('.rn-blank').innerText(),/正在获取/);await invoke(p,'rn:demo:error');assert.match(await p.locator('.rn-blank').innerText(),/无法获取/);await invoke(p,'rn:retry');assert.equal((await snapshot(p)).phase,'ready');await invoke(p,'rn:demo:empty');assert.match(await p.locator('.rn-blank').innerText(),/暂无消息/);await shot('empty');await invoke(p,'rn:demo:all');await invoke(p,'rn:filter:all');});
+ await check('主导航离开消息中心，入口不遮挡原页面',async()=>{await invoke(p,side==='mobile'?'mobile-tab:profile':'rom:devices');assert.equal((await snapshot(p)).open,false);assert.equal(await p.locator('.rn-center').count(),0);if(side==='mobile')assert.equal(await p.locator(sel('remote-scan-open')).count(),1);await invoke(p,side==='mobile'?'mobile-tab:ai':'rom:sessions');await invoke(p,'rn:open');});
+ await check('英文切换和窄屏不溢出',async()=>{await p.locator('[data-remote-language=en]').click();assert.equal(await p.locator('.rn-center h1').innerText(),'Notifications');assert.match(await p.locator('.rn-permission').innerText(),/Push notifications/);await p.setViewportSize({width:side==='mobile'?390:1000,height:1050});const sizes=await p.locator('.rn-center').evaluate(e=>({client:e.clientWidth,scroll:e.scrollWidth}));assert(sizes.scroll<=sizes.client+1);await shot('narrow-en');await p.locator('[data-remote-language=zh]').click();});
+ await check('退出清消息、待Push和旧账号上下文',async()=>{const previous=(await snapshot(p)).owner;await p.evaluate(side=>{if(side==='mobile')mobileReturnLogin();else {standaloneMac.signed=false;render();}},side);const x=await snapshot(p);assert.equal(x.items.length,0);assert.equal(x.push,null);assert.equal(x.owner,'');assert.equal(await emit(p,'completed',target,'after-logout',{owner:previous}),false);assert.equal(await p.locator('.rn-entry').count(),0);});
+ await p.close();
+}
+ assert.equal(report.errors.length,0);report.pass=true;
+}catch(e){report.errors.push(e.stack);process.exitCode=1;}finally{await b.close();fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({pass:report.pass,checks:report.checks.length,errors:report.errors}));}})();
