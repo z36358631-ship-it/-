@@ -7,12 +7,21 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from PIL import Image
-import zipfile, re, hashlib, json
+import zipfile, re, hashlib, json, argparse, urllib.parse
 
 ROOT = Path(__file__).resolve().parent
-HTML = ROOT / 'prd.html'
-OUT = ROOT / '盖世远程PRD-V4.12-Word图片内嵌版.docx'
+ap=argparse.ArgumentParser()
+ap.add_argument('--html',default='prd.html')
+ap.add_argument('--out',default='盖世远程PRD-V4.16-Word图片内嵌版.docx')
+ap.add_argument('--version',default='V4.16')
+ap.add_argument('--image-map')
+ap.add_argument('--report',default='feishu-docx-check.json')
+args=ap.parse_args()
+HTML = ROOT / args.html
+OUT = ROOT / args.out
+image_map=json.loads(Path(args.image_map).read_text(encoding='utf-8')) if args.image_map else {}
 
 class Node:
     def __init__(self, tag=None, attrs=None, parent=None, text=None):
@@ -75,22 +84,23 @@ def text_of(n):
 
 def img_path(node):
     src=node.attrs.get('src','')
-    if src.startswith('data:'): return None
-    return (HTML.parent / src).resolve()
+    if src in image_map:return Path(image_map[src]).resolve()
+    if src.startswith(('data:','http:','https:')):raise ValueError('Unmapped image: '+src)
+    return (HTML.parent / urllib.parse.unquote(src)).resolve()
 
 def add_image(run, node, in_cell=False):
     path=img_path(node)
     if not path or not path.exists():
-        run.add_text('[图片缺失]')
-        return
+        raise FileNotFoundError('图片缺失：'+node.attrs.get('src',''))
     try:
         with Image.open(path) as im: w,h=im.size
-        max_w = 3.15 if in_cell else 6.2
-        max_h = 4.0 if in_cell else 5.2
+        max_w = min(2.8 if h/w>1.3 else 5.65,float(in_cell)) if in_cell else 6.75
+        max_h = 4.35 if in_cell else 5.2
         scale=min(max_w/(w/96), max_h/(h/96), 1.0)
-        run.add_picture(str(path), width=Inches((w/96)*scale), height=Inches((h/96)*scale))
+        shape=run.add_picture(str(path), width=Inches((w/96)*scale), height=Inches((h/96)*scale))
+        shape._inline.docPr.set('descr',node.attrs.get('alt','页面配图'))
     except Exception:
-        run.add_picture(str(path), width=Inches(3.15 if in_cell else 5.8))
+        raise ValueError('Image could not be embedded: '+str(path))
 
 def inline(paragraph, nodes, bold=False, italic=False, in_cell=False):
     for n in nodes:
@@ -106,15 +116,31 @@ def inline(paragraph, nodes, bold=False, italic=False, in_cell=False):
         if tag in ('em','i'): inline(paragraph,n.children,bold,True,in_cell); continue
         if tag=='code':
             r=paragraph.add_run(text_of(n)); r.font.name='Consolas'; r.font.size=Pt(8.5); continue
-        if tag=='a': inline(paragraph,n.children,bold,italic,in_cell); continue
+        if tag=='a':
+            url=n.attrs.get('href','')
+            if url.startswith(('http://','https://')):
+                link=OxmlElement('w:hyperlink');link.set(qn('r:id'),paragraph.part.relate_to(url,RT.HYPERLINK,is_external=True))
+                run=OxmlElement('w:r');props=OxmlElement('w:rPr');style=OxmlElement('w:rStyle');style.set(qn('w:val'),'Hyperlink');props.append(style);run.append(props)
+                val=OxmlElement('w:t');val.text=text_of(n);run.append(val);link.append(run);paragraph._p.append(link)
+            else:inline(paragraph,n.children,bold,italic,in_cell)
+            continue
         inline(paragraph,n.children,bold,italic,in_cell)
 
 def render_cell(cell, node):
     cell.text=''; cell.vertical_alignment=WD_CELL_VERTICAL_ALIGNMENT.TOP; set_cell_margins(cell)
-    # Render every child in source order; filtering tags discarded strong/em/a.
-    para=cell.paragraphs[0]
-    para.paragraph_format.space_after=Pt(2)
-    inline(para,node.children,in_cell=True)
+    chunks=[[]]
+    for n in node.children:
+        if n.tag=='br':chunks.append([])
+        else:chunks[-1].append(n)
+    used=False
+    for chunk in chunks:
+        if not chunk or not any(text_of(n).strip() or n.tag=='img' for n in chunk):continue
+        para=cell.paragraphs[0] if not used else cell.add_paragraph();used=True
+        para.paragraph_format.space_after=Pt(1.5)
+        inline(para,chunk,in_cell=max(0.3,cell.width.inches-0.21))
+        has_img=any(n.tag=='img' for n in chunk)
+        if has_img or para.text.strip() in ('图示：','详细说明：','展示说明：','交互说明：'):
+            para.paragraph_format.keep_with_next=True
 
 def render_table(node):
     trs=[]
@@ -125,16 +151,25 @@ def render_table(node):
     walk(node)
     if not trs: return
     maxcols=max(sum(1 for c in tr.children if c.text is None and c.tag in ('td','th')) for tr in trs)
-    table=doc.add_table(rows=0, cols=maxcols); table.style='Table Grid'; table.autofit=True
+    table=doc.add_table(rows=0, cols=maxcols); table.style='Table Grid'; table.autofit=False
+    headers=[text_of(c).strip() for c in trs[0].children if c.tag in ('td','th')]
+    widths=[1.08,5.82] if maxcols==2 else ([1.2,1.5,1.8,2.4] if maxcols==4 else [6.9/maxcols]*maxcols)
+    if headers==['修订日期','修订内容','版本','修订人']:widths=[0.95,4.25,1.25,0.45]
+    if headers==['类型','图示','内容','说明']:widths=[0.65,2.0,1.1,3.15]
+    for col,width in zip(table.columns,widths):col.width=Inches(width)
     for ri,tr in enumerate(trs):
         cells=[c for c in tr.children if c.text is None and c.tag in ('td','th')]
         row=table.add_row().cells
         for ci in range(maxcols):
-            c=row[ci]
+            c=row[ci];c.width=Inches(widths[ci])
             if ci < len(cells):
                 render_cell(c,cells[ci])
                 if ri==0 or cells[ci].tag=='th': set_cell_shading(c,'E9EDF2')
             else: c.text=''
+        if ri==0:
+            head=OxmlElement('w:tblHeader');row[0]._tc.getparent().get_or_add_trPr().append(head)
+            for c in row:
+                for para in c.paragraphs:para.paragraph_format.keep_with_next=True
     doc.add_paragraph().paragraph_format.space_after=Pt(1)
 
 def add_block(node):
@@ -158,8 +193,8 @@ def add_block(node):
                 if c.text is None: add_block(c)
 
 # Intro for the import target.
-title=doc.add_paragraph(style='Title'); title.add_run('盖世远程独立客户端与移动 App PRD V4.12')
-intro=doc.add_paragraph(); intro.add_run('飞书导入版：').bold=True; intro.add_run('本文件已将 PRD 中的本地截图直接内嵌到 Word 文档。请将本 DOCX 文件直接导入飞书，图片不依赖本地 assets 文件夹。')
+title=doc.add_paragraph(style='Title'); title.add_run('盖世远程独立客户端与移动 App PRD '+args.version+' 评审稿')
+intro=doc.add_paragraph(); intro.add_run('飞书导入版：').bold=True; intro.add_run('本文件包含完整需求正文及内嵌图片，可将 DOCX 直接导入飞书。手机适配直接对话保留为技术调研方案，实际接入范围以正文为准。')
 
 for child in main.children:
     if child.text is not None: continue
@@ -171,11 +206,14 @@ for child in main.children:
 # Prevent rows from splitting where possible and set document core props.
 for table in doc.tables:
     for row in table.rows:
-        trPr=row._tr.get_or_add_trPr(); cant=OxmlElement('w:cantSplit'); trPr.append(cant)
+        if sum(len(c.text) for c in row.cells)<350 and not any(c._tc.xpath('.//w:drawing') for c in row.cells):
+            trPr=row._tr.get_or_add_trPr(); cant=OxmlElement('w:cantSplit'); trPr.append(cant)
         for cell in row.cells:
             for para in cell.paragraphs:
                 for run in para.runs: run.font.name='Microsoft YaHei'; run._element.rPr.rFonts.set(qn('w:eastAsia'),'Microsoft YaHei')
-doc.core_properties.title='盖世远程独立客户端与移动 App PRD V4.12'
+for border in list(doc.styles.element.xpath('.//w:pBdr')):border.getparent().remove(border)
+for border in list(doc.element.xpath('.//w:pBdr')):border.getparent().remove(border)
+doc.core_properties.title='盖世远程独立客户端与移动 App PRD '+args.version
 doc.core_properties.subject='飞书导入版，图片已内嵌'
 doc.core_properties.author='盖世远程产品团队'
 doc.save(OUT)
@@ -223,6 +261,6 @@ with zipfile.ZipFile(OUT) as z:
     document_xml=z.read('word/document.xml')
 assert len(saved.inline_shapes)==source_image_count, 'Image references lost during export'
 report={'output':str(OUT),'status':'content-check-passed','headingCount':len(saved_headings),'pageHeadingCount':sum(n.tag=='h4' and text_of(n).startswith(('3.1.','3.2.')) for n in main.children),'sourceHeadingOrderPreserved':True,'tableCount':len(saved.tables),'cellsChecked':checked_cells,'allCellTextPreserved':True,'boldLabelsPreserved':True,'sectionLabels':label_counts,'imageReferences':len(saved.inline_shapes),'embeddedMediaCount':len(media),'mediaFiles':media,'documentHasDrawing':b'<w:drawing' in document_xml,'size':OUT.stat().st_size,'feishuImport':'not-tested-this-revision'}
-(ROOT/'feishu-docx-check.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+(ROOT/args.report).write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(report,ensure_ascii=False))
 
