@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="盖世7.0产品改动分析：Steam新接入、App显示密度、横屏导航与社区布局的范围和推荐方案。"><meta name="color-scheme" content="light"><title>盖世 7.0 产品改动分析</title><style>
+:root{--ink:#1b293d;--muted:#69788b;--line:#e0e7ef;--blue:#2563eb;--wash:#f1f5fa;--white:#fff}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:32px}body{margin:0;background:var(--wash);color:var(--ink);font:15px/1.85 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #93b4ff;outline-offset:4px}.top{height:68px;border-bottom:1px solid var(--line);background:#ffffffd9;display:flex;align-items:center;justify-content:space-between;padding:0 5vw}.brand{font-weight:750;font-size:15px;letter-spacing:1.2px;display:flex;align-items:center;gap:12px}.mark{background:var(--ink);color:white;border-radius:8px;width:30px;height:30px;display:grid;place-items:center;font-size:17px}.top small{color:var(--muted);font-size:12px;letter-spacing:.5px}.wrap{max-width:1510px;margin:auto;padding:55px 5vw 72px}.hero{padding:0 0 38px}.eyebrow{font-size:12px;letter-spacing:2px;color:var(--blue);font-weight:700}h1{font-size:clamp(31px,4vw,49px);line-height:1.3;letter-spacing:-1.2px;margin:12px 0 17px}.intro{font-size:17px;color:#526176;max-width:850px;margin:0 0 23px}.meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12px}.pill{padding:3px 11px;border:1px solid #ccdaf0;color:#315eaa;border-radius:20px;background:#eaf1ff}.layout{display:grid;grid-template-columns:225px minmax(0,1fr);gap:32px;align-items:start}aside{position:sticky;top:28px}.toc-title{font-size:11px;letter-spacing:2px;color:#8593a3;margin:0 0 18px 13px}.toc a{display:flex;gap:12px;color:#5c6b80;line-height:1.6;font-size:13px;padding:10px 12px;border-radius:8px;margin:2px 0}.toc a span{font-size:10px;color:#91a1b5;padding-top:3px}.toc a:hover,.toc a.active{background:#e4ecfa;color:#184fba;text-decoration:none}.side-note{border-top:1px solid var(--line);padding:17px 12px;margin-top:24px;font-size:12px;color:var(--muted)}main{min-width:0}.paper{background:white;border:1px solid var(--line);border-radius:14px;padding:34px 38px;margin-bottom:22px;box-shadow:0 3px 12px #1b293d03}h2{font-size:25px;line-height:1.45;letter-spacing:-.5px;margin:0 0 24px}h3{font-size:19px;line-height:1.6;margin:34px 0 16px;padding-top:23px;border-top:1px solid var(--line)}p{margin:0 0 18px}p:last-child{margin-bottom:0}.paper:first-child>p:first-of-type{font-size:17px;line-height:1.9}.table-scroll{overflow:auto;border:1px solid var(--line);border-radius:9px;margin:22px 0;scrollbar-width:thin}table{width:100%;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.85}th{background:#f3f6fa;text-align:left;color:#41536b;font-weight:650}th,td{padding:14px 16px;vertical-align:top;border-bottom:1px solid var(--line)}tr:last-child td{border-bottom:0}td+td,th+th{border-left:1px solid #edf1f6}td:first-child{font-weight:600;color:#344964;min-width:105px}tbody tr:nth-child(even){background:#fbfcfe}ul,ol{padding-left:22px}code{background:#f0f4f9;padding:2px 5px;border-radius:4px;font-size:.92em}.mobile-toc{display:none}.footer{margin-top:26px;padding:20px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:#8490a0;font-size:12px}.print{border:1px solid #dbe3ed;background:white;color:#526176;padding:7px 14px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}.back{display:inline-block;margin-top:13px}.lead-note{border-left:3px solid #6b96eb;padding:11px 16px;background:#eef4ff;color:#456087;font-size:13px;margin-bottom:26px;border-radius:0 7px 7px 0}
+@media(min-width:1600px){.wrap{padding-left:60px;padding-right:60px}}
+@media(max-width:1050px){.layout{grid-template-columns:190px minmax(0,1fr);gap:20px}.paper{padding:28px 25px}.wrap{padding:38px 3vw}.toc a{padding:9px 8px;font-size:12px}table{font-size:12px}th,td{padding:11px 13px}}
+@media(max-width:760px){.top{padding:0 20px;height:59px}.top small{display:none}.wrap{padding:30px 16px}.hero{padding:0 4px 25px}.intro{font-size:15px}.layout{display:block}aside{display:none}.paper{padding:24px 19px;border-radius:11px;margin-bottom:16px}h2{font-size:22px}h3{font-size:18px}body{font-size:14px}.table-scroll{margin:18px -3px}table{min-width:600px;font-size:13px}.paper:first-child>p:first-of-type{font-size:15px}.mobile-toc{display:block;background:white;border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:18px}.mobile-toc summary{cursor:pointer;color:#40536d;font-weight:600}.mobile-toc nav{padding-top:9px}.footer{gap:20px}.lead-note{font-size:12px}}
+@media print{body{background:#fff;font-size:11px}.top,aside,.mobile-toc,.print,.back{display:none}.wrap{max-width:none;padding:0}.layout{display:block}.paper{border:0;box-shadow:none;padding:0;margin-bottom:30px}h1{font-size:30px}h2{font-size:21px;break-after:avoid}h3{break-after:avoid}.table-scroll{overflow:visible;border-radius:0}table{min-width:0!important;font-size:10px}tr{break-inside:avoid}a{color:inherit}.hero{padding-bottom:20px}.footer{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head>
+<body id="top"><header class="top"><a href="#top" class="brand"><span class="mark">G</span>GAMEHUB <small>PRODUCT REVIEW</small></a><button class="print" type="button" onclick="window.print()">打印 / 保存 PDF</button></header>
+<div class="wrap"><header class="hero"><div class="eyebrow">VERSION 7.0 · 产品方案</div><h1>盖世 7.0 产品改动分析</h1><p class="intro">以 Steam 新体验为基础，补齐盖世 App 的显示密度、横屏导航与社区浏览体验。</p><div class="meta"><span class="pill">产品方案评审稿</span><time datetime="2026-10-30">2026 年 10 月 30 日</time><span>Android · 手机 / 掌机 / 平板</span></div></header>
+<details class="mobile-toc"><summary>查看目录 · 8 个章节</summary><nav class="toc"><a href="#section-1309953"><span>01</span>结论与版本边界</a><a href="#section-2443097"><span>02</span>用户问题与已有解决方式</a><a href="#section-2146329"><span>03</span>参考做法与可借鉴边界</a><a href="#section-1236688"><span>04</span>方案比较与推荐</a><a href="#section-840246"><span>05</span>新增产品方案</a><a href="#section-1920650"><span>06</span>如何输出后续产品方案</a><a href="#section-1677019"><span>07</span>最小验证与待定参数</a><a href="#section-1107529"><span>08</span>依据与方案状态</a></nav></details><div class="layout"><aside><div class="toc-title">CONTENTS / 目录</div><nav class="toc" aria-label="章节导航"><a href="#section-1309953"><span>01</span>结论与版本边界</a><a href="#section-2443097"><span>02</span>用户问题与已有解决方式</a><a href="#section-2146329"><span>03</span>参考做法与可借鉴边界</a><a href="#section-1236688"><span>04</span>方案比较与推荐</a><a href="#section-840246"><span>05</span>新增产品方案</a><a href="#section-1920650"><span>06</span>如何输出后续产品方案</a><a href="#section-1677019"><span>07</span>最小验证与待定参数</a><a href="#section-1107529"><span>08</span>依据与方案状态</a></nav><div class="side-note">既有 Steam 与存档方案继续沿用。新增交互为推荐方案，具体参数需设计与真机验证。<br><a href="#top" class="back">返回顶部 ↑</a></div></aside><main><div class="lead-note">本页为产品分析与设计讨论输入。范围涵盖改动总览、方案取舍、交互边界与验证条件。</div><section class="paper"><h2 id="section-1309953">一、结论与版本边界</h2>
+<p>建议将 7.0 组织为“Steam 新体验＋盖世浏览体验适配”两条主线。Steam 已有方案继续推进真实接入；新增产品工作集中在盖世自有界面的显示密度、横屏导航和社区内容布局。网络可达性作为 Steam 交付依赖，云存档走已有专项，皮肤留在后续需求池。</p>
+<p>不能把“整页缩小”直接当作解决方案：卡片和导航占位、接口供给数量、阅读字号、触控热区与手柄焦点是不同约束。只有同一屏幕能浏览更多有效内容，且仍能读、能点、能返回，才算改善。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>工作包</th>
+<th>当前证据与状态</th>
+<th>建议如何承接</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Steam 接入与存量承接</td>
+<td>已有模式、声明、准备、账号、悬浮球、好友/工坊、启动落地和 PC 游戏承接方案；真实能力尚待联调</td>
+<td>沿用现稿，集中验证进入、运行、返回、账号和本机游戏迁移，不重做产品方案</td>
+</tr>
+<tr>
+<td>网络可达性</td>
+<td>会议提出国内网页/社区体验问题；既有稿尚无确定线路服务方案</td>
+<td>单列能力验证与异常体验，不把线路、收费、资质讨论写成已确定事实</td>
+</tr>
+<tr>
+<td>盖世显示密度</td>
+<td>会议明确大图和低屏效比问题；现稿仅有 Steam 内容缩放</td>
+<td>新增产品专项，与 Steam 内容缩放分开，先验证代表页</td>
+</tr>
+<tr>
+<td>横屏导航与社区布局</td>
+<td>会议讨论多层导航、右侧常驻区、图片尺寸及接口数量；具体收纳交互未定</td>
+<td>与显示密度合并设计、分别验收，避免三套规则互相冲突</td>
+</tr>
+<tr>
+<td>云存档分享</td>
+<td>已有 10 月 29 日 V1.16 专项及对应 Demo</td>
+<td>复用专项；补核对新 Steam 启动、云同步、盖世存档应用之间的时序与兼容，不重建分享方案</td>
+</tr>
+<tr>
+<td>皮肤与主题</td>
+<td>会议结尾明确核心功能优先、后续参考</td>
+<td>后置；当前不纳入换肤、付费或插件商用承诺</td>
+</tr>
+</tbody>
+</table></div>
+<p>“带新 Steam 的版本叫 7.0、年末给用户惊喜”来自任务附件中的发言。它可作为版本背景，不能据此推导已承诺的发布日期、研发工期或上述所有项目均需同期上线。</p>
+</section><section class="paper"><h2 id="section-2443097">二、用户问题与已有解决方式</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>用户与场景</th>
+<th>当前问题/解决方式</th>
+<th>本轮要改善的结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>掌机横屏浏览主页、社区、游戏圈</td>
+<td>多层导航及大卡片压缩内容区；用户继续滚动、切分区，手柄还需逐个移动焦点</td>
+<td>少滚动即可比较内容，分区、发布与返回仍可达</td>
+</tr>
+<tr>
+<td>手机小屏浏览同一内容</td>
+<td>会议中已有人指出缩小后文字难读、难操作</td>
+<td>默认可读；用户选择紧凑时不牺牲关键文字和触控能力</td>
+</tr>
+<tr>
+<td>平板/折叠屏使用大窗口</td>
+<td>内容没有充分利用可用空间；单个大图可能占据较大区域</td>
+<td>随窗口重排内容，不只把图片铺得更大</td>
+</tr>
+<tr>
+<td>国内玩家使用新 Steam 原生页面</td>
+<td>原有部分 API 页面可用性不能代表新原生网页可达；用户可能依赖外部网络服务，覆盖率未测</td>
+<td>能区分登录、下载、社区/工坊故障，不因局部失败丢失已有可用能力</td>
+</tr>
+<tr>
+<td>升级用户进入游戏或使用存档</td>
+<td>老账号、本机导入游戏、Steam 启动与盖世存档流程需要衔接</td>
+<td>不丢游戏入口，不误把导入游戏当 Steam 购买权益，不误覆盖存档</td>
+</tr>
+</tbody>
+</table></div>
+<p>任务提供的竖屏主页截图可确认搜索、分类、推荐大卡和底部导航结构；不能证明这张图对应会议中每一个横屏页面。已查阅的 6.2.0 横屏社区截图本身已有错落双列，因此本轮的价值应是改善尺寸、图片高度和常驻区域占用，不是笼统地“新增双列/瀑布流”。它与 7.0 存在版本差异，不能直接当作最终设计基线。</p>
+</section><section class="paper"><h2 id="section-2146329">三、参考做法与可借鉴边界</h2>
+<p>以下为官方文档核对与已有项目证据，未声称完成竞品全流程实机体验。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>产品/规范</th>
+<th>解决的问题与具体表现</th>
+<th>盖世可借鉴</th>
+<th>不直接照搬</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a target="_blank" rel="noopener noreferrer" href="https://support.microsoft.com/en-gb/outlook/change-the-look-of-your-mailbox-in-outlook-com-and-outlook-on-the-web">Outlook 网页版显示密度</a></td>
+<td>邮件列表提供 Roomy、Cozy、Compact；调整间距和部分预览呈现</td>
+<td>把“更多内容/更舒适”做成可理解、有限的档位</td>
+<td>邮件可省略附件预览，不代表盖世可删游戏信息、置顶或互动入口</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener noreferrer" href="https://support.google.com/youtube/answer/6052392?hl=en-ca">YouTube 播放器尺寸</a></td>
+<td>播放器随可用窗口变化，剧场模式扩大内容区但不进入系统全屏</td>
+<td>区分“内容区域扩大”和“离开当前页面/系统全屏”</td>
+<td>视频是单内容场景，不能据此证明信息流自动收起导航一定更好</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener noreferrer" href="https://developer.android.com/develop/ui/views/layout/use-window-size-classes">Android 窗口尺寸分类</a></td>
+<td>根据 App 可用窗口宽高调整布局，旋转、折叠和分屏可能改变可用空间</td>
+<td>同档位按实际空间重排，不能只按“手机/平板”标签判断</td>
+<td>不直接把平台通用断点当作盖世卡片的最终断点</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener noreferrer" href="https://developer.android.com/guide/topics/ui/accessibility/views/apps-views">Android 触控目标建议</a></td>
+<td>推荐可交互区域至少 48×48dp，视觉图标与热区可不同</td>
+<td>紧凑布局需保留可点区域，同时验证相邻热区不重叠</td>
+<td>48dp 是平台建议，不是当前盖世已经达到的实测结论</td>
+</tr>
+<tr>
+<td>现有 Steam 新接入方案</td>
+<td>已区分大屏/窗口、盖世启动落地、Steam 内容缩放与宿主控件</td>
+<td>沿用能力边界，避免两个缩放设置相互覆盖</td>
+<td>不把现有 Steam 100%—150%范围移植为盖世全局缩放范围</td>
+</tr>
+</tbody>
+</table></div>
+<p>会议提到的小黑盒多线路及“零成本”方式仅是待查证线索，本轮未取得服务成本、可达范围或授权证据，不据此推荐具体供应商或商业化方式。</p>
+</section><section class="paper"><h2 id="section-1236688">四、方案比较与推荐</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>路径</th>
+<th>好处</th>
+<th>代价/缺口</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A：整个界面按百分比缩放</td>
+<td>交互表面简单，接近会议中的直接描述</td>
+<td>不解决固定数据量、布局占位和焦点；字号、按钮一起变小；技术投入也不能仅凭表面判断</td>
+<td>不推荐直接采用</td>
+</tr>
+<tr>
+<td>B：有限显示密度＋自适应卡片＋横屏导航恢复</td>
+<td>分别处理内容量、阅读操作和空间占用，可复用现有页面</td>
+<td>需要设计、客户端、接口/运营共同确认；导航收纳须验证</td>
+<td>推荐进入产品设计</td>
+</tr>
+<tr>
+<td>C：全站重构、全面瀑布流并引入皮肤/新活跃体系</td>
+<td>可调整更多结构</td>
+<td>超出本次核心问题，叠加未知依赖，难以判断收益来自哪项变化</td>
+<td>当前不采用</td>
+</tr>
+</tbody>
+</table></div>
+<p>最小验证先比较同一内容、同一设备上的标准与紧凑布局，证明收益后再决定宽松档和覆盖页。全局适配是长期覆盖目标，不能把三个代表页通过写成“所有页面已适配”，也不默认让所有自有页面改版成为 7.0 发布前提。</p>
+</section><section class="paper"><h2 id="section-840246">五、新增产品方案</h2>
+<h3 id="section-8902856">5.1 显示密度：控制内容占位，同时保护阅读和操作</h3>
+<p>建议在盖世现有通用设置中增加“显示密度”，候选为紧凑、标准、宽松，初始标准。三档是本轮推荐，不是已经确认的需求；进入设计后先比较标准/紧凑，若宽松对目标用户没有独立价值，则不保留第三档。具体比例、字号、卡片最小宽度和断点在同版本基线与真机对比后确定，不用会议中的 60%、70%作为既定参数。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>推荐规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>紧凑</td>
+<td>优先减少大图高度、重复留白、过高卡片和导航占位；文字达到可读下限后不继续缩小。空间足够时增加可比较的卡片，不保证每台设备都增加列数</td>
+</tr>
+<tr>
+<td>标准</td>
+<td>以确认后的现有页面为起点；新装、旧版缺配置及未知配置值均回到标准</td>
+</tr>
+<tr>
+<td>宽松候选</td>
+<td>增大阅读与操作空间；允许减少列数，不允许重要文字或操作被裁掉。系统大字体仍须生效，不能被紧凑档抵消</td>
+</tr>
+<tr>
+<td>生效与记忆</td>
+<td>建议选择后直接生效并保存为本机偏好；再次选择标准即可恢复。切账号不改本机密度；不新增云同步设置</td>
+</tr>
+<tr>
+<td>旋转与窗口变化</td>
+<td>保留密度选择，按当前窗口重排；空间不足时减少列数，不修改用户已保存档位</td>
+</tr>
+<tr>
+<td>原位置</td>
+<td>返回内容页时保留原内容及阅读位置。不能仅保留滚动像素或第几张卡，因为重排会改变位置；内容失效时落到相邻有效项</td>
+</tr>
+<tr>
+<td>作用边界</td>
+<td>面向盖世自有界面逐页适配；Steam 原生界面、游戏渲染和系统授权界面不受这个设置控制；已有 Steam 缩放规则继续独立</td>
+</tr>
+</tbody>
+</table></div>
+<p>先验证主页推荐、社区信息流、游戏圈/分区三个代表页，并在清单中标明已适配页面。设置页、详情、搜索等自有页面是否同期覆盖，应由页面盘点和能力确认后定范围，不以“全局”二字隐含承诺。</p>
+<h3 id="section-10211277">5.2 横屏导航：进入内容浏览后收纳，返回先恢复导航</h3>
+<p>会议想解决的是横屏内容区被多层导航压缩。建议将“导航展开”和“内容浏览”定义为同一页面的两种状态；不新建一个全屏页面。优先验证横屏社区及游戏圈，不把这套行为直接套给手机竖屏或所有主页模块。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>首次进入</td>
+<td>导航完整展开；选中的社区栏目、分区保持可见</td>
+</tr>
+<tr>
+<td>用户持续向下浏览</td>
+<td>候选触发为主动滚动离开首屏内容区后，收起上层重复导航；手柄只有焦点已进入内容区才允许收起。精确阈值待原型验证；首屏自动加载、重排和程序恢复位置不能触发</td>
+</tr>
+<tr>
+<td>内容浏览状态</td>
+<td>保留返回/恢复控件、当前位置标题、必要分区切换及已有发布操作；不能把跨分区能力全部藏掉。右侧操作过多时先压缩信息层级，不叠加多行常驻导航</td>
+</tr>
+<tr>
+<td>反向滚动</td>
+<td>候选沿用会议方向，不因反向滚动反复展开；如真机验证用户找不到导航，则回退为常驻精简导航，不强推自动收纳</td>
+</tr>
+<tr>
+<td>返回或手柄 B</td>
+<td>先关闭当前最上层已有弹层/输入状态；在详情则先回原列表；处于内容浏览列表时一次操作只恢复导航，保留阅读位置；导航已展开时再按原页面返回规则执行，不新增退出规则</td>
+</tr>
+<tr>
+<td>恢复之后</td>
+<td>保持展开，直到用户再次主动向下浏览才允许收起，避免当前位置仍在首屏之外而立即再次收起</td>
+</tr>
+<tr>
+<td>切换分区、旋转</td>
+<td>恢复导航；分区切换沿用原分区列表规则，旋转保留当前内容位置。回列表可恢复原浏览状态，但不因恢复动作触发新一次收纳</td>
+</tr>
+<tr>
+<td>手柄焦点</td>
+<td>被隐藏的控件退出焦点路径；按 B 恢复时回到收纳前有效导航控件，或当前分区项。密度重排保持当前内容项，内容失效才转移到相邻有效项</td>
+</tr>
+</tbody>
+</table></div>
+<p>需重点比较“原有导航、常驻精简导航、浏览时收纳”三种表现。只有收纳方案在找内容、切分区、发布、返回四项任务中确有净收益才采用；会议讨论不等于交互已经定案。</p>
+<h3 id="section-12165351">5.3 社区与主页：先治理卡片和右栏，再决定是否改变排列方式</h3>
+<p>主页推荐卡和社区帖子服务不同任务，不能共用一套缩小系数。主页保留游戏名称、封面、评分/类型和既有入口关系；社区保留作者、内容摘要、必要媒体及互动操作。现有功能不因密度提高被删除。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>推荐处理</th>
+<th>需要避免</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主页大卡</td>
+<td>调整封面与文字区的比例，压缩过高留白；宽窗口在可读前提下重排，窄窗口保留单列</td>
+<td>仅把大图换成小图，卡片外框仍占同样高度；为了多显示而改变推荐排序</td>
+</tr>
+<tr>
+<td>社区单图/多图</td>
+<td>沿用已有单图横竖比例和多图规则，约束列表媒体区高度；原图继续从既有图片查看路径打开</td>
+<td>从旧截图反推当前规则；三图重新变成大幅逐张铺开；拉伸图片</td>
+</tr>
+<tr>
+<td>列数与顺序</td>
+<td>依据可用宽度和卡片最小可读宽度决定；保留业务排序并确定可预测的视觉和手柄遍历顺序</td>
+<td>固定“横屏必须三列”；每次图片加载后重新排列导致焦点跳走</td>
+</tr>
+<tr>
+<td>右侧常驻信息</td>
+<td>先按实际页面核对分区介绍、置顶和发布等对象。建议重复介绍收纳成当前分区内可展开的简短区域；重要置顶标题仍可见并沿原入口进入，发布入口保持可达</td>
+<td>尚未确认7.0右栏结构就直接删掉；把原常驻能力藏入新的多级页面</td>
+</tr>
+<tr>
+<td>瀑布流</td>
+<td>作为对比候选；已有错落双列可继续优化。若调整后手柄阅读顺序不稳定，优先保留可预测布局</td>
+<td>将“做瀑布流”当作会议已批准结论或唯一解决路径</td>
+</tr>
+<tr>
+<td>数据供给</td>
+<td>可分页信息流沿用真实分页能力；固定数量运营模块按实际有效数据展示，是否增加配置量另与运营确认</td>
+<td>重复请求同一批数据、复制卡片填格、要求运营按列数凑倍数</td>
+</tr>
+</tbody>
+</table></div>
+<p>空数据使用原空态，不留下空白大卡；仅一项或最后一行不足不强行放大铺满；加载失败保留已显示内容；图片失败沿用现有占位且保持布局稳定；无更多数据停止请求。密度变化不清空筛选或排序，也不冒充刷新成功。</p>
+<h3 id="section-8655095">5.4 网络：先明确哪些能力受影响，再决定服务方案</h3>
+<p>将登录、游戏文件下载、商店、社区/好友、工坊及原目标跳转分别核查。已有 API 可用不证明原生页面可用；网页失败也不能直接判定账号失效。国内和海外按实际目标网络分别验证，不给所有用户统一展示“需要加速”。</p>
+<p>推荐先复用团队已有且经验证的网络服务。进入具体能力失败时，在该能力当前页面/既有错误区域说明阶段并提供已有重试/返回路径，保留原目标；不要另建一套网络诊断中心或收费流程。单页面请求失败不主动阻断其他已可用能力，但共享登录、公共组件和线路故障可能影响多项，不能承诺完全隔离。</p>
+<p>若现有服务不能满足：把受影响能力、地区、可用替代路径、成本和服务约束列成独立决策项，决定延期该能力或接入经评估的服务。不能默认允许降级核心承诺，也不能用“后续加速”掩盖上线时不可用。会议关于线路成本、VPN资质的说法不作为本轮技术或法律结论。</p>
+<h3 id="section-10881137">5.5 存档联动：沿用专项，补齐新启动链路的实际时序</h3>
+<p>现有 V1.16 已处理适用平台、手填版本与实际 BuildID 区别、DLC/MOD展示、先发后审及应用后手动启动。本轮不改这些已确认规则。</p>
+<p>需要联调核对三个问题：新 Steam 启动前是否执行原生云同步、盖世存档在何时写入、随后是否会被原生同步覆盖。产品结果应是用户应用的目标存档在下次手动启动中生效；在覆盖关系未核实前不承诺自动协同，也不新增覆盖确认弹窗来代替技术核对。</p>
+<p>会议中的“Steam 所有游戏都支持”不能作为验收结论。热门导入游戏逐款核实路径、版本、DLC及账号关联；发布了存档、填写了版本说明，不等于证明可以跨平台使用。</p>
+</section><section class="paper"><h2 id="section-1920650">六、如何输出后续产品方案</h2>
+<p>建议用一份 7.0 总览统筹范围，按三份专项承接细节，避免重复维护同一规则。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>产物</th>
+<th>本轮已有/下一步内容</th>
+<th>进入后续工作的条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7.0 产品改动总览</td>
+<td>本文：范围、已有覆盖、差异项、优先顺序、未决依赖</td>
+<td>由产品负责人确认本期纳入范围，不把所有候选直接转成开发任务</td>
+</tr>
+<tr>
+<td>Steam 接入专项</td>
+<td>沿用既有 Demo/PRD；补网络验证、运行/邀请桥接和迁移结果</td>
+<td>真实组件、账号和运行结果有证据；原型成功不能替代</td>
+</tr>
+<tr>
+<td>App 显示与横屏布局专项</td>
+<td>后续在现有页面制作标准/紧凑、导航展开/收纳和右栏对比；确认后写设置页、主页、社区、游戏圈的具体规则</td>
+<td>获取7.0同版本横竖屏基线及现有接口/运营配置能力；先做代表页，不先改全站</td>
+</tr>
+<tr>
+<td>云存档专项</td>
+<td>沿用 V1.16；仅将新 Steam 同步时序和实际兼容结果回写原专项</td>
+<td>确认不会覆盖用户选择的存档；未知兼容不得标支持</td>
+</tr>
+</tbody>
+</table></div>
+<p>推荐顺序：先保住 Steam 启动与存量用户连续性；同步核实网络依赖；显示专项先做尺寸/卡片对比，再验证导航收纳，最后确定右栏和扩展页面。存档按专项并行核对依赖，皮肤后置。没有研发产能和联调结果，不给虚构的天数或上线承诺。</p>
+</section><section class="paper"><h2 id="section-1677019">七、最小验证与待定参数</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="可横向滚动的对比表"><table>
+<thead>
+<tr>
+<th>验证任务</th>
+<th>通过条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同内容比较标准/紧凑</td>
+<td>同设备、同数据、同位置，紧凑能展示更多可辨认的完整内容单元；若只有图片变小而信息量未增加，不算收益</td>
+</tr>
+<tr>
+<td>阅读与操作</td>
+<td>目标手机、掌机、平板均能阅读关键文字，触控不误触，手柄能到达分区、帖子、发布和返回；覆盖系统大字体</td>
+</tr>
+<tr>
+<td>密度重排/旋转</td>
+<td>当前内容和阅读位置不丢，焦点不进入隐藏控件；分区/排序不变</td>
+</tr>
+<tr>
+<td>导航恢复</td>
+<td>详情→原列表→恢复导航→原返回路径分层执行；一次返回不同时触发两个动作；恢复后不立即再收起</td>
+</tr>
+<tr>
+<td>数据与图片边界</td>
+<td>0、1、未满一行、固定两条、分页结束、加载/图片失败均有稳定显示；无复制内容或无效重复请求</td>
+</tr>
+<tr>
+<td>Steam 连续性</td>
+<td>旧账号、本机已下载/导入项、目标游戏和邀请上下文能够承接，运行成功有真实回执</td>
+</tr>
+<tr>
+<td>网络与存档</td>
+<td>分能力获得实际结果；单个页面失败不错误退出已可用会话；实际验证同步先后和存档生效</td>
+</tr>
+</tbody>
+</table></div>
+<p>目前仍需设计/研发拿到：7.0同版本横屏基线、卡片及导航尺寸、接口固定/分页能力、目标机型与可用窗口、网络服务边界、原生同步时序。档位数量、比例、断点、收纳阈值、右栏形态是设计验证参数，不是阻止本轮产品分析交付的问题，也不应被写成已确定规格。</p>
+</section><section class="paper"><h2 id="section-1107529">八、依据与方案状态</h2>
+<p>本方案依据2026年10月27日《郑群超的视频会议》42分47秒文字记录、当前Steam接入方案、10月29日云存档V1.16专项、任务提供的主页截图，以及6.2.0历史横屏截图形成。原始会议转写优先于AI摘要；7.0同版本横屏基线仍需补齐。</p>
+<p>会议中的“返回上一级”摘要已纠正为退出内容浏览状态、恢复导航与阅读位置；悬浮球开关沿用后续已确认的无开关规则。具体密度档位、布局断点、收纳阈值和右栏形态仍属推荐方案，须经过设计及真机验证。</p>
+<p>本文已完成用户、开发、投入三个视角的产品分析复核，适合作为范围和设计讨论输入。它不替代完整PRD、真实服务联调或上线验收。</p>
+<p>正式参考见第三章各官方文档链接。已确认的Steam与存档专项保持沿用，本页不改变其现行规则。</p></section><footer class="footer"><span>GAMEHUB · 7.0 产品方案</span><a href="#top">返回顶部 ↑</a></footer></main></div></div>
+<script>const links=[...document.querySelectorAll('aside .toc a')];const sections=[...document.querySelectorAll('main h2')];function mark(){let current=sections[0];for(const section of sections){if(section.getBoundingClientRect().top<160)current=section;}for(const link of links){const active=link.hash==='#'+current.id;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}}addEventListener('scroll',mark,{passive:true});mark();document.querySelectorAll('.mobile-toc a').forEach(a=>a.addEventListener('click',()=>document.querySelector('.mobile-toc').open=false));</script></body></html>
