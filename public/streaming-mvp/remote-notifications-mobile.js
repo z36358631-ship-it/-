@@ -1,17 +1,13 @@
-/* Mobile notification bridge. Inbox and Push state belong to remote-notifications.js. */
+/* 手机端 Push 目标与连接守卫。/2026.10.30修改 */
 (()=>{
  'use strict';
  const office=window.RemoteOfficeMobile;
  if(!office)return;
  const L=(zh,en)=>document.documentElement.lang==='en'?en:zh;
  const aiApps={vscode:'ChatGPT',claude:'Claude',workbuddy:'WorkBuddy'};
- let centerOpenFor='';
  const loggedIn=()=>!!mobileAuth.loggedIn;
- const owner=()=>loggedIn()?mobileAuth.region+'|'+mobileAuth.accountPhone:'';
- const sessionKey=()=>owner()+'|'+mobileAuth.generation;
- const centerVisible=()=>!!centerOpenFor&&centerOpenFor===sessionKey();
+ const owner=()=>loggedIn()?mobileAuth.region+'|'+mobileAuth.accountPhone+'|'+mobileAuth.generation:'';
  const activeAccount=(device,app)=>window.RemoteAiAccounts?.active(device,app)||'primary';
- const bell='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>';
  function targets(){
   if(!loggedIn()||s.empty)return [];
   return devices.filter(d=>!isUnsupportedDevice(d)).flatMap(d=>office.data(d.id).threads.filter(t=>Object.hasOwn(aiApps,t.app)).map(t=>({
@@ -25,7 +21,7 @@
   const record=loggedIn()&&Object.hasOwn(aiApps,app)?office.data(device).threads.find(t=>t.id===thread&&t.app===app):null;
   const native=s.page==='office-native'&&!!document.querySelector('.mobile-independent-shell .office-native-workspace');
   const client=s.page==='session'&&office.state.capture===app&&!!office.data(device).windows[app]&&!!document.querySelector('.mobile-independent-shell .office-client-chat');
-  return {device,app,thread,aiAccount:Object.hasOwn(aiApps,app)&&loggedIn()?activeAccount(device,app):'',viewing:!!(record&&!centerVisible()&&!s.modal&&(native||client))};
+  return {device,app,thread,aiAccount:Object.hasOwn(aiApps,app)&&loggedIn()?activeAccount(device,app):'',viewing:!!(record&&!s.modal&&(native||client))};
  }
  function navigate(target,mode='client'){
   const fail=(zh,en)=>({ok:false,error:L(zh,en)});
@@ -44,50 +40,5 @@
   action((mode==='preview'?'office-native:':'office-thread:')+target.device+':'+target.app+':'+target.thread);
   return {ok:true};
  }
- function badge(element,unread){
-  element.querySelectorAll('.rn-badge').forEach(node=>node.remove());
-  const count=Math.max(0,Math.floor(Number(unread)||0));
-  if(!count)return;
-  const mark=document.createElement('span');mark.className='rn-badge';mark.textContent=String(count);
-  mark.setAttribute('aria-label',L(count+' 条未读',count+' unread'));
-  const chevron=element.classList.contains('rn-profile-entry')?element.lastElementChild:null;
-  element.insertBefore(mark,chevron);
- }
- function injectEntry(unread){
-  if(!loggedIn()||centerVisible())return;
-  const shell=document.querySelector('.mobile-independent-shell');
-  if(!shell)return;
-  const label=L('消息通知','Notifications');
-  if(['office-ai','list'].includes(s.page)){
-   const header=shell.querySelector('.head');
-   if(!header)return;
-   let entry=header.querySelector('[data-action="rn:open"]');
-   if(!entry){entry=document.createElement('button');entry.type='button';entry.className='rn-entry';entry.dataset.action='rn:open';entry.innerHTML=bell;header.insertBefore(entry,header.querySelector('.ai-account-entry'));}
-   entry.setAttribute('aria-label',label);entry.title=label;badge(entry,unread);
-  }else if(s.page==='mobile-profile'){
-   const panel=shell.querySelector('.personal-page .personal-panel');
-   if(!panel)return;
-   let entry=panel.querySelector('[data-action="rn:open"]');
-   if(!entry){entry=document.createElement('button');entry.type='button';entry.className='personal-row rn-profile-entry';entry.dataset.action='rn:open';entry.innerHTML=bell+'<span class="grow"><strong></strong></span>'+icon('chevron');panel.insertBefore(entry,panel.firstChild);}
-   entry.querySelector('strong').textContent=label;entry.setAttribute('aria-label',label);badge(entry,unread);
-  }
- }
- function mount(){
-  if(!loggedIn())return null;
-  const shell=document.querySelector('.mobile-independent-shell');
-  if(!shell)return null;
-  centerOpenFor=sessionKey();
-  let host=shell.querySelector(':scope > .rn-page-host');
-  if(host)return host;
-  host=document.createElement('div');host.className='rn-page-host rn-mobile-page-host';
-  host.style.cssText='display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;overflow:hidden;';
-  const status=shell.querySelector(':scope > .status');
-  shell.insertBefore(host,status?status.nextSibling:shell.firstChild);
-  for(const child of [...shell.childNodes]){
-   if(child===host||child===status||child.nodeType===1&&child.matches('.bottom'))continue;
-   host.appendChild(child);
-  }
-  return host;
- }
- window.RemoteNotificationAdapter={platform:'mobile',owner,loggedIn,mount,targets,current,navigate,injectEntry,onOpen:()=>{centerOpenFor=sessionKey();},onClose:()=>{centerOpenFor='';}};
+ window.RemoteNotificationAdapter={platform:'mobile',owner,loggedIn,targets,current,navigate};
 })();
