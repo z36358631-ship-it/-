@@ -1,6 +1,6 @@
 """Export the approved PRD with editable tables and embedded figures."""
 from pathlib import Path
-import re, json, zipfile, urllib.parse
+import re, json, zipfile, urllib.parse, argparse
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.oxml import OxmlElement
@@ -9,7 +9,10 @@ from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
-OUT = ROOT / '盖世游戏Steam接入方案V1.7.docx'
+parser = argparse.ArgumentParser()
+parser.add_argument('--version', default='V1.8')
+VERSION = parser.parse_args().version
+OUT = ROOT / ('盖世游戏Steam接入方案' + VERSION + '.docx')
 doc = Document()
 sec = doc.sections[0]
 sec.page_width, sec.page_height = Inches(8.5), Inches(11)
@@ -24,7 +27,7 @@ for name in ['Normal','Title','Heading 1','Heading 2','Heading 3','Heading 4','H
     st.paragraph_format.space_after = Pt(6)
     st.paragraph_format.line_spacing = 1.18
 doc.core_properties.title = '盖世游戏 Steam 接入方案'
-doc.core_properties.subject = 'V1.7 产品需求与页面规则'
+doc.core_properties.subject = VERSION + ' 产品需求与页面规则'
 doc.core_properties.author = '盖世游戏'
 doc.core_properties.comments = ''
 figures = []
@@ -113,7 +116,7 @@ def markdown(text, appendix=False):
             level=len(h[1]); label=h[2]
             if level==1 and not appendix:
                 doc.add_paragraph('盖世游戏 Steam 接入方案',style='Title')
-                doc.add_paragraph('V1.7  ·  产品需求文档')
+                doc.add_paragraph(VERSION + '  ·  产品需求文档')
             elif level==1: doc.add_heading('6.3 第三方 Steam 服务调用免责声明',level=2)
             else: doc.add_heading(label,level=min(level-1 if not appendix else level,5))
         elif line=='---': pass
@@ -125,12 +128,29 @@ source=(ROOT/'Steam接入PRD-Draft.md').read_text(encoding='utf-8-sig')
 markdown(source)
 doc.add_page_break()
 markdown((ROOT/'免责声明.md').read_text(encoding='utf-8-sig'),appendix=True)
+actual = re.sub(r'\s+', '', ''.join(n.text or '' for n in doc._element.xpath('.//w:t')))
+checked = 0
+for content in [source, (ROOT/'免责声明.md').read_text(encoding='utf-8-sig')]:
+    for line in content.splitlines():
+        line = line.strip()
+        if not line or line.startswith('# ') or line == '---': continue
+        parts = line.strip('|').split('|') if line.startswith('|') else [re.sub(r'^#{1,6}\s+', '', line)]
+        if all(re.fullmatch(r'[\s:\-]+', p) for p in parts): continue
+        for part in parts:
+            part = re.sub(r'!\[[^\]]*\]\([^)]+\)', '', part)
+            part = re.sub(r'\[([^\]]*)\]\([^)]+\)', r'\1', part)
+            part = re.sub(r'<br\s*/?>', '', part).replace('**', '').replace('`', '')
+            part = re.sub(r'\s+', '', part)
+            if part:
+                assert part in actual, 'Missing document text: ' + part[:90]
+                checked += 1
 doc.save(OUT)
 with zipfile.ZipFile(OUT) as z:
     media=[n for n in z.namelist() if n.startswith('word/media/')]
     rel=z.read('word/_rels/document.xml.rels').decode()
     assert 'relationships/image' in rel
     assert not re.search(r'Type="[^"]*/image"[^>]*TargetMode="External"',rel)
-check={'file':OUT.name,'source':'Steam接入PRD-Draft.md','version':'V1.7','tables':len(doc.tables),'imageOccurrences':len(figures),'embeddedImages':len(media),'allImagesEmbedded':True,'disclaimerIncluded':True,'figures':figures,'renderStatus':'pending','feishuImport':'not-tested'}
-(ROOT/'Word导出验证-V1.7.json').write_text(json.dumps(check,ensure_ascii=False,indent=2),encoding='utf-8')
+check={'file':OUT.name,'source':'Steam接入PRD-Draft.md','version':VERSION,'tables':len(doc.tables),'imageOccurrences':len(figures),'embeddedImages':len(media),'allImagesEmbedded':True,'disclaimerIncluded':True,'figures':figures,'renderStatus':'pending','feishuImport':'not-tested'}
+check.update({'textSegmentsChecked':checked, 'missingTextSegments':[]})
+(ROOT/('Word导出验证-'+VERSION+'.json')).write_text(json.dumps(check,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(check,ensure_ascii=False))

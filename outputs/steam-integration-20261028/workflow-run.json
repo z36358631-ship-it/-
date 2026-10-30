@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "90d9c718-41b9-4e77-9025-3ebb1f6a72d9",
   "requirementId": "LOCAL-20261028",
-  "revision": 203,
+  "revision": 220,
   "status": "passed",
   "createdAt": "2026-10-28T01:57:53.1230318Z",
-  "updatedAt": "2026-10-30T02:00:25.4876529Z",
+  "updatedAt": "2026-10-30T09:30:13.8055136Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20261028-steam-integration.md",
   "cardHash": "D4026427D0AFE759C0DB74E935F805C6762903E2EC962357ECD9B4F8D05509F1",
   "contract": {
@@ -23,11 +23,13 @@
       "required": true,
       "dependsOn": [],
       "status": "passed",
-      "attempt": 1,
+      "attempt": 2,
       "inputHashes": [],
       "outputs": [],
-      "evidence": [],
-      "validation": "索引无已有同名需求，创建LOCAL-20261028-steam-integration",
+      "evidence": [
+        "docs/superpowers/plans/2026-10-30-steam-meeting-v18.md"
+      ],
+      "validation": "本轮会议补充已确认，资源位独立，文档和Demo按最小改动并行",
       "error": null,
       "reviewer": null
     },
@@ -39,14 +41,13 @@
         "S1"
       ],
       "status": "passed",
-      "attempt": 1,
+      "attempt": 2,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/experience/体验记录.md",
-        "outputs/steam-integration-20261028/apk-analysis/静态核查.md"
+        "docs/superpowers/plans/2026-10-30-steam-meeting-v18.md"
       ],
-      "validation": "已读用户材料并完成可达范围体验，运行时受阻明确记录",
+      "validation": "本轮会议补充已确认，资源位独立，文档和Demo按最小改动并行",
       "error": null,
       "reviewer": null
     },
@@ -58,13 +59,13 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 9,
+      "attempt": 10,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "prd/workflow-state/LOCAL-20261028-steam-integration.md"
+        "docs/superpowers/plans/2026-10-30-steam-meeting-v18.md"
       ],
-      "validation": "用户明确没有收起功能；截图圈选该按钮；Demo起始游戏库",
+      "validation": "本轮会议补充已确认，资源位独立，文档和Demo按最小改动并行",
       "error": null,
       "reviewer": null
     },
@@ -76,15 +77,16 @@
         "S3"
       ],
       "status": "passed",
-      "attempt": 10,
+      "attempt": 11,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "prd/workflow-state/LOCAL-20261028-steam-integration.md"
+        "outputs/steam-integration-20261028/meeting-v18-evidence/baseline-portrait.png",
+        "outputs/steam-integration-20261028/meeting-v18-evidence/baseline-landscape.png"
       ],
-      "validation": "用户明确没有收起功能；截图圈选该按钮；Demo起始游戏库",
+      "validation": "现有Demo横竖骨架截图作为局部新增基线，不重做原页面",
       "error": null,
-      "reviewer": null
+      "reviewer": "root"
     },
     {
       "id": "S5",
@@ -95,13 +97,14 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 18,
+      "attempt": 19,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/Steam接入PRD-Draft.md"
+        "outputs/steam-integration-20261028/Steam接入PRD-Draft.md",
+        "outputs/steam-integration-20261028/Steam接入Demo.html"
       ],
-      "validation": "9页面六要素，状态与数据完整",
+      "validation": "会议补充文档及Demo已实现，资源位独立说明",
       "error": null,
       "reviewer": null
     },
@@ -113,14 +116,15 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 18,
+      "attempt": 19,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/PRD文案结构验证-V1.7.json",
-        "outputs/steam-integration-20261028/PRD图片验证-V1.7.json"
+        "outputs/steam-integration-20261028/meeting-v18-evidence/验证记录.json",
+        "outputs/steam-integration-20261028/PRD图片验证-V1.8.json",
+        "outputs/steam-integration-20261028/Word导出验证-V1.8.json"
       ],
-      "validation": "结构0错误2提示已核对；18张图片公网通过，飞书未验证",
+      "validation": "新增7项行为与受影响回归通过，结构0错误，21图公网验证；Word仅内容完整性，渲染环境缺失且飞书未测",
       "error": null,
       "reviewer": "root"
     },
@@ -132,15 +136,15 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 18,
+      "attempt": 19,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/PRD内容复核-V1.7.json"
+        "outputs/steam-integration-20261028/PRD内容复核-V1.8.json"
       ],
-      "validation": "独立复核保留规则和10事件18参数，修复3处文档问题",
+      "validation": "修复同步重开遗漏，明确未模拟身份核对分支，人工检查横竖关键状态；真实接入未验证",
       "error": null,
-      "reviewer": "prd_copy_review"
+      "reviewer": "root + meeting_prd_v18"
     },
     {
       "id": "S8",
@@ -153,13 +157,14 @@
         "S7"
       ],
       "status": "passed",
-      "attempt": 18,
+      "attempt": 19,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/PRD在线验证-V1.7.json"
+        "outputs/steam-integration-20261028/PRD在线验证-V1.8.json",
+        "outputs/steam-integration-20261028/Pages在线验证.json"
       ],
-      "validation": "V1.7线上PRD与本地正文一致，结构与18图公网验证通过；Demo及流程图未变更",
+      "validation": "公网PRD/Demo/流程图与本地一致，直达页面与刷新流程通过；Word内容通过但分页及飞书未验证",
       "error": null,
       "reviewer": "root"
     }
