@@ -8,7 +8,7 @@ function remoteScanRead(raw){
  if(!remoteScanActive())return;
  const payload=RemoteQrDemo.parse(raw);
  if(!payload){remoteScanFail('请扫描盖世远程电脑端的登录二维码。');return;}
- if(payload.region!==mobileAuth.region){remoteScanFail('登录地区不同，请在两端选择同一地区后重新扫码。');return;}
+ if(payload.region!==mobileAuth.region){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}
  const record=RemoteQrDemo.get(payload.id);
  if(!record){remoteScanFail('此码无法在当前演示中校验。真实跨设备扫码需要接入账号服务，可用页面外的模拟入口体验流程。');return;}
  if(record.region!==payload.region||!['waiting','scanned'].includes(record.state)){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}

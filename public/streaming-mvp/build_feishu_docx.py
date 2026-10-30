@@ -14,8 +14,8 @@ import zipfile, re, hashlib, json, argparse, urllib.parse
 ROOT = Path(__file__).resolve().parent
 ap=argparse.ArgumentParser()
 ap.add_argument('--html',default='prd.html')
-ap.add_argument('--out',default='盖世远程PRD-V4.20-Word图片内嵌版.docx')
-ap.add_argument('--version',default='V4.20')
+ap.add_argument('--out',default='盖世远程PRD-V4.21-Word图片内嵌版.docx')
+ap.add_argument('--version',default='V4.21')
 ap.add_argument('--image-map')
 ap.add_argument('--report',default='feishu-docx-check.json')
 args=ap.parse_args()

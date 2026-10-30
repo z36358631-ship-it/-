@@ -4,10 +4,10 @@ const RemoteQrDemo=(()=>{
  const memory=new Map();
  function get(id){if(!/^[a-z0-9-]{12,80}$/i.test(id||''))return null;let r;try{r=JSON.parse(localStorage.getItem(prefix+id)||'null')||memory.get(id)||null;}catch{r=memory.get(id)||null;}if(r&&r.expiresAt&&Date.now()>r.expiresAt&&['blocked','waiting','scanned','confirmed'].includes(r.state))r={...r,state:'expired'};return r;}
  function put(record){memory.set(record.id,record);try{localStorage.setItem(prefix+record.id,JSON.stringify(record));}catch{}return record;}
- function create(region,consent=true){const id=typeof crypto.randomUUID==='function'?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);put({kind:'gamehub-remote-login-demo',id,region,consent:!!consent,state:'waiting',createdAt:Date.now(),expiresAt:Date.now()+120000});return id;}
+ function create(region,consent=true){region='domestic';const id=typeof crypto.randomUUID==='function'?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);put({kind:'gamehub-remote-login-demo',id,region,consent:!!consent,state:'waiting',createdAt:Date.now(),expiresAt:Date.now()+120000});return id;}
  function update(id,state,account='',uid=''){const record=get(id);if(!record)return null;if(['confirmed','completed'].includes(state)&&(!record.consent||!['waiting','scanned','confirmed'].includes(record.state)))return null;return put({...record,state,account:account||record.account||'',uid:uid||record.uid||''});}
  function setConsent(id,consent){const record=get(id);if(!record||!['waiting','scanned'].includes(record.state))return null;return put({...record,consent:!!consent});}
  function payload(id){const r=get(id);return r?JSON.stringify({kind:r.kind,id:r.id,region:r.region}):'';}
- function parse(raw){try{const p=JSON.parse(raw);return p.kind==='gamehub-remote-login-demo'&&['domestic','overseas'].includes(p.region)&&/^[a-z0-9-]{12,80}$/i.test(p.id)?p:null;}catch{return null;}}
+ function parse(raw){try{const p=JSON.parse(raw);return p.kind==='gamehub-remote-login-demo'&&p.region==='domestic'&&/^[a-z0-9-]{12,80}$/i.test(p.id)?p:null;}catch{return null;}}
  return {prefix,get,create,update,setConsent,payload,parse};
 })();

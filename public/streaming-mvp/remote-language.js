@@ -42,16 +42,12 @@
 退出后需重新登录才能访问你的设备。|You will need to log in again to access your devices.
 请先勾选协议|Please accept the agreements first
 手机号验证码登录|Log in with phone number
-邮箱验证码登录|Log in with email
 盖世游戏 App 扫码登录|Scan with GameHub App
 手机号|Phone number
 邮箱|Email
 验证码|Verification code
-邮箱验证码|Email verification code
 输入手机号|Enter phone number
 请输入手机号|Enter phone number
-输入邮箱地址|Enter email address
-请输入邮箱|Enter email address
 输入验证码|Enter verification code
 请输入验证码|Enter verification code
 获取验证码|Get code
@@ -60,14 +56,11 @@
 验证码已发送。|Verification code sent.
 请输入正确的手机号|Enter a valid phone number
 请输入正确的手机号。|Enter a valid phone number.
-请输入正确的邮箱地址|Enter a valid email address
-请输入正确的邮箱。|Enter a valid email address.
 请先获取验证码|Get a verification code first
 请先获取验证码。|Get a verification code first.
 验证码不正确，请重试|Incorrect code. Try again.
 验证码错误，请重新输入。|Incorrect code. Enter it again.
 其他登录方式|Other login methods
-Google 登录|Log in with Google
 盖世游戏 App 登录|Log in with GameHub App
 同意登录协议|Accept login agreements
 我已阅读并同意|I have read and accept
@@ -84,9 +77,6 @@ Google 登录|Log in with Google
 关闭协议|Close agreement
 关闭协议预览|Close agreement preview
 返回登录|Back to login
-等待 Google 授权确认|Waiting for Google authorization
-Google 登录未完成，请重试|Google login was not completed. Try again.
-Google 登录已取消|Google login cancelled
 未安装盖世游戏 App，请使用其他方式登录。|GameHub App is not installed. Use another login method.
 已取消登录，可重新选择登录方式。|Login cancelled. Choose a login method to continue.
 登录未完成，请重试或使用其他方式。|Login was not completed. Try again or use another method.
@@ -95,7 +85,6 @@ Google 登录已取消|Google login cancelled
 登录盖世游戏|Log in to GameHub
 登录后继续授权盖世远程|Log in to authorize GameHub Remote
 使用当前盖世游戏账号继续|Continue with your current GameHub account
-使用当前Google账号继续|Continue with your current Google account
 确认后，盖世远程将使用此盖世账号登录。|Confirm to log in to GameHub Remote with this GameHub account.
 正在登录…|Logging in…
 已扫码，请在手机确认|Scanned. Confirm on your phone.
@@ -179,7 +168,7 @@ Google 登录已取消|Google login cancelled
 Mac 需要开启哪些权限？|Which permissions does Mac need?
 仅观看和远程控制有什么区别？|What is the difference between view-only and remote control?
 如何传输文件？|How do I transfer files?
-手机号、邮箱和 Google 登录如何选择？|Which login method should I use?
+支持哪些登录方式？|Which login methods are supported?
 退出登录后会怎样？|What happens when I log out?
 在要访问的电脑上安装并打开盖世远程客户端。|Install and open GameHub Remote on the computer you want to access.
 手机和电脑登录同一盖世账号，并连接同一局域网。|Log in with the same GameHub account on both devices and connect them to the same local network.
@@ -204,9 +193,9 @@ Mac 需要开启哪些权限？|Which permissions does Mac need?
 在现有设备详情或会话工具中打开文件传输。|Open file transfer from device details or session tools.
 按页面提示选择文件与传输方向，查看任务状态。|Choose files and a transfer direction, then view task progress.
 Demo 中的文件任务用于交互演示，不会把真实文件发送到远程电脑。|File tasks in this demo are simulated. No real files are sent to a remote computer.
-国内使用手机号验证码，海外使用邮箱验证码或 Google 登录；电脑端还支持扫码登录。|The China region uses phone codes. The international region uses email codes or Google. Desktop also supports QR login.
+使用手机号验证码登录；电脑端还支持扫码登录。|Log in with a phone verification code. Desktop also supports QR login.
 移动端可拉起盖世游戏 App 完成盖世账号授权。|Mobile can open GameHub App to authorize your account.
-登录前需主动阅读并同意适用协议。当前 Demo 的短信、邮件、Google 和跨 App 授权均为模拟。|Read and accept the applicable agreements before logging in. SMS, email, Google and cross-app authorization are simulated.
+登录前需主动阅读并同意适用协议。当前 Demo 的短信和跨 App 授权均为模拟。|Read and accept the applicable agreements before logging in. SMS and cross-app authorization are simulated.
 退出当前盖世远程客户端账号，回到未登录页面。|Log out of this GameHub Remote client and return to login.
 当前会话相关的设备数据、草稿和文件任务会清理；再次登录后重新加载。|Session device data, drafts and file tasks are cleared. Data reloads after you log in again.
 退出登录不等于注销盖世账号，也不会关闭电脑中正在运行的程序。|Logging out does not delete your GameHub account or close programs on your computer.
@@ -226,7 +215,6 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 关闭摄像头|Turn off camera
 摄像头需你授权；二维码仅在本地识别，不上传画面。|Camera permission is required. QR codes are decoded locally; camera frames are not uploaded.
 请扫描盖世远程电脑端的登录二维码。|Scan a GameHub Remote desktop login QR code.
-登录地区不同，请在两端选择同一地区后重新扫码。|Regions do not match. Select the same region on both devices and scan again.
 此码无法在当前演示中校验。真实跨设备扫码需要接入账号服务，可用页面外的模拟入口体验流程。|This code cannot be verified in this demo. Real cross-device login requires an account service. Use the demo controls to try the flow.
 二维码已失效，请在电脑端刷新后重新扫描。|This QR code is no longer valid. Refresh it on desktop and scan again.
 当前浏览器无法调用摄像头，请使用支持摄像头权限的 HTTPS 浏览器。|The camera is unavailable. Use an HTTPS browser that supports camera access.
@@ -413,7 +401,6 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 电脑端|Desktop
 地区预览|Region preview
 国内|China
-海外|International
 预览页面与异常|Preview pages and exceptions
 未登录首页|Login home
 登录页|Login page
@@ -424,20 +411,18 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 远控窗口|Remote session
 重看首次引导|Replay introduction
 登录链路模拟|Login simulation
-填入示例号码／邮箱|Fill example phone / email
+填入示例号码|Fill example phone
 模拟盖世 App 扫码|Simulate GameHub App scan
 模拟手机确认|Simulate phone confirmation
 模拟手机取消|Simulate phone cancellation
 模拟客户端取得会话|Simulate session retrieval
 模拟二维码过期|Simulate QR expiration
 模拟扫码授权失败|Simulate QR authorization failure
-模拟 Google 授权成功|Simulate Google authorization success
-模拟 Google 授权失败|Simulate Google authorization failure
 模拟已授权|Simulate permission granted
 模拟拒绝|Simulate permission denied
 模拟扫描电脑登录码|Simulate scanning desktop login code
 系统权限结果模拟：|Simulated system permission result:
-演示验证码：任意6位数字。未调用短信、邮箱或 Google 接口；无需输入真实资料。|Demo code: any 6 digits. SMS, email and Google services are not connected. Do not enter real personal data.
+演示验证码：任意6位数字。未调用短信接口；无需输入真实资料。|Demo code: any 6 digits. SMS services are not connected. Do not enter real personal data.
 未接真实登录、扫码、系统权限及远控接口。二维码可供本地 Demo 扫描；真实跨设备授权待接入账号服务。|Login, QR authorization, system permissions and remote access are simulated. QR codes work between local demo pages; real cross-device authorization requires an account service.
 扫码流程演示 · 真实异机登录待接账号服务|QR login demo · Real cross-device login requires an account service
 `.trim().split('\n').map(line=>line.split('|')));
@@ -582,7 +567,6 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 超时|Timed out
 设备|Devices
 登录与设备评审状态|Login and device preview states
-评审地区|Preview region
 演示验证码：任意6位数字；地区切换仅用于评审，协议正式内容待接入|Demo code: any 6 digits. Region switching is for review only. Official agreements are not connected.
 
 App 扫码登录|Scan with an App
@@ -664,7 +648,7 @@ AI 办公交互演示|AI office interaction demo
   if(result===undefined){const added=text.match(/^已添加「(.*)」$/);if(added)result='Added “'+added[1]+'”';}
   if(result===undefined){const conflict=text.match(/^目标位置已有「(.*)」，请选择本次传输的处理方式。$/);if(conflict)result='“'+conflict[1]+'” already exists at the destination. Choose how to continue.';}
 
-  if(result===undefined){const preview=text.match(/^独立移动 App 交互评审 · (海外|国内)登录示例 · 登录、跨 App 授权及远控均为模拟，未连接账号服务$/);if(preview)result='Mobile app demo · '+(preview[1]==='国内'?'China':'International')+' login · Login, authorization and remote access are simulated.';}
+  if(result===undefined){const preview=text.match(/^独立移动 App 交互评审 · 国内登录示例 · 登录、跨 App 授权及远控均为模拟，未连接账号服务$/);if(preview)result='Mobile app demo · '+'China'+' login · Login, authorization and remote access are simulated.';}
 
   if(result===undefined&&/^在「隐私与安全性」中允许盖世远程的(屏幕录制|辅助功能)权限，完成后回到客户端。$/.test(text))result='Allow '+(text.includes('屏幕录制')?'Screen Recording':'Accessibility')+' for GameHub Remote in Privacy & Security, then return to the app.';
   return result===undefined?value:value.slice(0,value.indexOf(text))+result+value.slice(value.indexOf(text)+text.length);

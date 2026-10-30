@@ -15,7 +15,7 @@ const remoteHelpArticles=[
  {id:'permission',title:'Mac 需要开启哪些权限？',category:'权限与安全',body:['在电脑端左侧「设置」开启允许同账号控制。','根据系统提示，在「隐私与安全性」中允许屏幕录制和辅助功能。','返回客户端确认权限状态后，再从另一端发起连接。网页 Demo 不会修改系统权限。']},
  {id:'view',title:'仅观看和远程控制有什么区别？',category:'远程操作',body:['仅观看用于查看电脑画面，不发送鼠标、键盘等输入。','需要操作时，按照已有会话入口切换到控制状态。','退出远控只结束本次连接，电脑上的程序继续运行。']},
  {id:'files',title:'如何传输文件？',category:'远程操作',body:['在现有设备详情或会话工具中打开文件传输。','按页面提示选择文件与传输方向，查看任务状态。','Demo 中的文件任务用于交互演示，不会把真实文件发送到远程电脑。']},
- {id:'login',title:'手机号、邮箱和 Google 登录如何选择？',category:'账号与登录',body:['国内使用手机号验证码，海外使用邮箱验证码或 Google 登录；电脑端还支持扫码登录。','移动端可拉起盖世游戏 App 完成盖世账号授权。','登录前需主动阅读并同意适用协议。当前 Demo 的短信、邮件、Google 和跨 App 授权均为模拟。']},
+ {id:'login',title:'支持哪些登录方式？',category:'账号与登录',body:['使用手机号验证码登录；电脑端还支持扫码登录。','移动端可拉起盖世游戏 App 完成盖世账号授权。','登录前需主动阅读并同意适用协议。当前 Demo 的短信和跨 App 授权均为模拟。']},
  {id:'logout',title:'退出登录后会怎样？',category:'账号与登录',body:['退出当前盖世远程客户端账号，回到未登录页面。','当前会话相关的设备数据、草稿和文件任务会清理；再次登录后重新加载。','退出登录不等于注销盖世账号，也不会关闭电脑中正在运行的程序。']}
 ];
 function remoteSupportRow(title,actionName,iconName='info',detail=''){return '<button class="personal-row" data-action="'+actionName+'">'+icon(iconName)+'<span class="grow"><strong>'+title+'</strong>'+(detail?'<small>'+detail+'</small>':'')+'</span>'+icon('chevron')+'</button>';}

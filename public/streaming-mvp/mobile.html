@@ -11127,11 +11127,11 @@ const RemoteQrDemo=(()=>{
  const memory=new Map();
  function get(id){if(!/^[a-z0-9-]{12,80}$/i.test(id||''))return null;let r;try{r=JSON.parse(localStorage.getItem(prefix+id)||'null')||memory.get(id)||null;}catch{r=memory.get(id)||null;}if(r&&r.expiresAt&&Date.now()>r.expiresAt&&['blocked','waiting','scanned','confirmed'].includes(r.state))r={...r,state:'expired'};return r;}
  function put(record){memory.set(record.id,record);try{localStorage.setItem(prefix+record.id,JSON.stringify(record));}catch{}return record;}
- function create(region,consent=true){const id=typeof crypto.randomUUID==='function'?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);put({kind:'gamehub-remote-login-demo',id,region,consent:!!consent,state:'waiting',createdAt:Date.now(),expiresAt:Date.now()+120000});return id;}
+ function create(region,consent=true){region='domestic';const id=typeof crypto.randomUUID==='function'?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);put({kind:'gamehub-remote-login-demo',id,region,consent:!!consent,state:'waiting',createdAt:Date.now(),expiresAt:Date.now()+120000});return id;}
  function update(id,state,account='',uid=''){const record=get(id);if(!record)return null;if(['confirmed','completed'].includes(state)&&(!record.consent||!['waiting','scanned','confirmed'].includes(record.state)))return null;return put({...record,state,account:account||record.account||'',uid:uid||record.uid||''});}
  function setConsent(id,consent){const record=get(id);if(!record||!['waiting','scanned'].includes(record.state))return null;return put({...record,consent:!!consent});}
  function payload(id){const r=get(id);return r?JSON.stringify({kind:r.kind,id:r.id,region:r.region}):'';}
- function parse(raw){try{const p=JSON.parse(raw);return p.kind==='gamehub-remote-login-demo'&&['domestic','overseas'].includes(p.region)&&/^[a-z0-9-]{12,80}$/i.test(p.id)?p:null;}catch{return null;}}
+ function parse(raw){try{const p=JSON.parse(raw);return p.kind==='gamehub-remote-login-demo'&&p.region==='domestic'&&/^[a-z0-9-]{12,80}$/i.test(p.id)?p:null;}catch{return null;}}
  return {prefix,get,create,update,setConsent,payload,parse};
 })();
 
@@ -11152,7 +11152,7 @@ const remoteHelpArticles=[
  {id:'permission',title:'Mac 需要开启哪些权限？',category:'权限与安全',body:['在电脑端左侧「设置」开启允许同账号控制。','根据系统提示，在「隐私与安全性」中允许屏幕录制和辅助功能。','返回客户端确认权限状态后，再从另一端发起连接。网页 Demo 不会修改系统权限。']},
  {id:'view',title:'仅观看和远程控制有什么区别？',category:'远程操作',body:['仅观看用于查看电脑画面，不发送鼠标、键盘等输入。','需要操作时，按照已有会话入口切换到控制状态。','退出远控只结束本次连接，电脑上的程序继续运行。']},
  {id:'files',title:'如何传输文件？',category:'远程操作',body:['在现有设备详情或会话工具中打开文件传输。','按页面提示选择文件与传输方向，查看任务状态。','Demo 中的文件任务用于交互演示，不会把真实文件发送到远程电脑。']},
- {id:'login',title:'手机号、邮箱和 Google 登录如何选择？',category:'账号与登录',body:['国内使用手机号验证码，海外使用邮箱验证码或 Google 登录；电脑端还支持扫码登录。','移动端可拉起盖世游戏 App 完成盖世账号授权。','登录前需主动阅读并同意适用协议。当前 Demo 的短信、邮件、Google 和跨 App 授权均为模拟。']},
+ {id:'login',title:'支持哪些登录方式？',category:'账号与登录',body:['使用手机号验证码登录；电脑端还支持扫码登录。','移动端可拉起盖世游戏 App 完成盖世账号授权。','登录前需主动阅读并同意适用协议。当前 Demo 的短信和跨 App 授权均为模拟。']},
  {id:'logout',title:'退出登录后会怎样？',category:'账号与登录',body:['退出当前盖世远程客户端账号，回到未登录页面。','当前会话相关的设备数据、草稿和文件任务会清理；再次登录后重新加载。','退出登录不等于注销盖世账号，也不会关闭电脑中正在运行的程序。']}
 ];
 function remoteSupportRow(title,actionName,iconName='info',detail=''){return '<button class="personal-row" data-action="'+actionName+'">'+icon(iconName)+'<span class="grow"><strong>'+title+'</strong>'+(detail?'<small>'+detail+'</small>':'')+'</span>'+icon('chevron')+'</button>';}
@@ -11185,23 +11185,22 @@ function remoteAccountUid(identity,region='domestic'){
  return String(100000000+hash%900000000);
 }
 
-// Independent mobile shell. Shared remote controls remain the historical baseline.
+// Independent domestic mobile shell. Shared remote controls remain the historical baseline. /2026.10.30修改
 const mobileBase = {action, applyState, list, review, sourcePanel, quickAppAction, appFilesTick};
 // Device/account pages stay portrait; active game sessions retain landscape support.
 deviceOrientationButton=function(){return '';};
-const mobileAuth = {loggedIn:false, installed:true, gamehubCompatible:true, gamehubLoggedIn:true, pending:false, phone:'', code:'', sent:false, error:'', thirdParty:'', returnPage:'list', generation:0, accountPhone:'', gamehubPhone:'13600008000', gamehubEmail:'player@example.com', email:'', region:params.get('region')==='overseas'?'overseas':'domestic', agreed:false, sentFor:'', protocol:'', authTimer:null};
+const mobileAuth = {loggedIn:false, installed:true, gamehubCompatible:true, gamehubLoggedIn:true, pending:false, phone:'', code:'', sent:false, error:'', returnPage:'list', generation:0, accountPhone:'', gamehubPhone:'13600008000', region:'domestic', agreed:false, sentFor:'', protocol:'', authTimer:null};
 
-function mobileOverseas(){return mobileAuth.region==='overseas';}
-function mobileMaskedPhone(value){if(/^1\d{10}$/.test(value))return value.slice(0,3)+'****'+value.slice(-4);if(value.includes('@')){const [name,domain]=value.split('@');return name.slice(0,2)+'***@'+domain;}return '盖世演示账号';}
-function mobileIdentity(){return mobileOverseas()?mobileAuth.email.trim():mobileAuth.phone.trim();}
-function mobileProviderIdentity(){return mobileAuth.thirdParty==='Google'?'player@example.com':mobileOverseas()?mobileAuth.gamehubEmail:mobileAuth.gamehubPhone;}
+function mobileMaskedPhone(value){if(/^1\d{10}$/.test(value))return value.slice(0,3)+'****'+value.slice(-4);return '盖世演示账号';}
+function mobileIdentity(){return mobileAuth.phone.trim();}
+function mobileProviderIdentity(){return mobileAuth.gamehubPhone;}
 function mobileInvalidateAuthorization(){mobileAuth.generation++;clearTimeout(mobileAuth.authTimer);mobileAuth.authTimer=null;mobileAuth.pending=false;}
 function mobileInlineMessage(){return '<p class="mobile-login-error'+(mobileAuth.error==='验证码已发送。'?' is-success':'')+'" role="status">'+esc(mobileAuth.error)+'</p>';}
-function mobileAgreement(){const names=['用户协议','隐私协议',...(mobileOverseas()?[]:['中国移动认证服务协议'])];return '<div class="mobile-agreement"><input type="checkbox" id="mobile-agreement" aria-label="同意登录协议"'+(mobileAuth.agreed?' checked':'')+'><div><label for="mobile-agreement">我已阅读并同意</label>'+names.map((name,i)=>(i?'、':'')+'<button type="button" class="mobile-protocol-link" data-action="mobile-protocol:'+i+'">《'+name+'》</button>').join('')+'</div></div>';}
+function mobileAgreement(){const names=['用户协议','隐私协议','中国移动认证服务协议'];return '<div class="mobile-agreement"><input type="checkbox" id="mobile-agreement" aria-label="同意登录协议"'+(mobileAuth.agreed?' checked':'')+'><div><label for="mobile-agreement">我已阅读并同意</label>'+names.map((name,i)=>(i?'、':'')+'<button type="button" class="mobile-protocol-link" data-action="mobile-protocol:'+i+'">《'+name+'》</button>').join('')+'</div></div>';}
 function mobileProtocolPreview(){if(!mobileAuth.protocol)return '';return '<div class="modal-shade mobile-protocol-shade"><section class="dialog mobile-protocol-dialog" role="dialog" aria-modal="true" aria-labelledby="mobile-protocol-title"><div class="row spread"><h2 id="mobile-protocol-title">'+esc(mobileAuth.protocol)+'</h2>'+ib('关闭协议预览','mobile-protocol-close','close')+'</div><p>正式协议待接入</p><p>此处仅预览协议入口。正式 URL、协议正文及适用主体尚未提供，Demo 不展示或编造条款。</p>'+btn('返回登录','mobile-protocol-close','primary')+'</section></div>';}
 function mobileRequireAgreement(){if(mobileAuth.agreed)return true;mobileAuth.error='请先勾选协议';render();return false;}
-function mobileReadCredentials(){if($('#mobile-phone'))mobileAuth.phone=$('#mobile-phone').value.trim();if($('#mobile-email'))mobileAuth.email=$('#mobile-email').value.trim();if($('#mobile-code'))mobileAuth.code=$('#mobile-code').value.trim();}
-function mobileValidIdentity(){return mobileOverseas()?mobileAuth.email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mobileAuth.email):/^1\d{10}$/.test(mobileAuth.phone);}
+function mobileReadCredentials(){if($('#mobile-phone'))mobileAuth.phone=$('#mobile-phone').value.trim();if($('#mobile-code'))mobileAuth.code=$('#mobile-code').value.trim();}
+function mobileValidIdentity(){return /^1\d{10}$/.test(mobileAuth.phone);}
 function mobileClearAccountState(){
  // Invalidate detached GPT composer callbacks before discarding the account cache.
  for(const store of Object.values(s.gptDevices||{}))for(const composer of Object.values(store.compose||{})){composer.sending=false;composer.run=(composer.run||0)+1;composer.attachments=[];}
@@ -11215,50 +11214,49 @@ quickApps=function(){s.quickAppsByDevice ||= {};return s.quickAppsByDevice[s.dev
 quickAppAction=function(a){const[k,id]=a.split(':');if(k!=='quick-add')return mobileBase.quickAppAction(a);if(!mobileAuth.loggedIn||!s.quickScanAllowed?.[s.device]||!device()?.online||device().blocked||!quickCatalog().some(x=>x.id===id))return true;const apps=quickApps();if(!apps.includes(id))apps.push(id);render();return true;};
 appFilesTick=function(){return mobileAuth.loggedIn?mobileBase.appFilesTick():false;};
 
-function mobileLoginForm(inGamehub=false){const overseas=mobileOverseas();return '<div class="mobile-login-fields"><label class="mobile-field">'+(overseas?'邮箱':'手机号')+'<div class="mobile-phone-row">'+(overseas?'':'<span>+86</span>')+'<input id="'+(overseas?'mobile-email':'mobile-phone')+'" type="'+(overseas?'email':'tel')+'" inputmode="'+(overseas?'email':'tel')+'" autocomplete="'+(overseas?'email':'tel')+'"'+(overseas?' maxlength="254"':' maxlength="11"')+' aria-label="'+(overseas?'邮箱':'手机号')+'" placeholder="'+(overseas?'请输入邮箱':'请输入手机号')+'" value="'+esc(overseas?mobileAuth.email:mobileAuth.phone)+'"></div></label><label class="mobile-field">'+(overseas?'邮箱验证码':'验证码')+'<div class="mobile-code-row"><input id="mobile-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="验证码" placeholder="请输入验证码" value="'+esc(mobileAuth.code)+'">'+btn(mobileAuth.sent?'重新获取':'获取验证码','mobile-sms','ghost')+'</div></label>'+mobileInlineMessage()+(mobileAuth.installed&&!mobileAuth.gamehubCompatible?'<a class="mobile-protocol-link" href="https://gamehub.xiaoji.com/'+(mobileOverseas()?'en/':'zh-cn/')+'" target="_blank" rel="noopener noreferrer">更新盖世游戏 App</a>':'')+mobileAgreement()+btn(inGamehub?'登录并继续':'登录','mobile-login-submit','primary mobile-login-submit')+'</div>';}
-function mobileLogin(){return '<main class="content mobile-login" data-component-id="independent-mobile-login"><div class="mobile-brand"><img src="'+MOBILE_GAMEHUB_LOGO+'" alt="盖世游戏 Logo" data-source="demos/logo.svg"><span>盖世远程</span></div><section class="mobile-login-card" aria-label="盖世账号登录">'+mobileLoginForm()+'<div class="mobile-login-divider"><span>其他登录方式</span></div>'+(mobileOverseas()?btn('Google 登录','mobile-google-open','mobile-google-login'):'')+btn('盖世游戏 App 登录','mobile-gamehub-open','mobile-gamehub-login')+'</section></main>';}
-function mobileAuthorization(){const channel=mobileAuth.thirdParty||'盖世游戏';const needsLogin=!mobileAuth.thirdParty&&!mobileAuth.gamehubLoggedIn;return '<header class="head mobile-provider-header">'+ib('取消登录','mobile-auth-cancel','back')+'<h1>'+channel+'</h1></header><main class="content mobile-authorization" data-component-id="mobile-cross-app-authorization">'+(needsLogin?'<h2>登录盖世游戏</h2><p class="mobile-account-hint">登录后继续授权盖世远程</p>'+mobileLoginForm(true):'<h2>登录盖世远程</h2><p>使用当前'+channel+'账号继续</p><div class="mobile-auth-account"><strong>盖世玩家</strong><span>UID · '+remoteAccountUid(mobileProviderIdentity(),mobileAuth.region)+'</span></div><p class="mobile-auth-description">确认后，盖世远程将使用此盖世账号登录。</p>'+mobileInlineMessage()+mobileAgreement()+btn(mobileAuth.pending?'正在登录…':'确认登录','mobile-auth-confirm','primary mobile-auth-confirm')+btn('取消','mobile-auth-cancel','ghost mobile-auth-cancel'))+'</main>';}
-function mobilePreviewTools(){return '<div class="mobile-preview-notice">独立移动 App 交互评审 · '+(mobileOverseas()?'海外':'国内')+'登录示例 · 登录、跨 App 授权及远控均为模拟，未连接账号服务</div><nav class="mobile-preview-tools" aria-label="登录与设备评审状态"><div class="mobile-region-tools" aria-label="评审地区">'+btn('国内','mobile-region:domestic',mobileOverseas()?'':'selected')+btn('海外','mobile-region:overseas',mobileOverseas()?'selected':'')+'</div>'+[['login','登录'],['auth','盖世授权'],['not-installed','未安装'],['old-version','盖世版本过低'],['gamehub-logged-out','盖世未登录'],['auth-cancelled','取消'],['auth-failed','失败'],['auth-timeout','超时'],['list','设备'],['empty','无设备']].map(([id,label])=>btn(label,'mobile-preview:'+id,s.mobilePreview===id?'selected':'')).join('')+'<span>演示验证码：任意6位数字；地区切换仅用于评审，协议正式内容待接入</span></nav>';}
+function mobileLoginForm(inGamehub=false){return '<div class="mobile-login-fields"><label class="mobile-field">手机号<div class="mobile-phone-row"><span>+86</span><input id="mobile-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="11" aria-label="手机号" placeholder="请输入手机号" value="'+esc(mobileAuth.phone)+'"></div></label><label class="mobile-field">验证码<div class="mobile-code-row"><input id="mobile-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="验证码" placeholder="请输入验证码" value="'+esc(mobileAuth.code)+'">'+btn(mobileAuth.sent?'重新获取':'获取验证码','mobile-sms','ghost')+'</div></label>'+mobileInlineMessage()+(mobileAuth.installed&&!mobileAuth.gamehubCompatible?'<a class="mobile-protocol-link" href="https://gamehub.xiaoji.com/zh-cn/" target="_blank" rel="noopener noreferrer">更新盖世游戏 App</a>':'')+mobileAgreement()+btn(inGamehub?'登录并继续':'登录','mobile-login-submit','primary mobile-login-submit')+'</div>';}
+function mobileLogin(){return '<main class="content mobile-login" data-component-id="independent-mobile-login"><div class="mobile-brand"><img src="'+MOBILE_GAMEHUB_LOGO+'" alt="盖世游戏 Logo" data-source="demos/logo.svg"><span>盖世远程</span></div><section class="mobile-login-card" aria-label="盖世账号登录">'+mobileLoginForm()+'<div class="mobile-login-divider"><span>其他登录方式</span></div>'+btn('盖世游戏 App 登录','mobile-gamehub-open','mobile-gamehub-login')+'</section></main>';}
+function mobileAuthorization(){const channel='盖世游戏';const needsLogin=!mobileAuth.gamehubLoggedIn;return '<header class="head mobile-provider-header">'+ib('取消登录','mobile-auth-cancel','back')+'<h1>'+channel+'</h1></header><main class="content mobile-authorization" data-component-id="mobile-cross-app-authorization">'+(needsLogin?'<h2>登录盖世游戏</h2><p class="mobile-account-hint">登录后继续授权盖世远程</p>'+mobileLoginForm(true):'<h2>登录盖世远程</h2><p>使用当前'+channel+'账号继续</p><div class="mobile-auth-account"><strong>盖世玩家</strong><span>UID · '+remoteAccountUid(mobileProviderIdentity(),mobileAuth.region)+'</span></div><p class="mobile-auth-description">确认后，盖世远程将使用此盖世账号登录。</p>'+mobileInlineMessage()+mobileAgreement()+btn(mobileAuth.pending?'正在登录…':'确认登录','mobile-auth-confirm','primary mobile-auth-confirm')+btn('取消','mobile-auth-cancel','ghost mobile-auth-cancel'))+'</main>';}
+function mobilePreviewTools(){return '<div class="mobile-preview-notice">独立移动 App 交互评审 · 国内登录示例 · 登录、跨 App 授权及远控均为模拟，未连接账号服务</div><nav class="mobile-preview-tools" aria-label="登录与设备评审状态">'+[['login','登录'],['auth','盖世授权'],['not-installed','未安装'],['old-version','盖世版本过低'],['gamehub-logged-out','盖世未登录'],['auth-cancelled','取消'],['auth-failed','失败'],['auth-timeout','超时'],['list','设备'],['empty','无设备']].map(([id,label])=>btn(label,'mobile-preview:'+id,s.mobilePreview===id?'selected':'')).join('')+'<span>演示验证码：任意6位数字；协议正式内容待接入</span></nav>';}
 function mobileAccountMenu(){return s.mobileAccountMenu?'<div class="menu-small mobile-account-menu"><strong>盖世玩家</strong><small>'+esc(mobileMaskedPhone(mobileAuth.accountPhone))+'</small>'+btn('退出登录','mobile-logout','ghost')+'</div>':'';}
 list=function(){let html=mobileBase.list();html=html.replace(/<header class="head">[\s\S]*?<\/header>/,'<header class="head mobile-list-header"><h1>我的设备</h1>'+btn('连接教程','guide','ghost connection-tutorial')+'</header>');html=html.replace('在电脑上安装盖世游戏，登录同一账号。','在电脑上安装盖世远程，登录同一盖世账号。');if(!s.loading&&!s.error&&!s.empty&&!s.mobileNoticeDismissed)html=html.replace('<div class="device-groups">','<section class="mobile-device-notice">'+icon('info')+ib('关闭添加电脑提示','mobile-notice-close','close')+'<div><strong>添加你的其他电脑</strong><p>电脑安装盖世远程，登录同一盖世账号。</p>'+btn('如何添加设备','guide','ghost')+'</div></section><div class="device-groups">');return html;};
 guideModal=function(){return '<div class="modal-shade guide-shade"><section class="dialog guide-dialog" role="dialog" aria-modal="true" aria-label="添加你的电脑"><div class="row spread"><h2>添加你的电脑</h2>'+ib('关闭引导','guide-done','close')+'</div><p class="guide-intro">手机和电脑使用同一盖世账号，支持局域网与公网连接。</p><ol class="mobile-guide-steps"><li><strong>电脑安装盖世远程</strong><p>在你要访问的电脑上打开独立客户端。</p></li><li><strong>登录同一盖世账号</strong><p>电脑可使用盖世远程或盖世游戏 App 扫码登录。</p></li><li><strong>开启被控权限</strong><p>在电脑中允许远程控制，并完成系统所需权限。</p></li><li><strong>手机选择电脑</strong><p>回到「我的设备」，选择电脑后进入桌面。</p></li></ol><p class="guide-foot">电脑需保持开机、联网，并允许远程控制。</p>'+btn('知道了','guide-done','primary guide-done')+'</section></div>';};
-sourcePanel=function(){if(['login','gamehub-authorize'].includes(s.page))return '<aside class="source"><div class="row spread"><h2>独立移动 App 登录</h2>'+ib('关闭对照','compare','close')+'</div><p>本轮新增方案：复用盖世账号；国内使用手机号验证码，海外使用邮箱验证码、Google；两端示例均可拉起盖世游戏 App 授权。登录前需主动同意协议。</p><p style="margin-top:15px">该页面为真实 DOM 交互方案，不宣称已有跨 App 账号联调结果或与竞品像素级一致。</p></aside>';return mobileBase.sourcePanel().replace('盖世整合设计','独立移动 App 设计').replace(/<p>盖世 6\.3\.0[\s\S]*?<\/p>/,'<p>使用独立 App 完成登录、同账号设备选择和连接；原盖世游戏库入口已移除。登录页与跨 App 授权为本轮新增方案；远控沿用既有盖世交互和 UU 实机证据。</p>');};
-renderContent=function(){if(s.platform==='mac'){location.href='mac.html';return;}s.platform=s.page==='session'&&s.gameActive&&s.platform==='landscape'?'landscape':'app';if(['home','entry','library','profile'].includes(s.page))s.page='list';if(!mobileAuth.loggedIn&&!['login','gamehub-authorize'].includes(s.page))s.page='login';const auth=s.page==='gamehub-authorize';const login=s.page==='login';const pages={'mobile-profile':mobileProfilePage,'support-help':()=>remoteSupportPage('help','mobile'),'support-article':()=>remoteSupportPage('article','mobile'),'support-about':()=>remoteSupportPage('about','mobile'),'scan-login':remoteScanPage,gpt:gptWorkspace,'wake-guide':wakeGuide,ended:()=>head('会话已结束')+'<main class="content">'+blank('与电脑的连接已结束','电脑上的程序保持运行。','detail','返回设备详情')+'</main>',list,detail,session,files,more,properties,quicklaunch,'remote-settings':remoteSettings};if(!login&&!auth)guardUnsupportedPage();let html=login?mobileLogin():auth?mobileAuthorization():(s.page==='session'&&s.gptDesktop?gptDesktopWorkspace:(pages[s.page]||list))();if(!login&&!auth)html=macRemoteWorkspace(html);$('#app').innerHTML=mobilePreviewTools()+'<div class="stage mobile-independent-stage"><div class="shell '+s.platform+' mobile-independent-shell" data-page="'+s.page+'">'+(s.platform!=='mac'?'<div class="status"><span>9:41</span><span>◉ ▰</span></div>':'<div class="desktop-strip"><strong>'+(auth?(mobileAuth.thirdParty||'盖世游戏'):'盖世远程')+'</strong></div>')+html+mobileRootNav()+(!login&&!auth?modal()+mobileAccountMenu():'')+mobileProtocolPreview()+(s.toast?'<div role="status" class="toast">'+s.toast+'</div>':'')+'</div>'+(s.compare?sourcePanel():'')+'</div>'+demoSwitcher()+btn('状态 · '+({normal:'普通',game:'游戏',office:'AI办公'}[s.mode]||'普通'),'review','fab','grid')+(s.review?review():'');requestAnimationFrame(clampMouse);};
-function mobileCompleteLogin(fromProvider=false){if(!mobileRequireAgreement())return;const identity=fromProvider?mobileProviderIdentity():mobileIdentity();mobileInvalidateAuthorization();mobileClearAccountState();mobileAuth.accountPhone=identity;mobileAuth.loggedIn=true;mobileAuth.error='';mobileAuth.code='';mobileAuth.thirdParty='';s.page='usage-choice';s.modal='';s.mobilePreview='list';devices=structuredClone(initialDevices);render();}
-function mobileReturnLogin(message=''){mobileInvalidateAuthorization();mobileClearAccountState();mobileAuth.accountPhone='';mobileAuth.loggedIn=false;mobileAuth.thirdParty='';mobileAuth.agreed=false;mobileAuth.protocol='';mobileAuth.code='';mobileAuth.sent=false;mobileAuth.sentFor='';mobileAuth.error=message;s.page='login';s.modal='';render();}
-function mobileSwitchRegion(region){const next=region==='overseas'?'overseas':'domestic';mobileReturnLogin();mobileAuth.region=next;mobileAuth.phone='';mobileAuth.email='';s.mobilePreview='login';const url=new URL(location.href);url.searchParams.set('region',next);history.replaceState(null,'',url);render();}
-function mobilePreview(id){mobileInvalidateAuthorization();mobileClearAccountState();mobileAuth.accountPhone=mobileOverseas()?'player@example.com':'13600008000';s.mobilePreview=id;s.mobileAccountMenu=false;s.toast='';s.review=false;mobileAuth.installed=true;mobileAuth.gamehubCompatible=true;mobileAuth.gamehubLoggedIn=true;mobileAuth.error='';mobileAuth.thirdParty='';mobileAuth.agreed=false;mobileAuth.protocol='';mobileAuth.code='';mobileAuth.sent=false;mobileAuth.sentFor='';if(['login','auth','not-installed','old-version','gamehub-logged-out','auth-cancelled','auth-failed','auth-timeout'].includes(id)){mobileAuth.loggedIn=false;s.page='login';s.modal='';if(id==='auth')s.page='gamehub-authorize';if(id==='old-version'){mobileAuth.gamehubCompatible=false;mobileAuth.error='盖世游戏 App 版本过低，请更新后重试，或使用其他方式登录。';}if(id==='not-installed'){mobileAuth.installed=false;mobileAuth.error='未安装盖世游戏 App，请使用其他方式登录。';}if(id==='gamehub-logged-out'){mobileAuth.gamehubLoggedIn=false;s.page='gamehub-authorize';}if(id==='auth-cancelled')mobileAuth.error='已取消登录，可重新选择登录方式。';if(id==='auth-failed')mobileAuth.error='登录未完成，请重试或使用其他方式。';if(id==='auth-timeout')mobileAuth.error='本次登录已超时，请重新发起。';render();}else{mobileAuth.loggedIn=true;mobileBase.applyState(id);}}
-applyState=function(id){if(['login','auth','not-installed','old-version','gamehub-logged-out','auth-cancelled','auth-failed','auth-timeout'].includes(id)){mobilePreview(id);return;}if(!mobileAuth.loggedIn){mobileClearAccountState();mobileAuth.accountPhone=mobileOverseas()?'player@example.com':'13600008000';}mobileAuth.loggedIn=true;if(id.startsWith('entry-')||['home','entry','library','profile'].includes(id))id='list';mobileBase.applyState(id);};
+sourcePanel=function(){if(['login','gamehub-authorize'].includes(s.page))return '<aside class="source"><div class="row spread"><h2>独立移动 App 登录</h2>'+ib('关闭对照','compare','close')+'</div><p>复用盖世账号，支持国内手机号验证码和盖世游戏 App 授权登录。登录前需主动同意协议。</p><p style="margin-top:15px">该页面为真实 DOM 交互方案，不宣称已有跨 App 账号联调结果或与竞品像素级一致。</p></aside>';return mobileBase.sourcePanel().replace('盖世整合设计','独立移动 App 设计').replace(/<p>盖世 6\.3\.0[\s\S]*?<\/p>/,'<p>使用独立 App 完成登录、同账号设备选择和连接；原盖世游戏库入口已移除。登录页与跨 App 授权为本轮新增方案；远控沿用既有盖世交互和 UU 实机证据。</p>');};
+renderContent=function(){if(s.platform==='mac'){location.href='mac.html';return;}s.platform=s.page==='session'&&s.gameActive&&s.platform==='landscape'?'landscape':'app';if(['home','entry','library','profile'].includes(s.page))s.page='list';if(!mobileAuth.loggedIn&&!['login','gamehub-authorize'].includes(s.page))s.page='login';const auth=s.page==='gamehub-authorize';const login=s.page==='login';const pages={'mobile-profile':mobileProfilePage,'support-help':()=>remoteSupportPage('help','mobile'),'support-article':()=>remoteSupportPage('article','mobile'),'support-about':()=>remoteSupportPage('about','mobile'),'scan-login':remoteScanPage,gpt:gptWorkspace,'wake-guide':wakeGuide,ended:()=>head('会话已结束')+'<main class="content">'+blank('与电脑的连接已结束','电脑上的程序保持运行。','detail','返回设备详情')+'</main>',list,detail,session,files,more,properties,quicklaunch,'remote-settings':remoteSettings};if(!login&&!auth)guardUnsupportedPage();let html=login?mobileLogin():auth?mobileAuthorization():(s.page==='session'&&s.gptDesktop?gptDesktopWorkspace:(pages[s.page]||list))();if(!login&&!auth)html=macRemoteWorkspace(html);$('#app').innerHTML=mobilePreviewTools()+'<div class="stage mobile-independent-stage"><div class="shell '+s.platform+' mobile-independent-shell" data-page="'+s.page+'">'+(s.platform!=='mac'?'<div class="status"><span>9:41</span><span>◉ ▰</span></div>':'<div class="desktop-strip"><strong>'+(auth?'盖世游戏':'盖世远程')+'</strong></div>')+html+mobileRootNav()+(!login&&!auth?modal()+mobileAccountMenu():'')+mobileProtocolPreview()+(s.toast?'<div role="status" class="toast">'+s.toast+'</div>':'')+'</div>'+(s.compare?sourcePanel():'')+'</div>'+demoSwitcher()+btn('状态 · '+({normal:'普通',game:'游戏',office:'AI办公'}[s.mode]||'普通'),'review','fab','grid')+(s.review?review():'');requestAnimationFrame(clampMouse);};
+function mobileCompleteLogin(fromProvider=false){if(!mobileRequireAgreement())return;const identity=fromProvider?mobileProviderIdentity():mobileIdentity();mobileInvalidateAuthorization();mobileClearAccountState();mobileAuth.accountPhone=identity;mobileAuth.loggedIn=true;mobileAuth.error='';mobileAuth.code='';s.page='usage-choice';s.modal='';s.mobilePreview='list';devices=structuredClone(initialDevices);render();}
+function mobileReturnLogin(message=''){mobileInvalidateAuthorization();mobileClearAccountState();mobileAuth.accountPhone='';mobileAuth.loggedIn=false;mobileAuth.agreed=false;mobileAuth.protocol='';mobileAuth.code='';mobileAuth.sent=false;mobileAuth.sentFor='';mobileAuth.error=message;s.page='login';s.modal='';render();}
+
+function mobilePreview(id){mobileInvalidateAuthorization();mobileClearAccountState();mobileAuth.accountPhone='13600008000';s.mobilePreview=id;s.mobileAccountMenu=false;s.toast='';s.review=false;mobileAuth.installed=true;mobileAuth.gamehubCompatible=true;mobileAuth.gamehubLoggedIn=true;mobileAuth.error='';mobileAuth.agreed=false;mobileAuth.protocol='';mobileAuth.code='';mobileAuth.sent=false;mobileAuth.sentFor='';if(['login','auth','not-installed','old-version','gamehub-logged-out','auth-cancelled','auth-failed','auth-timeout'].includes(id)){mobileAuth.loggedIn=false;s.page='login';s.modal='';if(id==='auth')s.page='gamehub-authorize';if(id==='old-version'){mobileAuth.gamehubCompatible=false;mobileAuth.error='盖世游戏 App 版本过低，请更新后重试，或使用其他方式登录。';}if(id==='not-installed'){mobileAuth.installed=false;mobileAuth.error='未安装盖世游戏 App，请使用其他方式登录。';}if(id==='gamehub-logged-out'){mobileAuth.gamehubLoggedIn=false;s.page='gamehub-authorize';}if(id==='auth-cancelled')mobileAuth.error='已取消登录，可重新选择登录方式。';if(id==='auth-failed')mobileAuth.error='登录未完成，请重试或使用其他方式。';if(id==='auth-timeout')mobileAuth.error='本次登录已超时，请重新发起。';render();}else{mobileAuth.loggedIn=true;mobileBase.applyState(id);}}
+applyState=function(id){if(['login','auth','not-installed','old-version','gamehub-logged-out','auth-cancelled','auth-failed','auth-timeout'].includes(id)){mobilePreview(id);return;}if(!mobileAuth.loggedIn){mobileClearAccountState();mobileAuth.accountPhone='13600008000';}mobileAuth.loggedIn=true;if(id.startsWith('entry-')||['home','entry','library','profile'].includes(id))id='list';mobileBase.applyState(id);};
 action=function(a){const[k,v]=a.split(':');
  if((k==='rotate'||k==='demo-platform'&&v==='landscape')&&!(s.page==='session'&&s.gameActive))return;
  if(k==='mobile-notice-close'){if(mobileAuth.loggedIn){s.mobileNoticeDismissed=true;render();}return;}
  if(k==='mobile-preview'){mobilePreview(v);return;}
- if(k==='mobile-region'){mobileSwitchRegion(v);return;}
- if(k==='mobile-protocol'){const names=['用户协议','隐私协议',...(mobileOverseas()?[]:['中国移动认证服务协议'])];mobileAuth.protocol=names[Number(v)]||'';render();return;}
+ if(k==='mobile-protocol'){const names=['用户协议','隐私协议','中国移动认证服务协议'];mobileAuth.protocol=names[Number(v)]||'';render();return;}
  if(k==='mobile-protocol-close'){mobileAuth.protocol='';render();return;}
  if(k==='mobile-account'){s.mobileAccountMenu=!s.mobileAccountMenu;render();return;}
- if(k==='mobile-logout'){mobileAuth.phone='';mobileAuth.email='';s.device='win';devices=[];mobileReturnLogin();return;}
- if(k==='mobile-gamehub-open'||k==='mobile-google-open'){
-  if(k==='mobile-google-open'&&!mobileOverseas())return;if(!mobileRequireAgreement())return;
-  if(k==='mobile-gamehub-open'&&!mobileAuth.installed){mobileAuth.error='未安装盖世游戏 App，请使用其他方式登录。';render();return;}
-  if(k==='mobile-gamehub-open'&&!mobileAuth.gamehubCompatible){mobileAuth.error='盖世游戏 App 版本过低，请更新后重试，或使用其他方式登录。';render();return;}
-  mobileInvalidateAuthorization();mobileAuth.thirdParty=k==='mobile-google-open'?'Google':'';mobileAuth.error='';s.page='gamehub-authorize';s.modal='';render();return;
+ if(k==='mobile-logout'){mobileAuth.phone='';s.device='win';devices=[];mobileReturnLogin();return;}
+ if(k==='mobile-gamehub-open'){
+  if(!mobileRequireAgreement())return;
+  if(!mobileAuth.installed){mobileAuth.error='未安装盖世游戏 App，请使用其他方式登录。';render();return;}
+  if(!mobileAuth.gamehubCompatible){mobileAuth.error='盖世游戏 App 版本过低，请更新后重试，或使用其他方式登录。';render();return;}
+  mobileInvalidateAuthorization();mobileAuth.error='';s.page='gamehub-authorize';s.modal='';render();return;
  }
  if(k==='mobile-auth-cancel'){mobileReturnLogin('已取消登录，可重新选择登录方式。');return;}
  if(k==='mobile-auth-confirm'){
-  if(!mobileRequireAgreement()||mobileAuth.pending)return;mobileAuth.pending=true;const generation=++mobileAuth.generation,region=mobileAuth.region;render();
-  mobileAuth.authTimer=setTimeout(()=>{if(generation!==mobileAuth.generation||region!==mobileAuth.region||s.page!=='gamehub-authorize'||!mobileAuth.agreed)return;mobileCompleteLogin(true);},650);return;
+  if(!mobileRequireAgreement()||mobileAuth.pending)return;mobileAuth.pending=true;const generation=++mobileAuth.generation;render();
+  mobileAuth.authTimer=setTimeout(()=>{if(generation!==mobileAuth.generation||s.page!=='gamehub-authorize'||!mobileAuth.agreed)return;mobileCompleteLogin(true);},650);return;
  }
  if(k==='mobile-sms'){
   mobileReadCredentials();
-  if(!mobileValidIdentity()){mobileAuth.error=mobileOverseas()?'请输入正确的邮箱。':'请输入正确的手机号。';render();return;}
+  if(!mobileValidIdentity()){mobileAuth.error='请输入正确的手机号。';render();return;}
   mobileAuth.sent=true;mobileAuth.sentFor=mobileIdentity();mobileAuth.error='验证码已发送。';render();return;
  }
  if(k==='mobile-login-submit'){
   mobileReadCredentials();if(!mobileRequireAgreement())return;
-  if(!mobileValidIdentity()){mobileAuth.error=mobileOverseas()?'请输入正确的邮箱。':'请输入正确的手机号。';render();return;}
+  if(!mobileValidIdentity()){mobileAuth.error='请输入正确的手机号。';render();return;}
   if(!mobileAuth.sent||mobileAuth.sentFor!==mobileIdentity()||!/^\d{6}$/.test(mobileAuth.code)){mobileAuth.error=mobileAuth.sent&&mobileAuth.sentFor===mobileIdentity()?'验证码错误，请重新输入。':'请先获取验证码。';render();return;}
-  mobileAuth.error='';if(s.page==='gamehub-authorize'&&!mobileAuth.gamehubLoggedIn){mobileAuth.gamehubLoggedIn=true;if(mobileOverseas())mobileAuth.gamehubEmail=mobileAuth.email;else mobileAuth.gamehubPhone=mobileAuth.phone;render();}else mobileCompleteLogin();return;
+  mobileAuth.error='';if(s.page==='gamehub-authorize'&&!mobileAuth.gamehubLoggedIn){mobileAuth.gamehubLoggedIn=true;mobileAuth.gamehubPhone=mobileAuth.phone;render();}else mobileCompleteLogin();return;
  }
  if(k==='back'&&s.page==='list')return;
  if(k==='review-preset'&&v.startsWith('entry-')){mobilePreview('login');return;}
@@ -11270,7 +11268,7 @@ action=function(a){const[k,v]=a.split(':');
 reviewItems['功能入口']=[['独立 App 登录','mobile-login']];
 const mobileBaseReview=review;
 review=function(){return mobileBaseReview().replace('review-preset:mobile-login:default','mobile-preview:login').replace('review-preset:mobile-login:full','mobile-preview:auth');};
-document.addEventListener('input',e=>{if(e.target.id==='mobile-phone')mobileAuth.phone=e.target.value;if(e.target.id==='mobile-code')mobileAuth.code=e.target.value;if(e.target.id==='mobile-email')mobileAuth.email=e.target.value;});
+document.addEventListener('input',e=>{if(e.target.id==='mobile-phone')mobileAuth.phone=e.target.value;if(e.target.id==='mobile-code')mobileAuth.code=e.target.value;});
 document.addEventListener('change',e=>{if(e.target.id!=='mobile-agreement')return;mobileAuth.agreed=e.target.checked;mobileAuth.error='';if(!mobileAuth.agreed){mobileInvalidateAuthorization();mobileAuth.code='';mobileAuth.sent=false;mobileAuth.sentFor='';}render();});
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(mobileAuth.protocol){mobileAuth.protocol='';render();}else if(s.page==='gamehub-authorize')mobileReturnLogin('已取消登录，可重新选择登录方式。');});
 if(params.get('state'))applyState(params.get('state'));else if(params.get('page')==='session')applyState('session');else mobilePreview('login');
@@ -11285,7 +11283,7 @@ function remoteScanRead(raw){
  if(!remoteScanActive())return;
  const payload=RemoteQrDemo.parse(raw);
  if(!payload){remoteScanFail('请扫描盖世远程电脑端的登录二维码。');return;}
- if(payload.region!==mobileAuth.region){remoteScanFail('登录地区不同，请在两端选择同一地区后重新扫码。');return;}
+ if(payload.region!==mobileAuth.region){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}
  const record=RemoteQrDemo.get(payload.id);
  if(!record){remoteScanFail('此码无法在当前演示中校验。真实跨设备扫码需要接入账号服务，可用页面外的模拟入口体验流程。');return;}
  if(record.region!==payload.region||!['waiting','scanned'].includes(record.state)){remoteScanFail('二维码已失效，请在电脑端刷新后重新扫描。');return;}
@@ -11486,7 +11484,7 @@ function remoteAiIcon(id){const names={vscode:"ChatGPT",claude:"Claude",workbudd
  const oldAction=action;
  function blocked(a){return /^(gpt-game|gpt-steam|rlc:|mapping|virtual-key|toggle:(mapping|virtualPad)|panel:mapping|mode:game|review|state:|mobile-preview:|compare$|demo-platform:)/.test(a);}
  action=function(a){if(a.startsWith('usage-choice:')){if(!mobileAuth.loggedIn||s.page!=='usage-choice')return;const choice=a.split(':')[1];if(!['office','other'].includes(choice))return;s.page=choice==='office'?'office-ai':'list';s.modal='';render();return;}const p=a.split(':'),k=p[0],v=p[1];if(officeNewAction(k,v,p))return;if(k==='office-float-toggle'){state.floatOpen=!state.floatOpen;state.captureOpen=false;s.panel='';render();return;}if(k==='panel'){state.floatOpen=false;state.captureOpen=false;}if(blocked(a)){s.gameActive=false;s.mapping=false;s.virtualPad=false;s.review=false;return;}if(k==='mobile-tab'&&v==='ai'){if(!mobileAuth.loggedIn)return;state.notice='';s.page='office-ai';s.panel='';render();return;}if(k==='mobile-tab'){state.notice='';state.landscape=false;return oldAction(a);}if(k==='office-thread'||k==='office-start'){begin(p[1],p[2],p[3],p[4]||'office-ai',p[5]==='view');return;}if(k==='office-native'){openNative(p[1],p[2],p[3]);return;}if(k==='office-native-stream'){begin(s.device,state.app,state.thread,'office-native',s.view);return;}if(k==='office-native-history'){state.nativeHistory=!state.nativeHistory;render();return;}if(k==='office-native-select'){if(data().threads.some(t=>t.id===v&&t.app===state.app)){state.thread=v;rememberTopic(v);}state.nativeHistory=false;render();return;}if(k==='office-back'||['exit','exit-confirm'].includes(k)&&s.page==='session'){back();return;}if(k==='quick-open'){if(!apps.some(x=>x.id===v))return;begin(s.device,v,'','detail');return;}if(['connect','watch'].includes(k)){begin(s.device,'desktop','','detail',k==='watch');return;}if(k==='office-capture-panel'||k==='windows'){state.captureOpen=!state.captureOpen;state.floatOpen=false;s.panel='';render();return;}if(k==='office-capture'||k==='window'){if(!['desktop',...apps.map(x=>x.id)].includes(v))return;if(v!=='desktop'&&!data().windows[v]){state.notice=failure();render();return;}rememberTopic(state.thread);state.capture=v;state.app=v==='desktop'?state.app:v;state.thread=recentTopic(state.app);rememberTopic(state.thread);state.captureOpen=false;state.zoom=1;s.panel='';state.notice='';render();return;}if(['office-desktop','desktop'].includes(k)){state.floatOpen=false;state.capture='desktop';state.captureOpen=false;state.zoom=1;s.panel='';render();return;}if(k==='office-open-app'){if(!editable()||!apps.some(a=>a.id===v))return;data().windows[v]=true;action('office-capture:'+v);return;}if(k==='office-close-window'){if(!editable()||state.capture==='desktop')return;data().windows[state.capture]=false;render();return;}if(k==='office-remote-thread'){if(!editable())return;if(data().threads.some(t=>t.id===v&&t.app===state.app)){state.thread=v;rememberTopic(v);}render();return;}if(k==='office-browser'){if(!editable())return;data().browser=[L('项目资料已展开','Project files opened'),L('讨论记录已展开','Discussion notes opened'),L('任务清单已展开','Task checklist opened')][Number(v)]||'';render();return;}if(k==='office-send'||k==='office-native-send'){send();return;}if(k==='office-zoom'){state.zoom=v==='reset'?1:Math.max(1,Math.min(2.5,state.zoom+(v==='in'?.25:-.25)));state.notice=L('画面缩放 ','View scale ')+Math.round(state.zoom*100)+'%';render();return;}if(k==='rotate'){if(s.page!=='session')return;state.floatOpen=false;state.landscape=!state.landscape;s.panel='';render();return;}if(k==='toggle-view'){if(s.page!=='session')return;if(s.view&&!allowed()){state.notice=failure();render();return;}s.view=!s.view;s.panel='';render();return;}if(k==='gpt-launch'){openNative(s.device,'vscode',recentTopic('vscode'));return;}if(k==='gpt-back'){back();return;}if(k==='gpt-mode'){action(v==='desktop'?'office-native-stream':'office-native:'+s.device+':'+state.app+':'+state.thread);return;}if(k==='gpt-history'||k==='gpt-history-close'){state.nativeHistory=k==='gpt-history';render();return;}if(k==='gpt-thread'){action('office-native-select:'+v);return;}if(k==='gpt-send'){send();return;}if(k==='gpt-new'){if(!editable())return;const t={id:'new-'+Date.now(),app:state.app,title:L('新会话','New session'),draft:'',messages:[]};data().threads.push(t);state.thread=t.id;rememberTopic(t.id);s.page='office-native';render();return;}if(k.startsWith('gpt-'))return;if(k==='mode'){s.mode='office';return;}return oldAction(a);};
- mobilePreviewTools=function(){return '<aside class="mobile-preview-notice office-review-note">'+L('交互演示：设备、应用窗口与会话均为样例，未连接真实电脑或 AI 服务。默认将会话 ID 传至电脑，打开对应的 ChatGPT / Claude / WorkBuddy。保留手机适配的直接对话界面，根据技术方案确定，技术支持后实现。手机原生对话（待继续技术调研，方案待确定）。语音为模拟转写，不录音；AI 回复为本地示例。','Interaction demo: sample devices, app windows and sessions; no live computer or AI connection. Default: send the session ID to the computer and open ChatGPT, Claude or WorkBuddy. Keep the phone-adapted chat design; implement direct chat if the technical solution supports it. Native phone conversations require further technical research; the approach is undecided. Voice uses simulated transcription without recording; AI replies are local examples.')+'</aside><nav class="mobile-preview-tools office-review-tools">'+button('国内','Domestic','mobile-region:domestic')+button('海外','Overseas','mobile-region:overseas')+demoControls()+'<span>'+L('演示验证码：任意6位数字','Demo code: any six digits')+'</span></nav>';};
+ mobilePreviewTools=function(){return '<aside class="mobile-preview-notice office-review-note">'+L('交互演示：设备、应用窗口与会话均为样例，未连接真实电脑或 AI 服务。默认将会话 ID 传至电脑，打开对应的 ChatGPT / Claude / WorkBuddy。保留手机适配的直接对话界面，根据技术方案确定，技术支持后实现。手机原生对话（待继续技术调研，方案待确定）。语音为模拟转写，不录音；AI 回复为本地示例。','Interaction demo: sample devices, app windows and sessions; no live computer or AI connection. Default: send the session ID to the computer and open ChatGPT, Claude or WorkBuddy. Keep the phone-adapted chat design; implement direct chat if the technical solution supports it. Native phone conversations require further technical research; the approach is undecided. Voice uses simulated transcription without recording; AI replies are local examples.')+'</aside><nav class="mobile-preview-tools office-review-tools">'+demoControls()+'<span>'+L('演示验证码：任意6位数字','Demo code: any six digits')+'</span></nav>';};
  demoSwitcher=function(){return '';};review=function(){return '';};sourcePanel=function(){return '';};
  const oldApply=applyState;applyState=function(id){if(/game|mapping|gpt|entry|library/.test(id)){s.gameActive=false;s.mapping=false;s.virtualPad=false;if(mobileAuth.loggedIn)s.page='list';render();return;}if(id==='ai-sessions'){if(!mobileAuth.loggedIn)oldApply('list');s.page='office-ai';render();return;}return oldApply(id);};
  const oldRender=renderContent;renderContent=function(){if(state.owner!==account())reset();s.gameActive=false;s.mapping=false;s.virtualPad=false;s.gptDesktop=false;s.review=false;s.compare=false;s.mode='office';if(['gpt','home','entry','library','profile'].includes(s.page))s.page=mobileAuth.loggedIn?'list':'login';if(s.panel==='mapping')s.panel='';guardAsync();if((s.page==='office-native'||s.page==='session'&&['vscode','claude','workbuddy'].includes(state.capture))&&thread()?.taskStatus==='unread')thread().taskStatus='idle';oldRender();paintSpeech();const shell=document.querySelector('.mobile-independent-shell');if(shell){const landscape=s.page==='session'&&state.landscape;s.platform=landscape?'landscape':'app';shell.classList.toggle('landscape',landscape);shell.classList.toggle('app',!landscape);shell.classList.toggle('office-session-shell',s.page==='session');}fitDesktop();requestAnimationFrame(fitDesktop);document.querySelectorAll('.fab,.review,.demo-switcher,.remote-update-review').forEach(el=>el.remove());document.querySelectorAll('[data-action^="review"],[data-action^="mode:"],[data-action^="state:"],[data-action^="mobile-preview:"]').forEach(el=>el.remove());};
@@ -11640,16 +11638,12 @@ function remoteAiIcon(id){const names={vscode:"ChatGPT",claude:"Claude",workbudd
 退出后需重新登录才能访问你的设备。|You will need to log in again to access your devices.
 请先勾选协议|Please accept the agreements first
 手机号验证码登录|Log in with phone number
-邮箱验证码登录|Log in with email
 盖世游戏 App 扫码登录|Scan with GameHub App
 手机号|Phone number
 邮箱|Email
 验证码|Verification code
-邮箱验证码|Email verification code
 输入手机号|Enter phone number
 请输入手机号|Enter phone number
-输入邮箱地址|Enter email address
-请输入邮箱|Enter email address
 输入验证码|Enter verification code
 请输入验证码|Enter verification code
 获取验证码|Get code
@@ -11658,14 +11652,11 @@ function remoteAiIcon(id){const names={vscode:"ChatGPT",claude:"Claude",workbudd
 验证码已发送。|Verification code sent.
 请输入正确的手机号|Enter a valid phone number
 请输入正确的手机号。|Enter a valid phone number.
-请输入正确的邮箱地址|Enter a valid email address
-请输入正确的邮箱。|Enter a valid email address.
 请先获取验证码|Get a verification code first
 请先获取验证码。|Get a verification code first.
 验证码不正确，请重试|Incorrect code. Try again.
 验证码错误，请重新输入。|Incorrect code. Enter it again.
 其他登录方式|Other login methods
-Google 登录|Log in with Google
 盖世游戏 App 登录|Log in with GameHub App
 同意登录协议|Accept login agreements
 我已阅读并同意|I have read and accept
@@ -11682,9 +11673,6 @@ Google 登录|Log in with Google
 关闭协议|Close agreement
 关闭协议预览|Close agreement preview
 返回登录|Back to login
-等待 Google 授权确认|Waiting for Google authorization
-Google 登录未完成，请重试|Google login was not completed. Try again.
-Google 登录已取消|Google login cancelled
 未安装盖世游戏 App，请使用其他方式登录。|GameHub App is not installed. Use another login method.
 已取消登录，可重新选择登录方式。|Login cancelled. Choose a login method to continue.
 登录未完成，请重试或使用其他方式。|Login was not completed. Try again or use another method.
@@ -11693,7 +11681,6 @@ Google 登录已取消|Google login cancelled
 登录盖世游戏|Log in to GameHub
 登录后继续授权盖世远程|Log in to authorize GameHub Remote
 使用当前盖世游戏账号继续|Continue with your current GameHub account
-使用当前Google账号继续|Continue with your current Google account
 确认后，盖世远程将使用此盖世账号登录。|Confirm to log in to GameHub Remote with this GameHub account.
 正在登录…|Logging in…
 已扫码，请在手机确认|Scanned. Confirm on your phone.
@@ -11777,7 +11764,7 @@ Google 登录已取消|Google login cancelled
 Mac 需要开启哪些权限？|Which permissions does Mac need?
 仅观看和远程控制有什么区别？|What is the difference between view-only and remote control?
 如何传输文件？|How do I transfer files?
-手机号、邮箱和 Google 登录如何选择？|Which login method should I use?
+支持哪些登录方式？|Which login methods are supported?
 退出登录后会怎样？|What happens when I log out?
 在要访问的电脑上安装并打开盖世远程客户端。|Install and open GameHub Remote on the computer you want to access.
 手机和电脑登录同一盖世账号，并连接同一局域网。|Log in with the same GameHub account on both devices and connect them to the same local network.
@@ -11802,9 +11789,9 @@ Mac 需要开启哪些权限？|Which permissions does Mac need?
 在现有设备详情或会话工具中打开文件传输。|Open file transfer from device details or session tools.
 按页面提示选择文件与传输方向，查看任务状态。|Choose files and a transfer direction, then view task progress.
 Demo 中的文件任务用于交互演示，不会把真实文件发送到远程电脑。|File tasks in this demo are simulated. No real files are sent to a remote computer.
-国内使用手机号验证码，海外使用邮箱验证码或 Google 登录；电脑端还支持扫码登录。|The China region uses phone codes. The international region uses email codes or Google. Desktop also supports QR login.
+使用手机号验证码登录；电脑端还支持扫码登录。|Log in with a phone verification code. Desktop also supports QR login.
 移动端可拉起盖世游戏 App 完成盖世账号授权。|Mobile can open GameHub App to authorize your account.
-登录前需主动阅读并同意适用协议。当前 Demo 的短信、邮件、Google 和跨 App 授权均为模拟。|Read and accept the applicable agreements before logging in. SMS, email, Google and cross-app authorization are simulated.
+登录前需主动阅读并同意适用协议。当前 Demo 的短信和跨 App 授权均为模拟。|Read and accept the applicable agreements before logging in. SMS and cross-app authorization are simulated.
 退出当前盖世远程客户端账号，回到未登录页面。|Log out of this GameHub Remote client and return to login.
 当前会话相关的设备数据、草稿和文件任务会清理；再次登录后重新加载。|Session device data, drafts and file tasks are cleared. Data reloads after you log in again.
 退出登录不等于注销盖世账号，也不会关闭电脑中正在运行的程序。|Logging out does not delete your GameHub account or close programs on your computer.
@@ -11824,7 +11811,6 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 关闭摄像头|Turn off camera
 摄像头需你授权；二维码仅在本地识别，不上传画面。|Camera permission is required. QR codes are decoded locally; camera frames are not uploaded.
 请扫描盖世远程电脑端的登录二维码。|Scan a GameHub Remote desktop login QR code.
-登录地区不同，请在两端选择同一地区后重新扫码。|Regions do not match. Select the same region on both devices and scan again.
 此码无法在当前演示中校验。真实跨设备扫码需要接入账号服务，可用页面外的模拟入口体验流程。|This code cannot be verified in this demo. Real cross-device login requires an account service. Use the demo controls to try the flow.
 二维码已失效，请在电脑端刷新后重新扫描。|This QR code is no longer valid. Refresh it on desktop and scan again.
 当前浏览器无法调用摄像头，请使用支持摄像头权限的 HTTPS 浏览器。|The camera is unavailable. Use an HTTPS browser that supports camera access.
@@ -12011,7 +11997,6 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 电脑端|Desktop
 地区预览|Region preview
 国内|China
-海外|International
 预览页面与异常|Preview pages and exceptions
 未登录首页|Login home
 登录页|Login page
@@ -12022,20 +12007,18 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 远控窗口|Remote session
 重看首次引导|Replay introduction
 登录链路模拟|Login simulation
-填入示例号码／邮箱|Fill example phone / email
+填入示例号码|Fill example phone
 模拟盖世 App 扫码|Simulate GameHub App scan
 模拟手机确认|Simulate phone confirmation
 模拟手机取消|Simulate phone cancellation
 模拟客户端取得会话|Simulate session retrieval
 模拟二维码过期|Simulate QR expiration
 模拟扫码授权失败|Simulate QR authorization failure
-模拟 Google 授权成功|Simulate Google authorization success
-模拟 Google 授权失败|Simulate Google authorization failure
 模拟已授权|Simulate permission granted
 模拟拒绝|Simulate permission denied
 模拟扫描电脑登录码|Simulate scanning desktop login code
 系统权限结果模拟：|Simulated system permission result:
-演示验证码：任意6位数字。未调用短信、邮箱或 Google 接口；无需输入真实资料。|Demo code: any 6 digits. SMS, email and Google services are not connected. Do not enter real personal data.
+演示验证码：任意6位数字。未调用短信接口；无需输入真实资料。|Demo code: any 6 digits. SMS services are not connected. Do not enter real personal data.
 未接真实登录、扫码、系统权限及远控接口。二维码可供本地 Demo 扫描；真实跨设备授权待接入账号服务。|Login, QR authorization, system permissions and remote access are simulated. QR codes work between local demo pages; real cross-device authorization requires an account service.
 扫码流程演示 · 真实异机登录待接账号服务|QR login demo · Real cross-device login requires an account service
 `.trim().split('\n').map(line=>line.split('|')));
@@ -12180,7 +12163,6 @@ Demo 中的文件任务用于交互演示，不会把真实文件发送到远程
 超时|Timed out
 设备|Devices
 登录与设备评审状态|Login and device preview states
-评审地区|Preview region
 演示验证码：任意6位数字；地区切换仅用于评审，协议正式内容待接入|Demo code: any 6 digits. Region switching is for review only. Official agreements are not connected.
 
 App 扫码登录|Scan with an App
@@ -12262,7 +12244,7 @@ AI 办公交互演示|AI office interaction demo
   if(result===undefined){const added=text.match(/^已添加「(.*)」$/);if(added)result='Added “'+added[1]+'”';}
   if(result===undefined){const conflict=text.match(/^目标位置已有「(.*)」，请选择本次传输的处理方式。$/);if(conflict)result='“'+conflict[1]+'” already exists at the destination. Choose how to continue.';}
 
-  if(result===undefined){const preview=text.match(/^独立移动 App 交互评审 · (海外|国内)登录示例 · 登录、跨 App 授权及远控均为模拟，未连接账号服务$/);if(preview)result='Mobile app demo · '+(preview[1]==='国内'?'China':'International')+' login · Login, authorization and remote access are simulated.';}
+  if(result===undefined){const preview=text.match(/^独立移动 App 交互评审 · 国内登录示例 · 登录、跨 App 授权及远控均为模拟，未连接账号服务$/);if(preview)result='Mobile app demo · '+'China'+' login · Login, authorization and remote access are simulated.';}
 
   if(result===undefined&&/^在「隐私与安全性」中允许盖世远程的(屏幕录制|辅助功能)权限，完成后回到客户端。$/.test(text))result='Allow '+(text.includes('屏幕录制')?'Screen Recording':'Accessibility')+' for GameHub Remote in Privacy & Security, then return to the app.';
   return result===undefined?value:value.slice(0,value.indexOf(text))+result+value.slice(value.indexOf(text)+text.length);

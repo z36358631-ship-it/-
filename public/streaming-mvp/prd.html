@@ -1,4 +1,4 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世远程 PRD V4.20 评审稿</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#202a36;font:16px/1.8 -apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif}header{padding:18px 30px;background:#182738;display:flex;gap:24px;flex-wrap:wrap}header a{color:white;text-decoration:none}main{max-width:1240px;padding:35px 28px 90px;margin:auto}h1{font-size:30px}h2{margin-top:48px;font-size:25px}h3{margin-top:34px;font-size:21px}h4{margin-top:30px;font-size:19px}table{border-collapse:collapse;width:100%;background:white;margin:18px 0;font-size:14px}th,td{border:1px solid #d9e0e8;padding:12px 14px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eaf0f7}td:first-child{min-width:130px}td img{display:block;max-width:100%;max-height:520px;object-fit:contain;object-position:left;margin:10px 0}img{max-width:100%;height:auto}a{color:#1562a3}em{color:#657387}blockquote{background:white;padding:8px 20px;border-left:3px solid #70a7d7}code{background:#edf1f7}main>p:has(img){background:white;padding:16px}@media(max-width:700px){main{padding:20px 14px}table{display:block;overflow:auto}}</style></head><body><header><a href="index.html">盖世远程</a><a href="mobile.html">手机 Demo</a><a href="mac.html">电脑 Demo</a><a href="review.html">方案与界面流程图</a></header><main><h1>【PRD】盖世远程独立客户端与移动 App</h1>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>盖世远程 PRD V4.21 评审稿</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f7fa;color:#202a36;font:16px/1.8 -apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif}header{padding:18px 30px;background:#182738;display:flex;gap:24px;flex-wrap:wrap}header a{color:white;text-decoration:none}main{max-width:1240px;padding:35px 28px 90px;margin:auto}h1{font-size:30px}h2{margin-top:48px;font-size:25px}h3{margin-top:34px;font-size:21px}h4{margin-top:30px;font-size:19px}table{border-collapse:collapse;width:100%;background:white;margin:18px 0;font-size:14px}th,td{border:1px solid #d9e0e8;padding:12px 14px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eaf0f7}td:first-child{min-width:130px}td img{display:block;max-width:100%;max-height:520px;object-fit:contain;object-position:left;margin:10px 0}img{max-width:100%;height:auto}a{color:#1562a3}em{color:#657387}blockquote{background:white;padding:8px 20px;border-left:3px solid #70a7d7}code{background:#edf1f7}main>p:has(img){background:white;padding:16px}@media(max-width:700px){main{padding:20px 14px}table{display:block;overflow:auto}}</style></head><body><header><a href="index.html">盖世远程</a><a href="mobile.html">手机 Demo</a><a href="mac.html">电脑 Demo</a><a href="review.html">方案与界面流程图</a></header><main><h1>【PRD】盖世远程独立客户端与移动 App</h1>
 <h2>修订记录</h2>
 <table>
 <thead>
@@ -129,12 +129,18 @@
 <td>V4.20-Draft</td>
 <td>产品</td>
 </tr>
+<tr>
+<td>2026/10/30</td>
+<td>本期收敛为国内版，仅保留手机号验证码、盖世App授权和电脑扫码；移除地区切换，中文/English仅切展示文案，AI及通知范围不变</td>
+<td>V4.21-Draft</td>
+<td>产品</td>
+</tr>
 </tbody></table>
-<p><strong>备注：</strong> 搜2026.10.29修改。历史修订仅供追溯，以正文为准。配图来自Demo，真实服务接入及技术未决见第五章。</p>
+<p><strong>备注：</strong> 搜2026.10.30修改；此前修改搜2026.10.29修改。历史修订仅供追溯，以正文为准。配图来自Demo，真实服务接入及技术未决见第五章。</p>
 <h2>一、文档概述</h2>
 <h3>1.1 背景概述</h3>
 <p>用户离开电脑后，需要用手机查看AI任务、继续原会话并检查生成效果。2026年10月28日评审反馈：使用UU等通用远控工具时，需先进入桌面查找软件和会话，手机上的滚动、输入和精确点击也容易误触。</p>
-<p>本期提供独立移动App和电脑客户端，支持局域网、公网访问自己的电脑，增加AI会话入口，重点打磨手机触控。 /2026.10.29修改</p>
+<p>本期面向国内用户，提供独立移动App和电脑客户端，支持局域网、公网访问自己的电脑，增加AI会话入口，重点打磨手机触控。 /2026.10.30修改</p>
 <h3>1.2 需求边界</h3>
 <table>
 <thead>
@@ -149,7 +155,7 @@
 </tr>
 <tr>
 <td>业务边界</td>
-<td>1. 同账号电脑连接、观看、输入、文件、电源、应用启动及本机被控设置；登录后选择办公或非办公，分别进入AI会话或设备列表，可随时切换。电脑首次引导在场景选择后显示。移动端另有“我的”，双端提供帮助、更新及关于。<br>2. AI任务通知含单次执行完成、失败、待输入、待批准，不含营销、公告或设备上下线；提供站内信和Push提醒。国内手机号验证码，海外邮箱验证码/Google；移动端支持盖世App授权及扫一扫，电脑展示登录二维码。支持局域网与公网，网络方案及资源限制待确认。 /2026.10.29修改</td>
+<td>1. 同账号电脑连接、观看、输入、文件、电源、应用启动及本机被控设置；登录后选择办公或非办公，分别进入AI会话或设备列表，可随时切换。电脑首次引导在场景选择后显示。移动端另有“我的”，双端提供帮助、更新及关于。<br>2. AI任务通知含单次执行完成、失败、待输入、待批准，不含营销、公告或设备上下线；提供站内信和Push提醒。登录使用国内手机号验证码；移动端支持盖世App授权及扫一扫，电脑展示登录二维码。支持局域网与公网，网络方案及资源限制待确认。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>排除范围</td>
@@ -157,11 +163,11 @@
 </tr>
 <tr>
 <td>运营边界</td>
-<td>不新增内容配置后台或商业化入口。正式中英文随官网下载包提供，安装后不设语言切换；地区由发行版本/账号配置确定。Demo顶部语言与地区按钮仅供评审。帮助、协议和更新配置见4.3，正式品牌及各平台包地址待接入。 /2026.10.29修改</td>
+<td>不新增内容配置后台或商业化入口。本期只做国内版。Demo顶部保留中文/English展示文案切换，登录方式和服务范围不变；移除地区切换。正式语言随官网下载包提供，安装后不设语言切换。帮助、协议和更新配置见4.3，正式品牌及各平台包地址待接入。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>人力边界</td>
-<td>产品、设计定义页面和规则；客户端负责登录、设备、远控及H5打开/返回；账号服务负责盖世身份、独立会话和授权，设备/远控服务负责设备状态和连接。服务端维护静态H5与独立更新配置，运营供稿；测试按端和地区验证，数据团队核对事件及历史映射。</td>
+<td>产品、设计定义页面和规则；客户端负责登录、设备、远控及H5打开/返回；账号服务负责盖世身份、独立会话和授权，设备/远控服务负责设备状态和连接。服务端维护静态H5与独立更新配置，运营供稿；测试按端和国内渠道验证，数据团队核对事件及历史映射。 /2026.10.30修改</td>
 </tr>
 </tbody></table>
 <h3>1.3 术语定义</h3>
@@ -174,7 +180,7 @@
 </thead>
 <tbody><tr>
 <td>盖世账号</td>
-<td>复用盖世游戏身份，以服务端UID识别，不另建同手机号账号。</td>
+<td>本期使用国内账号体系，复用盖世游戏身份，以服务端UID识别，不另建同手机号账号。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>登录</td>
@@ -232,8 +238,8 @@
 </tr>
 </tbody></table>
 <h3>2.2 产品流程</h3>
-<p><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@77e7d3d890ab082f65b39f82139922676f75c252/public/prd/remote-v420/product-flow-v420.png" alt="双端主产品流程"></p>
-<p><em>图2-1：登录后选择场景，再选AI主题或电脑。目标在线且权限、网络、占用条件满足，首帧可用后进入电脑画面；退出回原入口。电脑首次引导在场景选择后显示，对话气泡进入适配预览演示，直接对话待技术方案确定。 /2026.10.29修改</em></p>
+<p><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/product-flow-v421.png" alt="双端主产品流程"></p>
+<p><em>图2-1：国内账号登录后选择场景，再选AI主题或电脑。目标在线且权限、网络、占用条件满足，首帧可用后进入电脑画面；退出回原入口。电脑首次引导在场景选择后显示，对话气泡进入适配预览演示，直接对话待技术方案确定。 /2026.10.30修改</em></p>
 <h2>三、功能需求</h2>
 <h3>3.1 移动端功能需求</h3>
 <h4>3.1.1 登录页</h4>
@@ -246,7 +252,7 @@
 </thead>
 <tbody><tr>
 <td>功能简介</td>
-<td>手机号/邮箱验证码及第三方授权入口。</td>
+<td>国内手机号验证码登录及盖世App授权入口。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>场景描述</td>
@@ -254,11 +260,11 @@
 </tr>
 <tr>
 <td>输入／前置条件</td>
-<td>独立移动 App；地区来自发行版本/账号配置。仅 Demo 外部工具可切地区。</td>
+<td>独立移动App国内版；中文/English按钮只切展示文案，不改变登录方式或账号服务。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-login.png" alt="国内登录"><br><em>图3-1 国内登录</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-login-overseas.png" alt="海外登录"><br><em>图3-2 海外登录</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-login-en.png" alt="移动端英文登录演示"><br><em>图3-2a：英文界面演示；登录渠道仍由独立地区配置决定。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 品牌区仅显示盖世游戏Logo和“盖世远程”；移除电脑插画、宣传文案及原游戏、社区、游戏库底栏。<br>2. 国内显示+86手机号、验证码、“获取验证码”“登录”“盖世游戏 App 登录”；海外改为邮箱、邮箱验证码，并增加“Google 登录”。不提供微信、QQ、密码登录或本机扫码二维码。<br>3. 协议默认未勾选。国内显示“我已阅读并同意《用户协议》《隐私协议》《中国移动认证服务协议》”；海外仅用户协议和隐私协议。<br><strong>交互说明：</strong><br>1. 未勾选协议仍可输入、获取验证码和点击登录入口。获取验证码只校验账号格式；点击登录、Google或盖世App登录时，未同意则提示“请先勾选协议”，保留输入，不提交、不授权、不自动勾选。<br>2. Demo手机号限11位数字并校验国内手机号格式；邮箱最多254字符，去首尾空格后校验格式；验证码最多6位数字。空值、格式错误不发送或提交。须先获取仍有效的验证码，Demo接受任意6位数字，正式验证码由账号服务校验。<br>3. 勾选协议保留输入及有效验证码。点击“登录”校验后提交；无既有账号时登录即注册，不增注册页。取得并核实有效会话后，获取当前盖世UID的设备。已同意时点击App/Google入口发起授权，异步成功前再核对本次同意和尝试是否有效。<br>4. 点击协议只阅读；关闭后保留输入与勾选状态。 /2026.10.28修改</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/standalone-mobile-login-v421.png" alt="国内登录"><br><em>图3-1 国内登录</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/standalone-mobile-login-en-v421.png" alt="移动端英文登录演示"><br><em>图3-2a：国内版英文文案，仍使用+86手机号及盖世App登录。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 品牌区仅显示盖世游戏Logo和“盖世远程”；移除电脑插画、宣传文案及原游戏、社区、游戏库底栏。<br>2. 显示+86手机号、验证码、“获取验证码”“登录”“盖世游戏 App 登录”。不提供微信、QQ、密码登录或本机扫码二维码。<br>3. 协议默认未勾选，显示“我已阅读并同意《用户协议》《隐私协议》《中国移动认证服务协议》”。<br><strong>交互说明：</strong><br>1. 未勾选协议仍可输入、获取验证码和点击登录入口。获取验证码只校验账号格式；点击登录或盖世App登录时，未同意则提示“请先勾选协议”，保留输入，不提交、不授权、不自动勾选。<br>2. Demo手机号限11位数字并校验国内手机号格式；验证码最多6位数字。空值、格式错误不发送或提交。须先获取仍有效的验证码，Demo接受任意6位数字，正式验证码由账号服务校验。<br>3. 勾选协议保留输入及有效验证码。点击“登录”校验后提交；无既有账号时登录即注册，不增注册页。取得并核实有效会话后，获取当前盖世UID的设备。已同意时点击盖世App入口发起授权，异步成功前再核对本次同意和尝试是否有效。<br>4. 点击协议只阅读；关闭后保留输入与勾选状态。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -266,10 +272,10 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 有效会话无需重复授权；每次重新登录均先选择办公/非办公，不能用登录前目标跳过。<br>2. 撤勾作废旧验证码、请求及未完成授权，忽略晚到结果；此后仍可获取新验证码，重新勾选时保留新获取的有效码。切换评审地区清空输入并恢复未勾选；退出隔离旧请求。<br>3. 演示账号：手机号13600008000、邮箱<a href="mailto:player@example.com">player@example.com</a>；任意6位数字验证码，如000000、654321。建议按填写账号、获取验证码、填码、勾协议、登录的顺序演示；合法格式的其他账号也可使用，不发送短信或邮件。正式国家码、长度、邮箱大小写、注册判断、发送间隔及有效期待账号组件核对。<br>4. 协议未接入时仅显示待接入预览；主体、版本、链接及中国移动适用认证方式待确认。 /2026.10.29修改 /2026.10.28修改</td>
+<td>1. 有效会话无需重复授权；每次重新登录均先选择办公/非办公，不能用登录前目标跳过。<br>2. 撤勾作废旧验证码、请求及未完成授权，忽略晚到结果；此后仍可获取新验证码，重新勾选时保留新获取的有效码。退出隔离旧请求。<br>3. 演示账号：手机号13600008000；任意6位数字验证码，如000000、654321。建议按填写账号、获取验证码、填码、勾协议、登录的顺序演示；合法格式的其他账号也可使用，不发送短信。正式手机号校验、注册判断、发送间隔及有效期待账号组件核对。<br>4. 协议未接入时仅显示待接入预览；主体、版本、链接及中国移动适用认证方式待确认。 /2026.10.30修改</td>
 </tr>
 </tbody></table>
-<h4>3.1.2 盖世 App／Google 授权页</h4>
+<h4>3.1.2 盖世 App 授权页</h4>
 <table>
 <thead>
 <tr>
@@ -283,15 +289,15 @@
 </tr>
 <tr>
 <td>场景描述</td>
-<td>从移动登录页点击本地区可用的授权方式。</td>
+<td>从移动登录页点击“盖世游戏 App 登录”。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>输入／前置条件</td>
-<td>已主动同意本地区协议；未同意点击入口只提示“请先勾选协议”。Google仅海外可用；盖世授权需能拉起已安装App。</td>
+<td>已主动同意登录协议；未同意点击入口只提示“请先勾选协议”。盖世授权需能拉起已安装App。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-auth.png" alt="盖世授权确认模拟"><br><em>图3-3 盖世授权确认模拟</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-old-gamehub.png" alt="旧版盖世更新提示"><br><em>图3-3a：已安装盖世版本不支持授权时，提示先更新，不进入成功态。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 盖世侧显示当前账号及确认/取消，未登录先显示其登录页。Google使用原授权页，本产品不收集其密码；图示仅为盖世授权模拟。<br><strong>交互说明：</strong><br>1. 盖世App版本支持且已登录时可确认授权；未登录或失效时，先完成盖世登录/注册，再继续有效授权。本期只支持盖世远程拉起盖世游戏授权。<br>2. 确认后返回发起端，核对本次协议、授权及独立会话，均有效才获取当前UID设备；不复制盖世App令牌，不要求绑定Steam/Epic。<br>3. 取消或拒绝后回独立登录页，可选择其他本地区方式。 /2026.10.28修改</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-auth.png" alt="盖世授权确认模拟"><br><em>图3-3 盖世授权确认模拟</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-old-gamehub.png" alt="旧版盖世更新提示"><br><em>图3-3a：已安装盖世版本不支持授权时，提示先更新，不进入成功态。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 盖世侧显示当前账号及确认/取消，未登录先显示其登录页。图示仅为盖世授权模拟。<br><strong>交互说明：</strong><br>1. 盖世App版本支持且已登录时可确认授权；未登录或失效时，先完成盖世登录/注册，再继续有效授权。本期只支持盖世远程拉起盖世游戏授权。<br>2. 确认后返回发起端，核对本次协议、授权及独立会话，均有效才获取当前UID设备；不复制盖世App令牌，不要求绑定Steam/Epic。<br>3. 取消或拒绝后回独立登录页，可改用手机号验证码。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -299,7 +305,7 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 拉起App、完成外部登录或点击模拟确认，均不等于独立App登录成功。<br>2. 未安装或无法拉起时留在登录页，国内可改用手机号，海外可用邮箱/Google，不跳虚构下载地址。旧版盖世不支持授权时提示更新；更新后须重新发起，不能复用失效请求。最低版本及更新地址待接入。<br>3. 网络失败、超时或结果未知时显示未完成，不取设备；重试发起新授权。取消、撤勾、切地区或退出后忽略旧回调。 /2026.10.28修改</td>
+<td>1. 拉起App、完成外部登录或点击模拟确认，均不等于独立App登录成功。<br>2. 未安装或无法拉起时留在登录页，可改用手机号验证码，不跳虚构下载地址。旧版盖世不支持授权时提示更新；更新后须重新发起，不能复用失效请求。最低版本及更新地址待接入。<br>3. 网络失败、超时或结果未知时显示未完成，不取设备；重试发起新授权。取消、撤勾或退出后忽略旧回调。 /2026.10.30修改</td>
 </tr>
 </tbody></table>
 <h4>3.1.3 登录后场景选择</h4>
@@ -316,7 +322,7 @@
 </tr>
 <tr>
 <td>场景描述</td>
-<td>手机号、邮箱、Google或盖世App授权等本端可用方式完成登录后。</td>
+<td>手机号验证码或盖世App授权完成登录后。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>输入／前置条件</td>
@@ -749,7 +755,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-help.png" alt="帮助中心"><br><em>图3-22：移动端帮助中心；问题搜索与文章列表。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 标题“帮助中心”，搜索框提示“搜索问题或关键词”。文章覆盖添加电脑、设备不显示、离线、扫码、Mac权限、观看/控制、文件、地区登录和退出。<br>2. 文章显示标题、分类；无匹配显示“没有找到相关问题”，并提示尝试登录、扫码、设备等关键词。<br><strong>交互说明：</strong><br>1. 输入后立即匹配标题、分类和正文，忽略首尾空格及英文大小写；清空恢复全部。搜索不另限长度，不提交或持久保存关键词。<br>2. 点击文章打开详情；返回我的不改账号、设备或会话。</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/standalone-mobile-help-v421.png" alt="帮助中心"><br><em>图3-22：移动端帮助中心；问题搜索与文章列表。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 标题“帮助中心”，搜索框提示“搜索问题或关键词”。文章覆盖添加电脑、设备不显示、离线、扫码、Mac权限、观看/控制、文件、手机号登录和退出。<br>2. 文章显示标题、分类；无匹配显示“没有找到相关问题”，并提示尝试登录、扫码、设备等关键词。<br><strong>交互说明：</strong><br>1. 输入后立即匹配标题、分类和正文，忽略首尾空格及英文大小写；清空恢复全部。搜索不另限长度，不提交或持久保存关键词。<br>2. 点击文章打开详情；返回我的不改账号、设备或会话。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -782,7 +788,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-help-article.png" alt="帮助详情"><br><em>图3-23：移动端帮助详情；分类、标题和步骤正文。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 标题“帮助详情”，显示文章分类、标题和操作步骤，底部保留返回帮助中心。<br><strong>交互说明：</strong><br>1. 点击左上返回或底部按钮回列表；阅读不自动授权、连接或发文件。</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/standalone-mobile-help-article-v421.png" alt="帮助详情"><br><em>图3-23：移动端帮助详情；分类、标题和步骤正文。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 标题“帮助详情”，显示文章分类、标题和操作步骤，底部保留返回帮助中心。<br><strong>交互说明：</strong><br>1. 点击左上返回或底部按钮回列表；阅读不自动授权、连接或发文件。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -844,11 +850,11 @@
 </tr>
 <tr>
 <td>输入／前置条件</td>
-<td>手机已登录，两端地区一致；二维码属于本产品、本次电脑登录且有效。电脑未勾协议也可扫描进入确认页，确认仍需电脑本次有效同意。</td>
+<td>手机已登录国内版盖世账号；二维码属于本产品、本次电脑登录且有效。电脑未勾协议也可扫描进入确认页，确认仍需电脑本次有效同意。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-scan.png" alt="扫一扫"><br><em>图3-26：扫一扫；从我的进入。</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-scan-confirm.png" alt="扫码登录确认"><br><em>图3-26a：电脑登录确认；确认仅登录，不自动远控。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 扫一扫显示关闭、扫描区及“扫描电脑端盖世远程登录二维码”，开启摄像头前说明授权。确认页显示“登录电脑端盖世远程”、脱敏账号、“确认登录”“取消登录”，说明仅用于登录。<br>2. 手机确认后显示“已确认本次登录”，提示回电脑查看；电脑取得并核实会话才算登录成功。<br><strong>交互说明：</strong><br>1. 点击开启摄像头请求授权，仅在本地识别二维码、不上传画面；识别正确有效码后停摄像头，进入确认页。<br>2. 点击确认再核对码、地区、状态和电脑协议同意。未同意提示“请先勾选协议”，留在确认页，不确认、不领取；电脑勾选后可用原有效码再确认。全部通过才提交当前账号确认。点击取消登录作废本次码，关闭扫码回我的。<br>3. 关闭、返回、离页或退出账号均释放摄像头。点击完成回原入口，不连接电脑、不开启允许被控。</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-scan.png" alt="扫一扫"><br><em>图3-26：扫一扫；从我的进入。</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-mobile-scan-confirm.png" alt="扫码登录确认"><br><em>图3-26a：电脑登录确认；确认仅登录，不自动远控。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 扫一扫显示关闭、扫描区及“扫描电脑端盖世远程登录二维码”，开启摄像头前说明授权。确认页显示“登录电脑端盖世远程”、脱敏账号、“确认登录”“取消登录”，说明仅用于登录。<br>2. 手机确认后显示“已确认本次登录”，提示回电脑查看；电脑取得并核实会话才算登录成功。<br><strong>交互说明：</strong><br>1. 点击开启摄像头请求授权，仅在本地识别二维码、不上传画面；识别正确有效码后停摄像头，进入确认页。<br>2. 点击确认再核对码、状态和电脑协议同意。未同意提示“请先勾选协议”，留在确认页，不确认、不领取；电脑勾选后可用原有效码再确认。全部通过才提交当前账号确认。点击取消登录作废本次码，关闭扫码回我的。<br>3. 关闭、返回、离页或退出账号均释放摄像头。点击完成回原入口，不连接电脑、不开启允许被控。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -856,7 +862,7 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 摄像头拒绝授权或不受支持时就地说明，可重新授权重试。非本产品、地区不同、取消、过期或已用码不可确认，提示电脑刷新重扫。<br>2. Demo仅在共享同源存储的页面间模拟二维码状态，未接真实跨设备认证；壳外模拟入口不是App功能。</td>
+<td>1. 摄像头拒绝授权或不受支持时就地说明，可重新授权重试。非本产品、取消、过期或已用码不可确认，提示电脑刷新重扫。<br>2. Demo仅在共享同源存储的页面间模拟二维码状态，未接真实跨设备认证；壳外模拟入口不是App功能。 /2026.10.30修改</td>
 </tr>
 </tbody></table>
 <h4>3.1.16 站内信与任务通知</h4>
@@ -903,7 +909,7 @@
 </thead>
 <tbody><tr>
 <td>功能简介</td>
-<td>本地区验证码/Google和电脑登录码扫码登录。</td>
+<td>国内手机号验证码及电脑登录码扫码登录。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>场景描述</td>
@@ -911,11 +917,11 @@
 </tr>
 <tr>
 <td>输入／前置条件</td>
-<td>独立电脑客户端；地区来自发行版本/账号配置，Demo外部工具/URL只供评审。</td>
+<td>独立电脑客户端国内版；中文/English按钮只切展示文案，不改变登录方式或账号服务。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-desktop-login.png" alt="国内电脑登录"><br><em>图3-13 国内电脑登录</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-desktop-login-overseas.png" alt="海外电脑登录"><br><em>图3-14 海外电脑登录</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-desktop-login-en.png" alt="电脑端英文登录演示"><br><em>图3-14a：英文界面演示；语言切换不改变地区、二维码或表单状态。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 无有效会话时直接显示登录页。品牌区仅盖世游戏Logo和“盖世远程”；左侧为“App扫码登录”、二维码及“使用盖世远程或盖世游戏App扫码登录”，右侧国内为手机号验证码，海外为邮箱验证码及Google。无欢迎首页、电脑插画、宣传文案、密码/微信/QQ入口；未登录隐藏账户和更多。 /2026.10.28修改<br>2. 协议默认未勾选，国内外均仅《用户协议》《隐私协议》，不含《中国移动认证服务协议》。未同意也可填写、获取验证码、点击登录/Google或扫码进入手机确认页；扫码不等于登录。盖世游戏下载链接可用，支持两款App扫码。 /2026.10.28修改<br><strong>交互说明：</strong><br>1. 点击登录、Google或扫码确认时，未同意提示“请先勾选协议”，保留输入，不提交、授权或领取会话。点击协议仅阅读。<br>2. 国内Demo为+86、11位手机号；海外邮箱去首尾空格、最多254字符并校验格式；验证码最多6位数字。空值/格式错误不发码、不提交；未发码、非6位数字或请求失效不登录。Demo不发短信/邮件，先取码后接受任意6位数字，合法手机号/邮箱均可用；示例13600008000、<a href="mailto:player@example.com">player@example.com</a>，原填充示例13800138000、<a href="mailto:demo@gamehub.test">demo@gamehub.test</a>仍可用。正式校验复用盖世账号服务。 /2026.10.28修改<br>3. 登录码绑定本发起端。勾选保留有效二维码、扫码状态、输入和验证码；撤勾废弃旧码及请求，生成可扫描但未同意的新码。已登录盖世远程App从我的→扫一扫，或使用盖世游戏App扫码确认本次电脑登录；码协议、支持版本及跨App兼容待联调。二维码不是设备被控码，不继承Steam/Epic会话。 /2026.10.28修改<br>4. Google仅海外可用，同意后走原授权，不收集密码。各方式异步完成/领取前复核本次同意和请求；首次登录即注册，取得有效会话后才读取当前UID数据。 /2026.10.28修改<br>5. 点击“盖世游戏 App”打开地区官网：国内 <a href="https://gamehub.xiaoji.com/zh-cn/%EF%BC%8C%E6%B5%B7%E5%A4%96">https://gamehub.xiaoji.com/zh-cn/，海外</a> <a href="https://gamehub.xiaoji.com/en/%EF%BC%9B%E4%B8%8D%E7%99%BB%E5%BD%95%E3%80%81%E4%B8%8D%E8%87%AA%E5%8A%A8%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85%E3%80%81%E4%B8%8D%E6%94%B9%E5%8F%98%E5%8D%8F%E8%AE%AE%E5%8B%BE%E9%80%89%E3%80%82">https://gamehub.xiaoji.com/en/；不登录、不自动下载安装、不改变协议勾选。</a></td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/standalone-desktop-login-v421.png" alt="国内电脑登录"><br><em>图3-13 国内电脑登录</em><br><img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/standalone-desktop-login-en-v421.png" alt="电脑端英文登录演示"><br><em>图3-14a：国内版英文文案，仍为手机号和扫码登录，不改变二维码或表单状态。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 无有效会话时直接显示登录页。品牌区仅盖世游戏Logo和“盖世远程”；左侧为“App扫码登录”、二维码及“使用盖世远程或盖世游戏App扫码登录”，右侧为+86手机号验证码。无欢迎首页、电脑插画、宣传文案、密码/微信/QQ入口；未登录隐藏账户和更多。 /2026.10.28修改<br>2. 协议默认未勾选，仅《用户协议》《隐私协议》，不含《中国移动认证服务协议》。未同意也可填写、获取验证码、点击登录或扫码进入手机确认页；扫码不等于登录。盖世游戏下载链接可用，支持两款App扫码。 /2026.10.28修改<br><strong>交互说明：</strong><br>1. 点击登录或扫码确认时，未同意提示“请先勾选协议”，保留输入，不提交、授权或领取会话。点击协议仅阅读。<br>2. Demo为+86、11位手机号；验证码最多6位数字。空值/格式错误不发码、不提交；未发码、非6位数字或请求失效不登录。Demo不发短信，先取码后接受任意6位数字，合法手机号均可用；示例13600008000，原填充示例13800138000仍可用。正式校验复用盖世账号服务。 /2026.10.28修改<br>3. 登录码绑定本发起端。勾选保留有效二维码、扫码状态、输入和验证码；撤勾废弃旧码及请求，生成可扫描但未同意的新码。已登录盖世远程App从我的→扫一扫，或使用盖世游戏App扫码确认本次电脑登录；码协议、支持版本及跨App兼容待联调。二维码不是设备被控码，不继承Steam/Epic会话。 /2026.10.28修改<br>4. 各方式异步完成/领取前复核本次同意和请求；首次登录即注册，取得有效会话后才读取当前UID数据。 /2026.10.28修改<br>5. 点击“盖世游戏 App”打开国内官网 <a href="https://gamehub.xiaoji.com/zh-cn/%EF%BC%9B%E4%B8%8D%E7%99%BB%E5%BD%95%E3%80%81%E4%B8%8D%E8%87%AA%E5%8A%A8%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85%E3%80%81%E4%B8%8D%E6%94%B9%E5%8F%98%E5%8D%8F%E8%AE%AE%E5%8B%BE%E9%80%89%E3%80%82">https://gamehub.xiaoji.com/zh-cn/；不登录、不自动下载安装、不改变协议勾选。</a> /2026.10.30修改</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -923,7 +929,7 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 协议未接入时显示待接入预览；邮箱254字符为Demo限制，正式SDK输入规则、有效期及发码间隔待核对。<br>2. 任一方式登录成功后其余尝试失效；撤勾、离开登录、切地区或退出均作废在途授权，忽略晚到结果。切地区清表单并恢复未勾选。</td>
+<td>1. 协议未接入时显示待接入预览；正式SDK输入规则、有效期及发码间隔待核对。<br>2. 任一方式登录成功后其余尝试失效；撤勾、离开登录或退出均作废在途授权，忽略晚到结果。 /2026.10.30修改</td>
 </tr>
 </tbody></table>
 <table>
@@ -944,8 +950,8 @@
 <tr>
 <td>等待扫码</td>
 <td>登录码有效，协议可未勾选</td>
-<td>显示二维码和手机扫码说明，本地区表单可用。</td>
-<td>扫码后进入待手机确认，不直接登录。</td>
+<td>显示二维码和手机扫码说明，手机号表单可用。</td>
+<td>扫码后进入待手机确认，不直接登录。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>已扫码待确认</td>
@@ -962,8 +968,8 @@
 <tr>
 <td>过期/取消/失败</td>
 <td>授权终止或生成失败</td>
-<td>扫码区域显示原因与重新生成，其他本地区方式可用。</td>
-<td>旧码失效，重试用新授权；时效由账号服务决定。</td>
+<td>扫码区域显示原因与重新生成，手机号登录可用。</td>
+<td>旧码失效，重试用新授权；时效由账号服务决定。 /2026.10.30修改</td>
 </tr>
 </tbody></table>
 <h4>3.2.2 登录后场景选择</h4>
@@ -980,7 +986,7 @@
 </tr>
 <tr>
 <td>场景描述</td>
-<td>手机号、邮箱、Google或电脑扫码等本端可用方式完成登录后。</td>
+<td>手机号验证码或电脑扫码完成登录后。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>输入／前置条件</td>
@@ -1423,7 +1429,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-desktop-help.png" alt="帮助中心"><br><em>图3-27：电脑端帮助中心；问题搜索和文章列表。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 标题“帮助中心”，顶部搜索问题或关键词，列表显示添加电脑、设备/离线、扫码、权限、远控、文件、账号等文章的标题及分类；无匹配显示“没有找到相关问题”。<br><strong>交互说明：</strong><br>1. 输入即匹配标题、分类及正文，去首尾空格、忽略英文大小写，不另设长度上限；清空恢复全部文章，不提交或保存搜索词。<br>2. 点击文章进入详情，不连接电脑或修改系统设置。</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/standalone-desktop-help-v421.png" alt="帮助中心"><br><em>图3-27：电脑端帮助中心；问题搜索和文章列表。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 标题“帮助中心”，顶部搜索问题或关键词，列表显示添加电脑、设备/离线、扫码、权限、远控、文件、账号等文章的标题及分类；无匹配显示“没有找到相关问题”。<br><strong>交互说明：</strong><br>1. 输入即匹配标题、分类及正文，去首尾空格、忽略英文大小写，不另设长度上限；清空恢复全部文章，不提交或保存搜索词。<br>2. 点击文章进入详情，不连接电脑或修改系统设置。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -1456,7 +1462,7 @@
 </tr>
 <tr>
 <td>需求描述</td>
-<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@ece269ef8a48af7b5c995e6626e5cb89e942ebc0/public/prd/remote-v417/standalone-desktop-help-article.png" alt="帮助详情"><br><em>图3-28：电脑端帮助详情。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 显示“帮助详情”、文章分类、标题、步骤正文及返回帮助中心按钮。<br><strong>交互说明：</strong><br>1. 点击返回，回到文章列表；阅读步骤不自动授权、登录、连接或传输。</td>
+<td><strong>图示：</strong> <img src="https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@5f03acb8b1df11b61e2369b5528281ab87def5f4/public/prd/remote-v421/standalone-desktop-help-article-v421.png" alt="帮助详情"><br><em>图3-28：电脑端帮助详情。</em><br><strong>详细说明：</strong><br><strong>展示说明：</strong><br>1. 显示“帮助详情”、文章分类、标题、步骤正文及返回帮助中心按钮。<br><strong>交互说明：</strong><br>1. 点击返回，回到文章列表；阅读步骤不自动授权、登录、连接或传输。</td>
 </tr>
 <tr>
 <td>输出／后置条件</td>
@@ -1497,7 +1503,7 @@
 </tr>
 <tr>
 <td>补充说明</td>
-<td>1. 国内外电脑均不展示中国移动认证服务协议，仅用户协议、隐私协议；Demo不代写正式条款。<br>2. 注销资格、确认、生效和回传由既有H5处理，地址及结果衔接待接入。 /2026.10.28修改</td>
+<td>1. 电脑不展示中国移动认证服务协议，仅用户协议、隐私协议；Demo不代写正式条款。<br>2. 注销资格、确认、生效和回传由既有H5处理，地址及结果衔接待接入。 /2026.10.30修改</td>
 </tr>
 </tbody></table>
 <h4>3.2.15 站内信与任务通知</h4>
@@ -1574,7 +1580,7 @@
 <tr>
 <td>remote_login_start</td>
 <td>双端登录页／新增</td>
-<td>同意协议且真正提交验证码登录、发起Google/跨App授权或扫码确认请求时上报；仅输入、获取验证码、展示/扫描二维码、阅读协议或未同意拦截不记录开始，重试使用新尝试标识。</td>
+<td>同意协议且真正提交验证码登录、发起跨App授权或扫码确认请求时上报；仅输入、获取验证码、展示/扫描二维码、阅读协议或未同意拦截不记录开始，重试使用新尝试标识。 /2026.10.30修改</td>
 <td>login_visit_id, login_attempt_id, client_side, login_method, product</td>
 </tr>
 <tr>
@@ -1617,8 +1623,8 @@
 <tr>
 <td>login_method</td>
 <td>string／start、result 必填</td>
-<td>本次发起方式；不将模拟按钮作为生产渠道。</td>
-<td>phone_sms＝国内手机号验证码；email_code＝海外邮箱验证码；google＝海外 Google 授权；gamehub_app＝移动端拉起盖世 App；gamehub_qr＝电脑端扫码。</td>
+<td>本次发起方式；不将模拟按钮作为生产渠道。 /2026.10.30修改</td>
+<td>phone_sms＝国内手机号验证码；gamehub_app＝移动端拉起盖世 App；gamehub_qr＝电脑端扫码。</td>
 </tr>
 <tr>
 <td>result</td>
@@ -1640,8 +1646,8 @@
 </tr>
 </tbody></table>
 <h3>4.2 账号、权限与兼容</h3>
-<p>两端复用盖世UID，各自建立独立会话；首次登录即注册，账号可用于盖世游戏。头像、昵称及UID来自账号服务，本端只展示，UID位于昵称下方。扫码/跨App授权绑定发起端，取消、过期或刷新使旧授权失效；回跳恢复原页，核实会话后才读取设备。账号服务异常时，保留本地区仍可用的登录方式；SDK、回调及会话撤销待联调。</p>
-<p>屏幕录制、输入、文件、应用扫描及电源权限按被控系统判断，主控登录不代替系统授权。手机号、邮箱、验证码、Google凭证、授权码、令牌和锁屏密码不写入埋点，不自动读取或保存锁屏密码。</p>
+<p>两端复用盖世UID，各自建立独立会话；首次登录即注册，账号可用于盖世游戏。头像、昵称及UID来自账号服务，本端只展示，UID位于昵称下方。扫码/跨App授权绑定发起端，取消、过期或刷新使旧授权失效；回跳恢复原页，核实会话后才读取设备。账号服务异常时，保留本端仍可用的登录方式；SDK、回调及会话撤销待联调。 /2026.10.30修改</p>
+<p>屏幕录制、输入、文件、应用扫描及电源权限按被控系统判断，主控登录不代替系统授权。手机号、验证码、AI账号凭证、授权码、令牌和锁屏密码不写入埋点，不自动读取或保存锁屏密码。 /2026.10.30修改</p>
 <p>本期未改的设备、观看、输入、文件、电源和工具规则沿用V3.10；旧入口、登录前置、仅局域网限制及游戏相关规则不再适用。 /2026.10.29修改</p>
 <h3>4.3 协议、隐私与素材</h3>
 <table>
@@ -1653,15 +1659,15 @@
 </thead>
 <tbody><tr>
 <td>登录协议</td>
-<td>国内App含用户协议、隐私协议、中国移动认证服务协议；海外App及双区电脑仅含前两项。默认未勾选，可输入、取码和扫码；提交登录、第三方授权或扫码确认时校验，未同意提示“请先勾选协议”，不发起请求。扫码确认仍校验电脑端本次有效同意；异步完成及扫码领取前再次校验。撤勾、切区、退出使旧请求失效；阅读协议或打开官网不自动同意。 /2026.10.29修改</td>
+<td>App含用户协议、隐私协议、中国移动认证服务协议；电脑仅含前两项。默认未勾选，可输入、取码和扫码；提交登录、第三方授权或扫码确认时校验，未同意提示“请先勾选协议”，不发起请求。扫码确认仍校验电脑端本次有效同意；异步完成及扫码领取前再次校验。撤勾、退出使旧请求失效；阅读协议或打开官网不自动同意。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>正式语言与官网包</td>
-<td>提供中文、英文，语言随官网下载包确定，客户端不设切换。官网提供Android、iOS、Windows、Mac入口并对应语言包；实际支持平台、版本、架构及地址待确认，不填虚构地址。</td>
+<td>本期提供国内版，官网和应用商店包按国内渠道维护。语言随官网下载包确定，正式客户端不设切换。官网提供Android、iOS、Windows、Mac入口；实际支持平台、版本、架构及地址待确认，不填虚构地址。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>Demo语言</td>
-<td>顶部外部评审区常驻“中文”“English”，即时切换并记忆，刷新或重开沿用。语言与地区独立，不改变输入、协议、登录态、页面、验证码、二维码、请求及任务，也不重新发起请求。用户内容、账号、验证码和业务标识不翻译；英文界面与中文规则一致，不新增产品设置页。</td>
+<td>顶部外部评审区常驻“中文”“English”，即时切换并记忆，刷新或重开沿用。两种文案均使用国内手机号、盖世App授权和电脑扫码；不改变输入、协议、登录态、页面、验证码、二维码、请求及任务，也不重新发起请求。用户内容、账号、验证码和业务标识不翻译；英文界面与中文规则一致，不新增产品设置页。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>正式配置</td>
@@ -1681,7 +1687,7 @@
 </tr>
 <tr>
 <td>素材</td>
-<td>暂用盖世游戏Logo和“盖世远程”工作名，正式品牌及独立下载地址待确认。盖世游戏App下载：国内<a href="https://gamehub.xiaoji.com/zh-cn/%EF%BC%8C%E6%B5%B7%E5%A4%96https://gamehub.xiaoji.com/en/%E3%80%82UU%E4%BB%85%E4%BD%9C%E7%BB%93%E6%9E%84/%E6%B5%81%E7%A8%8B%E5%8F%82%E8%80%83%EF%BC%8C%E4%B8%8D%E6%B2%BF%E7%94%A8%E5%85%B6%E5%93%81%E7%89%8C%E3%80%81%E5%8D%8F%E8%AE%AE%E5%8F%8A%E9%A2%9D%E5%A4%96%E8%83%BD%E5%8A%9B%E3%80%82">https://gamehub.xiaoji.com/zh-cn/，海外https://gamehub.xiaoji.com/en/。UU仅作结构/流程参考，不沿用其品牌、协议及额外能力。</a></td>
+<td>暂用盖世游戏Logo和“盖世远程”工作名，正式品牌及独立下载地址待确认。盖世游戏App下载：<a href="https://gamehub.xiaoji.com/zh-cn/%E3%80%82UU%E4%BB%85%E4%BD%9C%E7%BB%93%E6%9E%84/%E6%B5%81%E7%A8%8B%E5%8F%82%E8%80%83%EF%BC%8C%E4%B8%8D%E6%B2%BF%E7%94%A8%E5%85%B6%E5%93%81%E7%89%8C%E3%80%81%E5%8D%8F%E8%AE%AE%E5%8F%8A%E9%A2%9D%E5%A4%96%E8%83%BD%E5%8A%9B%E3%80%82">https://gamehub.xiaoji.com/zh-cn/。UU仅作结构/流程参考，不沿用其品牌、协议及额外能力。</a> /2026.10.30修改</td>
 </tr>
 </tbody></table>
 <h3>4.4 通知归属、权限与数据</h3>
@@ -1721,9 +1727,9 @@
 </thead>
 <tbody><tr>
 <td>独立入口埋点与上报平台</td>
-<td>核对entry、公网network_scope、新平台/Firebase、接口及历史映射，增加独立产品归属。</td>
+<td>核对entry、公网network_scope、国内上报平台、接口及历史映射，增加独立产品归属。</td>
 <td>转化、网络归因及报表。</td>
-<td>入口、公网埋点联调；页面不受影响。</td>
+<td>入口、公网埋点联调；页面不受影响。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>正式品牌、下载地址与协议主体</td>
@@ -1732,10 +1738,10 @@
 <td>正式品牌、下载及协议。</td>
 </tr>
 <tr>
-<td>首发系统、输入限制与地区配置</td>
-<td>登录渠道和中英文包已定；待确认精确系统/架构表、移动包、SDK、正式输入长度及地区配置。</td>
+<td>首发系统与输入限制</td>
+<td>国内登录方式已定；待确认精确系统/架构表、移动包、SDK及正式输入长度。</td>
 <td>权限、表单与渠道。</td>
-<td>实机与渠道验收。</td>
+<td>实机与渠道验收。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>国内App中国移动协议</td>
@@ -1745,9 +1751,9 @@
 </tr>
 <tr>
 <td>跨App授权、扫码与会话撤销</td>
-<td>复用身份、独立签发会话；核对双App扫码协议、最低版本、旧版更新地址、地区限制、回跳及失效规则。</td>
+<td>复用身份、独立签发会话；核对双App扫码协议、最低版本、国内更新地址、回跳及失效规则。</td>
 <td>授权、扫码、退出及切账号。</td>
-<td>真实登录联调。</td>
+<td>真实登录联调。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>旧设备迁移及退出后离线记录</td>
@@ -1811,9 +1817,9 @@
 </tr>
 <tr>
 <td>系统Push通道与权限</td>
-<td>分别核对iOS的系统授权、APNs凭证和后台投递；Android的目标地区/设备推送通道、后台限制和权限；Windows/Mac的系统通知接口、权限、后台接收和点击恢复。确认锁屏隐藏内容、事件去重及可用送达回执；不把本地卡片算系统送达。应用通知开关的正式默认值与设置保存范围待确认。</td>
+<td>分别核对iOS的系统授权、APNs凭证和后台投递；Android的国内设备推送通道、后台限制和权限；Windows/Mac的系统通知接口、权限、后台接收和点击恢复。确认锁屏隐藏内容、事件去重及可用送达回执；不把本地卡片算系统送达。应用通知开关的正式默认值与设置保存范围待确认。</td>
 <td>后台提醒是否可达、隐私与真实送达判断。</td>
-<td>各端系统Push联调和实机验收，不阻塞站内信演示。 /2026.10.29修改</td>
+<td>各端系统Push联调和实机验收，不阻塞站内信演示。 /2026.10.30修改</td>
 </tr>
 </tbody></table>
 <h2>六、附录</h2>
@@ -1839,7 +1845,7 @@
 <tr>
 <td>独立产品与登录讨论稿、状态卡</td>
 <td>独立远程电脑-产品形态与登录链路-评审稿.md；远程电脑状态卡.md D-049～D-077</td>
-<td>独立双端、账号、地区渠道、协议及MVP范围。</td>
+<td>独立双端、账号、国内登录、协议及MVP范围；历史稿范围以本文为准。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>UU本地实机及本轮五图</td>
@@ -1869,12 +1875,12 @@
 <tr>
 <td>移动端 Demo</td>
 <td>mobile.html</td>
-<td>国内/海外登录、场景选择、AI会话/我的设备/我的、手机预览/图片/语音、AI账号、站内信/Push演示及支持页，真实服务未接入。 /2026.10.29修改</td>
+<td>国内手机号/盖世App登录、场景选择、AI会话/我的设备/我的、手机预览/图片/语音、AI账号、站内信/Push演示及支持页，真实服务未接入。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>电脑端 Demo</td>
 <td>mac.html</td>
-<td>地区登录/扫码、场景选择后首次引导、三软件AI会话、AI账号、设备与权限、站内信/Push演示、更多/账户及支持页，真实服务未接入。 /2026.10.29修改</td>
+<td>国内手机号/扫码登录、场景选择后首次引导、三软件AI会话、AI账号、设备与权限、站内信/Push演示、更多/账户及支持页，真实服务未接入。 /2026.10.30修改</td>
 </tr>
 <tr>
 <td>PRD阅读版</td>
