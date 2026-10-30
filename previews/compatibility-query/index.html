@@ -1643,6 +1643,40 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
     }
+
+    /* V2 review: reuse existing colors, cards and separate native shells. */
+    .v2-demo-note{max-width:1100px;margin:0 auto 12px;color:#a9abb1;font-size:12px;line-height:1.6;padding:0 12px}
+    .v2-demo-note summary{cursor:pointer}.v2-demo-note select{background:#202226;color:#eee;border:1px solid #444;padding:6px;border-radius:6px}
+    .v2-game-search{display:flex;align-items:center;gap:10px;border:1px solid #373a40;border-radius:10px;background:#1a1c20;padding:0 12px;margin-bottom:12px;height:46px}
+    .v2-game-search svg{width:19px;height:19px;fill:none;stroke:#91959e;stroke-width:1.6;flex:none}
+    .v2-game-search input{min-width:0;width:100%;background:none;border:0;color:#fff;font-size:14px;outline:none}
+    .v2-game-search button{background:none;color:#aab0b9;border:0;font-size:22px}
+    .filter-grid.v2-filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)!important;gap:8px}
+    .v2-gpu select{width:100%;height:44px;background:#1c1e22;color:#eee;border:1px solid #383b42;border-radius:8px;padding:0 8px;font-size:12px}
+    .v2-games{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    .v2-game-card{display:flex;align-items:center;width:100%;min-width:0;gap:12px;padding:16px;background:#141518;border:1px solid #2e3137;border-radius:13px;color:#fff;text-align:left}
+    .v2-game-card .record-cover{width:54px;height:74px;flex:none;object-fit:cover;border-radius:8px}
+    .v2-game-copy{min-width:0;flex:1;display:flex;align-items:flex-start;flex-direction:column;gap:7px}.v2-game-copy strong{font-size:16px;line-height:1.4}.v2-game-copy small{font-size:11px;color:#828a98}
+    .v2-go{font-size:24px;color:#8b919d}.v2-load,.v2-web-back{display:block;border:1px solid #353840;background:#1c1f24;color:#ddd;border-radius:8px;padding:11px 18px;min-height:44px}
+    .v2-load{margin:16px auto}.v2-end{color:#747d8b;text-align:center;font-size:11px;margin:18px 0}.v2-web-back{margin:0 20px 14px}
+    .v2-record-context{display:flex;align-items:center;gap:12px;margin:0 0 20px}.v2-record-context>div{flex:1;min-width:0}.v2-record-context strong{font-size:17px}.v2-record-context small{display:block;color:#8b94a3;font-size:12px;margin-top:8px}.v2-record-context>.filter-select{width:112px;flex:none}
+    .v2-record-meta{display:flex;justify-content:space-between;gap:10px;color:#858e9d;font-size:11px;margin-top:16px}.v2-viewed{color:#b9b299}.v2-record.is-applied{border-color:#a28a37}.v2-record .detailed-footer{grid-template-columns:minmax(0,1fr) auto}
+    .record-cards.grid.v2-cards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.v2-cards .record-card{margin:0;min-width:0}
+    .v2-apply{background:#ffd43d;color:#18130a;border:0;border-radius:9px;min-height:44px;min-width:68px;padding:0 16px;font-size:13px;font-weight:650}
+    .v2-apply:disabled{background:#544a2b;color:#e0ce90;cursor:default}.v2-apply-group{display:flex;gap:6px;align-items:center;flex:none}
+    .v2-cancel{background:none;border:0;color:#ddd;font-size:12px;min-height:44px}.v2-apply-message{font-size:12px;line-height:1.6;color:#d4c285;margin:10px 0 0}.v2-apply-message.error,.v2-apply-message.incompatible{color:#efacb6}.v2-apply-message button{background:none;border:0;color:#ffd43d;text-decoration:underline;margin-left:5px;min-height:30px}
+    .v2-viewer .config-viewer-panel{height:100%;max-height:100%;display:flex;flex-direction:column}
+    .v2-detail-scroll{flex:1;min-height:0;overflow-y:auto}.v2-detail-scroll .config-viewer-body{overflow:visible}.v2-detail-scroll .evaluation-summary{padding:16px}.v2-detail-scroll .evaluation-verdict{margin:0 16px}
+    .v2-detail-footer{flex:none;padding:12px 16px max(12px,env(safe-area-inset-bottom));border-top:1px solid #303238;background:#151515}.v2-detail-footer>.v2-apply-message{margin:0 0 9px}
+    .v2-detail-actions{display:flex;gap:10px}.v2-detail-actions>.v2-share{flex:1;width:auto;background:#25282d;color:#eee;border-color:#3b3e45;position:static;box-shadow:none}.v2-detail-actions>.v2-apply-group{flex:2}.v2-detail-actions .v2-apply{flex:1;min-height:50px}.v2-detail-actions>.web-cta-primary{flex:2}
+    .v2-engine-meta{display:flex;justify-content:space-between;color:#929aa7;font-size:12px;padding:16px 4px}
+    .web-results .record-results{padding:0}.web-results .result-heading{margin-top:0}.web-page .web-filter{overflow:visible}.web-results .record-card{cursor:pointer}
+    .frame[data-preview="mobile"] .v2-games,.frame[data-preview="mobile"] .record-cards.grid.v2-cards{grid-template-columns:1fr}
+    .frame[data-preview]{max-height:calc(100dvh - 150px)}
+    @media(max-width:720px),(orientation:landscape) and (max-height:600px){.workbench{height:100dvh;min-height:0;display:flex;flex-direction:column;align-items:stretch;padding:0;gap:0}.v2-demo-note{flex:none;width:100%;margin:0;min-height:24px;padding:3px 12px}.frame[data-preview]{flex:1;min-height:0;height:0;max-height:none;max-width:none;width:100%;border:0;border-radius:0}}
+    @media(max-width:600px){.v2-games,.record-cards.grid.v2-cards{grid-template-columns:1fr!important}.v2-record-context{gap:8px}.v2-record-context strong{font-size:15px}.v2-demo-note{font-size:11px}.v2-detail-scroll .evaluation-summary{padding:12px}.v2-game-card{padding:14px}}
+    @media(orientation:landscape) and (max-height:600px){.frame .v2-games,.frame .record-cards.grid.v2-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}.v2-detail-footer{padding:8px 16px}.v2-detail-actions .v2-apply,.v2-detail-actions .copy-button{min-height:42px}.v2-detail-scroll .evaluation-summary{padding:12px 16px}.v2-demo-note{margin-bottom:4px}}
+
   </style>
 </head>
 <body>
@@ -1665,6 +1699,9 @@
         </div>
       </div>
     </div>
+
+    <details class="v2-demo-note"><summary>10.30 评审版 · 样例数据 / 应用模拟</summary><p>已实现两层查询、记录应用与详情分享。GPU 名称、精确等级筛选、每批 3 条、查看状态仅本次会话均为演示取值，待评审确认；未连接真实运行数据、评级、配置应用或下载。示例分享码不用于真实导入。</p><label>应用结果模拟 <select data-apply-scenario><option value="success">成功</option><option value="failure">依赖失败</option><option value="incompatible">版本不兼容</option><option value="unavailable">客户端能力不可用</option></select></label></details>
+
     <div class="frame" data-preview="mobile">
       <main id="compatibility-app" class="app"></main>
     </div>
@@ -1683,10 +1720,10 @@
       "cyberpunk-2077.jpg",
       "starfield.jpg"
     ]);
-    const COMPATIBILITY_STATUSES = ["完美兼容", "基本可玩", "部分兼容", "不可玩"];
+    const COMPATIBILITY_STATUSES = ["完美兼容", "基本可玩", "部分兼容"];
     // 站外查询页为固定链接：不带游戏／机型／兼容性参数，任何人打开都是同一份查询工具。
-    const OUTSIDE_QUERY_URL = "https://h5.gaishi.com/compatibility";
-    const OUTSIDE_QUERY_HOST = "h5.gaishi.com/compatibility";
+    const OUTSIDE_QUERY_URL = "https://z36358631-ship-it.github.io/-/previews/compatibility-query/?screen=web-landing";
+    const OUTSIDE_QUERY_HOST = "z36358631-ship-it.github.io";
     const SHARE_SHEET_TITLE = "分享兼容性查询";
     const shareChannelDefinitions = [
       { id: "wechat", label: "微信" },
@@ -1839,16 +1876,8 @@
     ];
 
     function normalizeCompatibilityStatus(item) {
-      const status = text(item.compatibilityStatus, 20);
-      if (COMPATIBILITY_STATUSES.includes(status)) return status;
-      if (status === "有部分问题") return "部分兼容";
-      // Legacy score is accepted only as migration input, never rendered or sorted.
-      const raw = item.rating;
-      const score = typeof raw === "number" || (typeof raw === "string" && raw.trim() !== "")
-        ? Number(raw) : NaN;
-      if (!Number.isFinite(score) || score < 1 || score > 5) return "暂无兼容数据";
-      return score >= 4 ? "完美兼容" : score >= 3 ? "基本可玩"
-        : score >= 2 ? "部分兼容" : "不可玩";
+      // Only an explicit server/demo category is accepted. No subjective rating migration.
+      return COMPATIBILITY_STATUSES.includes(item.compatibilityStatus) ? item.compatibilityStatus : "暂无兼容数据";
     }
 
     function compatibilityOrder(status) {
@@ -2488,12 +2517,102 @@
       ]
     };
 
+
+    // Review fixture, not production records or a compatibility classifier.
+    mockCatalog.hardware.forEach(h=>{if(h.platform==='android'&&h.type==='device')h.gpuId='android_gpu_adreno830';});
+    mockCatalog.records.forEach(r=>{r.sourceType='run';if(r.platform==='android')r.environment.engineVersion='PC 引擎 1.0（示例）';});
+    const baseRecord=mockCatalog.records.find(r=>r.id==='android_elden_oneplus');
+    const baseConfig=mockCatalog.configs.find(c=>c.recordId===baseRecord.id);
+    for(let i=1;i<=3;i++){
+      const r=JSON.parse(JSON.stringify(baseRecord)),c=JSON.parse(JSON.stringify(baseConfig));
+      r.id='demo_elden_run_'+i;r.verifiedAt='2026-10-'+(24+i);r.compatibilityStatus=i===1?'完美兼容':'基本可玩';r.avgFps=40+i;r.configIds=['demo_elden_config_'+i];
+      c.id=r.configIds[0];c.recordId=r.id;c.shareCode='DEMO_SNAPSHOT_'+i;c.updatedAt=r.verifiedAt;
+      mockCatalog.records.push(r);mockCatalog.configs.push(c);
+    }
+
     let catalog = { games: [], hardware: [], records: [], configs: [] };
     let copyFeedbackTimer = 0;
     let shareFeedbackTimer = 0;
     let webCtaTimer = 0;
     let viewerReturnFocusRecordId = null;
     let viewerScrollTop = 0;
+
+
+    // Demo-only transient state. No native application API or production config writes.
+    const reviewState={viewed:new Set(),applied:{},apply:{id:null,status:'idle',token:0,message:''},limits:{app:3,web:3},returnState:{app:null,web:null},scenario:'success'};
+    function reviewKey(){return isWebLandingScreen()?'web':'app';}
+    function deviceGpu(id){return activeCatalog().hardware.find(h=>h.id===id)?.gpuId||null;}
+    function recordTitle(){return activeCatalog().games.find(g=>g.id===activeFilters().gameId)?.name||'运行记录';}
+    function deviceSummary(){
+      const f=activeFilters();const model=activeCatalog().hardware.find(h=>h.id===f.hardwareId);
+      const gpu=activeCatalog().hardware.find(h=>h.id===(f.gpuId||deviceGpu(f.hardwareId)));
+      return [model?.displayName,gpu?.displayName].filter(Boolean).join(' / ')||'全部设备';
+    }
+    function queryScroller(){return document.querySelector('[data-web-scroll]')||document.getElementById('compatibility-app');}
+    function fpsLabel(r){return r.avgFps==null?'暂无数据':formatNumber(r.avgFps);}
+    function renderGameSummary(record){
+      const game=recordGame(record);
+      return '<button class="v2-game-card" data-game-open="'+esc(game.id)+'" type="button">'+renderCover(game,'record-cover')+'<span class="v2-game-copy"><strong>'+esc(game.name)+'</strong><small>'+esc(game.englishName)+'</small>'+renderCompatibilityStatus(record)+'</span><span class="v2-go">›</span></button>';
+    }
+    function renderQueryContent(){
+      if(state.catalogStatus==='loading')return renderState('正在加载兼容数据','正在获取运行记录。','');
+      if(state.catalogStatus==='error')return renderState('兼容数据加载失败','请稍后重试。','reload');
+      return renderRecordResults();
+    }
+    function openGameRecords(id){
+      if(!activeCatalog().games.some(g=>g.id===id))return;
+      reviewState.returnState[reviewKey()]={filters:{...activeFilters()},query:activeQueries().game,limit:reviewState.limits[reviewKey()],scroll:queryScroller()?.scrollTop||0};
+      activeFilters().gameId=id;state.openFilter=null;reviewState.limits[reviewKey()]=3;clearCopyState();render();queryScroller().scrollTop=0;
+    }
+    function backFromRecords(){
+      cancelDemoApply();
+      if(!isWebLandingScreen()&&state.entryReturn==='game-detail'){cancelDemoApply();returnFromCompatibility();return;}
+      const saved=reviewState.returnState[reviewKey()];
+      if(saved){Object.assign(activeFilters(),saved.filters);activeQueries().game=saved.query;reviewState.limits[reviewKey()]=saved.limit;}
+      else activeFilters().gameId=null;
+      state.openFilter=null;render();queryScroller().scrollTop=saved?.scroll||0;
+    }
+    function renderApplyAction(config){
+      if(!config)return '<button class="v2-apply" disabled>暂不可应用</button>';
+      const a=reviewState.apply, mine=a.id===config.id, pending=['preparing','committing'].includes(a.status), applied=reviewState.applied[config.gameId]===config.id;
+      const label=mine&&pending?(a.status==='preparing'?'准备中…':'正在应用…'):applied?'已应用':'应用';
+      return '<div class="v2-apply-group"><button class="v2-apply" data-config-apply="'+esc(config.id)+'" type="button"'+(pending||applied?' disabled':'')+'>'+label+'</button>'+(mine&&a.status==='preparing'?'<button class="v2-cancel" data-apply-cancel type="button">取消</button>':'')+'</div>';
+    }
+    function renderApplyMessage(config){
+      const a=reviewState.apply;if(!config||a.id!==config.id||!a.message||isWebLandingScreen())return '';
+      return '<p class="v2-apply-message '+esc(a.status)+'" role="status">'+esc(a.message)+(a.status==='incompatible'?'<button data-demo-update type="button">更新盖世游戏</button>':'')+'</p>';
+    }
+    function repaintPreservingScroll(){
+      const top=queryScroller()?.scrollTop||0, detail=document.querySelector('.v2-detail-scroll')?.scrollTop||0;
+      const focus=document.activeElement?.dataset?.configApply;
+      render();if(queryScroller())queryScroller().scrollTop=top;
+      const scroller=document.querySelector('.v2-detail-scroll');if(scroller)scroller.scrollTop=detail;
+      if(focus)document.querySelector('[data-config-apply="'+CSS.escape(focus)+'"]')?.focus({preventScroll:true});
+    }
+    function cancelDemoApply(){
+      if(reviewState.apply.status!=='preparing')return;
+      reviewState.apply={...reviewState.apply,token:reviewState.apply.token+1,status:'cancelled',message:'已取消，原配置保持不变'};
+    }
+    async function applyDemoConfig(id){
+      if(isWebLandingScreen()||!['compatibility'].includes(state.screen)||['preparing','committing'].includes(reviewState.apply.status))return;
+      const c=activeCatalog().configs.find(c=>c.id===id),r=activeCatalog().records.find(r=>r.id===c?.recordId);
+      if(!c||!r)return;
+      const token=reviewState.apply.token+1,scenario=reviewState.scenario;
+      reviewState.apply={id,token,status:'preparing',message:'正在校验配置并准备依赖…'};repaintPreservingScroll();
+      await new Promise(resolve=>setTimeout(resolve,700));
+      if(reviewState.apply.token!==token)return;
+      const actualGpu=deviceGpu(state.currentDeviceId);
+      if(scenario==='unavailable'){reviewState.apply.status='error';reviewState.apply.message='当前环境无法应用，请在详情分享后返回 App 导入';}
+      else if(scenario==='incompatible'){reviewState.apply.status='incompatible';reviewState.apply.message='当前盖世版本不兼容，请更新后重试';}
+      else if(!actualGpu||!r.hardwareIds.includes(actualGpu)){reviewState.apply.status='error';reviewState.apply.message='本机 GPU 与配置不匹配，原配置保持不变';}
+      else if(scenario==='failure'){reviewState.apply.status='error';reviewState.apply.message='依赖准备失败，原配置保持不变，请重试';}
+      else{
+        reviewState.apply.status='committing';reviewState.apply.message='正在应用配置…';repaintPreservingScroll();
+        await new Promise(resolve=>setTimeout(resolve,450));if(reviewState.apply.token!==token)return;
+        reviewState.applied[c.gameId]=id;reviewState.apply.status='success';reviewState.apply.message='应用成功，请返回游戏后自行启动';
+      }
+      repaintPreservingScroll();
+    }
 
     function text(value, max = 100) {
       return String(value == null ? "" : value).trim().slice(0, max);
@@ -2614,13 +2733,14 @@
           displayName,
           aliases: (Array.isArray(item.aliases) ? item.aliases : [])
             .map((value) => text(value, 60)).filter(Boolean),
+          gpuId: text(item.gpuId, 60),
           subtitle: text(item.subtitle, 100)
         };
       }).filter(Boolean));
 
       const hardwareById = new Map(hardware.map((item) => [item.id, item]));
       const gameIds = new Set(games.map((game) => game.id));
-      const records = uniqueById((Array.isArray(raw.records) ? raw.records : []).map((item) => {
+      const records = uniqueById((Array.isArray(raw.records) ? raw.records : []).filter(item => item && item.sourceType !== "review").map((item) => {
         if (!item || typeof item !== "object") return null;
         const platform = normalizePlatform(item.platform);
         const gameId = text(item.gameId, 60);
@@ -2638,12 +2758,14 @@
               soc: text(source.soc),
               mobileGpu: text(source.mobileGpu),
               androidVersion: text(source.androidVersion),
+              engineVersion: text(source.engineVersion),
               appVersion: text(source.appVersion)
             }
           : {
               macModel: text(source.macModel),
               appleChip: text(source.appleChip),
               macosVersion: text(source.macosVersion),
+              engineVersion: text(source.engineVersion),
               appVersion: text(source.appVersion),
               compatibilityLayer: text(source.compatibilityLayer),
               displayMode: text(source.displayMode)
@@ -2657,7 +2779,7 @@
           gameVersion: text(item.gameVersion, 40) || "未记录",
           verdict: text(item.verdict, 40),
           compatibilityStatus,
-          avgFps: number(item.avgFps, 0, 240),
+          avgFps: item.avgFps == null || item.avgFps === "" ? null : number(item.avgFps, 0, 240),
           verifiedAt: /^\d{4}-\d{2}-\d{2}$/.test(text(item.verifiedAt, 10))
             ? text(item.verifiedAt, 10) : "未记录",
           tags: (Array.isArray(item.tags) ? item.tags : [])
@@ -2793,14 +2915,18 @@
     }
 
     function filterRecords() {
-      const { records } = activeCatalog();
       const filters = activeFilters();
-      return sortRecords(records.filter((record) => {
+      const mappedGpu = deviceGpu(filters.hardwareId);
+      return activeCatalog().records.filter(record => {
+        if (!COMPATIBILITY_STATUSES.includes(record.compatibilityStatus)) return false;
         if (filters.gameId && record.gameId !== filters.gameId) return false;
-        if (filters.hardwareId && !record.hardwareIds.includes(filters.hardwareId)) return false;
-        if (filters.compatibilityStatus != null && record.compatibilityStatus !== filters.compatibilityStatus) return false;
+        if (filters.hardwareId && !mappedGpu) return false;
+        if (mappedGpu && !record.hardwareIds.includes(mappedGpu)) return false;
+        if (filters.gpuId && !record.hardwareIds.includes(filters.gpuId)) return false;
+        if (filters.gameId && filters.compatibilityStatus && record.compatibilityStatus !== filters.compatibilityStatus) return false;
+        if (!filters.gameId && !includesQuery([recordGame(record)?.name, recordGame(record)?.englishName], activeQueries().game)) return false;
         return true;
-      }));
+      }).sort((a,b) => compareVerifiedNewest(a,b) || a.id.localeCompare(b.id));
     }
 
     function hasActiveFilters() {
@@ -2823,19 +2949,20 @@
     }
 
     function resultRecords() {
-      return hasActiveFilters() ? filterRecords() : hotRecords();
+      const records = filterRecords();
+      if (activeFilters().gameId) return records;
+      const best = new Map();
+      for (const record of records) {
+        const prev=best.get(record.gameId);
+        if (!prev || compatibilityOrder(record.compatibilityStatus)>compatibilityOrder(prev.compatibilityStatus)) best.set(record.gameId, record);
+      }
+      return [...best.values()].filter(r=>!activeFilters().compatibilityStatus||r.compatibilityStatus===activeFilters().compatibilityStatus).sort((a,b)=>compatibilityOrder(b.compatibilityStatus)-compatibilityOrder(a.compatibilityStatus)||compareVerifiedNewest(a,b));
     }
 
     function filterDefinitions() {
-      return [
-        { key: "game", label: "游戏", placeholder: "搜索游戏名称" },
-        {
-          key: "hardware",
-          label: "机型",
-          placeholder: "搜索机型"
-        },
-        { key: "status", label: "兼容性", placeholder: "搜索兼容性" }
-      ];
+      return activeFilters().gameId
+        ? [{key:"status",label:"兼容性",placeholder:"搜索兼容性"}]
+        : [{key:"hardware",label:"机型",placeholder:"搜索机型"},{key:"status",label:"兼容性",placeholder:"搜索兼容性"}];
     }
 
     function includesQuery(values, query) {
@@ -2955,16 +3082,15 @@
     }
 
     function renderFilterBar() {
-      const filters = activeFilters();
-      const selectedCount = [filters.gameId, filters.hardwareId, filters.compatibilityStatus]
-        .filter((value) => value != null).length;
-      return '<section class="filter-panel">' +
-        '<div class="filter-grid">' +
-          filterDefinitions().map(renderSearchableSelect).join("") +
-        '</div>' +
-        (selectedCount ? '<div class="filter-summary"><span>已选 ' + selectedCount + ' 项</span>' +
-          '<button data-clear-filters type="button">清空</button></div>' : '') +
-        '</section>';
+      const f=activeFilters(), q=activeQueries();
+      if(f.gameId) return '<section class="v2-record-context"><div><strong>'+esc(recordTitle())+'</strong><small>'+esc(deviceSummary())+'</small></div>'+renderSearchableFilter(filterDefinitions()[0])+'</section>';
+      const gpuOptions=activeCatalog().hardware.filter(h=>h.type==='gpu');
+      return '<section class="filter-panel"><div class="v2-game-search">'+nativeSearchIcon()+
+        '<input data-game-search value="'+esc(q.game)+'" placeholder="搜索游戏名称" aria-label="搜索游戏名称" autocomplete="off">'+
+        (q.game?'<button data-search-clear type="button" aria-label="清空游戏搜索">×</button>':'')+'</div>'+
+        '<div class="filter-grid v2-filters">'+renderSearchableFilter(filterDefinitions()[0])+
+        '<label class="v2-gpu"><select data-gpu-select aria-label="GPU"><option value="">全部 GPU</option>'+gpuOptions.map(h=>'<option value="'+esc(h.id)+'"'+(f.gpuId===h.id?' selected':'')+'>'+esc(h.displayName)+'</option>').join('')+'</select></label>'+renderSearchableFilter(filterDefinitions()[1])+'</div>'+
+        ((f.hardwareId||f.gpuId||f.compatibilityStatus)?'<div class="filter-summary"><span>'+esc(deviceSummary())+'</span><button data-clear-filters type="button">清空</button></div>':'')+'</section>';
     }
 
     function platformLabel() {
@@ -3127,26 +3253,18 @@
     }
 
     function renderDetailedRecord(record) {
-      const game = recordGame(record);
-      const environment = record.environment;
-      return '<article class="record-card detailed" data-record-row="' + esc(record.id) +
-        '" data-record-open="' + esc(record.id) + '" tabindex="0" role="button"' +
-        ' aria-label="查看' + esc(game.name) + '兼容性评价">' +
-          '<header>' + renderCover(game, "record-cover") + '<div><strong>' + esc(game.name) +
-            '</strong><span>' + esc(game.englishName) + '</span></div></header>' +
-          '<div class="detailed-meta"><span>' + esc(recordHardwareSummary(record)) + '</span><span>' +
-            esc(recordEnvironmentSummary(record)) + '</span><span>游戏版本 ' + esc(record.gameVersion) +
-            '</span><span>盖世版本 ' + esc(environment.appVersion) + '</span></div>' +
-          '<div class="detailed-footer"><div class="record-status-line">' +
-            renderCompatibilityStatus(record) + '<span class="average-fps">平均帧率 ' +
-            formatNumber(record.avgFps) + '</span></div>' + configCopyAction(record) + '</div>' +
-        '</article>';
+      const game=recordGame(record), config=recordConfigs(record.id)[0];
+      const applied=reviewState.applied[record.gameId]===config?.id;
+      const viewed=reviewState.viewed.has(record.id);
+      return '<article class="record-card detailed v2-record'+(applied?' is-applied':'')+'" data-record-row="'+esc(record.id)+'" data-record-open="'+esc(record.id)+'" tabindex="0" role="button" aria-label="查看'+esc(game.name)+'方案详情">'+
+        '<header>'+renderCover(game,'record-cover')+'<div><strong>'+esc(game.name)+'</strong><span>'+esc(record.environment.deviceModel)+' / '+esc(record.environment.mobileGpu)+'</span></div></header>'+
+        '<div class="v2-record-meta"><span>运行于 '+esc(record.verifiedAt)+'</span><span class="v2-viewed">'+(applied?'已应用':viewed?'已查看':'')+'</span></div>'+
+        '<div class="detailed-footer"><div class="record-status-line">'+renderCompatibilityStatus(record)+'<span class="average-fps">平均帧率 '+fpsLabel(record)+'</span></div>'+
+        (isWebLandingScreen()?configCopyAction(record):renderApplyAction(config))+'</div>'+renderApplyMessage(config)+'</article>';
     }
 
     function renderRecordCards(records) {
-      const renderer = state.viewMode === "grid" ? renderDetailedRecord : renderCompactRecord;
-      return '<div class="record-cards ' + esc(state.viewMode) + '" data-record-cards>' +
-        records.map(renderer).join("") + '</div>';
+      return '<div class="record-cards grid v2-cards" data-record-cards>'+records.map(renderDetailedRecord).join('')+'</div>';
     }
 
     function renderViewModeSwitch() {
@@ -3162,16 +3280,12 @@
     }
 
     function renderRecordResults() {
-      const records = resultRecords();
-      if (!records.length) {
-        return '<section class="no-results"><h2>暂无符合条件的兼容记录</h2>' +
-          '<p>当前筛选条件会继续保留。</p><button data-clear-filters type="button">清空筛选</button></section>';
-      }
-      return '<section class="record-results"><div class="result-heading">' +
-        '<div><h2>' + (hasActiveFilters() ? '兼容记录' : '热门兼容记录') +
-          '</h2><strong data-result-count>' + records.length + ' 条</strong></div>' +
-        renderViewModeSwitch() + '</div>' +
-        renderRecordTable(records) + renderRecordCards(records) + '</section>';
+      const all=resultRecords(), isRecords=!!activeFilters().gameId;
+      const visible=all.slice(0,reviewState.limits[reviewKey()]);
+      if(!all.length) return '<section class="no-results"><h2>暂无符合条件的兼容记录</h2><p>可以调整筛选条件后重试。</p><button data-reset-results type="button">清空筛选</button></section>';
+      return '<section class="record-results"><div class="result-heading"><div><h2>'+(isRecords?'运行记录':'适配游戏')+'</h2><strong data-result-count>'+all.length+(isRecords?' 条':' 款')+'</strong></div></div>'+
+        (isRecords?renderRecordCards(visible):'<div class="v2-games">'+visible.map(renderGameSummary).join('')+'</div>')+
+        (visible.length<all.length?'<button class="v2-load" data-load-more type="button">加载更多</button>':'<p class="v2-end">已显示全部'+(isRecords?'记录':'游戏')+'</p>')+'</section>';
     }
 
     function clearCopyFeedbackTimer() {
@@ -3197,7 +3311,7 @@
         else button.removeAttribute("aria-disabled");
         const label = copyFeedbackLabel(status, detail, defaultLabel);
         button.setAttribute("aria-label", label);
-        if (detail) button.textContent = label;
+        if (detail) button.textContent = status === "idle" ? defaultLabel : label;
         else button.innerHTML = status === "success" ? copySuccessIcon() : copyIcon();
       });
     }
@@ -3242,7 +3356,8 @@
       const configs = recordConfigs(recordId);
       const app = document.getElementById("compatibility-app");
       viewerReturnFocusRecordId = recordId;
-      viewerScrollTop = app ? app.scrollTop : 0;
+      viewerScrollTop = queryScroller()?.scrollTop || 0;
+      reviewState.viewed.add(recordId);
       state.viewer = { recordId, configId: configs[0]?.id || null };
       state.openFilter = null;
       clearCopyState();
@@ -3254,12 +3369,13 @@
 
     function closeConfigViewer() {
       if (!state.viewer.recordId) return false;
+      cancelDemoApply();
       const recordId = viewerReturnFocusRecordId || state.viewer.recordId;
       const scrollTop = viewerScrollTop;
       state.viewer = { recordId: null, configId: null };
       clearCopyState();
       render();
-      const app = document.getElementById("compatibility-app");
+      const app = queryScroller();
       if (app) app.scrollTop = scrollTop;
       const trigger = visibleRecordTrigger(recordId);
       if (trigger) trigger.focus({ preventScroll: true });
@@ -3348,35 +3464,11 @@
     }
 
     function renderConfigDetail(config) {
-      if (!config) {
-        return '<section class="evaluation-empty"><h3>暂无启动配置</h3>' +
-          '<p>当前兼容记录可正常查看，但暂未提供可复制的分享码。</p></section>';
-      }
-      const copyStatus = state.copy.configId === config.id ? state.copy.status : "idle";
-      const copyStateClass = copyStatus === "idle" ? "" : " copy-" + copyStatus;
-      const copyLabel = copyFeedbackLabel(copyStatus, true, "复制分享码");
-      return '<div class="config-detail" data-config-detail="' + esc(config.id) + '">' +
-        '<div class="config-applicability" data-config-applicability>' +
-          '<strong>适用范围</strong>' +
-          '<div class="config-applicability-grid">' +
-            '<div><span>游戏版本</span><b>' + esc(config.applicability.gameVersion) + '</b></div>' +
-            '<div><span>' + (state.platform === "android" ? "适用 GPU" : "适用芯片") + '</span>' +
-              '<b>' + esc(config.applicability.hardware) + '</b></div>' +
-            '<div><span>系统范围</span><b>' + esc(config.applicability.systemRange) + '</b></div>' +
-          '</div>' +
-        '</div>' +
-        '<h3 class="settings-title">系统智能设置方案</h3>' +
-        configSettingSections(config).map((section) =>
-          '<section class="setting-section"><h4>' + esc(section.title) + '</h4><div class="setting-list">' +
-            section.items.map((setting) => renderSettingItem(setting)).join("") + '</div></section>'
-        ).join("") +
-        '<div class="config-meta">更新于 ' + esc(config.updatedAt) + ' · ' +
-          formatNumber(config.downloadCount) + ' 次下载</div>' +
-        '<button class="copy-button' + copyStateClass + '" data-config-copy="' + esc(config.id) +
-          '" data-copy-default-label="复制分享码" type="button" aria-live="polite" aria-label="' +
-          esc(copyLabel) + '"' + (copyStatus === "pending" ? ' aria-disabled="true"' : '') + '>' +
-          esc(copyLabel) + '</button>' +
-      '</div>';
+      if(!config) return '<section class="evaluation-empty"><h3>暂无启动配置</h3><p>当前记录暂无可用快照。</p></section>';
+      const record=activeCatalog().records.find(r=>r.id===config.recordId);
+      return '<div class="config-detail" data-config-detail="'+esc(config.id)+'"><div class="config-applicability" data-config-applicability><strong>运行与版本</strong><div class="config-applicability-grid">'+
+        [['游戏版本',record.gameVersion],['适用 GPU',config.applicability.hardware],['系统版本',record.environment.androidVersion],['盖世版本',record.environment.appVersion],['引擎 / 插件版本',record.environment.engineVersion||'未知'],['运行时间',record.verifiedAt]].map(([k,v])=>'<div><span>'+esc(k)+'</span><b>'+esc(v||'未知')+'</b></div>').join('')+'</div></div>'+
+        '<h3 class="settings-title">启动配置方案</h3>'+configSettingSections(config).map(section=>'<section class="setting-section"><h4>'+esc(section.title)+'</h4><div class="setting-list">'+section.items.map(setting=>renderSettingItem(setting)).join('')+'</div></section>').join('')+'</div>';
     }
 
     function renderConfigChoice(config, selectedId) {
@@ -3386,26 +3478,17 @@
     }
 
     function renderConfigViewer() {
-      const record = activeCatalog().records.find((item) => item.id === state.viewer.recordId);
-      if (!record) return "";
-      const configs = recordConfigs(state.viewer.recordId);
-      const selected = configs.find((config) => config.id === state.viewer.configId) || configs[0] || null;
-      const game = recordGame(record);
-      return '<div class="config-viewer-backdrop" data-config-viewer data-evaluation-viewer role="dialog" aria-modal="true"' +
-        ' aria-labelledby="config-viewer-title">' +
-        '<section class="config-viewer-panel">' +
-          '<header><button data-config-close type="button" aria-label="返回兼容记录">←</button>' +
-            '<div><h2 id="config-viewer-title">兼容性评价</h2></div>' +
-            '<button data-config-close type="button" aria-label="关闭兼容性评价">×</button></header>' +
-          '<div class="evaluation-summary">' + renderCover(game, "evaluation-cover") +
-            '<div><h3>' + esc(game.name) + '</h3><p>' + esc(recordHardwareSummary(record)) + '</p>' +
-              '<div class="record-status-line">' + renderCompatibilityStatus(record) +
-                '<span class="average-fps">平均帧率 ' + formatNumber(record.avgFps) + '</span></div></div></div>' +
-          '<section class="evaluation-verdict"><h3>兼容性结论</h3><p>' + esc(record.notes) + '</p></section>' +
-          (configs.length > 1 ? '<nav class="config-choice-list" aria-label="配置方案">' +
-            configs.map((config) => renderConfigChoice(config, selected.id)).join("") + '</nav>' : '') +
-          '<div class="config-viewer-body">' + renderConfigDetail(selected) + '</div>' +
-        '</section></div>';
+      const record=activeCatalog().records.find(r=>r.id===state.viewer.recordId);
+      if(!record) return '';
+      const config=recordConfigs(record.id).find(c=>c.id===state.viewer.configId)||recordConfigs(record.id)[0];
+      const game=recordGame(record), status=state.copy.configId===config?.id?state.copy.status:'idle';
+      const copy= config?'<button class="copy-button v2-share copy-'+status+'" data-config-copy="'+esc(config.id)+'" data-copy-default-label="分享" type="button" aria-live="polite">'+esc(copyFeedbackLabel(status,true,'分享'))+'</button>':'';
+      return '<div class="config-viewer-backdrop v2-viewer" data-config-viewer data-evaluation-viewer role="dialog" aria-modal="true" aria-labelledby="config-viewer-title"><section class="config-viewer-panel">'+
+        '<header><button data-config-close type="button" aria-label="返回运行记录">←</button><div><h2 id="config-viewer-title">方案详情</h2></div></header>'+
+        '<div class="v2-detail-scroll"><div class="evaluation-summary">'+renderCover(game,'evaluation-cover')+'<div><h3>'+esc(game.name)+'</h3><p>'+esc(recordHardwareSummary(record))+'</p><div class="record-status-line">'+renderCompatibilityStatus(record)+'<span class="average-fps">平均帧率 '+fpsLabel(record)+'</span></div></div></div>'+
+        '<section class="evaluation-verdict"><h3>运行表现</h3><p>'+esc(record.notes)+'</p></section><div class="config-viewer-body">'+renderConfigDetail(config)+'</div></div>'+
+        '<footer class="v2-detail-footer">'+renderApplyMessage(config)+(isWebLandingScreen()&&state.web.cta?'<p class="web-hint">'+esc(state.web.cta)+'</p>':'')+'<div class="v2-detail-actions">'+copy+
+        (isWebLandingScreen()?'<button class="web-cta-primary" data-web-cta="download" type="button">下载盖世游戏</button>':renderApplyAction(config))+'</div></footer></section></div>';
     }
 
     function renderState(title, copy, action) {
@@ -3507,7 +3590,7 @@
         '<section class="engine-card"><header><h2>PC游戏引擎</h2><small>当前机型：一加 13</small></header>' +
           '<button class="engine-compatibility" data-open-compatibility="game-detail" data-entry-game-id="steam_1245620"' +
             ' type="button" aria-label="查看艾尔登法环兼容记录"><div><span>兼容性</span>' +
-              '<strong>' + esc(entryCompatibilitySummary("steam_1245620")) + '</strong></div><b>查看兼容记录　›</b></button></section>' +
+              '<strong>查看兼容记录</strong></div><b aria-hidden="true">›</b></button><div class="v2-engine-meta"><span>云存档　暂无</span><span>游戏时长　12.6 小时</span></div></section>' +
         '<section class="detail-copy"><h2>游戏介绍</h2><p>在辽阔交错的世界中探索未知区域，挑战强敌，并按自己的方式塑造角色与战斗风格。</p></section></div>' +
         '<div class="detail-action-bar"><button type="button" aria-label="更多">•••</button>' +
           '<button class="primary" type="button">启动游戏</button></div></section>';
@@ -3522,7 +3605,7 @@
             '<button type="button" aria-label="更多">•••</button></div></div>' +
         '<div class="handheld-metrics"><button class="handheld-metric entry" data-open-compatibility="game-detail"' +
           ' data-entry-game-id="steam_1245620" type="button" aria-label="查看艾尔登法环兼容记录">' +
-          '<span>兼容性</span><strong>' + esc(entryCompatibilitySummary("steam_1245620")) + '</strong><b aria-hidden="true">›</b></button>' +
+          '<span>运行记录</span><strong>查看兼容记录</strong><b aria-hidden="true">›</b></button>' +
           '<article class="handheld-metric"><span>云存档</span><strong>暂无</strong></article>' +
           '<article class="handheld-metric"><span>游戏时长</span><strong>12.6 小时</strong></article>' +
           '<article class="handheld-metric"><span>玩家评分</span><strong>9.2 特别好评</strong></article></div></section>';
@@ -3543,6 +3626,8 @@
     }
 
     function openCompatibility(source, gameId) {
+      cancelDemoApply();
+      reviewState.returnState.app=null;reviewState.limits.app=3;
       state.entryReturn = source;
       state.screen = "compatibility";
       state.filters = {
@@ -3751,79 +3836,23 @@
     }
 
     function renderWebLanding() {
-      const records = resultRecords();
-      return '<div class="web-page"><div class="web-scroll" data-web-scroll>' +
-        '<div class="browser-bar">' +
-          '<span class="browser-lock" aria-hidden="true">🔒</span>' +
-          '<span class="browser-url">' + esc(OUTSIDE_QUERY_URL) + '</span>' +
-          '<span class="browser-tag">站外</span>' +
-        '</div>' +
-        '<header class="web-header">' +
-          '<div class="web-brand"><span class="web-logo">GH</span>' +
-            '<div><strong>盖世游戏 · 兼容性查询</strong><small>站外只读查询页</small></div></div>' +
-          '<p class="web-tip">当前为站外浏览，无法识别你的手机机型，请手动选择机型。页内只提供查询与结果浏览，不复制分享码、不应用配置。</p>' +
-        '</header>' +
-        '<section class="web-filter">' + renderFilterBar() + '</section>' +
-        '<section class="web-results">' +
-          '<div class="web-result-heading"><h2>' +
-            (hasActiveFilters() ? '兼容记录' : '热门兼容记录') + '</h2>' +
-            '<strong>' + records.length + ' 条</strong></div>' +
-          (records.length
-            ? '<div class="web-cards">' + records.map(renderWebRecordCard).join("") + '</div>'
-            : '<div class="web-empty"><p>暂无符合条件的兼容记录</p>' +
-              '<button class="web-empty-clear" data-clear-filters type="button">清空筛选</button></div>') +
-        '</section>' +
-        '<div class="web-open-app"><button data-web-cta="open" type="button">打开盖世游戏应用配置</button></div></div>' +
-        '<footer class="web-cta" aria-label="下载盖世游戏">' +
-          '<button class="web-cta-primary" data-web-cta="download" type="button">下载盖世游戏</button>' +
-          (state.web.cta ? '<div class="web-hint" aria-live="polite">' + esc(state.web.cta) + '</div>' : '') +
-        '</footer>' +
-      '</div>';
+      const viewer=state.catalogStatus==='ready'?renderConfigViewer():'';
+      return '<div class="web-page"'+(viewer?' inert aria-hidden="true"':'')+'><div class="web-scroll" data-web-scroll><header class="web-header">'+
+        '<div class="web-brand"><span class="web-logo">GH</span><div><strong>盖世游戏 · 兼容性查询</strong><small>查找适配游戏与启动方案</small></div></div><p class="web-tip">请手动选择设备。支持查看与分享配置，应用配置请返回盖世游戏。</p></header>'+
+        (activeFilters().gameId?'<button class="v2-web-back" data-records-back type="button">← 返回适配游戏</button>':'')+
+        '<section class="web-filter">'+renderFilterBar()+'</section><section class="web-results">'+renderQueryContent()+'</section><div class="web-open-app"><button data-web-cta="open" type="button">打开盖世游戏应用配置</button></div></div>'+
+        '<footer class="web-cta" aria-label="下载盖世游戏"><button class="web-cta-primary" data-web-cta="download" type="button">下载盖世游戏</button>'+(state.web.cta?'<div class="web-hint" aria-live="polite">'+esc(state.web.cta)+'</div>':'')+'</footer></div>'+viewer;
     }
 
     function render() {
       syncWorkbenchControls();
-      if (state.screen === "web-landing") {
-        document.getElementById("compatibility-app").innerHTML = renderWebLanding();
-        return;
-      }
-      if (state.screen !== "compatibility") {
-        document.getElementById("compatibility-app").innerHTML = renderNativeScreen();
-        return;
-      }
-      let content = "";
-      if (state.catalogStatus === "loading") {
-        content = renderState("正在加载兼容数据", "正在获取游戏、兼容记录和配置。", "");
-      } else if (state.catalogStatus === "error") {
-        content = renderState("兼容数据加载失败", "暂时无法获取数据，请重试。", "reload");
-      } else if (activeCatalog().records.length === 0) {
-        content = renderState(
-          "当前" + platformLabel() + "暂无兼容数据",
-          "当前平台暂时没有可展示的兼容记录，请重新加载。",
-          "reload"
-        );
-      } else {
-        content = renderFilterBar() + renderRecordResults();
-      }
-      const viewer = state.catalogStatus === "ready" ? renderConfigViewer() : "";
-      const shareSheet = state.share.open ? renderShareSheet() : "";
-      const pageAccessibility = viewer || state.share.open ? ' inert aria-hidden="true"' : "";
-      // 加载中／加载失败／无数据时没有可分享的查询内容，不展示分享入口。
-      const shareEntry = state.catalogStatus === "ready" && activeCatalog().records.length > 0
-        ? '<div class="header-actions">' + renderShareButton() + '</div>' : '';
-      document.getElementById("compatibility-app").innerHTML =
-        '<div class="page"' + pageAccessibility + '><header class="page-header">' +
-          '<div class="header-topline">' +
-            '<button class="back-button" data-back type="button" aria-label="返回">←</button>' +
-            '<h1>兼容性查询</h1>' +
-            shareEntry +
-          '</div>' +
-          '<p>查看当前平台的运行表现与启动配置</p>' +
-        '</header>' + content + '</div>' + viewer + shareSheet;
-      document.querySelectorAll("[data-demo-platform]").forEach((button) => {
-        button.classList.toggle("active", button.dataset.demoPlatform === state.platform);
-        button.disabled = state.platformSource === "bridge";
-      });
+      const app=document.getElementById('compatibility-app');
+      if(state.screen==='web-landing'){app.innerHTML=renderWebLanding();return;}
+      if(state.screen!=='compatibility'){app.innerHTML=renderNativeScreen();return;}
+      const viewer=state.catalogStatus==='ready'?renderConfigViewer():'';
+      const shareSheet=state.share.open?renderShareSheet():'';
+      const share=state.catalogStatus==='ready'&&resultRecords().length&&!activeFilters().gameId?'<div class="header-actions">'+renderShareButton()+'</div>':'';
+      app.innerHTML='<div class="page"'+(viewer||state.share.open?' inert aria-hidden="true"':'')+'><header class="page-header"><div class="header-topline"><button class="back-button" '+(activeFilters().gameId?'data-records-back':'data-back')+' type="button" aria-label="返回">←</button><h1>'+(activeFilters().gameId?'运行记录':'兼容性查询')+'</h1>'+share+'</div></header>'+renderFilterBar()+renderQueryContent()+'</div>'+viewer+shareSheet;
     }
 
     function setCopyResult(requestId, configId, ok) {
@@ -3908,7 +3937,7 @@
       state.copy = { requestId, configId, status: "pending", message: "复制中…" };
       syncCopyFeedback(configId);
       try {
-        const copied = await copyWithBridge(payload) || await copyWithClipboard(payload) ||
+        const copied = (!isWebLandingScreen() && await copyWithBridge(payload)) || await copyWithClipboard(payload) ||
           fallbackCopyText(payload);
         return setCopyResult(requestId, configId, copied);
       } catch (error) {
@@ -3932,12 +3961,36 @@
       if (!(key in queries)) return;
       if (key === "game") filters.gameId = null;
       if (key === "hardware") filters.hardwareId = null;
+      reviewState.limits[reviewKey()]=3;
       if (key === "status") filters.compatibilityStatus = null;
       queries[key] = "";
       state.openFilter = null;
       state.viewer = { recordId: null, configId: null };
       clearCopyState();
     }
+
+
+    document.addEventListener('input',event=>{
+      if(!event.target.matches('[data-game-search]'))return;
+      const pos=event.target.selectionStart;activeQueries().game=event.target.value;reviewState.limits[reviewKey()]=3;
+      render();const input=document.querySelector('[data-game-search]');input.focus();input.setSelectionRange(pos,pos);
+    });
+    document.addEventListener('change',event=>{
+      if(event.target.matches('[data-gpu-select]')){activeFilters().gpuId=event.target.value||null;reviewState.limits[reviewKey()]=3;render();}
+      if(event.target.matches('[data-apply-scenario]')){reviewState.scenario=event.target.value;}
+    });
+    document.addEventListener('click',event=>{
+      const target=event.target.closest('[data-game-open],[data-records-back],[data-config-apply],[data-apply-cancel],[data-search-clear],[data-load-more],[data-reset-results],[data-demo-update]');
+      if(!target)return;event.preventDefault();event.stopImmediatePropagation();
+      if(target.hasAttribute('data-game-open'))openGameRecords(target.dataset.gameOpen);
+      else if(target.hasAttribute('data-records-back')){cancelDemoApply();backFromRecords();}
+      else if(target.hasAttribute('data-config-apply'))applyDemoConfig(target.dataset.configApply);
+      else if(target.hasAttribute('data-apply-cancel')){cancelDemoApply();repaintPreservingScroll();}
+      else if(target.hasAttribute('data-search-clear')){activeQueries().game='';reviewState.limits[reviewKey()]=3;render();}
+      else if(target.hasAttribute('data-load-more')){reviewState.limits[reviewKey()]+=3;repaintPreservingScroll();}
+      else if(target.hasAttribute('data-reset-results')){activeFilters().compatibilityStatus=null;activeFilters().gpuId=null;if(!activeFilters().gameId){activeFilters().hardwareId=null;activeQueries().game='';}render();}
+      else if(target.hasAttribute('data-demo-update')){reviewState.apply.message='Demo 演示：正式环境进入 App 更新入口';reviewState.apply.status='error';repaintPreservingScroll();}
+    },true);
 
     document.addEventListener("input", (event) => {
       const key = event.target.dataset.filterQuery;
@@ -3953,6 +4006,7 @@
     });
 
     document.addEventListener("keydown", (event) => {
+      if(event.key==='Escape' && !state.viewer.recordId && !state.openFilter && !state.share.open && activeFilters().gameId){event.preventDefault();backFromRecords();return;}
       if (state.share.open) {
         if (event.key === "Escape") {
           event.preventDefault();
@@ -4071,6 +4125,9 @@
 
       const demoScreen = event.target.closest("[data-demo-screen]");
       if (demoScreen) {
+        cancelDemoApply();
+        reviewState.returnState.app=null;reviewState.returnState.web=null;
+        reviewState.limits.app=3;reviewState.limits.web=3;
         state.screen = demoScreen.dataset.demoScreen;
         state.entryReturn = null;
         state.openFilter = null;
@@ -4163,6 +4220,7 @@
         const filters = activeFilters();
         const queries = activeQueries();
         if (!(key in queries)) return;
+        reviewState.limits[reviewKey()]=3;
         if (key === "game") filters.gameId = value;
         if (key === "hardware") filters.hardwareId = value;
         if (key === "status") filters.compatibilityStatus = COMPATIBILITY_STATUSES.includes(value) ? value : null;
@@ -4182,6 +4240,8 @@
       }
 
       if (event.target.closest("[data-clear-filters]")) {
+        reviewState.limits[reviewKey()]=3;
+        activeFilters().gpuId=null;
         const filters = activeFilters();
         const queries = activeQueries();
         filters.gameId = null;
@@ -4257,6 +4317,7 @@
         applyPlatform(resolved.platform, resolved.source);
       },
       setCatalog(catalog) {
+        cancelDemoApply();
         setCatalog(catalog);
       },
       setCatalogLoading() {
