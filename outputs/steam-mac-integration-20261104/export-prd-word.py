@@ -10,9 +10,11 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
 parser = argparse.ArgumentParser()
-parser.add_argument('--version', default='V1.1')
-VERSION = parser.parse_args().version
-OUT = ROOT / '盖世游戏MacSteam接入产品需求.docx'
+parser.add_argument('--version', default='V1.2')
+parser.add_argument('--output', default='盖世游戏MacSteam接入产品需求-V1.2.docx')
+args = parser.parse_args()
+VERSION = args.version
+OUT = ROOT / args.output
 doc = Document()
 sec = doc.sections[0]
 sec.page_width, sec.page_height = Inches(8.5), Inches(11.7)
@@ -80,7 +82,6 @@ def table(lines):
     rows = [[s.strip() for s in l.strip().strip('|').split('|')] for l in lines]
     rows = [r for r in rows if not all(re.fullmatch(r'[:\- ]+',x) for x in r)]
     n=len(rows[0]); heads=rows[0]
-    if heads[0]=='状态': doc.add_page_break()
     if n==2: widths=[1.3,5.9]
     elif heads[0]=='类型': widths=[.7,2.15,1.1,3.25]
     elif heads[0]=='事件': widths=[1.7,1.0,2.4,2.1]
