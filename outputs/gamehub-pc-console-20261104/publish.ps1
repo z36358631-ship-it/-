@@ -8,6 +8,8 @@ $publicationFiles=@(
  'outputs/gamehub-pc-console-20261104/verify-homeplay.cjs',
  'outputs/gamehub-pc-console-20261104/homeplay-verification.json',
  'outputs/gamehub-pc-console-20261104/homeplay-review.md',
+ 'outputs/gamehub-pc-console-20261104/assets/homeplay/compatibility-status.png',
+ 'outputs/gamehub-pc-console-20261104/assets/homeplay/compatibility-status.json',
  'outputs/gamehub-pc-console-20261104/assets/homeplay/hades-gameplay.mp4',
  'outputs/gamehub-pc-console-20261104/assets/homeplay/hades-frame-0.jpg',
  'outputs/gamehub-pc-console-20261104/assets/homeplay/source.json',
@@ -61,7 +63,7 @@ try {
  git fetch origin refs/heads/master:refs/remotes/origin/master
  if($LASTEXITCODE -ne 0){throw 'Cannot fetch Pages source'}
  $base=(git rev-parse refs/remotes/origin/master).Trim()
- $known='11ea892006abfc8fe205cb395942b96e9464c668'
+ $known='0dfcf3b186b1168bab787115e77d46f83cf370ef'
  $remoteChanges=@(git diff --name-only $known $base -- $publicationFiles)
  if($remoteChanges.Count){throw ('Scoped remote changes require reconciliation: '+($remoteChanges -join ', '))}
  $env:GIT_INDEX_FILE=$publishIndex
@@ -77,7 +79,7 @@ try {
  $tree=(git write-tree).Trim()
  $changed=@(git diff-tree --no-commit-id --name-only -r $base $tree)
  if(!$changed.Count -or @($changed | Where-Object {$_ -notin $publicationFiles}).Count){throw 'Publication scope check failed'}
- $commit=(git commit-tree $tree -p $base -m 'Add compatibility badges to playable game artwork').Trim()
+ $commit=(git commit-tree $tree -p $base -m 'Use reference compatibility icons on playable artwork').Trim()
  if($LASTEXITCODE -ne 0){throw 'Cannot create publication commit'}
  git push origin "${commit}:refs/heads/master"
  if($LASTEXITCODE -ne 0){throw 'Normal push rejected; reconcile without force push'}

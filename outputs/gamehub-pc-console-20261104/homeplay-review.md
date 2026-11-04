@@ -57,3 +57,11 @@
 审核者：主管root。2026-11-04。游戏画面左下新增浅绿色“完美兼容”标签，宽屏位于名称上方，Duo随媒体进入上屏。已查看homeplay-returning-portrait.png、homeplay-landscape-android.png、homeplay-duo-ios.png，标签可见，未遮挡名称或暂停按钮；其余模块和布局保持不变。
 
 机器证据：homeplay-verification.json，本轮8组检查、7种设备/系统组合通过，JS异常0、外部请求0；包含标签数量、文案、可见性与媒体内位置检查。未识别设备与无结果不生成标签。此标签是Demo兼容状态样例，不代表真实手机或模拟器的性能验证。原主首页、流程图、PRD、Word无需修改。
+
+## D057 截图兼容状态行复核
+
+审核者：主管root。2026-11-04。按用户截图提取四枚状态图标局部（83×22），排除红色标注和旁侧文字，作为本机可玩封面右下角的内嵌图片。替代D056绿色文字标签；封面不再生成homeplay-media-source。播放控制移到右上，宽屏图标处于名称上方的画面右下。未新增状态计算或交互。
+
+已查看本轮homeplay-returning-portrait.png、homeplay-landscape-android.png、homeplay-duo-ios.png及compatibility-status.png。图标与来源截图一致，无遮挡名称/暂停，宽屏四卡和逐行布局保持。图片来自低分辨率参考截图，未声称获得原始矢量或达到整页像素复刻门槛。
+
+本轮homeplay-verification.json：8组、7系统/形态组合，JS0、外部请求0。新增验证图标内嵌解码/尺寸、右下位置、无旧来源标签、名称与播放控件不重叠；原媒体生命周期、手势、导航与承接检查保留。标签为Demo视觉参考，非真实兼容性能证明。原主首页、流程图、PRD、Word无需修改。

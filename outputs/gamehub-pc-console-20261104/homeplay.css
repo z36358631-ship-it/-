@@ -11,7 +11,6 @@
 .homeplay-feature-card{flex:0 0 calc(100% - 27px);min-width:0;border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 2px 9px #20394609;border:1px solid #e0e8eb}
 .homeplay-media{position:relative;width:100%;height:174px;overflow:hidden;background:#102124;flex:none}
 .homeplay-media>img,.homeplay-media>video{display:block;width:100%;height:100%;object-fit:cover;max-width:none}
-.homeplay-media-source{position:absolute;left:9px;top:9px;padding:2px 6px;border:1px solid #ffffff30;border-radius:5px;background:#06151766;color:#fff;font-size:8px;backdrop-filter:blur(6px);pointer-events:none;line-height:15px}
 .screen .homeplay-motion,.homeplay-duo-upper .homeplay-motion{position:absolute;right:8px;bottom:8px;display:grid;place-items:center;width:28px;height:26px;min-height:26px;padding:0;border-radius:7px;border:1px solid #ffffff50;background:#06151788;color:#fff;font-size:10px;font-weight:650;backdrop-filter:blur(6px);box-shadow:none}
 .homeplay-motion:disabled{opacity:.5;cursor:default}
 .homeplay-feature-info{padding:11px 12px 12px}.homeplay-game-heading{display:flex;align-items:center;gap:7px;min-width:0}.homeplay-game-heading h3{font-size:18px;line-height:25px;letter-spacing:-.3px;color:#243b48;margin:0;min-width:0}.homeplay-game-heading>span{font-size:8px;line-height:14px;color:#7f929b;padding:1px 5px;border-radius:4px;background:#f0f5f6;white-space:nowrap;flex:none}
@@ -33,7 +32,7 @@
 .screen.device-tablet .homeplay-media{min-height:0;height:221px}.screen.device-tablet .homeplay-game-heading h3{font-size:24px;line-height:32px}.screen.device-tablet .homeplay-feature-info{padding:21px}.screen.device-tablet .homeplay-hook{font-size:14px;margin-top:8px}.screen.device-tablet .homeplay-start{min-height:39px;font-size:12px}.screen.device-tablet .homeplay-picker-games span{font-size:10px}.screen.device-tablet .homeplay-picker-games .media-image{width:24px;height:32px}
 .screen:is(.device-landscape,.device-tablet) .homeplay-detail-content{display:grid;grid-template-columns:1.1fr 1fr;gap:0}.screen:is(.device-landscape,.device-tablet) .homeplay-detail-scene{height:100%;min-height:230px}.screen:is(.device-landscape,.device-tablet) .homeplay-detail-copy{padding:16px 20px}.screen.device-landscape .homeplay-detail-copy h2{font-size:20px}.screen.device-landscape .homeplay-detail-copy h3{margin-top:12px}.screen.device-landscape .homeplay-detail-state{margin:10px 0}
 /* Duo: official media above, selection/actions below. */
-.homeplay-duo-upper>.homeplay-media{height:calc(100% - 41px);min-height:0;border-radius:0 0 13px 13px}.homeplay-duo-upper .homeplay-media>video,.homeplay-duo-upper .homeplay-media>img{object-fit:contain;background:#071419}.homeplay-duo-upper .homeplay-media-source{left:13px;top:9px}.homeplay-duo-upper .homeplay-motion{right:13px;bottom:12px;width:34px;height:30px}
+.homeplay-duo-upper>.homeplay-media{height:calc(100% - 41px);min-height:0;border-radius:0 0 13px 13px}.homeplay-duo-upper .homeplay-media>video,.homeplay-duo-upper .homeplay-media>img{object-fit:contain;background:#071419}.homeplay-duo-upper .homeplay-motion{right:13px;bottom:12px;width:34px;height:30px}
 .homeplay-duo-empty{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;background:#12232d;color:#a7c3d2}.homeplay-duo-empty>span{font-size:10px;letter-spacing:3px;color:#638795}.homeplay-duo-empty h2{font-size:25px;line-height:35px;margin:12px 0 0}.homeplay-duo-empty p{font-size:12px;color:#7195a6}
 .screen.device-duo.homeplay-screen .content{padding:8px 18px 22px!important}.screen.device-duo .homeplay-feature-card{flex-basis:calc(100% - 34px)}.screen.device-duo .homeplay-feature-info{padding:8px 15px}.screen.device-duo .homeplay-description{min-height:0;margin-top:1px;margin-bottom:5px;font-size:9px;line-height:15px}.screen.device-duo .homeplay-next-peek{max-height:121px}.screen.device-duo .homeplay-next-peek>.media-image{object-position:50% 35%}.screen.device-duo.homeplay-screen .homeplay-continue{min-height:39px;margin-bottom:10px;padding-bottom:7px}.screen.device-duo .homeplay-module{margin-bottom:16px}
 .lab-audience{margin:0 0 19px}.lab-audience-options{display:flex;gap:5px;background:#eaf0f5;padding:4px;border-radius:12px}.lab-audience-options button{flex:1;min-height:29px;border:1px solid transparent;background:none;border-radius:9px;color:#6b8492;font-size:11px;font-weight:600;padding:4px}.lab-audience-options button.active{color:#167e9f;background:white;box-shadow:0 2px 5px #59718416}
@@ -84,7 +83,6 @@
 .screen.homeplay-screen .homeplay-wide-action{pointer-events:auto;min-height:25px;height:25px;padding:3px 7px;border-radius:7px;font-size:8px;gap:3px;color:#06202a;background:#34bded;box-shadow:none}
 .homeplay-wide-action .console-icon{height:11px;width:11px}
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-card .homeplay-motion{top:5px;right:5px;bottom:auto;width:22px;height:22px;min-height:22px;border-radius:6px;font-size:9px}
-.homeplay-wide-card .homeplay-media-source{top:5px;left:5px;font-size:7px;line-height:12px;padding:1px 4px}
 .screen.device-tablet .homeplay-wide-card{height:128px}
 .screen.device-tablet .homeplay-wide-info h3{font-size:15px;line-height:20px}
 .screen.device-tablet.homeplay-screen .homeplay-wide-action{font-size:9px;min-height:27px;height:27px}
@@ -108,7 +106,10 @@
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-home>.secondary-business{display:block}
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .editorial-split{grid-template-columns:minmax(0,.85fr) minmax(0,1.65fr);gap:18px}
-/* D056: review-fixture compatibility label stays on the artwork. */
-.homeplay-compatibility-tag{position:absolute;left:8px;bottom:8px;z-index:1;display:inline-flex;align-items:center;padding:2px 6px;border:1px solid #d0efc9;border-radius:5px;background:#d3edcb;color:#244c2b;font-size:9px;font-weight:600;line-height:15px;white-space:nowrap;pointer-events:none;box-shadow:0 1px 4px #0002}
-.homeplay-wide-card .homeplay-compatibility-tag{left:8px;bottom:33px;font-size:8px;line-height:14px;padding:1px 5px}
-.homeplay-duo-upper .homeplay-compatibility-tag{left:13px;bottom:12px;font-size:10px;line-height:17px}
+/* D057: supplied compatibility icon strip at the artwork bottom-right. */
+.homeplay-compatibility-tag{position:absolute;right:8px;bottom:8px;z-index:1;display:block;width:83px;height:22px;border:0;border-radius:11px;overflow:hidden;pointer-events:none;background:#202126;line-height:0}
+.homeplay-compatibility-tag>img{display:block;width:100%;height:100%;object-fit:contain}
+.homeplay-wide-card .homeplay-compatibility-tag{right:7px;bottom:33px;width:75px;height:20px}
+.homeplay-duo-upper .homeplay-compatibility-tag{right:13px;bottom:12px}
+.screen.homeplay-screen .homeplay-motion,.homeplay-duo-upper .homeplay-motion{top:8px;bottom:auto}
+.homeplay-duo-upper .homeplay-motion{top:12px;right:13px}

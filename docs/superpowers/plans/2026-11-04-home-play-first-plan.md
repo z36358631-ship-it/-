@@ -67,4 +67,9 @@
 
 ### Task 12: D056 compatibility label
 - [x] Add a cover-only “完美兼容” fixture badge in `homeplay.js` and compact green styling in `homeplay.css`; keep wide names, media source/pause and Duo upper media unobstructed. Unknown/no-results and continue stay unlabelled.
-- [ ] Run existing homepage suite with badge text/count/cover geometry across seven system/form combinations, inspect portrait/wide/Duo screenshots, then publish to the same fixed URL and verify the live body and interactions.
+- [x] Run existing homepage suite with badge text/count/cover geometry across seven system/form combinations, inspect portrait/wide/Duo screenshots, then publish to the same fixed URL and verify the live body and interactions.
+
+### Task 13: D057 screenshot status row
+- [x] Extract only the four compatibility icons from the supplied crop, embed locally in homeplay.js, remove homepage media-source markup; place status bottom-right, move portrait/Duo pause to top-right and reserve wide title space.
+- [x] Update homepage checks for icon loading, source removal, bottom-right geometry and no name/control overlap across seven combinations; inspect current screenshots.
+- [ ] Publish to fixed address, verify live body and homepage suite, update state card.

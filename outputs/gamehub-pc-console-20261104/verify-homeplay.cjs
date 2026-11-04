@@ -33,7 +33,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
   assert.equal(await page.locator('.homeplay-install-state').count(),0);
   assert.equal(await page.locator('.homeplay-module .homeplay-platform,.homeplay-hook,.homeplay-game-heading,.homeplay-start').count(),0);
   assert.equal(await page.locator('.homeplay-feature-info').textContent(),'哈迪斯');
-  assert.equal(await page.locator('.homeplay-compatibility-tag').textContent(),'完美兼容');
+  assert.equal(await page.locator('.homeplay-compatibility-tag').getAttribute('aria-label'),'兼容状态');
+  assert.equal(await page.locator('.homeplay-media-source').count(),0);
   assert.equal(await page.locator('.homeplay-picker,[data-act="homeplay-select"],[data-act="homeplay-prev"]').count(),0);
   assert(!/沿用上次配置|已安装/.test(await page.locator('.content').textContent()),'Homepage retained configuration/installation description');
   assert.equal(await page.locator('.homeplay-description').isVisible(),false,'Long description still consumes homepage space');
@@ -88,7 +89,17 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
     assert.deepEqual(await page.locator('[data-module]').evaluateAll(es=>es.map(e=>e.dataset.module)),['playable','community','calendar','discounts','giveaways','return','instant','team']);
     const screen=await page.locator('.screen').boundingBox();
     const tags=page.locator('.homeplay-compatibility-tag');assert.equal(await tags.count(),['landscape','tablet'].includes(form)?4:1);
-    for(const tag of await tags.all()){assert.equal(await tag.textContent(),'完美兼容');assert.equal(await tag.isVisible(),true);const r=await tag.boundingBox(),m=await tag.locator('..').boundingBox();assert(r.x>=m.x&&r.y>=m.y&&r.x+r.width<=m.x+m.width+1&&r.y+r.height<=m.y+m.height+1,'Compatibility label escaped cover');}
+    assert.equal(await page.locator('.homeplay-media-source').count(),0);
+    for(const tag of await tags.all()){
+     assert.equal(await tag.getAttribute('aria-label'),'兼容状态');assert.equal(await tag.textContent(),'');assert.equal(await tag.isVisible(),true);
+     assert.equal(await tag.locator('img').evaluate(i=>i.complete&&i.naturalWidth===83&&i.naturalHeight===22),true);
+     const r=await tag.boundingBox(),m=await tag.locator('..').boundingBox();
+     assert(r.x>=m.x&&r.y>=m.y&&r.x+r.width<=m.x+m.width+1&&r.y+r.height<=m.y+m.height+1,'Compatibility icons escaped cover');
+     assert(m.x+m.width-r.x-r.width<=14&&m.y+m.height-r.y-r.height<=34,'Compatibility icons are not at bottom-right');
+     const card=tag.locator('xpath=ancestor::*[contains(@class, \"homeplay-wide-card\") or contains(@class, \"homeplay-feature-card\") or contains(@class, \"homeplay-duo-upper\")][1]');
+     const others=await card.locator('h3,.homeplay-motion').all();
+     for(const other of others){const b=await other.boundingBox();if(b)assert(r.x+r.width<=b.x||b.x+b.width<=r.x||r.y+r.height<=b.y||b.y+b.height<=r.y,'Compatibility icons overlap title/pause');}
+    }
     assert.equal(await page.locator('.homeplay-continue .homeplay-compatibility-tag').count(),0);
     assert.equal(await page.locator('.homeplay-picker,[data-act="homeplay-select"],[data-act="homeplay-prev"]').count(),0,'Bottom picker remains '+form+os);
     assert.equal(await page.locator('.screen').evaluate(e=>e.scrollWidth>e.clientWidth),false,'Inner horizontal overflow '+form+os);
