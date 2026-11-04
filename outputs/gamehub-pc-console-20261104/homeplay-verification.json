@@ -1,0 +1,65 @@
+{
+  "url": "local",
+  "checks": [
+    {
+      "name": "默认首页，继续与主卡游戏不同，首屏主卡动作可见",
+      "passed": true
+    },
+    {
+      "name": "官方片段真实解码、静音循环、暂停/继续、滚出暂停、减少动态静图",
+      "passed": true
+    },
+    {
+      "name": "选择与社区独立，未安装只看详情且无法启动，已安装/继续直接启动，取消返回原首页",
+      "passed": true
+    },
+    {
+      "name": "新用户无继续/无虚假一键开始；未识别与无结果不展示本机适配结果",
+      "passed": true
+    },
+    {
+      "name": "7种设备/系统组合首屏可操作，宽屏游戏库首位，Duo上玩法下选游",
+      "passed": true,
+      "data": [
+        {
+          "form": "portrait",
+          "os": "android"
+        },
+        {
+          "form": "portrait",
+          "os": "ios"
+        },
+        {
+          "form": "landscape",
+          "os": "android"
+        },
+        {
+          "form": "landscape",
+          "os": "ios"
+        },
+        {
+          "form": "tablet",
+          "os": "android"
+        },
+        {
+          "form": "tablet",
+          "os": "ios"
+        },
+        {
+          "form": "duo",
+          "os": "ios"
+        }
+      ]
+    },
+    {
+      "name": "既有社区左右独立、发售日历、任务中心和喜加一入口正常",
+      "passed": true
+    },
+    {
+      "name": "三宽度无页面横溢出、JS异常0、全部媒体内嵌",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "requests": []
+}

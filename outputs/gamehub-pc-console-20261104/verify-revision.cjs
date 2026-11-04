@@ -11,8 +11,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert'),crypto=requ
  const shot=async name=>{await page.waitForTimeout(500);await page.locator('.hardware-device').screenshot({path:path.join(__dirname,prefix+name+'.png')});};
  const show=async(form,os,scene)=>page.evaluate(({form,os,scene})=>{CONSOLE_DEVICE_PREVIEW.setForm(form);CONSOLE_DEVICE_PREVIEW.setOS(os);GAMEHUB_CONSOLE_PREVIEW.show(scene);},{form,os,scene});
  try{
-  const response=await page.goto(process.env.LIVE_URL||'file:///'+path.resolve(__dirname,'../../public/gamehub-pc-console-demo/index.html').replaceAll('\\','/'));
+  const response=await page.goto(process.env.LIVE_URL||'file:///'+path.resolve(__dirname,'../../public/gamehub-pc-console-demo/index.html').replaceAll('\\','/'),{timeout:120000});
   if(live)assert.equal(response.status(),200);
+  assert.equal((await state()).page,'home');
+  await show('portrait','android','steam');
   assert.equal(await page.locator('[data-act="lab-form"]').count(),4);
   assert.equal(await page.locator('[data-act="lab-os"]').count(),2);
   assert.equal(await page.locator('.native-appbar button').count(),3);
@@ -89,7 +91,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert'),crypto=requ
   const baseline=JSON.parse(fs.readFileSync(path.join(__dirname,'baseline.json'),'utf8'));
   for(const form of ['portrait','landscape','tablet','duo']){
    await show(form,form==='duo'?'ios':'android','home');
-   assert.deepEqual(await page.locator('[data-module]').evaluateAll(es=>es.map(e=>e.dataset.module)),baseline.homeModules);
+   assert.deepEqual(await page.locator('[data-module]').evaluateAll(es=>es.map(e=>e.dataset.module)),['playable','community','calendar','discounts','giveaways','return','instant','team']);
+   if(['landscape','tablet'].includes(form))assert.equal(await page.locator('.device-top-nav button').first().getAttribute('data-page'),'steam');
    assert.equal(await page.locator('.native-appbar .native-message').count(),1);
    assert.equal(await page.locator('.story-open').first().evaluate(e=>getComputedStyle(e).display),'flex');
    const banner=await page.locator('.hero-open').first().boundingBox(),caption=await page.locator('.feature-caption').first().boundingBox();
@@ -101,10 +104,11 @@ const fs=require('fs'),path=require('path'),assert=require('assert'),crypto=requ
    assert.deepEqual(await page.locator('.content h2,.content h3').allTextContents(),baseline.pcTitles);
    await shot(form+'-pc');
   }
-  record('四形态首页模块顺序、PC原内容与榜单保留；不重新加入手柄');
+  record('四形态首页选游前置、宽屏游戏库首位；PC原内容与榜单保留');
   await show('portrait','android','home');
   await page.locator('.content').evaluate(e=>e.scrollTop=340);
-  await click('[data-module="playable"] [data-act="game"]');
+  await click('[data-act="homeplay-select"][data-index="1"]');
+  await click('[data-act="homeplay-detail"]');
   await click('[data-act="console-back"]');assert.equal((await state()).page,'home');
   await click('.calendar-more');assert.equal(await page.locator('.release-calendar-page').count(),1);
   await click('[data-act="back"]');

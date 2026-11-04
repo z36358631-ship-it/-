@@ -2,6 +2,18 @@ $ErrorActionPreference='Stop'
 $repoRoot=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $publicationFiles=@(
  'public/gamehub-pc-console-demo/index.html',
+ 'outputs/gamehub-pc-console-20261104/homeplay.js',
+ 'outputs/gamehub-pc-console-20261104/homeplay.css',
+ 'outputs/gamehub-pc-console-20261104/verify-homeplay.cjs',
+ 'outputs/gamehub-pc-console-20261104/homeplay-verification.json',
+ 'outputs/gamehub-pc-console-20261104/homeplay-review.md',
+ 'outputs/gamehub-pc-console-20261104/assets/homeplay/hades-gameplay.mp4',
+ 'outputs/gamehub-pc-console-20261104/assets/homeplay/hades-frame-0.jpg',
+ 'outputs/gamehub-pc-console-20261104/assets/homeplay/source.json',
+ 'outputs/gamehub-pc-console-20261104/assets/homeplay/verification.json',
+ 'outputs/gamehub-pc-console-20261104/assets/homeplay/prepare.py',
+ 'docs/superpowers/specs/2026-11-04-home-play-first-design.md',
+ 'docs/superpowers/plans/2026-11-04-home-play-first-plan.md',
  'outputs/gamehub-pc-console-20261104/console.js',
  'outputs/gamehub-pc-console-20261104/console.css',
  'outputs/gamehub-pc-console-20261104/immersive.js',
@@ -48,7 +60,7 @@ try {
  git fetch origin refs/heads/master:refs/remotes/origin/master
  if($LASTEXITCODE -ne 0){throw 'Cannot fetch Pages source'}
  $base=(git rev-parse refs/remotes/origin/master).Trim()
- $known='53d78d1fc2c91928492a9012401441ea38296ca8'
+ $known='95ec86ac9008575f4a8f9bacf6b0d973c8377e7a'
  $remoteChanges=@(git diff --name-only $known $base -- $publicationFiles)
  if($remoteChanges.Count){throw ('Scoped remote changes require reconciliation: '+($remoteChanges -join ', '))}
  $env:GIT_INDEX_FILE=$publishIndex
@@ -64,7 +76,7 @@ try {
  $tree=(git write-tree).Trim()
  $changed=@(git diff-tree --no-commit-id --name-only -r $base $tree)
  if(!$changed.Count -or @($changed | Where-Object {$_ -notin $publicationFiles}).Count){throw 'Publication scope check failed'}
- $commit=(git commit-tree $tree -p $base -m 'Revise PC play experience and add phone tablet and Duo previews').Trim()
+ $commit=(git commit-tree $tree -p $base -m 'Make homepage play-first with official gameplay and library-first wide navigation').Trim()
  if($LASTEXITCODE -ne 0){throw 'Cannot create publication commit'}
  git push origin "${commit}:refs/heads/master"
  if($LASTEXITCODE -ne 0){throw 'Normal push rejected; reconcile without force push'}

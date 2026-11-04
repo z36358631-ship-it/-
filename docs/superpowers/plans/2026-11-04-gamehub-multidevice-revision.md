@@ -26,5 +26,5 @@
 - [x] Run `python outputs/gamehub-pc-console-20261104/build.py` and `node outputs/gamehub-pc-console-20261104/verify-revision.cjs`.
 - [x] Check OS/form matrix, header icon geometry, direct launch/cancel/lock, keyboard, controller press/stick return, menu focus and original content preservation.
 - [x] Inspect all four form screenshots at original sizes and mobile body overflow.
-- [ ] Whitelist updated demo/modules/assets/evidence; normal push to existing master with HEAD/index preserved.
-- [ ] Run fixed public body/Git/local hash comparison and key live interactions; update state and deliver fixed URL.
+- [x] Whitelist updated demo/modules/assets/evidence; normal push to existing master with HEAD/index preserved.
+- [x] Run fixed public body/Git/local hash comparison and key live interactions; update state and deliver fixed URL.
