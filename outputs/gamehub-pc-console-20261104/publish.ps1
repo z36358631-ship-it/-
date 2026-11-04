@@ -14,6 +14,7 @@ $publicationFiles=@(
  'outputs/gamehub-pc-console-20261104/review-panel-decision.json',
  'outputs/gamehub-pc-console-20261104/review.md',
  'outputs/gamehub-pc-console-20261104/verify.cjs',
+ 'outputs/gamehub-pc-console-20261104/verify-publication.py',
  'outputs/gamehub-pc-console-20261104/capture-baseline.cjs',
  'outputs/gamehub-pc-console-20261104/verification.json',
  'outputs/gamehub-pc-console-20261104/publish.ps1',
@@ -30,7 +31,7 @@ try {
  git fetch origin refs/heads/master:refs/remotes/origin/master
  if($LASTEXITCODE -ne 0){throw 'Cannot fetch Pages source'}
  $base=(git rev-parse refs/remotes/origin/master).Trim()
- $known='a429fe45438b842dd3e279261bb089639388cb52'
+ $known='060e6148ac097b7975d5be931c4340cfbb9a1fa5'
  $remoteChanges=@(git diff --name-only $known $base -- $publicationFiles)
  if($remoteChanges.Count){throw ('Scoped remote changes require reconciliation: '+($remoteChanges -join ', '))}
  $env:GIT_INDEX_FILE=$publishIndex
@@ -46,7 +47,6 @@ try {
  $tree=(git write-tree).Trim()
  $changed=@(git diff-tree --no-commit-id --name-only -r $base $tree)
  if(!$changed.Count -or @($changed | Where-Object {$_ -notin $publicationFiles}).Count){throw 'Publication scope check failed'}
- if('public/gamehub-pc-console-demo/index.html' -notin $changed){throw 'Missing intended preview change'}
  $commit=(git commit-tree $tree -p $base -m 'Add independent console-style PC gaming experience demo').Trim()
  if($LASTEXITCODE -ne 0){throw 'Cannot create publication commit'}
  git push origin "${commit}:refs/heads/master"

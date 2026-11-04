@@ -30,7 +30,7 @@ assert sha(BASE.read_bytes()) == sha(original), 'Baseline was unexpectedly modif
 for relative in ['public/gamehub-pc-console-demo/index.html', 'demos/gamehub-pc-console-demo.html']:
     target = ROOT / relative
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(document, encoding='utf-8')
+    target.write_text(document, encoding='utf-8', newline='\n')
 (OUT / 'build-manifest.json').write_text(json.dumps({
     'baseline': str(BASE), 'baselineSha256': sha(original),
     'outputSha256': sha(document.encode('utf-8')), 'bytes': len(document.encode('utf-8')),
