@@ -10,7 +10,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
 parser = argparse.ArgumentParser()
-parser.add_argument('--version', default='V1.0')
+parser.add_argument('--version', default='V1.1')
 VERSION = parser.parse_args().version
 OUT = ROOT / '盖世游戏MacSteam接入产品需求.docx'
 doc = Document()
@@ -23,8 +23,9 @@ for name in ['Normal','Title','Heading 1','Heading 2','Heading 3','Heading 4','H
     st.font.name = 'Microsoft YaHei'
     st.font.color.rgb = RGBColor(0,0,0)
     st.element.get_or_add_rPr().rFonts.set(qn('w:eastAsia'), 'Microsoft YaHei')
-    st.font.size = Pt(10.5 if name == 'Normal' else {'Title':22,'Heading 1':17,'Heading 2':15,'Heading 3':13,'Heading 4':12,'Heading 5':11}[name])
-    st.paragraph_format.space_after = Pt(6)
+    st.font.size = Pt(10.5 if name == 'Normal' else {'Title':20,'Heading 1':14,'Heading 2':12,'Heading 3':13,'Heading 4':12,'Heading 5':11}[name])
+    st.paragraph_format.space_after = Pt(3)
+    st.paragraph_format.space_before = Pt(6 if name.startswith('Heading') else 0)
     st.paragraph_format.line_spacing = 1.1
 doc.core_properties.title = '盖世游戏 Mac Steam 接入产品需求'
 doc.core_properties.subject = VERSION + ' 产品需求与页面规则'
@@ -51,6 +52,7 @@ def inline(p, value, width=7.2):
             assert img.exists(), img
             w,h = Image.open(img).size
             draw_w = min(width, 4.8, 1.8*w/h) if w/h<4 else width
+            if img.name=='flow.png': draw_w=min(draw_w,6.0)
             if img.name=='new-library.jpg': draw_w=min(draw_w,1.45*w/h)
             if p.text: p.add_run().add_break()
             shape = p.add_run().add_picture(str(img), width=Inches(draw_w))
@@ -180,7 +182,7 @@ with zipfile.ZipFile(OUT) as z:
     rel=z.read('word/_rels/document.xml.rels').decode()
     assert 'relationships/image' in rel
     assert not re.search(r'Type="[^"]*/image"[^>]*TargetMode="External"',rel)
-check={'file':OUT.name,'source':'MacSteam接入产品需求.md','version':VERSION,'tables':len(doc.tables),'imageOccurrences':len(figures),'embeddedImages':len(media),'allImagesEmbedded':True,'disclaimerLinked':True,'figures':figures,'renderStatus':'pending','feishuImport':'not-tested'}
+check={'file':OUT.name,'source':'MacSteam接入产品需求.md','version':VERSION,'tables':len(doc.tables),'imageOccurrences':len(figures),'embeddedImages':len(media),'allImagesEmbedded':True,'disclaimerLinked':'免责声明原文' in source,'figures':figures,'renderStatus':'pending','feishuImport':'not-tested'}
 check.update({'textSegmentsChecked':checked, 'missingTextSegments':[]})
 (ROOT/('Word导出验证-'+VERSION+'.json')).write_text(json.dumps(check,ensure_ascii=False,indent=2),encoding='utf-8')
 print(json.dumps(check,ensure_ascii=False))
