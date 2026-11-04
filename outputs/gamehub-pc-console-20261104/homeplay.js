@@ -72,9 +72,13 @@ function homePlayMount(){
 }
 const homePlayOriginalDuoUpper=deviceMakeDuoUpper;
 deviceMakeDuoUpper=function(screen){
- if(appState.page!=='home'||!screen.querySelector('.homeplay-media'))return homePlayOriginalDuoUpper(screen);
+ if(appState.page!=='home')return homePlayOriginalDuoUpper(screen);
  const upper=document.createElement('section');upper.className='device-duo-upper homeplay-duo-upper';upper.setAttribute('aria-label','上屏游戏玩法');
- upper.innerHTML=`<div class="device-duo-status">${consoleStatus()}</div>`;upper.append(screen.querySelector('.homeplay-media'));return upper;
+ upper.innerHTML=`<div class="device-duo-status">${consoleStatus()}</div>`;
+ const media=screen.querySelector('.homeplay-media');
+ if(media)upper.append(media);
+ else upper.insertAdjacentHTML('beforeend',`<div class="homeplay-duo-empty"><span>GAMEHUB</span><h2>本机可玩</h2><p>${appState.playableMode==='unknown'?'暂无法识别当前设备':'暂无匹配的游戏'}</p></div>`);
+ return upper;
 };
 const homePlayOriginalRender=render;
 render=function(preserve=false){

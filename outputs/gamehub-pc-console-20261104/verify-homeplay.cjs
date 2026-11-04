@@ -53,7 +53,10 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
   await page.locator('[data-act="console-back"]').click();
   await shot('new-portrait');
   for(const mode of ['unknown','none']){await page.evaluate(mode=>GAMEHUB_HOME_PLAY_PREVIEW.setPlayableMode(mode),mode);assert.equal(await page.locator('.homeplay-feature-card').count(),0);assert.equal(await page.locator('.homeplay-module .state-block').count(),1);}
+  await show('duo','ios');
+  for(const mode of ['unknown','none']){await page.evaluate(mode=>GAMEHUB_HOME_PLAY_PREVIEW.setPlayableMode(mode),mode);assert.equal(await page.locator('.device-duo-upper img,.device-duo-upper video').count(),0);assert.equal(await page.locator('.homeplay-duo-empty').count(),1);}
   await page.evaluate(()=>GAMEHUB_HOME_PLAY_PREVIEW.setPlayableMode('known'));
+  await show();
   await page.locator('[data-audience="returning"]').click();
   record('新用户无继续/无虚假一键开始；未识别与无结果不展示本机适配结果');
   const matrix=[];
