@@ -23,9 +23,10 @@ function homePlayAction(game,cls='homeplay-start'){
 const homePlayOriginalContinue=continueStrip;
 continueStrip=function(){
  if(appState.page!=='home')return homePlayOriginalContinue();
+ if(['landscape','tablet'].includes(deviceState.form))return '';
  if(homePlayState.audience==='new'||!appState.recent||appState.recentFolded)return '';
  const game=consoleGames[0];
- return `<div class="continue-row homeplay-continue" data-testid="continue-strip"><span class="continue-label"><span aria-hidden="true">▷</span>继续</span>${media(game.key,game.name,'homeplay-recent-cover')}<div class="homeplay-recent-copy"><b>${game.name}</b><small>上次游玩 ${game.last}</small></div>${homePlayAction(game,'homeplay-recent-start')}</div>`;
+ return `<div class="continue-row homeplay-continue" data-testid="continue-strip"><div class="homeplay-recent-art">${consoleSceneImage(game.key,game.name+'游戏画面','homeplay-recent-cover')}<span class="homeplay-recent-time"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5V8l2.2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>${game.last}</span></div><div class="homeplay-recent-copy"><span>继续游戏</span><b>${game.name}</b><small>PC · 沿用上次配置</small></div><button type="button" class="homeplay-recent-start" data-act="homeplay-start" data-key="${game.key}" aria-label="继续游戏：${game.name}">${consoleIcon('play')}</button></div>`;
 };
 function homePlayModule(){
  const game=homePlayGame(),copy=homePlayCopy[game.key],ready=homePlayReady(game);
@@ -65,6 +66,7 @@ function homePlaySyncMotion(){
  if(control){const playing=visible&&!homePlayState.paused&&!homePlayMotion.matches;control.textContent=playing?'Ⅱ':'▶';control.setAttribute('aria-label',playing?'暂停玩法片段':'播放玩法片段');control.setAttribute('aria-pressed',String(playing));control.disabled=homePlayMotion.matches;}
 }
 function homePlayMount(){
+ document.querySelector('.screen')?.classList.add('app-dark');
  if(appState.page==='home')document.querySelector('.screen')?.classList.add('homeplay-screen');
  const video=document.querySelector('.homeplay-video');if(!video)return;
  homePlayObserver=new IntersectionObserver(entries=>{for(const entry of entries){entry.target.dataset.visible=String(entry.isIntersecting&&entry.intersectionRatio>=.4);}homePlaySyncMotion();},{threshold:[0,.4,1]});

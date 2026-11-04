@@ -4,6 +4,7 @@ $publicationFiles=@(
  'public/gamehub-pc-console-demo/index.html',
  'outputs/gamehub-pc-console-20261104/homeplay.js',
  'outputs/gamehub-pc-console-20261104/homeplay.css',
+ 'outputs/gamehub-pc-console-20261104/app-dark.css',
  'outputs/gamehub-pc-console-20261104/verify-homeplay.cjs',
  'outputs/gamehub-pc-console-20261104/homeplay-verification.json',
  'outputs/gamehub-pc-console-20261104/homeplay-review.md',
@@ -60,7 +61,7 @@ try {
  git fetch origin refs/heads/master:refs/remotes/origin/master
  if($LASTEXITCODE -ne 0){throw 'Cannot fetch Pages source'}
  $base=(git rev-parse refs/remotes/origin/master).Trim()
- $known='d7eac2a9da9f98e2e5a017a90036e6ab4ac1a40e'
+ $known='9ceded703ac750e48cff8f0a9ed2a4a149504dce'
  $remoteChanges=@(git diff --name-only $known $base -- $publicationFiles)
  if($remoteChanges.Count){throw ('Scoped remote changes require reconciliation: '+($remoteChanges -join ', '))}
  $env:GIT_INDEX_FILE=$publishIndex
@@ -76,7 +77,7 @@ try {
  $tree=(git write-tree).Trim()
  $changed=@(git diff-tree --no-commit-id --name-only -r $base $tree)
  if(!$changed.Count -or @($changed | Where-Object {$_ -notin $publicationFiles}).Count){throw 'Publication scope check failed'}
- $commit=(git commit-tree $tree -p $base -m 'Make homepage play-first with official gameplay and library-first wide navigation').Trim()
+ $commit=(git commit-tree $tree -p $base -m 'Compact homepage cards, unify dark app theme and move controls right').Trim()
  if($LASTEXITCODE -ne 0){throw 'Cannot create publication commit'}
  git push origin "${commit}:refs/heads/master"
  if($LASTEXITCODE -ne 0){throw 'Normal push rejected; reconcile without force push'}

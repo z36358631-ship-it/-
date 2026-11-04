@@ -24,7 +24,7 @@ clip='data:video/mp4;base64,'+base64.b64encode((OUT/'assets/homeplay/hades-gamep
 poster='data:image/jpeg;base64,'+base64.b64encode((OUT/'assets/homeplay/hades-frame-0.jpg').read_bytes()).decode('ascii')
 script = 'const CONSOLE_SCENES='+json.dumps(scenes)+';\nconst HOME_PLAY_CLIP='+json.dumps(clip)+';\nconst HOME_PLAY_POSTER='+json.dumps(poster)+';\n'+'\n'.join((OUT/name).read_text(encoding='utf-8') for name in ['console.js','immersive.js','device.js','header.js','homeplay.js','panel.js'])
 document = document[:position] + '\n' + script + document[position:]
-styles = '\n'.join((OUT/name).read_text(encoding='utf-8') for name in ['console.css','immersive.css','device.css','header.css','review.css','homeplay.css'])
+styles = '\n'.join((OUT/name).read_text(encoding='utf-8') for name in ['console.css','immersive.css','device.css','header.css','review.css','homeplay.css','app-dark.css'])
 document = document.replace('</style>', '\n' + styles + '\n</style>', 1)
 document = re.sub(r'<title>.*?</title>', '<title>盖世游戏 · PC 主机体验</title>', document, count=1)
 shell = (OUT / 'shell.html').read_text(encoding='utf-8')
