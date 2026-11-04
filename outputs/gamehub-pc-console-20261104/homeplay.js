@@ -16,7 +16,7 @@ function homePlayReady(game){return homePlayState.audience==='returning'&&['elde
 function homePlayMedia(game){
  const clip=game.key==='hades'&&typeof HOME_PLAY_CLIP==='string';
  const poster=clip?HOME_PLAY_POSTER:consoleSceneSource(game.key);
- return `<div class="homeplay-media">${clip?`<video class="homeplay-video" poster="${poster}" muted playsinline loop preload="none" aria-label="哈迪斯官方玩法片段"></video>`:`<img src="${poster}" alt="${game.name}官方游戏画面" decoding="async">`}<span class="homeplay-media-source">${clip?'官方玩法':'官方游戏画面'}</span>${clip?`<button type="button" class="homeplay-motion" data-act="homeplay-motion" aria-label="播放玩法片段" aria-pressed="false">▶</button>`:''}</div>`;
+ return `<div class="homeplay-media">${clip?`<video class="homeplay-video" poster="${poster}" muted playsinline loop preload="none" aria-label="哈迪斯官方玩法片段"></video>`:`<img src="${poster}" alt="${game.name}官方游戏画面" decoding="async">`}<span class="homeplay-media-source">${clip?'官方玩法':'官方游戏画面'}</span><span class="homeplay-compatibility-tag" data-compatibility="perfect">完美兼容</span>${clip?`<button type="button" class="homeplay-motion" data-act="homeplay-motion" aria-label="播放玩法片段" aria-pressed="false">▶</button>`:''}</div>`;
 }
 function homePlayCardOpen(game){
  return `<button type="button" class="homeplay-card-open" data-act="homeplay-detail" data-key="${game.key}" aria-label="查看${game.name}游戏详情"></button>`;

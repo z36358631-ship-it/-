@@ -49,7 +49,7 @@
 - [x] In `header.js`/`header.css`, remove the two business-more entries, replace subpage back labels with existing SVG and remove duplicate body back controls without changing route handlers.
 - [x] Normalize retained section-list entries to title-adjacent right-arrow buttons, keeping dataset actions and accessible names; D054 places calendar arrow after date and removes duplicate icon. Verify actual geometry and original routes.
 - [x] Extend `verify-homeplay.cjs` with no wide carousel/gesture, all four card-to-detail actions, new-user and empty states, no business-more, arrow-only headers and working back navigation. Local suite and existing regression each pass 8 groups across 7 combinations; current screenshots reviewed.
-- [ ] Publish only whitelisted independent-demo files with isolated index and normal push; verify fixed public bytes against Git and repeat live suite. Record reviewer, evidence and production limitations.
+- [x] Publish only whitelisted independent-demo files with isolated index and normal push; fixed public bytes match local/Git at 11ea892006abfc8fe205cb395942b96e9464c668. Live 8-group/7-combination suite passes, JS0/one document request. Review/evidence/limitations recorded.
 
 ### Task 9: D053 title-only playable cards
 - [x] Remove platform, genre, hook and start CTA from every playable card; show each title once and remove duplicate labels in portrait/Duo thumbnail pickers.
@@ -59,8 +59,12 @@
 ### Task 10: D054 remove picker and place calendar arrow after date
 - [x] Stop generating the thumbnail picker and bottom previous/next controls; preserve portrait/Duo swipe and next-card peek, leaving wide grid static.
 - [x] Normalize calendar heading to title, muted month/day, then right arrow; remove duplicate today text and calendar icon while preserving `release-open`.
-- [ ] Verify no picker in any form, real portrait forward/back swipe without accidental detail opening, title/date/arrow order and original calendar route; capture and review current screenshots, then publish together with D050–053.
+- [x] Verify no picker in any form, real portrait forward/back swipe without accidental detail opening, title/date/arrow order and original calendar route; current screenshots reviewed and final combined D050–055 published.
 
 ### Task 11: D055 one wide module per row
 - [x] Override wide homepage layout to one full-width module per row, including separate secondary business modules; use a single four-card playable row and retain community internal banner/text split.
-- [ ] Verify module full-width geometry/order, four cards in the same row without horizontal overflow or swipe, preserved portrait/Duo and current D050–054 interactions. Review current wide screenshots and publish the combined final version.
+- [x] Verify all eight modules full-width geometry/order, four cards in the same row without horizontal overflow or swipe, preserved portrait/Duo and current D050–054 interactions. Final wide screenshots independently reviewed; combined final version published and checked live.
+
+### Task 12: D056 compatibility label
+- [x] Add a cover-only “完美兼容” fixture badge in `homeplay.js` and compact green styling in `homeplay.css`; keep wide names, media source/pause and Duo upper media unobstructed. Unknown/no-results and continue stay unlabelled.
+- [ ] Run existing homepage suite with badge text/count/cover geometry across seven system/form combinations, inspect portrait/wide/Duo screenshots, then publish to the same fixed URL and verify the live body and interactions.

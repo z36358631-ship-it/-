@@ -33,6 +33,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
   assert.equal(await page.locator('.homeplay-install-state').count(),0);
   assert.equal(await page.locator('.homeplay-module .homeplay-platform,.homeplay-hook,.homeplay-game-heading,.homeplay-start').count(),0);
   assert.equal(await page.locator('.homeplay-feature-info').textContent(),'哈迪斯');
+  assert.equal(await page.locator('.homeplay-compatibility-tag').textContent(),'完美兼容');
   assert.equal(await page.locator('.homeplay-picker,[data-act="homeplay-select"],[data-act="homeplay-prev"]').count(),0);
   assert(!/沿用上次配置|已安装/.test(await page.locator('.content').textContent()),'Homepage retained configuration/installation description');
   assert.equal(await page.locator('.homeplay-description').isVisible(),false,'Long description still consumes homepage space');
@@ -86,6 +87,9 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
     await show(form,os);
     assert.deepEqual(await page.locator('[data-module]').evaluateAll(es=>es.map(e=>e.dataset.module)),['playable','community','calendar','discounts','giveaways','return','instant','team']);
     const screen=await page.locator('.screen').boundingBox();
+    const tags=page.locator('.homeplay-compatibility-tag');assert.equal(await tags.count(),['landscape','tablet'].includes(form)?4:1);
+    for(const tag of await tags.all()){assert.equal(await tag.textContent(),'完美兼容');assert.equal(await tag.isVisible(),true);const r=await tag.boundingBox(),m=await tag.locator('..').boundingBox();assert(r.x>=m.x&&r.y>=m.y&&r.x+r.width<=m.x+m.width+1&&r.y+r.height<=m.y+m.height+1,'Compatibility label escaped cover');}
+    assert.equal(await page.locator('.homeplay-continue .homeplay-compatibility-tag').count(),0);
     assert.equal(await page.locator('.homeplay-picker,[data-act="homeplay-select"],[data-act="homeplay-prev"]').count(),0,'Bottom picker remains '+form+os);
     assert.equal(await page.locator('.screen').evaluate(e=>e.scrollWidth>e.clientWidth),false,'Inner horizontal overflow '+form+os);
     if(['landscape','tablet'].includes(form)){

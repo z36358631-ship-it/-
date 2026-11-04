@@ -539,6 +539,10 @@ body.console-lab{background:repeating-linear-gradient(180deg,#f9fbfc 0 3px,#e3ea
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-home>.secondary-business{display:block}
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .editorial-split{grid-template-columns:minmax(0,.85fr) minmax(0,1.65fr);gap:18px}
+/* D056: review-fixture compatibility label stays on the artwork. */
+.homeplay-compatibility-tag{position:absolute;left:8px;bottom:8px;z-index:1;display:inline-flex;align-items:center;padding:2px 6px;border:1px solid #d0efc9;border-radius:5px;background:#d3edcb;color:#244c2b;font-size:9px;font-weight:600;line-height:15px;white-space:nowrap;pointer-events:none;box-shadow:0 1px 4px #0002}
+.homeplay-wide-card .homeplay-compatibility-tag{left:8px;bottom:33px;font-size:8px;line-height:14px;padding:1px 5px}
+.homeplay-duo-upper .homeplay-compatibility-tag{left:13px;bottom:12px;font-size:10px;line-height:17px}
 
 /* D046: the app uses the existing community charcoal surfaces across tabs. */
 .screen.app-dark{--console-ink:#ededf0;--console-muted:#969aa5;--console-line:#303238;--console-shadow:none;color:#ededf0;background:#0e0e10;color-scheme:dark}
@@ -1411,7 +1415,7 @@ function homePlayReady(game){return homePlayState.audience==='returning'&&['elde
 function homePlayMedia(game){
  const clip=game.key==='hades'&&typeof HOME_PLAY_CLIP==='string';
  const poster=clip?HOME_PLAY_POSTER:consoleSceneSource(game.key);
- return `<div class="homeplay-media">${clip?`<video class="homeplay-video" poster="${poster}" muted playsinline loop preload="none" aria-label="哈迪斯官方玩法片段"></video>`:`<img src="${poster}" alt="${game.name}官方游戏画面" decoding="async">`}<span class="homeplay-media-source">${clip?'官方玩法':'官方游戏画面'}</span>${clip?`<button type="button" class="homeplay-motion" data-act="homeplay-motion" aria-label="播放玩法片段" aria-pressed="false">▶</button>`:''}</div>`;
+ return `<div class="homeplay-media">${clip?`<video class="homeplay-video" poster="${poster}" muted playsinline loop preload="none" aria-label="哈迪斯官方玩法片段"></video>`:`<img src="${poster}" alt="${game.name}官方游戏画面" decoding="async">`}<span class="homeplay-media-source">${clip?'官方玩法':'官方游戏画面'}</span><span class="homeplay-compatibility-tag" data-compatibility="perfect">完美兼容</span>${clip?`<button type="button" class="homeplay-motion" data-act="homeplay-motion" aria-label="播放玩法片段" aria-pressed="false">▶</button>`:''}</div>`;
 }
 function homePlayCardOpen(game){
  return `<button type="button" class="homeplay-card-open" data-act="homeplay-detail" data-key="${game.key}" aria-label="查看${game.name}游戏详情"></button>`;
