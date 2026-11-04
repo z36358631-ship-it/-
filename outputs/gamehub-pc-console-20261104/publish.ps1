@@ -61,7 +61,7 @@ try {
  git fetch origin refs/heads/master:refs/remotes/origin/master
  if($LASTEXITCODE -ne 0){throw 'Cannot fetch Pages source'}
  $base=(git rev-parse refs/remotes/origin/master).Trim()
- $known='b4d2a526052ca75c0212c6e55ff83520089cb176'
+ $known='c5ba65a38ffc0b70550df2124c387c3ac149aa6a'
  $remoteChanges=@(git diff --name-only $known $base -- $publicationFiles)
  if($remoteChanges.Count){throw ('Scoped remote changes require reconciliation: '+($remoteChanges -join ', '))}
  $env:GIT_INDEX_FILE=$publishIndex
@@ -77,7 +77,7 @@ try {
  $tree=(git write-tree).Trim()
  $changed=@(git diff-tree --no-commit-id --name-only -r $base $tree)
  if(!$changed.Count -or @($changed | Where-Object {$_ -notin $publicationFiles}).Count){throw 'Publication scope check failed'}
- $commit=(git commit-tree $tree -p $base -m 'Restore controls-left demo-right review layout').Trim()
+ $commit=(git commit-tree $tree -p $base -m 'Use fixed wide game cards and consistent arrow navigation').Trim()
  if($LASTEXITCODE -ne 0){throw 'Cannot create publication commit'}
  git push origin "${commit}:refs/heads/master"
  if($LASTEXITCODE -ne 0){throw 'Normal push rejected; reconcile without force push'}

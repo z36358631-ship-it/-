@@ -19,3 +19,15 @@
 .screen .editorial-split{align-items:start}.screen .feature-banner{align-self:start}.screen .hero-open{height:151px;min-height:151px}.screen .hero-open>.media-image,.screen .hero-open>.crop-media{height:103px!important;width:100%;object-fit:cover}.screen .feature-caption{height:48px;display:flex;flex-direction:column;justify-content:center;padding:5px 9px}.screen .feature-caption b{font-size:13px;line-height:19px}.screen .feature-caption small{font-size:10px;line-height:17px}.screen .story-open{display:flex;align-items:center;gap:6px;padding:7px 1px;min-height:35px;max-height:35px;width:100%;line-height:21px}.screen .story-title{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.screen .story-bullet{flex:none}.screen.device-portrait .post-grid{grid-template-columns:1fr}.screen.device-portrait .modal .grid.two{grid-template-columns:1fr}
 .screen .bottom button:not(.selected):hover{background:#d8e3eb40}
 @media(max-width:600px){.screen.console-skin .native-appbar{padding-left:13px;padding-right:13px;gap:10px}.screen.console-skin .native-search{height:39px;min-height:39px;font-size:13px}}
+/* D051-052: a single back arrow; section links stay beside their heading. */
+.screen>.subhead{justify-content:flex-start;gap:8px}
+.screen>.subhead>.native-back,.screen:has(.release-calendar-page)>.subhead>.native-back{display:grid;place-items:center;flex:0 0 32px;width:32px;height:36px;min-width:32px;min-height:36px;margin:0;padding:0;border:0;background:none;box-shadow:none;border-radius:8px;color:inherit;font-size:0}
+.screen>.subhead>.native-back:before{content:none!important}
+.screen>.subhead>.native-back .console-icon{width:22px;height:22px}
+.screen .native-section-heading{display:flex;align-items:center;justify-content:flex-start;gap:2px}
+.screen .native-section-heading>h2,.screen .native-section-heading>h3{flex:0 1 auto;margin-right:0}
+.screen .native-section-heading>.native-section-link{display:grid;place-items:center;flex:0 0 26px;width:26px;height:28px;min-width:26px;min-height:28px;margin:0;padding:0;border:0;border-radius:6px;background:none;box-shadow:none;font-size:0;color:#989eaa}
+.screen .native-section-link .console-icon{width:15px;height:15px;transform:rotate(180deg)}
+.screen .native-section-heading>.calendar-today{flex:none;margin-left:8px;color:#979da8;font-size:11px;font-weight:400;line-height:20px;white-space:nowrap}
+.screen .calendar-heading>.native-section-link{margin-left:1px}
+.screen .native-back:hover,.screen .native-section-link:hover{background:#ffffff0b}

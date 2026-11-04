@@ -7,18 +7,19 @@ const homePlayCopy={
  elden:{genre:'开放世界 · 动作',title:'下一片风景，在迷雾之后',description:'骑马探索交界地，挑战强敌，找到属于自己的冒险路线。'},
  wukong:{genre:'动作冒险',title:'提起金箍棒，踏上取经路',description:'看破招式，闪身反击，在熟悉的西游故事里迎战妖王。'}
 };
-let homePlayObserver=null,homePlayPointer=null;
+let homePlayObserver=null,homePlayPointer=null,homePlaySwipeUntil=0;
 const homePlayMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function homePlayGame(){return consoleGames[homePlayOrder[homePlayState.selected]];}
+function homePlayWide(){return ['landscape','tablet'].includes(deviceState.form);}
+function homePlayPlatform(game){return 'Steam';}
 function homePlayReady(game){return homePlayState.audience==='returning'&&['elden','hades'].includes(game.key);}
 function homePlayMedia(game){
  const clip=game.key==='hades'&&typeof HOME_PLAY_CLIP==='string';
  const poster=clip?HOME_PLAY_POSTER:consoleSceneSource(game.key);
  return `<div class="homeplay-media">${clip?`<video class="homeplay-video" poster="${poster}" muted playsinline loop preload="none" aria-label="哈迪斯官方玩法片段"></video>`:`<img src="${poster}" alt="${game.name}官方游戏画面" decoding="async">`}<span class="homeplay-media-source">${clip?'官方玩法':'官方游戏画面'}</span>${clip?`<button type="button" class="homeplay-motion" data-act="homeplay-motion" aria-label="播放玩法片段" aria-pressed="false">▶</button>`:''}</div>`;
 }
-function homePlayAction(game,cls='homeplay-start'){
- const ready=homePlayReady(game);
- return `<button type="button" class="${cls}" data-act="${ready?'homeplay-start':'homeplay-detail'}" data-key="${game.key}" aria-label="${ready?'开始游戏':'查看游戏'}：${game.name}">${ready?consoleIcon('play'):''}<span>${ready?'开始游戏':'查看游戏'}</span>${ready?'':'<span aria-hidden="true">↗</span>'}</button>`;
+function homePlayCardOpen(game){
+ return `<button type="button" class="homeplay-card-open" data-act="homeplay-detail" data-key="${game.key}" aria-label="查看${game.name}游戏详情"></button>`;
 }
 const homePlayOriginalContinue=continueStrip;
 continueStrip=function(){
@@ -26,14 +27,18 @@ continueStrip=function(){
  if(['landscape','tablet'].includes(deviceState.form))return '';
  if(homePlayState.audience==='new'||!appState.recent||appState.recentFolded)return '';
  const game=consoleGames[0];
- return `<div class="continue-row homeplay-continue" data-testid="continue-strip"><div class="homeplay-recent-art">${consoleSceneImage(game.key,game.name+'游戏画面','homeplay-recent-cover')}<span class="homeplay-recent-time"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5V8l2.2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>${game.last}</span></div><div class="homeplay-recent-copy"><span>继续游戏</span><b>${game.name}</b><small>PC · 沿用上次配置</small></div><button type="button" class="homeplay-recent-start" data-act="homeplay-start" data-key="${game.key}" aria-label="继续游戏：${game.name}">${consoleIcon('play')}</button></div>`;
+ return `<div class="continue-row homeplay-continue" data-testid="continue-strip"><div class="homeplay-recent-art">${consoleSceneImage(game.key,game.name+'游戏画面','homeplay-recent-cover')}<span class="homeplay-recent-time"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5V8l2.2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>${game.last}</span></div><div class="homeplay-recent-copy"><span>继续游戏</span><b>${game.name}</b><small>${homePlayPlatform(game)}</small></div><button type="button" class="homeplay-recent-start" data-act="homeplay-start" data-key="${game.key}" aria-label="继续游戏：${game.name}">${consoleIcon('play')}</button></div>`;
 };
+function homePlayWideCards(){
+ return `<div class="homeplay-wide-grid" aria-label="本机可玩游戏">${homePlayOrder.map(index=>{const game=consoleGames[index];return `<article class="homeplay-wide-card" data-key="${game.key}">${homePlayMedia(game)}<div class="homeplay-wide-info"><h3>${game.name}</h3></div>${homePlayCardOpen(game)}</article>`;}).join('')}</div>`;
+}
 function homePlayModule(){
- const game=homePlayGame(),copy=homePlayCopy[game.key],ready=homePlayReady(game);
+ const game=homePlayGame();
  const heading=`<div class="section-title"><h2>本机可玩</h2><button type="button" data-act="open-compatibility">更多 ›</button></div>`;
  if(appState.playableMode!=='known')return `<section class="section homeplay-module playable-module" data-module="playable">${heading}<div class="state-block">${appState.playableMode==='unknown'?'暂无法识别当前设备':'暂无匹配的游戏'}<p>到兼容性查询看看</p><button data-act="open-compatibility">兼容性查询</button></div></section>`;
+ if(homePlayWide())return `<section class="section homeplay-module playable-module" data-module="playable">${heading}${homePlayWideCards()}</section>`;
  const next=consoleGames[homePlayOrder[(homePlayState.selected+1)%homePlayOrder.length]];
- return `<section class="section homeplay-module playable-module" data-module="playable">${heading}<div class="homeplay-focus-track" aria-label="本机可玩游戏"><article class="homeplay-feature-card" data-key="${game.key}">${homePlayMedia(game)}<div class="homeplay-feature-info"><div class="homeplay-game-heading"><h3>${game.name}</h3><span>${copy.genre}</span></div><p class="homeplay-hook">${copy.title}</p><p class="homeplay-description">${copy.description}</p><div class="homeplay-card-bottom"><span class="homeplay-install-state ${ready?'is-ready':''}"><i></i>${ready?'已安装 · 沿用上次配置':'未添加到游戏库'}</span>${homePlayAction(game)}</div></div></article><button type="button" class="homeplay-next-peek" data-act="homeplay-next" aria-label="下一款：${next.name}">${media(next.key,next.name)}<span aria-hidden="true">›</span></button></div><div class="homeplay-picker" role="group" aria-label="选择本机可玩游戏"><button type="button" class="homeplay-prev" data-act="homeplay-prev" aria-label="上一款游戏">‹</button><div class="homeplay-picker-games">${homePlayOrder.map((index,i)=>{const g=consoleGames[index];return `<button type="button" data-act="homeplay-select" data-index="${i}" class="${i===homePlayState.selected?'is-selected':''}" aria-label="选择${g.name}" aria-pressed="${i===homePlayState.selected}">${media(g.key,'')}<span>${g.name}</span></button>`;}).join('')}</div><button type="button" class="homeplay-next" data-act="homeplay-next" aria-label="下一款游戏">›</button></div></section>`;
+ return `<section class="section homeplay-module playable-module" data-module="playable">${heading}<div class="homeplay-focus-track" aria-label="本机可玩游戏"><article class="homeplay-feature-card" data-key="${game.key}">${homePlayMedia(game)}<div class="homeplay-feature-info"><h3>${game.name}</h3></div>${homePlayCardOpen(game)}</article><button type="button" class="homeplay-next-peek" data-act="homeplay-next" aria-label="下一款：${next.name}">${media(next.key,'')}<span aria-hidden="true">›</span></button></div></section>`;
 }
 home=function(){return `${continueStrip()}<div class="retention-home homeplay-home">${homePlayModule()}${editorial()}${calendarModule()}${steamDiscountModule()}${giveawayModule()}${activityModule()}<div class="secondary-business">${business()}</div></div>`;};
 const homePlayOriginalSpace=consoleGameSpace;
@@ -47,7 +52,7 @@ const homePlayOriginalStart=consoleStart;
 consoleStart=function(){if(appState.detail.homePlay&&!homePlayReady(consoleGame()))return;homePlayOriginalStart();};
 function homePlaySelect(index,focus=false){
  homePlayState.selected=(index+homePlayOrder.length)%homePlayOrder.length;homePlayState.paused=false;consoleTone();render(true);
- if(focus)document.querySelector(`[data-act="homeplay-select"][data-index="${homePlayState.selected}"]`)?.focus({preventScroll:true});
+ if(focus)document.querySelector('.homeplay-next-peek')?.focus({preventScroll:true});
 }
 function homePlayOpen(key,start){
  const index=consoleGames.findIndex(game=>game.key===key);if(index<0)return;
@@ -92,6 +97,7 @@ render=function(preserve=false){
 window.addEventListener('click',event=>{
  const button=event.target.closest('[data-act^="homeplay-"]');if(!button)return;
  event.preventDefault();event.stopImmediatePropagation();
+ if(button.dataset.act==='homeplay-detail'&&performance.now()<homePlaySwipeUntil)return;
  switch(button.dataset.act){
   case 'homeplay-select':homePlaySelect(Number(button.dataset.index),true);break;
   case 'homeplay-prev':homePlaySelect(homePlayState.selected-1,true);break;
@@ -101,8 +107,8 @@ window.addEventListener('click',event=>{
   case 'homeplay-motion':homePlayState.paused=!homePlayState.paused;homePlaySyncMotion();break;
  }
 },true);
-document.addEventListener('pointerdown',event=>{if(event.target.closest('.homeplay-focus-track')&&!event.target.closest('button'))homePlayPointer={x:event.clientX,y:event.clientY};else homePlayPointer=null;},{passive:true});
-document.addEventListener('pointerup',event=>{const start=homePlayPointer;homePlayPointer=null;if(!start||appState.page!=='home')return;const dx=event.clientX-start.x,dy=event.clientY-start.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.4)homePlaySelect(homePlayState.selected+(dx<0?1:-1),false);},{passive:true});
+document.addEventListener('pointerdown',event=>{if(!homePlayWide()&&event.target.closest('.homeplay-focus-track')&&!event.target.closest('button:not(.homeplay-card-open)'))homePlayPointer={x:event.clientX,y:event.clientY};else homePlayPointer=null;},{passive:true});
+document.addEventListener('pointerup',event=>{const start=homePlayPointer;homePlayPointer=null;if(!start||homePlayWide()||appState.page!=='home')return;const dx=event.clientX-start.x,dy=event.clientY-start.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.4){homePlaySwipeUntil=performance.now()+250;homePlaySelect(homePlayState.selected+(dx<0?1:-1),false);}},{passive:true});
 document.addEventListener('pointercancel',()=>homePlayPointer=null,{passive:true});
 document.addEventListener('visibilitychange',homePlaySyncMotion);homePlayMotion.addEventListener('change',homePlaySyncMotion);
 window.GAMEHUB_HOME_PLAY_PREVIEW={

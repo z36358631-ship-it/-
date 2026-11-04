@@ -72,3 +72,39 @@
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-feature-info .homeplay-start{font-size:9px;min-height:31px;padding:5px 8px}
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-motion{top:8px;bottom:auto;z-index:2}.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-picker-games span{display:none}.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-picker-games>button{justify-content:center;min-height:30px}.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-picker-games .media-image{width:19px;height:25px}
 .screen.device-tablet.homeplay-screen .homeplay-feature-card{height:192px}
+/* D050: fixed wide cards have no carousel, selector, peek or swipe target. */
+.screen.homeplay-screen .homeplay-platform{grid-column:1;grid-row:3;min-width:0;font-size:9px;line-height:14px;color:#a4aab6}
+.homeplay-wide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
+.homeplay-wide-card{position:relative;min-width:0;height:112px;border:1px solid #2b2e34;border-radius:10px;overflow:hidden;background:#1b1d21}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-card>.homeplay-media{height:100%;width:100%;min-height:0}
+.homeplay-wide-info{position:absolute;left:0;right:0;bottom:0;padding:23px 8px 7px;background:linear-gradient(transparent,#101216c9 31%,#101216f5 100%);pointer-events:none}
+.homeplay-wide-info h3{display:block;margin:0 0 2px;color:#ededf0;font-size:13px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.homeplay-wide-bottom{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0}
+.screen.homeplay-screen .homeplay-wide-bottom>.homeplay-platform{font-size:8px;line-height:13px}
+.screen.homeplay-screen .homeplay-wide-action{pointer-events:auto;min-height:25px;height:25px;padding:3px 7px;border-radius:7px;font-size:8px;gap:3px;color:#06202a;background:#34bded;box-shadow:none}
+.homeplay-wide-action .console-icon{height:11px;width:11px}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-card .homeplay-motion{top:5px;right:5px;bottom:auto;width:22px;height:22px;min-height:22px;border-radius:6px;font-size:9px}
+.homeplay-wide-card .homeplay-media-source{top:5px;left:5px;font-size:7px;line-height:12px;padding:1px 4px}
+.screen.device-tablet .homeplay-wide-card{height:128px}
+.screen.device-tablet .homeplay-wide-info h3{font-size:15px;line-height:20px}
+.screen.device-tablet.homeplay-screen .homeplay-wide-action{font-size:9px;min-height:27px;height:27px}
+/* D053: playable cards show the scene and a single title; the card opens details. */
+.screen.homeplay-screen .homeplay-feature-card{position:relative}
+.screen.homeplay-screen .homeplay-feature-info{display:block;padding:8px 10px;min-height:38px}
+.homeplay-feature-info>h3{margin:0;color:#ededf0;font-size:15px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.screen .homeplay-card-open{position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;border-radius:inherit;background:transparent;box-shadow:none}
+.screen .homeplay-card-open:hover{background:#ffffff05}
+.screen .homeplay-card-open:focus-visible{outline:2px solid #61d6fa;outline-offset:-3px}
+.homeplay-feature-card .homeplay-motion,.homeplay-wide-card .homeplay-motion{z-index:2}
+.homeplay-wide-info{padding:24px 8px 8px}
+.homeplay-wide-info h3{margin:0}
+.screen .homeplay-picker-games>button{justify-content:center}
+.screen.device-duo.homeplay-screen .homeplay-feature-info{min-height:36px;padding:7px 12px}
+.screen.device-duo.homeplay-screen .homeplay-focus-track,.screen.device-duo.homeplay-screen .homeplay-feature-card{height:38px;min-height:0}
+.screen.device-duo.homeplay-screen .homeplay-next-peek{height:38px;max-height:38px}
+/* D055: every wide homepage module occupies its own full-width row. */
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-home{display:block}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-home>.section{width:100%;min-width:0}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-home>.secondary-business{display:block}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .editorial-split{grid-template-columns:minmax(0,.85fr) minmax(0,1.65fr);gap:18px}

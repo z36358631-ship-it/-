@@ -107,7 +107,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert'),crypto=requ
   record('四形态首页选游前置、宽屏游戏库首位；PC原内容与榜单保留');
   await show('portrait','android','home');
   await page.locator('.content').evaluate(e=>e.scrollTop=340);
-  await click('[data-act="homeplay-select"][data-index="1"]');
+  await click('.homeplay-next-peek');
   await click('[data-act="homeplay-detail"]');
   await click('[data-act="console-back"]');assert.equal((await state()).page,'home');
   await click('.calendar-more');assert.equal(await page.locator('.release-calendar-page').count(),1);

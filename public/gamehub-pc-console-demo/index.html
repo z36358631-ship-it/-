@@ -390,6 +390,18 @@ body.console-lab .hardware-device.form-duo>.screen{height:390px;width:620px;bord
 .screen .editorial-split{align-items:start}.screen .feature-banner{align-self:start}.screen .hero-open{height:151px;min-height:151px}.screen .hero-open>.media-image,.screen .hero-open>.crop-media{height:103px!important;width:100%;object-fit:cover}.screen .feature-caption{height:48px;display:flex;flex-direction:column;justify-content:center;padding:5px 9px}.screen .feature-caption b{font-size:13px;line-height:19px}.screen .feature-caption small{font-size:10px;line-height:17px}.screen .story-open{display:flex;align-items:center;gap:6px;padding:7px 1px;min-height:35px;max-height:35px;width:100%;line-height:21px}.screen .story-title{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.screen .story-bullet{flex:none}.screen.device-portrait .post-grid{grid-template-columns:1fr}.screen.device-portrait .modal .grid.two{grid-template-columns:1fr}
 .screen .bottom button:not(.selected):hover{background:#d8e3eb40}
 @media(max-width:600px){.screen.console-skin .native-appbar{padding-left:13px;padding-right:13px;gap:10px}.screen.console-skin .native-search{height:39px;min-height:39px;font-size:13px}}
+/* D051-052: a single back arrow; section links stay beside their heading. */
+.screen>.subhead{justify-content:flex-start;gap:8px}
+.screen>.subhead>.native-back,.screen:has(.release-calendar-page)>.subhead>.native-back{display:grid;place-items:center;flex:0 0 32px;width:32px;height:36px;min-width:32px;min-height:36px;margin:0;padding:0;border:0;background:none;box-shadow:none;border-radius:8px;color:inherit;font-size:0}
+.screen>.subhead>.native-back:before{content:none!important}
+.screen>.subhead>.native-back .console-icon{width:22px;height:22px}
+.screen .native-section-heading{display:flex;align-items:center;justify-content:flex-start;gap:2px}
+.screen .native-section-heading>h2,.screen .native-section-heading>h3{flex:0 1 auto;margin-right:0}
+.screen .native-section-heading>.native-section-link{display:grid;place-items:center;flex:0 0 26px;width:26px;height:28px;min-width:26px;min-height:28px;margin:0;padding:0;border:0;border-radius:6px;background:none;box-shadow:none;font-size:0;color:#989eaa}
+.screen .native-section-link .console-icon{width:15px;height:15px;transform:rotate(180deg)}
+.screen .native-section-heading>.calendar-today{flex:none;margin-left:8px;color:#979da8;font-size:11px;font-weight:400;line-height:20px;white-space:nowrap}
+.screen .calendar-heading>.native-section-link{margin-left:1px}
+.screen .native-back:hover,.screen .native-section-link:hover{background:#ffffff0b}
 
 /* Independent review frame. Product styling belongs to console.css. */
 body.console-lab{margin:0;background:#edf2f5;color:#35434f;font-family:ui-rounded,"Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
@@ -491,6 +503,42 @@ body.console-lab{background:repeating-linear-gradient(180deg,#f9fbfc 0 3px,#e3ea
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-feature-info .homeplay-start{font-size:9px;min-height:31px;padding:5px 8px}
 .screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-motion{top:8px;bottom:auto;z-index:2}.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-picker-games span{display:none}.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-picker-games>button{justify-content:center;min-height:30px}.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-picker-games .media-image{width:19px;height:25px}
 .screen.device-tablet.homeplay-screen .homeplay-feature-card{height:192px}
+/* D050: fixed wide cards have no carousel, selector, peek or swipe target. */
+.screen.homeplay-screen .homeplay-platform{grid-column:1;grid-row:3;min-width:0;font-size:9px;line-height:14px;color:#a4aab6}
+.homeplay-wide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
+.homeplay-wide-card{position:relative;min-width:0;height:112px;border:1px solid #2b2e34;border-radius:10px;overflow:hidden;background:#1b1d21}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-card>.homeplay-media{height:100%;width:100%;min-height:0}
+.homeplay-wide-info{position:absolute;left:0;right:0;bottom:0;padding:23px 8px 7px;background:linear-gradient(transparent,#101216c9 31%,#101216f5 100%);pointer-events:none}
+.homeplay-wide-info h3{display:block;margin:0 0 2px;color:#ededf0;font-size:13px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.homeplay-wide-bottom{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0}
+.screen.homeplay-screen .homeplay-wide-bottom>.homeplay-platform{font-size:8px;line-height:13px}
+.screen.homeplay-screen .homeplay-wide-action{pointer-events:auto;min-height:25px;height:25px;padding:3px 7px;border-radius:7px;font-size:8px;gap:3px;color:#06202a;background:#34bded;box-shadow:none}
+.homeplay-wide-action .console-icon{height:11px;width:11px}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-card .homeplay-motion{top:5px;right:5px;bottom:auto;width:22px;height:22px;min-height:22px;border-radius:6px;font-size:9px}
+.homeplay-wide-card .homeplay-media-source{top:5px;left:5px;font-size:7px;line-height:12px;padding:1px 4px}
+.screen.device-tablet .homeplay-wide-card{height:128px}
+.screen.device-tablet .homeplay-wide-info h3{font-size:15px;line-height:20px}
+.screen.device-tablet.homeplay-screen .homeplay-wide-action{font-size:9px;min-height:27px;height:27px}
+/* D053: playable cards show the scene and a single title; the card opens details. */
+.screen.homeplay-screen .homeplay-feature-card{position:relative}
+.screen.homeplay-screen .homeplay-feature-info{display:block;padding:8px 10px;min-height:38px}
+.homeplay-feature-info>h3{margin:0;color:#ededf0;font-size:15px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.screen .homeplay-card-open{position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;border-radius:inherit;background:transparent;box-shadow:none}
+.screen .homeplay-card-open:hover{background:#ffffff05}
+.screen .homeplay-card-open:focus-visible{outline:2px solid #61d6fa;outline-offset:-3px}
+.homeplay-feature-card .homeplay-motion,.homeplay-wide-card .homeplay-motion{z-index:2}
+.homeplay-wide-info{padding:24px 8px 8px}
+.homeplay-wide-info h3{margin:0}
+.screen .homeplay-picker-games>button{justify-content:center}
+.screen.device-duo.homeplay-screen .homeplay-feature-info{min-height:36px;padding:7px 12px}
+.screen.device-duo.homeplay-screen .homeplay-focus-track,.screen.device-duo.homeplay-screen .homeplay-feature-card{height:38px;min-height:0}
+.screen.device-duo.homeplay-screen .homeplay-next-peek{height:38px;max-height:38px}
+/* D055: every wide homepage module occupies its own full-width row. */
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-home{display:block}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-home>.section{width:100%;min-width:0}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-wide-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .homeplay-home>.secondary-business{display:block}
+.screen:is(.device-landscape,.device-tablet).homeplay-screen .editorial-split{grid-template-columns:minmax(0,.85fr) minmax(0,1.65fr);gap:18px}
 
 /* D046: the app uses the existing community charcoal surfaces across tabs. */
 .screen.app-dark{--console-ink:#ededf0;--console-muted:#969aa5;--console-line:#303238;--console-shadow:none;color:#ededf0;background:#0e0e10;color-scheme:dark}
@@ -1307,6 +1355,34 @@ window.CONSOLE_DEVICE_PREVIEW={
 /* Existing app header, using registered transparent screenshots of native icons. */
 function nativeAppbar(){return `<div class="console-appbar native-appbar"><button type="button" class="native-search" data-act="destination" data-title="搜索" aria-label="搜索游戏">${media('icon-search','','native-search-icon')}<span>生化危机7</span></button><button type="button" class="native-header-action native-message" data-act="destination" data-title="消息" aria-label="消息，有未读消息">${media('icon-bell','','native-header-icon')}<i class="native-unread-dot" aria-hidden="true"></i></button><button type="button" class="native-header-action" data-act="destination" data-title="设备" aria-label="设备">${media('icon-device','','native-header-icon')}</button></div>`;}
 consoleHeader=function(title,backButton=false){return consoleStatus()+(backButton?`<div class="console-appbar native-subbar">${consoleButton(consoleIcon('back'),'back','aria-label="返回"','console-round')}<h1>${title}</h1></div>`:nativeAppbar());};
+const nativeOriginalBusiness=business;
+business=function(){
+ const template=document.createElement('template');template.innerHTML=nativeOriginalBusiness();
+ template.content.querySelectorAll('.business-module .section-title [data-act="destination"]').forEach(button=>{
+  if(['秒玩上新','组队云玩'].includes(button.dataset.title))button.remove();
+ });
+ return template.innerHTML;
+};
+function nativeNormalizeNavigation(screen){
+ if(!screen)return;
+ const back=screen.querySelector('.subhead>[data-act="back"]');
+ if(back){
+  back.innerHTML=consoleIcon('back');back.classList.add('native-back');back.setAttribute('aria-label','返回上一页');
+  screen.querySelectorAll('.content [data-act="back"]').forEach(button=>{if(/^(←\s*)?返回$/.test(button.textContent.trim()))button.remove();});
+ }
+ screen.querySelectorAll('.section-title,.calendar-heading').forEach(header=>{
+  const title=header.querySelector('h2,h3');if(!title)return;
+  const link=[...header.querySelectorAll('button')].find(button=>button.classList.contains('calendar-more')||/^更多/.test(button.textContent.trim()));
+  if(!link)return;
+  link.innerHTML=consoleIcon('back');link.classList.add('native-section-link');link.setAttribute('aria-label',`查看${title.textContent.trim()}`);
+  header.classList.add('native-section-heading');title.insertAdjacentElement('afterend',link);
+  if(header.classList.contains('calendar-heading')){
+   const date=header.querySelector('.calendar-today');
+   if(date){date.textContent=date.textContent.replace(/\s*·\s*今天\s*$/,'');date.insertAdjacentElement('afterend',link);}
+   header.querySelector('.calendar-entry')?.remove();
+  }
+ });
+}
 const nativeHeaderRender=render;
 render=function(preserve=false){
  nativeHeaderRender(preserve);
@@ -1314,6 +1390,7 @@ render=function(preserve=false){
  const screen=document.querySelector('.screen.device-landscape,.screen.device-tablet');
  const bar=screen?.querySelector('.native-appbar'),nav=screen?.querySelector('.device-top-nav');
  if(bar&&nav){const row=document.createElement('div');row.className='native-wide-header';bar.parentNode.insertBefore(row,bar);row.append(nav,bar);}
+ nativeNormalizeNavigation(document.querySelector('.screen'));
 };
 
 /* Homepage direction study. Installation/history are review fixtures, never device tests. */
@@ -1325,18 +1402,19 @@ const homePlayCopy={
  elden:{genre:'开放世界 · 动作',title:'下一片风景，在迷雾之后',description:'骑马探索交界地，挑战强敌，找到属于自己的冒险路线。'},
  wukong:{genre:'动作冒险',title:'提起金箍棒，踏上取经路',description:'看破招式，闪身反击，在熟悉的西游故事里迎战妖王。'}
 };
-let homePlayObserver=null,homePlayPointer=null;
+let homePlayObserver=null,homePlayPointer=null,homePlaySwipeUntil=0;
 const homePlayMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function homePlayGame(){return consoleGames[homePlayOrder[homePlayState.selected]];}
+function homePlayWide(){return ['landscape','tablet'].includes(deviceState.form);}
+function homePlayPlatform(game){return 'Steam';}
 function homePlayReady(game){return homePlayState.audience==='returning'&&['elden','hades'].includes(game.key);}
 function homePlayMedia(game){
  const clip=game.key==='hades'&&typeof HOME_PLAY_CLIP==='string';
  const poster=clip?HOME_PLAY_POSTER:consoleSceneSource(game.key);
  return `<div class="homeplay-media">${clip?`<video class="homeplay-video" poster="${poster}" muted playsinline loop preload="none" aria-label="哈迪斯官方玩法片段"></video>`:`<img src="${poster}" alt="${game.name}官方游戏画面" decoding="async">`}<span class="homeplay-media-source">${clip?'官方玩法':'官方游戏画面'}</span>${clip?`<button type="button" class="homeplay-motion" data-act="homeplay-motion" aria-label="播放玩法片段" aria-pressed="false">▶</button>`:''}</div>`;
 }
-function homePlayAction(game,cls='homeplay-start'){
- const ready=homePlayReady(game);
- return `<button type="button" class="${cls}" data-act="${ready?'homeplay-start':'homeplay-detail'}" data-key="${game.key}" aria-label="${ready?'开始游戏':'查看游戏'}：${game.name}">${ready?consoleIcon('play'):''}<span>${ready?'开始游戏':'查看游戏'}</span>${ready?'':'<span aria-hidden="true">↗</span>'}</button>`;
+function homePlayCardOpen(game){
+ return `<button type="button" class="homeplay-card-open" data-act="homeplay-detail" data-key="${game.key}" aria-label="查看${game.name}游戏详情"></button>`;
 }
 const homePlayOriginalContinue=continueStrip;
 continueStrip=function(){
@@ -1344,14 +1422,18 @@ continueStrip=function(){
  if(['landscape','tablet'].includes(deviceState.form))return '';
  if(homePlayState.audience==='new'||!appState.recent||appState.recentFolded)return '';
  const game=consoleGames[0];
- return `<div class="continue-row homeplay-continue" data-testid="continue-strip"><div class="homeplay-recent-art">${consoleSceneImage(game.key,game.name+'游戏画面','homeplay-recent-cover')}<span class="homeplay-recent-time"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5V8l2.2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>${game.last}</span></div><div class="homeplay-recent-copy"><span>继续游戏</span><b>${game.name}</b><small>PC · 沿用上次配置</small></div><button type="button" class="homeplay-recent-start" data-act="homeplay-start" data-key="${game.key}" aria-label="继续游戏：${game.name}">${consoleIcon('play')}</button></div>`;
+ return `<div class="continue-row homeplay-continue" data-testid="continue-strip"><div class="homeplay-recent-art">${consoleSceneImage(game.key,game.name+'游戏画面','homeplay-recent-cover')}<span class="homeplay-recent-time"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 4.5V8l2.2 1.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>${game.last}</span></div><div class="homeplay-recent-copy"><span>继续游戏</span><b>${game.name}</b><small>${homePlayPlatform(game)}</small></div><button type="button" class="homeplay-recent-start" data-act="homeplay-start" data-key="${game.key}" aria-label="继续游戏：${game.name}">${consoleIcon('play')}</button></div>`;
 };
+function homePlayWideCards(){
+ return `<div class="homeplay-wide-grid" aria-label="本机可玩游戏">${homePlayOrder.map(index=>{const game=consoleGames[index];return `<article class="homeplay-wide-card" data-key="${game.key}">${homePlayMedia(game)}<div class="homeplay-wide-info"><h3>${game.name}</h3></div>${homePlayCardOpen(game)}</article>`;}).join('')}</div>`;
+}
 function homePlayModule(){
- const game=homePlayGame(),copy=homePlayCopy[game.key],ready=homePlayReady(game);
+ const game=homePlayGame();
  const heading=`<div class="section-title"><h2>本机可玩</h2><button type="button" data-act="open-compatibility">更多 ›</button></div>`;
  if(appState.playableMode!=='known')return `<section class="section homeplay-module playable-module" data-module="playable">${heading}<div class="state-block">${appState.playableMode==='unknown'?'暂无法识别当前设备':'暂无匹配的游戏'}<p>到兼容性查询看看</p><button data-act="open-compatibility">兼容性查询</button></div></section>`;
+ if(homePlayWide())return `<section class="section homeplay-module playable-module" data-module="playable">${heading}${homePlayWideCards()}</section>`;
  const next=consoleGames[homePlayOrder[(homePlayState.selected+1)%homePlayOrder.length]];
- return `<section class="section homeplay-module playable-module" data-module="playable">${heading}<div class="homeplay-focus-track" aria-label="本机可玩游戏"><article class="homeplay-feature-card" data-key="${game.key}">${homePlayMedia(game)}<div class="homeplay-feature-info"><div class="homeplay-game-heading"><h3>${game.name}</h3><span>${copy.genre}</span></div><p class="homeplay-hook">${copy.title}</p><p class="homeplay-description">${copy.description}</p><div class="homeplay-card-bottom"><span class="homeplay-install-state ${ready?'is-ready':''}"><i></i>${ready?'已安装 · 沿用上次配置':'未添加到游戏库'}</span>${homePlayAction(game)}</div></div></article><button type="button" class="homeplay-next-peek" data-act="homeplay-next" aria-label="下一款：${next.name}">${media(next.key,next.name)}<span aria-hidden="true">›</span></button></div><div class="homeplay-picker" role="group" aria-label="选择本机可玩游戏"><button type="button" class="homeplay-prev" data-act="homeplay-prev" aria-label="上一款游戏">‹</button><div class="homeplay-picker-games">${homePlayOrder.map((index,i)=>{const g=consoleGames[index];return `<button type="button" data-act="homeplay-select" data-index="${i}" class="${i===homePlayState.selected?'is-selected':''}" aria-label="选择${g.name}" aria-pressed="${i===homePlayState.selected}">${media(g.key,'')}<span>${g.name}</span></button>`;}).join('')}</div><button type="button" class="homeplay-next" data-act="homeplay-next" aria-label="下一款游戏">›</button></div></section>`;
+ return `<section class="section homeplay-module playable-module" data-module="playable">${heading}<div class="homeplay-focus-track" aria-label="本机可玩游戏"><article class="homeplay-feature-card" data-key="${game.key}">${homePlayMedia(game)}<div class="homeplay-feature-info"><h3>${game.name}</h3></div>${homePlayCardOpen(game)}</article><button type="button" class="homeplay-next-peek" data-act="homeplay-next" aria-label="下一款：${next.name}">${media(next.key,'')}<span aria-hidden="true">›</span></button></div></section>`;
 }
 home=function(){return `${continueStrip()}<div class="retention-home homeplay-home">${homePlayModule()}${editorial()}${calendarModule()}${steamDiscountModule()}${giveawayModule()}${activityModule()}<div class="secondary-business">${business()}</div></div>`;};
 const homePlayOriginalSpace=consoleGameSpace;
@@ -1365,7 +1447,7 @@ const homePlayOriginalStart=consoleStart;
 consoleStart=function(){if(appState.detail.homePlay&&!homePlayReady(consoleGame()))return;homePlayOriginalStart();};
 function homePlaySelect(index,focus=false){
  homePlayState.selected=(index+homePlayOrder.length)%homePlayOrder.length;homePlayState.paused=false;consoleTone();render(true);
- if(focus)document.querySelector(`[data-act="homeplay-select"][data-index="${homePlayState.selected}"]`)?.focus({preventScroll:true});
+ if(focus)document.querySelector('.homeplay-next-peek')?.focus({preventScroll:true});
 }
 function homePlayOpen(key,start){
  const index=consoleGames.findIndex(game=>game.key===key);if(index<0)return;
@@ -1410,6 +1492,7 @@ render=function(preserve=false){
 window.addEventListener('click',event=>{
  const button=event.target.closest('[data-act^="homeplay-"]');if(!button)return;
  event.preventDefault();event.stopImmediatePropagation();
+ if(button.dataset.act==='homeplay-detail'&&performance.now()<homePlaySwipeUntil)return;
  switch(button.dataset.act){
   case 'homeplay-select':homePlaySelect(Number(button.dataset.index),true);break;
   case 'homeplay-prev':homePlaySelect(homePlayState.selected-1,true);break;
@@ -1419,8 +1502,8 @@ window.addEventListener('click',event=>{
   case 'homeplay-motion':homePlayState.paused=!homePlayState.paused;homePlaySyncMotion();break;
  }
 },true);
-document.addEventListener('pointerdown',event=>{if(event.target.closest('.homeplay-focus-track')&&!event.target.closest('button'))homePlayPointer={x:event.clientX,y:event.clientY};else homePlayPointer=null;},{passive:true});
-document.addEventListener('pointerup',event=>{const start=homePlayPointer;homePlayPointer=null;if(!start||appState.page!=='home')return;const dx=event.clientX-start.x,dy=event.clientY-start.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.4)homePlaySelect(homePlayState.selected+(dx<0?1:-1),false);},{passive:true});
+document.addEventListener('pointerdown',event=>{if(!homePlayWide()&&event.target.closest('.homeplay-focus-track')&&!event.target.closest('button:not(.homeplay-card-open)'))homePlayPointer={x:event.clientX,y:event.clientY};else homePlayPointer=null;},{passive:true});
+document.addEventListener('pointerup',event=>{const start=homePlayPointer;homePlayPointer=null;if(!start||homePlayWide()||appState.page!=='home')return;const dx=event.clientX-start.x,dy=event.clientY-start.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.4){homePlaySwipeUntil=performance.now()+250;homePlaySelect(homePlayState.selected+(dx<0?1:-1),false);}},{passive:true});
 document.addEventListener('pointercancel',()=>homePlayPointer=null,{passive:true});
 document.addEventListener('visibilitychange',homePlaySyncMotion);homePlayMotion.addEventListener('change',homePlaySyncMotion);
 window.GAMEHUB_HOME_PLAY_PREVIEW={

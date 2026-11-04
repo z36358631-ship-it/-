@@ -25,20 +25,42 @@
 - [x] Update the continue row DOM to screenshot-based left artwork / middle metadata / circular play, keeping the original launch action and fixture history.
 - [x] Compact homepage feature metadata into three short rows with the action beside them; retain official preview and all device layouts.
 - [x] Assert portrait feature height <=215px, continue height <=92px, art-left/play-right geometry, playback and route regressions; inspect four forms.
-- [ ] Whitelist ordinary push, verify current fixed public bytes and interactions, and update workflow/state evidence.
+- [x] Whitelist ordinary push, verify current fixed public bytes and interactions, and update workflow/state evidence.
 
 ### Task 5: D046—047 theme and review placement
 - [x] Add `app-dark.css` after home CSS, using community charcoal surfaces across app chrome, homepage/PC cards and internal routes; no new theme selector.
 - [x] Put the preview left and controls right in `review.css`; stack preview first on narrow screens.
 - [x] Verify dark surface values, left/right desktop and narrow order, all device/profile interactions and source preservation; review final screenshots.
-- [ ] Publish to the same fixed address and validate live current-version hashes and interactions.
+- [x] Publish to the same fixed address and validate live current-version hashes and interactions. D049 supersedes D047 placement below.
 
 ### Task 6: D048 wide homepage correction
 - [x] Remove continue game from landscape/tablet home only; retain portrait/Duo and existing PC behavior.
 - [x] Put playable and editorial modules side by side; use scene-overlay information in the wide game card.
 - [x] Verify no wide continue, side-by-side geometry and visible CTA; independently review both wide forms and launch/cancel paths.
-- [ ] Publish together with compact cards, dark surfaces and right-side controls; verify the final fixed URL.
+- [x] Publish together with compact cards and dark surfaces; final controls-left placement follows D049. Verify the final fixed URL.
 
 ### Task 7: D049 latest placement
 - [x] Restore original controls-left / demo-right desktop CSS and controls-first narrow stacking; retain the approved app changes.
-- [ ] Verify final placement, device/profile controls and compact dark homepage, then publish and confirm the fixed URL.
+- [x] Verify final placement, device/profile controls and compact dark homepage, then publish and confirm the fixed URL. Final commit c5ba65a38ffc0b70550df2124c387c3ac149aa6a; live body matches local/Git; 7 checks and 7 combinations pass with zero JS errors.
+
+### Task 8: D050—051 direct wide cards and back navigation
+- [x] In `homeplay.js`, generate a separate two-column/four-card wide module and guard swipe to portrait/Duo only. D053 replaces playable platform and start actions with a single title and whole-card existing detail route; continue keeps Steam and direct play.
+- [x] In `homeplay.css`, style compact scene cards with a single name per D053; retain `app-dark.css`, first-row community and no wide continue.
+- [x] In `header.js`/`header.css`, remove the two business-more entries, replace subpage back labels with existing SVG and remove duplicate body back controls without changing route handlers.
+- [x] Normalize retained section-list entries to title-adjacent right-arrow buttons, keeping dataset actions and accessible names; D054 places calendar arrow after date and removes duplicate icon. Verify actual geometry and original routes.
+- [x] Extend `verify-homeplay.cjs` with no wide carousel/gesture, all four card-to-detail actions, new-user and empty states, no business-more, arrow-only headers and working back navigation. Local suite and existing regression each pass 8 groups across 7 combinations; current screenshots reviewed.
+- [ ] Publish only whitelisted independent-demo files with isolated index and normal push; verify fixed public bytes against Git and repeat live suite. Record reviewer, evidence and production limitations.
+
+### Task 9: D053 title-only playable cards
+- [x] Remove platform, genre, hook and start CTA from every playable card; show each title once and remove duplicate labels in portrait/Duo thumbnail pickers.
+- [x] Reuse `homeplay-detail` for a whole-card accessible hit area, keep video pause separate, and suppress click after a portrait swipe. Installed games can launch from existing details, new/unadded games retain the previous restriction.
+- [x] Recheck compact cards, all wide cards, media controls, swipe versus open behavior, detail/back/launch/cancel, and current arrow conventions; inspect final screenshots before fixed-address publication.
+
+### Task 10: D054 remove picker and place calendar arrow after date
+- [x] Stop generating the thumbnail picker and bottom previous/next controls; preserve portrait/Duo swipe and next-card peek, leaving wide grid static.
+- [x] Normalize calendar heading to title, muted month/day, then right arrow; remove duplicate today text and calendar icon while preserving `release-open`.
+- [ ] Verify no picker in any form, real portrait forward/back swipe without accidental detail opening, title/date/arrow order and original calendar route; capture and review current screenshots, then publish together with D050–053.
+
+### Task 11: D055 one wide module per row
+- [x] Override wide homepage layout to one full-width module per row, including separate secondary business modules; use a single four-card playable row and retain community internal banner/text split.
+- [ ] Verify module full-width geometry/order, four cards in the same row without horizontal overflow or swipe, preserved portrait/Duo and current D050–054 interactions. Review current wide screenshots and publish the combined final version.

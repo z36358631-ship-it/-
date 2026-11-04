@@ -40,7 +40,7 @@ for relative in ['public/gamehub-pc-console-demo/index.html', 'demos/gamehub-pc-
     'baseline': str(BASE), 'baselineSha256': sha(original),
     'outputSha256': sha(document.encode('utf-8')), 'bytes': len(document.encode('utf-8')),
     'source': 'User supplied Emuly README/CSS, native header and device screenshots; existing GameHub demo; official Steam scenes and Hades gameplay excerpt',
-    'homepage': 'Play-first homepage, review-only new/returning profiles; installation and history fixtures; wide navigation library first',
+    'homepage': 'Scene and single-title playable cards opening existing details; full-width wide sections and fixed four-game row; adjacent list arrows and icon-only back; review-only profiles and fixture history',
     'gameplay': '8-second muted official Hades footage, embedded; not a mobile emulator benchmark',
     'forms': ['portrait','landscape','tablet','duo'],
     'systems': 'Android and iOS appearance; conceptual Duo uses iOS',
