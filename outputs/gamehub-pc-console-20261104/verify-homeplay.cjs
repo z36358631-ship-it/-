@@ -14,7 +14,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
   await page.goto(process.env.LIVE_URL||'file:///'+path.resolve(__dirname,'../../public/gamehub-pc-console-demo/index.html').replaceAll('\\','/'),{timeout:120000});
   assert.equal((await app()).page,'home');
   const placement=await page.locator('.canvas-area,.sidebar').evaluateAll(es=>es.map(e=>({cls:e.className,x:e.getBoundingClientRect().x,right:e.getBoundingClientRect().right})));
-  assert(placement.find(e=>e.cls==='canvas-area').right<=placement.find(e=>e.cls==='sidebar').x,'Desktop demo must be left of controls');
+  assert(placement.find(e=>e.cls==='sidebar').right<=placement.find(e=>e.cls==='canvas-area').x,'Desktop controls must be left of demo');
   assert.equal(await page.locator('.screen').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(14, 14, 16)');
   assert.equal(await page.locator('.content').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(14, 14, 16)');
   assert.equal(await page.locator('.homeplay-feature-card').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(27, 29, 33)');
@@ -30,7 +30,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
   assert.equal(await page.locator('.homeplay-recent-copy>span').textContent(),'继续游戏');
   assert.equal(await page.locator('.homeplay-description').isVisible(),false,'Long description still consumes homepage space');
   await shot('returning-portrait');await page.screenshot({path:path.join(__dirname,prefix+'desktop.png'),fullPage:true});
-  record('左侧演示右侧控制，深色首页，横向继续卡与压缩主卡',{playableHeight:compact.height,continueHeight:recent.height});
+  record('左侧控制右侧演示，深色首页，横向继续卡与压缩主卡',{playableHeight:compact.height,continueHeight:recent.height});
   await page.waitForFunction(()=>{const v=document.querySelector('.homeplay-video');return v&&!v.paused&&v.currentTime>.2;});
   assert.equal(await page.locator('video').evaluate(v=>v.muted&&v.loop&&v.playsInline),true);
   await page.locator('[data-act="homeplay-motion"]').click();assert.equal(await page.locator('video').evaluate(v=>v.paused),true);
@@ -100,7 +100,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
   await page.locator('[data-module="return"] [data-page="task-center"]').click();assert.equal((await app()).page,'task-center');await page.locator('[data-act="back"]').first().click();
   await page.locator('[data-act="promo-giveaways-open"]').first().click();assert.equal((await app()).page,'giveaways');
   record('既有社区左右独立、发售日历、任务中心和喜加一入口正常');
-  for(const width of [360,390,768]){await page.setViewportSize({width,height:1100});await show();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);if(width<600){const main=await page.locator('.canvas-area').boundingBox(),controls=await page.locator('.sidebar').boundingBox();assert(main.y<controls.y,'Narrow layout must show demo above controls');}if(width===390)await page.screenshot({path:path.join(__dirname,prefix+'mobile.png'),fullPage:true});}
+  for(const width of [360,390,768]){await page.setViewportSize({width,height:1100});await show();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);if(width<600){const main=await page.locator('.canvas-area').boundingBox(),controls=await page.locator('.sidebar').boundingBox();assert(controls.y<main.y,'Narrow layout keeps controls above demo');}if(width===390)await page.screenshot({path:path.join(__dirname,prefix+'mobile.png'),fullPage:true});}
   assert.deepEqual(errors,[]);assert.equal(requests.length,live?1:0);
   record('三宽度无页面横溢出、JS异常0、全部媒体内嵌');
   fs.writeFileSync(path.join(__dirname,live?'live-homeplay-verification.json':'homeplay-verification.json'),JSON.stringify({url:process.env.LIVE_URL||'local',checks,errors,requests},null,2));

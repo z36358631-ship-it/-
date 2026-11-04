@@ -38,3 +38,7 @@
 - [x] Put playable and editorial modules side by side; use scene-overlay information in the wide game card.
 - [x] Verify no wide continue, side-by-side geometry and visible CTA; independently review both wide forms and launch/cancel paths.
 - [ ] Publish together with compact cards, dark surfaces and right-side controls; verify the final fixed URL.
+
+### Task 7: D049 latest placement
+- [x] Restore original controls-left / demo-right desktop CSS and controls-first narrow stacking; retain the approved app changes.
+- [ ] Verify final placement, device/profile controls and compact dark homepage, then publish and confirm the fixed URL.
