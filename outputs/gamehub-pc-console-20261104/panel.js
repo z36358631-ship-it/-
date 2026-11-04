@@ -1,6 +1,9 @@
 /* Review controls only; these shortcuts are outside the app canvas. */
 const labAppRender=render;
 function paintLabControls(){
+ const os=CONSOLE_DEVICE_PREVIEW.getOS(),form=CONSOLE_DEVICE_PREVIEW.getForm();
+ document.querySelector('#lab-form').innerHTML=[['portrait','手机竖屏'],['landscape','手机横屏'],['tablet','平板'],['duo','iPhone Duo']].map(([id,title])=>`<button type="button" data-act="lab-form" data-form="${id}" aria-pressed="${form===id}" class="${form===id?'active':''}">${title}</button>`).join('');
+ document.querySelector('#lab-os').innerHTML=[['android','Android'],['ios','iOS']].map(([id,title])=>`<button type="button" data-act="lab-os" data-os="${id}" ${form==='duo'&&id==='android'?'disabled':''} aria-pressed="${os===id}" class="${os===id?'active':''}">${title}</button>`).join('');
  const page=appState.page;
  const scene=consoleState.menu?'menu':page;
  const button=(title,id)=>`<button type="button" data-act="lab-scene" data-scene="${id}" aria-pressed="${scene===id}" class="${scene===id?'active':''}">${title}</button>`;
@@ -9,6 +12,8 @@ function paintLabControls(){
 }
 render=function(preserve=false){labAppRender(preserve);paintLabControls();};
 document.addEventListener('click',event=>{
+ const deviceButton=event.target.closest('[data-act="lab-form"],[data-act="lab-os"]');
+ if(deviceButton){event.preventDefault();event.stopImmediatePropagation();if(deviceButton.dataset.act==='lab-form')CONSOLE_DEVICE_PREVIEW.setForm(deviceButton.dataset.form);else CONSOLE_DEVICE_PREVIEW.setOS(deviceButton.dataset.os);return;}
  const el=event.target.closest('[data-act="lab-scene"]');if(!el)return;
  event.preventDefault();event.stopImmediatePropagation();
  consoleCancelTimer();consoleCancelTransition();consoleState.menu=false;consoleState.origin=null;trail.length=0;overlayData=null;appState.detail={};

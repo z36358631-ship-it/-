@@ -1,0 +1,62 @@
+/* Scene-first PC library. All geometry stays inside the platform device shell. */
+.screen.console-skin.immersive-library{background:#10181e;color:#f4f6f8}
+.immersive-library .console-status{color:#dbe5e9!important}
+.immersive-library .console-status-right>i,.immersive-library .console-battery:before,.immersive-library .console-battery:after{background:#dbe5e9}
+.immersive-library .console-battery{border-color:#b5c6ce}
+.screen.console-skin.immersive-library .console-library-content{padding:0!important;display:flex;flex-direction:column;overflow-x:hidden;scrollbar-width:none}
+.immersive-library .immersive-showcase{position:relative;flex:1;min-height:305px;padding:0;margin:0;border:0;border-radius:0;background:#111a20;box-shadow:none;overflow:hidden;isolation:isolate}
+.immersive-library .console-wallpaper{inset:0;filter:none;opacity:1;transform:none}
+.immersive-library .console-wallpaper:after{background:#111a20}
+.screen.console-skin.immersive-library .console-feature-art{position:absolute;inset:0;width:100%;height:100%;padding:0;margin:0;border:0;border-radius:0;background:#162028;box-shadow:none;overflow:hidden}
+.immersive-library .console-feature-art>.media-image{height:100%;width:100%;object-fit:cover;object-position:center 35%;border-radius:0;animation:immersive-scene-in .55s ease both}
+.immersive-scene-shade{position:absolute;inset:0;background:linear-gradient(180deg,#10181e06 0%,#10181e00 29%,#10181e70 54%,#10181ef0 80%,#10181e 100%);pointer-events:none}
+.immersive-library .console-showcase>*:not(.console-wallpaper){z-index:auto}
+.immersive-library .console-showcase>.console-feature-art{z-index:0}
+.immersive-library .console-showcase>.console-showcase-top{position:absolute;left:20px;right:20px;top:17px;z-index:1;pointer-events:none;color:#e7eef2;font-size:9px;text-shadow:0 1px 8px #0008;margin:0;font-weight:500}
+.immersive-library .console-showcase-top>span:first-child{padding:4px 8px;border:1px solid #ffffff38;border-radius:8px;background:#16222a3b;backdrop-filter:blur(6px)}
+.immersive-library .console-showcase-top>span:last-child{color:#c5d2d8;font-size:8px;letter-spacing:.4px}
+.immersive-library .console-showcase>.immersive-hero-content{position:absolute;left:22px;right:22px;bottom:16px;z-index:2;pointer-events:none}
+.immersive-library .console-feature-copy{padding:0;margin:0 0 19px;text-align:left}
+.immersive-library .console-feature-copy .console-overline{display:block;color:#b7cbd5;font-size:9px;line-height:16px;letter-spacing:2.6px;font-weight:500;text-shadow:0 1px 10px #0008}
+.screen.console-skin.immersive-library .console-feature-copy h2{margin:5px 0 8px;font-size:29px;line-height:38px;font-weight:750;letter-spacing:.2px;color:#fff;text-shadow:0 2px 20px #071117aa}
+.immersive-library .console-feature-copy p{color:#bdcbd2;font-size:11px;line-height:19px;margin:0;letter-spacing:.5px}
+.immersive-start-row{display:flex;align-items:center;gap:17px;pointer-events:auto}
+.screen.console-skin.immersive-library .immersive-direct-start{flex:1;min-height:47px;border-radius:15px;border:1px solid #77e0f4;background:linear-gradient(135deg,#85e9fa,#35c4ea);box-shadow:0 6px 20px #21b5dc28,inset 0 1px 0 #d5faff;color:#124353;font-size:14px;font-weight:750;letter-spacing:1px;padding:10px 15px}
+.screen.console-skin.immersive-library .immersive-direct-start:hover{background:linear-gradient(135deg,#a4f0fc,#58d3ef);box-shadow:0 6px 25px #21b5dc42}
+.immersive-direct-start .console-icon{height:17px;width:17px}
+.screen.console-skin.immersive-library .immersive-space-link{display:flex;align-items:center;gap:5px;min-height:44px;padding:0 0 0 0;flex:0 0 auto;border:0;border-radius:0;background:none;box-shadow:none;font-size:10px;color:#b7cad4;letter-spacing:.4px}
+.screen.console-skin.immersive-library .immersive-space-link:hover{color:#fff;background:none}
+.immersive-space-link>span{font-size:18px;line-height:18px;color:#7194a7}
+.immersive-library .console-shelf-heading{flex:none;margin:8px 20px 11px;min-height:22px;align-items:center}
+.screen.console-skin.immersive-library .console-shelf-heading h2{font-size:12px;color:#e6edf1;line-height:20px;font-weight:650}
+.immersive-library .console-shelf-heading h2 small{font-size:8px;line-height:13px;border-color:#334650;color:#8fa7b3;background:#18232a}
+.immersive-library .console-shelf-heading>span{font-size:8px;color:#748e9d}
+.immersive-library .console-channels{flex:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:3px 2px 13px;margin:0 17px;overflow:visible}
+.screen.console-skin.immersive-library .console-channel{padding:3px 3px 0;min-height:0;border:1px solid #263740;border-radius:12px;box-shadow:none;background:#17222a;overflow:hidden}
+.immersive-library .console-channel>.media-image{height:91px;width:100%;border-radius:8px;object-fit:cover;object-position:center;filter:saturate(.8) brightness(.78)}
+.immersive-library .console-channel-copy{min-height:34px;padding:7px 1px 6px;align-items:flex-start;justify-content:flex-start}
+.immersive-library .console-channel-copy b{font-size:10px;line-height:14px;letter-spacing:0;font-weight:550;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:#9badb8}
+.screen.console-skin.immersive-library .console-channel.is-focused{border-color:#54cef2;box-shadow:0 0 0 1px #54cef2,0 0 17px #34bded22;background:#1b303c}
+.immersive-library .console-channel.is-focused>.media-image{filter:saturate(1) brightness(1)}
+.immersive-library .console-channel.is-focused .console-channel-copy b{color:#f4fafc}
+.immersive-library .console-channel-dot{right:7px;top:7px;width:7px;height:7px;border-width:1px;border-color:#def8ff}
+.immersive-library .console-foot-curve{height:0;margin:0;box-shadow:none;background:none}
+.screen.console-skin.immersive-library .bottom{height:64px;padding:6px 5px 8px;border-top:1px solid #ffffff08;background:#111b22;box-shadow:none}
+.screen.console-skin.immersive-library .bottom button{color:#708997;font-size:9px;border-radius:11px;background:none;box-shadow:none}
+.screen.console-skin.immersive-library .bottom button.selected{color:#75d7f4;background:#1b333f;box-shadow:inset 0 1px 0 #83d8f90c}
+.screen.console-skin.immersive-library .bottom button.selected:before{height:2px;top:-5px;background:#56c9eb}
+.screen.console-skin.console-launch-screen{background:#111b23}
+.screen.console-skin.console-launch-screen .console-status{color:#b1c5cf!important}
+.screen.console-skin.console-launch-screen h1,.screen.console-skin.console-launch-screen h2{color:#f0f6f9}
+.console-launch-screen .console-overline{color:#7c9eaf}
+.console-launch-screen .console-launch-cover{background:#22313b;box-shadow:0 0 0 1px #3a5362,0 12px 30px #0004}
+.console-launch-screen .console-orbit{background:#111b23;border-color:#224352;border-top-color:#54cef2}
+.console-launch-screen .console-launch-now{color:#83c3df}.console-launch-screen .console-progress{background:#203641}
+.console-launch-screen .console-stage-list li{color:#627c8d}.console-launch-screen .console-stage-list li>span{border-color:#273e4b;background:#1a2b35;color:#6f8e9f}
+.console-launch-screen .console-stage-list li.current{color:#86d6f0}.console-launch-screen .console-stage-list li.current>span{border-color:#439dbc;background:#1a3947;color:#7bddf8}
+.console-launch-screen .console-stage-list li.done{color:#9ebac9}.console-launch-screen .console-stage-list li.done>span{background:#1c3a46;border-color:#24586a;color:#6acfe9}
+.screen.console-skin.console-launch-screen .console-launch-content .console-secondary{background:#1b2d38;border-color:#304d5d;box-shadow:inset 0 1px 0 #ffffff08;color:#a2bfce}
+.console-launch-screen .console-preview-note{color:#617f91}
+@keyframes immersive-scene-in{from{opacity:.5;transform:scale(1.035)}to{opacity:1;transform:scale(1)}}
+@media(max-width:600px){.immersive-library .immersive-showcase{min-height:270px}.immersive-library .console-showcase>.immersive-hero-content{left:19px;right:19px;bottom:13px}.screen.console-skin.immersive-library .console-feature-copy h2{font-size:27px;line-height:35px}.immersive-library .console-feature-copy{margin-bottom:16px}.immersive-library .console-channel>.media-image{height:83px}.immersive-library .console-channels{gap:9px;margin:0 15px;padding-bottom:12px}.immersive-library .console-channel-copy{min-height:32px;padding-top:6px}.immersive-library .console-shelf-heading{margin-left:18px;margin-right:18px}.immersive-start-row{gap:15px}.screen.console-skin.immersive-library .immersive-direct-start{font-size:13px;min-height:45px}}
+@media(prefers-reduced-motion:reduce){.immersive-library *{animation:none!important;transition:none!important}}

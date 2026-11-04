@@ -1,44 +1,104 @@
 {
-  "url": "local generated demo",
+  "url": "local generated multidevice demo",
   "checks": [
     {
-      "name": "切换封面同步展示背景、标题与选中态",
+      "name": "左侧四形态与双系统；顶部原生搜索、铃铛红点、设备；真实场景内嵌",
       "passed": true
     },
     {
-      "name": "进入游戏空间默认收起配置；取消启动后旧定时器不跳转",
+      "name": "单步开玩、防连点及游戏锁定；启动中切形态不重置；取消回原库且定时器失效",
       "passed": true
     },
     {
-      "name": "启动演示→静态画面→菜单；焦点限制、键盘选择确认返回和选中恢复",
+      "name": "空间启动取消回空间；方向键Enter直启；演示流程结束进入PC控制器预览",
       "passed": true
     },
     {
-      "name": "音效默认关闭，可显式开启与关闭",
+      "name": "七组系统/形态组合，独立重排、上下屏、底部手势条；按键按压/摇杆回中/菜单返回",
+      "passed": true,
+      "data": [
+        {
+          "form": "portrait",
+          "os": "android",
+          "library": true,
+          "player": true,
+          "button": true,
+          "stick": true,
+          "menu": true
+        },
+        {
+          "form": "portrait",
+          "os": "ios",
+          "library": true,
+          "player": true,
+          "button": true,
+          "stick": true,
+          "menu": true
+        },
+        {
+          "form": "landscape",
+          "os": "android",
+          "library": true,
+          "player": true,
+          "button": true,
+          "stick": true,
+          "menu": true
+        },
+        {
+          "form": "landscape",
+          "os": "ios",
+          "library": true,
+          "player": true,
+          "button": true,
+          "stick": true,
+          "menu": true
+        },
+        {
+          "form": "tablet",
+          "os": "android",
+          "library": true,
+          "player": true,
+          "button": true,
+          "stick": true,
+          "menu": true
+        },
+        {
+          "form": "tablet",
+          "os": "ios",
+          "library": true,
+          "player": true,
+          "button": true,
+          "stick": true,
+          "menu": true
+        },
+        {
+          "form": "duo",
+          "os": "ios",
+          "library": true,
+          "player": true,
+          "button": true,
+          "stick": true,
+          "menu": true
+        }
+      ]
+    },
+    {
+      "name": "四形态首页模块顺序、PC原内容与榜单保留；不重新加入手柄",
       "passed": true
     },
     {
-      "name": "左侧独立切换页面；切离启动取消定时器；快速返回立即清理封面转场",
+      "name": "首页游戏返回来源、日历、任务及喜加一既有承接页可达",
       "passed": true
     },
     {
-      "name": "推荐首页八模块顺序保留、无手柄；PC原内容及三个榜单保留、无Steam大入口",
+      "name": "360/390/768外层无横溢出；宽设备仅在预览舞台内横向浏览",
       "passed": true
     },
     {
-      "name": "360、390、768宽度无页面或游戏库横溢出；图片解码通过",
-      "passed": true
-    },
-    {
-      "name": "减少动态效果生效",
-      "passed": true
-    },
-    {
-      "name": "原主稿SHA256不变；脚本异常0；无新增外部资源请求",
+      "name": "音效开关、减少动画、图片解码、主稿SHA保持；JS异常0，无新增网络资源",
       "passed": true
     }
   ],
   "errors": [],
-  "requests": [],
-  "primaryDemoSha256": "a30db8c6f920a982d947a097b4d16fb350c8ac444bc4cb6f2e0fc5daa75a64e0"
+  "requests": []
 }

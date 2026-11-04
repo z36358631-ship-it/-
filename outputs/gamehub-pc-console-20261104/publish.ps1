@@ -4,6 +4,18 @@ $publicationFiles=@(
  'public/gamehub-pc-console-demo/index.html',
  'outputs/gamehub-pc-console-20261104/console.js',
  'outputs/gamehub-pc-console-20261104/console.css',
+ 'outputs/gamehub-pc-console-20261104/immersive.js',
+ 'outputs/gamehub-pc-console-20261104/immersive.css',
+ 'outputs/gamehub-pc-console-20261104/device.js',
+ 'outputs/gamehub-pc-console-20261104/device.css',
+ 'outputs/gamehub-pc-console-20261104/header.js',
+ 'outputs/gamehub-pc-console-20261104/header.css',
+ 'outputs/gamehub-pc-console-20261104/scene-sources.json',
+ 'outputs/gamehub-pc-console-20261104/fetch-scenes.py',
+ 'outputs/gamehub-pc-console-20261104/assets/scenes/elden.jpg',
+ 'outputs/gamehub-pc-console-20261104/assets/scenes/hades.jpg',
+ 'outputs/gamehub-pc-console-20261104/assets/scenes/cyber.jpg',
+ 'outputs/gamehub-pc-console-20261104/assets/scenes/wukong.jpg',
  'outputs/gamehub-pc-console-20261104/review.css',
  'outputs/gamehub-pc-console-20261104/shell.html',
  'outputs/gamehub-pc-console-20261104/panel.js',
@@ -12,13 +24,18 @@ $publicationFiles=@(
  'outputs/gamehub-pc-console-20261104/build-manifest.json',
  'outputs/gamehub-pc-console-20261104/change-scope.json',
  'outputs/gamehub-pc-console-20261104/review-panel-decision.json',
+ 'outputs/gamehub-pc-console-20261104/revision-scope.json',
+ 'outputs/gamehub-pc-console-20261104/revision-review.md',
  'outputs/gamehub-pc-console-20261104/review.md',
  'outputs/gamehub-pc-console-20261104/verify.cjs',
+ 'outputs/gamehub-pc-console-20261104/verify-revision.cjs',
  'outputs/gamehub-pc-console-20261104/verify-publication.py',
  'outputs/gamehub-pc-console-20261104/capture-baseline.cjs',
  'outputs/gamehub-pc-console-20261104/verification.json',
  'outputs/gamehub-pc-console-20261104/publish.ps1',
- 'docs/superpowers/plans/2026-11-04-gamehub-pc-console.md'
+ 'docs/superpowers/plans/2026-11-04-gamehub-pc-console.md',
+ 'docs/superpowers/plans/2026-11-04-gamehub-multidevice-revision.md',
+ 'docs/superpowers/specs/2026-11-04-gamehub-play-now-revision-design.md'
 )
 $previousIndex=$env:GIT_INDEX_FILE
 $publishIndex=Join-Path ([IO.Path]::GetTempPath()) ('gh-pc-console-'+[guid]::NewGuid().ToString('N')+'.index')
@@ -31,7 +48,7 @@ try {
  git fetch origin refs/heads/master:refs/remotes/origin/master
  if($LASTEXITCODE -ne 0){throw 'Cannot fetch Pages source'}
  $base=(git rev-parse refs/remotes/origin/master).Trim()
- $known='060e6148ac097b7975d5be931c4340cfbb9a1fa5'
+ $known='53d78d1fc2c91928492a9012401441ea38296ca8'
  $remoteChanges=@(git diff --name-only $known $base -- $publicationFiles)
  if($remoteChanges.Count){throw ('Scoped remote changes require reconciliation: '+($remoteChanges -join ', '))}
  $env:GIT_INDEX_FILE=$publishIndex
@@ -47,7 +64,7 @@ try {
  $tree=(git write-tree).Trim()
  $changed=@(git diff-tree --no-commit-id --name-only -r $base $tree)
  if(!$changed.Count -or @($changed | Where-Object {$_ -notin $publicationFiles}).Count){throw 'Publication scope check failed'}
- $commit=(git commit-tree $tree -p $base -m 'Add independent console-style PC gaming experience demo').Trim()
+ $commit=(git commit-tree $tree -p $base -m 'Revise PC play experience and add phone tablet and Duo previews').Trim()
  if($LASTEXITCODE -ne 0){throw 'Cannot create publication commit'}
  git push origin "${commit}:refs/heads/master"
  if($LASTEXITCODE -ne 0){throw 'Normal push rejected; reconcile without force push'}

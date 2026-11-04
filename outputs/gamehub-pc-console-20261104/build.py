@@ -3,6 +3,7 @@ from pathlib import Path
 import hashlib
 import json
 import re
+import base64
 
 OUT = Path(__file__).resolve().parent
 ROOT = OUT.parents[1]
@@ -17,9 +18,11 @@ assert document.count('</style>') == 1, 'Unexpected CSS insertion point'
 anchor = '\nrender();\nrestoreCompatibilityReturn();'
 position = document.rfind(anchor)
 assert position >= 0, 'Missing final application render'
-script = (OUT / 'console.js').read_text(encoding='utf-8') + '\n' + (OUT / 'panel.js').read_text(encoding='utf-8')
+scene_sources=json.loads((OUT/'scene-sources.json').read_text(encoding='utf-8-sig'))
+scenes={key:'data:image/jpeg;base64,'+base64.b64encode((ROOT/source['path']).read_bytes()).decode('ascii') for key,source in scene_sources.items()}
+script = 'const CONSOLE_SCENES='+json.dumps(scenes)+';\n'+'\n'.join((OUT/name).read_text(encoding='utf-8') for name in ['console.js','immersive.js','device.js','header.js','panel.js'])
 document = document[:position] + '\n' + script + document[position:]
-styles = (OUT / 'console.css').read_text(encoding='utf-8') + '\n' + (OUT / 'review.css').read_text(encoding='utf-8')
+styles = '\n'.join((OUT/name).read_text(encoding='utf-8') for name in ['console.css','immersive.css','device.css','header.css','review.css'])
 document = document.replace('</style>', '\n' + styles + '\n</style>', 1)
 document = re.sub(r'<title>.*?</title>', '<title>盖世游戏 · PC 主机体验</title>', document, count=1)
 shell = (OUT / 'shell.html').read_text(encoding='utf-8')
@@ -34,7 +37,9 @@ for relative in ['public/gamehub-pc-console-demo/index.html', 'demos/gamehub-pc-
 (OUT / 'build-manifest.json').write_text(json.dumps({
     'baseline': str(BASE), 'baselineSha256': sha(original),
     'outputSha256': sha(document.encode('utf-8')), 'bytes': len(document.encode('utf-8')),
-    'source': 'User supplied Emuly README and CSS; current published GameHub demo',
+    'source': 'User supplied Emuly README/CSS, native header and device screenshots; existing GameHub demo; official Steam scene screenshots',
+    'forms': ['portrait','landscape','tablet','duo'],
+    'systems': 'Android and iOS appearance; conceptual Duo uses iOS',
     'visualStatus': 'derived design exploration, not pixel replication',
     'capabilities': 'HTML interactions only; no actual PC game execution, save or compatibility proof',
 }, ensure_ascii=False, indent=2), encoding='utf-8')

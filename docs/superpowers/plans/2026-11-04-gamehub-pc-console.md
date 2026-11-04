@@ -20,26 +20,26 @@
 
 Files: `outputs/gamehub-pc-console-20261104/console.js`, `console.css` (implementation worker).
 
-- [ ] Add a game library with focused cover selection and linked showcase background.
-- [ ] Add a game space with local fixture configuration, cancellable launch simulation, static art preview and a game menu.
-- [ ] Preserve existing home/PC content routes and apply a readable light theme.
-- [ ] Add keyboard selection/confirm/back, optional WebAudio and reduced motion handling.
+- [x] Add a game library with focused cover selection and linked showcase background.
+- [x] Add a game space with local fixture configuration, cancellable launch simulation, static art preview and a game menu.
+- [x] Preserve existing home/PC content routes and apply a readable light theme.
+- [x] Add keyboard selection/confirm/back, optional WebAudio and reduced motion handling.
 
 ### Task 3: Packaging and evidence
 
 Files: `outputs/gamehub-pc-console-20261104/build.py`, `review.css`, `shell.html`, `panel.js`, `verify.cjs`, `review.md` (supervisor). Latest supplied screenshot requires a left control panel and right interactive device preview; scene shortcuts are review tools outside the app.
 
-- [ ] Use `Path.read_text(encoding='utf-8')` to read the existing HTML, insert scoped CSS before `</style>` and JS before its final render call; fail if either anchor is absent.
-- [ ] Output only `public/gamehub-pc-console-demo/index.html` and `demos/gamehub-pc-console-demo.html`; compare the original SHA-256 before and after.
-- [ ] Run `python outputs/gamehub-pc-console-20261104/build.py`, then `node outputs/gamehub-pc-console-20261104/verify.cjs`.
-- [ ] Verify cover switching, game space, launch cancellation/completion, menu return, keyboard, mobile layout, home module retention and zero script errors. Inspect screenshots at 1440 and 390 widths.
-- [ ] Record derived visual components and distinguish the HTML simulation from actual emulator/phone capability.
+- [x] Use `Path.read_text(encoding='utf-8')` to read the existing HTML, insert scoped CSS before `</style>` and JS before its final render call; fail if either anchor is absent.
+- [x] Output only `public/gamehub-pc-console-demo/index.html` and `demos/gamehub-pc-console-demo.html`; compare the original SHA-256 before and after.
+- [x] Run `python outputs/gamehub-pc-console-20261104/build.py`, then `node outputs/gamehub-pc-console-20261104/verify.cjs`.
+- [x] Verify cover switching, game space, launch cancellation/completion, menu return, keyboard, mobile layout, home module retention and zero script errors. Inspect screenshots at 1440 and 390 widths.
+- [x] Record derived visual components and distinguish the HTML simulation from actual emulator/phone capability.
 
 ### Task 4: Fixed preview delivery
 
 Files: `publish.ps1`, `publication.json`, `live-verification.json`, workflow state card.
 
-- [ ] Fetch origin/master; build an isolated index from that commit, whitelist the new published HTML plus its implementation sources, and create a commit with `git commit-tree`.
-- [ ] Use ordinary push to the existing master; never force push or alter real HEAD/index.
-- [ ] Verify fixed HTTPS page body matches local SHA-256 and run key interactions against the public page.
-- [ ] Update workflow evidence and deliver the fixed clickable preview with the actual simulation limit.
+- [x] Fetch origin/master; build an isolated index from that commit, whitelist the new published HTML plus its implementation sources, and create a commit with `git commit-tree`.
+- [x] Use ordinary push to the existing master; never force push or alter real HEAD/index.
+- [x] Verify fixed HTTPS page body matches local SHA-256 and run key interactions against the public page.
+- [x] Update workflow evidence and deliver the fixed clickable preview with the actual simulation limit.
