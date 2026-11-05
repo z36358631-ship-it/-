@@ -48,7 +48,7 @@
 
     function hero(){
       const item=itemById('repo');
-      return `<section class="purchase-hero" aria-label="好价推荐 ${item.name}">${image(item.key,'')}<div class="purchase-hero-shade"></div><div class="purchase-hero-copy"><span class="purchase-eyebrow">STEAM · 11.05 折扣</span><h2>下一款，挑个好价。</h2><h3>${item.name}</h3>${priceLine(item,{large:true})}<div class="purchase-hero-bottom">${action('看看值不值得入手','purchase-detail',offerAttrs(item),'purchase-main-cta')}${compatBadge(item)}</div></div></section>`;
+      return `<section class="purchase-hero" aria-label="好价推荐 ${item.name}">${image(item.key,'')}<div class="purchase-hero-shade"></div><div class="purchase-hero-copy"><span class="purchase-eyebrow">STEAM · 11.05 折扣</span><h2>Steam 折扣</h2><h3>${item.name}</h3>${priceLine(item,{large:true})}<div class="purchase-hero-bottom">${action('查看详情','purchase-detail',offerAttrs(item),'purchase-main-cta')}${compatBadge(item)}</div></div></section>`;
     }
 
     function dealCard(item){
@@ -58,19 +58,19 @@
     function budget({full=false}={}){
       const active=ITEMS.filter(item=>item.discount>0);
       const shown=active.filter(item=>state.purchaseBudget==='all'||item.price<=Number(state.purchaseBudget));
-      return `<section class="app-section purchase-budget" data-module="discounts">${heading(full?'正在打折':'按预算，挑下一款',full?undefined:'purchase-deals')}<div class="purchase-budget-tabs" role="group" aria-label="游戏预算">${BUDGETS.map(([value,label])=>action(label,'purchase-budget',`data-budget="${value}" aria-pressed="${state.purchaseBudget===value}"`,state.purchaseBudget===value?'is-selected':'')).join('')}</div><div class="purchase-deal-grid">${shown.length?shown.map(dealCard).join(''):'<div class="purchase-empty"><h3>这个预算暂时没有折扣游戏</h3><p>换个预算，再看看。</p></div>'}</div>${stamp()}</section>`;
+      return `<section class="app-section purchase-budget" data-module="discounts">${heading(full?'正在打折':'Steam 折扣',full?undefined:'purchase-deals')}<div class="purchase-budget-tabs" role="group" aria-label="游戏预算">${BUDGETS.map(([value,label])=>action(label,'purchase-budget',`data-budget="${value}" aria-pressed="${state.purchaseBudget===value}"`,state.purchaseBudget===value?'is-selected':'')).join('')}</div><div class="purchase-deal-grid">${shown.length?shown.map(dealCard).join(''):'<div class="purchase-empty"><h3>这个预算暂时没有折扣游戏</h3><p>换个预算，再看看。</p></div>'}</div>${stamp()}</section>`;
     }
 
     function matchedWaiting(){
       const candidates=ITEMS.filter(item=>['hades','elden'].includes(item.id)&&isCompatible(item));
-      if(!candidates.length)return `<section class="app-section purchase-matched"><div class="purchase-fit-empty"><span>${icon('compat')}</span><div><h3>好价之前，先看能不能玩</h3><p>${state.match==='unknown'?'识别设备后，再查看适配记录。':'暂未找到本机已匹配的折扣游戏。'}</p></div>${action('›','local-list','aria-label="查看兼容性查询"','heading-link')}</div></section>`;
+      if(!candidates.length)return `<section class="app-section purchase-matched"><div class="purchase-fit-empty"><span>${icon('compat')}</span><div><h3>本机适配</h3><p>${state.match==='unknown'?'识别设备后，再查看适配记录。':'暂未找到本机已匹配的折扣游戏。'}</p></div>${action('›','local-list','aria-label="查看兼容性查询"','heading-link')}</div></section>`;
       if(state.source!=='none')return `<section class="app-section purchase-matched">${heading('手上的游戏，先玩起来','library')}<button type="button" class="purchase-owned" data-action="library"><span class="purchase-owned-covers">${candidates.map(item=>image(item.key,'')).join('')}</span><span><b>${candidates.map(item=>esc(item.name)).join(' · ')}</b><small>已在游戏库，查看游玩准备</small></span><i aria-hidden="true">›</i></button></section>`;
       return `<section class="app-section purchase-matched">${heading('已适配，等个好价')}<div class="purchase-waiting-list">${candidates.map(item=>`<article class="purchase-waiting-row">${image(item.key,'')}<div><h3>${item.name}</h3><p>${compatText(item)} · 当前无折扣</p><strong>${money(item.price)}</strong></div>${followButton(item)}</article>`).join('')}</div></section>`;
     }
 
     function following({full=false}={}){
       const entries=ITEMS.filter(item=>followed(item.id));
-      return `<section class="app-section purchase-following" data-module="price-following">${heading(full?'我关注的价格':'关注的游戏，现在什么价？',full?undefined:'purchase-following')}${entries.length?`<div class="purchase-watch-list">${entries.map(item=>`<article class="purchase-watch-row"><button type="button" data-action="purchase-detail" ${offerAttrs(item)}>${image(item.key,'')}<span><b>${esc(item.name)}</b><small>${item.discount?'当前折扣 -'+item.discount+'%':'当前无折扣'}</small></span><strong>${money(item.price)}</strong></button>${followButton(item)}</article>`).join('')}</div>`:`<div class="purchase-follow-empty"><span>${icon('bell')}</span><div><h3>把想玩的，先关注起来</h3><p>等个好价，再决定入手。</p></div>${action('挑选游戏','purchase-deals','','purchase-inline-link')}</div>`}${full?`<div class="purchase-reminder-note"><b>降价提醒</b><span>站内信 · Push</span><p>本演示仅记录关注状态，不发送通知。</p></div>${stamp()}`:''}</section>`;
+      return `<section class="app-section purchase-following" data-module="price-following">${heading(full?'我关注的价格':'价格关注',full?undefined:'purchase-following')}${entries.length?`<div class="purchase-watch-list">${entries.map(item=>`<article class="purchase-watch-row"><button type="button" data-action="purchase-detail" ${offerAttrs(item)}>${image(item.key,'')}<span><b>${esc(item.name)}</b><small>${item.discount?'当前折扣 -'+item.discount+'%':'当前无折扣'}</small></span><strong>${money(item.price)}</strong></button>${followButton(item)}</article>`).join('')}</div>`:`<div class="purchase-follow-empty"><span>${icon('bell')}</span><div><h3>暂无关注的游戏</h3><p>可订阅降价提醒。</p></div>${action('挑选游戏','purchase-deals','','purchase-inline-link')}</div>`}${full?`<div class="purchase-reminder-note"><b>降价提醒</b><span>站内信 · Push</span><p>本演示仅记录关注状态，不发送通知。</p></div>${stamp()}`:''}</section>`;
     }
 
     function detail(){
@@ -79,7 +79,7 @@
     }
 
     function rental(){
-      return `<div class="purchase-rental"><div class="purchase-rental-symbol">${icon('rental')}</div><span class="purchase-eyebrow">STEAM 账号服务</span><h2>Steam 租号</h2><p>账号服务暂未接入。</p><section class="purchase-check-card"><h3>选择前，先确认</h3><dl><div><dt>账号与游戏供给</dt><dd>待确认</dd></div><div><dt>价格与可用时长</dt><dd>待接入</dd></div><div><dt>当前设备运行条件</dt><dd>需另行核对</dd></div></dl></section>${action('暂不可租用','purchase-noop','disabled','purchase-main-cta full-button')}${action('先查本机适配','local-list','','purchase-inline-link full-button')}</div>`;
+      return `<div class="purchase-rental"><div class="purchase-rental-symbol">${icon('rental')}</div><span class="purchase-eyebrow">STEAM 账号服务</span><h2>Steam 租号</h2><p>账号服务暂未接入。</p><section class="purchase-check-card"><h3>使用条件</h3><dl><div><dt>账号与游戏供给</dt><dd>待确认</dd></div><div><dt>价格与可用时长</dt><dd>待接入</dd></div><div><dt>当前设备运行条件</dt><dd>需另行核对</dd></div></dl></section>${action('暂不可租用','purchase-noop','disabled','purchase-main-cta full-button')}${action('先查本机适配','local-list','','purchase-inline-link full-button')}</div>`;
     }
 
     function home({retention:R,community,localModule}){
@@ -89,7 +89,7 @@
 
     function page(name){
       switch(name){
-        case 'purchase-deals':return `<div class="purchase-deals-page"><div class="purchase-page-intro"><span class="purchase-eyebrow">STEAM SPECIALS</span><h2>把喜欢的游戏，好价带回家。</h2><p>先看价格，再核对本机适配。</p></div>${budget({full:true})}${section('想玩的，也可以先关注',`<div class="purchase-catalog-list">${ITEMS.filter(item=>!item.discount).map(item=>`<article class="purchase-catalog-row"><button type="button" data-action="purchase-detail" ${offerAttrs(item)}>${image(item.key,'')}<span><b>${esc(item.name)}</b><small>${inLibrary(item)?'已在演示游戏库':'当前无折扣'}</small></span><strong>${money(item.price)}</strong></button>${followButton(item)}</article>`).join('')}</div>`)}${following()}</div>`;
+        case 'purchase-deals':return `<div class="purchase-deals-page"><div class="purchase-page-intro"><span class="purchase-eyebrow">STEAM SPECIALS</span><h2>Steam 折扣</h2><p>国区 · 游戏本体</p></div>${budget({full:true})}${section('游戏价格',`<div class="purchase-catalog-list">${ITEMS.filter(item=>!item.discount).map(item=>`<article class="purchase-catalog-row"><button type="button" data-action="purchase-detail" ${offerAttrs(item)}>${image(item.key,'')}<span><b>${esc(item.name)}</b><small>${inLibrary(item)?'已在演示游戏库':'当前无折扣'}</small></span><strong>${money(item.price)}</strong></button>${followButton(item)}</article>`).join('')}</div>`)}${following()}</div>`;
         case 'purchase-detail':return detail();
         case 'purchase-following':return following({full:true});
         case 'purchase-rental':return rental();
@@ -113,3 +113,4 @@
   }
   window.LAB_PURCHASE={create,items:ITEMS,snapshot:SNAPSHOT};
 })();
+

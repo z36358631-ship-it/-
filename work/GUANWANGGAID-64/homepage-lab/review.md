@@ -1,7 +1,7 @@
 # 首页三方向 r5 评审
 
 日期：2026-11-05；版本：2026-11-05-home-lab-r5。
-当前审核产物 SHA256：231cd2072bf2b53a075f7db63337850f01396a713ec51e66bb5aa694bd9a11d7。
+当前审核产物 SHA256：fa506b6c528245c139a5514ac2ececea1f87d9bef427576137b895b4f4ebbffb。
 
 ## 当前决定与实现
 
@@ -43,3 +43,9 @@ verification.json记录本地浏览器完整回归结果，包括三方向×四�
 独立审核者r5_review和主管root实际查看更新后的r5-value-portrait-top.png、r5-play-portrait-top.png、r5-content-portrait-top.png、r5-content-landscape-top.png。签到、搜索及右侧入口未重叠，三个方向主内容可区分，宽屏每栏目整行。结论通过，无发布阻塞。社区每页3条保持，部分条目超出物理首屏需纵向下滚，不保证整个设备首屏露出3条。
 
 当前本地97项浏览器检查通过，JS异常0、外部请求0；已验证三方向签到往返、唯一运营位、专题进入日历、素材失效隐藏，以及弱设备租号快捷入口固定权益页。独立复审为截图与代码判断，交互结果以verification.json为准。
+
+## D075 文案修正复核
+
+按用户明确纠正，App内主视觉及相关会员、云、折扣、价格关注、任务页移除自拟策略口号，展示游戏名、栏目名、服务名与状态；设计思路仅留在外侧评审面板和design-rationale.md。业务规则不变。
+
+审核者root实际查看更新后的r5-value-portrait-top.png、r5-play-portrait-top.png、r5-content-portrait-top.png，首要标题分别为影之刃零、哈迪斯、游戏日历；字号与画面无错位。前轮独立业务评审对未改变的业务规则继续有效。当前本地98项通过，增加了三个首页禁止策略口号的检查；不作真实用户反馈或效果声明。

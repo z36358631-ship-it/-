@@ -162,7 +162,7 @@
     }
 
     function discountPage() {
-      return `<div class="ret-offer-page"><div class="ret-page-intro"><span>STEAM SPECIALS</span><h2>值得留意的优惠</h2><p>国区 · 游戏本体</p></div>${DISCOUNTS.map(item=>`<article class="ret-offer-row ${state.retSelectedDiscount===item.id?'is-selected':''}" data-offer-id="${item.id}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-price"><em>-${item.discount}%</em><strong>${money(item.price)}</strong><del>${money(item.original)}</del></div><small>${isActive(item)?(item.end?dateText(item.end)+' 截止':'11.05 价格快照'):'折扣已结束'}</small>${isActive(item)?storeLink(item,'查看 Steam 商店'):'<span class="ret-ended">已结束</span>'}</div></article>`).join('')}</div>`;
+      return `<div class="ret-offer-page"><div class="ret-page-intro"><span>STEAM SPECIALS</span><h2>Steam 折扣</h2><p>国区 · 游戏本体</p></div>${DISCOUNTS.map(item=>`<article class="ret-offer-row ${state.retSelectedDiscount===item.id?'is-selected':''}" data-offer-id="${item.id}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-price"><em>-${item.discount}%</em><strong>${money(item.price)}</strong><del>${money(item.original)}</del></div><small>${isActive(item)?(item.end?dateText(item.end)+' 截止':'11.05 价格快照'):'折扣已结束'}</small>${isActive(item)?storeLink(item,'查看 Steam 商店'):'<span class="ret-ended">已结束</span>'}</div></article>`).join('')}</div>`;
     }
 
     function giveawayPage() {
@@ -170,12 +170,12 @@
       const entries=GIVEAWAYS.filter(item=>item.platform===platform),active=entries.filter(isActive),ended=entries.filter(item=>!isActive(item));
       const subscribed=!!state.retSubscriptions[platform];
       const offer=item=>`<article class="ret-offer-row ret-giveaway-row ${isActive(item)?'':'is-ended'}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-free-line"><strong>${isActive(item)?'免费领取':'领取已结束'}</strong>${item.original!==null?`<del>${money(item.original)}</del>`:''}</div><small>${dateText(item.end)} 截止</small>${isActive(item)?storeLink(item,'前往领取'):'<span class="ret-ended">已结束</span>'}</div></article>`;
-      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>把喜欢的游戏，收进自己的游戏库。</p></div><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}<div class="ret-subscription-row"><span><b>${PLATFORMS[platform]} 领免提醒</b><small>站内信 · Push</small></span>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`data-platform="${platform}" aria-pressed="${subscribed}"`,subscribed?'secondary is-on':'primary')}</div>${action('桌面提醒组件 ›','ret-widget','','ret-widget-entry')}</div>`;
+      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam · GOG</p></div><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}<div class="ret-subscription-row"><span><b>${PLATFORMS[platform]} 领免提醒</b><small>站内信 · Push</small></span>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`data-platform="${platform}" aria-pressed="${subscribed}"`,subscribed?'secondary is-on':'primary')}</div>${action('桌面提醒组件 ›','ret-widget','','ret-widget-entry')}</div>`;
     }
 
     function taskCenterPage() {
       const daily=state.retTaskTab!=='growth';
-      return `<div class="ret-task-center"><div class="ret-task-center-top"><span>每天一点新发现</span><h2>游戏之外，也有收获。</h2><p>签到、畅玩、参与社区</p></div><nav class="ret-task-tabs" aria-label="任务分类">${action('每日任务','ret-task-tab','data-tab="daily" aria-pressed="'+daily+'"',daily?'is-selected':'')}${action('成长任务','ret-task-tab','data-tab="growth" aria-pressed="'+!daily+'"',!daily?'is-selected':'')}</nav>${daily?`<div class="ret-task-list">${TASKS.map((task,index)=>`<article class="ret-task-row"><span class="ret-task-symbol" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><div><h3>${task.name}</h3><p>${task.description}</p></div>${action(task.id==='checkin'&&state.retSigned?'已签到':task.id==='checkin'?'签到':'去完成','ret-task',`data-task="${task.id}" ${task.id==='checkin'&&state.retSigned?'disabled':''}`,'secondary')}</article>`).join('')}</div>`:'<div class="ret-empty"><h3>暂无成长任务</h3></div>'}</div>`;
+      return `<div class="ret-task-center"><div class="ret-task-center-top"><h2>任务中心</h2><p>签到、畅玩、参与社区</p></div><nav class="ret-task-tabs" aria-label="任务分类">${action('每日任务','ret-task-tab','data-tab="daily" aria-pressed="'+daily+'"',daily?'is-selected':'')}${action('成长任务','ret-task-tab','data-tab="growth" aria-pressed="'+!daily+'"',!daily?'is-selected':'')}</nav>${daily?`<div class="ret-task-list">${TASKS.map((task,index)=>`<article class="ret-task-row"><span class="ret-task-symbol" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><div><h3>${task.name}</h3><p>${task.description}</p></div>${action(task.id==='checkin'&&state.retSigned?'已签到':task.id==='checkin'?'签到':'去完成','ret-task',`data-task="${task.id}" ${task.id==='checkin'&&state.retSigned?'disabled':''}`,'secondary')}</article>`).join('')}</div>`:'<div class="ret-empty"><h3>暂无成长任务</h3></div>'}</div>`;
     }
 
     function taskPage() {
@@ -223,6 +223,7 @@
 
   window.LAB_RETENTION={create};
 })();
+
 
 ;
 (() => {
@@ -275,7 +276,7 @@
 
     function hero(){
       const item=itemById('repo');
-      return `<section class="purchase-hero" aria-label="好价推荐 ${item.name}">${image(item.key,'')}<div class="purchase-hero-shade"></div><div class="purchase-hero-copy"><span class="purchase-eyebrow">STEAM · 11.05 折扣</span><h2>下一款，挑个好价。</h2><h3>${item.name}</h3>${priceLine(item,{large:true})}<div class="purchase-hero-bottom">${action('看看值不值得入手','purchase-detail',offerAttrs(item),'purchase-main-cta')}${compatBadge(item)}</div></div></section>`;
+      return `<section class="purchase-hero" aria-label="好价推荐 ${item.name}">${image(item.key,'')}<div class="purchase-hero-shade"></div><div class="purchase-hero-copy"><span class="purchase-eyebrow">STEAM · 11.05 折扣</span><h2>Steam 折扣</h2><h3>${item.name}</h3>${priceLine(item,{large:true})}<div class="purchase-hero-bottom">${action('查看详情','purchase-detail',offerAttrs(item),'purchase-main-cta')}${compatBadge(item)}</div></div></section>`;
     }
 
     function dealCard(item){
@@ -285,19 +286,19 @@
     function budget({full=false}={}){
       const active=ITEMS.filter(item=>item.discount>0);
       const shown=active.filter(item=>state.purchaseBudget==='all'||item.price<=Number(state.purchaseBudget));
-      return `<section class="app-section purchase-budget" data-module="discounts">${heading(full?'正在打折':'按预算，挑下一款',full?undefined:'purchase-deals')}<div class="purchase-budget-tabs" role="group" aria-label="游戏预算">${BUDGETS.map(([value,label])=>action(label,'purchase-budget',`data-budget="${value}" aria-pressed="${state.purchaseBudget===value}"`,state.purchaseBudget===value?'is-selected':'')).join('')}</div><div class="purchase-deal-grid">${shown.length?shown.map(dealCard).join(''):'<div class="purchase-empty"><h3>这个预算暂时没有折扣游戏</h3><p>换个预算，再看看。</p></div>'}</div>${stamp()}</section>`;
+      return `<section class="app-section purchase-budget" data-module="discounts">${heading(full?'正在打折':'Steam 折扣',full?undefined:'purchase-deals')}<div class="purchase-budget-tabs" role="group" aria-label="游戏预算">${BUDGETS.map(([value,label])=>action(label,'purchase-budget',`data-budget="${value}" aria-pressed="${state.purchaseBudget===value}"`,state.purchaseBudget===value?'is-selected':'')).join('')}</div><div class="purchase-deal-grid">${shown.length?shown.map(dealCard).join(''):'<div class="purchase-empty"><h3>这个预算暂时没有折扣游戏</h3><p>换个预算，再看看。</p></div>'}</div>${stamp()}</section>`;
     }
 
     function matchedWaiting(){
       const candidates=ITEMS.filter(item=>['hades','elden'].includes(item.id)&&isCompatible(item));
-      if(!candidates.length)return `<section class="app-section purchase-matched"><div class="purchase-fit-empty"><span>${icon('compat')}</span><div><h3>好价之前，先看能不能玩</h3><p>${state.match==='unknown'?'识别设备后，再查看适配记录。':'暂未找到本机已匹配的折扣游戏。'}</p></div>${action('›','local-list','aria-label="查看兼容性查询"','heading-link')}</div></section>`;
+      if(!candidates.length)return `<section class="app-section purchase-matched"><div class="purchase-fit-empty"><span>${icon('compat')}</span><div><h3>本机适配</h3><p>${state.match==='unknown'?'识别设备后，再查看适配记录。':'暂未找到本机已匹配的折扣游戏。'}</p></div>${action('›','local-list','aria-label="查看兼容性查询"','heading-link')}</div></section>`;
       if(state.source!=='none')return `<section class="app-section purchase-matched">${heading('手上的游戏，先玩起来','library')}<button type="button" class="purchase-owned" data-action="library"><span class="purchase-owned-covers">${candidates.map(item=>image(item.key,'')).join('')}</span><span><b>${candidates.map(item=>esc(item.name)).join(' · ')}</b><small>已在游戏库，查看游玩准备</small></span><i aria-hidden="true">›</i></button></section>`;
       return `<section class="app-section purchase-matched">${heading('已适配，等个好价')}<div class="purchase-waiting-list">${candidates.map(item=>`<article class="purchase-waiting-row">${image(item.key,'')}<div><h3>${item.name}</h3><p>${compatText(item)} · 当前无折扣</p><strong>${money(item.price)}</strong></div>${followButton(item)}</article>`).join('')}</div></section>`;
     }
 
     function following({full=false}={}){
       const entries=ITEMS.filter(item=>followed(item.id));
-      return `<section class="app-section purchase-following" data-module="price-following">${heading(full?'我关注的价格':'关注的游戏，现在什么价？',full?undefined:'purchase-following')}${entries.length?`<div class="purchase-watch-list">${entries.map(item=>`<article class="purchase-watch-row"><button type="button" data-action="purchase-detail" ${offerAttrs(item)}>${image(item.key,'')}<span><b>${esc(item.name)}</b><small>${item.discount?'当前折扣 -'+item.discount+'%':'当前无折扣'}</small></span><strong>${money(item.price)}</strong></button>${followButton(item)}</article>`).join('')}</div>`:`<div class="purchase-follow-empty"><span>${icon('bell')}</span><div><h3>把想玩的，先关注起来</h3><p>等个好价，再决定入手。</p></div>${action('挑选游戏','purchase-deals','','purchase-inline-link')}</div>`}${full?`<div class="purchase-reminder-note"><b>降价提醒</b><span>站内信 · Push</span><p>本演示仅记录关注状态，不发送通知。</p></div>${stamp()}`:''}</section>`;
+      return `<section class="app-section purchase-following" data-module="price-following">${heading(full?'我关注的价格':'价格关注',full?undefined:'purchase-following')}${entries.length?`<div class="purchase-watch-list">${entries.map(item=>`<article class="purchase-watch-row"><button type="button" data-action="purchase-detail" ${offerAttrs(item)}>${image(item.key,'')}<span><b>${esc(item.name)}</b><small>${item.discount?'当前折扣 -'+item.discount+'%':'当前无折扣'}</small></span><strong>${money(item.price)}</strong></button>${followButton(item)}</article>`).join('')}</div>`:`<div class="purchase-follow-empty"><span>${icon('bell')}</span><div><h3>暂无关注的游戏</h3><p>可订阅降价提醒。</p></div>${action('挑选游戏','purchase-deals','','purchase-inline-link')}</div>`}${full?`<div class="purchase-reminder-note"><b>降价提醒</b><span>站内信 · Push</span><p>本演示仅记录关注状态，不发送通知。</p></div>${stamp()}`:''}</section>`;
     }
 
     function detail(){
@@ -306,7 +307,7 @@
     }
 
     function rental(){
-      return `<div class="purchase-rental"><div class="purchase-rental-symbol">${icon('rental')}</div><span class="purchase-eyebrow">STEAM 账号服务</span><h2>Steam 租号</h2><p>账号服务暂未接入。</p><section class="purchase-check-card"><h3>选择前，先确认</h3><dl><div><dt>账号与游戏供给</dt><dd>待确认</dd></div><div><dt>价格与可用时长</dt><dd>待接入</dd></div><div><dt>当前设备运行条件</dt><dd>需另行核对</dd></div></dl></section>${action('暂不可租用','purchase-noop','disabled','purchase-main-cta full-button')}${action('先查本机适配','local-list','','purchase-inline-link full-button')}</div>`;
+      return `<div class="purchase-rental"><div class="purchase-rental-symbol">${icon('rental')}</div><span class="purchase-eyebrow">STEAM 账号服务</span><h2>Steam 租号</h2><p>账号服务暂未接入。</p><section class="purchase-check-card"><h3>使用条件</h3><dl><div><dt>账号与游戏供给</dt><dd>待确认</dd></div><div><dt>价格与可用时长</dt><dd>待接入</dd></div><div><dt>当前设备运行条件</dt><dd>需另行核对</dd></div></dl></section>${action('暂不可租用','purchase-noop','disabled','purchase-main-cta full-button')}${action('先查本机适配','local-list','','purchase-inline-link full-button')}</div>`;
     }
 
     function home({retention:R,community,localModule}){
@@ -316,7 +317,7 @@
 
     function page(name){
       switch(name){
-        case 'purchase-deals':return `<div class="purchase-deals-page"><div class="purchase-page-intro"><span class="purchase-eyebrow">STEAM SPECIALS</span><h2>把喜欢的游戏，好价带回家。</h2><p>先看价格，再核对本机适配。</p></div>${budget({full:true})}${section('想玩的，也可以先关注',`<div class="purchase-catalog-list">${ITEMS.filter(item=>!item.discount).map(item=>`<article class="purchase-catalog-row"><button type="button" data-action="purchase-detail" ${offerAttrs(item)}>${image(item.key,'')}<span><b>${esc(item.name)}</b><small>${inLibrary(item)?'已在演示游戏库':'当前无折扣'}</small></span><strong>${money(item.price)}</strong></button>${followButton(item)}</article>`).join('')}</div>`)}${following()}</div>`;
+        case 'purchase-deals':return `<div class="purchase-deals-page"><div class="purchase-page-intro"><span class="purchase-eyebrow">STEAM SPECIALS</span><h2>Steam 折扣</h2><p>国区 · 游戏本体</p></div>${budget({full:true})}${section('游戏价格',`<div class="purchase-catalog-list">${ITEMS.filter(item=>!item.discount).map(item=>`<article class="purchase-catalog-row"><button type="button" data-action="purchase-detail" ${offerAttrs(item)}>${image(item.key,'')}<span><b>${esc(item.name)}</b><small>${inLibrary(item)?'已在演示游戏库':'当前无折扣'}</small></span><strong>${money(item.price)}</strong></button>${followButton(item)}</article>`).join('')}</div>`)}${following()}</div>`;
         case 'purchase-detail':return detail();
         case 'purchase-following':return following({full:true});
         case 'purchase-rental':return rental();
@@ -341,6 +342,7 @@
   window.LAB_PURCHASE={create,items:ITEMS,snapshot:SNAPSHOT};
 })();
 
+
 ;
 (() => {
   'use strict';
@@ -361,33 +363,33 @@
     const deviceNote=()=>state.match==='unknown'?'当前设备待识别，租号前先确认能否运行。':state.capability==='weak'?'当前设备较弱，账号权益不会改变本机运行能力。':'本机适配尚待核对，账号权益与运行条件分别确认。';
 
     function hero(){
-      if(state.capability==='weak'||state.route==='cloud')return `<section class="conversion-hero conversion-cloud-hero" data-ops-slot="home-primary" data-content-source="catalog-and-eligibility" data-module="paid-conversion" data-conversion-route="cloud">${image('scene-cyber','')}<div class="conversion-hero-shade"></div><div class="conversion-hero-copy"><small>云端游玩 · 供给待确认</small><h2>手机带不动，也想玩大作？</h2><h3>先看看云端这条路</h3><p class="conversion-cloud-hero-note">目标游戏、网络与时长服务，分别确认。</p><div class="conversion-hero-bottom">${action('先看云端游戏','cloud-list','','conversion-primary')}${action('查看时长服务','pricing','','conversion-cloud-price-link')}</div></div></section>`;
+      if(state.capability==='weak'||state.route==='cloud')return `<section class="conversion-hero conversion-cloud-hero" data-ops-slot="home-primary" data-content-source="catalog-and-eligibility" data-module="paid-conversion" data-conversion-route="cloud">${image('scene-cyber','')}<div class="conversion-hero-shade"></div><div class="conversion-hero-copy"><small>云端游玩 · 供给待确认</small><h2>云游戏</h2><h3>游戏供给待确认</h3><div class="conversion-hero-bottom">${action('查看云游戏','cloud-list','','conversion-primary')}${action('查看时长服务','pricing','','conversion-cloud-price-link')}</div></div></section>`;
       const offer=state.trialEligible?OFFER.trial:OFFER.permanent;
-      return `<section class="conversion-hero" data-ops-slot="home-primary" data-content-source="catalog-and-eligibility" data-module="paid-conversion" data-trial-eligible="${state.trialEligible}" data-conversion-route="rental">${image('cover-phantom','')}<div class="conversion-hero-shade"></div><div class="conversion-hero-copy"><small>租号体验 · 历史方案样例</small><h2>${state.trialEligible?'先体验，再决定。':'想长期玩，先看清权益。'}</h2><h3>${OFFER.name}</h3><div class="conversion-hero-price"><strong>${price(offer.price)}</strong><span>${offer.duration}${state.trialEligible?' · 仅限符合首租资格':''}</span></div><div class="conversion-hero-bottom">${action(state.trialEligible?'查看首租体验':'查看账号权益','conversion-offer','data-offer="phantom"','conversion-primary')}<span>${state.trialEligible?'2小时账号使用权益':'单游戏账号权益'}</span></div></div></section>`;
+      return `<section class="conversion-hero" data-ops-slot="home-primary" data-content-source="catalog-and-eligibility" data-module="paid-conversion" data-trial-eligible="${state.trialEligible}" data-conversion-route="rental">${image('cover-phantom','')}<div class="conversion-hero-shade"></div><div class="conversion-hero-copy"><small>租号体验 · 历史方案样例</small><h2>${OFFER.name}</h2><h3>${state.trialEligible?'首租体验':'单游戏账号权益'}</h3><div class="conversion-hero-price"><strong>${price(offer.price)}</strong><span>${offer.duration}${state.trialEligible?' · 仅限符合首租资格':''}</span></div><div class="conversion-hero-bottom">${action(state.trialEligible?'查看首租体验':'查看账号权益','conversion-offer','data-offer="phantom"','conversion-primary')}<span>${state.trialEligible?'2小时账号使用权益':'单游戏账号权益'}</span></div></div></section>`;
     }
 
     function membership(){
-      return `<section class="app-section conversion-membership" data-module="membership">${heading('换着玩，看看会员库','conversion-member-library')}<div class="conversion-member-banner"><div><small>会员游戏库 · 历史方案样例</small><h3>这一周，想玩点不一样的。</h3><p>会员有效期内使用库内账号权益</p><div class="conversion-member-price"><strong>¥39</strong><span>/ 7天周卡</span></div>${action('查看会员方案','conversion-member','','conversion-secondary')}</div><button type="button" class="conversion-member-cover" data-action="conversion-member-library" aria-label="查看会员游戏库">${image('cover-elden','艾尔登法环')}<span>艾尔登法环</span></button></div></section>`;
+      return `<section class="app-section conversion-membership" data-module="membership">${heading('会员游戏库','conversion-member-library')}<div class="conversion-member-banner"><div><small>会员游戏库 · 历史方案样例</small><h3>会员周卡</h3><p>会员有效期内使用库内账号权益</p><div class="conversion-member-price"><strong>¥39</strong><span>/ 7天周卡</span></div>${action('查看会员方案','conversion-member','','conversion-secondary')}</div><button type="button" class="conversion-member-cover" data-action="conversion-member-library" aria-label="查看会员游戏库">${image('cover-elden','艾尔登法环')}<span>艾尔登法环</span></button></div></section>`;
     }
 
     function cloud(){
       const weak=state.capability==='weak';
-      return `<section class="app-section conversion-cloud" data-module="cloud-service">${heading(weak?'设备带不动，了解云端路径':'想换一种方式，也可以看看云端')}<button type="button" class="conversion-cloud-entry" data-action="cloud-list"><span class="conversion-cloud-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18a4 4 0 0 1-1-7.9A7 7 0 0 1 18.6 9 4.5 4.5 0 0 1 18 18H6Z"/></svg></span><span><b>先看看云端能玩什么</b><small>游戏供给、网络与账号条件分别确认</small></span><i aria-hidden="true">›</i></button></section>`;
+      return `<section class="app-section conversion-cloud" data-module="cloud-service">${heading('云游戏')}<button type="button" class="conversion-cloud-entry" data-action="cloud-list"><span class="conversion-cloud-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18a4 4 0 0 1-1-7.9A7 7 0 0 1 18.6 9 4.5 4.5 0 0 1 18 18H6Z"/></svg></span><span><b>云游戏列表</b><small>游戏供给、网络与账号条件分别确认</small></span><i aria-hidden="true">›</i></button></section>`;
     }
 
     function offerPage(){
       const sku=selected();
       const skus=state.trialEligible?[OFFER.trial,OFFER.permanent]:[OFFER.permanent];
-      return `<div class="conversion-offer-page" data-conversion-offer="phantom"><div class="conversion-detail-art">${image('cover-phantom',OFFER.name)}</div><small class="conversion-kicker">STEAM 账号使用权益</small><h2>${OFFER.name}</h2><p class="conversion-detail-intro">先看清可用时长和权益，再决定怎么体验。</p><div class="conversion-sku-list" role="group" aria-label="租号权益方案">${skus.map(item=>`<button type="button" data-action="conversion-sku" data-sku="${item.id}" class="${sku.id===item.id?'is-selected':''}" aria-pressed="${sku.id===item.id}"><span><b>${item.name}</b><small>${item.duration}${item.id==='trial'?' · 仅限符合首租资格':''}</small></span><strong>${price(item.price)}</strong></button>`).join('')}</div>${sample()}<section class="conversion-condition-card"><h3>购买前，先确认</h3><dl><div><dt>当前选择</dt><dd>${sku.name} · ${sku.duration}</dd></div><div><dt>首租资格</dt><dd>${state.trialEligible?'样例：符合首租资格':'样例：首租资格已使用'}</dd></div><div><dt>账号与库存</dt><dd>未连接实时供给</dd></div></dl><p>${deviceNote()}</p>${action('打开兼容性查询','local-list','','conversion-text-link')}</section><div class="conversion-rights-note"><b>账号权益与游戏购买分别确认</b><p>这里展示账号使用权益，不向个人 Steam 游戏库新增游戏所有权；“单游戏永久”沿用源方案名称，具体服务条件需另行确认。</p></div>${action('演示不付款','conversion-noop','disabled','conversion-primary conversion-full')}<p class="conversion-demo-note">本页仅演示购前选择，不创建订单、不分配账号。</p></div>`;
+      return `<div class="conversion-offer-page" data-conversion-offer="phantom"><div class="conversion-detail-art">${image('cover-phantom',OFFER.name)}</div><small class="conversion-kicker">STEAM 账号使用权益</small><h2>${OFFER.name}</h2><p class="conversion-detail-intro">账号使用方案</p><div class="conversion-sku-list" role="group" aria-label="租号权益方案">${skus.map(item=>`<button type="button" data-action="conversion-sku" data-sku="${item.id}" class="${sku.id===item.id?'is-selected':''}" aria-pressed="${sku.id===item.id}"><span><b>${item.name}</b><small>${item.duration}${item.id==='trial'?' · 仅限符合首租资格':''}</small></span><strong>${price(item.price)}</strong></button>`).join('')}</div>${sample()}<section class="conversion-condition-card"><h3>使用条件</h3><dl><div><dt>当前选择</dt><dd>${sku.name} · ${sku.duration}</dd></div><div><dt>首租资格</dt><dd>${state.trialEligible?'样例：符合首租资格':'样例：首租资格已使用'}</dd></div><div><dt>账号与库存</dt><dd>未连接实时供给</dd></div></dl><p>${deviceNote()}</p>${action('打开兼容性查询','local-list','','conversion-text-link')}</section><div class="conversion-rights-note"><b>账号权益与游戏购买分别确认</b><p>这里展示账号使用权益，不向个人 Steam 游戏库新增游戏所有权；“单游戏永久”沿用源方案名称，具体服务条件需另行确认。</p></div>${action('演示不付款','conversion-noop','disabled','conversion-primary conversion-full')}<p class="conversion-demo-note">本页仅演示购前选择，不创建订单、不分配账号。</p></div>`;
     }
 
     function memberPage(){
       const plan=PLANS.find(p=>p.id===state.conversionPlan);
-      return `<div class="conversion-member-page"><small class="conversion-kicker">会员游戏库 · 方案样例</small><h2>换着玩，也有一种选择。</h2><p class="conversion-detail-intro">先看库内游戏，再选择适合自己的使用周期。</p><button type="button" class="conversion-library-entry" data-action="conversion-member-library">${image('cover-elden','')}<span><b>会员游戏库</b><small>查看源方案中的游戏样例</small></span><i aria-hidden="true">›</i></button><div class="conversion-plan-list" role="group" aria-label="会员方案">${PLANS.map(item=>`<button type="button" data-action="conversion-plan" data-plan="${item.id}" class="${plan.id===item.id?'is-selected':''}" aria-pressed="${plan.id===item.id}"><b>${item.name}</b><strong>${price(item.price)}</strong><small>${item.days}天</small></button>`).join('')}</div>${sample()}<section class="conversion-condition-card"><h3>这项服务包含什么</h3><p>所选${plan.name}周期为${plan.days}天，样例价格${price(plan.price)}。有效期内使用会员库范围内的账号权益，具体可用游戏与库存需以服务端确认为准。</p><p>会员库账号权益与本机适配分别判断；不会向个人 Steam 库新增所有权，也不表示全部游戏可玩。</p></section>${action('演示不付款','conversion-noop','disabled','conversion-primary conversion-full')}<p class="conversion-demo-note">仅切换方案展示，不扣费、不生成会员订单或已开通状态。</p></div>`;
+      return `<div class="conversion-member-page"><small class="conversion-kicker">会员游戏库 · 方案样例</small><h2>会员方案</h2><p class="conversion-detail-intro">周卡 / 月卡</p><button type="button" class="conversion-library-entry" data-action="conversion-member-library">${image('cover-elden','')}<span><b>会员游戏库</b><small>查看源方案中的游戏样例</small></span><i aria-hidden="true">›</i></button><div class="conversion-plan-list" role="group" aria-label="会员方案">${PLANS.map(item=>`<button type="button" data-action="conversion-plan" data-plan="${item.id}" class="${plan.id===item.id?'is-selected':''}" aria-pressed="${plan.id===item.id}"><b>${item.name}</b><strong>${price(item.price)}</strong><small>${item.days}天</small></button>`).join('')}</div>${sample()}<section class="conversion-condition-card"><h3>会员权益</h3><p>所选${plan.name}周期为${plan.days}天，样例价格${price(plan.price)}。有效期内使用会员库范围内的账号权益，具体可用游戏与库存需以服务端确认为准。</p><p>会员库账号权益与本机适配分别判断；不会向个人 Steam 库新增所有权，也不表示全部游戏可玩。</p></section>${action('演示不付款','conversion-noop','disabled','conversion-primary conversion-full')}<p class="conversion-demo-note">仅切换方案展示，不扣费、不生成会员订单或已开通状态。</p></div>`;
     }
 
     function memberLibrary(){
-      return `<div class="conversion-member-library"><small class="conversion-kicker">会员游戏库 · 源方案样例</small><h2>先看想玩的，再选服务。</h2><p class="conversion-detail-intro">这里展示已登记的会员库游戏样例。实时可用范围待接入。</p><button type="button" class="conversion-member-game" data-action="conditions" data-game="elden">${image('cover-elden','艾尔登法环')}<span><b>艾尔登法环</b><small>会员库游戏样例 · 查看本机适配</small></span><i aria-hidden="true">›</i></button>${action('查看会员方案','conversion-member','','conversion-secondary conversion-full')}${sample()}</div>`;
+      return `<div class="conversion-member-library"><small class="conversion-kicker">会员游戏库 · 源方案样例</small><h2>会员游戏库</h2><p class="conversion-detail-intro">这里展示已登记的会员库游戏样例。实时可用范围待接入。</p><button type="button" class="conversion-member-game" data-action="conditions" data-game="elden">${image('cover-elden','艾尔登法环')}<span><b>艾尔登法环</b><small>会员库游戏样例 · 查看本机适配</small></span><i aria-hidden="true">›</i></button>${action('查看会员方案','conversion-member','','conversion-secondary conversion-full')}${sample()}</div>`;
     }
 
     function page(name){return ({'conversion-offer':offerPage,'conversion-member':memberPage,'conversion-member-library':memberLibrary})[name]?.()??null;}
@@ -411,11 +413,12 @@
 })();
 
 
+
 ;
 (() => {
   'use strict';
   // A single editorial slot selects an existing content ID; no per-game guide production.
-  const operations={content:{image:'release-archeage',title:'下一款想玩的，别错过发售',subtitle:'游戏日历 · 订阅每日发售提醒',action:'ret-calendar'}};
+  const operations={content:{image:'release-archeage',title:'游戏日历',subtitle:'每日发售提醒',action:'ret-calendar'}};
   const articles = {
     'community-night': {id:'community-night',game:'cyber',category:'社区精选',title:'把夜之城的这一段路，留给今天',deck:'不接新任务，只沿着街道走一走，看看熟悉世界里的另一面。',image:'scene-cyber',sections:[['把视角放低一点','除了任务标记，路口、招牌和街边的声音也组成了夜之城。选一条路线慢慢走，观察自己过去没有留意的细节。'],['重新认识熟悉的游戏','重复打开同一款游戏，不一定总是为了推进进度。换一种观察方式，也可能找到新的游玩乐趣。'],['今天你会停在哪个路口','可以把下一次探索的起点留在一个自己喜欢的位置，再决定继续任务还是看看别处。']]},
     'community-doors': {id:'community-doors',game:'hades',category:'社区精选',title:'选祝福还是选金币？聊聊过门前的犹豫',deck:'同一场逃脱，状态不同，选择也会不同。',image:'scene-hades',sections:[['先看自己缺什么','当前生命、已有祝福和手头金币，都会影响下一扇门的选择。先看眼前状态，再判断奖励能补上什么。'],['留一点试错空间','有时会想试一个新祝福，有时更想稳稳走到下一层。两种选择都有各自的游玩目标。'],['把选择说具体','讨论时带上当前武器、状态和已有祝福，比只问哪扇门更好更容易获得有用的建议。']]},
@@ -429,7 +432,7 @@
 
     function localModule(){
       if(state.capability==='local'&&state.match==='matched')return section('本机可玩',gameGrid(['hades','elden'],{compact:true}),'local-list');
-      return section('先看看适配情况',`<button class="concept-path-link" data-action="adapt-list"><span>${state.match==='unknown'?'识别设备后，再查看对应的适配记录':state.match==='empty'?'暂未找到当前设备的匹配记录':'先核对设备与运行条件'}</span><b>查看适配记录 ›</b></button>`);
+      return section('本机适配',`<button class="concept-path-link" data-action="adapt-list"><span>${state.match==='unknown'?'识别设备后，再查看对应的适配记录':state.match==='empty'?'暂未找到当前设备的匹配记录':'先核对设备与运行条件'}</span><b>查看适配记录 ›</b></button>`);
     }
 
     function communityBlock(){
@@ -438,7 +441,7 @@
       return `<div class="community-module" data-module="community-picks"><div class="community-carousel" aria-label="社区精选，每页三条内容" tabindex="0">${pages.map((ids,index)=>`<div class="community-page" data-community-page="${index}" id="community-${direction}-page-${index}" role="group" aria-label="第 ${index+1} 页，共 ${pages.length} 页">${ids.map(id=>{const a=communityArticles[id];return `<button class="community-list-item" data-action="article" data-article="${id}"><div class="community-item-copy"><h3>${esc(a.title)}</h3><p>${esc(a.category)}<span>·</span>${esc(GAMES[a.game].name)}</p></div>${image(a.image,'')}</button>`;}).join('')}</div>`).join('')}</div><div class="community-dots" aria-label="社区精选分页">${pages.map((ids,index)=>`<button type="button" data-action="community-page" data-index="${index}" class="${selected===index?'is-selected':''}" aria-label="查看社区精选第 ${index+1} 页" aria-controls="community-${direction}-page-${index}" aria-pressed="${selected===index}"><span></span></button>`).join('')}</div></div>`;
     }
     const community=()=>section('社区精选',communityBlock());
-    function operationsBanner(){const item=operations.content;if(!item||!MEDIA[item.image]||item.action!=='ret-calendar')return '';return `<button type="button" class="concept-operations-banner" data-ops-slot="home-primary" data-content-source="editorial-selection" data-action="${item.action}" aria-label="${esc(item.title)}">${image(item.image,'')}<span class="concept-operations-copy"><small>游戏日历</small><strong>${esc(item.title)}</strong><span>${esc(item.subtitle)}</span></span><i aria-hidden="true">›</i></button>`;}
+    function operationsBanner(){const item=operations.content;if(!item||!MEDIA[item.image]||item.action!=='ret-calendar')return '';return `<button type="button" class="concept-operations-banner" data-ops-slot="home-primary" data-content-source="editorial-selection" data-action="${item.action}" aria-label="${esc(item.title)}">${image(item.image,'')}<span class="concept-operations-copy"><strong>${esc(item.title)}</strong><span>${esc(item.subtitle)}</span></span><i aria-hidden="true">›</i></button>`;}
 
     function conversion(){
       const cloudFirst=state.capability==='weak';
@@ -448,11 +451,11 @@
     function playableHero(){
       const id='hades',cloud=state.route==='cloud';
       const matched=compatible(id),ready=localReady(id);
-      let title='把哈迪斯，带到手机玩。',label='准备游戏',status='适配已匹配 · 尚需准备游戏',copy='先确认游戏来源和准备状态，再开始这一局。';
-      if(cloud){title='想玩这款？先看看云端路径。';label='了解云端';status='云端供给与网络待确认';copy='设备运行困难时，另行确认云端是否提供这款游戏。';}
-      else if(!matched){title='想玩这一局，先查适配。';label='核对适配';status=state.match==='unknown'?'设备未识别':state.capability==='weak'?'本机运行条件待核对':'暂无匹配记录';copy='结论需要对应设备、游戏版本和运行环境。';}
-      else if(ready){const returning=Array.isArray(state.recentPlayed)&&state.recentPlayed.includes(id);title=returning?'这一局，在手机上继续。':'这一局，现在开始。';label=returning?'继续游玩':'开始游玩';status='适配已匹配 · 游戏已准备';copy='回到熟悉的冥界，再开始一次逃脱。';}
-      return `<section class="concept-playable-hero" data-ops-slot="home-primary" data-content-source="device-match" data-module="compatible-feature" data-game-state="${cloud?'cloud':ready?'ready':matched?'preparation':'unknown'}">${image('scene-hades','哈迪斯游戏画面')}<div class="concept-playable-shade"></div><div class="concept-playable-copy"><small>哈迪斯 · 动作肉鸽</small><h2>${title}</h2><p>${copy}</p><div class="concept-playable-status">${matched&&!cloud?'<i aria-hidden="true"></i>':''}<span>${status}</span></div>${action(label,'game',`data-game="${id}" data-route="${cloud?'cloud':'local'}"`,'concept-feature-cta')}</div>${matched&&!cloud?compat(id):''}</section>`;
+      let label='准备游戏',status='适配已匹配 · 尚需准备游戏';
+      if(cloud){label='查看云游戏';status='云端供给与网络待确认';}
+      else if(!matched){label='核对适配';status=state.match==='unknown'?'设备未识别':state.capability==='weak'?'本机运行条件待核对':'暂无匹配记录';}
+      else if(ready){const returning=Array.isArray(state.recentPlayed)&&state.recentPlayed.includes(id);label=returning?'继续游玩':'开始游玩';status='适配已匹配 · 游戏已准备';}
+      return `<section class="concept-playable-hero" data-ops-slot="home-primary" data-content-source="device-match" data-module="compatible-feature" data-game-state="${cloud?'cloud':ready?'ready':matched?'preparation':'unknown'}">${image('scene-hades','哈迪斯游戏画面')}<div class="concept-playable-shade"></div><div class="concept-playable-copy"><small>动作 · 肉鸽</small><h2>${GAMES[id].name}</h2><div class="concept-playable-status">${matched&&!cloud?'<i aria-hidden="true"></i>':''}<span>${status}</span></div>${action(label,'game',`data-game="${id}" data-route="${cloud?'cloud':'local'}"`,'concept-feature-cta')}</div>${matched&&!cloud?compat(id):''}</section>`;
     }
 
     function adaptationRecords(){
@@ -464,7 +467,7 @@
     function gameplay(){
       const clip=MEDIA['clip-hades'];
       const media=clip?`<video controls playsinline preload="none" poster="${MEDIA['poster-hades']||MEDIA['scene-hades']}" aria-label="哈迪斯官方玩法片段"><source src="${clip}" type="video/mp4"></video>`:image('scene-hades','哈迪斯游戏画面');
-      return section('看看游戏怎么玩',`<div class="concept-play-film"><div class="concept-video">${media}</div><div class="concept-film-copy"><small>哈迪斯 · 官方玩法片段</small><h3>先看一局，再决定。</h3>${action('查看游戏','game',`data-game="hades" data-route="${state.route}"`,'concept-feature-cta')}</div></div>`);
+      return section('玩法视频',`<div class="concept-play-film"><div class="concept-video">${media}</div><div class="concept-film-copy"><small>官方玩法片段</small><h3>哈迪斯</h3>${action('查看游戏','game',`data-game="hades" data-route="${state.route}"`,'concept-feature-cta')}</div></div>`);
     }
 
     function discovery(){
@@ -478,6 +481,7 @@
   }
   window.LAB_CONTENT={articles,home,operations};
 })();
+
 
 
 ;
