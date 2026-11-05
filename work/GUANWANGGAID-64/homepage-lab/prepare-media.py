@@ -32,6 +32,11 @@ for key, uri in scenes.items():
     media['scene-' + key] = uri
 for key in ['icon-home', 'icon-community', 'icon-library', 'icon-profile', 'icon-ranking', 'icon-search', 'icon-bell', 'icon-device']:
     media[key] = assets[key]
+for key in ['battle','catquest']:
+    media['cover-' + key] = assets[key]
+media['cover-phantom'] = assets['pc_top_sellers_0']
+for key in ['promo-sorry','promo-asleep','promo-beginning','promo-raft','promo-re4','promo-repo','release-fleming','release-figure','release-dailygold','release-archeage','release-floatopia']:
+    media[key] = assets[key]
 media['compatibility'] = string_value('HOME_PLAY_COMPATIBILITY_ICONS')
 media['clip-hades'] = string_value('HOME_PLAY_CLIP')
 media['poster-hades'] = string_value('HOME_PLAY_POSTER')
@@ -49,7 +54,7 @@ for key, uri in media.items():
     'baseline': 'public/gamehub-pc-console-demo/index.html',
     'referenceScreens': ['screen-08', 'screen-15', 'screen-36'],
     'components': {'C-SHELL-P': 'measured baseline / derived concept', 'C-SHELL-L': 'measured baseline / derived concept', 'D-GAME-CARD': 'derived', 'C-BUTTON-GLOW': 'derived'},
-    'claims': {'media': 'Existing registered local game artwork/official gameplay, not proof of Android/iOS compatibility or cloud supply.', 'compatibility': 'Reference visual only; all game/device results in this lab are fixtures.', 'paidService': 'screen-15 proves a time/recharge entry, but no confirmed package price. No invented memberships or payment.', 'feedback': 'AI scenario walkthroughs, not recruited users or observed retention.'},
+    'claims': {'media': 'Existing registered local game artwork/official gameplay, not proof of Android/iOS compatibility or cloud supply.', 'compatibility': 'Reference visual only; all game/device results in this lab are fixtures.', 'paidService': 'screen-15 proves a time/recharge entry, but no confirmed package price. No invented memberships or payment.', 'feedback': 'AI scenario walkthroughs, not recruited users or observed retention.', 'promotions': 'Store snapshot from first demo checked 2026-11-02. Demo clock fixed to 2026-11-02T10:00:00+08:00; not current availability.', 'releases': 'First demo release calendar artwork and content samples; calendar dates are review fixtures.'},
     'assets': records
 }, ensure_ascii=False, indent=2), encoding='utf-8')
 print(json.dumps({'assets': len(records), 'bytes': sum(x['bytes'] for x in records)}))

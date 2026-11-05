@@ -24,11 +24,11 @@ def publish():
     verification = json.loads((HERE / 'verification.json').read_text(encoding='utf-8'))
     if verification.get('status') != 'passed' or verification.get('artifactSha256') != sha(ROOT / 'public/gamehub-home-lab/index.html'):
         raise RuntimeError('Local validation is not passed')
-    if not (HERE / 'review.md').exists():
-        raise RuntimeError('Scenario review is missing')
-    files = ['public/gamehub-home-lab/index.html', 'docs/superpowers/plans/2026-11-05-gamehub-home-lab.md']
+    if not (HERE / 'review.md').exists() or verification['artifactSha256'] not in (HERE / 'review.md').read_text(encoding='utf-8'):
+        raise RuntimeError('Review does not cover the current verified artifact')
+    files = ['public/gamehub-home-lab/index.html', 'docs/superpowers/plans/2026-11-05-gamehub-home-lab.md','docs/superpowers/plans/2026-11-05-gamehub-home-lab-r3.md','docs/superpowers/specs/2026-11-05-gamehub-home-lab-r3-design.md']
     for path in HERE.iterdir():
-        if path.is_file() and path.suffix in ['.html', '.css', '.js', '.cjs', '.py', '.json', '.md', '.ps1'] and path.name not in ['publication.json', 'live-verification.json', 'run.json']:
+        if path.is_file() and path.suffix in ['.html', '.css', '.js', '.cjs', '.py', '.json', '.md', '.ps1'] and path.name not in ['publication.json', 'live-verification.json', 'http-verification.json','run.json']:
             files.append(path.relative_to(ROOT).as_posix())
     before_head = git('rev-parse', 'HEAD')
     index = pathlib.Path(git('rev-parse', '--git-path', 'index'))
@@ -39,7 +39,9 @@ def publish():
     before_baseline = sha(baseline)
     git('fetch', 'origin', 'refs/heads/master:refs/remotes/origin/master')
     base = git('rev-parse', 'refs/remotes/origin/master')
-    conflict = git('diff', '--name-only', KNOWN_BASE, base, '--', *files)
+    previous = HERE / 'publication.json'
+    known_base = json.loads(previous.read_text(encoding='utf-8'))['commit'] if previous.exists() else KNOWN_BASE
+    conflict = git('diff', '--name-only', known_base, base, '--', *files)
     if conflict:
         raise RuntimeError('Scoped remote changes need reconciliation: ' + conflict)
     temporary_index = HERE / ('.publish-' + uuid.uuid4().hex + '.index')
@@ -54,11 +56,12 @@ def publish():
         changed = git('diff-tree', '--no-commit-id', '--name-only', '-r', base, tree).splitlines()
         if not changed or any(file not in files for file in changed):
             raise RuntimeError('Publication scope check failed')
-        commit = git('commit-tree', tree, '-p', base, '-m', 'Add three GameHub home content directions with scenario walkthrough revisions')
+        commit = git('commit-tree', tree, '-p', base, '-m', 'Rebuild three home concepts and restore calendar, offers and activities')
         git('push', 'origin', commit + ':refs/heads/master')
+        published_blob = subprocess.check_output(['git','show',commit+':public/gamehub-home-lab/index.html'],cwd=ROOT)
         if git('rev-parse', 'HEAD') != before_head or sha(index) != before_index or sha(baseline) != before_baseline:
             raise RuntimeError('Workspace preservation check failed')
-        result = {'commit': commit, 'base': base, 'files': changed, 'url': URL, 'headPreserved': True, 'indexPreserved': True, 'existingDemoPreserved': True, 'bytes': (ROOT / files[0]).stat().st_size, 'sha256': sha(ROOT / files[0])}
+        result = {'commit': commit, 'base': base, 'files': changed, 'url': URL, 'headPreserved': True, 'indexPreserved': True, 'existingDemoPreserved': True, 'bytes': (ROOT / files[0]).stat().st_size, 'sha256': sha(ROOT / files[0]),'gitBlobBytes':len(published_blob),'gitBlobSha256':hashlib.sha256(published_blob).hexdigest()}
         (HERE / 'publication.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
         print(json.dumps(result, ensure_ascii=False))
     finally:
