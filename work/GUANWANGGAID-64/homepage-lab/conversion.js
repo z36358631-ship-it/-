@@ -3,24 +3,13 @@
   // Prices and entitlement types are copied from the confirmed APP rental demo.
   // They are historical planning samples, not a live inventory or payment feed.
   const SOURCE='demos/APP租号功能/盖世游戏APP租号功能demo.template.html';
-  const OFFER={id:'phantom',name:'影之刃零',trial:{id:'trial',name:'首次体验',price:1.9,duration:'2小时'},permanent:{id:'permanent',name:'单游戏永久账号权益',price:198,duration:'长期有效'}};
   const PLANS=[{id:'weekly',name:'周卡',price:39,days:7},{id:'monthly',name:'月卡',price:129,days:30}];
 
   function create(ctx){
     const {state,image,action,heading,section}=ctx;
-    state.trialEligible ??= true;
     if(!PLANS.some(p=>p.id===state.conversionPlan))state.conversionPlan='weekly';
-    if(!['trial','permanent'].includes(state.conversionSku)||(!state.trialEligible&&state.conversionSku==='trial'))state.conversionSku=state.trialEligible?'trial':'permanent';
     const price=value=>'¥'+value;
-    const selected=()=>state.trialEligible&&state.conversionSku==='trial'?OFFER.trial:OFFER.permanent;
     const sample=()=>'<p class="conversion-source-note">既有租号方案样例 · 非当前在售</p>';
-    const deviceNote=()=>state.match==='unknown'?'当前设备待识别，租号前先确认能否运行。':state.capability==='weak'?'当前设备较弱，账号权益不会改变本机运行能力。':'本机适配尚待核对，账号权益与运行条件分别确认。';
-
-    function hero(){
-      if(state.capability==='weak'||state.route==='cloud')return `<section class="conversion-hero conversion-cloud-hero" data-ops-slot="home-primary" data-content-source="catalog-and-eligibility" data-module="paid-conversion" data-conversion-route="cloud">${image('scene-cyber','')}<div class="conversion-hero-shade"></div><div class="conversion-hero-copy"><small>云端游玩 · 供给待确认</small><h2>云游戏</h2><h3>游戏供给待确认</h3><div class="conversion-hero-bottom">${action('查看云游戏','cloud-list','','conversion-primary')}${action('查看时长服务','pricing','','conversion-cloud-price-link')}</div></div></section>`;
-      const offer=state.trialEligible?OFFER.trial:OFFER.permanent;
-      return `<section class="conversion-hero" data-ops-slot="home-primary" data-content-source="catalog-and-eligibility" data-module="paid-conversion" data-trial-eligible="${state.trialEligible}" data-conversion-route="rental">${image('cover-phantom','')}<div class="conversion-hero-shade"></div><div class="conversion-hero-copy"><small>租号体验 · 历史方案样例</small><h2>${OFFER.name}</h2><h3>${state.trialEligible?'首租体验':'单游戏账号权益'}</h3><div class="conversion-hero-price"><strong>${price(offer.price)}</strong><span>${offer.duration}${state.trialEligible?' · 仅限符合首租资格':''}</span></div><div class="conversion-hero-bottom">${action(state.trialEligible?'查看首租体验':'查看账号权益','conversion-offer','data-offer="phantom"','conversion-primary')}<span>${state.trialEligible?'2小时账号使用权益':'单游戏账号权益'}</span></div></div></section>`;
-    }
 
     function membership(){
       return `<section class="app-section conversion-membership" data-module="membership">${heading('会员游戏库','conversion-member-library')}<div class="conversion-member-banner"><div><small>会员游戏库 · 历史方案样例</small><h3>会员周卡</h3><p>会员有效期内使用库内账号权益</p><div class="conversion-member-price"><strong>¥39</strong><span>/ 7天周卡</span></div>${action('查看会员方案','conversion-member','','conversion-secondary')}</div><button type="button" class="conversion-member-cover" data-action="conversion-member-library" aria-label="查看会员游戏库">${image('cover-elden','艾尔登法环')}<span>艾尔登法环</span></button></div></section>`;
@@ -29,12 +18,6 @@
     function cloud(){
       const weak=state.capability==='weak';
       return `<section class="app-section conversion-cloud" data-module="cloud-service">${heading('云游戏')}<button type="button" class="conversion-cloud-entry" data-action="cloud-list"><span class="conversion-cloud-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18a4 4 0 0 1-1-7.9A7 7 0 0 1 18.6 9 4.5 4.5 0 0 1 18 18H6Z"/></svg></span><span><b>云游戏列表</b><small>游戏供给、网络与账号条件分别确认</small></span><i aria-hidden="true">›</i></button></section>`;
-    }
-
-    function offerPage(){
-      const sku=selected();
-      const skus=state.trialEligible?[OFFER.trial,OFFER.permanent]:[OFFER.permanent];
-      return `<div class="conversion-offer-page" data-conversion-offer="phantom"><div class="conversion-detail-art">${image('cover-phantom',OFFER.name)}</div><small class="conversion-kicker">STEAM 账号使用权益</small><h2>${OFFER.name}</h2><p class="conversion-detail-intro">账号使用方案</p><div class="conversion-sku-list" role="group" aria-label="租号权益方案">${skus.map(item=>`<button type="button" data-action="conversion-sku" data-sku="${item.id}" class="${sku.id===item.id?'is-selected':''}" aria-pressed="${sku.id===item.id}"><span><b>${item.name}</b><small>${item.duration}${item.id==='trial'?' · 仅限符合首租资格':''}</small></span><strong>${price(item.price)}</strong></button>`).join('')}</div>${sample()}<section class="conversion-condition-card"><h3>使用条件</h3><dl><div><dt>当前选择</dt><dd>${sku.name} · ${sku.duration}</dd></div><div><dt>首租资格</dt><dd>${state.trialEligible?'样例：符合首租资格':'样例：首租资格已使用'}</dd></div><div><dt>账号与库存</dt><dd>未连接实时供给</dd></div></dl><p>${deviceNote()}</p>${action('打开兼容性查询','local-list','','conversion-text-link')}</section><div class="conversion-rights-note"><b>账号权益与游戏购买分别确认</b><p>这里展示账号使用权益，不向个人 Steam 游戏库新增游戏所有权；“单游戏永久”沿用源方案名称，具体服务条件需另行确认。</p></div>${action('演示不付款','conversion-noop','disabled','conversion-primary conversion-full')}<p class="conversion-demo-note">本页仅演示购前选择，不创建订单、不分配账号。</p></div>`;
     }
 
     function memberPage(){
@@ -46,14 +29,9 @@
       return `<div class="conversion-member-library"><small class="conversion-kicker">会员游戏库 · 源方案样例</small><h2>会员游戏库</h2><p class="conversion-detail-intro">这里展示已登记的会员库游戏样例。实时可用范围待接入。</p><button type="button" class="conversion-member-game" data-action="conditions" data-game="elden">${image('cover-elden','艾尔登法环')}<span><b>艾尔登法环</b><small>会员库游戏样例 · 查看本机适配</small></span><i aria-hidden="true">›</i></button>${action('查看会员方案','conversion-member','','conversion-secondary conversion-full')}${sample()}</div>`;
     }
 
-    function page(name){return ({'conversion-offer':offerPage,'conversion-member':memberPage,'conversion-member-library':memberLibrary})[name]?.()??null;}
+    function page(name){return ({'conversion-member':memberPage,'conversion-member-library':memberLibrary})[name]?.()??null;}
     function handle(name,data){
       switch(name){
-        case 'purchase-rental':
-          state.conversionSku=state.trialEligible?'trial':'permanent';ctx.go('conversion-offer');
-          return true;
-        case 'conversion-offer':state.conversionSku=state.trialEligible?'trial':'permanent';ctx.go('conversion-offer');return true;
-        case 'conversion-sku':if(['trial','permanent'].includes(data.sku)&&(data.sku!=='trial'||state.trialEligible)){state.conversionSku=data.sku;ctx.render(ctx.getScroll());}return true;
         case 'conversion-member':ctx.go('conversion-member');return true;
         case 'conversion-member-library':ctx.go('conversion-member-library');return true;
         case 'conversion-plan':if(PLANS.some(p=>p.id===data.plan)){state.conversionPlan=data.plan;ctx.render(ctx.getScroll());}return true;
@@ -61,9 +39,11 @@
         default:return false;
       }
     }
-    return {hero,membership,cloud,page,handle};
+    return {membership,cloud,page,handle};
   }
-  window.LAB_CONVERSION={create,offer:OFFER,plans:PLANS,source:SOURCE};
+  window.LAB_CONVERSION={create,plans:PLANS,source:SOURCE};
 })();
+
+
 
 
