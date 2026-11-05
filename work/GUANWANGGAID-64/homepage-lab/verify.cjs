@@ -66,11 +66,11 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  }
  await api('reset');await click('.home-shortcuts [data-action="ret-giveaways"]');assert.deepEqual(await page.locator('.ret-platform-tabs button').evaluateAll(es=>es.map(e=>e.dataset.platform)),['epic','steam']);
  for(const platform of ['epic','steam']){await click('[data-action="ret-platform"][data-platform="'+platform+'"]');await click('[data-action="ret-subscribe"]');assert.equal((await state()).retSubscriptions[platform],true);}
- await click('[data-action="ret-widget"]');assert((await page.locator('.ret-native-widget').innerText()).includes('当前可领 2 款'));assert(!await page.locator('.ret-native-widget img').count());record('two-platform giveaway subscription and count-only widget');
+ assert.equal(await page.locator('.ret-giveaway-page [data-action="ret-widget"]').count(),0);record('two-platform giveaway subscription without duplicate widget entry');
  await api('reset');await click('.home-shortcuts [data-action="ret-task-center"]');assert.equal((await state()).page,'ret-task-center');await click('[data-task="checkin"]');await click('[data-action="ret-checkin"]');assert((await state()).retSigned);record('task center and checkin');
  await api('reset');assert.equal(await page.locator('.channel-tabs .nav-update').count(),1);await click('.channel-tabs [data-action="compatibility"]');assert.equal(await page.locator('.channel-tabs .nav-update').count(),0);await click('.app-bottom [data-page="community"]');assert.equal(await page.locator('.app-bottom .nav-update').count(),0);record('independent tab update badges clear on visiting');
  for(const width of [375,768])for(const form of ['portrait','landscape','tablet']){await page.setViewportSize({width,height:1000});await api('reset');await api('setForm',form);await ensure(width+'/'+form);record('narrow viewport no clipping',{width,form});}
  assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);record('no runtime errors or external runtime resources');
- const result={version:'r7.1',status:'passed',artifactSha256:hash,target,checks:checks.length,results:checks,errors,externalRequests:requests};
+ const result={version:'r7.2',status:'passed',artifactSha256:hash,target,checks:checks.length,results:checks,errors,externalRequests:requests};
  fs.writeFileSync(path.join(HERE,prefix+'verification.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:'passed',checks:checks.length,sha256:hash,target}));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});
