@@ -17,7 +17,7 @@ def build():
     html = template.replace('<!--STYLE-->', css).replace('<!--MEDIA-->', 'window.LAB_MEDIA=' + media.replace('</', '<\\/') + ';').replace('<!--SCRIPT-->', js)
     TARGET.parent.mkdir(parents=True, exist_ok=True)
     TARGET.write_text(html, encoding='utf-8',newline='\n')
-    record = {'version': '2026-11-05-home-lab-r7.2', 'target': str(TARGET.relative_to(ROOT)), 'bytes': TARGET.stat().st_size, 'sha256': hashlib.sha256(TARGET.read_bytes()).hexdigest(), 'runtime': 'offline single HTML, no external assets', 'directions': ['play']}
+    record = {'version': '2026-11-05-home-lab-r7.3', 'target': str(TARGET.relative_to(ROOT)), 'bytes': TARGET.stat().st_size, 'sha256': hashlib.sha256(TARGET.read_bytes()).hexdigest(), 'runtime': 'offline single HTML, no external assets', 'directions': ['play']}
     (HERE / 'build-manifest.json').write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding='utf-8')
     print(json.dumps(record, ensure_ascii=False))
 

@@ -12,8 +12,9 @@
     communityPages:[['community-night','community-doors','community-break'],['nightcity','routine','controls']],
     shortcuts:[
       {id:'compatibility',name:'兼容性查询',action:'compatibility',icon:'device'},
-      {id:'giveaways',name:'盖世喜加一',action:'ret-giveaways',icon:'gift'},
-      {id:'tasks',name:'任务中心',action:'ret-task-center',icon:'task'}
+      {id:'giveaways',name:'喜加一',action:'ret-giveaways',icon:'gift'},
+      {id:'calendar',name:'游戏日历',action:'ret-calendar',icon:'calendar'},
+      {id:'forum',name:'盖世讨论区',action:'gamehub-forum',icon:'forum'}
     ]
   };
   const articles = {
@@ -44,9 +45,11 @@
       const icons={
         device:'<rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 18.5h4M10 5.5h4"/>',
         gift:'<path d="M4 10h16v11H4zM3 6h18v4H3zM12 6v15"/><path d="M12 6C5 6 6 0 9 2c2 1 3 4 3 4Zm0 0c7 0 6-6 3-4-2 1-3 4-3 4Z"/>',
-        task:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8.5 11l2 2 5-5M9 17h6"/>'
+        task:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M8.5 11l2 2 5-5M9 17h6"/>',
+        calendar:'<rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M7.5 3v4m9-4v4M3.5 10h17M8 14h2m4 0h2M8 17h2"/>',
+        forum:'<path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-9l-6 3V6a2 2 0 0 1 1-2Z"/><path d="M8 9h9M8 13h6"/>'
       };
-      const items=(operations.shortcuts||[]).filter(item=>item&&icons[item.icon]&&['compatibility','ret-giveaways','ret-task-center'].includes(item.action));
+      const items=(operations.shortcuts||[]).filter(item=>item&&icons[item.icon]&&['compatibility','ret-giveaways','ret-calendar','gamehub-forum'].includes(item.action));
       if(!items.length)return '';
       return `<nav class="home-shortcuts" data-module="shortcuts" aria-label="首页功能入口">${items.map(item=>`<button type="button" data-action="${item.action}" data-shortcut="${esc(item.id)}"><span class="home-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${icons[item.icon]}</svg></span><b>${esc(item.name)}</b></button>`).join('')}</nav>`;
     }
