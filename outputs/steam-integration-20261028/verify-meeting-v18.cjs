@@ -1,7 +1,7 @@
 const {chromium}=require('playwright-core'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const {pathToFileURL}=require('url');
 (async()=>{
- const dir=path.join(__dirname,'meeting-v18-evidence');fs.mkdirSync(dir,{recursive:true});
+ const dir=path.join(__dirname,'evidence-meeting-20261105','network-regression');fs.mkdirSync(dir,{recursive:true});
  const b=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe'});
  const p=await b.newPage({viewport:{width:1480,height:1140}});p.setDefaultTimeout(6000);
  const errors=[],remote=[],results=[];p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url())});
@@ -60,7 +60,7 @@ const {pathToFileURL}=require('url');
   }
  }
  for(const [key,file] of [['steam-library','04-steam.png'],['sync-download-complete','28-library-account.png'],['source-imported','46-imported-library.png'],['sync-error','47-sync-failed.png'],['steam-network-error','48-network-failed.png'],['sync-download-complete','49-steam-downloaded-host.png']]){
-  await api('setOrientation','portrait');await fixture(key);await p.locator('#device').screenshot({path:path.join(__dirname,'prd-assets',file)});
+  await api('setOrientation','portrait');await fixture(key);await p.locator('#device').screenshot({path:path.join(dir,file)});
  }
  assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
  fs.writeFileSync(path.join(dir,'验证记录.json'),JSON.stringify({scope:'离线交互模拟；模拟重开仅复用已确认身份，未模拟原生身份核对中/失败/外部退出；未验证真实Steam网络和SDK同步能力',passed:results.length,failed:0,results,errors,remote},null,2));await b.close();

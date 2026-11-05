@@ -10,8 +10,8 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
 parser = argparse.ArgumentParser()
-parser.add_argument('--version', default='V1.2')
-parser.add_argument('--output', default='盖世游戏MacSteam接入产品需求-V1.2.docx')
+parser.add_argument('--version', default='V1.3')
+parser.add_argument('--output', default='盖世游戏MacSteam接入产品需求-V1.3.docx')
 args = parser.parse_args()
 VERSION = args.version
 OUT = ROOT / args.output
@@ -115,7 +115,11 @@ def table(lines):
                     for run in p.runs: run.bold=True
         if row_index==0:
             repeat=OxmlElement('w:tblHeader');t.rows[-1]._tr.get_or_add_trPr().append(repeat)
-    # 表格后直接接正文，避免分页符前遗留空段。
+    gap=doc.add_paragraph()
+    gap.paragraph_format.space_before=Pt(0)
+    gap.paragraph_format.space_after=Pt(0)
+    gap.paragraph_format.line_spacing=Pt(1)
+    gap.add_run().font.size=Pt(1)
 
 def markdown(text, appendix=False):
     lines=text.splitlines();i=0

@@ -1,0 +1,43 @@
+{
+  "version": "V1.9",
+  "status": "passed",
+  "pages": 28,
+  "scope": "仅修改 export-word.py 排版及重新生成 Word；正文与免责声明未修改。",
+  "initialIssues": [
+    "初版50页，截图逐张过大，修订记录跨3页",
+    "孤立表头、标题/元数据与图分离",
+    "标题蓝色底线与表格跨页不连贯"
+  ],
+  "fixes": [
+    "同组图片并排，限制图片高度",
+    "统一黑色标题、字号、行距、表格列宽和内距",
+    "表头重复，规则行不拆分；保留表间1pt段防止表合并",
+    "页面标题、前置条件与图连排，短列表不留末行孤页"
+  ],
+  "checks": {
+    "sourceTextSegments": 638,
+    "missingTextSegments": 0,
+    "embeddedImages": 21,
+    "imageOccurrences": 21,
+    "allImagesEmbedded": true,
+    "disclaimerIncluded": true
+  },
+  "visualEvidence": [
+    "prd-render-meeting/contact-1.png",
+    "prd-render-meeting/contact-2.png",
+    "prd-render-meeting/contact-3.png",
+    "prd-render-meeting/contact-4.png"
+  ],
+  "fullSizeReviewPages": [
+    6,
+    15,
+    18,
+    22,
+    26,
+    27,
+    28
+  ],
+  "normalPagination": "长表与多图按页续排，保留节末余白；无正文删改。",
+  "feishuImport": "not-tested",
+  "sha256": "3f7ba746f137891c598d87d87ccc2587a6ad015b9b98f87a854b820bf2b83b4c"
+}

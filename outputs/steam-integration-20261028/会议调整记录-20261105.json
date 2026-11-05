@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-05",
+  "source": "郑群超的视频会议 (5).txt",
+  "scope": "Android+Mac，用户本轮确认",
+  "decisions": [
+    {
+      "time": "29:15—29:44，40:00—40:27",
+      "change": "首次仅确认协议；新启动固定大屏；模式切换移至悬浮面板右上设置",
+      "replaces": [
+        "D-003模式偏好",
+        "D-008模式协议同页选择",
+        "D-009默认窗口",
+        "D-MAC-06首次模式选择"
+      ]
+    },
+    {
+      "time": "29:53—30:27",
+      "change": "免责声明为未审稿，上线前须律师审定，原文不改"
+    },
+    {
+      "time": "35:31—38:29",
+      "change": "不加限免预告、浮球广告/消息中心；补停留及返回统计，阈值不臆定"
+    },
+    {
+      "time": "40:27—41:04",
+      "change": "保留启动落地页设置，各端默认和选项不变"
+    }
+  ],
+  "unchanged": [
+    "原文协议条款",
+    "下载/登录/账号管理",
+    "联网与双向游戏同步",
+    "缩放与最小化",
+    "Mac默认发现及五项启动页",
+    "Android四项启动页及横竖默认",
+    "首页/社区/兼容性/资源位等独立需求"
+  ],
+  "auditFixes": [
+    "修复Mac返回重入恢复原会话",
+    "统一声明更新枚举version_change",
+    "限定page_instance_id必填范围",
+    "返回率分母纳入跨日可见会话",
+    "恢复被回归脚本误写的历史图片"
+  ],
+  "verification": {
+    "mobileBehavior": "8组",
+    "networkSyncRegression": "7组",
+    "macBehavior": "7组",
+    "reviewImages": "移动23张，Mac27张",
+    "prdImages": "移动21张，Mac12张HTTP/MIME通过",
+    "production": "7.0真实组件未验收；原生能力及法务待确认",
+    "word": "移动28页、Mac15页渲染检查通过；飞书未实测"
+  },
+  "pagesCommit": "70e60588b",
+  "assetCommit": "b55908e66a650d55b720e26f5f136dbe2addd993",
+  "reviewer": "/root + meeting_mobile_docs"
+}

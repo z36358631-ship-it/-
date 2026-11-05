@@ -1,4 +1,4 @@
-param([string]$DocName='盖世游戏MacSteam接入产品需求-V1.2.docx')
+param([string]$DocName='盖世游戏MacSteam接入产品需求-V1.3.docx')
 $ErrorActionPreference='Stop'
 $docPath=Join-Path $PSScriptRoot $DocName
 $renderDir=Join-Path $PSScriptRoot 'prd-render'

@@ -1,0 +1,60 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "name": "首次仅确认协议，默认大屏；准备/登录后直达，重进不重复协议",
+      "status": "passed"
+    },
+    {
+      "name": "模式只在悬浮球右上设置，缩放/最小化保留；新进入忽略旧偏好",
+      "status": "passed"
+    },
+    {
+      "name": "有效会话保留窗口与目标，普通重入恢复；显式重开才固定大屏",
+      "status": "passed"
+    },
+    {
+      "name": "旧登录首次仍须勾协议，取消不提交；登录态可复用",
+      "status": "passed"
+    },
+    {
+      "name": "Mac 启动页五项与默认发现不变，Steam设置仅去掉模式与记忆",
+      "status": "passed"
+    },
+    {
+      "name": "详情目标与返回标签、账号、网络/同步异常不回归",
+      "status": "passed"
+    },
+    {
+      "name": "演示场景包含浮球设置，窄窗无横向溢出",
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "visualReview": {
+    "reviewer": "/root/meeting_mac_demo",
+    "status": "passed",
+    "evidence": [
+      "consent.jpg",
+      "panel.jpg",
+      "panel-settings.jpg",
+      "new-steam-settings.jpg",
+      "flow.png",
+      "review-entry.png",
+      "review-session.png"
+    ],
+    "checks": [
+      "协议单行与勾选门槛",
+      "模式仅在浮球设置",
+      "Mac设置原区域保留",
+      "会话恢复无新增UI，仅修状态与对应流程说明"
+    ]
+  },
+  "sessionRestoreRule": {
+    "resume": "accepted + ready + same account + live/suspended native session",
+    "normalEntry": "restore display mode, page and game/native target",
+    "deepLink": "reuse display mode; replace only requested target",
+    "newSession": "endSession called by restart; fixed big mode",
+    "accountChange": "discard old snapshot"
+  }
+}

@@ -24,43 +24,49 @@
     "android-changes"
   ],
   "publishPath": "public/steam-mac-integration",
-  "verification": "passed: verify-v4 seven behavior groups; 26 review screenshots; online version verified",
-  "pagesCommit": "c70109a87bb0848213c0f1260eea3934766dd426",
+  "verification": "7 behavior groups and 27 review images passed; actual 7.0 native package not verified",
+  "pagesCommit": "70e60588b081f12772ae8f10b9e1c04832101321",
   "decisions": [
-    "D-MAC-06 restores Steam mode dialog; replaces D-MAC-05 entry split",
     "D-MAC-03 detail ownership remains",
-    "D-MAC-04 left review sidebar remains"
+    "D-MAC-04 left review sidebar remains",
+    "D-MAC-07 replaces D-MAC-06 entry selection: fixed Big Picture for new session; consent only; mode switch in floating settings"
   ],
   "currentEvidence": [
-    "evidence-v4/verification.json",
-    "evidence-v4/artifacts-verification.json",
-    "Pages在线验证.json",
+    "evidence-meeting-20261105/verification.json",
+    "evidence-meeting-20261105/artifacts-verification.json",
     "验收说明.md"
   ],
   "artifacts": {
     "demo": "已同步",
     "readme": "已同步",
-    "android": "无需修改",
+    "android": "按同次会议同步，端差异保留",
     "oldEvidence": "历史记录，非本轮验证",
     "review": "已同步",
-    "prd": "V1.2：恢复原六章、九张页面六要素表，逐条精简",
-    "word": "盖世游戏MacSteam接入产品需求-V1.2.docx；14页已检查"
+    "prd": "V1.3，仅会议涉及部分",
+    "word": "盖世游戏MacSteam接入产品需求-V1.3.docx；15页检查通过"
   },
   "reviewer": "/root/mac_baseline_inventory + /root",
   "reviewEvidence": "验收说明.md; evidence-v4/consent.jpg; evidence-v4/window.jpg; evidence-v4/big.jpg",
   "prdEvidence": [
-    "PRD结构检查-V1.2.json",
-    "PRD图片检查-V1.2.json",
-    "Word导出验证-V1.2.json",
+    "PRD结构检查-V1.3.json",
+    "PRD图片检查-V1.3.json",
+    "Word导出验证-V1.3.json",
     "PRD交付记录.json"
   ],
   "prdRevision": {
-    "version": "V1.2",
-    "reason": "用户要求保留原文档结构，逐字精简",
-    "format": "六章、九张页面六要素表、悬浮球子功能表、状态表、事件与参数表",
-    "historicalDetailedVersion": "51c2fd8c7",
-    "headingsMatchOriginal": true,
-    "chineseCharacters": 3729,
-    "demoChanged": false
+    "version": "V1.3",
+    "source": "2026-11-05会议，用户确认两端同步",
+    "scopedEdit": true,
+    "demoChanged": true
+  },
+  "meetingRevision": {
+    "source": "郑群超的视频会议 (5).txt",
+    "date": "2026-11-05",
+    "scopeConfirmed": "Android+Mac",
+    "decision": "D-MAC-07 replaces D-MAC-06 entry mode selection",
+    "artifacts": "synced",
+    "reviewer": "/root + meeting_mac_demo + meeting_mobile_docs",
+    "evidence": "evidence-meeting-20261105",
+    "pagesCommit": "70e60588b081f12772ae8f10b9e1c04832101321"
   }
 }

@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "90d9c718-41b9-4e77-9025-3ebb1f6a72d9",
   "requirementId": "LOCAL-20261028",
-  "revision": 220,
+  "revision": 237,
   "status": "passed",
   "createdAt": "2026-10-28T01:57:53.1230318Z",
-  "updatedAt": "2026-10-30T09:30:13.8055136Z",
+  "updatedAt": "2026-11-05T11:22:24.4803735Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20261028-steam-integration.md",
   "cardHash": "D4026427D0AFE759C0DB74E935F805C6762903E2EC962357ECD9B4F8D05509F1",
   "contract": {
@@ -23,13 +23,13 @@
       "required": true,
       "dependsOn": [],
       "status": "passed",
-      "attempt": 2,
+      "attempt": 3,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "docs/superpowers/plans/2026-10-30-steam-meeting-v18.md"
+        "C:/Users/z3635/Downloads/郑群超的视频会议 (5).txt"
       ],
-      "validation": "本轮会议补充已确认，资源位独立，文档和Demo按最小改动并行",
+      "validation": "会议29:15-30:27、35:31-41:04；仅默认大屏/协议/嵌套模式设置/法务/停留统计",
       "error": null,
       "reviewer": null
     },
@@ -41,13 +41,13 @@
         "S1"
       ],
       "status": "passed",
-      "attempt": 2,
+      "attempt": 3,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "docs/superpowers/plans/2026-10-30-steam-meeting-v18.md"
+        "C:/Users/z3635/Downloads/郑群超的视频会议 (5).txt"
       ],
-      "validation": "本轮会议补充已确认，资源位独立，文档和Demo按最小改动并行",
+      "validation": "会议29:15-30:27、35:31-41:04；仅默认大屏/协议/嵌套模式设置/法务/停留统计",
       "error": null,
       "reviewer": null
     },
@@ -59,13 +59,13 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 10,
+      "attempt": 11,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "docs/superpowers/plans/2026-10-30-steam-meeting-v18.md"
+        "C:/Users/z3635/Downloads/郑群超的视频会议 (5).txt"
       ],
-      "validation": "本轮会议补充已确认，资源位独立，文档和Demo按最小改动并行",
+      "validation": "会议29:15-30:27、35:31-41:04；仅默认大屏/协议/嵌套模式设置/法务/停留统计",
       "error": null,
       "reviewer": null
     },
@@ -77,16 +77,16 @@
         "S3"
       ],
       "status": "passed",
-      "attempt": 11,
+      "attempt": 12,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/meeting-v18-evidence/baseline-portrait.png",
-        "outputs/steam-integration-20261028/meeting-v18-evidence/baseline-landscape.png"
+        "outputs/steam-integration-20261028/Steam接入Demo.html",
+        "outputs/steam-mac-integration-20261104/MacSteam接入Demo.html"
       ],
-      "validation": "现有Demo横竖骨架截图作为局部新增基线，不重做原页面",
+      "validation": "沿用现有Demo局部改动，非7.0真包还原；真实右上设置样式待包体验核对",
       "error": null,
-      "reviewer": "root"
+      "reviewer": "/root"
     },
     {
       "id": "S5",
@@ -97,14 +97,13 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 19,
+      "attempt": 20,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/Steam接入PRD-Draft.md",
-        "outputs/steam-integration-20261028/Steam接入Demo.html"
+        "outputs/steam-integration-20261028/会议调整记录-20261105.json"
       ],
-      "validation": "会议补充文档及Demo已实现，资源位独立说明",
+      "validation": "两端Demo/流程/PRD/Word受影响内容已同步",
       "error": null,
       "reviewer": null
     },
@@ -116,17 +115,18 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 19,
+      "attempt": 20,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/meeting-v18-evidence/验证记录.json",
-        "outputs/steam-integration-20261028/PRD图片验证-V1.8.json",
-        "outputs/steam-integration-20261028/Word导出验证-V1.8.json"
+        "outputs/steam-integration-20261028/evidence-meeting-20261105/verification.json",
+        "outputs/steam-mac-integration-20261104/evidence-meeting-20261105/verification.json",
+        "outputs/steam-integration-20261028/Word导出验证-V1.9.json",
+        "outputs/steam-mac-integration-20261104/Word导出验证-V1.3.json"
       ],
-      "validation": "新增7项行为与受影响回归通过，结构0错误，21图公网验证；Word仅内容完整性，渲染环境缺失且飞书未测",
+      "validation": "两端行为、文档结构/正文/图片校验通过，生产接入未验",
       "error": null,
-      "reviewer": "root"
+      "reviewer": null
     },
     {
       "id": "S7",
@@ -136,15 +136,16 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 19,
+      "attempt": 20,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/PRD内容复核-V1.8.json"
+        "outputs/steam-integration-20261028/会议调整记录-20261105.json",
+        "outputs/steam-integration-20261028/Word排版复核-V1.9.json"
       ],
-      "validation": "修复同步重开遗漏，明确未模拟身份核对分支，人工检查横竖关键状态；真实接入未验证",
+      "validation": "独立审查修复Mac会话恢复与数据口径，范围未扩展；两端Word视觉检查通过",
       "error": null,
-      "reviewer": "root + meeting_prd_v18"
+      "reviewer": "/root + meeting_mobile_docs"
     },
     {
       "id": "S8",
@@ -157,16 +158,15 @@
         "S7"
       ],
       "status": "passed",
-      "attempt": 19,
+      "attempt": 20,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/PRD在线验证-V1.8.json",
-        "outputs/steam-integration-20261028/Pages在线验证.json"
+        "outputs/steam-integration-20261028/evidence-meeting-20261105/online-verification.json"
       ],
-      "validation": "公网PRD/Demo/流程图与本地一致，直达页面与刷新流程通过；Word内容通过但分页及飞书未验证",
+      "validation": "发布70e60588b，5个线上文件与本地一致，33张PRD图公网可达；真实7.0组件/律师审核待完成，飞书未测",
       "error": null,
-      "reviewer": "root"
+      "reviewer": "/root"
     }
   ]
 }
