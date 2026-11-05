@@ -6,7 +6,7 @@
     {id:'calendar',image:'release-archeage',title:'游戏日历',subtitle:'每日发售提醒',action:'ret-calendar'}
   ],
     homeOrder:['collections','calendar','latest','community','tasks','business'],
-    collections:[{id:'local-action',title:'动作游戏合集',games:['hades','elden','cyber']}],
+    collections:[{id:'local-action',title:'动作与冒险',subtitle:'动作 · 角色扮演 · 开放世界',eyebrow:'游戏合集',caption:'本机兼容精选',games:['hades','elden','cyber','wukong','village','horizon']}],
     latestGames:['hades','elden','cyber'],
     taskIds:['checkin','play','community'],
     communityPages:[['community-night','community-doors','community-break'],['nightcity','routine','controls']],
@@ -31,9 +31,10 @@
       const collections=(operations.collections||[]).filter(item=>item&&item.title&&Array.isArray(item.games));
       if(!collections.length)return '';
       const cards=collections.map(item=>{
-        const ids=item.games.filter(id=>GAMES[id]&&MEDIA['cover-'+id]&&compatible(id)).slice(0,4);
+        const ids=item.games.filter(id=>GAMES[id]&&MEDIA['cover-'+id]&&compatible(id)).slice(0,8);
         if(!ids.length)return '';
-        return `<button type="button" class="local-collection-card" data-collection="${esc(item.id)}" data-content-source="operations-device-match" data-action="compatibility"><div class="local-collection-covers">${ids.map(id=>`<span class="local-collection-game">${image('cover-'+id,GAMES[id].name)}${compat(id)}</span>`).join('')}</div><span class="local-collection-title"><b>${esc(item.title)}</b><i aria-hidden="true">›</i></span></button>`;
+        const split=Math.ceil(ids.length/2);
+        return `<article class="local-collection" data-collection="${esc(item.id)}"><header class="local-collection-intro"><h3>${esc(item.title)}</h3>${item.subtitle?`<p>${esc(item.subtitle)}</p>`:''}</header><button type="button" class="local-collection-card" data-content-source="operations-device-match" data-action="compatibility" aria-label="查看${esc(item.title)}"><div class="local-collection-covers">${[ids.slice(0,split),ids.slice(split)].filter(row=>row.length).map(row=>`<span class="local-collection-icon-row">${row.map(id=>`<span class="local-collection-game" data-collection-game="${id}">${image('cover-'+id,GAMES[id].name)}${compat(id)}</span>`).join('')}</span>`).join('')}</div><span class="local-collection-title"><small>${esc(item.eyebrow||'游戏合集')}</small><b>${esc(item.caption||item.title)}</b></span></button></article>`;
       }).filter(Boolean);
       if(!cards.length)return section('本机可玩',`<button type="button" class="concept-path-link" data-action="compatibility"><span>${state.match==='unknown'?'尚未识别当前设备':'暂无当前设备的兼容游戏'}</span><b>兼容性查询 ›</b></button>`,'compatibility');
       return `<section class="app-section" data-module="local-collections">${ctx.heading('本机可玩','compatibility')}<div class="local-collection-list">${cards.join('')}</div></section>`;

@@ -14,7 +14,7 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  const state=()=>api('getState'),click=async s=>page.locator('.device '+s).first().click();
  const record=(name,details={})=>checks.push({case:name,passed:true,...details});
  const ensure=async label=>{await page.evaluate(async()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))));const g=await page.evaluate(()=>{const d=document.querySelector('.device'),b=document.querySelector('.app-body');return {windowOverflow:document.documentElement.scrollWidth>innerWidth+1,bodyOverflow:b.scrollWidth>b.clientWidth+1,deviceOverflow:d.scrollWidth>d.clientWidth+1,images:[...document.images].every(i=>i.complete&&i.naturalWidth>0),height:b.clientHeight};});assert(!g.windowOverflow&&!g.bodyOverflow&&!g.deviceOverflow&&g.images&&g.height>50,label+JSON.stringify(g));};
- const snap=async name=>{await ensure(name);await page.locator('.device').screenshot({path:path.join(HERE,prefix+'r6-'+name+'.png')});};
+ const snap=async name=>{await ensure(name);await page.locator('.device').screenshot({path:path.join(HERE,prefix+'r7-'+name+'.png')});};
  await api('reset');assert.equal((await state()).direction,'play');assert.equal(await page.locator('#direction-controls button').count(),1);record('selected direction is default and sole visible review direction');
  for(const scenario of ['new','import','steam','weak'])for(const form of ['portrait','landscape','tablet']){
   await api('reset');await api('setScenario',scenario);await api('setForm',form);await ensure(scenario+'/'+form);
@@ -29,6 +29,15 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
   if(scenario==='import')await snap(form+'-home');record('scenario/layout',{scenario,form});
  }
  await api('reset');
+ assert.deepEqual(await page.locator('.channel-tabs button').allTextContents(),['推荐','PC游戏','兼容游戏','云游戏','云游组队玩','复古游戏']);
+ for(const [channel,label] of [['local-list','PC游戏'],['compatibility','兼容游戏'],['cloud-list','云游戏'],['team-list','云游组队玩'],['retro-list','复古游戏'],['home','推荐']]){
+  await click('[data-channel="'+channel+'"]');assert.equal((await state()).page,channel);assert.equal(await page.locator('.channel-tabs .is-selected').innerText(),label);assert.equal(await page.locator('.app-bottom .is-selected').innerText(),'首页');assert.equal(await page.locator('.device .back-button').count(),0);await ensure(channel);
+ }
+ record('six original home channels, compatibility placement and channel switching');
+ for(const form of ['portrait','landscape','tablet']){await api('setForm',form);assert.equal(await page.locator('.local-collection-icon-row').count(),2);assert.equal(await page.locator('.local-collection-game').count(),6);assert(await page.locator('.local-collection-game>img').evaluateAll(es=>es.every(e=>{const r=e.getBoundingClientRect();return Math.abs(r.width-r.height)<1;})));await page.locator('.local-collection').scrollIntoViewIfNeeded();await snap(form+'-collection');}
+ record('two-row square icon collection in portrait, landscape and tablet');
+ await api('reset');await click('.local-collection-card');await click('.fit-page .game-card[data-game="cyber"]');assert.equal((await state()).page,'game');assert.equal(await page.locator('.device [data-action="player"]').count(),0);record('additional collection samples do not imply game content is prepared');
+ await api('reset');
  assert.equal(await page.locator('.community-page').count(),2);for(const group of await page.locator('.community-page').all())assert.equal(await group.locator('.community-list-item').count(),3);
  assert(await page.locator('.community-list-item').first().evaluate(e=>e.querySelector('.community-item-copy').getBoundingClientRect().right<=e.querySelector('img').getBoundingClientRect().left));
  await click('[data-action="community-page"][data-index="1"]');await page.waitForFunction(()=>document.querySelector('.community-carousel').scrollLeft>100);
@@ -41,7 +50,7 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  await page.evaluate(c=>{Object.assign(LAB_CONTENT.operations,c);HOME_LAB.reset();},config);record('configured section order and empty configuration hiding');
  await page.evaluate(()=>{LAB_CONTENT.operations.taskIds=[];HOME_LAB.reset();});assert.equal(await page.locator('[data-module="tasks"]').count(),0);
  await page.evaluate(c=>{LAB_CONTENT.operations.taskIds=c.taskIds;HOME_LAB.reset();},config);assert.equal(await page.locator('.ret-task-buttons button').count(),3);record('task content configuration and empty hiding');
- await click('.local-collection-card');assert.equal((await state()).page,'compatibility');assert.equal(await page.locator('.channel-tabs .is-selected').innerText(),'兼容性');assert.equal(await page.locator('.app-bottom .is-selected').innerText(),'首页');assert.equal(await page.locator('.fit-page .game-card').count(),2);
+ await click('.local-collection-card');assert.equal((await state()).page,'compatibility');assert.equal(await page.locator('.channel-tabs .is-selected').innerText(),'兼容游戏');assert.equal(await page.locator('.app-bottom .is-selected').innerText(),'首页');assert.equal(await page.locator('.fit-page .game-card').count(),6);
  await page.selectOption('[data-fit="genre"]','rogue');assert.equal(await page.locator('.fit-page .game-card').count(),1);await page.selectOption('[data-fit="device"]','other');assert((await page.locator('.fit-page').innerText()).includes('暂无该机型数据'));assert.equal(await page.locator('.fit-page .compat-mark').count(),0);record('collection enters compatibility tab and model/type filters');
  await api('reset');for(const match of ['unknown','empty']){await api('setScenario',{match});assert.equal(await page.locator('.device .compat-mark').count(),0);await click('.channel-tabs [data-action="compatibility"]');assert.equal(await page.locator('.fit-page .game-card').count(),0);await ensure('compatibility '+match);}
  record('unknown and unmatched devices avoid false compatibility');
@@ -62,6 +71,6 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  await api('reset');assert.equal(await page.locator('.channel-tabs .nav-update').count(),1);await click('.channel-tabs [data-action="compatibility"]');assert.equal(await page.locator('.channel-tabs .nav-update').count(),0);await click('.app-bottom [data-page="community"]');assert.equal(await page.locator('.app-bottom .nav-update').count(),0);record('independent tab update badges clear on visiting');
  for(const width of [375,768])for(const form of ['portrait','landscape','tablet']){await page.setViewportSize({width,height:1000});await api('reset');await api('setForm',form);await ensure(width+'/'+form);record('narrow viewport no clipping',{width,form});}
  assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);record('no runtime errors or external runtime resources');
- const result={version:'r6',status:'passed',artifactSha256:hash,target,checks:checks.length,results:checks,errors,externalRequests:requests};
+ const result={version:'r7',status:'passed',artifactSha256:hash,target,checks:checks.length,results:checks,errors,externalRequests:requests};
  fs.writeFileSync(path.join(HERE,prefix+'verification.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:'passed',checks:checks.length,sha256:hash,target}));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});

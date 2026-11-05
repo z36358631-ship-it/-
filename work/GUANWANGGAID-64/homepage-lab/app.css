@@ -8,3 +8,6 @@
 .ret-price-snapshot{font-size:9px;color:#868f9d;margin:-6px 0 10px}
 
 .direction-explanation{border-top:1px solid #dededc;border-bottom:1px solid #dededc;padding:12px 0;margin:0 0 23px;color:#555b62;font-size:11px}.direction-explanation summary{cursor:pointer;font-weight:600;color:#333b43;line-height:1.7}.direction-explanation p{font-size:10px;line-height:1.9;margin-top:12px}.direction-explanation b{display:block;color:#444d55;margin-bottom:3px;font-weight:650}@media(max-width:760px){.direction-explanation{grid-column:1/-1;margin:0}.direction-controls{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Home channels retain the original set; narrow devices scroll only this tab strip. */
+.channel-tabs{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;white-space:nowrap;gap:20px;max-width:100%;min-width:0}.channel-tabs::-webkit-scrollbar{display:none}.channel-tabs button{flex:0 0 auto;white-space:nowrap}.device.is-landscape .channel-tabs,.device.is-tablet .channel-tabs{gap:24px}
