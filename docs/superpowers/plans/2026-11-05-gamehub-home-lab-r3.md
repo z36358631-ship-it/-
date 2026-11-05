@@ -11,6 +11,6 @@
 - [x] 5. node --check各脚本；构建r3，浏览器检查3方向×4场景×3形态及窄屏。
 - [x] 6. 逐页验证日历/订阅、折扣/官方链接、喜加一三平台/组件、任务、秒玩组队、文章与返回；明确不执行外部交易。
 - [x] 7. 审查三方向首屏与下滚内容，独立复核差异、完整性与横屏；修正并做受影响回归。
-- [ ] 8. 临时Git索引仅推本轮目录、计划/设计与HTML，保留原HEAD/索引/原Demo；核验线上目标版本与交互。
+- [x] 8. 临时Git索引仅推本轮目录、计划/设计与HTML，保留原HEAD/索引/原Demo；核验线上目标版本与交互。
 
 命令：python -X utf8 work/GUANWANGGAID-64/homepage-lab/build.py；node work/GUANWANGGAID-64/homepage-lab/verify.cjs；python -X utf8 work/GUANWANGGAID-64/homepage-lab/publish.py。

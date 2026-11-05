@@ -16,7 +16,7 @@
   };
 
   function home(direction,ctx){
-    const {state,MEDIA,GAMES,esc,image,action,section,gameGrid,compatible,retention:R}=ctx;
+    const {state,MEDIA,GAMES,esc,image,action,section,gameGrid,compatible,retention:R,purchase:P}=ctx;
     const focus=state.focusGame==='elden'?'elden':'hades';
     const scene=id=>MEDIA['scene-'+id]?'scene-'+id:'cover-'+id;
     const articleCard=(id,{large=false}={})=>{const a=articles[id];return `<button class="concept-article ${large?'concept-article-large':''}" data-action="article" data-article="${id}"><div class="concept-article-image">${image(a.image,'')}<span>${a.category}</span></div><div class="concept-article-copy"><h3>${a.title}</h3><p>${a.deck}</p></div></button>`;};
@@ -36,28 +36,29 @@
       const gameFocus=`<section class="concept-focus"><div class="concept-focus-heading"><h2>${state.source==='none'?'从一款游戏开始':'这款游戏，试试这样玩'}</h2>${action('›','library','aria-label="查看游戏库"','heading-link')}</div><div class="concept-focus-games">${['hades','elden'].map(id=>`<button class="${id===focus?'is-selected':''}" data-action="focus-game" data-game="${id}" aria-pressed="${id===focus}">${image('cover-'+id,'')}<span>${GAMES[id].name}</span></button>`).join('')}</div></section>`;
       const focused=`<div class="concept-focus-world">${image(scene(focus),'')}<div class="concept-focus-shade"></div><div class="concept-focus-copy"><small>${GAMES[focus].name}</small><h2>${hades?'这次，试试盾牌开局。':'今天，先去岔路走走。'}</h2><p>${hades?'挡住正面的攻击，再蓄力冲出包围。':'暂时放下主线，给宁姆格福留一段探索。'}</p>${action(hades?'看看这一局怎么打':'看看这条探索思路','article',`data-article="${featured}"`,'concept-feature-cta')}</div></div>`;
       const utility=`<div class="concept-tool-pair"><button data-action="conditions" data-game="${focus}"><span class="concept-tool-icon">◎</span><div><b>适配与运行条件</b><small>设备、版本与已知问题</small></div><span>›</span></button><button data-action="article" data-article="${hades?'hades-touch':'elden-controls'}"><span class="concept-tool-icon">⌘</span><div><b>${hades?'冲刺与攻击的衔接':'移动与视角的配合'}</b><small>触屏与手柄操作经验</small></div><span>›</span></button></div>`;
-      return `<div class="concept-home concept-own" data-module="owned-experience">${R.continueStrip()}${gameFocus}${focused}${section(hades?'换一种操作，换一种打法':'打不过时，也有别的目标',`<div class="concept-two-stories">${ids.map(id=>articleCard(id)).join('')}</div>`)}${section('玩起来更顺手',utility)}${section('社区精选',communityBlock())}<button class="concept-library-link" data-action="${state.source==='none'?'game':'library'}" data-game="${focus}" data-route="${state.route}">${image('cover-'+focus,'')}<div><b>${GAMES[focus].name}</b><span>${ownRoute}</span></div><span aria-hidden="true">›</span></button>${localModule()}${devices()}${dailyBase()}</div>`;
+      return `<div class="concept-home concept-own" data-module="owned-experience">${R.continueStrip()}${P.shortcuts()}${gameFocus}${focused}${section(hades?'换一种操作，换一种打法':'打不过时，也有别的目标',`<div class="concept-two-stories">${ids.map(id=>articleCard(id)).join('')}</div>`)}${section('玩起来更顺手',utility)}${section('社区精选',communityBlock())}<button class="concept-library-link" data-action="${state.source==='none'?'game':'library'}" data-game="${focus}" data-route="${state.route}">${image('cover-'+focus,'')}<div><b>${GAMES[focus].name}</b><span>${ownRoute}</span></div><span aria-hidden="true">›</span></button>${localModule()}${devices()}${dailyBase()}</div>`;
     }
     function discovery(){
       const clip=MEDIA['clip-hades'];
       const video=`<section class="concept-play-film"><div class="concept-video">${clip?`<video controls playsinline preload="none" poster="${MEDIA['poster-hades']||MEDIA['scene-hades']}" aria-label="哈迪斯玩法片段"><source src="${clip}" type="video/mp4"></video>`:image('scene-hades','哈迪斯玩法画面')}</div><div class="concept-film-copy"><small>哈迪斯 · 动作肉鸽</small><h2>下一扇门，会遇到什么？</h2><p>冲刺、出手、选择祝福。每一局，换一种逃脱的打法。</p>${action('想玩这款','game',`data-game="hades" data-route="${state.route}"`,'concept-feature-cta')}</div></section>`;
       const themes=`<div class="concept-theme-list">${[['theme-roam','horizon','想慢慢逛一个世界','探索 · 风景 · 不赶进度'],['theme-challenge','wukong','想认真打一场','观察 · 躲避 · 找到破绽']].map(([id,g,t,d])=>`<button class="concept-theme" data-action="article" data-article="${id}">${image(scene(g),'')}<div><small>${d}</small><h3>${t}</h3><span>看看怎么玩 ›</span></div></button>`).join('')}</div>`;
       const adapt=`<div class="concept-adapt-cards">${['elden','hades'].map(id=>`<button data-action="conditions" data-game="${id}"><div>${image(scene(id),'')}${compat(id)}</div><h3>${GAMES[id].name}</h3><p>${id==='elden'?'探索与小屏操作':'战斗与按键衔接'} <span>›</span></p></button>`).join('')}</div>`;
-      return `<div class="concept-home concept-discover" data-module="play-discovery">${R.continueStrip()}${video}${localModule()}${section('今天，想怎么玩？',themes)}${section('适配与操作体验',adapt,'adapt-list')}${section('先看懂一局，再决定',articleRows(['hades-loop','elden-explore']))}${section('社区精选',communityBlock())}${devices()}${R.calendar({compact:true})}${R.discounts({compact:true})}${R.giveaways({compact:true})}${R.tasks()}${R.business({kind:'all'})}</div>`;
+      return `<div class="concept-home concept-discover" data-module="play-discovery">${R.continueStrip()}${P.shortcuts()}${video}${localModule()}${section('今天，想怎么玩？',themes)}${section('适配与操作体验',adapt,'adapt-list')}${section('先看懂一局，再决定',articleRows(['hades-loop','elden-explore']))}${section('社区精选',communityBlock())}${devices()}${R.calendar({compact:true})}${R.discounts({compact:true})}${R.giveaways({compact:true})}${R.tasks()}${R.business({kind:'all'})}</div>`;
     }
     function communityBlock(){
       const pages={
         value:[['hades-touch','elden-controls','theme-challenge'],['weapon-bow','community-night','theme-roam']],
         play:[['community-night','theme-challenge','community-doors'],['theme-roam','elden-guard','hades-touch']],
+        deals:[['community-doors','theme-roam','hades-touch'],['community-night','theme-challenge','elden-controls']],
         content:[['community-night','community-doors','community-break'],['theme-challenge','theme-roam','elden-controls']]
       }[direction]||[];
       const selected=Math.max(0,Math.min(pages.length-1,Number(state.communityPage)||0));
       return `<div class="community-module" data-module="community-picks"><div class="community-carousel" aria-label="社区精选，每页三条内容" tabindex="0">${pages.map((ids,index)=>`<div class="community-page" data-community-page="${index}" id="community-${direction}-page-${index}" role="group" aria-label="第 ${index+1} 页，共 ${pages.length} 页">${ids.map(id=>{const a=articles[id];return `<button class="community-list-item" data-action="article" data-article="${id}"><div class="community-item-copy"><h3>${esc(a.title)}</h3><p>${esc(a.category)}<span>·</span>${esc(GAMES[a.game].name)}</p></div>${image(a.image,'')}</button>`;}).join('')}</div>`).join('')}</div><div class="community-dots" aria-label="社区精选分页">${pages.map((ids,index)=>`<button type="button" data-action="community-page" data-index="${index}" class="${selected===index?'is-selected':''}" aria-label="查看社区精选第 ${index+1} 页" aria-controls="community-${direction}-page-${index}" aria-pressed="${selected===index}"><span></span></button>`).join('')}</div></div>`;
     }
     function daily(){
-      return `<div class="concept-home concept-daily" data-module="daily-brief">${R.continueStrip()}${section('社区精选',communityBlock())}${R.calendar({compact:false})}${R.discounts({compact:false})}${R.giveaways({compact:false})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
+      return `<div class="concept-home concept-daily" data-module="daily-brief">${R.continueStrip()}${P.shortcuts()}${section('社区精选',communityBlock())}${R.calendar({compact:false})}${R.discounts({compact:false})}${R.giveaways({compact:false})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
     }
-    return ({value:ownHome,play:discovery,content:daily}[direction]||discovery)();
+    return ({value:ownHome,play:discovery,content:daily,deals:()=>P.home({retention:R,community:()=>section('社区精选',communityBlock()),localModule})}[direction]||discovery)();
   }
   window.LAB_CONTENT={articles,home};
 })();

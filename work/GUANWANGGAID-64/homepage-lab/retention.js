@@ -9,9 +9,8 @@
     {id:'beginning',key:'promo-beginning',name:'A New Beginning: Final Cut',platform:'gog',original:null,end:'2026-11-02T14:00:00Z',url:'https://www.gog.com/en#giveaway'}
   ];
   const DISCOUNTS = [
-    {id:'raft',key:'promo-raft',name:'Raft',original:77,price:51.59,discount:33,end:'2026-11-05T18:00:00Z',url:'https://store.steampowered.com/app/648800/Raft/'},
-    {id:'re4',key:'promo-re4',name:'生化危机 4',original:198,price:49.5,discount:75,end:'2026-11-03T18:00:00Z',url:'https://store.steampowered.com/app/2050650/Resident_Evil_4/'},
-    {id:'repo',key:'promo-repo',name:'R.E.P.O.',original:35,price:22.75,discount:35,end:'2026-11-09T17:00:00Z',url:'https://store.steampowered.com/app/3241660/REPO/'}
+    {id:'raft',key:'promo-raft',name:'Raft',original:77,price:51.59,discount:33,end:null,url:'https://store.steampowered.com/app/648800/Raft/'},
+    {id:'repo',key:'promo-repo',name:'R.E.P.O.',original:35,price:22.75,discount:35,end:null,url:'https://store.steampowered.com/app/3241660/REPO/'}
   ];
   const RELEASES = [
     {id:'fleming',key:'release-fleming',name:'弗莱明庄园命案',date:'2026-11-03',tags:'冒险 · 独立',url:'https://store.steampowered.com/app/3758950/'},
@@ -48,7 +47,7 @@
     state.retBusiness ||= 'phantom';
     const parsedNow=Date.parse(state.demoNow||'2026-11-02T10:00:00+08:00');
     const now=Number.isFinite(parsedNow)?parsedNow:Date.parse('2026-11-02T10:00:00+08:00');
-    const isActive=item=>Date.parse(item.end)>now;
+    const isActive=item=>item.end===null||Date.parse(item.end)>now;
     const money=value=>'¥'+Number(value).toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1');
     const dateText=date=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(date)).replaceAll('/','.');
     const todayText=()=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit'}).format(new Date(now));
@@ -63,7 +62,7 @@
 
     function discounts({compact=false}={}) {
       const entries=DISCOUNTS.filter(isActive).slice(0,compact?2:3);
-      return `<section class="app-section ret-discounts" data-module="discounts">${heading('Steam 折扣','ret-discounts')}<div class="ret-promo-grid ${compact?'ret-promo-compact':''}">${entries.length?entries.map(item=>`<button type="button" class="ret-promo-card" data-action="ret-discounts" data-offer="${item.id}"><span class="ret-promo-art">${promoArt(item)}</span><b>${esc(item.name)}</b><span class="ret-price"><em>-${item.discount}%</em><strong>${money(item.price)}</strong></span></button>`).join(''):'<p class="ret-empty-inline">暂无进行中的折扣</p>'}</div></section>`;
+      return `<section class="app-section ret-discounts" data-module="discounts">${heading('Steam 折扣','ret-discounts')}<p class="ret-price-snapshot">11.05 国区价格快照</p><div class="ret-promo-grid ${compact?'ret-promo-compact':''}">${entries.length?entries.map(item=>`<button type="button" class="ret-promo-card" data-action="ret-discounts" data-offer="${item.id}"><span class="ret-promo-art">${promoArt(item)}</span><b>${esc(item.name)}</b><span class="ret-price"><em>-${item.discount}%</em><strong>${money(item.price)}</strong></span></button>`).join(''):'<p class="ret-empty-inline">暂无进行中的折扣</p>'}</div></section>`;
     }
 
     function giveaways({compact=false}={}) {
@@ -92,7 +91,7 @@
     }
 
     function discountPage() {
-      return `<div class="ret-offer-page"><div class="ret-page-intro"><span>STEAM SPECIALS</span><h2>值得留意的优惠</h2><p>国区 · 游戏本体</p></div>${DISCOUNTS.map(item=>`<article class="ret-offer-row ${state.retSelectedDiscount===item.id?'is-selected':''}" data-offer-id="${item.id}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-price"><em>-${item.discount}%</em><strong>${money(item.price)}</strong><del>${money(item.original)}</del></div><small>${isActive(item)?dateText(item.end)+' 截止':'折扣已结束'}</small>${isActive(item)?storeLink(item,'查看 Steam 商店'):'<span class="ret-ended">已结束</span>'}</div></article>`).join('')}</div>`;
+      return `<div class="ret-offer-page"><div class="ret-page-intro"><span>STEAM SPECIALS</span><h2>值得留意的优惠</h2><p>国区 · 游戏本体</p></div>${DISCOUNTS.map(item=>`<article class="ret-offer-row ${state.retSelectedDiscount===item.id?'is-selected':''}" data-offer-id="${item.id}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-price"><em>-${item.discount}%</em><strong>${money(item.price)}</strong><del>${money(item.original)}</del></div><small>${isActive(item)?(item.end?dateText(item.end)+' 截止':'11.05 价格快照'):'折扣已结束'}</small>${isActive(item)?storeLink(item,'查看 Steam 商店'):'<span class="ret-ended">已结束</span>'}</div></article>`).join('')}</div>`;
     }
 
     function giveawayPage() {
