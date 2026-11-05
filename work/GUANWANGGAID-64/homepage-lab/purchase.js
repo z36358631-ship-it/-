@@ -109,7 +109,7 @@
         default:return false;
       }
     }
-    return {shortcuts,home,page,handle};
+    return {shortcuts,budget,following,page,handle};
   }
   window.LAB_PURCHASE={create,items:ITEMS,snapshot:SNAPSHOT};
 })();

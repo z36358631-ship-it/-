@@ -16,7 +16,7 @@ if($Stage -eq 'init') {
  Step 'S4' '已截图当前HTML，核对暗色骨架与导航；新概念非实机逐像素复刻' @((Join-Path $PSScriptRoot 'baseline.json'),(Join-Path $PSScriptRoot 'baseline-current.png'))
  & $runner -Action start-step -RunPath $run -StepId 'S5' | Out-Null
 } elseif($Stage -eq 'implementation') {
- & $runner -Action pass -RunPath $run -StepId 'S5' -Message '四方向可操作内容、价格来源与离线HTML已生成' -Evidence @((Join-Path $PSScriptRoot 'build-manifest.json')) -Reviewer 'root' | Out-Null
+ & $runner -Action pass -RunPath $run -StepId 'S5' -Message '三方向可操作内容、商品来源与离线HTML已生成' -Evidence @((Join-Path $PSScriptRoot 'build-manifest.json')) -Reviewer 'root' | Out-Null
 } elseif($Stage -eq 'machine') {
  Step 'S6' '浏览器场景/交互/布局/素材验证通过' @((Join-Path $PSScriptRoot 'verification.json'))
 } elseif($Stage -eq 'review') {

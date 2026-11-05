@@ -1,0 +1,29 @@
+{
+  "source": "demos\\APP租号功能\\盖世游戏APP租号功能demo.template.html",
+  "sha256": "24fe01f2f934567a2b4cbaf8bd897f6e1505d2d401826f25d83be77e5847c91b",
+  "kind": "Historical approved rental Demo; NOT live stock or current price",
+  "snapshot": "2026-11-05 local extraction",
+  "samples": {
+    "phantom": {
+      "firstPrice": 1.9,
+      "firstHours": 2,
+      "permanentAccountPrice": 198
+    },
+    "plans": [
+      {
+        "id": "weekly",
+        "price": 39,
+        "days": 7
+      },
+      {
+        "id": "monthly",
+        "price": 129,
+        "days": 30
+      }
+    ]
+  },
+  "snippets": {
+    "MEMBER_PLANS": "    const MEMBER_PLANS = Object.freeze([\n      { id: 'weekly', name: '周卡', price: 39, note: '7天会员游戏库畅玩' },\n      { id: 'monthly', name: '月卡', price: 129, note: '30天会员游戏库畅玩' },\n      { id: 'quarterly', name: '季卡', price: 299, note: '90天会员游戏库畅玩' },\n    ]);\n",
+    "DISCOVERY_GAME_CONTEXTS": "    const DISCOVERY_GAME_CONTEXTS = Object.freeze([\n      {\n        id: 'shadow-blade-zero', name: '影之刃零', asset: 'home', crop: [584, 1656, 492, 240],\n        saleMode: GAME_SALE_MODES.ENTITLEMENT, defaultSku: 'permanent',\n        platforms: createFirstPhasePlatform({ trialPrice: 1.9, trialOriginalPrice: 9.9, permanentPrice: 198 }),\n        rentalSkus: [\n          { id: 'trial', label: '首次体验', packageName: '首次体验', durationLabel: '2小时', price: 1.9, originalPrice: 9.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard', firstOnly: true },\n        ],\n        purchaseSkus: [\n          { id: 'purchase-standard', price: 198, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },\n        ],\n      },\n      {\n        id: 'spiritfarer', name: 'Spiritfarer', asset: 'landscapeSteamLibrary', crop: [1486, 297, 383, 224],\n        saleMode: GAME_SALE_MODES.ENTITLEMENT, defaultSku: 'permanent',\n        platforms: createFirstPhasePlatform({ trialPrice: 1.99, trialOriginalPrice: 7.9, permanentPrice: 68 }),\n        rentalSkus: [\n          { id: 'trial-standard', label: '首次体验', packageName: '首次体验套餐', durationLabel: '2小时', price: 1.99, originalPrice: 7.9, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard', firstOnly: true },\n        ],\n        purchaseSkus: [\n          { id: 'purchase-standard', price: 68, enabled: true, inStock: true, region: 'CN', platform: 'Steam', editionId: 'standard' },\n        ],\n      },\n    ]);\n\n"
+  }
+}

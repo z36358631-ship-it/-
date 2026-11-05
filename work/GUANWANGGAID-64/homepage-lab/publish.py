@@ -26,7 +26,7 @@ def publish():
         raise RuntimeError('Local validation is not passed')
     if not (HERE / 'review.md').exists() or verification['artifactSha256'] not in (HERE / 'review.md').read_text(encoding='utf-8'):
         raise RuntimeError('Review does not cover the current verified artifact')
-    files = ['public/gamehub-home-lab/index.html', 'docs/superpowers/plans/2026-11-05-gamehub-home-lab.md','docs/superpowers/plans/2026-11-05-gamehub-home-lab-r3.md','docs/superpowers/specs/2026-11-05-gamehub-home-lab-r3-design.md','docs/superpowers/plans/2026-11-05-gamehub-home-lab-r4.md','docs/superpowers/specs/2026-11-05-gamehub-home-lab-r4-design.md']
+    files = ['public/gamehub-home-lab/index.html', 'docs/superpowers/plans/2026-11-05-gamehub-home-lab.md','docs/superpowers/plans/2026-11-05-gamehub-home-lab-r3.md','docs/superpowers/specs/2026-11-05-gamehub-home-lab-r3-design.md','docs/superpowers/plans/2026-11-05-gamehub-home-lab-r4.md','docs/superpowers/specs/2026-11-05-gamehub-home-lab-r4-design.md','docs/superpowers/plans/2026-11-05-gamehub-home-lab-r5.md','docs/superpowers/specs/2026-11-05-gamehub-home-lab-r5-design.md']
     for path in HERE.iterdir():
         if path.is_file() and path.suffix in ['.html', '.css', '.js', '.cjs', '.py', '.json', '.md', '.ps1'] and path.name not in ['publication.json', 'live-verification.json', 'http-verification.json','run.json']:
             files.append(path.relative_to(ROOT).as_posix())
@@ -56,7 +56,7 @@ def publish():
         changed = git('diff-tree', '--no-commit-id', '--name-only', '-r', base, tree).splitlines()
         if not changed or any(file not in files for file in changed):
             raise RuntimeError('Publication scope check failed')
-        commit = git('commit-tree', tree, '-p', base, '-m', 'Add value shopping home concept with shortcuts, budget picks and price following')
+        commit = git('commit-tree', tree, '-p', base, '-m', 'Restore three home goals: paid conversion, device fit play and daily engagement')
         git('push', 'origin', commit + ':refs/heads/master')
         published_blob = subprocess.check_output(['git','show',commit+':public/gamehub-home-lab/index.html'],cwd=ROOT)
         if git('rev-parse', 'HEAD') != before_head or sha(index) != before_index or sha(baseline) != before_baseline:
