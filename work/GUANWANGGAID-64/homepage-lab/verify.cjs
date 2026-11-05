@@ -14,7 +14,7 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  const state=()=>api('getState'),click=async s=>page.locator('.device '+s).first().click();
  const record=(name,details={})=>checks.push({case:name,passed:true,...details});
  const ensure=async label=>{await page.evaluate(async()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))));const g=await page.evaluate(()=>{const d=document.querySelector('.device'),b=document.querySelector('.app-body');return {windowOverflow:document.documentElement.scrollWidth>innerWidth+1,bodyOverflow:b.scrollWidth>b.clientWidth+1,deviceOverflow:d.scrollWidth>d.clientWidth+1,images:[...document.images].every(i=>i.complete&&i.naturalWidth>0),height:b.clientHeight};});assert(!g.windowOverflow&&!g.bodyOverflow&&!g.deviceOverflow&&g.images&&g.height>50,label+JSON.stringify(g));};
- const snap=async name=>{await ensure(name);await page.locator('.device').screenshot({path:path.join(HERE,prefix+'r7-'+name+'.png')});};
+ const snap=async name=>{await ensure(name);await page.locator('.device').screenshot({path:path.join(HERE,prefix+'r8-'+name+'.png')});};
  await api('reset');assert.deepEqual(await page.locator('.home-shortcuts b').allTextContents(),['兼容性查询','喜加一','游戏日历','盖世讨论区']);assert.equal((await state()).direction,'play');assert.equal(await page.locator('#direction-controls button').count(),1);record('selected direction is default and sole visible review direction');
  for(const scenario of ['new','import','steam','weak'])for(const form of ['portrait','landscape','tablet']){
   await api('reset');await api('setScenario',scenario);await api('setForm',form);await ensure(scenario+'/'+form);
@@ -70,8 +70,54 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  await api('reset');await click('.home-checkin');assert.equal((await state()).page,'ret-task-center');await click('[data-task="checkin"]');await click('[data-action="ret-checkin"]');assert((await state()).retSigned);record('task center and checkin');
  for(const form of ['portrait','landscape','tablet']){await api('reset');await api('setForm',form);await click('.home-shortcuts [data-action="ret-calendar"]');assert.equal((await state()).page,'ret-calendar');await click('[data-action="back"]');await click('.home-shortcuts [data-action="gamehub-forum"]');assert.equal((await state()).page,'gamehub-forum');assert.equal(await page.locator('.subheader h2').innerText(),'盖世游戏');assert.equal(await page.locator('[data-community-section="gamehub"]').count(),1);assert.equal(await page.locator((form==='portrait'?'.app-bottom':'.land-nav')+' .is-selected').innerText(),'社区');await click('[data-action="forum-tab"][data-tab="guide"]');await ensure('forum '+form);await snap('forum-'+form);await click('.forum-feed [data-action="article"]');assert.equal((await state()).page,'article');await click('[data-action="back"]');assert.equal((await state()).page,'gamehub-forum');await click('[data-action="back"]');assert.equal((await state()).page,'home');record('four shortcuts and direct GameHub subsection with nested return',{form});}
  await api('reset');assert.equal(await page.locator('.channel-tabs .nav-update').count(),1);await click('.channel-tabs [data-action="compatibility"]');assert.equal(await page.locator('.channel-tabs .nav-update').count(),0);await click('.app-bottom [data-page="community"]');assert.equal(await page.locator('.app-bottom .nav-update').count(),0);record('independent tab update badges clear on visiting');
+
+ for(const os of ['android','ios'])for(const region of ['domestic','overseas']){
+  await api('reset');await page.locator('#os-controls [data-os="'+os+'"]').click();await page.locator('#region-controls [data-region="'+region+'"]').click();
+  assert.equal((await state()).os,os);assert.equal((await state()).region,region);
+  assert.equal(await page.locator('#os-controls [aria-pressed="true"]').getAttribute('data-os'),os);
+  assert.equal(await page.locator('#region-controls [aria-pressed="true"]').getAttribute('data-region'),region);
+  for(const form of ['portrait','landscape','tablet']){
+   await page.locator('#form-controls [data-form="'+form+'"]').click();await ensure(os+'/'+region+'/'+form);
+   const quick=await page.locator('.home-shortcuts b').allTextContents();
+   assert.deepEqual(quick,os==='android'?['兼容性查询','喜加一','游戏日历','盖世讨论区']:['喜加一','游戏日历','盖世讨论区']);
+   assert.equal(await page.locator('[data-module="latest-compatibility"]').count(),os==='android'?1:0);
+   assert.equal(await page.locator('.app-top [aria-label="当前设备适配信息"]').count(),os==='android'?1:0);
+   assert.equal(await page.locator('[data-module="team"]').count(),region==='domestic'?1:0);
+   assert.equal(await page.locator('[data-module="instant"]').count(),1);
+   assert.equal(await page.locator('.channel-tabs [data-channel="cloud-list"],.channel-tabs [data-channel="team-list"]').count(),region==='domestic'?2:0);
+   assert.equal(await page.locator('.channel-tabs [data-action="compatibility"]').count(),1);
+   const hardware=page.locator('.device-hardware');assert(await hardware.evaluate((e,{os,form})=>e.classList.contains('is-'+os)&&e.classList.contains('is-'+form),{os,form}));
+   assert.equal(await hardware.locator('.hardware-camera,.hardware-key').count(),5);
+   assert(await hardware.evaluate(e=>{const r=e.getBoundingClientRect(),d=e.querySelector('.device').getBoundingClientRect(),c=document.querySelector('.control-panel').getBoundingClientRect();return c.right<r.left&&r.left>=0&&r.right<=innerWidth&&r.width>d.width&&r.height>d.height;}));
+   if(form==='landscape')assert(await page.locator('.home-shortcuts button').evaluateAll(es=>es.every(e=>e.querySelector('.home-shortcut-icon').getBoundingClientRect().right<=e.querySelector('b').getBoundingClientRect().left)));
+   await page.screenshot({path:path.join(HERE,prefix+'r8-shell-'+os+'-'+region+'-'+form+'.png'),fullPage:true});
+   record('OS/region menu and physical shell',{os,region,form});
+  }
+  await api('setForm','portrait');await click('.app-bottom [data-page="library"]');
+  assert.equal(await page.locator('.device [data-action="cloud-list"]').count(),region==='domestic'?1:0);
+  await click('.app-bottom [data-page="profile"]');assert.equal(await page.locator('.device [data-action="pricing"]').count(),region==='domestic'?1:0);
+  await api('setScenario','weak');assert.equal((await state()).route,region==='domestic'?'cloud':'local');
+  await click('.channel-tabs [data-channel="local-list"]');await click('.game-card');
+  assert.equal((await state()).page,'game');
+  assert.equal(await page.locator('.device [data-action="switch-route"][data-route="cloud"]').count(),region==='domestic'?2:0);
+  assert.equal(await page.locator('.device [data-action="player"]').count(),0);
+  if(region==='overseas')assert((await page.locator('.condition-card').innerText()).includes('待确认'));
+
+  await api('setScenario','new');await click('.app-bottom [data-page="library"]');
+  assert.equal(await page.locator('.device [data-action="cloud-list"]').count(),region==='domestic'?1:0);
+  await click('[data-action="help"]');assert.equal((await state()).page,'help');
+  assert.equal(await page.locator('.device [data-action="cloud-info"]').count(),region==='domestic'?1:0);
+  record('market service restrictions across library/profile/weak device',{os,region});
+ }
+ await api('reset');await click('.channel-tabs [data-channel="cloud-list"]');await page.locator('#region-controls [data-region="overseas"]').click();
+ assert.equal((await state()).page,'home');assert.equal((await state()).route,'local');assert.equal((await state()).historyDepth,0);
+ await page.keyboard.press('Escape');assert.equal((await state()).page,'home');
+ await page.locator('#region-controls [data-region="domestic"]').click();assert.equal((await state()).os,'android');assert.equal(await page.locator('.channel-tabs [data-channel="cloud-list"]').count(),1);
+ await click('.section-heading [data-action="latest-compatibility"]');await page.locator('#os-controls [data-os="ios"]').click();assert.equal((await state()).page,'home');assert.equal((await state()).historyDepth,0);
+ await api('setScenario',{match:'unknown'});assert.equal(await page.locator('.device [data-action="compatibility"]').filter({hasText:'兼容性查询'}).count(),0);
+ record('platform change clears unsupported route and stale back stack; iOS query absent in unknown-device fallback');
  for(const width of [375,768])for(const form of ['portrait','landscape','tablet']){await page.setViewportSize({width,height:1000});await api('reset');await api('setForm',form);await ensure(width+'/'+form);record('narrow viewport no clipping',{width,form});}
  assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);record('no runtime errors or external runtime resources');
- const result={version:'r7.3',status:'passed',artifactSha256:hash,target,checks:checks.length,results:checks,errors,externalRequests:requests};
+ const result={version:'r8',status:'passed',artifactSha256:hash,target,checks:checks.length,results:checks,errors,externalRequests:requests};
  fs.writeFileSync(path.join(HERE,prefix+'verification.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:'passed',checks:checks.length,sha256:hash,target}));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});

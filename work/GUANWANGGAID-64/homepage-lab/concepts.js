@@ -37,6 +37,7 @@
         const split=Math.ceil(ids.length/2);
         return `<article class="local-collection" data-collection="${esc(item.id)}"><button type="button" class="local-collection-card" data-content-source="operations-device-match" data-action="compatibility" aria-label="查看${esc(item.title)}"><div class="local-collection-covers">${[ids.slice(0,split),ids.slice(split)].filter(row=>row.length).map(row=>`<span class="local-collection-icon-row">${row.map(id=>`<span class="local-collection-game" data-collection-game="${id}">${image('cover-'+id,GAMES[id].name)}${compat(id)}</span>`).join('')}</span>`).join('')}</div><span class="local-collection-title"><small>${esc(item.eyebrow||'游戏合集')}</small><b>${esc(item.caption||item.title)}</b></span></button></article>`;
       }).filter(Boolean);
+      if(!cards.length&&!ctx.features.compatQuery)return '';
       if(!cards.length)return section('本机可玩',`<button type="button" class="concept-path-link" data-action="compatibility"><span>${state.match==='unknown'?'尚未识别当前设备':'暂无当前设备的兼容游戏'}</span><b>兼容性查询 ›</b></button>`,'compatibility');
       return `<section class="app-section" data-module="local-collections" aria-label="本机可玩"><div class="local-collection-list">${cards.join('')}</div></section>`;
     }
@@ -49,7 +50,7 @@
         calendar:'<rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M7.5 3v4m9-4v4M3.5 10h17M8 14h2m4 0h2M8 17h2"/>',
         forum:'<path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-9l-6 3V6a2 2 0 0 1 1-2Z"/><path d="M8 9h9M8 13h6"/>'
       };
-      const items=(operations.shortcuts||[]).filter(item=>item&&icons[item.icon]&&['compatibility','ret-giveaways','ret-calendar','gamehub-forum'].includes(item.action));
+      const items=(operations.shortcuts||[]).filter(item=>item&&(item.action!=='compatibility'||ctx.features.compatQuery)).filter(item=>item&&icons[item.icon]&&['compatibility','ret-giveaways','ret-calendar','gamehub-forum'].includes(item.action));
       if(!items.length)return '';
       return `<nav class="home-shortcuts" data-module="shortcuts" aria-label="首页功能入口">${items.map(item=>`<button type="button" data-action="${item.action}" data-shortcut="${esc(item.id)}"><span class="home-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${icons[item.icon]}</svg></span><b>${esc(item.name)}</b></button>`).join('')}</nav>`;
     }
@@ -74,6 +75,7 @@
     }
 
     function adaptationRecords(){
+      if(!ctx.features.latestCompatibility)return '';
       const ids=(operations.latestGames||[]).filter(id=>GAMES[id]&&MEDIA['cover-'+id]);
       if(!ids.length)return '';
       return `<section class="app-section" data-module="latest-compatibility">${ctx.heading('盖世最新兼容','latest-compatibility')}<div class="latest-compatibility-rail">${ids.map(id=>`<button type="button" data-action="game" data-game="${id}" data-route="local">${image('cover-'+id,GAMES[id].name)}<b>${esc(GAMES[id].name)}</b></button>`).join('')}</div></section>`;

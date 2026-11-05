@@ -75,7 +75,7 @@
     }
 
     function business({kind='all'}={}) {
-      return ['instant','team'].filter(type=>kind==='all'||kind===type).map(type=>`<section class="app-section ret-business" data-module="${type}">${heading(type==='instant'?'秒玩上新':'组队云玩')}<div class="ret-business-grid">${BUSINESS.filter(item=>item.kind===type).map(item=>`<article class="ret-business-card"><button type="button" class="ret-business-art" data-action="ret-business" data-business="${item.id}">${promoArt(item)}</button><h3>${esc(item.name)}</h3><p>${esc(item.description)}</p><div class="ret-business-actions">${type==='instant'?action('秒玩','ret-business',`data-business="${item.id}"`,'secondary'):action('快速加入','ret-business',`data-business="${item.id}" data-intent="join"`,'secondary')+action('创建房间','ret-business',`data-business="${item.id}" data-intent="create"`,'secondary')}</div></article>`).join('')}</div></section>`).join('');
+      return ['instant','team'].filter(type=>type!=='team'||ctx.features.cloud).filter(type=>kind==='all'||kind===type).map(type=>`<section class="app-section ret-business" data-module="${type}">${heading(type==='instant'?'秒玩上新':'组队云玩')}<div class="ret-business-grid">${BUSINESS.filter(item=>item.kind===type).map(item=>`<article class="ret-business-card"><button type="button" class="ret-business-art" data-action="ret-business" data-business="${item.id}">${promoArt(item)}</button><h3>${esc(item.name)}</h3><p>${esc(item.description)}</p><div class="ret-business-actions">${type==='instant'?action('秒玩','ret-business',`data-business="${item.id}"`,'secondary'):action('快速加入','ret-business',`data-business="${item.id}" data-intent="join"`,'secondary')+action('创建房间','ret-business',`data-business="${item.id}" data-intent="create"`,'secondary')}</div></article>`).join('')}</div></section>`).join('');
     }
 
     function continueStrip() {
@@ -142,7 +142,7 @@
         case 'ret-task':{const task=TASKS.find(item=>item.id===data.task)||TASKS[0];state.retTask=task.id;if(task.id==='checkin'||task.id==='ad')ctx.go('ret-task');else ctx.go(task.page);return true;}
         case 'ret-checkin':state.retSigned=true;ctx.render(ctx.getScroll());return true;
         case 'ret-widget':ctx.go('ret-widget');return true;
-        case 'ret-business':if(BUSINESS.some(item=>item.id===data.business))state.retBusiness=data.business;state.retBusinessIntent=data.intent||'';ctx.go('ret-business');return true;
+        case 'ret-business':if(!ctx.features.cloud&&BUSINESS.some(item=>item.id===data.business&&item.kind==='team'))return true;if(BUSINESS.some(item=>item.id===data.business))state.retBusiness=data.business;state.retBusinessIntent=data.intent||'';ctx.go('ret-business');return true;
         case 'ret-noop':return true;
         default:return false;
       }

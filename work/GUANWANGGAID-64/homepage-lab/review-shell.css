@@ -1,0 +1,86 @@
+/* Review controls and physical device presentation; application content stays unchanged. */
+body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),radial-gradient(ellipse at 14% 96%,#e8e2f34d,transparent 40%),#eef1f4;color:#35404d}
+.review-header{display:none}
+.review-layout{display:grid;grid-template-columns:272px minmax(0,1fr);gap:36px;max-width:1600px;min-height:100vh;padding:24px;margin:0 auto;align-items:start}
+.control-panel{position:sticky;top:24px;display:block;padding:24px 20px 22px;border:1px solid #ffffffd9;border-radius:26px;background:#fbfcfdeb;box-shadow:0 12px 38px #33445c0a,0 1px 2px #ffffff;max-height:calc(100vh - 48px);overflow:auto;scrollbar-width:thin;scrollbar-color:#d6dce3 transparent}
+.control-intro{display:block;margin:0 0 26px}
+.review-app-brand{display:flex;align-items:center;gap:12px}
+#review-app-logo{display:none;width:42px;height:42px;object-fit:contain;border-radius:12px;box-shadow:0 3px 9px #26364b12}
+#review-app-logo[src]{display:block}
+.control-intro h2{font-size:22px;line-height:1.3;letter-spacing:-.5px;margin:0;color:#35404d}
+.review-app-brand p{font-size:11px;color:#97a1ae;margin-top:5px}
+.control-section{margin:0 0 20px}
+.control-section h3{font-size:11px;line-height:1.5;font-weight:600;letter-spacing:0;color:#96a2b2;margin-bottom:8px}
+.segmented{display:flex;gap:3px;background:#e9eef4;padding:4px;border-radius:13px;margin:0}
+.segmented button{border:0;background:transparent;color:#738196;font-size:12px;font-weight:600;min-height:35px;border-radius:10px;padding:7px 6px;box-shadow:none}
+.segmented button.is-selected{border:0;background:#fff;color:#344255;box-shadow:0 2px 5px #243c5a12}
+.small-grid{gap:7px}
+.small-grid button{border:1px solid #d9e1e9;background:#fff;border-radius:10px;font-size:11px;font-weight:550;color:#728094;min-height:36px;line-height:1.5;padding:7px 5px}
+.small-grid button.is-selected{border-color:#31b9df;background:#2bb7e1;color:#fff;box-shadow:0 3px 8px #21a8d024}
+.control-device .small-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.control-device .small-grid button{font-size:10px;padding:8px 3px;min-height:39px}
+.direction-controls{display:grid;grid-template-columns:1fr;gap:6px}
+.direction-control{border:1px solid #dce3eb;border-radius:11px;min-height:50px;padding:9px 10px;gap:10px;background:#fff;align-items:center}
+.direction-control strong{font-size:12px;line-height:1.6;color:#49586b}
+.direction-control small{font-size:10px;line-height:1.6;color:#97a0ae}
+.direction-control.is-selected{border-color:#b7dbe5;background:#eaf6fa}
+.direction-control.is-selected>span{color:#2396b8}
+.direction-explanation,.control-conditions{border:0;border-top:1px solid #e8ecf1;padding:13px 0;margin:0 0 7px;color:#738196;font-size:11px}
+.direction-explanation summary,.control-conditions summary,.review-boundary summary{cursor:pointer;font-weight:550;color:#8390a1;font-size:11px;line-height:1.7}
+.direction-explanation p{color:#8691a0;font-size:10px}
+.control-conditions .control-section{margin:13px 0 2px}
+.field-row{font-size:11px;color:#8290a0;margin:9px 0}
+.field-row select{width:132px;min-height:31px;font-size:10px;border:1px solid #dce3eb;border-radius:7px;color:#55667b;background:#fff}
+.control-note{font-size:10px;line-height:1.8;color:#9aa4b2}
+.review-boundary{border-top:1px solid #e8ecf1;padding-top:13px;margin-top:2px;display:block}
+.review-boundary p{font-size:10px;line-height:1.9;margin-top:10px;color:#9aa4b2}
+.reset-button{font-size:11px;border-bottom:0;padding:7px 0;color:#8d99a9;margin-top:13px}
+.preview-column{padding:0;min-width:0}
+.preview-heading,.direction-description{display:none}
+.device-stage{min-height:calc(100vh - 90px);border:0;background:none;border-radius:0;padding:0 14px 20px;align-items:flex-start;overflow:visible}
+#device-mount{width:100%;min-width:0;display:flex;justify-content:center;align-items:flex-start;padding-top:2px}
+.preview-footer{max-width:930px;margin:0 auto;padding:6px 10px;color:#9da7b2;font-size:10px;gap:20px}
+.preview-footer #runtime-caption{display:none}
+.device-hardware{--hardware-radius:51px;--screen-radius:40px;position:relative;flex:none;isolation:isolate;display:block;width:410px;max-width:100%;padding:10px;border:2px solid #b6bbc1;border-radius:var(--hardware-radius);background:linear-gradient(108deg,#dce1e5 0%,#727a83 1.2%,#fafcff 2.2%,#aeb5bc 3.2%,#d2d7dd 97%,#fff 98.2%,#747d87 99.2%,#b8c0c6);box-shadow:0 0 0 1px #ffffffed,inset 0 0 0 1px #ffffffb3,0 3px 3px #26374c2e,0 24px 38px -18px #26374c60,0 45px 70px -35px #26374c3b}
+.device-hardware::before{content:"";pointer-events:none;position:absolute;inset:4px;border-radius:calc(var(--hardware-radius) - 5px);border:1px solid #ffffff73;box-shadow:inset 0 0 0 5px #060708;z-index:-1}
+.device-hardware::after{content:"";position:absolute;left:13%;right:13%;bottom:-12px;height:18px;border-radius:50%;background:#26364d1c;filter:blur(12px);z-index:-2;pointer-events:none}
+.device-hardware .device{width:100%;max-width:none;height:822px;border:0;border-radius:var(--screen-radius);box-shadow:0 0 0 6px #060708;background:var(--app-bg);--app-pad:16px}
+.device-hardware .device::after{border-radius:var(--screen-radius);border:1px solid #ffffff14}
+.device-hardware .device::before{display:none}
+.hardware-key{position:absolute;display:block;background:linear-gradient(90deg,#7c858f,#d2d7dc 42%,#8a939c);border-radius:2px;box-shadow:0 0 0 .5px #ffffff59;pointer-events:none}
+.key-mute{left:-4px;top:105px;width:3px;height:25px}
+.key-up{left:-4px;top:153px;width:3px;height:49px}
+.key-down{left:-4px;top:217px;width:3px;height:49px}
+.key-power{right:-4px;top:171px;width:3px;height:75px}
+.hardware-camera{position:absolute;display:block;pointer-events:none;z-index:15}
+.device-hardware.is-ios:not(.is-tablet):not(.is-landscape) .hardware-camera{width:103px;height:27px;left:50%;top:20px;transform:translateX(-50%);border-radius:22px;background:#030405;box-shadow:inset 0 0 0 1px #000}
+.device-hardware.is-ios:not(.is-tablet):not(.is-landscape) .hardware-camera::after{content:"";position:absolute;right:11px;top:9px;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#20324e,#0d1524 45%,#060809 65%);border:1px solid #141820}
+.device-hardware.is-ios:not(.is-tablet):not(.is-landscape) .device-status{height:47px;padding:11px 24px 6px}
+.device-hardware.is-android{--hardware-radius:43px;--screen-radius:32px;padding:9px}
+.device-hardware.is-android .key-mute{display:none}
+.device-hardware.is-android:not(.is-tablet):not(.is-landscape) .hardware-camera{width:10px;height:10px;border-radius:50%;left:50%;top:21px;transform:translateX(-50%);background:radial-gradient(circle,#17233a 0 22%,#06070a 42%);box-shadow:0 0 0 2px #0c0d10}
+.device-hardware.is-android:not(.is-tablet):not(.is-landscape) .device-status{height:35px;padding-top:8px}
+.device-hardware.is-landscape{--hardware-radius:42px;--screen-radius:31px;width:924px;max-width:100%;padding:10px}
+.device-hardware.is-landscape .device{height:445px;--app-pad:25px}
+.device-hardware.is-landscape .key-mute{left:115px;top:-4px;width:25px;height:3px}
+.device-hardware.is-landscape .key-up{left:160px;top:-4px;width:49px;height:3px}
+.device-hardware.is-landscape .key-down{left:222px;top:-4px;width:49px;height:3px}
+.device-hardware.is-landscape .key-power{right:180px;top:auto;bottom:-4px;width:75px;height:3px}
+.device-hardware.is-ios.is-landscape .hardware-camera{height:103px;width:27px;left:20px;top:50%;transform:translateY(-50%);border-radius:22px;background:#030405}
+.device-hardware.is-ios.is-landscape .hardware-camera::after{content:"";position:absolute;left:9px;bottom:12px;width:9px;height:9px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#20324e,#060809 70%)}
+.device-hardware.is-ios.is-landscape .device{--app-pad:43px}
+.device-hardware.is-ios.is-landscape .land-nav{padding-left:45px;padding-right:27px}
+.device-hardware.is-android.is-landscape .hardware-camera{width:10px;height:10px;border-radius:50%;left:22px;top:50%;transform:translateY(-50%);background:#030407;box-shadow:inset 0 0 0 3px #101723}
+.device-hardware.is-android.is-landscape .device{--app-pad:34px}
+.device-hardware.is-android.is-landscape .land-nav{padding-left:35px}
+.device-hardware.is-tablet{--hardware-radius:37px;--screen-radius:22px;width:748px;max-width:100%;padding:14px;border-color:#aeb5bd;background:linear-gradient(100deg,#e6e9ed,#aeb5be 1%,#f0f2f4 2%,#c8ced5 98%,#808a96 99%,#d7dce2)}
+.device-hardware.is-tablet::before{inset:3px;box-shadow:inset 0 0 0 12px #07080a}
+.device-hardware.is-tablet .device{height:970px;--app-pad:25px}
+.device-hardware.is-tablet .hardware-camera{width:6px;height:6px;border-radius:50%;left:50%;top:5px;transform:translateX(-50%);background:#101520;box-shadow:inset 0 0 0 2px #080a0d}
+.device-hardware.is-tablet .key-mute,.device-hardware.is-tablet .key-down{display:none}
+.device-hardware.is-tablet .key-up{left:auto;right:95px;top:-4px;width:49px;height:3px}
+.device-hardware.is-tablet .key-power{right:32px;top:-4px;width:40px;height:3px}
+@media(min-width:1600px){.review-layout{gap:56px;padding-top:30px}.control-panel{top:30px;max-height:calc(100vh - 60px)}.device-stage{padding-top:0;min-height:calc(100vh - 100px)}}
+@media(max-width:1200px){.review-layout{grid-template-columns:244px minmax(0,1fr);gap:22px;padding:20px}.control-panel{padding:22px 17px;top:20px;max-height:calc(100vh - 40px)}.device-stage{padding:0 5px 20px}.device-hardware.is-landscape .device{height:445px}.device-hardware.is-landscape .land-nav nav{gap:20px}.device-hardware.is-landscape .land-status{display:none}}
+@media(max-width:900px){.review-layout{grid-template-columns:220px minmax(0,1fr);gap:16px;padding:16px}.control-panel{padding:20px 14px;top:16px;max-height:calc(100vh - 32px)}.device-stage{padding-left:1px;padding-right:1px}.control-device .small-grid{grid-template-columns:1fr}.control-device .small-grid button{min-height:32px;padding:5px}.device-hardware.is-landscape .device{--app-pad:26px}.device-hardware.is-landscape .land-nav nav{gap:14px}.device-hardware.is-landscape .land-nav button{font-size:10px}.device-hardware.is-ios.is-landscape .land-nav{padding-left:42px;padding-right:12px}}
+@media(max-width:680px){.review-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;padding:14px}.control-panel{position:relative;top:auto;max-height:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;padding:20px;border-radius:23px}.control-intro{grid-column:1/-1;margin-bottom:1px}.control-section,.direction-explanation,.control-conditions{margin:0;min-width:0}.control-device{grid-column:1/-1}.control-device .small-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.control-section:has(#direction-controls){grid-column:1/-1}.direction-controls{grid-template-columns:1fr}.direction-explanation,.control-conditions,.review-boundary{grid-column:1/-1}.control-conditions .control-section{margin:12px 0 0}.field-row{flex-wrap:nowrap}.field-row select{width:60%}.review-boundary p{margin-top:10px}.preview-column{padding:0}.device-stage{min-height:0;padding:0 6px 24px;overflow:visible}.preview-footer{padding:0 7px;font-size:9px}.device-hardware .device{height:822px}.device-hardware.is-landscape .device{height:445px}.device-hardware.is-tablet .device{height:970px}.reset-button{margin:0;justify-self:start}.device-hardware.is-landscape .land-nav nav{gap:11px}.device-hardware.is-landscape .land-nav{gap:9px}.device-hardware.is-landscape .land-tools{display:none}}

@@ -27,3 +27,6 @@
 @media(max-width:370px){.home-feature-row{gap:7px}.home-shortcuts b{font-size:9px}.local-collection-covers{padding-top:24px;gap:11px}.local-collection-title{padding:17px}.local-collection-title b{font-size:18px}.latest-compatibility-rail{gap:8px}.latest-compatibility-rail b{font-size:10px}}
 
 .home-shortcuts>button:nth-child(4) .home-shortcut-icon{background:#293145;color:#b3c5f0}
+/* Landscape quick links: icon on the left, label on the right. */
+.home-feature-row .home-shortcuts{grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(4,minmax(0,1fr));padding:3px 7px;gap:0}.home-feature-row .home-shortcuts>button{flex-direction:row;justify-content:flex-start;gap:8px;padding:2px 3px}.home-feature-row .home-shortcut-icon{width:20px;height:20px;border-radius:6px}.home-feature-row .home-shortcut-icon svg{width:15px;height:15px}.home-feature-row .home-shortcuts b{font-size:10px;text-align:left;line-height:1.4}
+@container(max-width:600px){.home-feature-row .home-shortcuts{padding:3px 2px}.home-feature-row .home-shortcuts>button{gap:3px;padding:1px;flex-direction:row;justify-content:flex-start}.home-feature-row .home-shortcut-icon{width:15px;height:15px;border-radius:4px}.home-feature-row .home-shortcut-icon svg{width:12px;height:12px}.home-feature-row .home-shortcuts b{font-size:8px;text-align:left}}
