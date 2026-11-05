@@ -2,11 +2,10 @@
   'use strict';
 
   // These records retain the original review snapshot; they are not a live feed.
-  const PLATFORMS = {epic:'Epic',steam:'Steam',gog:'GOG'};
+  const PLATFORMS = {epic:'Epic',steam:'Steam'};
   const GIVEAWAYS = [
     {id:'sorry',key:'promo-sorry',name:'对不起，我们关门了',platform:'epic',original:78,end:'2026-11-05T16:00:00Z',url:'https://store.epicgames.com/zh-CN/p/sorry-were-closed-724c86'},
     {id:'asleep',key:'promo-asleep',name:'Asleep: Act 1',platform:'steam',original:42,end:'2026-11-02T18:00:00Z',url:'https://store.steampowered.com/app/1583850/Asleep_Act_1/'},
-    {id:'beginning',key:'promo-beginning',name:'A New Beginning: Final Cut',platform:'gog',original:null,end:'2026-11-02T14:00:00Z',url:'https://www.gog.com/en#giveaway'}
   ];
   const DISCOUNTS = [
     {id:'raft',key:'promo-raft',name:'Raft',original:77,price:51.59,discount:33,end:null,url:'https://store.steampowered.com/app/648800/Raft/'},
@@ -71,7 +70,8 @@
     }
 
     function tasks() {
-      return `<section class="app-section ret-tasks" data-module="tasks">${heading('任务活动','ret-task-center')}<div class="ret-task-buttons">${TASKS.slice(0,3).map(task=>action(task.name,'ret-task',`data-task="${task.id}"`,'ret-task-button')).join('')}</div></section>`;
+      if(!(window.LAB_CONTENT.operations.taskIds||[]).length)return '';
+      return `<section class="app-section ret-tasks" data-module="tasks">${heading('任务活动','ret-task-center')}<div class="ret-task-buttons">${TASKS.filter(task=>(window.LAB_CONTENT.operations.taskIds||[]).includes(task.id)).map(task=>action(task.name,'ret-task',`data-task="${task.id}"`,'ret-task-button')).join('')}</div></section>`;
     }
 
     function business({kind='all'}={}) {
@@ -99,7 +99,7 @@
       const entries=GIVEAWAYS.filter(item=>item.platform===platform),active=entries.filter(isActive),ended=entries.filter(item=>!isActive(item));
       const subscribed=!!state.retSubscriptions[platform];
       const offer=item=>`<article class="ret-offer-row ret-giveaway-row ${isActive(item)?'':'is-ended'}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-free-line"><strong>${isActive(item)?'免费领取':'领取已结束'}</strong>${item.original!==null?`<del>${money(item.original)}</del>`:''}</div><small>${dateText(item.end)} 截止</small>${isActive(item)?storeLink(item,'前往领取'):'<span class="ret-ended">已结束</span>'}</div></article>`;
-      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam · GOG</p></div><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}<div class="ret-subscription-row"><span><b>${PLATFORMS[platform]} 领免提醒</b><small>站内信 · Push</small></span>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`data-platform="${platform}" aria-pressed="${subscribed}"`,subscribed?'secondary is-on':'primary')}</div>${action('桌面提醒组件 ›','ret-widget','','ret-widget-entry')}</div>`;
+      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam</p></div><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}<div class="ret-subscription-row"><span><b>${PLATFORMS[platform]} 领免提醒</b><small>站内信 · Push</small></span>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`data-platform="${platform}" aria-pressed="${subscribed}"`,subscribed?'secondary is-on':'primary')}</div>${action('桌面提醒组件 ›','ret-widget','','ret-widget-entry')}</div>`;
     }
 
     function taskCenterPage() {
@@ -150,6 +150,6 @@
     return {calendar,discounts,giveaways,tasks,business,continueStrip,page,handle};
   }
 
-  window.LAB_RETENTION={create};
+  window.LAB_RETENTION={create,releases:RELEASES};
 })();
 

@@ -1,0 +1,44 @@
+/* Shared release / compatibility date lists. The surrounding app owns navigation. */
+.timeline-page{min-height:100%;display:flex;flex-direction:column;position:relative;padding-top:3px}
+.timeline-toolbar{position:sticky;top:-2px;z-index:2;background:var(--app-bg);padding-top:7px;box-shadow:0 1px #ffffff09}
+.timeline-month-title{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:13px;min-height:30px}
+.timeline-month-title time{font-size:12px;color:#b0bbc8;font-weight:450}
+.timeline-today{border:0;background:#25262c;border-radius:6px;color:#c8ccd3;font-size:11px;padding:7px 9px;min-height:29px}
+.timeline-months{display:flex;align-items:center;justify-content:space-between;gap:3px;padding-bottom:7px}
+.timeline-months>button{flex:1;min-width:0;min-height:37px;padding:5px 2px;border:0;background:none;color:#929cab;font-size:11px;border-radius:7px;white-space:nowrap}
+.timeline-months>button.is-selected{background:#2b2c33;color:#f3f4f7;font-weight:700}
+.timeline-months>.timeline-calendar-icon{border-left:1px solid #ffffff09;border-radius:0;flex:0 0 33px;margin-left:3px;padding-left:9px;color:#a4acb7}
+.timeline-calendar-icon svg{display:block;width:19px;height:19px;margin:auto}
+.timeline-content{flex:1;padding-bottom:12px}
+.timeline-day{padding-top:18px;margin-bottom:8px;scroll-margin-top:105px}
+.timeline-day>h2{font-size:12px;display:flex;align-items:center;gap:8px;color:#d4dce6;line-height:1.7;font-weight:650;margin-bottom:8px}
+.timeline-day>h2>span{font-size:9px;padding:1px 4px;color:#cadbbf;background:#2d342b;border-radius:3px;font-weight:400}
+.timeline-day-games{display:grid}
+.timeline-game{display:flex;align-items:center;gap:10px;min-width:0;padding:14px 0;border-bottom:1px solid #ffffff07;min-height:89px}
+.timeline-game>img{width:104px;aspect-ratio:16/9;flex:none;object-fit:cover;border-radius:6px;background:#25262c}
+.timeline-game-copy{min-width:0;flex:1;align-self:flex-start;padding-top:4px}
+.timeline-game h3{font-size:12px;line-height:1.5;font-weight:650;color:#edf1f6;margin-bottom:7px;overflow-wrap:anywhere}
+.timeline-tags{display:flex;flex-wrap:wrap;gap:4px}
+.timeline-tags>span{font-size:9px;line-height:1.5;color:#93a1b3;background:#22262d;padding:0 4px;border-radius:2px}
+.timeline-game-status{font-size:9px;white-space:nowrap;flex:none;align-self:flex-end;color:#98a4b3;padding-bottom:1px}
+.timeline-game-status.is-upcoming{color:#c8d8b8}
+.timeline-game.is-selected{border-bottom-color:#6bc1ca66}
+.timeline-empty{padding:65px 12px;text-align:center;min-height:210px}
+.timeline-empty h3{font-size:12px;font-weight:450;color:#7f8998}
+.timeline-subscription{position:sticky;bottom:-24px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px var(--app-pad) 15px;margin:10px calc(-1 * var(--app-pad)) -24px;background:#1b1d23;border-top:1px solid #ffffff06;flex:none}
+.timeline-subscription>div{min-width:0;flex:1}
+.timeline-subscription b{display:block;font-size:11px;line-height:1.6;color:#dce3ed;font-weight:600}
+.timeline-subscription small{display:block;font-size:9px;line-height:1.6;color:#8d97a7;margin-top:2px}
+.timeline-subscription>div>span{display:block;font-size:8px;line-height:1.5;color:#6f7a8b;margin-top:2px}
+.timeline-subscribe{border:0;background:#cbd9ba;color:#111610;border-radius:22px;min-height:35px;padding:8px 14px;font-size:10px;font-weight:600;flex:none;white-space:nowrap}
+.timeline-subscribe.is-on{background:#30362e;color:#bdc7b7}
+.device.is-landscape .timeline-month-title,.device.is-tablet .timeline-month-title{margin-bottom:8px}
+.device.is-landscape .timeline-months,.device.is-tablet .timeline-months{justify-content:flex-start;gap:10px}
+.device.is-landscape .timeline-months>button,.device.is-tablet .timeline-months>button{flex:0 1 58px}
+.device.is-landscape .timeline-months>.timeline-calendar-icon,.device.is-tablet .timeline-months>.timeline-calendar-icon{margin-left:auto}
+.device.is-landscape .timeline-game>img,.device.is-tablet .timeline-game>img{width:124px}
+.device.is-landscape .timeline-game h3,.device.is-tablet .timeline-game h3{font-size:13px}
+.device.is-landscape .timeline-game,.device.is-tablet .timeline-game{gap:15px}
+.device.is-landscape .timeline-game-status,.device.is-tablet .timeline-game-status{align-self:center;font-size:10px}
+.device.is-landscape .timeline-subscription,.device.is-tablet .timeline-subscription{padding-top:10px;padding-bottom:12px}
+@media(max-width:370px){.timeline-game>img{width:88px}.timeline-game{gap:8px}.timeline-game h3{font-size:11px}.timeline-game-status{font-size:8px}.timeline-subscribe{padding:8px 10px;font-size:9px}.timeline-months>button{font-size:10px}}

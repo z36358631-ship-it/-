@@ -16,11 +16,11 @@ if($Stage -eq 'init') {
  Step 'S4' '已截图当前HTML，核对暗色骨架与导航；新概念非实机逐像素复刻' @((Join-Path $PSScriptRoot 'baseline.json'),(Join-Path $PSScriptRoot 'baseline-current.png'))
  & $runner -Action start-step -RunPath $run -StepId 'S5' | Out-Null
 } elseif($Stage -eq 'implementation') {
- & $runner -Action pass -RunPath $run -StepId 'S5' -Message '三方向可操作内容、商品来源与离线HTML已生成' -Evidence @((Join-Path $PSScriptRoot 'build-manifest.json')) -Reviewer 'root' | Out-Null
+ & $runner -Action pass -RunPath $run -StepId 'S5' -Message '方案2首页、兼容频道和日期页已生成' -Evidence @((Join-Path $PSScriptRoot 'build-manifest.json')) -Reviewer 'root' | Out-Null
 } elseif($Stage -eq 'machine') {
  Step 'S6' '浏览器场景/交互/布局/素材验证通过' @((Join-Path $PSScriptRoot 'verification.json'))
 } elseif($Stage -eq 'review') {
- Step 'S7' '主管审图与独立模拟用户场景走查完成，具体问题已处理' @((Join-Path $PSScriptRoot 'review.md'))
+ Step 'S7' '主管审图与独立用户/开发/商业三视角复核完成，导航问题已处理' @((Join-Path $PSScriptRoot 'review.md'))
 } else {
  Step 'S8' '各层级验证与发布结果独立记录，真实用户反馈未执行' @((Join-Path $PSScriptRoot 'publication.json'),(Join-Path $PSScriptRoot 'live-verification.json'))
 }
