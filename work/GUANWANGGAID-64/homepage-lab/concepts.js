@@ -31,7 +31,7 @@
       const items=operations.banners.filter(item=>item&&MEDIA[item.image]&&['ret-calendar','ret-giveaways','purchase-rental'].includes(item.action));
       if(!items.length)return '';
       const selected=Math.max(0,Math.min(items.length-1,Number(state.operationsIndex)||0)),item=items[selected];
-      return `<section class="operations-slot" data-ops-slot="home-banner" aria-label="首页运营轮播"><button type="button" class="concept-operations-banner" data-content-source="operations" data-banner-id="${esc(item.id)}" data-action="${item.action}" aria-label="${esc(item.title)}">${image(item.image,'')}<span class="concept-operations-copy"><strong>${esc(item.title)}</strong><span>${esc(item.subtitle)}</span></span></button><div class="operations-dots" aria-label="运营轮播分页">${items.map((item,index)=>`<button type="button" data-action="operations-page" data-index="${index}" aria-label="${esc(item.title)}" aria-pressed="${index===selected}" class="${index===selected?'is-selected':''}"><span></span></button>`).join('')}</div></section>`;
+      return `<section class="operations-slot" data-ops-slot="home-banner" aria-label="首页运营轮播"><span class="operations-label">运营 Banner</span><button type="button" class="concept-operations-banner" data-content-source="operations" data-banner-id="${esc(item.id)}" data-action="${item.action}" aria-label="${esc(item.title)}">${image(item.image,'')}<span class="concept-operations-copy"><strong>${esc(item.title)}</strong><span>${esc(item.subtitle)}</span></span></button><div class="operations-dots" aria-label="运营轮播分页">${items.map((item,index)=>`<button type="button" data-action="operations-page" data-index="${index}" aria-label="${esc(item.title)}" aria-pressed="${index===selected}" class="${index===selected?'is-selected':''}"><span></span></button>`).join('')}</div></section>`;
     }
 
     function conversion(){
@@ -72,6 +72,7 @@
   }
   window.LAB_CONTENT={articles,home,operations};
 })();
+
 
 
 
