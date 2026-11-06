@@ -26,8 +26,8 @@
 
   function create(ctx) {
     const {state,esc,image,action} = ctx;
-    const parsed = Date.parse(state.demoNow || '2026-11-02T10:00:00+08:00');
-    const now = Number.isFinite(parsed) ? parsed : Date.parse('2026-11-02T10:00:00+08:00');
+    const parsed = Date.parse(state.timelineNow || state.signInNow || new Date().toISOString());
+    const now = Number.isFinite(parsed) ? parsed : Date.now();
     const today = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(now));
     const todayMonth = today.slice(0,7);
     state.timelineMonths ||= {};

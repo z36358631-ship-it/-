@@ -37,7 +37,7 @@ def assets():
  paths=[HERE/n for n in names]
  paths += [ROOT/'public/gamehub-home-lab/index.html',ROOT/'public/gamehub-home-lab/admin.html',ROOT/'docs/superpowers/plans/2026-11-06-gamehub-review-r11.md']
  paths += list((HERE/'review-r11-evidence').glob('*.png'))+list((HERE/'admin-review-evidence').glob('*.png'))
- commit,changed,base=publish(paths,'7c80392455a65a17903ea98093e4304cfe140f8d','fix(gamehub): apply November 6 home review and dated change notes')
+ commit,changed,base=publish(paths,read(RECORD)['assetCommit'] if RECORD.exists() else '7c80392455a65a17903ea98093e4304cfe140f8d','fix(gamehub): apply November 6 home review and dated change notes')
  write({'version':'r11','annotation':'2026.11.6修改','assetCommit':commit,'base':base,'branch':BRANCH,'sha256':digest,'adminSha256':sha(ROOT/'public/gamehub-home-lab/admin.html'),'assetFiles':changed,'assetPush':'passed','imagePush':'pending','docsPush':'pending','url':'https://z36358631-ship-it.github.io/-/public/gamehub-home-lab/','headPreserved':True,'indexPreserved':True})
  print(json.dumps({'assetCommit':commit,'files':len(changed)}))
 def images():
@@ -48,12 +48,12 @@ def images():
  commit,changed,base=publish(paths,r['assetCommit'],'docs(gamehub): publish immutable reviewed v1.6 figures')
  r.update(imageCommit=commit,imageFiles=changed,imagePush='passed',imageBase='https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@'+commit+'/public/prd/gamehub-home-r11-20261106');write(r);print(json.dumps({'imageCommit':commit,'files':len(changed),'imageBase':r['imageBase']}))
 def docs():
- r=read(RECORD);check();report=read(OUT/'review-revision-verification.json')
+ r=read(RECORD);check();report=read(OUT/'review-v16-verification.json')
  assert report['status']=='passed',report
  assert read(HERE/'remote-images-r11.json')['status']=='passed'
  md=PRD/'【PRD】《盖世游戏》7.0首页改版需求.md';word=PRD/'盖世游戏7.0首页改版PRD_V1.6_飞书导入版.docx'
  assert r['imageBase'] in md.read_text('utf-8') and '2026.11.6修改' in md.read_text('utf-8')
- names=['prd-v1.4-source.md','prd-v1.4-Draft.md','首页改版说明.md','2026.11.6评审修改对照.md','build_docx.py','build_final_flow.py','sync_review_markdown.py','review-revision-verification.json','review-prd-quality.json','home-prd-word-verification.json']
+ names=['prd-v1.4-source.md','prd-v1.4-Draft.md','首页改版说明.md','2026.11.6评审修改对照.md','build_docx.py','build_final_flow.py','sync_review_markdown.py','review-v16-verification.json','review-prd-quality.json','home-prd-word-verification.json']
  paths=[OUT/n for n in names if (OUT/n).is_file()]+[md,word,HERE/'state.md',HERE/'r11-review.md',HERE/'sources.json',HERE/'publish-r11.py',HERE/'remote-images-r11.json',ROOT/'prd/workflow-state/GUANWANGGAID-64-gamehub-70-product.md']
  commit,changed,base=publish(paths,r['imageCommit'],'docs(gamehub): align PRD v1.6 and mark all November 6 review changes')
  r.update(commit=commit,docsFiles=changed,docsPush='passed',markdownSha256=sha(md),wordSha256=sha(word));write(r);print(json.dumps({'commit':commit,'files':len(changed)}))

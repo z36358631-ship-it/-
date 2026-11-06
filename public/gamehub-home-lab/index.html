@@ -450,7 +450,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     const isActive=item=>item.end===null||Date.parse(item.end)>now;
     const money=value=>'¥'+Number(value).toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1');
     const dateText=date=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(date)).replaceAll('/','.');
-    const todayText=()=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit'}).format(new Date(now));
+    const todayText=()=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit'}).format(new Date(state.timelineNow||state.signInNow||Date.now()));
     const remaining=end=>{const minutes=Math.max(0,Math.ceil((Date.parse(end)-now)/60000));const days=Math.floor(minutes/1440),hours=Math.floor(minutes%1440/60),mins=minutes%60;return days?`${days}天${hours}小时`:hours?`${hours}小时${mins}分`:`${mins}分钟`;};
     const storeLink=(item,label='官方商店')=>`<a class="ret-store-link" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${label}<span aria-hidden="true">↗</span></a>`;
     const promoArt=(item,cls='')=>image(item.key,item.name,cls);
@@ -812,7 +812,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
       if(!ctx.features.latestCompatibility)return '';
       const ids=(operations.latestGames||[]).filter(id=>GAMES[id]&&MEDIA['cover-'+id]);
       if(!ids.length)return '';
-      return `<section class="app-section" data-module="latest-compatibility">${ctx.heading('盖世最新兼容','latest-compatibility')}<div class="latest-compatibility-rail">${ids.map(id=>`<button type="button" data-action="latest-compatibility">${image('cover-'+id,GAMES[id].name)}<b>${esc(GAMES[id].name)}</b></button>`).join('')}</div></section>`;
+      return `<section class="app-section" data-module="latest-compatibility">${ctx.heading('盖世最新兼容','latest-compatibility')}<div class="latest-compatibility-rail">${ids.map(id=>`<button type="button" data-action="game" data-game="${id}" data-route="local">${image('cover-'+id,GAMES[id].name)}<b>${esc(GAMES[id].name)}</b></button>`).join('')}</div></section>`;
     }
 
     function discovery(){
@@ -864,8 +864,8 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 
   function create(ctx) {
     const {state,esc,image,action} = ctx;
-    const parsed = Date.parse(state.demoNow || '2026-11-02T10:00:00+08:00');
-    const now = Number.isFinite(parsed) ? parsed : Date.parse('2026-11-02T10:00:00+08:00');
+    const parsed = Date.parse(state.timelineNow || state.signInNow || new Date().toISOString());
+    const now = Number.isFinite(parsed) ? parsed : Date.now();
     const today = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(now));
     const todayMonth = today.slice(0,7);
     state.timelineMonths ||= {};
@@ -1235,7 +1235,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   function back(){const previous=stack.pop();if(previous){Object.assign(state,previous);render(previous.scroll);}else{state.page='home';render();}}
   function home(){stack.length=0;state.page='home';render();}
   function setDirection(value){if(!DIRECTIONS[value])throw new TypeError('Unknown direction');state.direction=value;state.communityPage=0;home();}
-  function setScenario(value){if(value&&typeof value==='object'){for(const k of ['lifecycle','source','capability','route','match','preparation','demoNow','signInNow','accountLoggedIn','notificationPermission','deviceCompatibility','rankingHeat','appLanguage','dataRegion'])if(value[k]!==undefined)state[k]=value[k];}else{switch(value){case 'new':Object.assign(state,{lifecycle:'new',source:'none',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'import':Object.assign(state,{lifecycle:'returning',source:'import',capability:'local',route:'local',match:'matched',preparation:'ready',recentPlayed:['hades','elden']});break;case 'steam':Object.assign(state,{lifecycle:'returning',source:'steam',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'cloud':case 'weak':Object.assign(state,{capability:'weak',route:'cloud'});break;default:throw new TypeError('Unknown scenario');}}home();}
+  function setScenario(value){if(value&&typeof value==='object'){for(const k of ['lifecycle','source','capability','route','match','preparation','demoNow','signInNow','timelineNow','accountLoggedIn','notificationPermission','deviceCompatibility','rankingHeat','appLanguage','dataRegion'])if(value[k]!==undefined)state[k]=value[k];}else{switch(value){case 'new':Object.assign(state,{lifecycle:'new',source:'none',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'import':Object.assign(state,{lifecycle:'returning',source:'import',capability:'local',route:'local',match:'matched',preparation:'ready',recentPlayed:['hades','elden']});break;case 'steam':Object.assign(state,{lifecycle:'returning',source:'steam',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'cloud':case 'weak':Object.assign(state,{capability:'weak',route:'cloud'});break;default:throw new TypeError('Unknown scenario');}}home();}
   function setForm(value){if(!['portrait','landscape','tablet'].includes(value))throw new TypeError('Unknown form');const y=getScroll();state.form=value;render(y);}
   function setPlatform(value){if(value.os!==undefined){if(!['android','ios'].includes(value.os))throw new TypeError('Unknown OS');state.os=value.os;}if(value.region!==undefined){if(!['domestic','overseas'].includes(value.region))throw new TypeError('Unknown region');state.region=value.region;}home();}
   function setPresentation(value){for(const key of ['showContinue','showBanner'])if(value[key]!==undefined)state[key]=!!value[key];home();}

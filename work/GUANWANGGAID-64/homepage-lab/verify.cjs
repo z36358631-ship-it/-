@@ -100,7 +100,7 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
   assert.equal(await page.locator('.device .back-button').innerText(),'‹');assert.equal(await page.locator('.timeline-page select').count(),0);assert(await page.locator('.timeline-day').count()>0);
   await click('[data-action="timeline-month"][data-month="2026-12"]');assert.equal(await page.locator('.timeline-empty').count(),1);
   await click('[data-action="timeline-today"]');assert((await page.locator('.timeline-month-title').innerText()).includes('2026 年 11 月'));assert(await page.locator('.timeline-day').count()>0);
-  await api('setScenario',{accountLoggedIn:true,notificationPermission:'granted'});await click('.section-heading [data-action="'+route+'"]');
+  await api('setScenario',{timelineNow:'2026-11-02T10:00:00+08:00',accountLoggedIn:true,notificationPermission:'granted'});await click('.section-heading [data-action="'+route+'"]');
   const selector=route==='ret-calendar'?'[data-action="release-subscribe"]':'[data-action="timeline-subscribe"]';
   await click(selector);if(route==='ret-calendar')assert.equal((await state()).releaseSubscriptions.length,1);else assert.equal((await state()).latestCompatSubscribed,true);
   await snap(route+'-'+form);
@@ -108,7 +108,7 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
   if(route==='ret-calendar')assert.equal((await state()).releaseSubscriptions.length,1);else assert.equal((await state()).latestCompatSubscribed,true);
   await click(selector);if(route==='ret-calendar')assert.equal((await state()).releaseSubscriptions.length,0);else assert.equal((await state()).latestCompatSubscribed,false);record('date timeline, empty month, today, scoped subscription and return',{route,form});
  }
- await api('reset');await api('setScenario',{accountLoggedIn:true,notificationPermission:'granted'});await click('.home-shortcuts [data-action="ret-giveaways"]');assert.deepEqual(await page.locator('.ret-platform-tabs button').evaluateAll(es=>es.map(e=>e.dataset.platform)),['epic','steam','gog']);
+ await api('reset');await api('setScenario',{timelineNow:'2026-11-02T10:00:00+08:00',accountLoggedIn:true,notificationPermission:'granted'});await click('.home-shortcuts [data-action="ret-giveaways"]');assert.deepEqual(await page.locator('.ret-platform-tabs button').evaluateAll(es=>es.map(e=>e.dataset.platform)),['epic','steam','gog']);
  await click('[data-action="ret-subscribe"]');assert.equal((await state()).giveawaySubscribed,true);
  for(const platform of ['epic','steam','gog']){await click('[data-action="ret-platform"][data-platform="'+platform+'"]');assert.equal(await page.locator('[data-action="ret-subscribe"]').getAttribute('aria-pressed'),'true');}
  assert.equal(await page.locator('.ret-giveaway-page [data-action="ret-widget"]').count(),0);record('whole giveaway subscription remains shared across three platform filters');

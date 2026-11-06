@@ -88,7 +88,7 @@
       if(!ctx.features.latestCompatibility)return '';
       const ids=(operations.latestGames||[]).filter(id=>GAMES[id]&&MEDIA['cover-'+id]);
       if(!ids.length)return '';
-      return `<section class="app-section" data-module="latest-compatibility">${ctx.heading('盖世最新兼容','latest-compatibility')}<div class="latest-compatibility-rail">${ids.map(id=>`<button type="button" data-action="latest-compatibility">${image('cover-'+id,GAMES[id].name)}<b>${esc(GAMES[id].name)}</b></button>`).join('')}</div></section>`;
+      return `<section class="app-section" data-module="latest-compatibility">${ctx.heading('盖世最新兼容','latest-compatibility')}<div class="latest-compatibility-rail">${ids.map(id=>`<button type="button" data-action="game" data-game="${id}" data-route="local">${image('cover-'+id,GAMES[id].name)}<b>${esc(GAMES[id].name)}</b></button>`).join('')}</div></section>`;
     }
 
     function discovery(){

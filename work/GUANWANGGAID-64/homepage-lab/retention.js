@@ -50,7 +50,7 @@
     const isActive=item=>item.end===null||Date.parse(item.end)>now;
     const money=value=>'¥'+Number(value).toFixed(2).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1');
     const dateText=date=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(date)).replaceAll('/','.');
-    const todayText=()=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit'}).format(new Date(now));
+    const todayText=()=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit'}).format(new Date(state.timelineNow||state.signInNow||Date.now()));
     const remaining=end=>{const minutes=Math.max(0,Math.ceil((Date.parse(end)-now)/60000));const days=Math.floor(minutes/1440),hours=Math.floor(minutes%1440/60),mins=minutes%60;return days?`${days}天${hours}小时`:hours?`${hours}小时${mins}分`:`${mins}分钟`;};
     const storeLink=(item,label='官方商店')=>`<a class="ret-store-link" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${label}<span aria-hidden="true">↗</span></a>`;
     const promoArt=(item,cls='')=>image(item.key,item.name,cls);
