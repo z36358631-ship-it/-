@@ -402,7 +402,8 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   'use strict';
 
   // These records retain the original review snapshot; they are not a live feed.
-  const PLATFORMS = {epic:'Epic',steam:'Steam',gog:'GOG'};
+  // 2026.11.6修改：用户最终决定，本期仅保留Epic和Steam。
+  const PLATFORMS = {epic:'Epic',steam:'Steam'};
   const GIVEAWAYS = [
     {id:'sorry',key:'promo-sorry',name:'对不起，我们关门了',platform:'epic',original:78,end:'2026-11-05T16:00:00Z',url:'https://store.epicgames.com/zh-CN/p/sorry-were-closed-724c86'},
     {id:'asleep',key:'promo-asleep',name:'Asleep: Act 1',platform:'steam',original:42,end:'2026-11-02T18:00:00Z',url:'https://store.steampowered.com/app/1583850/Asleep_Act_1/'},
@@ -497,7 +498,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
       const entries=GIVEAWAYS.filter(item=>item.platform===platform),active=entries.filter(isActive),ended=entries.filter(item=>!isActive(item));
       const subscribed=!!state.giveawaySubscribed;
       const offer=item=>`<article class="ret-offer-row ret-giveaway-row ${isActive(item)?'':'is-ended'}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-free-line"><strong>${isActive(item)?'免费领取':'领取已结束'}</strong>${item.original!==null?`<del>${money(item.original)}</del>`:''}</div><small>${dateText(item.end)} 截止</small>${isActive(item)?storeLink(item,'前往领取'):'<span class="ret-ended">已结束</span>'}</div></article>`;
-      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam · GOG</p>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`aria-pressed="${subscribed}"`,'primary ret-column-subscribe')}</div><p class="timeline-global-note">有新增可领游戏时提醒 · 站内信 / 系统通知</p><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}</div>`;
+      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam</p>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`aria-pressed="${subscribed}"`,'primary ret-column-subscribe')}</div><p class="timeline-global-note">有新增可领游戏时提醒 · 站内信 / 系统通知</p><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}</div>`;
     }
 
     function taskCenterPage() {
