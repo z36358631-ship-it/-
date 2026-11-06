@@ -1,0 +1,56 @@
+{
+  "version": "V1.4",
+  "reviewer": "review_1106_mac（独立视觉复核）",
+  "status": "passed",
+  "pages": 14,
+  "revision": "r2",
+  "method": "使用 view_image(detail=original) 逐页读取 Word COM 导出PDF后渲染的 page-1.png 至 page-14.png；未用联系表代替逐页检查。",
+  "sourceDirectory": ".tmp/render-review1106-mac-r2",
+  "reviewedPages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "checks": {
+    "textClipping": "14页未发现文字被裁切、重叠或超出表格边界",
+    "missingImages": "未发现缺图；横向流程、准备/流量提示双图、详情双图及浮球图正常",
+    "dateMarks": "2026.11.6修改标记完整可见",
+    "tableHeaders": "续页重复正确表头；事件表与参数表分开",
+    "sectionOrder": "章节顺序正确，3.1.1至3.1.9及附录齐全",
+    "imageLayout": "组件准备两图和游戏详情两图同排，原大空白已消除",
+    "blankSpace": "第2页为主章节换页留白，第14页为文末余白；未发现原第6/11页式中间异常空页"
+  },
+  "resolvedIssues": [
+    {
+      "previousPages": [
+        5,
+        6
+      ],
+      "resolution": "组件准备双图同排；现第4-5页连续排版，尾行不再独占空页。"
+    },
+    {
+      "previousPages": [
+        11,
+        12
+      ],
+      "resolution": "详情双图同排；现第8-9页连续排版，需求描述不再挤出近空白页。"
+    }
+  ],
+  "issues": [],
+  "notes": [
+    "长表在页间延续，续页表头清楚；第6-7页文字自然续接，未丢字。",
+    "只验证视觉排版；正文段数/图片数一致性以主管导出验证为准，不据视觉检查声称飞书导入成功。"
+  ],
+  "scope": "仅排版与视觉完整性；未评价未改历史文字，未修改Word或正文。"
+}

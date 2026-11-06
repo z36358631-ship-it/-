@@ -10,7 +10,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
 parser = argparse.ArgumentParser()
-parser.add_argument('--version', default='V1.9')
+parser.add_argument('--version', default='V2.0')
 VERSION = parser.parse_args().version
 OUT = ROOT / ('盖世游戏Steam接入方案' + VERSION + '.docx')
 doc = Document()
@@ -122,8 +122,6 @@ def table(lines):
         for cell,w,value in zip(cells,widths,values):
             cell.width=Inches(w)
             cell_content(cell,value,w)
-            if n==2 and value=='需求描述':
-                for para in cell.paragraphs: para.paragraph_format.keep_with_next=True
             if n==2 and values[0] in ['功能简介','场景描述','输入／前置条件']:
                 for para in cell.paragraphs: para.paragraph_format.keep_with_next=True
             tcpr=cell._tc.get_or_add_tcPr()

@@ -10,8 +10,8 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
 parser = argparse.ArgumentParser()
-parser.add_argument('--version', default='V1.3')
-parser.add_argument('--output', default='盖世游戏MacSteam接入产品需求-V1.3.docx')
+parser.add_argument('--version', default='V1.4')
+parser.add_argument('--output', default='盖世游戏MacSteam接入产品需求-V1.4.docx')
 args = parser.parse_args()
 VERSION = args.version
 OUT = ROOT / args.output
@@ -69,11 +69,35 @@ def inline(p, value, width=7.2):
         else: p.add_run(token)
 
 def cell_content(cell, value, width):
-    for i,part in enumerate(re.split(r'<br\s*/?>', value)):
-        p = cell.paragraphs[0] if i==0 else cell.add_paragraph()
-        p.paragraph_format.space_after=Pt(2)
-        p.paragraph_format.widow_control=True
+    # Arrange a page's related figures side by side without changing source prose.
+    parts=re.split(r'<br\s*/?>', value)
+    stop=next((i for i,x in enumerate(parts) if '**详细说明：**' in x),0)
+    first=' '.join(parts[:stop]) if stop else ''
+    matches=list(re.finditer(r'!\[[^\]]*\]\([^)]+\)',first))
+    if len(matches)>1:
+        prefix=first[:matches[0].start()].strip()
+        inline(cell.paragraphs[0],prefix,width-.18)
+        cell.paragraphs[0].paragraph_format.keep_with_next=True
+        t=cell.add_table(rows=1,cols=len(matches));t.autofit=False
+        usable=(width-.18)/len(matches)
+        for i,m in enumerate(matches):
+            c=t.cell(0,i);c.width=Inches(usable)
+            caption=first[m.end():matches[i+1].start() if i+1<len(matches) else len(first)].strip()
+            inline(c.paragraphs[0],m.group(),usable-.12)
+            c.paragraphs[0].paragraph_format.space_after=Pt(1)
+            c.paragraphs[0].paragraph_format.keep_with_next=True
+            cp=c.add_paragraph();inline(cp,caption,usable-.12)
+            cp.paragraph_format.space_after=Pt(1)
+            for r in cp.runs:r.font.size=Pt(9)
+        parts=parts[stop:]
+        first_paragraph=False
+    else:
+        first_paragraph=True
+    for i,part in enumerate(parts):
+        p=cell.paragraphs[0] if i==0 and first_paragraph else cell.add_paragraph()
+        p.paragraph_format.space_after=Pt(0)
         p.paragraph_format.keep_together=True
+        p.paragraph_format.widow_control=True
         if part.startswith('![') or part in ['**图示：**','**详细说明：**','**展示说明：**','**交互说明：**']:
             p.paragraph_format.keep_with_next=True
         inline(p,part,width-.18)
@@ -98,7 +122,8 @@ def table(lines):
     for col,w in zip(t.columns,widths): col.width=Inches(w)
     for row_index, values in enumerate(rows):
         new_row=t.add_row()
-        new_row._tr.get_or_add_trPr().append(OxmlElement('w:cantSplit'))
+        if not any('**详细说明：**' in x for x in values):
+            new_row._tr.get_or_add_trPr().append(OxmlElement('w:cantSplit'))
         cells=new_row.cells
         for cell,w,value in zip(cells,widths,values):
             cell.width=Inches(w)
@@ -140,7 +165,7 @@ def markdown(text, appendix=False):
             elif level==1: doc.add_heading('6.3 第三方 Steam 服务调用免责声明',level=2)
             else:
                 heading=doc.add_heading(label,level=min(level-1 if not appendix else level,5))
-                if label.startswith('三、') or (re.match(r'^3\.1\.\d+\s',label) and not label.startswith('3.1.1 ')): heading.paragraph_format.page_break_before=True
+                if label.startswith('三、'): heading.paragraph_format.page_break_before=True
         elif line=='---': pass
         else:
             p=doc.add_paragraph();inline(p,line)

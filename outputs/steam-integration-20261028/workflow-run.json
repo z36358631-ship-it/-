@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "runId": "90d9c718-41b9-4e77-9025-3ebb1f6a72d9",
   "requirementId": "LOCAL-20261028",
-  "revision": 237,
-  "status": "passed",
+  "revision": 253,
+  "status": "in_progress",
   "createdAt": "2026-10-28T01:57:53.1230318Z",
-  "updatedAt": "2026-11-05T11:22:24.4803735Z",
+  "updatedAt": "2026-11-06T05:24:02.2195826Z",
   "cardPath": "C:\\Users\\z3635\\官网改动\\prd\\workflow-state\\LOCAL-20261028-steam-integration.md",
   "cardHash": "D4026427D0AFE759C0DB74E935F805C6762903E2EC962357ECD9B4F8D05509F1",
   "contract": {
@@ -23,15 +23,15 @@
       "required": true,
       "dependsOn": [],
       "status": "passed",
-      "attempt": 3,
+      "attempt": 4,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "C:/Users/z3635/Downloads/郑群超的视频会议 (5).txt"
+        "C:/Users/z3635/Downloads/盖世7.0版本评审.txt"
       ],
-      "validation": "会议29:15-30:27、35:31-41:04；仅默认大屏/协议/嵌套模式设置/法务/停留统计",
+      "validation": "对照当前V1.9/MacV1.3与评审02:20-16:38、1:34:38-1:41:25；无关页不改，SDK未定能力标待验证",
       "error": null,
-      "reviewer": null
+      "reviewer": "主管"
     },
     {
       "id": "S2",
@@ -41,15 +41,15 @@
         "S1"
       ],
       "status": "passed",
-      "attempt": 3,
+      "attempt": 4,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "C:/Users/z3635/Downloads/郑群超的视频会议 (5).txt"
+        "C:/Users/z3635/Downloads/盖世7.0版本评审.txt"
       ],
-      "validation": "会议29:15-30:27、35:31-41:04；仅默认大屏/协议/嵌套模式设置/法务/停留统计",
+      "validation": "对照当前V1.9/MacV1.3与评审02:20-16:38、1:34:38-1:41:25；无关页不改，SDK未定能力标待验证",
       "error": null,
-      "reviewer": null
+      "reviewer": "主管"
     },
     {
       "id": "S3",
@@ -59,15 +59,15 @@
         "S2"
       ],
       "status": "passed",
-      "attempt": 11,
+      "attempt": 12,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "C:/Users/z3635/Downloads/郑群超的视频会议 (5).txt"
+        "C:/Users/z3635/Downloads/盖世7.0版本评审.txt"
       ],
-      "validation": "会议29:15-30:27、35:31-41:04；仅默认大屏/协议/嵌套模式设置/法务/停留统计",
+      "validation": "对照当前V1.9/MacV1.3与评审02:20-16:38、1:34:38-1:41:25；无关页不改，SDK未定能力标待验证",
       "error": null,
-      "reviewer": null
+      "reviewer": "主管"
     },
     {
       "id": "S4",
@@ -77,16 +77,15 @@
         "S3"
       ],
       "status": "passed",
-      "attempt": 12,
+      "attempt": 13,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/Steam接入Demo.html",
-        "outputs/steam-mac-integration-20261104/MacSteam接入Demo.html"
+        "C:/Users/z3635/Downloads/盖世7.0版本评审.txt"
       ],
-      "validation": "沿用现有Demo局部改动，非7.0真包还原；真实右上设置样式待包体验核对",
+      "validation": "对照当前V1.9/MacV1.3与评审02:20-16:38、1:34:38-1:41:25；无关页不改，SDK未定能力标待验证",
       "error": null,
-      "reviewer": "/root"
+      "reviewer": "主管"
     },
     {
       "id": "S5",
@@ -97,13 +96,14 @@
         "S4"
       ],
       "status": "passed",
-      "attempt": 20,
+      "attempt": 21,
       "inputHashes": [],
-      "outputs": [],
-      "evidence": [
-        "outputs/steam-integration-20261028/会议调整记录-20261105.json"
+      "outputs": [
+        "outputs/steam-integration-20261028/Steam接入PRD-Draft.md",
+        "outputs/steam-mac-integration-20261104/MacSteam接入产品需求.md"
       ],
-      "validation": "两端Demo/流程/PRD/Word受影响内容已同步",
+      "evidence": [],
+      "validation": "两端源/Demo/review/PRD/Word已更新，含2026.11.6修改定位",
       "error": null,
       "reviewer": null
     },
@@ -115,16 +115,16 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 20,
+      "attempt": 21,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/evidence-meeting-20261105/verification.json",
-        "outputs/steam-mac-integration-20261104/evidence-meeting-20261105/verification.json",
-        "outputs/steam-integration-20261028/Word导出验证-V1.9.json",
-        "outputs/steam-mac-integration-20261104/Word导出验证-V1.3.json"
+        "outputs/steam-integration-20261028/evidence-review-20261106/verification.json",
+        "outputs/steam-mac-integration-20261104/evidence-review-20261106/verification.json",
+        "outputs/steam-integration-20261028/PRD结构检查-V2.0.json",
+        "outputs/steam-mac-integration-20261104/PRD结构检查-V1.4.json"
       ],
-      "validation": "两端行为、文档结构/正文/图片校验通过，生产接入未验",
+      "validation": "移动9组/Mac13组行为通过；两端结构0错误；20+14图片HTTP/MIME通过；导出正文和图片完整",
       "error": null,
       "reviewer": null
     },
@@ -136,16 +136,17 @@
         "S5"
       ],
       "status": "passed",
-      "attempt": 20,
+      "attempt": 21,
       "inputHashes": [],
       "outputs": [],
       "evidence": [
-        "outputs/steam-integration-20261028/会议调整记录-20261105.json",
-        "outputs/steam-integration-20261028/Word排版复核-V1.9.json"
+        "outputs/steam-integration-20261028/Word排版复核-V2.0.json",
+        "outputs/steam-mac-integration-20261104/Word排版复核-V1.4.json",
+        "outputs/steam-integration-20261028/评审修改记录-20261106.md"
       ],
-      "validation": "独立审查修复Mac会话恢复与数据口径，范围未扩展；两端Word视觉检查通过",
+      "validation": "局部语义与配图一致；Word逐页复核26/14页通过；真实SDK问题保留待验证",
       "error": null,
-      "reviewer": "/root + meeting_mobile_docs"
+      "reviewer": "主管及两端文档/Demo审阅代理"
     },
     {
       "id": "S8",
@@ -157,16 +158,14 @@
         "S6",
         "S7"
       ],
-      "status": "passed",
-      "attempt": 20,
+      "status": "running",
+      "attempt": 21,
       "inputHashes": [],
       "outputs": [],
-      "evidence": [
-        "outputs/steam-integration-20261028/evidence-meeting-20261105/online-verification.json"
-      ],
-      "validation": "发布70e60588b，5个线上文件与本地一致，33张PRD图公网可达；真实7.0组件/律师审核待完成，飞书未测",
+      "evidence": [],
+      "validation": null,
       "error": null,
-      "reviewer": "/root"
+      "reviewer": null
     }
   ]
 }

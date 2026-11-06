@@ -1,7 +1,7 @@
 {
   "id": "steam-mac-integration-20261104",
   "platform": "mac",
-  "status": "complete",
+  "status": "passed",
   "baseline": {
     "version": "1.0.0",
     "build": "74ddda9f",
@@ -24,17 +24,19 @@
     "android-changes"
   ],
   "publishPath": "public/steam-mac-integration",
-  "verification": "7 behavior groups and 27 review images passed; actual 7.0 native package not verified",
-  "pagesCommit": "70e60588b081f12772ae8f10b9e1c04832101321",
+  "verification": "13组行为、31张流程图、14页Word、PRD结构及图片验证通过；实际SDK待联调",
+  "pagesCommit": "60c21993b6f6ee72cafa745b6f160704d4678fb5",
   "decisions": [
     "D-MAC-03 detail ownership remains",
     "D-MAC-04 left review sidebar remains",
-    "D-MAC-07 replaces D-MAC-06 entry selection: fixed Big Picture for new session; consent only; mode switch in floating settings"
+    "D-MAC-07 replaces D-MAC-06 entry selection: fixed Big Picture for new session; consent only; mode switch in floating settings",
+    "D-MAC-08: 2026.11.6 entry prerequisites, cancellable preparation, metered confirmation, SDK-defined internal pages; supersedes import sync commitments"
   ],
   "currentEvidence": [
-    "evidence-meeting-20261105/verification.json",
-    "evidence-meeting-20261105/artifacts-verification.json",
-    "验收说明.md"
+    "evidence-review-20261106/verification.json",
+    "evidence-review-20261106/artifacts-verification.json",
+    "Word排版复核-V1.4.json",
+    "Pages在线验证.json"
   ],
   "artifacts": {
     "demo": "已同步",
@@ -42,20 +44,20 @@
     "android": "按同次会议同步，端差异保留",
     "oldEvidence": "历史记录，非本轮验证",
     "review": "已同步",
-    "prd": "V1.3，仅会议涉及部分",
-    "word": "盖世游戏MacSteam接入产品需求-V1.3.docx；15页检查通过"
+    "prd": "V1.4，仅评审涉及部分",
+    "word": "盖世游戏MacSteam接入产品需求-V1.4.docx；14页逐页检查通过"
   },
-  "reviewer": "/root/mac_baseline_inventory + /root",
-  "reviewEvidence": "验收说明.md; evidence-v4/consent.jpg; evidence-v4/window.jpg; evidence-v4/big.jpg",
+  "reviewer": "/root + review_1106_mac + review_1106_docs",
+  "reviewEvidence": "evidence-review-20261106; Word排版复核-V1.4.json",
   "prdEvidence": [
-    "PRD结构检查-V1.3.json",
-    "PRD图片检查-V1.3.json",
-    "Word导出验证-V1.3.json",
+    "PRD结构检查-V1.4.json",
+    "PRD图片检查-V1.4.json",
+    "Word导出验证-V1.4.json",
     "PRD交付记录.json"
   ],
   "prdRevision": {
-    "version": "V1.3",
-    "source": "2026-11-05会议，用户确认两端同步",
+    "version": "V1.4",
+    "source": "2026-11-06盖世7.0版本评审",
     "scopedEdit": true,
     "demoChanged": true
   },
@@ -68,5 +70,13 @@
     "reviewer": "/root + meeting_mac_demo + meeting_mobile_docs",
     "evidence": "evidence-meeting-20261105",
     "pagesCommit": "70e60588b081f12772ae8f10b9e1c04832101321"
+  },
+  "reviewRevision": {
+    "date": "2026-11-06",
+    "decision": "D-MAC-08",
+    "source": "盖世7.0版本评审.txt",
+    "pagesCommit": "60c21993b6f6ee72cafa745b6f160704d4678fb5",
+    "artifacts": "synced",
+    "nativeSdk": "not-tested"
   }
 }

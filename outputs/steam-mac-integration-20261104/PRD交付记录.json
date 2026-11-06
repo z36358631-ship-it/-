@@ -1,27 +1,37 @@
 {
-  "scope": "D-MAC-07; only meeting-affected entry, panel, settings, legal and tracking",
-  "source": "MacSteam接入产品需求.md",
-  "status": "review-draft-delivered",
+  "date": "2026-11-06",
+  "version": "V1.4",
+  "source": "盖世7.0版本评审.txt",
+  "scope": "仅Steam相关评审项；各处2026.11.6修改定位，保留原结构",
+  "currentWord": "盖世游戏MacSteam接入产品需求-V1.4.docx",
+  "sourceCheck": "364正文片段校验一致；14图内嵌",
+  "machineCheck": "PRD结构检查-V1.4.json：Draft Pass，0错误；evidence-review-20261106/verification.json",
   "semanticReview": {
-    "reviewer": "/root + meeting_mobile_docs",
-    "fixed": [
-      "修复Mac返回重入恢复原会话",
-      "统一声明更新枚举version_change",
-      "限定page_instance_id必填范围",
-      "返回率分母纳入跨日可见会话",
-      "恢复被回归脚本误写的历史图片"
+    "reviewer": "/root + review_1106_docs + review_1106_mobile + review_1106_mac",
+    "evidence": [
+      "评审修改记录-20261106.md（移动目录）",
+      "Word排版复核-V1.4.json",
+      "evidence-review-20261106/verification.json"
     ],
-    "unresolved": "真实组件接入与律师审定"
+    "checked": [
+      "全入口协议/组件条件与非Steam例外",
+      "组件取消停止任务和迟到跳转",
+      "按端区分流量提示",
+      "SDK原生边界及同步收敛",
+      "默认页/默认大屏/有效会话保留",
+      "旧规则和截图移除、日期定位",
+      "游客与登录条件不混用"
+    ],
+    "limits": "实际SDK、移动竖屏/功耗、律师审核待验证"
   },
-  "sourceCheck": "359 source segments mapped to DOCX",
-  "machineCheck": "PRD结构检查-V1.3.json Draft Pass",
-  "wordCheck": "Word导出验证-V1.3.json; 15 pages visually verified",
-  "publicPreview": "existing Demo/review links unchanged; no new document web preview requested",
-  "remoteImages": "PRD图片检查-V1.3.json; 12 HTTP/MIME passed",
+  "wordCheck": "14页逐页原尺寸复核；正文与原声明未因排版修改",
+  "publicPreview": {
+    "commit": "60c21993b6f6ee72cafa745b6f160704d4678fb5",
+    "evidence": "Pages在线验证.json",
+    "matchesLocal": true
+  },
+  "remoteImages": "PRD图片检查-V1.4.json：14图HTTP/MIME通过",
   "feishuImport": "not-tested",
-  "version": "V1.3",
-  "chineseCharacters": 4139,
-  "historicalDetailedVersion": "51c2fd8c7",
-  "currentWord": "盖世游戏MacSteam接入产品需求-V1.3.docx",
-  "historicalWord": "无版本号的Word为V1.1历史短版；被打开占用，未覆盖"
+  "sourceFiles": "passed",
+  "git": "资产已推送fc7917e1c、d491c07cd；源/Word及本记录随后提交"
 }

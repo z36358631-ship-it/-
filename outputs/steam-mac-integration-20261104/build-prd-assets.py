@@ -7,10 +7,13 @@ OUT = ROOT.parent.parent / 'public/prd/steam-mac-integration'
 OUT.mkdir(parents=True, exist_ok=True)
 SRC = ROOT / 'evidence-v4'
 MEETING = ROOT / 'evidence-meeting-20261105'
+REVIEW = ROOT / 'evidence-review-20261106'
 UPDATED = {'consent', 'panel', 'panel-settings', 'new-steam-settings'}
 def source(name, flow=False):
-    return (MEETING if flow or name in UPDATED else SRC) / (name+'.jpg')
-names = ['new-library','consent','prepare','login','window','big','panel','account','new-settings','new-steam-settings','detail-achievements','detail-reviews','detail-dlc','detail-mods','panel-settings']
+    changed = {'prepare','big','window','panel','panel-settings','detail-achievements','detail-reviews','detail-dlc','detail-mods','metered','component-required','component-update','download-error'}
+    current = REVIEW / (name+'.jpg')
+    return current if name in changed and current.exists() else (MEETING if flow or name in UPDATED else SRC) / (name+'.jpg')
+names = ['new-library','consent','prepare','login','window','big','panel','account','new-settings','new-steam-settings','detail-achievements','detail-reviews','detail-dlc','detail-mods','panel-settings','metered','component-required','component-update','download-error']
 for name in names:
     shutil.copyfile(source(name), OUT / (name+'.jpg'))
 font_path = 'C:/Windows/Fonts/msyh.ttc'
@@ -22,7 +25,7 @@ def paste_fit(canvas, name, box, flow=False):
 
 im=Image.new('RGB',(3000,620),'#f5f7fa');d=ImageDraw.Draw(im)
 d.text((40,22),'Mac Steam 首次进入流程',font=font(35),fill='#172536')
-steps=[('new-library','1  点击 Steam','登录后入口显示昵称和头像'),('consent','2  勾选协议','不再选择启动模式'),('prepare','3  按需准备组件','下载 → 校验 → 启动服务'),('login','4  按需登录','扫码或密码；有效登录态可复用'),('big','5  默认进入大屏','模式切换在悬浮球右上设置内')]
+steps=[('new-library','1  点击 Steam','登录后入口显示昵称和头像'),('consent','2  勾选协议','不再选择启动模式'),('prepare','3  按需准备组件','计费网络先确认；可取消准备'),('login','4  按需登录','扫码或密码；有效登录态可复用'),('big','5  默认进入大屏','模式切换在悬浮球右上设置内')]
 for i,(name,title,note) in enumerate(steps):
     x=40+i*590
     d.rounded_rectangle((x,90,x+540,510),12,fill='white',outline='#d9e0e8',width=2)
@@ -30,7 +33,7 @@ for i,(name,title,note) in enumerate(steps):
     paste_fit(im,name,(x+12,151,x+528,465),flow=True)
     d.text((x+18,474),note,font=font(20),fill='#536779')
     if i<4:d.text((x+550,270),'→',font=font(36),fill='#55738e')
-d.text((40,548),'已同意：跳过第 2 步；组件可用：跳过第 3 步；登录有效：跳过第 4 步。',font=font(24),fill='#536779')
+d.text((40,548),'2026.11.6修改：取消返回来源；组件可用则跳过准备；已安装游戏校验后继续，不重复下载。',font=font(24),fill='#536779')
 im.save(OUT/'flow.png')
 
 im=Image.new('RGB',(1600,630),'white');d=ImageDraw.Draw(im)

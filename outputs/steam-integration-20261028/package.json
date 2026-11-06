@@ -1,14 +1,15 @@
 {
   "name": "gamehub-steam-integration-review",
-  "version": "1.8.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Steam integration offline review demo and PRD assets",
   "scripts": {
     "build": "node build-demo.mjs && node build-flowcharts.mjs",
-    "test": "node verify-demo.cjs && node verify-legal-copy.cjs && node verify-consent-inline.cjs && node verify-flow.cjs && node verify-fixtures.cjs && node verify-entry-routing.cjs && node verify-session-controls.cjs && node verify-account-view.cjs",
-    "capture": "node capture-prd.cjs",
+    "test": "node verify-review-20261106.cjs && node verify-review-artifacts-20261106.cjs",
+    "capture": "node capture-review-flow-20261106.cjs",
     "build:public": "node build-public.mjs",
-    "test:pages": "node verify-pages.cjs"
+    "test:pages": "node verify-pages.cjs",
+    "test:legacy": "node verify-demo.cjs && node verify-legal-copy.cjs && node verify-consent-inline.cjs && node verify-flow.cjs && node verify-fixtures.cjs && node verify-entry-routing.cjs && node verify-session-controls.cjs && node verify-account-view.cjs"
   },
   "devDependencies": {
     "playwright-core": "1.61.1"
