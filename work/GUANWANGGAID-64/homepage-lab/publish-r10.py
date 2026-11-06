@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import uuid
 from urllib.parse import quote
@@ -92,17 +93,42 @@ def assets():
     RECORD.write_text(json.dumps(record, ensure_ascii=False, indent=2), 'utf-8')
     print(json.dumps(record, ensure_ascii=False))
 
+def images():
+    record = json.loads(RECORD.read_text('utf-8'))
+    source = (OUT / 'prd-v1.4-source.md').read_text('utf-8')
+    destination = ROOT / 'public/prd/gamehub-home-r10-20261106'
+    destination.mkdir(parents=True, exist_ok=True)
+    paths = [HERE / 'publish-r10.py']
+    for name in re.findall(r'!\[[^\]]*\]\(__BASE__/([^\)]+)\)', source):
+        target = destination / name
+        shutil.copyfile(OUT / name, target)
+        paths.append(target)
+    git('fetch', 'origin', 'refs/heads/master:refs/remotes/origin/master')
+    base = git('rev-parse', 'refs/remotes/origin/master').decode().strip()
+    assert base == record['assetCommit'], 'Review remote changes before publishing images'
+    commit, changed = commit_files(base, paths, 'docs(gamehub): publish immutable PRD v1.5 figures')
+    before = snapshot()
+    git('update-ref', 'refs/heads/' + BRANCH, commit)
+    git('push', '--atomic', 'origin', commit + ':refs/heads/master', commit + ':refs/heads/' + BRANCH)
+    assert snapshot() == before
+    assert git('ls-remote', 'origin', 'refs/heads/master').decode().split()[0] == commit
+    record.update(imageCommit=commit, imageFiles=changed, imagePush='passed')
+    RECORD.write_text(json.dumps(record, ensure_ascii=False, indent=2), 'utf-8')
+    print(json.dumps({'imageCommit': commit, 'files': len(changed), 'imagePush': 'passed'}))
+
 def docs():
     record = json.loads(RECORD.read_text('utf-8'))
     check_assets()
     source = (OUT / 'prd-v1.4-source.md').read_text('utf-8')
-    image_root = 'https://raw.githubusercontent.com/z36358631-ship-it/-/' + record['assetCommit'] + '/outputs/gamehub-home-prd-20261105'
+    image_root = 'https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@' + record['imageCommit'] + '/public/prd/gamehub-home-r10-20261106'
     rendered = source.replace('__BASE__', image_root)
     rendered = re.sub(r'(!\[[^\]]*\]\()([^\)]+)(\))', lambda m: m[1] + quote(m[2], safe=':/%') + m[3], rendered)
     assert '待确认' not in rendered
     MD.write_text(rendered, encoding='utf-8', newline='\n')
-    names = ['prd-v1.4-source.md', '首页改版说明.md', 'build_docx_v1_5.py', 'simplify_monthly_prd.py',
-             'monthly-simplification-verification.json', 'monthly-final-verification.json']
+    names = ['prd-v1.4-source.md', '首页改版说明.md', 'build_docx.py', 'simplify_monthly_prd.py',
+             'build_final_flow.py', 'complete_monthly_revision.py', 'render_word_fallback.ps1',
+             'monthly-prd-quality.json', 'home-prd-word-verification.json',
+             'monthly-simplification-verification.json', 'final-revision-verification.json']
     paths = [MD, PRD / '盖世游戏7.0首页改版PRD_V1.5_飞书导入版.docx', HERE / 'state.md', HERE / 'r10-review.md', HERE / 'sources.json',
              ROOT / 'docs/superpowers/plans/2026-11-06-gamehub-monthly-signin.md',
              ROOT / 'prd/workflow-state/GUANWANGGAID-64-gamehub-70-product.md']
@@ -126,6 +152,6 @@ def docs():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('stage', choices=['assets', 'docs'])
+    parser.add_argument('stage', choices=['assets', 'images', 'docs'])
     args = parser.parse_args()
-    assets() if args.stage == 'assets' else docs()
+    {'assets': assets, 'images': images, 'docs': docs}[args.stage]()
