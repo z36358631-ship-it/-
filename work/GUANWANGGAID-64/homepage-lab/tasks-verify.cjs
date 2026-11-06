@@ -16,7 +16,7 @@ const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
  const module=sandbox.window.LAB_TASKS_REVISION.create({state:demoState,esc:String,action,go:name=>demoState.page=name,render:()=>{},getScroll:()=>0});
  for(let n=0;n<3;n++)module.handle('ret-checkin');
  assert.equal(demoState.retSigned,true);assert.equal(demoState.pointsBalance,45);assert.equal(demoState.signInReward,3);
- assert(module.renderSignIn().includes('+3'));assert(!module.renderSignIn().includes('tasks-revision-tabs'));
+ assert(module.renderSignIn().includes('+3'));assert(module.renderSignIn().includes('tasks-revision-tabs'));
  record('repeated sign-in changes local sign-in flag only; supplied balances and rewards remain unchanged');
  const unknown=sandbox.window.LAB_TASKS_REVISION.create({state:{},esc:String,action,go:()=>{},render:()=>{},getScroll:()=>0});
  assert(!unknown.renderSignIn().includes('积分待配置'));assert(unknown.renderSignIn().includes('>—</strong>'));
@@ -45,12 +45,12 @@ const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
  const snap=async name=>{await ensure(name);await page.locator('.device').screenshot({path:path.join(EVIDENCE,name+'.png')});};
  await api('reset');await click('.home-checkin');
  assert.equal((await state()).page,'ret-task');assert.equal((await state()).retSigned,true);
- assert.equal(await page.locator('.tasks-revision-checkin h2').textContent(),'今日已签到');
- assert.equal(await page.locator('.tasks-revision-tabs').count(),0);
- assert.equal(await page.locator('.tasks-revision-entry button').textContent(),'获得更多积分');
+ assert.equal(await page.locator('.tasks-month-result [role="status"]').textContent(),'今日已签到');
+ assert.equal(await page.locator('.tasks-revision-tabs').count(),1);
+ assert.equal(await page.locator('.tasks-revision-entry').count(),0);
+ assert.equal(await page.locator('.tasks-revision-more-heading h2').textContent(),'获得更多积分');
  await snap('signin-portrait');
- await click('[data-action="ret-task-center"]');
- assert.equal((await state()).page,'ret-task-center');
+ assert.equal((await state()).page,'ret-task');
  assert.deepEqual(await page.locator('.tasks-revision-tabs button').allTextContents(),['每日任务','成长任务']);
  assert.equal(await page.locator('.tasks-revision-done').textContent(),'已签到');
  assert.equal(await page.locator('.tasks-revision-done').isDisabled(),true);
@@ -63,28 +63,27 @@ const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
  await click('[data-action="ret-task-tab"][data-tab="daily"]');
  for(const [task,target] of [['play','library'],['community','community'],['comment','community'],['share','community']]){
    await click(`[data-task="${task}"]`);assert.equal((await state()).page,target);
-   await click('[data-action="back"]');assert.equal((await state()).page,'ret-task-center');
+   await click('[data-action="back"]');assert.equal((await state()).page,'ret-task');
  }
- record('sign-in → more points → separate task center; two task groups, disabled ad and signed state, existing task routes and back');
- await click('[data-action="back"]');assert.equal((await state()).page,'ret-task');
+ record('sign-in directly includes more points and task content; two task groups, disabled ad and signed state, existing task routes and back');
  await click('[data-action="back"]');assert.equal((await state()).page,'home');
  const before=await state();await click('.home-checkin');const after=await state();
  assert.equal(after.retSigned,true);assert.equal(after.pointsBalance,before.pointsBalance);
- assert.equal(await page.locator('.tasks-revision-signin [data-action="ret-checkin"]').count(),0);
+ assert.equal(await page.locator('.tasks-revision-signin [data-action="ret-checkin"]:not(:disabled)').count(),0);
  record('return to home and sign in again preserves signed state without awarding points twice');
 
  for(const os of ['android','ios'])for(const region of ['domestic','overseas'])for(const form of ['portrait','landscape','tablet']){
    await api('reset');await api('setPlatform',{os,region});await api('setForm',form);
    await click('.home-checkin');await ensure(`${os}/${region}/${form}/signin`);
    assert.equal((await state()).retSigned,true);
-   await click('[data-action="ret-task-center"]');await ensure(`${os}/${region}/${form}/center`);
+   assert.equal((await state()).page,'ret-task');await ensure(`${os}/${region}/${form}/inline-tasks`);
    assert.equal(await page.locator('.tasks-revision-row').count(),6);
    if(os==='android'&&region==='domestic'&&form!=='portrait'){
-     await snap('center-'+form);await click('[data-action="back"]');await snap('signin-'+form);
+     await snap('center-'+form);await page.locator('.app-body').evaluate(e=>e.scrollTop=0);await snap('signin-'+form);
    }
    record('system/market/device sign-in and task center',{os,region,form});
  }
- await api('reset');await api('setForm','portrait');await click('.home-checkin');await click('[data-action="ret-task-center"]');
+ await api('reset');await api('setForm','portrait');await click('.home-checkin');
  await page.setViewportSize({width:390,height:900});await ensure('narrow viewport');
  await snap('center-narrow');record('narrow viewport retains readable controls and no horizontal body overflow');
  assert.deepEqual(errors,[]);assert.deepEqual(externalRequests,[]);

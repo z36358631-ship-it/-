@@ -37,14 +37,45 @@
 .tasks-revision-empty h3{margin:0;font-size:15px;font-weight:500;color:#c2c5cc}
 .tasks-revision-empty p{margin:10px 0 0;font-size:12px;color:#858c98}
 .tasks-revision-page button:focus-visible{outline:2px solid #dcffd3;outline-offset:3px}
-.device.is-landscape .tasks-revision-signin{display:grid;grid-template-columns:minmax(200px,.8fr) minmax(300px,1.5fr);gap:12px 18px;padding-top:4px}
+.tasks-month-card{text-align:left;padding:18px 14px 16px;background:#1b1d21}
+.tasks-month-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:20px}
+.tasks-month-heading h2{font-size:19px;white-space:nowrap}
+.tasks-month-heading>span{font-size:11px;color:#939c96;white-space:nowrap}
+.tasks-month-heading b{color:#c5f8bb;font-weight:600}
+.tasks-month-week,.tasks-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.tasks-month-week{color:#81878c;text-align:center;font-size:11px;margin-bottom:10px}
+.tasks-month-grid{row-gap:8px}
+.tasks-month-toggle{display:block;width:100%;min-height:44px;margin:6px 0 -8px;border:0;background:transparent;color:#a8b6a6;font-size:12px;cursor:pointer}
+.tasks-month-day.is-other-month{opacity:.55}
+.tasks-month-day.is-other-month .tasks-month-date{font-size:11px}
+.tasks-month-day{min-width:0;min-height:58px;display:flex;align-items:center;flex-direction:column;justify-content:center;gap:3px;border-radius:10px;border:1px solid transparent;background:#24272c;color:#c4c8ce;font-variant-numeric:tabular-nums}
+.tasks-month-date{font-size:13px;line-height:1.2;font-weight:550}
+.tasks-month-mark{font-size:13px;line-height:15px;color:#666f78}
+.tasks-month-state{font-size:9px;line-height:11px;color:#828991}
+.tasks-month-day.is-missed{background:#202227;color:#858c95}
+.tasks-month-day.is-future{background:#22252a;color:#abb1b9}
+.tasks-month-day.is-signed{background:#2c3b30;border-color:#52694e;color:#c5f8bb}
+.tasks-month-day.is-signed .tasks-month-mark{color:#c5f8bb;font-size:16px}
+.tasks-month-day.is-signed .tasks-month-state{color:#a9c9a1}
+.tasks-month-day.is-today{border-color:#c5f8bb;background:#c5f8bb;color:#173723}
+.tasks-month-day.is-today .tasks-month-mark{color:#173723;font-size:11px;font-weight:650}
+.tasks-month-day.is-today.is-signed .tasks-month-mark{font-size:16px}
+.tasks-month-day.is-today .tasks-month-state{color:#385e41}
+.tasks-month-footer{border-top:1px solid #30343a;margin-top:18px;padding-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tasks-month-result{display:flex;flex-direction:column;gap:7px;min-width:0}
+.tasks-month-result>strong{font-size:13px;font-weight:550}
+.tasks-month-result>span{font-size:11px;color:#939c96;line-height:1.4}
+.tasks-month-result b{color:#c5f8bb;font-weight:550}
+.tasks-month-footer .tasks-revision-sign-button{width:100px;min-height:40px;flex-shrink:0}
+.tasks-month-footer .tasks-revision-signed-label{padding:10px 17px;white-space:nowrap}
+.device.is-landscape .tasks-revision-signin{display:grid;grid-template-columns:minmax(330px,1.7fr) minmax(200px,.8fr);gap:12px 18px;padding-top:4px}
 .device.is-landscape .tasks-revision-balance{padding:8px 8px 16px}
 .device.is-landscape .tasks-revision-checkin{padding:18px 12px;align-self:start}
 .device.is-landscape .tasks-revision-summary{grid-column:1}.device.is-landscape .tasks-revision-more{grid-column:2;grid-row:1;margin:0}
 .device.is-landscape .tasks-revision-row{padding:12px 0}
 .device.is-landscape .tasks-revision-center{max-width:720px}
 .device.is-landscape .tasks-revision-entry{align-self:center}
-.device.is-tablet .tasks-revision-signin{display:grid;grid-template-columns:minmax(220px,1fr) minmax(330px,1.5fr);gap:16px 22px;padding-top:14px}
+.device.is-tablet .tasks-revision-signin{display:grid;grid-template-columns:minmax(330px,1.7fr) minmax(200px,.8fr);gap:16px 22px;padding-top:14px}
 .device.is-tablet .tasks-revision-balance{padding-bottom:22px}
 .device.is-tablet .tasks-revision-checkin{align-self:start}
 .device.is-tablet .tasks-revision-summary{grid-column:1}.device.is-tablet .tasks-revision-more{grid-column:2;grid-row:1;margin:0}

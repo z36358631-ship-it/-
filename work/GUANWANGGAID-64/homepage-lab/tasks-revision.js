@@ -16,10 +16,41 @@
     const {state,esc,action}=ctx;
     state.retTaskTab ||= 'daily';
     state.retSigned ??= false;
+    state.retCalendarExpanded ??= false;
     const amount=value=>Number.isFinite(value)&&value>=0?esc(String(value)):'—';
     const reward=()=>amount(state.signInReward);
     const balance=()=>amount(state.pointsBalance);
-    const signed=()=>!!state.retSigned;
+    // Sign-in has its own clock: the other Demo pages intentionally use an old
+    // offer/release date. An optional internal clock makes date boundaries testable.
+    const dateParts=()=>{
+      const supplied=Date.parse(state.signInNow||'');
+      const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(Number.isFinite(supplied)?supplied:Date.now());
+      return Object.fromEntries(parts.filter(part=>part.type!=='literal').map(part=>[part.type,part.value]));
+    };
+    const today=()=>{const p=dateParts();return `${p.year}-${p.month}-${p.day}`;};
+    state.retSignedDates=Array.isArray(state.retSignedDates)?[...new Set(state.retSignedDates.filter(value=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)))]:[];
+    const signed=()=>state.retSigned=state.retSignedDates.includes(today());
+    signed();
+
+    function monthCalendar() {
+      const p=dateParts(),year=Number(p.year),month=Number(p.month),day=Number(p.day);
+      const prefix=`${p.year}-${p.month}-`,days=new Date(Date.UTC(year,month,0)).getUTCDate();
+      const offset=(new Date(Date.UTC(year,month-1,1)).getUTCDay()+6)%7;
+      const monthDates=state.retSignedDates.filter(key=>key.startsWith(prefix)&&Number(key.slice(-2))>=1&&Number(key.slice(-2))<=days);
+      const expanded=state.retCalendarExpanded,todayKey=today();
+      const weekOffset=(new Date(Date.UTC(year,month-1,day)).getUTCDay()+6)%7;
+      const startDay=expanded?1:day-weekOffset;
+      const blanks=expanded?Array.from({length:offset},()=>'<span class="tasks-month-blank" aria-hidden="true"></span>').join(''):'';
+      const cells=Array.from({length:expanded?days:7},(_,index)=>{
+        const date=new Date(Date.UTC(year,month-1,startDay+index)),cellYear=date.getUTCFullYear(),cellMonth=date.getUTCMonth()+1,n=date.getUTCDate();
+        const key=`${cellYear}-${String(cellMonth).padStart(2,'0')}-${String(n).padStart(2,'0')}`,checked=state.retSignedDates.includes(key);
+        const current=key===todayKey,past=key<todayKey,outside=cellMonth!==month||cellYear!==year;
+        const kind=checked?'signed':past?'missed':current?'today':'future';
+        const status=checked?'已签到':past?'未签到':current?'待签到':'未到';
+        return `<div class="tasks-month-day is-${kind}${current?' is-today':''}${outside?' is-other-month':''}" data-date="${key}" data-status="${kind}" aria-label="${cellMonth}月${n}日，${current?'今日，':''}${status}"${current?' aria-current="date"':''}><span class="tasks-month-date">${outside?`${cellMonth}/${n}`:n}</span><span class="tasks-month-mark" aria-hidden="true">${checked?'✓':current?'今天':'·'}</span><span class="tasks-month-state">${checked?'已签':past?'未签':current?'待签':'未到'}</span></div>`;
+      }).join('');
+      return `<section class="tasks-revision-card tasks-revision-checkin tasks-month-card" aria-label="本月签到记录"><div class="tasks-month-heading"><h2>连续签到</h2><span>${year}年${month}月 · 已签 <b>${monthDates.length}</b> 天</span></div><div class="tasks-month-week" aria-hidden="true">${['一','二','三','四','五','六','日'].map(text=>`<span>${text}</span>`).join('')}</div><div class="tasks-month-grid" id="tasks-signin-calendar" aria-label="${expanded?'整月':'本周'}签到日期">${blanks}${cells}</div>${action(expanded?'收起 ⌃':'更多 ⌄','ret-calendar-toggle',`aria-expanded="${expanded}" aria-controls="tasks-signin-calendar"`,'tasks-month-toggle')}<div class="tasks-month-footer"><div class="tasks-month-result"><strong role="status">${signed()?'今日已签到':'今日未签到'}</strong><span>${signed()?'今日获得':'签到可得'} <b>${signed()&&Number.isFinite(state.signInReward)?'+':''}${reward()}</b> 盖世积分</span></div>${signed()?'<span class="tasks-revision-signed-label">明天再来</span>':action('签到','ret-checkin','','tasks-revision-sign-button')}</div></section>`;
+    }
 
     function tabs() {
       return `<nav class="tasks-revision-tabs" aria-label="任务分类">${['daily','growth'].map((id,index)=>action(index?'成长任务':'每日任务','ret-task-tab',`data-tab="${id}" aria-pressed="${state.retTaskTab===id}"`,state.retTaskTab===id?'is-selected':'')).join('')}</nav>`;
@@ -35,8 +66,7 @@
     }
 
     function renderSignIn() {
-      const configured=Number.isFinite(state.signInReward)&&state.signInReward>=0;
-      return `<div class="tasks-revision-page tasks-revision-signin" data-component-id="D-TASK-SIGNIN"><div class="tasks-revision-summary"><section class="tasks-revision-balance"><span>我的盖世积分</span><strong>${balance()}</strong></section><section class="tasks-revision-card tasks-revision-checkin"><span class="tasks-revision-status ${signed()?'is-signed':''}" aria-hidden="true">${signed()?'✓':'＋'}</span><h2>${signed()?'今日已签到':'每日签到'}</h2><p role="status">${signed()?'获得盖世积分':'签到获得盖世积分'}</p><div class="tasks-revision-reward"><strong>${signed()&&configured?'+':''}${reward()}</strong><span>盖世积分</span></div>${signed()?'<span class="tasks-revision-signed-label">明天再来</span>':action('签到','ret-checkin','','tasks-revision-sign-button')}</section></div><section class="tasks-revision-card tasks-revision-more tasks-revision-entry"><div class="tasks-revision-more-heading"><h2>盖世任务中心</h2><span>每日任务 · 成长任务</span></div>${action('获得更多积分','ret-task-center','','tasks-revision-sign-button')}</section></div>`;
+      return `<div class="tasks-revision-page tasks-revision-signin" data-component-id="D-TASK-SIGNIN"><div class="tasks-revision-summary"><section class="tasks-revision-balance"><span>我的盖世积分</span><strong>${balance()}</strong></section>${monthCalendar()}</div>${moreTasks()}</div>`;
     }
 
     function renderTasks() {
@@ -44,8 +74,9 @@
     }
 
     function signIn() {
-      // Only update the existing local Demo flag. No balance mutation or award receipt.
-      if(!state.retSigned)state.retSigned=true;
+      // Only record this local Demo date. No balance mutation or award receipt.
+      if(!signed())state.retSignedDates.push(today());
+      signed();
     }
 
     function page(name) {
@@ -57,10 +88,17 @@
     function handle(name,data={}) {
       switch(name) {
         case 'lab-signin':
-          signIn();state.retTask='checkin';state.retTaskTab='daily';ctx.go('ret-task');return true;
+          signIn();state.retTask='checkin';state.retTaskTab='daily';state.retCalendarExpanded=false;ctx.go('ret-task');return true;
         case 'ret-task':
-          if(data.task!=='checkin')return false;
-          state.retTask='checkin';state.retTaskTab='daily';ctx.go('ret-task');return true;
+          if(data.task!=='checkin'){
+            const task=TASKS.find(item=>item.id===data.task);
+            if(!task)return false;
+            if(task.page)ctx.go(task.page);
+            return true;
+          }
+          state.retTask='checkin';state.retTaskTab='daily';state.retCalendarExpanded=false;ctx.go('ret-task');return true;
+        case 'ret-calendar-toggle':
+          state.retCalendarExpanded=!state.retCalendarExpanded;ctx.render(ctx.getScroll());return true;
         case 'ret-task-center':
           state.retTaskTab='daily';ctx.go('ret-task-center');return true;
         case 'ret-task-tab':
