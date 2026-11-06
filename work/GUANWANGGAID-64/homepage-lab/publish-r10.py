@@ -119,24 +119,39 @@ def images():
 def docs():
     record = json.loads(RECORD.read_text('utf-8'))
     check_assets()
+    verification = json.loads((OUT / 'final-revision-verification.json').read_text('utf-8'))
+    assert verification['sourceMarkdownWordAlignment'] == 'passed'
+    assert verification['wordReview']['status'] == 'passed'
+    assert verification['wordSha256'] == sha((PRD / '盖世游戏7.0首页改版PRD_V1.5_飞书导入版.docx').read_bytes())
+    assert json.loads((HERE / 'remote-images-r10.json').read_text('utf-8'))['status'] == 'passed'
     source = (OUT / 'prd-v1.4-source.md').read_text('utf-8')
     image_root = 'https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@' + record['imageCommit'] + '/public/prd/gamehub-home-r10-20261106'
     rendered = source.replace('__BASE__', image_root)
     rendered = re.sub(r'(!\[[^\]]*\]\()([^\)]+)(\))', lambda m: m[1] + quote(m[2], safe=':/%') + m[3], rendered)
     assert '待确认' not in rendered
     MD.write_text(rendered, encoding='utf-8', newline='\n')
+    for name in ['final-revision-verification.json', 'monthly-simplification-verification.json']:
+        report_path = OUT / name
+        report = json.loads(report_path.read_text('utf-8'))
+        report['markdownSha256'] = sha(MD.read_bytes())
+        report['fixedShaPublicImages'] = 'passed: 16 public HTTP/MIME and exact-byte comparisons'
+        report['publication'] = 'tracked separately in work/GUANWANGGAID-64/homepage-lab/publication-r10.json'
+        report['imageBase'] = image_root
+        report['markdownImagePolicy'] = 'Formal MD uses immutable public images; Word embeds identical local pixels; source retains __BASE__ for rebuilding.'
+        report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), 'utf-8')
     names = ['prd-v1.4-source.md', '首页改版说明.md', 'build_docx.py', 'simplify_monthly_prd.py',
              'build_final_flow.py', 'complete_monthly_revision.py', 'render_word_fallback.ps1',
              'monthly-prd-quality.json', 'home-prd-word-verification.json',
              'monthly-simplification-verification.json', 'final-revision-verification.json']
     paths = [MD, PRD / '盖世游戏7.0首页改版PRD_V1.5_飞书导入版.docx', HERE / 'state.md', HERE / 'r10-review.md', HERE / 'sources.json',
+             HERE / 'remote-images-r10.json', HERE / 'prd-images-r10.json', HERE / 'monthly-evidence/review.md', HERE / 'publish-r10.py',
              ROOT / 'docs/superpowers/plans/2026-11-06-gamehub-monthly-signin.md',
              ROOT / 'prd/workflow-state/GUANWANGGAID-64-gamehub-70-product.md']
     paths += [OUT / name for name in names if (OUT / name).is_file()]
     git('fetch', 'origin', 'refs/heads/master:refs/remotes/origin/master')
     base = git('rev-parse', 'refs/remotes/origin/master').decode().strip()
     # Other project commits may have arrived; preserve them and refuse scoped conflicts.
-    conflicts = git('diff', '--name-only', record['assetCommit'], base, '--', *[p.relative_to(ROOT).as_posix() for p in paths]).decode().strip()
+    conflicts = git('diff', '--name-only', record['imageCommit'], base, '--', *[p.relative_to(ROOT).as_posix() for p in paths]).decode().strip()
     if conflicts:
         raise RuntimeError('Remote document scope changed; review first: ' + conflicts)
     commit, changed = commit_files(base, paths, 'docs(gamehub): simplify home PRD v1.5 and align weekly sign-in and inline tasks')
