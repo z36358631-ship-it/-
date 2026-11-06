@@ -326,11 +326,37 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 .device.is-tablet .tasks-revision-summary{grid-column:1}.device.is-tablet .tasks-revision-more{grid-column:2;grid-row:1;margin:0}
 .device.is-tablet .tasks-revision-entry{align-self:center}
 @media(prefers-reduced-motion:reduce){.tasks-revision-page *{scroll-behavior:auto}}
+
+/* 2026.11.6修改：订阅登录/通知权限演示，应用内浮层受设备边界约束。 */
+.device{position:relative}
+.subscription-overlay{position:absolute;inset:0;z-index:50;background:#0009;display:flex;align-items:center;justify-content:center;padding:22px}
+.subscription-dialog{width:min(100%,360px);padding:23px;border:1px solid #ffffff18;border-radius:18px;background:#23252c;box-shadow:0 15px 55px #0006}
+.subscription-dialog h3{font-size:17px;margin:0 0 12px;color:#f0f3f7}
+.subscription-dialog p{font-size:12px;line-height:1.8;color:#b1bac6}
+.subscription-dialog small{display:block;color:#828c9a;font-size:10px;line-height:1.6;margin:10px 0}
+.subscription-dialog>div{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.subscription-dialog button{flex:1;min-height:38px;font-size:11px;white-space:nowrap}
+.ret-giveaway-intro{position:relative;padding-right:100px}
+.ret-column-subscribe{position:absolute;right:0;top:20px;min-height:44px;padding:7px 12px;font-size:11px}
+.timeline-store{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none;color:inherit}
+.timeline-store>img{width:86px;aspect-ratio:16/9;object-fit:cover;border-radius:6px;flex:none}
+.timeline-release-actions{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex:none}
+.timeline-release-actions>small{font-size:9px;color:#9aa6b5}
+.timeline-batch-note,.timeline-global-note{font-size:11px;line-height:1.8;color:#99a5b5;margin:8px 0}
+.timeline-global-note{padding:10px 12px;border-radius:8px;background:#ffffff05}
+.timeline-game .timeline-subscribe{padding:7px 10px;font-size:10px;min-height:44px;min-width:48px}
+.ret-calendar-card{text-decoration:none;color:inherit}
+.message-categories{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.message-categories button{font-size:11px;padding:8px 10px}
+.message-categories .is-selected{background:#cbd9ba;color:#151a12}
+.community-list-item.is-text-only .community-item-copy{width:100%;padding-right:0}
+
+.timeline-game .timeline-subscribe:disabled{opacity:.5;cursor:default}
 </style>
 </head>
 <body>
   <header class="review-header">
-    <div class="review-brand"><span class="brand-square">G</span><div><h1>盖世首页</h1><p>本机开玩 · 可操作评审版</p></div></div>
+    <div class="review-brand"><span class="brand-square">G</span><div><h1>盖世首页</h1><p>本机开玩 · 2026.11.6修改</p></div></div>
     <div class="review-status"><span></span>已选方案 <b>02</b></div>
   </header>
   <main class="review-layout">
@@ -343,7 +369,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
       <details class="direction-explanation"><summary>设计思路与内容来源</summary><div id="direction-rationale"></div></details>
       <section class="control-section"><h3>快捷体验情境</h3><div id="scenario-controls" class="small-grid"></div><p id="scenario-note" class="control-note">“设备弱”可叠加在任何来源上，切换云端游玩不会改变原有身份。</p></section>
       <details class="control-conditions"><summary>用户与游玩条件</summary><section class="control-section"><label class="field-row">使用阶段<select id="lifecycle-control" data-control="lifecycle"><option value="new">首次使用</option><option value="returning">已使用过</option></select></label><label class="field-row">游戏来源<select id="source-control" data-control="source"><option value="none">尚未添加</option><option value="import">导入游戏</option><option value="steam">Steam 游戏</option></select></label><label class="field-row">设备条件<select id="capability-control" data-control="capability"><option value="local">可本地游玩</option><option value="weak">设备较弱</option></select></label><label class="field-row">游玩方式<select id="route-control" data-control="route"><option value="local">本机</option><option value="cloud">云端</option></select></label><label class="field-row">适配记录<select id="match-control" data-control="match"><option value="matched">已匹配</option><option value="unknown">设备未识别</option><option value="empty">暂无匹配</option></select></label><label class="field-row">游戏准备<select id="preparation-control" data-control="preparation"><option value="ready">样例游戏已准备</option><option value="not-ready">尚未准备完成</option></select></label></section></details>
-      <details class="review-boundary"><summary>演示说明</summary><p>游戏封面复用已有素材；社区为运营编辑样例，合集候选与任务可配置。机型、兼容结果及兼容日期为演示输入，不代表真实测试。</p><p>演示日期：<span id="demo-date">2026.11.02</span>。发售与限免沿用历史方案快照，非实时数据。</p><p>订阅仅演示站内信与Push状态，不执行通知；领取入口进入官方商店。游玩仅为画面演示。</p></details>
+      <details class="review-boundary"><summary>演示说明</summary><p>游戏封面复用已有素材；社区为运营定时精选样例。本机候选由兼容接口及热度排序提供，运营只配置栏目显示和样式。机型、兼容结果及兼容日期为演示输入，不代表真实测试。</p><p>演示日期：<span id="demo-date">2026.11.02</span>。发售与限免沿用历史方案快照，非实时数据。</p><p>2026.11.6修改：整栏目喜加一订阅、单游戏发售订阅、官方兼容更新说明、后台配置及评论任务移除。登录与权限均为离线模拟，不执行通知；领取入口进入官方商店；日历用官方外链代替生产Steam原生浏览。游玩仅为画面演示。</p></details>
       <button class="reset-button" data-action="reset">重置演示</button>
     </aside>
     <section class="preview-column" aria-label="设备演示">
@@ -376,7 +402,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   'use strict';
 
   // These records retain the original review snapshot; they are not a live feed.
-  const PLATFORMS = {epic:'Epic',steam:'Steam'};
+  const PLATFORMS = {epic:'Epic',steam:'Steam',gog:'GOG'};
   const GIVEAWAYS = [
     {id:'sorry',key:'promo-sorry',name:'对不起，我们关门了',platform:'epic',original:78,end:'2026-11-05T16:00:00Z',url:'https://store.epicgames.com/zh-CN/p/sorry-were-closed-724c86'},
     {id:'asleep',key:'promo-asleep',name:'Asleep: Act 1',platform:'steam',original:42,end:'2026-11-02T18:00:00Z',url:'https://store.steampowered.com/app/1583850/Asleep_Act_1/'},
@@ -398,11 +424,11 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     {id:'battle',key:'cover-battle',name:'Battletoads',kind:'team',description:'横版动作冒险，和伙伴一起迎接下一场战斗。'},
     {id:'catquest',key:'cover-catquest',name:'猫咪斗恶龙 2',kind:'team',description:'一猫一狗结伴出发，走进菲灵洛的奇幻冒险。'}
   ];
+  // 2026.11.6修改：移除社区评论任务，保留既有任务口径。
   const TASKS = [
     {id:'checkin',name:'签到',description:'每日签到',page:null},
     {id:'play',name:'畅玩游戏',description:'前往游戏库选择游戏',page:'library'},
     {id:'community',name:'社区互动',description:'看看喜欢的帖子',page:'community'},
-    {id:'comment',name:'社区评论',description:'进入社区参与讨论',page:'community'},
     {id:'share',name:'分享帖子',description:'发现值得分享的内容',page:'community'},
     {id:'ad',name:'观看广告',description:'查看任务参与条件',page:null}
   ];
@@ -410,7 +436,8 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   function create(ctx) {
     const {state,esc,image,action,heading,section} = ctx;
     state.retPlatform ||= 'epic';
-    state.retSubscriptions ||= {epic:false,steam:false,gog:false};
+    // 2026.11.6修改：整栏目订阅；平台Tab仅筛选展示。
+    state.giveawaySubscribed ??= false;
     state.retReleaseSubscribed ??= false;
     state.retSigned ??= false;
     state.retTaskTab ||= 'daily';
@@ -430,7 +457,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 
     function calendar({compact=false}={}) {
       const entries=compact?RELEASES.slice(0,4):RELEASES;
-      return `<section class="app-section ret-calendar" data-module="calendar"><div class="section-heading ret-calendar-heading"><h2>游戏日历</h2><time>${todayText()}</time>${action('›','ret-calendar','aria-label="查看发售日历"','heading-link')}</div><div class="ret-calendar-rail">${entries.map(item=>`<button type="button" class="ret-calendar-card" data-action="ret-calendar" data-release="${item.id}"><span class="ret-calendar-art">${promoArt(item)}<span>${item.date.slice(5).replace('-','/')} 发售</span></span><b>${esc(item.name)}</b></button>`).join('')}</div></section>`;
+      return `<section class="app-section ret-calendar" data-module="calendar"><div class="section-heading ret-calendar-heading"><h2>游戏日历</h2><time>${todayText()}</time>${action('›','ret-calendar','aria-label="查看发售日历"','heading-link')}</div><div class="ret-calendar-rail">${entries.map(item=>`<a class="ret-calendar-card" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" data-store-route="steam-native"><span class="ret-calendar-art">${promoArt(item)}<span>${item.date.slice(5).replace('-','/')} 发售</span></span><b>${esc(item.name)}</b></a>`).join('')}</div></section>`;
     }
 
     function discounts({compact=false}={}) {
@@ -459,10 +486,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
       return `<section class="app-section ret-continue" data-module="continue"><div class="section-heading"><h2>继续游玩</h2></div><div class="ret-continue-row">${ids.map(id=>`<button type="button" class="ret-continue-card" data-action="game" data-game="${id}" data-route="local">${image('cover-'+id,ctx.GAMES[id].name)}<span><b>${ctx.GAMES[id].name}</b><small>${state.source==='steam'?'Steam':'本地导入'}</small></span><i aria-hidden="true">›</i></button>`).join('')}</div></section>`;
     }
 
-    function calendarPage() {
-      const dates=[...new Set(RELEASES.map(item=>item.date))];
-      return `<div class="ret-release-page"><div class="ret-release-month"><span>2026 年</span><h2>11 月发售日历</h2><small>PC 游戏</small></div><button type="button" class="ret-release-subscribe ${state.retReleaseSubscribed?'is-on':''}" data-action="ret-release-subscribe" aria-pressed="${state.retReleaseSubscribed}"><span><b>每日发售提醒</b><small>站内信 · Push</small></span><em>${state.retReleaseSubscribed?'已订阅':'订阅'}</em></button>${dates.map(date=>`<section class="ret-release-day"><h3><strong>${Number(date.slice(-2))}</strong><span>11 月 · ${new Intl.DateTimeFormat('zh-CN',{weekday:'long',timeZone:'UTC'}).format(new Date(date+'T00:00:00Z'))}</span></h3><div class="ret-release-list">${RELEASES.filter(item=>item.date===date).map(item=>`<article class="ret-release-item ${state.retSelectedRelease===item.id?'is-selected':''}" data-release-id="${item.id}">${promoArt(item)}<div><h4>${esc(item.name)}</h4><p>${item.tags}</p><small>${date.replaceAll('-','.')} 发售</small>${storeLink(item,'Steam 商店')}</div></article>`).join('')}</div></section>`).join('')}</div>`;
-    }
+    function calendarPage() { return window.LAB_TIMELINE.create(ctx).page('ret-calendar'); }
 
     function discountPage() {
       return `<div class="ret-offer-page"><div class="ret-page-intro"><span>STEAM SPECIALS</span><h2>Steam 折扣</h2><p>国区 · 游戏本体</p></div>${DISCOUNTS.map(item=>`<article class="ret-offer-row ${state.retSelectedDiscount===item.id?'is-selected':''}" data-offer-id="${item.id}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-price"><em>-${item.discount}%</em><strong>${money(item.price)}</strong><del>${money(item.original)}</del></div><small>${isActive(item)?(item.end?dateText(item.end)+' 截止':'11.05 价格快照'):'折扣已结束'}</small>${isActive(item)?storeLink(item,'查看 Steam 商店'):'<span class="ret-ended">已结束</span>'}</div></article>`).join('')}</div>`;
@@ -471,9 +495,9 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     function giveawayPage() {
       const platform=PLATFORMS[state.retPlatform]?state.retPlatform:'epic';
       const entries=GIVEAWAYS.filter(item=>item.platform===platform),active=entries.filter(isActive),ended=entries.filter(item=>!isActive(item));
-      const subscribed=!!state.retSubscriptions[platform];
+      const subscribed=!!state.giveawaySubscribed;
       const offer=item=>`<article class="ret-offer-row ret-giveaway-row ${isActive(item)?'':'is-ended'}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-free-line"><strong>${isActive(item)?'免费领取':'领取已结束'}</strong>${item.original!==null?`<del>${money(item.original)}</del>`:''}</div><small>${dateText(item.end)} 截止</small>${isActive(item)?storeLink(item,'前往领取'):'<span class="ret-ended">已结束</span>'}</div></article>`;
-      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam</p></div><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}<div class="ret-subscription-row"><span><b>${PLATFORMS[platform]} 领免提醒</b><small>站内信 · Push</small></span>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`data-platform="${platform}" aria-pressed="${subscribed}"`,subscribed?'secondary is-on':'primary')}</div></div>`;
+      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam · GOG</p>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`aria-pressed="${subscribed}"`,'primary ret-column-subscribe')}</div><p class="timeline-global-note">有新增可领游戏时提醒 · 站内信 / 系统通知</p><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}</div>`;
     }
 
     function taskCenterPage() {
@@ -488,10 +512,10 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     }
 
     function widgetPage() {
-      const subscribed=Object.values(state.retSubscriptions).some(Boolean);
-      const entries=GIVEAWAYS.filter(item=>state.retSubscriptions[item.platform]&&isActive(item));
+      const subscribed=!!state.giveawaySubscribed;
+      const entries=GIVEAWAYS.filter(item=>subscribed&&isActive(item));
       const nearest=entries.length?entries.reduce((min,item)=>Date.parse(item.end)<Date.parse(min.end)?item:min):null;
-      return `<div class="ret-widget-page"><h2>领免提醒</h2><p>订阅的平台，有新限免时提醒你。</p><button type="button" class="ret-native-widget" data-action="ret-giveaways"><span class="ret-widget-brand"><i aria-hidden="true"></i>盖世喜加一</span><strong>${!subscribed?'开启领免订阅':entries.length?`当前可领 ${entries.length} 款`:'暂无可领游戏'}</strong><span class="ret-widget-time">${nearest?'最近截止剩余 '+remaining(nearest.end):subscribed?'新限免发布后更新':'站内信 · Push 提醒'}</span><span class="ret-widget-arrow" aria-hidden="true">›</span></button></div>`;
+      return `<div class="ret-widget-page"><h2>领免提醒</h2><p>订阅盖世喜加一，有新增可领游戏时提醒你。</p><button type="button" class="ret-native-widget" data-action="ret-giveaways"><span class="ret-widget-brand"><i aria-hidden="true"></i>盖世喜加一</span><strong>${!subscribed?'开启领免订阅':entries.length?`当前可领 ${entries.length} 款`:'暂无可领游戏'}</strong><span class="ret-widget-time">${nearest?'最近截止剩余 '+remaining(nearest.end):subscribed?'新限免发布后更新':'站内信 · Push 提醒'}</span><span class="ret-widget-arrow" aria-hidden="true">›</span></button></div>`;
     }
 
     function businessPage() {
@@ -509,8 +533,8 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
         case 'ret-discounts':ctx.go('ret-discounts',{retSelectedDiscount:data.offer||''});return true;
         case 'ret-giveaways':if(PLATFORMS[data.platform])state.retPlatform=data.platform;ctx.go('ret-giveaways');return true;
         case 'ret-platform':if(PLATFORMS[data.platform]){state.retPlatform=data.platform;ctx.render(0);}return true;
-        case 'ret-subscribe':if(PLATFORMS[data.platform]){state.retSubscriptions[data.platform]=!state.retSubscriptions[data.platform];ctx.render(ctx.getScroll());}return true;
-        case 'ret-release-subscribe':state.retReleaseSubscribed=!state.retReleaseSubscribed;ctx.render(ctx.getScroll());return true;
+        case 'ret-subscribe':window.LAB_SUBSCRIPTIONS.create(ctx).subscribe('giveaways');return true;
+        
         case 'ret-task-center':ctx.go('ret-task-center');return true;
         case 'ret-task-tab':state.retTaskTab=data.tab==='growth'?'growth':'daily';ctx.render(0);return true;
         case 'ret-task':{const task=TASKS.find(item=>item.id===data.task)||TASKS[0];state.retTask=task.id;if(task.id==='checkin'||task.id==='ad')ctx.go('ret-task');else ctx.go(task.page);return true;}
@@ -703,7 +727,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   // Independent operating banners; campaign selection never overwrites game eligibility.
   const operations={banners:[
     {id:'giveaways',image:'promo-sorry',title:'盖世喜加一',subtitle:'Epic · Steam',action:'ret-giveaways'},
-    {id:'calendar',image:'release-archeage',title:'游戏日历',subtitle:'每日发售提醒',action:'ret-calendar'}
+    {id:'calendar',image:'release-archeage',title:'游戏日历',subtitle:'订阅心仪游戏的发售提醒',action:'ret-calendar'}
   ],
     homeOrder:['collections','calendar','latest','community','tasks','business'],
     collections:[{id:'local-action',title:'动作与冒险',subtitle:'动作 · 角色扮演 · 开放世界',eyebrow:'游戏合集',caption:'本机兼容精选',games:['hades','elden','cyber','wukong','village','horizon']}],
@@ -723,6 +747,8 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     'community-break': {id:'community-break',game:'elden',category:'社区精选',title:'下次打开时，你还记得自己要去哪里吗？',deck:'一个地图标记，给下一次探索留下起点。',image:'scene-elden',sections:[['结束前做一个小整理','回顾刚刚探索到的位置，标记一处下一次想去的地方。不需要长篇记录，留一个自己能看懂的线索就够了。'],['重返游戏先看地图','先确认身处哪里、周围有哪些已到达的赐福。找回探索方向之后，再决定这次要玩多久。'],['进度之外，也留住兴趣','有时值得记录的并非任务，而是一条想走的路或一个想再挑战的对手。']]}
   };
 
+  // 2026.11.6修改：排行榜顺序为离线接口样例，运营不能手选改变本机兼容事实。
+  const RANK_HEAT={hades:60,elden:50,cyber:40,wukong:30,village:20,horizon:10};
   function home(direction,ctx){
     const {state,MEDIA,GAMES,ARTICLES,esc,image,action,section,gameGrid,compatible,localReady,retention:R,purchase:P,conversion:C}=ctx;
     const communityArticles={...articles,...ARTICLES};
@@ -730,13 +756,15 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 
     function localModule(){
       if(!ctx.features.compatibleCatalog)return '';
-      const collections=(operations.collections||[]).filter(item=>item&&item.title&&Array.isArray(item.games));
+      const collections=(operations.collections||[]).filter(item=>item&&item.title);
       if(!collections.length)return '';
       const cards=collections.map(item=>{
-        const ids=item.games.filter(id=>GAMES[id]&&MEDIA['cover-'+id]&&compatible(id)).slice(0,8);
+        const candidates=Array.isArray(state.deviceCompatibility)?state.deviceCompatibility:ctx.compatibleGames;
+        const heat=state.rankingHeat||RANK_HEAT;
+        const ids=[...new Set(candidates)].filter(id=>GAMES[id]&&MEDIA['cover-'+id]&&compatible(id)).sort((a,b)=>(heat[b]||0)-(heat[a]||0)||a.localeCompare(b)).slice(0,6);
         if(!ids.length)return '';
         const split=Math.ceil(ids.length/2);
-        return `<article class="local-collection" data-collection="${esc(item.id)}"><button type="button" class="local-collection-card" data-content-source="operations-device-match" data-action="compatibility" aria-label="查看${esc(item.title)}"><div class="local-collection-covers">${[ids.slice(0,split),ids.slice(split)].filter(row=>row.length).map(row=>`<span class="local-collection-icon-row">${row.map(id=>`<span class="local-collection-game" data-collection-game="${id}">${image('cover-'+id,GAMES[id].name)}${compat(id)}</span>`).join('')}</span>`).join('')}</div><span class="local-collection-title"><small>${esc(item.eyebrow||'游戏合集')}</small><b>${esc(item.caption||item.title)}</b></span></button></article>`;
+        return `<article class="local-collection" data-collection="${esc(item.id)}"><button type="button" class="local-collection-card" data-content-source="device-compatibility-ranked" data-action="compatibility" aria-label="查看${esc(item.title)}"><div class="local-collection-covers">${[ids.slice(0,split),ids.slice(split)].filter(row=>row.length).map(row=>`<span class="local-collection-icon-row">${row.map(id=>`<span class="local-collection-game" data-collection-game="${id}">${image('cover-'+id,GAMES[id].name)}${compat(id)}</span>`).join('')}</span>`).join('')}</div><span class="local-collection-title"><small>${esc(item.eyebrow||'游戏合集')}</small><b>${esc(item.caption||item.title)}</b></span></button></article>`;
       }).filter(Boolean);
       if(!cards.length&&!ctx.features.compatQuery)return '';
       if(!cards.length)return section('本机可玩',`<button type="button" class="concept-path-link" data-action="compatibility"><span>${state.match==='unknown'?'尚未识别当前设备':'暂无当前设备的兼容游戏'}</span><b>兼容性查询 ›</b></button>`,'compatibility');
@@ -751,16 +779,20 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
         calendar:'<rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M7.5 3v4m9-4v4M3.5 10h17M8 14h2m4 0h2M8 17h2"/>',
         forum:'<path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-9l-6 3V6a2 2 0 0 1 1-2Z"/><path d="M8 9h9M8 13h6"/>'
       };
-      const items=(operations.shortcuts||[]).filter(item=>item&&(item.action!=='compatibility'||ctx.features.compatQuery)).filter(item=>item&&icons[item.icon]&&['compatibility','ret-giveaways','ret-calendar','gamehub-forum'].includes(item.action));
+      const items=(operations.shortcuts||[]).filter(item=>item&&(item.action!=='compatibility'||ctx.features.compatQuery)).filter(item=>item&&icons[item.icon]&&['compatibility','ret-giveaways','ret-calendar','gamehub-forum','article','game'].includes(item.action));
       if(!items.length)return '';
-      return `<nav class="home-shortcuts" data-module="shortcuts" aria-label="首页功能入口">${items.map(item=>`<button type="button" data-action="${item.action}" data-shortcut="${esc(item.id)}"><span class="home-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${icons[item.icon]}</svg></span><b>${esc(item.name)}</b></button>`).join('')}</nav>`;
+      return `<nav class="home-shortcuts" data-module="shortcuts" aria-label="首页功能入口">${items.map(item=>`<button type="button" data-action="${item.action}" data-shortcut="${esc(item.id)}"${item.article?` data-article="${esc(item.article)}"`:''}${item.game?` data-game="${esc(item.game)}"`:''}><span class="home-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${icons[item.icon]}</svg></span><b>${esc(item.name)}</b></button>`).join('')}</nav>`;
     }
 
     function communityBlock(){
-      const pages=(operations.communityPages||[]).map(ids=>ids.filter(id=>communityArticles[id])).filter(ids=>ids.length);
+      const now=Date.parse(state.demoNow);
+      const schedule=operations.communitySchedule||[];
+      const configured=schedule.length?schedule.filter(item=>(!item.start||Date.parse(item.start)<=now)&&(!item.end||Date.parse(item.end)>now)).sort((a,b)=>(a.order||0)-(b.order||0)).map(item=>item.id):(operations.communityPages||[]).flat();
+      const ids=[...new Set(configured)].filter(id=>communityArticles[id]).slice(0,6);
+      const pages=[];for(let i=0;i<ids.length;i+=3)pages.push(ids.slice(i,i+3));
       if(!pages.length)return '';
       const selected=Math.max(0,Math.min(pages.length-1,Number(state.communityPage)||0));
-      return `<div class="community-module" data-module="community-picks"><div class="community-carousel" aria-label="社区精选，每页三条内容" tabindex="0">${pages.map((ids,index)=>`<div class="community-page" data-community-page="${index}" id="community-${direction}-page-${index}" role="group" aria-label="第 ${index+1} 页，共 ${pages.length} 页">${ids.map(id=>{const a=communityArticles[id];return `<button class="community-list-item" data-action="article" data-article="${id}"><div class="community-item-copy"><h3>${esc(a.title)}</h3><p>${esc(a.category)}<span>·</span>${esc(GAMES[a.game].name)}</p></div>${image(a.image,'')}</button>`;}).join('')}</div>`).join('')}</div><div class="community-dots" aria-label="社区精选分页">${pages.map((ids,index)=>`<button type="button" data-action="community-page" data-index="${index}" class="${selected===index?'is-selected':''}" aria-label="查看社区精选第 ${index+1} 页" aria-controls="community-${direction}-page-${index}" aria-pressed="${selected===index}"><span></span></button>`).join('')}</div></div>`;
+      return `<div class="community-module" data-module="community-picks"><div class="community-carousel" aria-label="社区精选，每页三条内容" tabindex="0">${pages.map((ids,index)=>`<div class="community-page" data-community-page="${index}" id="community-${direction}-page-${index}" role="group" aria-label="第 ${index+1} 页，共 ${pages.length} 页">${ids.map(id=>{const a=communityArticles[id];return `<button class="community-list-item${a.image?'':' is-text-only'}" data-action="article" data-article="${id}"><div class="community-item-copy"><h3>${esc(a.title)}</h3><p>${esc(a.category)}<span>·</span>${esc(GAMES[a.game].name)}</p></div>${a.image?image(a.image,''):''}</button>`;}).join('')}</div>`).join('')}</div><div class="community-dots" aria-label="社区精选分页">${pages.map((ids,index)=>`<button type="button" data-action="community-page" data-index="${index}" class="${selected===index?'is-selected':''}" aria-label="查看社区精选第 ${index+1} 页" aria-controls="community-${direction}-page-${index}" aria-pressed="${selected===index}"><span></span></button>`).join('')}</div></div>`;
     }
     const community=()=>{const body=communityBlock();return body?section('社区精选',body):'';};
     function operationsBanner(){
@@ -780,7 +812,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
       if(!ctx.features.latestCompatibility)return '';
       const ids=(operations.latestGames||[]).filter(id=>GAMES[id]&&MEDIA['cover-'+id]);
       if(!ids.length)return '';
-      return `<section class="app-section" data-module="latest-compatibility">${ctx.heading('盖世最新兼容','latest-compatibility')}<div class="latest-compatibility-rail">${ids.map(id=>`<button type="button" data-action="game" data-game="${id}" data-route="local">${image('cover-'+id,GAMES[id].name)}<b>${esc(GAMES[id].name)}</b></button>`).join('')}</div></section>`;
+      return `<section class="app-section" data-module="latest-compatibility">${ctx.heading('盖世最新兼容','latest-compatibility')}<div class="latest-compatibility-rail">${ids.map(id=>`<button type="button" data-action="latest-compatibility">${image('cover-'+id,GAMES[id].name)}<b>${esc(GAMES[id].name)}</b></button>`).join('')}</div></section>`;
     }
 
     function discovery(){
@@ -820,6 +852,8 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     {id:'archeage',key:'release-archeage',name:'上古世纪编年史',date:'2026-11-04',tags:'动作 · 冒险'},
     {id:'floatopia',key:'release-floatopia',name:'乐浮岛',date:'2026-11-04',tags:'冒险 · 休闲'}
   ];
+  // 2026.11.6修改：测试结果的官方批次，不受当前机型过滤；说明也是演示数据。
+  const BATCH_NOTES={'2026-11-01':'动作游戏兼容测试记录更新；具体机型及运行条件以各游戏测试记录为准。','2026-11-02':'开放世界游戏测试记录更新；请查看各游戏的芯片、机型适用条件及已知问题。'};
   const ROUTES = ['ret-calendar','latest-compatibility'];
   const validMonth = value => /^\d{4}-(0[1-9]|1[0-2])$/.test(value || '');
   const shiftedMonth = (value, offset) => {
@@ -852,15 +886,15 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 
     function row(item,page) {
       const compatible = kind(page) === 'compatibility';
-      const status = compatible ? '兼容更新' : item.date <= today ? '已发售' : '即将发售';
-      const selected = compatible ? '' : state.retSelectedRelease === item.id ? ' is-selected' : '';
-      return `<article class="timeline-game${selected}" data-timeline-game="${esc(item.id)}">${image(item.key,item.name)}<div class="timeline-game-copy"><h3>${esc(item.name)}</h3><div class="timeline-tags">${item.tags.split(' · ').map(tag=>`<span>${esc(tag)}</span>`).join('')}</div></div><span class="timeline-game-status${!compatible&&item.date>today?' is-upcoming':''}">${status}</span></article>`;
+      if(compatible)return `<article class="timeline-game" data-timeline-game="${esc(item.id)}">${image(item.key,item.name)}<div class="timeline-game-copy"><h3>${esc(item.name)}</h3><div class="timeline-tags">${item.tags.split(' · ').map(tag=>`<span>${esc(tag)}</span>`).join('')}</div></div><span class="timeline-game-status">兼容更新</span></article>`;
+      const subscribed=(state.releaseSubscriptions||[]).includes(item.id),released=item.date<=today;
+      return `<article class="timeline-game" data-timeline-game="${esc(item.id)}"><a class="timeline-store" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" data-store-route="steam-native" aria-label="浏览${esc(item.name)} Steam商店">${image(item.key,item.name)}<div class="timeline-game-copy"><h3>${esc(item.name)}</h3><div class="timeline-tags">${item.tags.split(' · ').map(tag=>`<span>${esc(tag)}</span>`).join('')}</div></div></a><div class="timeline-release-actions"><small>${item.date<=today?'已发售':'即将发售'}</small>${action(subscribed?'已订阅':released?'已发售':'订阅','release-subscribe',`${released&&!subscribed?'disabled ':''}data-release="${esc(item.id)}" aria-label="${subscribed?'取消订阅':'订阅'}${esc(item.name)}发售提醒" aria-pressed="${subscribed}"`,subscribed?'timeline-subscribe is-on':'timeline-subscribe')}</div></article>`;
     }
 
     function subscribeBar(page) {
       const compatible=kind(page)==='compatibility';
       const on=compatible?state.latestCompatSubscribed:state.retReleaseSubscribed;
-      return `<footer class="timeline-subscription" data-timeline-subscription="${compatible?'compatibility':'release'}"><div><b>${compatible?'兼容提醒':'发售提醒'}</b><small>${compatible?'每日汇总新增兼容游戏':'每日汇总当天发售游戏'}</small><span>站内信 · Push</span></div>${action(on?'已订阅':compatible?'订阅兼容提醒':'订阅发售提醒','timeline-subscribe',`aria-pressed="${on}"`,on?'timeline-subscribe is-on':'timeline-subscribe')}</footer>`;
+      return `<footer class="timeline-subscription" data-timeline-subscription="${compatible?'compatibility':'release'}"><div><b>${compatible?'兼容提醒':'发售提醒'}</b><small>${compatible?'有新的官方兼容更新时提醒':'仅提醒已订阅游戏的发售'}</small><span>站内信 · Push</span></div>${action(on?'已订阅':compatible?'订阅兼容提醒':'订阅发售提醒','timeline-subscribe',`aria-pressed="${on}"`,on?'timeline-subscribe is-on':'timeline-subscribe')}</footer>`;
     }
 
     function page(name) {
@@ -868,8 +902,8 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
       const month=currentMonth(name);
       const list=entries(name).filter(item=>item.date.startsWith(month)).sort((a,b)=>a.date.localeCompare(b.date));
       const dates=[...new Set(list.map(item=>item.date))];
-      const content=dates.length?dates.map(date=>`<section class="timeline-day" data-timeline-date="${date}"><h2><time datetime="${date}">${date.replaceAll('-','.')}</time>${date===today?'<span>今天</span>':''}</h2><div class="timeline-day-games">${list.filter(item=>item.date===date).map(item=>row(item,name)).join('')}</div></section>`).join(''):`<div class="timeline-empty"><h3>${kind(name)==='compatibility'?'本月暂无兼容更新':'本月暂无发售游戏'}</h3></div>`;
-      return `<div class="timeline-page" data-timeline-kind="${kind(name)}">${monthHeader(name)}<div class="timeline-content">${content}</div>${subscribeBar(name)}</div>`;
+      const content=dates.length?dates.map(date=>`<section class="timeline-day" data-timeline-date="${date}"><h2><time datetime="${date}">${date.replaceAll('-','.')}</time>${date===today?'<span>今天</span>':''}</h2>${kind(name)==='compatibility'?`<p class="timeline-batch-note" data-batch-note="${date}">${esc(BATCH_NOTES[date]||'兼容测试记录更新，适用条件请查看具体游戏。')}</p>`:''}<div class="timeline-day-games">${list.filter(item=>item.date===date).map(item=>row(item,name)).join('')}</div></section>`).join(''):`<div class="timeline-empty"><h3>${kind(name)==='compatibility'?'本月暂无兼容更新':'本月暂无发售游戏'}</h3></div>`;
+      return `<div class="timeline-page" data-timeline-kind="${kind(name)}">${monthHeader(name)}${kind(name)==='compatibility'?'<p class="timeline-global-note">官方兼容更新动态 · 不代表全部适配当前设备</p>':'<p class="timeline-global-note">订阅感兴趣的游戏，发售时接收提醒</p>'}<div class="timeline-content">${content}</div>${kind(name)==='compatibility'?subscribeBar(name):''}</div>`;
     }
 
     function locateToday() {
@@ -906,10 +940,11 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
           ctx.render(0);
           locateToday();
           return true;
+        case 'release-subscribe':
+          if(entries('ret-calendar').some(x=>x.id===data.release&&(x.date>today||(state.releaseSubscriptions||[]).includes(x.id))))window.LAB_SUBSCRIPTIONS.create(ctx).subscribe('release',data.release);
+          return true;
         case 'timeline-subscribe':
-          if(kind(active)==='compatibility')state.latestCompatSubscribed=!state.latestCompatSubscribed;
-          else state.retReleaseSubscribed=!state.retReleaseSubscribed;
-          ctx.render(ctx.getScroll());
+          if(kind(active)==='compatibility')window.LAB_SUBSCRIPTIONS.create(ctx).subscribe('compatibility');
           return true;
         default:return false;
       }
@@ -943,11 +978,11 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 
   // Task names and destinations come from the existing retention Demo.
   // Rewards and growth-task rules were not supplied; this module does not invent them.
+  // 2026.11.6修改：移除社区评论任务，保留既有任务口径。
   const TASKS = [
     {id:'checkin',name:'签到',description:'每天来盖世看看',page:null},
     {id:'play',name:'畅玩游戏',description:'前往游戏库选择游戏',page:'library'},
     {id:'community',name:'社区互动',description:'看看喜欢的帖子',page:'community'},
-    {id:'comment',name:'社区评论',description:'进入社区参与讨论',page:'community'},
     {id:'share',name:'分享帖子',description:'发现值得分享的内容',page:'community'},
     {id:'ad',name:'观看广告',description:'广告任务暂未接入',page:null}
   ];
@@ -1059,6 +1094,55 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 ;
 (() => {
   'use strict';
+  // 2026.11.6修改：栏目/单游戏订阅共用盖世登录与通知权限；权限不影响站内信。
+  // Offline preview only. No account credentials, OS permissions or real pushes are used.
+  function create(ctx) {
+    const {state,action}=ctx;
+    state.releaseSubscriptions ||= [];
+    state.notificationPermission ||= 'unknown';
+    const render=()=>ctx.render(ctx.getScroll());
+    function finish(target) {
+      if(target.kind==='giveaways')state.giveawaySubscribed=true;
+      if(target.kind==='compatibility')state.latestCompatSubscribed=true;
+      if(target.kind==='release'&&!state.releaseSubscriptions.includes(target.id))state.releaseSubscriptions.push(target.id);
+      state.pendingSubscription=null;
+      state.subscriptionDialog=state.notificationPermission==='unknown'?'permission':state.notificationPermission==='blocked'?'settings':'';
+      render();
+    }
+    function subscribe(kind,id='') {
+      if(kind==='giveaways'&&state.giveawaySubscribed){state.giveawaySubscribed=false;render();return;}
+      if(kind==='compatibility'&&state.latestCompatSubscribed){state.latestCompatSubscribed=false;render();return;}
+      if(kind==='release'&&state.releaseSubscriptions.includes(id)){state.releaseSubscriptions=state.releaseSubscriptions.filter(x=>x!==id);render();return;}
+      const target={kind,id};
+      if(!state.accountLoggedIn){state.pendingSubscription=target;state.subscriptionDialog='login';render();return;}
+      finish(target);
+    }
+    function overlay() {
+      const type=state.subscriptionDialog;
+      if(!type)return '';
+      const descriptions={login:['登录盖世','登录后可同步订阅并接收站内信。'],permission:['接收订阅通知','订阅已保存。开启系统通知可及时收到提醒；暂不开启仍可收到站内信。'],settings:['开启通知提醒','订阅已保存。系统暂不能再次申请通知权限，可前往系统设置开启；站内信不受影响。'],settingsPreview:['系统通知设置','离线演示：此处模拟系统设置，实际 App 将进入系统通知设置页。']};
+      const [title,description]=descriptions[type];
+      const buttons=type==='login'?action('暂不登录','subscription-close','','secondary')+action('演示登录并订阅','subscription-login','','primary'):type==='permission'?action('暂不开启','subscription-deny','','secondary')+action('允许通知（演示）','subscription-allow','','primary'):type==='settings'?action('暂不开启','subscription-close','','secondary')+action('前往设置','subscription-settings','','primary'):action('返回盖世','subscription-close','','primary');
+      return `<div class="subscription-overlay"><section class="subscription-dialog" role="dialog" aria-modal="true" aria-labelledby="subscription-title"><h3 id="subscription-title">${title}</h3><p>${description}</p>${type==='login'?'<small>当前为登录流程演示，不连接真实账号。</small>':''}<div>${buttons}</div></section></div>`;
+    }
+    function handle(name) {
+      if(name==='subscription-close'){state.subscriptionDialog='';state.pendingSubscription=null;render();return true;}
+      if(name==='subscription-login'){state.accountLoggedIn=true;finish(state.pendingSubscription);return true;}
+      if(name==='subscription-deny'){state.notificationPermission='denied';state.subscriptionDialog='';render();return true;}
+      if(name==='subscription-allow'){state.notificationPermission='granted';state.subscriptionDialog='';render();return true;}
+      if(name==='subscription-settings'){state.subscriptionDialog='settingsPreview';render();return true;}
+      return false;
+    }
+    return {subscribe,overlay,handle};
+  }
+  // Compare stable identities, not totals: replacing one of five games is still an increment.
+  const addedGiveaways=(previous,current)=>{const known=new Set(previous.map(x=>`${x.platform}:${x.id}`));return current.filter(x=>!known.has(`${x.platform}:${x.id}`));};
+  window.LAB_SUBSCRIPTIONS={create,addedGiveaways};
+})();
+
+;
+(() => {
+  'use strict';
   const MEDIA = window.LAB_MEDIA || {};
   const DIRECTIONS = {
     value: {n:'01',name:'促进付费',line:'给导入用户一个付费理由',title:'已经有游戏，为什么还愿意花钱？',description:'围绕想玩的下一款，展示会员游戏库、云端服务与优惠内容；租号保留快捷入口；Steam优惠作为辅助，不把商店跳转等同于盖世付费。'},
@@ -1067,7 +1151,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   };
   const DESIGN_NOTES = {
     value: {reference:'小黑盒游戏库推荐：促销Banner后接商城、喜加一等入口，游戏卡直接展示券价、折扣和榜单。借鉴从兴趣到价格决策的衔接。',attention:'想玩什么 → 现有来源还缺什么 → 花多少钱、得到什么 → 是否适用。',priority:'具体游戏与付费价值 ＞ 价格和使用条件 ＞ 体验或套餐入口 ＞ 优惠福利 ＞ 社区内容',supply:'运营资源位选择商品与活动；价格、权益、库存和资格由商品数据决定。现用既有租号/会员历史SKU样例，优惠来自商店快照。',boundary:'外部Steam商店购买不等于盖世收入；不执行付款，租号不改善设备性能。'},
-    play: {reference:'233 PC推荐：最近在玩、导入/Steam/Epic入口、大封面选游戏。TapTap：金刚入口、大图、简短推荐理由。盖世增加当前设备适配判断。',attention:'这款好不好玩 → 我的手机能不能运行 → 还差什么准备 → 怎么开始。',priority:'本机可玩合集 ＞ 游戏日历 ＞ 盖世最新兼容 ＞ 社区精选 ＞ 任务与秒玩组队',supply:'运营资源位选择展示候选；设备、兼容记录、游戏来源和准备状态决定最终展示及动作。无记录不显示兼容标签。',boundary:'兼容结果与兼容日期为演示样例；不接入真实启动、消息推送或后台配置。'},
+    play: {reference:'233 PC推荐：最近在玩、导入/Steam/Epic入口、大封面选游戏。TapTap：金刚入口、大图、简短推荐理由。盖世增加当前设备适配判断。',attention:'这款好不好玩 → 我的手机能不能运行 → 还差什么准备 → 怎么开始。',priority:'本机可玩合集 ＞ 游戏日历 ＞ 盖世最新兼容 ＞ 社区精选 ＞ 任务与秒玩组队',supply:'本机候选由机型/GPU兼容接口返回，按既有排行榜热度降序取前6款；运营配置栏目开关、顺序和样式。无记录不显示兼容标签。',boundary:'兼容结果与兼容日期为演示样例；不接入真实启动、消息推送或后台配置。'},
     content: {reference:'森空岛：首页活动Banner后接玩家图文。3DM：首页签到、运营Banner、三条头条及专栏。借鉴持续更新与轻量回访入口，保留盖世三条左文右图。',attention:'今天有什么新内容 → 哪些游戏有动态 → 有没有优惠或限免 → 如何不错过。',priority:'社区精选与当日动态 ＞ 游戏日历 ＞ 折扣及喜加一 ＞ 订阅提醒 ＞ 任务活动',supply:'运营资源位只选专题素材和目标；社区从内容池精选，日历/优惠/限免由数据源更新。签到复用现有任务中心，不新增奖励。',boundary:'运营配置不等于逐款生产内容；当前社区是编辑样例，无素材隐藏运营位，不造热度或真实用户效果。'}
   };
   const GAMES = {
@@ -1127,6 +1211,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     return `<div class="forum-page" data-community-section="gamehub"><section class="forum-summary"><div>${image('forum-gamehub-logo','盖世游戏')}<h3>盖世游戏</h3></div><p>PC游戏、复古游戏与云游戏交流</p></section><nav class="forum-tabs" aria-label="盖世游戏分区内容">${[['all','综合'],['guide','攻略'],['help','求助']].map(([id,label])=>action(label,'forum-tab',`data-tab="${id}" aria-pressed="${tab===id}"`,tab===id?'is-selected':'')).join('')}</nav><div class="forum-feed">${ids.length?ids.map(id=>storyCard(id)).join(''):'<div class="empty-card"><h3>暂无相关帖子</h3></div>'}</div></div>`;
   }
   function context(){return {state,MEDIA,GAMES,ARTICLES,features:features(),compatibleGames:COMPATIBLE_GAMES,esc,image,scene,action,heading,section,gameGrid,hero,localEntry,editorial,storyCard,miniStory,topic,compatible,localReady,go,render,getScroll};}
+  function subscriptions(){return window.LAB_SUBSCRIPTIONS.create(context());}
   function timeline(){return window.LAB_TIMELINE.create(context());}
   function fit(){return window.LAB_COMPATIBILITY.create(context());}
   function tasksRevision(){return window.LAB_TASKS_REVISION.create(context());}
@@ -1134,15 +1219,15 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   function purchase(){return window.LAB_PURCHASE.create(context());}
   function conversion(){return window.LAB_CONVERSION.create(context());}
   function conceptHome(){const ctx=context();ctx.retention=retention();ctx.purchase=purchase();ctx.conversion=conversion();return `<div class="concept-home" data-concept="${state.direction}">${window.LAB_CONTENT.home(state.direction,ctx)}</div>`;}
-  function body(){const revised=tasksRevision().page(state.page);if(revised!=null)return revised;const fitted=fit().page(state.page);if(fitted!=null)return fitted;const dated=timeline().page(state.page);if(dated!=null)return dated;const paid=conversion().page(state.page);if(paid!==null&&paid!==undefined)return paid;const shopping=purchase().page(state.page);if(shopping!==null&&shopping!==undefined)return shopping;const restored=retention().page(state.page);if(restored!==null&&restored!==undefined)return restored;switch(state.page){case 'home':return conceptHome();case 'game':return gameDetail();case 'article':return articleDetail();case 'cloud-info':return cloudInfo();case 'pricing':return pricing();case 'help':return help();case 'conditions':return conditions();case 'library':return library();case 'player':return player();case 'community':return community();case 'gamehub-forum':return gamehubForum();case 'cloud-list':return `<h2 class="library-heading">云游戏</h2><p class="library-sub">游戏供给与进入条件待接入，当前仅可查看介绍。</p>${gameGrid(['cyber','wukong','elden','horizon'],{cloud:true,compact:true})}`;case 'local-list':return `<h2 class="library-heading">PC游戏</h2>${gameGrid(COMPATIBLE_GAMES,{compact:true})}`;case 'team-list':return retention().business({kind:'team'});case 'retro-list':return `<div class="empty-card"><h3>暂无复古游戏</h3></div>`;case 'adapt-list':return `<h2 class="library-heading">适配记录</h2><p class="library-sub">结论需要与具体设备、游戏版本和运行环境对应。</p>${['hades','elden','horizon'].map(id=>`<div class="adapt-row">${image(scene(id),'')}<div><strong>${GAMES[id].name}</strong><p>查看运行条件与已知问题</p></div>${action('›','conditions',`data-game="${id}" aria-label="查看${GAMES[id].name}适配依据"`,'')}</div>`).join('')}`;case 'search':return search();case 'ranking':return `<h2 class="library-heading">排行榜</h2><div class="empty-card"><h3>榜单数据暂未接入</h3><p>本次预览聚焦首页内容方向，保留原排行榜入口。</p></div>`;case 'profile':return `<h2 class="library-heading">我的</h2><p class="library-sub">当前使用情境</p><div class="setting-row">游戏来源<span>${{none:'尚未添加',import:'导入游戏',steam:'Steam游戏'}[state.source]}</span></div><div class="setting-row">游玩方式<span>${state.route==='cloud'?'云端':'本机'}</span></div>${features().cloud?action('云游戏时长','pricing','','secondary full-button'):''}${action('我的收藏','saved-page','','secondary full-button')}`;default:return '';}}
-  const PAGE_TITLES={'gamehub-forum':'盖世游戏','compatibility':'兼容游戏','team-list':'云游组队玩','retro-list':'复古游戏','latest-compatibility':'盖世最新兼容','conversion-member':'会员游戏库','conversion-member-library':'会员游戏库','purchase-deals':'Steam 折扣','purchase-detail':'购前了解','purchase-following':'降价关注','purchase-rental':'Steam 租号','game':'游戏详情','article':'内容详情','cloud-info':'云端游玩','pricing':'时长服务','help':'游戏准备','conditions':'适配依据','cloud-list':'云端游戏','local-list':'PC游戏','adapt-list':'适配记录','search':'搜索游戏','profile':'我的','ranking':'排行榜','library':'游戏库','community':'社区','ret-calendar':'发售日历','ret-discounts':'Steam 折扣','ret-giveaways':'盖世喜加一','lab-signin':'盖世积分','lab-tasks':'盖世任务中心','ret-task-center':'盖世任务中心','ret-task':'任务详情','ret-widget':'桌面组件','ret-business':'游玩方式'};
+  function body(){if(state.page==='messages'){const tab=state.messageTab||'subscriptions';return `<h2 class="library-heading">消息</h2><nav class="message-categories" aria-label="消息分类">${[['subscriptions','订阅通知'],['official','官方消息'],['system','系统消息'],['community','社区通知']].map(([id,label])=>action(label,'message-tab',`data-tab="${id}" aria-pressed="${tab===id}"`,tab===id?'is-selected':'secondary')).join('')}</nav><div class="empty-card"><h3>暂无${{subscriptions:'订阅通知',official:'官方消息',system:'系统消息',community:'社区通知'}[tab]}</h3></div>`;}const revised=tasksRevision().page(state.page);if(revised!=null)return revised;const fitted=fit().page(state.page);if(fitted!=null)return fitted;const dated=timeline().page(state.page);if(dated!=null)return dated;const paid=conversion().page(state.page);if(paid!==null&&paid!==undefined)return paid;const shopping=purchase().page(state.page);if(shopping!==null&&shopping!==undefined)return shopping;const restored=retention().page(state.page);if(restored!==null&&restored!==undefined)return restored;switch(state.page){case 'home':return conceptHome();case 'game':return gameDetail();case 'article':return articleDetail();case 'cloud-info':return cloudInfo();case 'pricing':return pricing();case 'help':return help();case 'conditions':return conditions();case 'library':return library();case 'player':return player();case 'community':return community();case 'gamehub-forum':return gamehubForum();case 'cloud-list':return `<h2 class="library-heading">云游戏</h2><p class="library-sub">游戏供给与进入条件待接入，当前仅可查看介绍。</p>${gameGrid(['cyber','wukong','elden','horizon'],{cloud:true,compact:true})}`;case 'local-list':return `<h2 class="library-heading">PC游戏</h2>${gameGrid(COMPATIBLE_GAMES,{compact:true})}`;case 'team-list':return retention().business({kind:'team'});case 'retro-list':return `<div class="empty-card"><h3>暂无复古游戏</h3></div>`;case 'adapt-list':return `<h2 class="library-heading">适配记录</h2><p class="library-sub">结论需要与具体设备、游戏版本和运行环境对应。</p>${['hades','elden','horizon'].map(id=>`<div class="adapt-row">${image(scene(id),'')}<div><strong>${GAMES[id].name}</strong><p>查看运行条件与已知问题</p></div>${action('›','conditions',`data-game="${id}" aria-label="查看${GAMES[id].name}适配依据"`,'')}</div>`).join('')}`;case 'search':return search();case 'ranking':return `<h2 class="library-heading">排行榜</h2><div class="empty-card"><h3>榜单数据暂未接入</h3><p>本次预览聚焦首页内容方向，保留原排行榜入口。</p></div>`;case 'profile':return `<h2 class="library-heading">我的</h2><p class="library-sub">当前使用情境</p><div class="setting-row">游戏来源<span>${{none:'尚未添加',import:'导入游戏',steam:'Steam游戏'}[state.source]}</span></div><div class="setting-row">游玩方式<span>${state.route==='cloud'?'云端':'本机'}</span></div>${features().cloud?action('云游戏时长','pricing','','secondary full-button'):''}${action('我的收藏','saved-page','','secondary full-button')}`;default:return '';}}
+  const PAGE_TITLES={'messages':'消息','gamehub-forum':'盖世游戏','compatibility':'兼容游戏','team-list':'云游组队玩','retro-list':'复古游戏','latest-compatibility':'盖世最新兼容','conversion-member':'会员游戏库','conversion-member-library':'会员游戏库','purchase-deals':'Steam 折扣','purchase-detail':'购前了解','purchase-following':'降价关注','purchase-rental':'Steam 租号','game':'游戏详情','article':'内容详情','cloud-info':'云端游玩','pricing':'时长服务','help':'游戏准备','conditions':'适配依据','cloud-list':'云端游戏','local-list':'PC游戏','adapt-list':'适配记录','search':'搜索游戏','profile':'我的','ranking':'排行榜','library':'游戏库','community':'社区','ret-calendar':'发售日历','ret-discounts':'Steam 折扣','ret-giveaways':'盖世喜加一','lab-signin':'盖世积分','lab-tasks':'盖世任务中心','ret-task-center':'盖世任务中心','ret-task':'任务详情','ret-widget':'桌面组件','ret-business':'游玩方式'};
   function nav(wide=false){const rows=[['home','首页','home'],['community','社区','community'],['library','游戏库','library'],['ranking','排行榜','ranking'],['profile','我的','profile']];return rows.map(([page,title,icon])=>{const active=state.page===page||(page==='community'&&state.page==='gamehub-forum')||(page==='home'&&CHANNEL_PAGES.includes(state.page));return `<button data-action="nav" data-page="${page}" class="${active?'is-selected':''}" aria-label="${title}" ${active?'aria-current="page"':''}>${!wide?image('icon-'+icon,''):''}<span>${title}</span>${page==='community'&&!state.communityRead?'<i class="nav-update" aria-label="社区有更新"></i>':''}</button>`;}).join('');}
   function recentGames(){return state.form==='portrait'&&state.showContinue&&state.lifecycle==='returning'&&state.source!=='none'&&state.preparation==='ready'&&state.capability==='local'&&state.match==='matched'?(state.recentPlayed||[]).filter(id=>GAMES[id]&&localReady(id)):[];}
   function continueRow(){const ids=recentGames();if(!ids.length)return '';return `<section class="home-resume-row" data-module="continue" aria-label="继续游玩"><button class="resume-play" data-action="player" data-game="${ids[0]}" data-route="local"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4Z"/></svg><span>继续</span></button><div class="resume-icons" aria-label="最近游玩的游戏">${ids.map(id=>`<button class="resume-game" data-action="game" data-game="${id}" data-route="local" aria-label="查看${esc(GAMES[id].name)}">${image('cover-'+id,GAMES[id].name)}</button>`).join('')}</div></section>`;}
   function syncContinue(){const d=document.querySelector('.device'),body=document.querySelector('.app-body'),row=document.querySelector('.home-resume-row');if(!d)return;const collapsed=!!(row&&body&&row.getBoundingClientRect().bottom<=body.getBoundingClientRect().top+1);d.classList.toggle('is-continue-collapsed',collapsed);const mini=d.querySelector('.resume-mini');if(mini){mini.tabIndex=collapsed?0:-1;mini.setAttribute('aria-hidden',String(!collapsed));}}
   function channelTabs(){const tabs=[['home','推荐'],['local-list','PC游戏'],['compatibility','兼容游戏'],['cloud-list','云游戏'],['team-list','云游组队玩'],['retro-list','复古游戏']].filter(([page])=>window.LAB_PLATFORM.allowsPage(state,page));return `<nav class="channel-tabs" aria-label="首页频道">${tabs.map(([page,label])=>action(label+(page==='compatibility'&&!state.compatRead?'<i class="nav-update" aria-label="兼容游戏有更新"></i>':''),page==='home'?'home':page==='compatibility'?'compatibility':'channel',`data-channel="${page}" ${state.page===page?'aria-current="page"':''}`,state.page===page?'is-selected':'')).join('')}</nav>`;}
-  function topTools(wide=false){const id=recentGames()[0];return `<div class="${wide?'land-tools':'app-top'}"><button type="button" class="home-checkin" data-action="lab-signin" aria-label="签到，获得盖世积分">签到</button><button class="app-search" data-action="search" aria-label="搜索游戏"${wide?' title="搜索游戏"':''}>${image('icon-search','')}${wide?'':'<span>搜索游戏与游玩体验</span>'}</button>${action(image('icon-bell',''),'profile','aria-label="个人与消息入口" title="消息"','app-icon')}${features().compatQuery?action(image('icon-device',''),'conditions',`data-game="hades" aria-label="当前设备适配信息" title="当前设备适配信息"`,'app-icon'):''}${id?`<button class="resume-mini" data-action="player" data-game="${id}" data-route="local" aria-label="继续${esc(GAMES[id].name)}" aria-hidden="true" tabindex="-1">${image('cover-'+id,'')}</button>`:''}</div>`;}
-  function shell(){const wide=state.form!=='portrait';const sub=!CHANNEL_PAGES.includes(state.page)&&(!['home','library','community'].includes(state.page)||(state.page!=='home'&&stack.length>0));const status=`<div class="device-status"><span>9:41</span><span class="device-status-right"><i class="status-signal"></i><i class="status-battery"></i></span></div>`;const land=`<div class="land-nav"><nav aria-label="横屏主导航">${nav(true)}</nav><div class="land-right">${topTools(true)}<span class="land-status"><span>9:41</span><i class="status-battery"></i></span></div></div>`;const head=sub?`<div class="subheader">${action('‹','back','aria-label="返回上一页"','back-button')}<h2>${(state.page==='ret-task'&&state.retTask==='checkin'?'盖世积分':PAGE_TITLES[state.page]||'社区')}</h2></div>`:CHANNEL_PAGES.includes(state.page)?(wide?'':topTools()):`<div class="app-top"><h2>${state.page==='community'?'社区':'游戏库'}</h2>${wide?'':action(image('icon-search',''),'search','aria-label="搜索游戏"','app-icon')}</div>`;return `<div class="device-hardware is-${state.form} is-${state.os}"><i class="hardware-key key-mute" aria-hidden="true"></i><i class="hardware-key key-up" aria-hidden="true"></i><i class="hardware-key key-down" aria-hidden="true"></i><i class="hardware-key key-power" aria-hidden="true"></i><i class="hardware-camera" aria-hidden="true"></i><div class="device is-${state.form} is-${state.os}" data-component-id="${wide?'C-SHELL-L':'C-SHELL-P'}">${wide?land:status}${head}<div class="app-body" tabindex="0" aria-label="${PAGE_TITLES[state.page]||'首页内容'}">${CHANNEL_PAGES.includes(state.page)?`<div class="home-flow-header">${continueRow()}${channelTabs()}</div>`:""}${body()}</div>${wide?'':`<nav class="app-bottom" aria-label="竖屏主导航">${nav()}<span class="gesture" aria-hidden="true"></span></nav>`}</div></div>`;}
+  function topTools(wide=false){const id=recentGames()[0];return `<div class="${wide?'land-tools':'app-top'}"><button type="button" class="home-checkin" data-action="lab-signin" aria-label="签到，获得盖世积分">签到</button><button class="app-search" data-action="search" aria-label="搜索游戏"${wide?' title="搜索游戏"':''}>${image('icon-search','')}${wide?'':'<span>搜索游戏与游玩体验</span>'}</button>${action(image('icon-bell',''),'messages','aria-label="消息入口" title="消息"','app-icon')}${features().compatQuery?action(image('icon-device',''),'conditions',`data-game="hades" aria-label="当前设备适配信息" title="当前设备适配信息"`,'app-icon'):''}${id?`<button class="resume-mini" data-action="player" data-game="${id}" data-route="local" aria-label="继续${esc(GAMES[id].name)}" aria-hidden="true" tabindex="-1">${image('cover-'+id,'')}</button>`:''}</div>`;}
+  function shell(){const wide=state.form!=='portrait';const sub=!CHANNEL_PAGES.includes(state.page)&&(!['home','library','community'].includes(state.page)||(state.page!=='home'&&stack.length>0));const status=`<div class="device-status"><span>9:41</span><span class="device-status-right"><i class="status-signal"></i><i class="status-battery"></i></span></div>`;const land=`<div class="land-nav"><nav aria-label="横屏主导航">${nav(true)}</nav><div class="land-right">${topTools(true)}<span class="land-status"><span>9:41</span><i class="status-battery"></i></span></div></div>`;const head=sub?`<div class="subheader">${action('‹','back','aria-label="返回上一页"','back-button')}<h2>${(state.page==='ret-task'&&state.retTask==='checkin'?'盖世积分':PAGE_TITLES[state.page]||'社区')}</h2></div>`:CHANNEL_PAGES.includes(state.page)?(wide?'':topTools()):`<div class="app-top"><h2>${state.page==='community'?'社区':'游戏库'}</h2>${wide?'':action(image('icon-search',''),'search','aria-label="搜索游戏"','app-icon')}</div>`;return `<div class="device-hardware is-${state.form} is-${state.os}"><i class="hardware-key key-mute" aria-hidden="true"></i><i class="hardware-key key-up" aria-hidden="true"></i><i class="hardware-key key-down" aria-hidden="true"></i><i class="hardware-key key-power" aria-hidden="true"></i><i class="hardware-camera" aria-hidden="true"></i><div class="device is-${state.form} is-${state.os}" data-component-id="${wide?'C-SHELL-L':'C-SHELL-P'}">${wide?land:status}${head}<div class="app-body" tabindex="0" aria-label="${PAGE_TITLES[state.page]||'首页内容'}">${CHANNEL_PAGES.includes(state.page)?`<div class="home-flow-header">${continueRow()}${channelTabs()}</div>`:""}${body()}</div>${subscriptions().overlay()}${wide?'':`<nav class="app-bottom" aria-label="竖屏主导航">${nav()}<span class="gesture" aria-hidden="true"></span></nav>`}</div></div>`;}
   function paintControls(){for(const key of ['showContinue','showBanner']){const box=document.querySelector('[data-control="'+key+'"]');if(box)box.checked=state[key];}const note=document.querySelector('#scenario-note');if(note)note.textContent=features().cloud?'“设备弱”可叠加在任何来源上，切换云端游玩不会改变原有身份。':'“设备弱”可叠加在任何来源上；海外版不提供云游。';const logo=document.querySelector('#review-app-logo');if(logo)logo.src=MEDIA['forum-gamehub-logo'];const regions=document.querySelector('#region-controls');if(regions)regions.innerHTML=[['domestic','国内'],['overseas','海外']].map(([id,label])=>action(label,'region',`data-region="${id}" aria-pressed="${state.region===id}"`,state.region===id?'is-selected':'')).join('');document.querySelector('#route-control option[value="cloud"]').disabled=!features().cloud;document.querySelector('#direction-controls').innerHTML=Object.entries(DIRECTIONS).filter(([id])=>id==='play').sort((a,b)=>a[1].n.localeCompare(b[1].n)).map(([id,d])=>`<button class="direction-control ${state.direction===id?'is-selected':''}" data-action="direction" data-direction="${id}" aria-pressed="${state.direction===id}"><span>${d.n}</span><div><strong>${d.name}</strong><small>${d.line}</small></div></button>`).join('');document.querySelector('#scenario-controls').innerHTML=[['new','新用户'],['import','导入用户'],['steam','Steam 用户'],['weak','设备弱 · 想玩3A']].map(([id,label])=>action(label,'scenario',`data-scenario="${id}"`,'')).join('');document.querySelector('#form-controls').innerHTML=[['portrait','手机竖屏'],['landscape','手机横屏'],['tablet','平板']].map(([id,label])=>action(label,'form',`data-form="${id}" aria-pressed="${state.form===id}"`,state.form===id?'is-selected':'')).join('');document.querySelector('#os-controls').innerHTML=[['android','安卓'],['ios','iOS']].map(([id,label])=>action(label,'os',`data-os="${id}" aria-pressed="${state.os===id}"`,state.os===id?'is-selected':'')).join('');for(const key of ['lifecycle','source','capability','route','match','preparation'])document.querySelector('#'+key+'-control').value=state[key];const notes=DESIGN_NOTES[state.direction];document.querySelector('#direction-rationale').innerHTML=Object.entries({reference:'参考思路',attention:'用户关注',priority:'展示权重',supply:'内容来源',boundary:'当前边界'}).map(([key,label])=>`<p><b>${label}</b>${esc(notes[key])}</p>`).join('');const d=DIRECTIONS[state.direction];document.querySelector('#direction-kicker').textContent=`DIRECTION ${d.n}`;document.querySelector('#direction-title').textContent=d.title;document.querySelector('#direction-description').textContent=d.description;document.querySelector('#scenario-summary').textContent=`${state.lifecycle==='new'?'首次使用':'已使用过'} · ${{none:'未添加游戏',import:'导入游戏',steam:'Steam 游戏'}[state.source]} · ${state.route==='cloud'?'云端路径':'本机路径'}`;document.querySelector('#demo-date').textContent=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(state.demoNow)).replaceAll('/','.');document.querySelector('#runtime-caption').textContent=state.page==='player'?'游玩画面演示 · 不运行真实游戏':'策划样例 · 可点击查看演示路径';}
   function render(scroll=0){if(!features().cloud){state.route='local';if(state.detailRoute==='cloud')state.detailRoute='local';}if(!window.LAB_PLATFORM.allowsPage(state,state.page)){state.page='home';stack.length=0;}paintControls();document.querySelector('#device-mount').innerHTML=shell();const bodyEl=document.querySelector('.app-body');if(bodyEl)bodyEl.scrollTop=scroll;syncContinue();document.querySelectorAll('.device button:not([type])').forEach(b=>b.type='button');const carousel=document.querySelector('.community-carousel');if(carousel){const pages=carousel.querySelectorAll('[data-community-page]');const n=Math.min(state.communityPage,pages.length-1);if(pages[n])carousel.scrollLeft=pages[n].offsetLeft-pages[0].offsetLeft;}const channel=document.querySelector('.channel-tabs'),selected=channel?.querySelector('.is-selected');if(selected)channel.scrollLeft=Math.max(0,selected.offsetLeft-channel.offsetLeft-18);window.dispatchEvent(new CustomEvent('home-lab-render',{detail:getState()}));}
   function getScroll(){return document.querySelector('.app-body')?.scrollTop||0;}
@@ -1150,13 +1235,13 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   function back(){const previous=stack.pop();if(previous){Object.assign(state,previous);render(previous.scroll);}else{state.page='home';render();}}
   function home(){stack.length=0;state.page='home';render();}
   function setDirection(value){if(!DIRECTIONS[value])throw new TypeError('Unknown direction');state.direction=value;state.communityPage=0;home();}
-  function setScenario(value){if(value&&typeof value==='object'){for(const k of ['lifecycle','source','capability','route','match','preparation','demoNow','signInNow'])if(value[k]!==undefined)state[k]=value[k];}else{switch(value){case 'new':Object.assign(state,{lifecycle:'new',source:'none',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'import':Object.assign(state,{lifecycle:'returning',source:'import',capability:'local',route:'local',match:'matched',preparation:'ready',recentPlayed:['hades','elden']});break;case 'steam':Object.assign(state,{lifecycle:'returning',source:'steam',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'cloud':case 'weak':Object.assign(state,{capability:'weak',route:'cloud'});break;default:throw new TypeError('Unknown scenario');}}home();}
+  function setScenario(value){if(value&&typeof value==='object'){for(const k of ['lifecycle','source','capability','route','match','preparation','demoNow','signInNow','accountLoggedIn','notificationPermission','deviceCompatibility','rankingHeat','appLanguage','dataRegion'])if(value[k]!==undefined)state[k]=value[k];}else{switch(value){case 'new':Object.assign(state,{lifecycle:'new',source:'none',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'import':Object.assign(state,{lifecycle:'returning',source:'import',capability:'local',route:'local',match:'matched',preparation:'ready',recentPlayed:['hades','elden']});break;case 'steam':Object.assign(state,{lifecycle:'returning',source:'steam',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'cloud':case 'weak':Object.assign(state,{capability:'weak',route:'cloud'});break;default:throw new TypeError('Unknown scenario');}}home();}
   function setForm(value){if(!['portrait','landscape','tablet'].includes(value))throw new TypeError('Unknown form');const y=getScroll();state.form=value;render(y);}
   function setPlatform(value){if(value.os!==undefined){if(!['android','ios'].includes(value.os))throw new TypeError('Unknown OS');state.os=value.os;}if(value.region!==undefined){if(!['domestic','overseas'].includes(value.region))throw new TypeError('Unknown region');state.region=value.region;}home();}
   function setPresentation(value){for(const key of ['showContinue','showBanner'])if(value[key]!==undefined)state[key]=!!value[key];home();}
-  function getState(){return {...state,saved:[...state.saved],following:[...state.following],recentPlayed:[...state.recentPlayed],retSubscriptions:{...state.retSubscriptions},historyDepth:stack.length};}
+  function getState(){return {...state,saved:[...state.saved],following:[...state.following],recentPlayed:[...state.recentPlayed],retSubscriptions:{...state.retSubscriptions},releaseSubscriptions:[...(state.releaseSubscriptions||[])],historyDepth:stack.length};}
   function reset(){state={...initial,saved:[],following:[],recentPlayed:[...initial.recentPlayed]};stack.length=0;render();}
-  document.addEventListener('click',event=>{const b=event.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action,id=b.dataset.game||state.game;if(tasksRevision().handle(a,b.dataset)||timeline().handle(a,b.dataset)||fit().handle(a,b.dataset)||conversion().handle(a,b.dataset)||purchase().handle(a,b.dataset)||retention().handle(a,b.dataset))return;switch(a){case 'gamehub-forum':go('gamehub-forum',{forumTab:'all'});break;case 'forum-tab':state.forumTab=['all','guide','help'].includes(b.dataset.tab)?b.dataset.tab:'all';render(0);break;case 'operations-page':state.operationsIndex=Number(b.dataset.index)||0;render(getScroll());break;case 'community-page':{const c=document.querySelector('.community-carousel'),pages=c?.querySelectorAll('[data-community-page]'),n=Number(b.dataset.index);if(pages?.[n]){state.communityPage=n;c.scrollTo({left:pages[n].offsetLeft-pages[0].offsetLeft,behavior:'smooth'});}break;}case 'focus-game':if(['hades','elden'].includes(id)){state.focusGame=id;render(getScroll());}break;case 'direction':setDirection(b.dataset.direction);break;case 'scenario':setScenario(b.dataset.scenario);break;case 'form':setForm(b.dataset.form);break;case 'os':setPlatform({os:b.dataset.os});break;case 'region':setPlatform({region:b.dataset.region});break;case 'reset':reset();break;case 'home':home();break;case 'channel':if(CHANNEL_PAGES.includes(b.dataset.channel)){stack.length=0;state.page=b.dataset.channel;render();}break;case 'back':back();break;case 'nav':stack.length=0;state.page=b.dataset.page;if(state.page==='community')state.communityRead=true;render();break;case 'game':go('game',{game:id,detailRoute:b.dataset.route||state.route});break;case 'article':go('article',{article:b.dataset.article});break;case 'player':go('player',{game:id,detailRoute:b.dataset.route||state.detailRoute});break;case 'cloud-info':go('cloud-info',{game:id});break;case 'conditions':go('conditions',{game:id});break;case 'switch-route':state.detailRoute=b.dataset.route;state.route=b.dataset.route;render(getScroll());break;case 'cloud-list':state.route='cloud';go('cloud-list');break;case 'local-list':go('local-list');break;case 'adapt-list':go('adapt-list');break;case 'help':go('help',{game:id});break;case 'library':go('library');break;case 'community':go('community');break;case 'pricing':go('pricing');break;case 'search':go('search');document.querySelector('#game-query')?.focus();break;case 'profile':go('profile');break;case 'saved-page':state.filter='saved';go('community');break;case 'save':{const i=state.saved.indexOf(b.dataset.article);if(i<0)state.saved.push(b.dataset.article);else state.saved.splice(i,1);render(getScroll());break;}case 'follow':{const key=b.dataset.topic,i=state.following.indexOf(key);if(i<0)state.following.push(key);else state.following.splice(i,1);render(getScroll());break;}case 'filter':state.filter=b.dataset.filter;render();break;case 'banner':state.banner=Number(b.dataset.index);render(getScroll());break;}});
+  document.addEventListener('click',event=>{const b=event.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action,id=b.dataset.game||state.game;if(subscriptions().handle(a,b.dataset)||tasksRevision().handle(a,b.dataset)||timeline().handle(a,b.dataset)||fit().handle(a,b.dataset)||conversion().handle(a,b.dataset)||purchase().handle(a,b.dataset)||retention().handle(a,b.dataset))return;switch(a){case 'messages':go('messages');break;case 'message-tab':if(['subscriptions','official','system','community'].includes(b.dataset.tab)){state.messageTab=b.dataset.tab;render(0);}break;case 'gamehub-forum':go('gamehub-forum',{forumTab:'all'});break;case 'forum-tab':state.forumTab=['all','guide','help'].includes(b.dataset.tab)?b.dataset.tab:'all';render(0);break;case 'operations-page':state.operationsIndex=Number(b.dataset.index)||0;render(getScroll());break;case 'community-page':{const c=document.querySelector('.community-carousel'),pages=c?.querySelectorAll('[data-community-page]'),n=Number(b.dataset.index);if(pages?.[n]){state.communityPage=n;c.scrollTo({left:pages[n].offsetLeft-pages[0].offsetLeft,behavior:'smooth'});}break;}case 'focus-game':if(['hades','elden'].includes(id)){state.focusGame=id;render(getScroll());}break;case 'direction':setDirection(b.dataset.direction);break;case 'scenario':setScenario(b.dataset.scenario);break;case 'form':setForm(b.dataset.form);break;case 'os':setPlatform({os:b.dataset.os});break;case 'region':setPlatform({region:b.dataset.region});break;case 'reset':reset();break;case 'home':home();break;case 'channel':if(CHANNEL_PAGES.includes(b.dataset.channel)){stack.length=0;state.page=b.dataset.channel;render();}break;case 'back':back();break;case 'nav':stack.length=0;state.page=b.dataset.page;if(state.page==='community')state.communityRead=true;render();break;case 'game':go('game',{game:id,detailRoute:b.dataset.route||state.route});break;case 'article':go('article',{article:b.dataset.article});break;case 'player':go('player',{game:id,detailRoute:b.dataset.route||state.detailRoute});break;case 'cloud-info':go('cloud-info',{game:id});break;case 'conditions':go('conditions',{game:id});break;case 'switch-route':state.detailRoute=b.dataset.route;state.route=b.dataset.route;render(getScroll());break;case 'cloud-list':state.route='cloud';go('cloud-list');break;case 'local-list':go('local-list');break;case 'adapt-list':go('adapt-list');break;case 'help':go('help',{game:id});break;case 'library':go('library');break;case 'community':go('community');break;case 'pricing':go('pricing');break;case 'search':go('search');document.querySelector('#game-query')?.focus();break;case 'profile':go('profile');break;case 'saved-page':state.filter='saved';go('community');break;case 'save':{const i=state.saved.indexOf(b.dataset.article);if(i<0)state.saved.push(b.dataset.article);else state.saved.splice(i,1);render(getScroll());break;}case 'follow':{const key=b.dataset.topic,i=state.following.indexOf(key);if(i<0)state.following.push(key);else state.following.splice(i,1);render(getScroll());break;}case 'filter':state.filter=b.dataset.filter;render();break;case 'banner':state.banner=Number(b.dataset.index);render(getScroll());break;}});
   document.addEventListener('change',event=>{if(event.target.dataset.fit){state[event.target.dataset.fit==='device'?'fitDevice':'fitGenre']=event.target.value;render(getScroll());return;}const key=event.target.dataset.control;if(!key)return;state[key]=event.target.type==='checkbox'?event.target.checked:event.target.value;if(key==='capability')state.route=state.capability==='weak'?'cloud':'local';if(key==='source'){state.preparation=state.source==='import'?'ready':'not-ready';state.recentPlayed=[];}home();});
   document.addEventListener('input',event=>{if(event.target.id!=='game-query')return;const start=event.target.selectionStart;state.query=event.target.value;render(getScroll());const input=document.querySelector('#game-query');input.focus();input.setSelectionRange?.(start,start);});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!/input|select|textarea/i.test(event.target.tagName)){event.preventDefault();back();}});

@@ -2,7 +2,7 @@
   'use strict';
 
   // These records retain the original review snapshot; they are not a live feed.
-  const PLATFORMS = {epic:'Epic',steam:'Steam'};
+  const PLATFORMS = {epic:'Epic',steam:'Steam',gog:'GOG'};
   const GIVEAWAYS = [
     {id:'sorry',key:'promo-sorry',name:'对不起，我们关门了',platform:'epic',original:78,end:'2026-11-05T16:00:00Z',url:'https://store.epicgames.com/zh-CN/p/sorry-were-closed-724c86'},
     {id:'asleep',key:'promo-asleep',name:'Asleep: Act 1',platform:'steam',original:42,end:'2026-11-02T18:00:00Z',url:'https://store.steampowered.com/app/1583850/Asleep_Act_1/'},
@@ -24,11 +24,11 @@
     {id:'battle',key:'cover-battle',name:'Battletoads',kind:'team',description:'横版动作冒险，和伙伴一起迎接下一场战斗。'},
     {id:'catquest',key:'cover-catquest',name:'猫咪斗恶龙 2',kind:'team',description:'一猫一狗结伴出发，走进菲灵洛的奇幻冒险。'}
   ];
+  // 2026.11.6修改：移除社区评论任务，保留既有任务口径。
   const TASKS = [
     {id:'checkin',name:'签到',description:'每日签到',page:null},
     {id:'play',name:'畅玩游戏',description:'前往游戏库选择游戏',page:'library'},
     {id:'community',name:'社区互动',description:'看看喜欢的帖子',page:'community'},
-    {id:'comment',name:'社区评论',description:'进入社区参与讨论',page:'community'},
     {id:'share',name:'分享帖子',description:'发现值得分享的内容',page:'community'},
     {id:'ad',name:'观看广告',description:'查看任务参与条件',page:null}
   ];
@@ -36,7 +36,8 @@
   function create(ctx) {
     const {state,esc,image,action,heading,section} = ctx;
     state.retPlatform ||= 'epic';
-    state.retSubscriptions ||= {epic:false,steam:false,gog:false};
+    // 2026.11.6修改：整栏目订阅；平台Tab仅筛选展示。
+    state.giveawaySubscribed ??= false;
     state.retReleaseSubscribed ??= false;
     state.retSigned ??= false;
     state.retTaskTab ||= 'daily';
@@ -56,7 +57,7 @@
 
     function calendar({compact=false}={}) {
       const entries=compact?RELEASES.slice(0,4):RELEASES;
-      return `<section class="app-section ret-calendar" data-module="calendar"><div class="section-heading ret-calendar-heading"><h2>游戏日历</h2><time>${todayText()}</time>${action('›','ret-calendar','aria-label="查看发售日历"','heading-link')}</div><div class="ret-calendar-rail">${entries.map(item=>`<button type="button" class="ret-calendar-card" data-action="ret-calendar" data-release="${item.id}"><span class="ret-calendar-art">${promoArt(item)}<span>${item.date.slice(5).replace('-','/')} 发售</span></span><b>${esc(item.name)}</b></button>`).join('')}</div></section>`;
+      return `<section class="app-section ret-calendar" data-module="calendar"><div class="section-heading ret-calendar-heading"><h2>游戏日历</h2><time>${todayText()}</time>${action('›','ret-calendar','aria-label="查看发售日历"','heading-link')}</div><div class="ret-calendar-rail">${entries.map(item=>`<a class="ret-calendar-card" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" data-store-route="steam-native"><span class="ret-calendar-art">${promoArt(item)}<span>${item.date.slice(5).replace('-','/')} 发售</span></span><b>${esc(item.name)}</b></a>`).join('')}</div></section>`;
     }
 
     function discounts({compact=false}={}) {
@@ -85,10 +86,7 @@
       return `<section class="app-section ret-continue" data-module="continue"><div class="section-heading"><h2>继续游玩</h2></div><div class="ret-continue-row">${ids.map(id=>`<button type="button" class="ret-continue-card" data-action="game" data-game="${id}" data-route="local">${image('cover-'+id,ctx.GAMES[id].name)}<span><b>${ctx.GAMES[id].name}</b><small>${state.source==='steam'?'Steam':'本地导入'}</small></span><i aria-hidden="true">›</i></button>`).join('')}</div></section>`;
     }
 
-    function calendarPage() {
-      const dates=[...new Set(RELEASES.map(item=>item.date))];
-      return `<div class="ret-release-page"><div class="ret-release-month"><span>2026 年</span><h2>11 月发售日历</h2><small>PC 游戏</small></div><button type="button" class="ret-release-subscribe ${state.retReleaseSubscribed?'is-on':''}" data-action="ret-release-subscribe" aria-pressed="${state.retReleaseSubscribed}"><span><b>每日发售提醒</b><small>站内信 · Push</small></span><em>${state.retReleaseSubscribed?'已订阅':'订阅'}</em></button>${dates.map(date=>`<section class="ret-release-day"><h3><strong>${Number(date.slice(-2))}</strong><span>11 月 · ${new Intl.DateTimeFormat('zh-CN',{weekday:'long',timeZone:'UTC'}).format(new Date(date+'T00:00:00Z'))}</span></h3><div class="ret-release-list">${RELEASES.filter(item=>item.date===date).map(item=>`<article class="ret-release-item ${state.retSelectedRelease===item.id?'is-selected':''}" data-release-id="${item.id}">${promoArt(item)}<div><h4>${esc(item.name)}</h4><p>${item.tags}</p><small>${date.replaceAll('-','.')} 发售</small>${storeLink(item,'Steam 商店')}</div></article>`).join('')}</div></section>`).join('')}</div>`;
-    }
+    function calendarPage() { return window.LAB_TIMELINE.create(ctx).page('ret-calendar'); }
 
     function discountPage() {
       return `<div class="ret-offer-page"><div class="ret-page-intro"><span>STEAM SPECIALS</span><h2>Steam 折扣</h2><p>国区 · 游戏本体</p></div>${DISCOUNTS.map(item=>`<article class="ret-offer-row ${state.retSelectedDiscount===item.id?'is-selected':''}" data-offer-id="${item.id}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-price"><em>-${item.discount}%</em><strong>${money(item.price)}</strong><del>${money(item.original)}</del></div><small>${isActive(item)?(item.end?dateText(item.end)+' 截止':'11.05 价格快照'):'折扣已结束'}</small>${isActive(item)?storeLink(item,'查看 Steam 商店'):'<span class="ret-ended">已结束</span>'}</div></article>`).join('')}</div>`;
@@ -97,9 +95,9 @@
     function giveawayPage() {
       const platform=PLATFORMS[state.retPlatform]?state.retPlatform:'epic';
       const entries=GIVEAWAYS.filter(item=>item.platform===platform),active=entries.filter(isActive),ended=entries.filter(item=>!isActive(item));
-      const subscribed=!!state.retSubscriptions[platform];
+      const subscribed=!!state.giveawaySubscribed;
       const offer=item=>`<article class="ret-offer-row ret-giveaway-row ${isActive(item)?'':'is-ended'}">${promoArt(item)}<div><h3>${esc(item.name)}</h3><div class="ret-free-line"><strong>${isActive(item)?'免费领取':'领取已结束'}</strong>${item.original!==null?`<del>${money(item.original)}</del>`:''}</div><small>${dateText(item.end)} 截止</small>${isActive(item)?storeLink(item,'前往领取'):'<span class="ret-ended">已结束</span>'}</div></article>`;
-      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam</p></div><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}<div class="ret-subscription-row"><span><b>${PLATFORMS[platform]} 领免提醒</b><small>站内信 · Push</small></span>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`data-platform="${platform}" aria-pressed="${subscribed}"`,subscribed?'secondary is-on':'primary')}</div></div>`;
+      return `<div class="ret-giveaway-page"><div class="ret-giveaway-intro"><span>FREE TO KEEP</span><h2>盖世喜加一</h2><p>Epic · Steam · GOG</p>${action(subscribed?'已订阅':'订阅提醒','ret-subscribe',`aria-pressed="${subscribed}"`,'primary ret-column-subscribe')}</div><p class="timeline-global-note">有新增可领游戏时提醒 · 站内信 / 系统通知</p><nav class="ret-platform-tabs" aria-label="领取平台">${Object.entries(PLATFORMS).map(([id,name])=>action(`${name}<small>${GIVEAWAYS.filter(item=>item.platform===id&&isActive(item)).length} 款</small>`,'ret-platform',`data-platform="${id}" aria-pressed="${id===platform}"`,id===platform?'is-selected':'')).join('')}</nav><h3 class="ret-list-heading">当前可领 <small>${active.length} 款</small></h3>${active.length?active.map(offer).join(''):'<div class="ret-empty"><h3>暂无当前限免</h3><p>订阅后，有新限免时提醒你。</p></div>'}${ended.length?`<h3 class="ret-list-heading">已结束</h3>${ended.map(offer).join('')}`:''}</div>`;
     }
 
     function taskCenterPage() {
@@ -114,10 +112,10 @@
     }
 
     function widgetPage() {
-      const subscribed=Object.values(state.retSubscriptions).some(Boolean);
-      const entries=GIVEAWAYS.filter(item=>state.retSubscriptions[item.platform]&&isActive(item));
+      const subscribed=!!state.giveawaySubscribed;
+      const entries=GIVEAWAYS.filter(item=>subscribed&&isActive(item));
       const nearest=entries.length?entries.reduce((min,item)=>Date.parse(item.end)<Date.parse(min.end)?item:min):null;
-      return `<div class="ret-widget-page"><h2>领免提醒</h2><p>订阅的平台，有新限免时提醒你。</p><button type="button" class="ret-native-widget" data-action="ret-giveaways"><span class="ret-widget-brand"><i aria-hidden="true"></i>盖世喜加一</span><strong>${!subscribed?'开启领免订阅':entries.length?`当前可领 ${entries.length} 款`:'暂无可领游戏'}</strong><span class="ret-widget-time">${nearest?'最近截止剩余 '+remaining(nearest.end):subscribed?'新限免发布后更新':'站内信 · Push 提醒'}</span><span class="ret-widget-arrow" aria-hidden="true">›</span></button></div>`;
+      return `<div class="ret-widget-page"><h2>领免提醒</h2><p>订阅盖世喜加一，有新增可领游戏时提醒你。</p><button type="button" class="ret-native-widget" data-action="ret-giveaways"><span class="ret-widget-brand"><i aria-hidden="true"></i>盖世喜加一</span><strong>${!subscribed?'开启领免订阅':entries.length?`当前可领 ${entries.length} 款`:'暂无可领游戏'}</strong><span class="ret-widget-time">${nearest?'最近截止剩余 '+remaining(nearest.end):subscribed?'新限免发布后更新':'站内信 · Push 提醒'}</span><span class="ret-widget-arrow" aria-hidden="true">›</span></button></div>`;
     }
 
     function businessPage() {
@@ -135,8 +133,8 @@
         case 'ret-discounts':ctx.go('ret-discounts',{retSelectedDiscount:data.offer||''});return true;
         case 'ret-giveaways':if(PLATFORMS[data.platform])state.retPlatform=data.platform;ctx.go('ret-giveaways');return true;
         case 'ret-platform':if(PLATFORMS[data.platform]){state.retPlatform=data.platform;ctx.render(0);}return true;
-        case 'ret-subscribe':if(PLATFORMS[data.platform]){state.retSubscriptions[data.platform]=!state.retSubscriptions[data.platform];ctx.render(ctx.getScroll());}return true;
-        case 'ret-release-subscribe':state.retReleaseSubscribed=!state.retReleaseSubscribed;ctx.render(ctx.getScroll());return true;
+        case 'ret-subscribe':window.LAB_SUBSCRIPTIONS.create(ctx).subscribe('giveaways');return true;
+        
         case 'ret-task-center':ctx.go('ret-task-center');return true;
         case 'ret-task-tab':state.retTaskTab=data.tab==='growth'?'growth':'daily';ctx.render(0);return true;
         case 'ret-task':{const task=TASKS.find(item=>item.id===data.task)||TASKS[0];state.retTask=task.id;if(task.id==='checkin'||task.id==='ad')ctx.go('ret-task');else ctx.go(task.page);return true;}

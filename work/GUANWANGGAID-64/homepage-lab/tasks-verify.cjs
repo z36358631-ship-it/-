@@ -61,7 +61,7 @@ const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
  assert.equal(await page.locator('.tasks-revision-row').count(),0);
  await snap('center-growth-portrait');
  await click('[data-action="ret-task-tab"][data-tab="daily"]');
- for(const [task,target] of [['play','library'],['community','community'],['comment','community'],['share','community']]){
+ for(const [task,target] of [['play','library'],['community','community'],['share','community']]){
    await click(`[data-task="${task}"]`);assert.equal((await state()).page,target);
    await click('[data-action="back"]');assert.equal((await state()).page,'ret-task');
  }
@@ -77,7 +77,7 @@ const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
    await click('.home-checkin');await ensure(`${os}/${region}/${form}/signin`);
    assert.equal((await state()).retSigned,true);
    assert.equal((await state()).page,'ret-task');await ensure(`${os}/${region}/${form}/inline-tasks`);
-   assert.equal(await page.locator('.tasks-revision-row').count(),6);
+   assert.equal(await page.locator('.tasks-revision-row').count(),5);
    if(os==='android'&&region==='domestic'&&form!=='portrait'){
      await snap('center-'+form);await page.locator('.app-body').evaluate(e=>e.scrollTop=0);await snap('signin-'+form);
    }

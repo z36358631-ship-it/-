@@ -14,6 +14,8 @@
     {id:'archeage',key:'release-archeage',name:'上古世纪编年史',date:'2026-11-04',tags:'动作 · 冒险'},
     {id:'floatopia',key:'release-floatopia',name:'乐浮岛',date:'2026-11-04',tags:'冒险 · 休闲'}
   ];
+  // 2026.11.6修改：测试结果的官方批次，不受当前机型过滤；说明也是演示数据。
+  const BATCH_NOTES={'2026-11-01':'动作游戏兼容测试记录更新；具体机型及运行条件以各游戏测试记录为准。','2026-11-02':'开放世界游戏测试记录更新；请查看各游戏的芯片、机型适用条件及已知问题。'};
   const ROUTES = ['ret-calendar','latest-compatibility'];
   const validMonth = value => /^\d{4}-(0[1-9]|1[0-2])$/.test(value || '');
   const shiftedMonth = (value, offset) => {
@@ -46,15 +48,15 @@
 
     function row(item,page) {
       const compatible = kind(page) === 'compatibility';
-      const status = compatible ? '兼容更新' : item.date <= today ? '已发售' : '即将发售';
-      const selected = compatible ? '' : state.retSelectedRelease === item.id ? ' is-selected' : '';
-      return `<article class="timeline-game${selected}" data-timeline-game="${esc(item.id)}">${image(item.key,item.name)}<div class="timeline-game-copy"><h3>${esc(item.name)}</h3><div class="timeline-tags">${item.tags.split(' · ').map(tag=>`<span>${esc(tag)}</span>`).join('')}</div></div><span class="timeline-game-status${!compatible&&item.date>today?' is-upcoming':''}">${status}</span></article>`;
+      if(compatible)return `<article class="timeline-game" data-timeline-game="${esc(item.id)}">${image(item.key,item.name)}<div class="timeline-game-copy"><h3>${esc(item.name)}</h3><div class="timeline-tags">${item.tags.split(' · ').map(tag=>`<span>${esc(tag)}</span>`).join('')}</div></div><span class="timeline-game-status">兼容更新</span></article>`;
+      const subscribed=(state.releaseSubscriptions||[]).includes(item.id),released=item.date<=today;
+      return `<article class="timeline-game" data-timeline-game="${esc(item.id)}"><a class="timeline-store" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" data-store-route="steam-native" aria-label="浏览${esc(item.name)} Steam商店">${image(item.key,item.name)}<div class="timeline-game-copy"><h3>${esc(item.name)}</h3><div class="timeline-tags">${item.tags.split(' · ').map(tag=>`<span>${esc(tag)}</span>`).join('')}</div></div></a><div class="timeline-release-actions"><small>${item.date<=today?'已发售':'即将发售'}</small>${action(subscribed?'已订阅':released?'已发售':'订阅','release-subscribe',`${released&&!subscribed?'disabled ':''}data-release="${esc(item.id)}" aria-label="${subscribed?'取消订阅':'订阅'}${esc(item.name)}发售提醒" aria-pressed="${subscribed}"`,subscribed?'timeline-subscribe is-on':'timeline-subscribe')}</div></article>`;
     }
 
     function subscribeBar(page) {
       const compatible=kind(page)==='compatibility';
       const on=compatible?state.latestCompatSubscribed:state.retReleaseSubscribed;
-      return `<footer class="timeline-subscription" data-timeline-subscription="${compatible?'compatibility':'release'}"><div><b>${compatible?'兼容提醒':'发售提醒'}</b><small>${compatible?'每日汇总新增兼容游戏':'每日汇总当天发售游戏'}</small><span>站内信 · Push</span></div>${action(on?'已订阅':compatible?'订阅兼容提醒':'订阅发售提醒','timeline-subscribe',`aria-pressed="${on}"`,on?'timeline-subscribe is-on':'timeline-subscribe')}</footer>`;
+      return `<footer class="timeline-subscription" data-timeline-subscription="${compatible?'compatibility':'release'}"><div><b>${compatible?'兼容提醒':'发售提醒'}</b><small>${compatible?'有新的官方兼容更新时提醒':'仅提醒已订阅游戏的发售'}</small><span>站内信 · Push</span></div>${action(on?'已订阅':compatible?'订阅兼容提醒':'订阅发售提醒','timeline-subscribe',`aria-pressed="${on}"`,on?'timeline-subscribe is-on':'timeline-subscribe')}</footer>`;
     }
 
     function page(name) {
@@ -62,8 +64,8 @@
       const month=currentMonth(name);
       const list=entries(name).filter(item=>item.date.startsWith(month)).sort((a,b)=>a.date.localeCompare(b.date));
       const dates=[...new Set(list.map(item=>item.date))];
-      const content=dates.length?dates.map(date=>`<section class="timeline-day" data-timeline-date="${date}"><h2><time datetime="${date}">${date.replaceAll('-','.')}</time>${date===today?'<span>今天</span>':''}</h2><div class="timeline-day-games">${list.filter(item=>item.date===date).map(item=>row(item,name)).join('')}</div></section>`).join(''):`<div class="timeline-empty"><h3>${kind(name)==='compatibility'?'本月暂无兼容更新':'本月暂无发售游戏'}</h3></div>`;
-      return `<div class="timeline-page" data-timeline-kind="${kind(name)}">${monthHeader(name)}<div class="timeline-content">${content}</div>${subscribeBar(name)}</div>`;
+      const content=dates.length?dates.map(date=>`<section class="timeline-day" data-timeline-date="${date}"><h2><time datetime="${date}">${date.replaceAll('-','.')}</time>${date===today?'<span>今天</span>':''}</h2>${kind(name)==='compatibility'?`<p class="timeline-batch-note" data-batch-note="${date}">${esc(BATCH_NOTES[date]||'兼容测试记录更新，适用条件请查看具体游戏。')}</p>`:''}<div class="timeline-day-games">${list.filter(item=>item.date===date).map(item=>row(item,name)).join('')}</div></section>`).join(''):`<div class="timeline-empty"><h3>${kind(name)==='compatibility'?'本月暂无兼容更新':'本月暂无发售游戏'}</h3></div>`;
+      return `<div class="timeline-page" data-timeline-kind="${kind(name)}">${monthHeader(name)}${kind(name)==='compatibility'?'<p class="timeline-global-note">官方兼容更新动态 · 不代表全部适配当前设备</p>':'<p class="timeline-global-note">订阅感兴趣的游戏，发售时接收提醒</p>'}<div class="timeline-content">${content}</div>${kind(name)==='compatibility'?subscribeBar(name):''}</div>`;
     }
 
     function locateToday() {
@@ -100,10 +102,11 @@
           ctx.render(0);
           locateToday();
           return true;
+        case 'release-subscribe':
+          if(entries('ret-calendar').some(x=>x.id===data.release&&(x.date>today||(state.releaseSubscriptions||[]).includes(x.id))))window.LAB_SUBSCRIPTIONS.create(ctx).subscribe('release',data.release);
+          return true;
         case 'timeline-subscribe':
-          if(kind(active)==='compatibility')state.latestCompatSubscribed=!state.latestCompatSubscribed;
-          else state.retReleaseSubscribed=!state.retReleaseSubscribed;
-          ctx.render(ctx.getScroll());
+          if(kind(active)==='compatibility')window.LAB_SUBSCRIPTIONS.create(ctx).subscribe('compatibility');
           return true;
         default:return false;
       }

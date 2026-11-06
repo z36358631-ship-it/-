@@ -81,20 +81,20 @@ async function main(){
     for(const form of ['portrait','landscape','tablet']){
       await api('reset');await api('setScenario',{signInNow:'2026-11-06T12:00:00+08:00'});await api('setForm',form);await click('.home-checkin');
       assert.equal((await api('getState')).page,'ret-task');assert.equal(await page.locator('.tasks-revision-entry').count(),0);assert.equal(await page.locator('.tasks-revision-signin [data-action="ret-task-center"]').count(),0);
-      assert.deepEqual(await page.locator('.tasks-revision-tabs button').allTextContents(),['每日任务','成长任务']);assert.equal(await page.locator('.tasks-revision-row').count(),6);
+      assert.deepEqual(await page.locator('.tasks-revision-tabs button').allTextContents(),['每日任务','成长任务']);assert.equal(await page.locator('.tasks-revision-row').count(),5);
       const geometry=await ensure(form);assert.equal(await page.locator('.tasks-month-heading h2').textContent(),'连续签到');assert.equal(await page.locator('.tasks-month-day').count(),7);assert.equal(await page.locator('[data-action="ret-calendar-toggle"]').getAttribute('aria-expanded'),'false');await page.locator('.device').screenshot({path:path.join(EVIDENCE,'signin-'+form+'.png')});await click('[data-action="ret-calendar-toggle"]');assert.equal(await page.locator('.tasks-month-day').count(),30);assert.equal(await page.locator('[data-action="ret-calendar-toggle"]').getAttribute('aria-expanded'),'true');await page.locator('.device').screenshot({path:path.join(EVIDENCE,'signin-expanded-'+form+'.png')});await click('[data-action="ret-calendar-toggle"]');assert.equal(await page.locator('.tasks-month-day').count(),7);
       await page.locator('.tasks-revision-more').scrollIntoViewIfNeeded();await page.locator('.device').screenshot({path:path.join(EVIDENCE,'daily-'+form+'.png')});
       if(form==='portrait')await page.locator('.tasks-revision-more').screenshot({path:path.join(EVIDENCE,'signin-inline-daily.png')});
       await click('[data-action="ret-task-tab"][data-tab="growth"]');assert.equal((await api('getState')).page,'ret-task');assert.equal(await page.locator('.tasks-revision-empty h3').textContent(),'暂无成长任务');await ensure(form+' growth');
       await page.locator('.device').screenshot({path:path.join(EVIDENCE,'growth-'+form+'.png')});
       if(form==='portrait')await page.locator('.tasks-revision-more').screenshot({path:path.join(EVIDENCE,'signin-inline-growth.png')});
-      await click('[data-action="ret-task-tab"][data-tab="daily"]');assert.equal((await api('getState')).page,'ret-task');assert.equal(await page.locator('.tasks-revision-row').count(),6);
+      await click('[data-action="ret-task-tab"][data-tab="daily"]');assert.equal((await api('getState')).page,'ret-task');assert.equal(await page.locator('.tasks-revision-row').count(),5);
       record('inline task tabs and monthly layout remain on sign-in page without overflow',{form,geometry});
     }
     await api('reset');await api('setScenario',{signInNow:'2026-11-06T12:00:00+08:00'});await click('.home-checkin');
-    for(const [task,targetPage] of [['play','library'],['community','community'],['comment','community'],['share','community']]){
+    for(const [task,targetPage] of [['play','library'],['community','community'],['share','community']]){
       await click(`[data-task="${task}"]`);assert.equal((await api('getState')).page,targetPage);await click('[data-action="back"]');
-      assert.equal((await api('getState')).page,'ret-task');assert.equal((await api('getState')).retTask,'checkin');assert.equal(await page.locator('.tasks-month-day').count(),7);assert.equal(await page.locator('.tasks-revision-tabs').count(),1);assert.equal(await page.locator('.tasks-revision-row').count(),6);
+      assert.equal((await api('getState')).page,'ret-task');assert.equal((await api('getState')).retTask,'checkin');assert.equal(await page.locator('.tasks-month-day').count(),7);assert.equal(await page.locator('.tasks-revision-tabs').count(),1);assert.equal(await page.locator('.tasks-revision-row').count(),5);
       record('inline task destination returns to the same monthly sign-in context',{task,targetPage});
     }
     await api('reset');await api('setScenario',{signInNow:'2026-11-06T12:00:00+08:00'});await click('.home-checkin');const before=await api('getState');await click('[data-action="back"]');await click('.home-checkin');const after=await api('getState');

@@ -3,11 +3,11 @@
 
   // Task names and destinations come from the existing retention Demo.
   // Rewards and growth-task rules were not supplied; this module does not invent them.
+  // 2026.11.6修改：移除社区评论任务，保留既有任务口径。
   const TASKS = [
     {id:'checkin',name:'签到',description:'每天来盖世看看',page:null},
     {id:'play',name:'畅玩游戏',description:'前往游戏库选择游戏',page:'library'},
     {id:'community',name:'社区互动',description:'看看喜欢的帖子',page:'community'},
-    {id:'comment',name:'社区评论',description:'进入社区参与讨论',page:'community'},
     {id:'share',name:'分享帖子',description:'发现值得分享的内容',page:'community'},
     {id:'ad',name:'观看广告',description:'广告任务暂未接入',page:null}
   ];

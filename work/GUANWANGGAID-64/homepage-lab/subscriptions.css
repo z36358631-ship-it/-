@@ -1,0 +1,25 @@
+/* 2026.11.6修改：订阅登录/通知权限演示，应用内浮层受设备边界约束。 */
+.device{position:relative}
+.subscription-overlay{position:absolute;inset:0;z-index:50;background:#0009;display:flex;align-items:center;justify-content:center;padding:22px}
+.subscription-dialog{width:min(100%,360px);padding:23px;border:1px solid #ffffff18;border-radius:18px;background:#23252c;box-shadow:0 15px 55px #0006}
+.subscription-dialog h3{font-size:17px;margin:0 0 12px;color:#f0f3f7}
+.subscription-dialog p{font-size:12px;line-height:1.8;color:#b1bac6}
+.subscription-dialog small{display:block;color:#828c9a;font-size:10px;line-height:1.6;margin:10px 0}
+.subscription-dialog>div{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.subscription-dialog button{flex:1;min-height:38px;font-size:11px;white-space:nowrap}
+.ret-giveaway-intro{position:relative;padding-right:100px}
+.ret-column-subscribe{position:absolute;right:0;top:20px;min-height:44px;padding:7px 12px;font-size:11px}
+.timeline-store{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none;color:inherit}
+.timeline-store>img{width:86px;aspect-ratio:16/9;object-fit:cover;border-radius:6px;flex:none}
+.timeline-release-actions{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex:none}
+.timeline-release-actions>small{font-size:9px;color:#9aa6b5}
+.timeline-batch-note,.timeline-global-note{font-size:11px;line-height:1.8;color:#99a5b5;margin:8px 0}
+.timeline-global-note{padding:10px 12px;border-radius:8px;background:#ffffff05}
+.timeline-game .timeline-subscribe{padding:7px 10px;font-size:10px;min-height:44px;min-width:48px}
+.ret-calendar-card{text-decoration:none;color:inherit}
+.message-categories{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.message-categories button{font-size:11px;padding:8px 10px}
+.message-categories .is-selected{background:#cbd9ba;color:#151a12}
+.community-list-item.is-text-only .community-item-copy{width:100%;padding-right:0}
+
+.timeline-game .timeline-subscribe:disabled{opacity:.5;cursor:default}

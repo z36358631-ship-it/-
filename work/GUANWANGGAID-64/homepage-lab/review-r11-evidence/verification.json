@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "htmlSha256": "bda1895a432ba593137f3100d53bfb2de919a186816aa250ec53c2ae2a9fbc41",
+  "checks": [
+    {
+      "case": "cancelled account login does not subscribe",
+      "passed": true
+    },
+    {
+      "case": "account login saves subscription; refusing OS permission preserves it",
+      "passed": true
+    },
+    {
+      "case": "top subscription shared across platform tabs; GOG has empty state without fabricated titles",
+      "passed": true
+    },
+    {
+      "case": "whole-column unsubscribe",
+      "passed": true
+    },
+    {
+      "case": "equal-size replacement identifies a new game by platform and id",
+      "passed": true
+    },
+    {
+      "case": "independent per-game subscriptions, cancellation and return portrait",
+      "passed": true
+    },
+    {
+      "case": "independent per-game subscriptions, cancellation and return landscape",
+      "passed": true
+    },
+    {
+      "case": "independent per-game subscriptions, cancellation and return tablet",
+      "passed": true
+    },
+    {
+      "case": "already-released games do not create new release reminders",
+      "passed": true
+    },
+    {
+      "case": "blocked permission guides settings and keeps subscription/inbox",
+      "passed": true
+    },
+    {
+      "case": "first permission allow path",
+      "passed": true
+    },
+    {
+      "case": "official compatibility batches are global and include text scope",
+      "passed": true
+    },
+    {
+      "case": "device interface candidates deduplicated and sorted by ranking heat",
+      "passed": true
+    },
+    {
+      "case": "manual operating candidate list does not override device compatibility supply",
+      "passed": true
+    },
+    {
+      "case": "scheduled future post hidden and text-only selected post has no fabricated cover",
+      "passed": true
+    },
+    {
+      "case": "all home calendar cards use the same Steam browsing destination",
+      "passed": true
+    },
+    {
+      "case": "subscription, official, system and community messages remain separate",
+      "passed": true
+    },
+    {
+      "case": "comment task removed while weekly/monthly sign-in and inline groups preserved",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "target": "file:///C:/Users/z3635/官网改动/public/gamehub-home-lab/index.html",
+  "limits": [
+    "Offline login/notification scenarios only; no real accounts, SDK, server subscription or push delivery.",
+    "Native Steam browse represented by the official external store links.",
+    "Regional data mappings belong to server configuration; fixtures are historic samples."
+  ]
+}
