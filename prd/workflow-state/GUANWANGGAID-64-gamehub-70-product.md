@@ -344,3 +344,7 @@ D-049：最新要求恢复左侧菜单、右侧Demo；窄屏上菜单、下Demo�
 - 当前真实折扣样本与已匹配适配样例无交集，分别呈现先查适配和关注好价。租号为未接入承接，关注不发送通知，未执行真实支付/转化/留存或用户测试。
 - 影响产物实验源文件、HTML、来源、截图、验证、评审、设计/计划、状态均已同步。正式首页、原PC Demo、PRD、Word和流程图无需修改。
 - 证据目录：work/GUANWANGGAID-64/homepage-lab/；verification.json、live-verification.json、http-verification.json、review.md、publication.json。
+
+
+## 2026-11-06 PRD V1.7（D111—D112）
+全文精简及图片入表完成；同页子功能统一一张“类型｜图示｜内容｜说明”四列表，首页7行各有对应局部图。Word22页、27图、26图嵌表，正文/MD/Word同源及逐页审图通过；27图公开链接与原字节一致。用户排除待确认章节的模板例外保留，飞书真实导入未验证。Demo不改。文档发布以work/GUANWANGGAID-64/homepage-lab/publication-v17.json为准。

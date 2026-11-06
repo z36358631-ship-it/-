@@ -1,0 +1,654 @@
+{
+  "checkedAt": "2026-11-06T07:19:20.198826+00:00",
+  "scope": "首页PRD全文文字精简及首页单张四列子功能表；不修改Word、正式MD、构建或发布脚本",
+  "baseline": {
+    "path": "C:\\Users\\z3635\\官网改动\\outputs\\gamehub-home-prd-20261105\\prd-v1.4-source.md",
+    "sha256": "2bc7b1757f8d58bd62f33710d40514feda91e178e21464dbbc8bcf23f3571146",
+    "version": "V1.6 after explicit GOG removal"
+  },
+  "output": {
+    "path": "C:\\Users\\z3635\\官网改动\\outputs\\gamehub-home-prd-20261105\\prd-v1.7-source.md",
+    "sha256": "6f682fd733e30d92cb2e5158782b4e75ab241077946769a274bbb6b43920470b",
+    "version": "V1.7"
+  },
+  "structuralChecks": {
+    "pageCount": 11,
+    "sixElementRowsPerPage": 6,
+    "allTablesAtMostFourColumns": true,
+    "historicalRevisionRowsUnchanged": true,
+    "revisionRowsAdded": 1,
+    "existingImagesRetained": 20,
+    "newHomepageModuleImages": [
+      "module-banner.png",
+      "module-shortcuts.png",
+      "module-local.png",
+      "module-calendar-latest.png",
+      "module-community.png",
+      "module-tasks.png",
+      "module-business.png"
+    ],
+    "totalImageReferences": 27,
+    "homepageSubfunctionTableCount": 1,
+    "homepageSubfunctionRowsWithEmbeddedImage": 7,
+    "flowImageOutsidePageTables": 1,
+    "pendingSectionAbsentByPriorUserInstruction": true,
+    "demoLimitStatementCount": 1,
+    "searchMarkerCount": 24
+  },
+  "writingChanges": {
+    "bodyScaffoldOccurrencesBefore": 53,
+    "bodyScaffoldOccurrencesAfter": 4,
+    "bodyProseCharactersBefore": 8787,
+    "bodyProseCharactersAfter": 8328,
+    "deletedOrMerged": [
+      "同一页反复出现的2026.11.6修改标签合并到对应规则首处",
+      "功能简介、前置、输出及正文的同义重复缩短；主场景和异常仍留在各自页面",
+      "现有/沿用/既有/保留原的机械铺陈改为具体页面事实；未改业务仍明确不变",
+      "Demo两处分散说明合并为一处，删除SDK接入自述",
+      "图注去除作者操作描述；首页7行图号引用改为实际局部图片引用",
+      "小组件未改缓存实现不再写入PRD；刷新、失效和未知状态保留"
+    ]
+  },
+  "semanticReview": {
+    "status": "passed_for_requested_rewording_scope",
+    "method": "逐页人工比对对象、入口、默认、数量、端地区差异、权限、成功依据、失败及恢复，并用下列前后原文锚点复核关键分支；锚点匹配不单独等于业务语义通过。",
+    "pageCoverage": [
+      {
+        "section": "3.1.1",
+        "page": "推荐首页",
+        "status": "compared"
+      },
+      {
+        "section": "3.1.2",
+        "page": "兼容游戏频道",
+        "status": "compared"
+      },
+      {
+        "section": "3.1.3",
+        "page": "游戏发售日历",
+        "status": "compared"
+      },
+      {
+        "section": "3.1.4",
+        "page": "盖世最新兼容",
+        "status": "compared"
+      },
+      {
+        "section": "3.1.5",
+        "page": "盖世喜加一",
+        "status": "compared"
+      },
+      {
+        "section": "3.1.6",
+        "page": "Android桌面小组件",
+        "status": "compared"
+      },
+      {
+        "section": "3.1.7",
+        "page": "签到积分页",
+        "status": "compared"
+      },
+      {
+        "section": "3.1.8",
+        "page": "盖世任务中心",
+        "status": "compared"
+      },
+      {
+        "section": "3.2.1",
+        "page": "新版专题管理",
+        "status": "compared"
+      },
+      {
+        "section": "3.2.2",
+        "page": "专题栏目列表",
+        "status": "compared"
+      },
+      {
+        "section": "3.2.3",
+        "page": "栏目编辑",
+        "status": "compared"
+      }
+    ],
+    "branchCount": 57,
+    "branches": [
+      {
+        "id": 1,
+        "page": "首页",
+        "scenario": "未准备好的最近游戏",
+        "expectedBehavior": "隐藏继续游玩整行。",
+        "beforeAnchor": "无满足原准备条件的最近游戏时隐藏整行",
+        "afterAnchor": "无满足准备条件的最近游戏时隐藏整行",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 2,
+        "page": "首页",
+        "scenario": "滚动与恢复",
+        "expectedBehavior": "上划收起，回顶恢复，收起后仍进入最近游戏。",
+        "beforeAnchor": "上划后，继续入口收至右上角",
+        "afterAnchor": "上划后，继续入口收至右上角",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 3,
+        "page": "首页",
+        "scenario": "下级返回",
+        "expectedBehavior": "返回恢复首页位置和社区页码。",
+        "beforeAnchor": "下级页左上箭头返回来源",
+        "afterAnchor": "下级页左上箭头返回来源",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 4,
+        "page": "首页",
+        "scenario": "横屏",
+        "expectedBehavior": "横屏4:1、金刚四行，不显示继续行或完整搜索框。",
+        "beforeAnchor": "Banner与金刚区宽度4:1",
+        "afterAnchor": "Banner与金刚区宽度4:1",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 5,
+        "page": "首页",
+        "scenario": "iOS兼容入口",
+        "expectedBehavior": "iOS隐藏全部五项兼容入口，不留空位。",
+        "beforeAnchor": "隐藏兼容性查询金刚、顶部设备兼容信息图标、兼容游戏频道、本机合集、盖世最新兼容",
+        "afterAnchor": "隐藏兼容性查询金刚、顶部设备兼容信息图标、兼容游戏频道、本机合集、盖世最新兼容",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 6,
+        "page": "首页",
+        "scenario": "海外云入口",
+        "expectedBehavior": "海外隐藏云服务关联入口，保留秒玩与Android兼容。",
+        "beforeAnchor": "隐藏云游戏、云游组队玩及相关云服务入口",
+        "afterAnchor": "隐藏云游戏、云游组队玩及相关云服务入口",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 7,
+        "page": "首页金刚",
+        "scenario": "运营配置",
+        "expectedBehavior": "可改图标名称目标顺序，默认四入口及iOS差异不变。",
+        "beforeAnchor": "运营可配图标、名称和目标",
+        "afterAnchor": "运营可配图标、名称、目标和顺序",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 8,
+        "page": "首页本机合集",
+        "scenario": "不足六款",
+        "expectedBehavior": "当前机型/GPU及版本环境兼容结果按热度前6，少于6不补造。",
+        "beforeAnchor": "按已有排行榜热度降序取前6款；不足6款按实际返回展示",
+        "afterAnchor": "按排行榜热度降序取前6款，不足6款按实际数量展示",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 9,
+        "page": "首页本机合集",
+        "scenario": "合集点击",
+        "expectedBehavior": "整张合集进入兼容游戏，不启动。",
+        "beforeAnchor": "点击整张合集进入兼容游戏频道，不直接启动游戏",
+        "afterAnchor": "点击整张合集进入兼容游戏频道，不直接启动游戏",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 10,
+        "page": "首页日历",
+        "scenario": "卡片与标题",
+        "expectedBehavior": "卡片去Steam原生详情，标题箭头去日历。",
+        "beforeAnchor": "点击日历游戏卡片默认进入对应Steam原生详情",
+        "afterAnchor": "点击日历游戏卡片进入对应Steam原生详情",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 11,
+        "page": "首页社区",
+        "scenario": "条数翻页定时",
+        "expectedBehavior": "最多6条，每页3条，配置顺序和时间生效。",
+        "beforeAnchor": "最多6条已有帖子，每页三条、整组左右翻页",
+        "afterAnchor": "最多6条已有帖子，每页三条、整组左右翻页",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 12,
+        "page": "首页社区",
+        "scenario": "无封面及返回",
+        "expectedBehavior": "无封面纯文字，无标题箭头，返回保留页码。",
+        "beforeAnchor": "无封面用纯文字样式",
+        "afterAnchor": "无封面时显示纯文字",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 13,
+        "page": "兼容游戏",
+        "scenario": "交集默认",
+        "expectedBehavior": "设备与类型按交集筛选，卡片不加平台或启动按钮。",
+        "beforeAnchor": "默认当前设备、全部类型，按两项交集展示游戏",
+        "afterAnchor": "默认当前设备、全部类型，显示两项筛选的交集",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 14,
+        "page": "兼容游戏",
+        "scenario": "兼容标识",
+        "expectedBehavior": "有对应记录才显示封面右下兼容标识，拥有/准备状态独立。",
+        "beforeAnchor": "不代表用户已拥有或准备好游戏",
+        "afterAnchor": "不代表用户已拥有或准备好游戏",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 15,
+        "page": "兼容游戏",
+        "scenario": "三类空态",
+        "expectedBehavior": "三类空态均保留筛选，不显示兼容标识。",
+        "beforeAnchor": "设备未知、机型无数据、筛选无结果分别显示对应空态并保留筛选",
+        "afterAnchor": "设备未知、机型无数据或筛选无结果时，分别显示对应空态，保留筛选",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 16,
+        "page": "日历",
+        "scenario": "历史月与今天",
+        "expectedBehavior": "首次本月，可选历史，“今天”回本月定位。",
+        "beforeAnchor": "首次默认当前月，可选历史月份",
+        "afterAnchor": "首次默认当前月，可选历史月份",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 17,
+        "page": "日历",
+        "scenario": "未发售单游戏",
+        "expectedBehavior": "仅所订游戏发售提醒，无整日历订阅。",
+        "beforeAnchor": "发售时只提醒已订阅该游戏的用户",
+        "afterAnchor": "只在该游戏发售时提醒订阅用户",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 18,
+        "page": "日历",
+        "scenario": "已发售",
+        "expectedBehavior": "禁止已发售新增，已有可取消。",
+        "beforeAnchor": "已发售游戏不新增发售订阅，仅可取消已有订阅",
+        "afterAnchor": "已发售游戏不可新增订阅，仅可取消已有订阅",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 19,
+        "page": "日历",
+        "scenario": "详情及订阅独立",
+        "expectedBehavior": "游戏行去Steam，订阅不打开详情；浏览免登录、获取Steam登录。",
+        "beforeAnchor": "订阅按钮独立响应，不同时打开详情",
+        "afterAnchor": "订阅按钮独立响应，不打开详情",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 20,
+        "page": "日历",
+        "scenario": "盖世登录",
+        "expectedBehavior": "订阅需盖世登录。",
+        "beforeAnchor": "未登录盖世时点订阅先登录",
+        "afterAnchor": "未登录盖世时点订阅先登录",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 21,
+        "page": "日历",
+        "scenario": "通知拒绝",
+        "expectedBehavior": "拒绝权限仍保存及站内信，不能再申请时引导设置。",
+        "beforeAnchor": "拒绝仍保存订阅并发站内信，无法再次申请时提示到系统设置开启",
+        "afterAnchor": "拒绝仍保存订阅并发站内信，无法再次申请时提示到系统设置开启",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 22,
+        "page": "日历",
+        "scenario": "保存失败",
+        "expectedBehavior": "成功才更新，失败保留。",
+        "beforeAnchor": "保存成功后更新按钮，失败保留原状态",
+        "afterAnchor": "保存成功后更新按钮，失败保留原状态",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 23,
+        "page": "日历",
+        "scenario": "空月与失败",
+        "expectedBehavior": "合法无记录与请求失败不同。",
+        "beforeAnchor": "无记录显示“本月暂无发售游戏”，失败不作空月",
+        "afterAnchor": "无记录显示“本月暂无发售游戏”，加载失败不作空月",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 24,
+        "page": "最新兼容",
+        "scenario": "官方批次",
+        "expectedBehavior": "官方更新日期及说明，不是发售日期，不等于本机一定可玩。",
+        "beforeAnchor": "说明写本批解决的问题及适用芯片／机型范围",
+        "afterAnchor": "说明包含解决的问题及适用芯片／机型",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 25,
+        "page": "最新兼容",
+        "scenario": "提醒与求适配",
+        "expectedBehavior": "只按新增批次提醒，保留站内信/Push限制，不新增单款求适配。",
+        "beforeAnchor": "有新增官方兼容批次时发送提醒",
+        "afterAnchor": "有新增官方兼容批次时提醒",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 26,
+        "page": "喜加一",
+        "scenario": "GOG移除",
+        "expectedBehavior": "本期仅两平台，绝不恢复GOG。",
+        "beforeAnchor": "本期仅Epic、Steam，不含GOG",
+        "afterAnchor": "本期仅Epic、Steam，不含GOG",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 27,
+        "page": "喜加一",
+        "scenario": "平台默认",
+        "expectedBehavior": "首次Epic，会话内保留；切平台只换列表。",
+        "beforeAnchor": "首次默认Epic，再次进入保留本次会话平台",
+        "afterAnchor": "首次默认Epic，再次进入保留本次会话平台",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 28,
+        "page": "喜加一",
+        "scenario": "整栏目新增提醒",
+        "expectedBehavior": "顶部整栏目订阅，无新增不推，不随平台切换。",
+        "beforeAnchor": "仅新增可领游戏产生提醒，无增量不推",
+        "afterAnchor": "仅新增可领游戏时提醒，无增量不推",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 29,
+        "page": "喜加一",
+        "scenario": "登录独立",
+        "expectedBehavior": "盖世订阅与商店登录独立。",
+        "beforeAnchor": "商店账号是否登录不影响栏目订阅",
+        "afterAnchor": "商店登录状态不影响订阅",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 30,
+        "page": "喜加一",
+        "scenario": "领取降级",
+        "expectedBehavior": "自动能力未接入时走官方页，不伪报自动领取。",
+        "beforeAnchor": "无法自动领取时打开官方页面",
+        "afterAnchor": "否则打开官方页面",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 31,
+        "page": "喜加一",
+        "scenario": "到期与成功",
+        "expectedBehavior": "到期失效不取消订阅，外跳不计领取成功。",
+        "beforeAnchor": "到期不打开链接，也不取消订阅；跳转不标记领取成功",
+        "afterAnchor": "已到期不打开链接、不取消订阅，跳转不标记领取成功",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 32,
+        "page": "喜加一",
+        "scenario": "读取失败",
+        "expectedBehavior": "未知数据不补零，不覆盖订阅。",
+        "beforeAnchor": "读取失败不作零款或未订阅",
+        "afterAnchor": "读取失败不作零款或未订阅",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 33,
+        "page": "小组件",
+        "scenario": "组件与订阅独立",
+        "expectedBehavior": "添加不订阅、订阅不添加。",
+        "beforeAnchor": "订阅不自动添加组件，添加组件不代用户订阅",
+        "afterAnchor": "订阅与添加组件互不代替",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 34,
+        "page": "小组件",
+        "scenario": "两平台同地区",
+        "expectedBehavior": "仅两平台同地区有效项目数量。",
+        "beforeAnchor": "数量只汇总Epic、Steam在服务端当前地区有效的项目",
+        "afterAnchor": "数量只汇总Epic、Steam在服务端当前地区有效的项目",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 35,
+        "page": "小组件",
+        "scenario": "未订阅与空项目",
+        "expectedBehavior": "未订阅与无项目区别，后者无倒计时。",
+        "beforeAnchor": "未订阅显示“开启领免订阅”；已订阅但无项目显示“暂无可领游戏”",
+        "afterAnchor": "未订阅显示“开启领免订阅”；已订阅但无项目显示“暂无可领游戏”",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 36,
+        "page": "小组件",
+        "scenario": "时间边界",
+        "expectedBehavior": ">=1小时上取整小时；[1分钟,1小时)上取整分钟；(0,1分钟)即将结束；0过期。",
+        "beforeAnchor": "不少于1小时向上取整显示小时",
+        "afterAnchor": "不少于1小时时向上取整显示小时",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 37,
+        "page": "小组件",
+        "scenario": "更新与错误",
+        "expectedBehavior": "更新剔除过期，不保证准点，初次正在更新、失败不补零。",
+        "beforeAnchor": "失败显示“暂时无法更新”",
+        "afterAnchor": "失败显示“暂时无法更新”",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 38,
+        "page": "小组件",
+        "scenario": "桌面操作",
+        "expectedBehavior": "桌面只拉起喜加一，默认/会话平台不自动追最近截止项。",
+        "beforeAnchor": "桌面不执行领取、订阅或取消操作",
+        "afterAnchor": "桌面不执行领取、订阅或取消",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 39,
+        "page": "签到",
+        "scenario": "周月折叠",
+        "expectedBehavior": "默认本周，更多同页1日至月末，收起回本周。",
+        "beforeAnchor": "默认只显示本周周一至周日七格一行",
+        "afterAnchor": "默认本周周一至周日七格一行",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 40,
+        "page": "签到",
+        "scenario": "年月与天数",
+        "expectedBehavior": "月已签天数，不推算连续天数。",
+        "beforeAnchor": "右侧显示年月及本月已签到天数",
+        "afterAnchor": "右侧显示年月及本月已签天数",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 41,
+        "page": "签到",
+        "scenario": "页内任务",
+        "expectedBehavior": "获得更多积分下两个Tab同页列表，不跳任务中心。",
+        "beforeAnchor": "不是跳转按钮；首次默认每日任务",
+        "afterAnchor": "首次默认每日任务，不是跳转按钮",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 42,
+        "page": "签到",
+        "scenario": "禁止奖励扩展",
+        "expectedBehavior": "不补签翻月倍奖，不重复发奖。",
+        "beforeAnchor": "不新增补签、翻月、连签倍奖",
+        "afterAnchor": "不新增补签、翻月、连签倍奖",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 43,
+        "page": "签到",
+        "scenario": "未知结果与换周期",
+        "expectedBehavior": "未知先查询；换账号/跨日跨月重读并恢复本周。",
+        "beforeAnchor": "结果未知先读取结果再允许重试",
+        "afterAnchor": "结果未知先查询再重试",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 44,
+        "page": "签到",
+        "scenario": "独立云游",
+        "expectedBehavior": "盖世签到不影响云游签到。",
+        "beforeAnchor": "盖世任务签到与云游签到独立",
+        "afterAnchor": "盖世任务签到与云游签到独立",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 45,
+        "page": "任务中心",
+        "scenario": "独立入口",
+        "expectedBehavior": "独立页仅从标题箭头，签到页留在原页。",
+        "beforeAnchor": "用户从首页任务活动标题箭头进入",
+        "afterAnchor": "从首页任务活动标题箭头进入",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 46,
+        "page": "任务中心",
+        "scenario": "删除评论",
+        "expectedBehavior": "删除社区评论任务，不编新任务或奖励。",
+        "beforeAnchor": "移除社区评论任务，不自行补其他任务",
+        "afterAnchor": "移除社区评论任务，不新增其他任务",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 47,
+        "page": "任务中心",
+        "scenario": "完成依据",
+        "expectedBehavior": "任务服务结果判完成与奖励。",
+        "beforeAnchor": "打开页面或点击“去完成”不计完成",
+        "afterAnchor": "打开页面或点击“去完成”不计完成",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 48,
+        "page": "专题管理",
+        "scenario": "数据范围",
+        "expectedBehavior": "权限和App协议/渠道/语言/方向/平台范围不变。",
+        "beforeAnchor": "点击“专题栏目列表”进入该专题，不改变其配置范围",
+        "afterAnchor": "点击“专题栏目列表”进入对应专题，配置范围不变",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 49,
+        "page": "栏目列表",
+        "scenario": "保存不跨专题",
+        "expectedBehavior": "保存回当前专题，关闭不保存。",
+        "beforeAnchor": "更新该行及栏目数量，不跨专题修改",
+        "afterAnchor": "更新该行及栏目数量，不修改其他专题",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 50,
+        "page": "栏目列表",
+        "scenario": "旧客户端",
+        "expectedBehavior": "不识别样式的旧客户端不展示。",
+        "beforeAnchor": "旧客户端不展示无法识别的栏目",
+        "afterAnchor": "旧客户端不展示无法识别的栏目",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 51,
+        "page": "栏目编辑",
+        "scenario": "自动内容源",
+        "expectedBehavior": "本机热度前6，日历自动数据，非运营手配。",
+        "beforeAnchor": "日历游戏由服务端Steam数据提供，不手配发售清单",
+        "afterAnchor": "日历游戏由服务端Steam数据提供，不手配发售清单",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 52,
+        "page": "栏目编辑",
+        "scenario": "帖子上限及时间",
+        "expectedBehavior": "仅已有帖子，最多6条，可排序定时，不在此发帖。",
+        "beforeAnchor": "社区超过6条不保存，定时未到不展示",
+        "afterAnchor": "社区超过6条不保存，未到展示时间的帖子不展示",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 53,
+        "page": "栏目编辑",
+        "scenario": "保存关闭重置",
+        "expectedBehavior": "成功才关闭；失败留输入、关闭不保存、重置恢复打开值。",
+        "beforeAnchor": "取得保存成功结果才关闭窗口并更新列表，失败保留输入；关闭不保存，“重置”恢复本次打开时的值",
+        "afterAnchor": "保存成功后关闭窗口、更新列表，失败保留输入；关闭不保存，“重置”恢复本次打开时的值",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 54,
+        "page": "栏目编辑",
+        "scenario": "超时未知",
+        "expectedBehavior": "超时先查，不重复创建。",
+        "beforeAnchor": "保存超时先核实结果，不重复新增",
+        "afterAnchor": "保存超时先查询结果，不重复新增",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 55,
+        "page": "跨页",
+        "scenario": "地区回退",
+        "expectedBehavior": "国内中国区，海外按服务端语言地区配置，无映射英语区，不编国家时区表。",
+        "beforeAnchor": "未映射语言使用服务端配置的英语区",
+        "afterAnchor": "未映射语言使用服务端英语区",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 56,
+        "page": "跨页",
+        "scenario": "三类订阅隔离",
+        "expectedBehavior": "三类各自账号保存、切号重读、提交去重、结果未知先查。",
+        "beforeAnchor": "喜加一整栏目、单游戏发售、兼容提醒分别保存，订阅绑定盖世账号",
+        "afterAnchor": "喜加一整栏目、单游戏发售及兼容提醒分别绑定盖世账号保存",
+        "status": "anchors_present_and_semantics_compared"
+      },
+      {
+        "id": 57,
+        "page": "数据",
+        "scenario": "不改埋点",
+        "expectedBehavior": "保留不改埋点，点击/保存不冒充运行领取或送达。",
+        "beforeAnchor": "不涉及埋点改造，既有统计保持不变",
+        "afterAnchor": "不涉及埋点改造，既有统计保持不变",
+        "status": "anchors_present_and_semantics_compared"
+      }
+    ]
+  },
+  "handoffRisks": [
+    {
+      "kind": "rendering",
+      "detail": "Markdown已嵌图；Word图片是否处于表格单元格、跨页及行高由主线程重建并实审，本代理未宣称完成。"
+    },
+    {
+      "kind": "newImages",
+      "detail": "7张module-*由主线程从当前Demo截图生成；本代理只按明确文件名引用，未验证其图文或公网可达。"
+    },
+    {
+      "kind": "existingConstraints",
+      "detail": "旧稿未改的字段长度、默认校验、分页、Android版本等仍注明不变；本轮不编造数值或重定义原系统。"
+    },
+    {
+      "kind": "manualStructureOverride",
+      "detail": "继续执行用户不出现待确认章节的明确要求，常规模板的该项检查仍需记录例外。"
+    }
+  ],
+  "notPerformed": [
+    "Word重建及渲染",
+    "正式MD同步",
+    "公网图片发布与HTTP检查",
+    "飞书实际导入",
+    "新增社区求助内容或截图"
+  ]
+}
