@@ -29,6 +29,7 @@
     const compat=id=>compatible(id)?`<span class="compat-mark" role="img" aria-label="完美兼容">${image('compatibility','')}</span>`:'';
 
     function localModule(){
+      if(!ctx.features.compatibleCatalog)return '';
       const collections=(operations.collections||[]).filter(item=>item&&item.title&&Array.isArray(item.games));
       if(!collections.length)return '';
       const cards=collections.map(item=>{
@@ -63,6 +64,7 @@
     }
     const community=()=>{const body=communityBlock();return body?section('社区精选',body):'';};
     function operationsBanner(){
+      if(state.showBanner===false)return '';
       const items=operations.banners.filter(item=>item&&MEDIA[item.image]&&['ret-calendar','ret-giveaways'].includes(item.action));
       if(!items.length)return '';
       const selected=Math.max(0,Math.min(items.length-1,Number(state.operationsIndex)||0)),item=items[selected];
@@ -71,7 +73,7 @@
 
     function conversion(){
       const cloudFirst=state.capability==='weak';
-      return `<div class="concept-home concept-conversion" data-module="paid-conversion">${operationsBanner()}${R.continueStrip()}${P.shortcuts()}${cloudFirst?C.cloud():''}${C.membership()}${cloudFirst?'':C.cloud()}${P.budget()}${P.following()}${R.giveaways({compact:true})}${community()}${R.calendar({compact:true})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
+      return `<div class="concept-home concept-conversion" data-module="paid-conversion">${operationsBanner()}${P.shortcuts()}${cloudFirst?C.cloud():''}${C.membership()}${cloudFirst?'':C.cloud()}${P.budget()}${P.following()}${R.giveaways({compact:true})}${community()}${R.calendar({compact:true})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
     }
 
     function adaptationRecords(){
@@ -83,14 +85,14 @@
 
     function discovery(){
       const banner=operationsBanner(),quick=shortcuts();
-      const top=state.form==='landscape'?`<div class="home-feature-row" data-module="feature-row">${banner}${quick}</div>`:`${banner}${R.continueStrip()}${quick}`;
+      const top=state.form==='landscape'&&banner?`<div class="home-feature-row" data-module="feature-row">${banner}${quick}</div>`:`${banner}${quick}`;
       const modules={collections:localModule,calendar:()=>R.calendar({compact:true}),latest:adaptationRecords,community,tasks:()=>R.tasks(),business:()=>R.business({kind:'all'})};
       const order=[...new Set(operations.homeOrder||[])].filter(id=>modules[id]);
       return `<div class="concept-home concept-discover" data-module="play-discovery">${top}${order.map(id=>modules[id]()).join('')}</div>`;
     }
 
     function daily(){
-      return `<div class="concept-home concept-daily" data-module="daily-brief">${operationsBanner()}${R.continueStrip()}${P.shortcuts()}${community()}${R.calendar({compact:false})}${R.discounts({compact:false})}${R.giveaways({compact:false})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
+      return `<div class="concept-home concept-daily" data-module="daily-brief">${operationsBanner()}${P.shortcuts()}${community()}${R.calendar({compact:false})}${R.discounts({compact:false})}${R.giveaways({compact:false})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
     }
     return ({value:conversion,play:discovery,content:daily}[direction]||discovery)();
   }

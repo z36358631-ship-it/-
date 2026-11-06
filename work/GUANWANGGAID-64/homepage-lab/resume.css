@@ -1,0 +1,29 @@
+/* Confirmed home order. Search stays visible while its content row scrolls away. */
+.home-flow-header{min-width:0;max-width:100%}
+.home-flow-header .channel-tabs{padding:1px 0 10px;margin:0 0 10px;min-height:38px}
+.home-resume-row{display:flex;align-items:center;gap:10px;min-height:58px;margin:0 0 7px;padding:2px 0 7px}
+.resume-play{border:0;background:transparent;color:#e9f4f4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:2px 0;border-radius:8px;font-size:10px;line-height:1.25;width:42px;min-height:48px;flex:0 0 42px}
+.resume-play svg{height:26px;width:26px;fill:none;stroke:currentColor;stroke-width:1.5}
+.resume-play svg path{fill:currentColor;stroke:none}
+.resume-icons{display:flex;gap:9px;min-width:0;overflow-x:auto;scrollbar-width:none;padding:2px}
+.resume-game{border:0;padding:0;background:transparent;flex:0 0 42px;height:42px;overflow:hidden;border-radius:10px}
+.resume-game img,.resume-mini img{width:100%;height:100%;object-fit:cover;object-position:50% 35%}
+.resume-mini{display:none;padding:0;border:1px solid #ffffff18;width:33px;height:33px;flex:0 0 33px;border-radius:8px;overflow:hidden;background:#202226}
+.is-continue-collapsed .resume-mini{display:block}
+.device.is-landscape .home-resume-row,.device.is-tablet .home-resume-row{min-height:53px}
+.device.is-landscape .home-resume-row{margin-bottom:1px}
+.device.is-landscape .home-flow-header .channel-tabs{margin-bottom:7px}
+.land-nav nav{flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.land-nav nav button{flex:0 0 auto}
+.land-right{display:flex;align-items:center;gap:14px;flex:none;margin-left:auto}
+.land-tools,.device.is-landscape .land-tools{display:flex;align-items:center;gap:10px;flex:none}
+.land-nav .land-tools button{display:grid;place-items:center;flex:none;min-width:30px;height:32px;padding:0;border:0;background:transparent;border-radius:6px}
+.land-nav .land-tools .home-checkin{color:#abeee0;font-size:12px;font-weight:650}
+.land-nav .land-tools .app-search,.land-nav .land-tools .app-icon{width:30px;min-width:30px;max-width:30px}
+.land-tools img{width:20px;height:20px;object-fit:contain}
+.land-nav .land-tools button:hover{background:#ffffff0b}
+@media(max-width:900px){.land-right{gap:8px}.land-tools,.device.is-landscape .land-tools{gap:5px}.land-nav .land-tools button{min-width:26px}.land-nav .land-tools .app-search,.land-nav .land-tools .app-icon{width:26px;min-width:26px;max-width:26px}.device.is-tablet .land-status{display:none}}
+.presentation-controls label{display:flex;gap:8px;align-items:center;font-size:11px;min-height:30px;color:#687078}
+.presentation-controls input{accent-color:#2a6e78}
+.admin-preview-link{display:flex;justify-content:space-between;font-size:11px;text-decoration:none;color:#367782;border-top:1px solid #dce2e2;margin-top:9px;padding:12px 1px 0}
+@media(max-width:370px){.resume-game{flex-basis:38px;height:38px}.resume-icons{gap:7px}.resume-play{padding:8px}.app-top{gap:5px}.app-top .app-search>span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.is-continue-collapsed .app-top .home-checkin{padding-left:2px;padding-right:2px}}

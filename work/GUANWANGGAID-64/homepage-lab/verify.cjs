@@ -14,7 +14,7 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  const state=()=>api('getState'),click=async s=>page.locator('.device '+s).first().click();
  const record=(name,details={})=>checks.push({case:name,passed:true,...details});
  const ensure=async label=>{await page.evaluate(async()=>Promise.all([...document.images].map(i=>i.decode().catch(()=>{}))));const g=await page.evaluate(()=>{const d=document.querySelector('.device'),b=document.querySelector('.app-body');return {windowOverflow:document.documentElement.scrollWidth>innerWidth+1,bodyOverflow:b.scrollWidth>b.clientWidth+1,deviceOverflow:d.scrollWidth>d.clientWidth+1,images:[...document.images].every(i=>i.complete&&i.naturalWidth>0),height:b.clientHeight};});assert(!g.windowOverflow&&!g.bodyOverflow&&!g.deviceOverflow&&g.images&&g.height>50,label+JSON.stringify(g));};
- const snap=async name=>{await ensure(name);await page.locator('.device').screenshot({path:path.join(HERE,prefix+'r8-'+name+'.png')});};
+ const snap=async name=>{await ensure(name);await page.locator('.device').screenshot({path:path.join(HERE,prefix+'r9-'+name+'.png')});};
  await api('reset');assert.deepEqual(await page.locator('.home-shortcuts b').allTextContents(),['兼容性查询','喜加一','游戏日历','盖世讨论区']);assert.equal((await state()).direction,'play');assert.equal(await page.locator('#direction-controls button').count(),1);record('selected direction is default and sole visible review direction');
  for(const scenario of ['new','import','steam','weak'])for(const form of ['portrait','landscape','tablet']){
   await api('reset');await api('setScenario',scenario);await api('setForm',form);await ensure(scenario+'/'+form);
@@ -23,10 +23,50 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
   for(const key of ['discounts','giveaways','compatible-feature'])assert(!modules.includes(key),key);
   assert.equal(await page.locator('.device video').count(),0);assert.equal(await page.locator('.device [data-action="purchase-rental"]').count(),0);
   assert.equal(await page.locator('.home-shortcuts button').count(),4);
-  if(form==='portrait'){assert.deepEqual(await page.locator('.app-bottom button').allTextContents(),['首页','排行榜','游戏库','社区','我的']);assert.equal(modules.includes('continue'),scenario==='import');}
-  else{assert.equal(await page.locator('.land-nav nav button').first().innerText(),'游戏库');assert.equal(await page.locator('.app-bottom').count(),0);assert(!modules.includes('continue'));}
+  if(form==='portrait'){assert.deepEqual(await page.locator('.app-bottom button').allTextContents(),['首页','社区','游戏库','排行榜','我的']);}
+  else{assert.deepEqual(await page.locator('.land-nav nav button').allTextContents(),['首页','社区','游戏库','排行榜','我的']);assert.equal(await page.locator('.app-bottom').count(),0);}
+  assert.equal(modules.includes('continue'),scenario==='import'&&form==='portrait');
   if(form==='landscape'){const ratio=await page.locator('.home-feature-row').evaluate(e=>{const a=e.querySelector('.operations-slot').getBoundingClientRect(),b=e.querySelector('.home-shortcuts').getBoundingClientRect();return {ratio:a.width/b.width,sameY:Math.abs(a.top-b.top)<1,ordered:a.right<b.left};});assert(Math.abs(ratio.ratio-4)<.03&&ratio.sameY&&ratio.ordered,JSON.stringify(ratio));}
   if(scenario==='import')await snap(form+'-home');record('scenario/layout',{scenario,form});
+ }
+ await api('reset');
+ assert(await page.locator('.resume-play').evaluate(e=>e.querySelector('span').getBoundingClientRect().top>=e.querySelector('svg').getBoundingClientRect().bottom));
+ assert.equal(await page.locator('.resume-game').count(),2);
+ assert(await page.locator('.resume-game').evaluateAll(es=>es.every(e=>e.children.length===1&&e.firstElementChild.tagName==='IMG')));
+ assert(await page.locator('.resume-mini').isHidden());
+ await page.locator('.app-body').evaluate(e=>{e.scrollTop=180;});
+ await page.waitForFunction(()=>document.querySelector('.device').classList.contains('is-continue-collapsed'));
+ assert(await page.locator('.resume-mini').isVisible());
+ await snap('portrait-continue-collapsed');
+ await page.locator('.app-body').evaluate(e=>{e.scrollTop=0;});
+ await page.waitForFunction(()=>!document.querySelector('.device').classList.contains('is-continue-collapsed'));
+ await page.locator('[data-control="showContinue"]').uncheck();
+ assert.equal(await page.locator('.home-resume-row,.resume-mini').count(),0);
+ await page.locator('[data-control="showBanner"]').uncheck();
+ assert.equal(await page.locator('.operations-slot').count(),0);
+ await page.locator('[data-control="showContinue"]').check();
+ await page.locator('[data-control="showBanner"]').check();
+ assert.equal(await page.locator('.home-resume-row').count(),1);
+ assert.equal(await page.locator('.operations-slot').count(),1);
+ record('portrait continue label, icons, collapse/restore and review switches');
+ for(const form of ['landscape','tablet']){
+  await api('reset');await api('setForm',form);
+  assert.equal(await page.locator('.device .app-search').count(),1);
+  assert.equal(await page.locator('.land-tools .app-search span').count(),0);
+  assert.equal(await page.locator('.home-resume-row,.resume-mini').count(),0);
+  assert(await page.locator('.land-nav').evaluate(e=>{const n=e.querySelector('nav').getBoundingClientRect(),t=e.querySelector('.land-tools').getBoundingClientRect();return n.right<=t.left&&Math.abs((n.top+n.bottom)/2-(t.top+t.bottom)/2)<2;}));
+  const tools=await page.locator('.land-tools button').evaluateAll(es=>es.slice(0,3).map(e=>e.getBoundingClientRect().toJSON()));
+  assert(tools.every(r=>Math.abs(r.top-tools[0].top)<2));
+  await click('.land-tools .app-search');assert.equal((await state()).page,'search');
+  await page.locator('#game-query').fill('哈迪斯');assert.equal(await page.locator('.game-card').count(),1);
+  await click('[data-action="back"]');assert.equal((await state()).page,'home');
+  await click('.land-tools .home-checkin');assert.equal((await state()).page,'ret-task');
+  await click('[data-action="back"]');assert.equal((await state()).page,'home');
+  if(form==='landscape'){
+   assert(await page.locator('.local-collection-game').evaluateAll(es=>es.every(e=>Math.abs(e.getBoundingClientRect().top-es[0].getBoundingClientRect().top)<1)));
+   assert.equal(await page.locator('.local-collection-card').evaluate(e=>Math.round(e.getBoundingClientRect().height)),120);
+  }
+  await snap(form+'-toolbar-collection');record('wide right toolbar, search, checkin and compact collection',{form});
  }
  await api('reset');
  assert.deepEqual(await page.locator('.channel-tabs button').allTextContents(),['推荐','PC游戏','兼容游戏','云游戏','云游组队玩','复古游戏']);
@@ -67,7 +107,7 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  await api('reset');await click('.home-shortcuts [data-action="ret-giveaways"]');assert.deepEqual(await page.locator('.ret-platform-tabs button').evaluateAll(es=>es.map(e=>e.dataset.platform)),['epic','steam']);
  for(const platform of ['epic','steam']){await click('[data-action="ret-platform"][data-platform="'+platform+'"]');await click('[data-action="ret-subscribe"]');assert.equal((await state()).retSubscriptions[platform],true);}
  assert.equal(await page.locator('.ret-giveaway-page [data-action="ret-widget"]').count(),0);record('two-platform giveaway subscription without duplicate widget entry');
- await api('reset');await click('.home-checkin');assert.equal((await state()).page,'ret-task-center');await click('[data-task="checkin"]');await click('[data-action="ret-checkin"]');assert((await state()).retSigned);record('task center and checkin');
+ await api('reset');await click('.home-checkin');assert.equal((await state()).page,'ret-task');assert((await state()).retSigned);assert.equal(await page.locator('.subheader h2').innerText(),'盖世积分');assert.equal(await page.locator('.tasks-revision-tabs').count(),0);await click('.tasks-revision-entry [data-action="ret-task-center"]');assert.equal((await state()).page,'ret-task-center');assert.deepEqual(await page.locator('.tasks-revision-tabs button').allTextContents(),['每日任务','成长任务']);await click('[data-action="ret-task-tab"][data-tab="growth"]');assert.equal(await page.locator('.tasks-revision-empty').count(),1);await click('[data-action="ret-task-tab"][data-tab="daily"]');assert.equal(await page.locator('.tasks-revision-done').innerText(),'已签到');record('task center and checkin');
  for(const form of ['portrait','landscape','tablet']){await api('reset');await api('setForm',form);await click('.home-shortcuts [data-action="ret-calendar"]');assert.equal((await state()).page,'ret-calendar');await click('[data-action="back"]');await click('.home-shortcuts [data-action="gamehub-forum"]');assert.equal((await state()).page,'gamehub-forum');assert.equal(await page.locator('.subheader h2').innerText(),'盖世游戏');assert.equal(await page.locator('[data-community-section="gamehub"]').count(),1);assert.equal(await page.locator((form==='portrait'?'.app-bottom':'.land-nav')+' .is-selected').innerText(),'社区');await click('[data-action="forum-tab"][data-tab="guide"]');await ensure('forum '+form);await snap('forum-'+form);await click('.forum-feed [data-action="article"]');assert.equal((await state()).page,'article');await click('[data-action="back"]');assert.equal((await state()).page,'gamehub-forum');await click('[data-action="back"]');assert.equal((await state()).page,'home');record('four shortcuts and direct GameHub subsection with nested return',{form});}
  await api('reset');assert.equal(await page.locator('.channel-tabs .nav-update').count(),1);await click('.channel-tabs [data-action="compatibility"]');assert.equal(await page.locator('.channel-tabs .nav-update').count(),0);await click('.app-bottom [data-page="community"]');assert.equal(await page.locator('.app-bottom .nav-update').count(),0);record('independent tab update badges clear on visiting');
 
@@ -81,16 +121,17 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
    const quick=await page.locator('.home-shortcuts b').allTextContents();
    assert.deepEqual(quick,os==='android'?['兼容性查询','喜加一','游戏日历','盖世讨论区']:['喜加一','游戏日历','盖世讨论区']);
    assert.equal(await page.locator('[data-module="latest-compatibility"]').count(),os==='android'?1:0);
-   assert.equal(await page.locator('.app-top [aria-label="当前设备适配信息"]').count(),os==='android'?1:0);
+   assert.equal(await page.locator('.app-top [aria-label="当前设备适配信息"],.land-tools [aria-label="当前设备适配信息"]').count(),os==='android'?1:0);
    assert.equal(await page.locator('[data-module="team"]').count(),region==='domestic'?1:0);
    assert.equal(await page.locator('[data-module="instant"]').count(),1);
    assert.equal(await page.locator('.channel-tabs [data-channel="cloud-list"],.channel-tabs [data-channel="team-list"]').count(),region==='domestic'?2:0);
-   assert.equal(await page.locator('.channel-tabs [data-action="compatibility"]').count(),1);
+   assert.equal(await page.locator('.channel-tabs [data-action="compatibility"]').count(),os==='android'?1:0);
+   assert.equal(await page.locator('[data-module="local-collections"]').count(),os==='android'?1:0);
    const hardware=page.locator('.device-hardware');assert(await hardware.evaluate((e,{os,form})=>e.classList.contains('is-'+os)&&e.classList.contains('is-'+form),{os,form}));
    assert.equal(await hardware.locator('.hardware-camera,.hardware-key').count(),5);
    assert(await hardware.evaluate(e=>{const r=e.getBoundingClientRect(),d=e.querySelector('.device').getBoundingClientRect(),c=document.querySelector('.control-panel').getBoundingClientRect();return c.right<r.left&&r.left>=0&&r.right<=innerWidth&&r.width>d.width&&r.height>d.height;}));
    if(form==='landscape')assert(await page.locator('.home-shortcuts button').evaluateAll(es=>es.every(e=>e.querySelector('.home-shortcut-icon').getBoundingClientRect().right<=e.querySelector('b').getBoundingClientRect().left)));
-   await page.screenshot({path:path.join(HERE,prefix+'r8-shell-'+os+'-'+region+'-'+form+'.png'),fullPage:true});
+   await page.screenshot({path:path.join(HERE,prefix+'r9-shell-'+os+'-'+region+'-'+form+'.png'),fullPage:true});
    record('OS/region menu and physical shell',{os,region,form});
   }
   await api('setForm','portrait');await click('.app-bottom [data-page="library"]');
@@ -118,6 +159,6 @@ const prefix=process.env.HOME_LAB_URL?'live-':'';
  record('platform change clears unsupported route and stale back stack; iOS query absent in unknown-device fallback');
  for(const width of [375,768])for(const form of ['portrait','landscape','tablet']){await page.setViewportSize({width,height:1000});await api('reset');await api('setForm',form);await ensure(width+'/'+form);record('narrow viewport no clipping',{width,form});}
  assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);record('no runtime errors or external runtime resources');
- const result={version:'r8',status:'passed',artifactSha256:hash,target,checks:checks.length,results:checks,errors,externalRequests:requests};
+ const result={version:'r9',status:'passed',artifactSha256:hash,target,checks:checks.length,results:checks,errors,externalRequests:requests};
  fs.writeFileSync(path.join(HERE,prefix+'verification.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({status:'passed',checks:checks.length,sha256:hash,target}));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1);});

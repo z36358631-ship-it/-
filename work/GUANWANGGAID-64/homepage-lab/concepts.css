@@ -28,5 +28,14 @@
 
 .home-shortcuts>button:nth-child(4) .home-shortcut-icon{background:#293145;color:#b3c5f0}
 /* Landscape quick links: icon on the left, label on the right. */
+.device.is-landscape .local-collection-card{grid-template-columns:160px minmax(0,1fr);gap:24px;height:120px;padding:17px 20px;background:linear-gradient(105deg,#293c3c,#222a2c 58%,#2d2930);border:1px solid #ffffff0c}
+.device.is-landscape .local-collection-title{grid-column:1;grid-row:1;padding:0;gap:6px}
+.device.is-landscape .local-collection-title small{color:#a8bbbb}
+.device.is-landscape .local-collection-title b{letter-spacing:0}
+.device.is-landscape .local-collection-covers{grid-column:2;grid-row:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:center;gap:12px;padding:0}
+.device.is-landscape .local-collection-icon-row{display:contents;transform:none}
+.device.is-landscape .local-collection-game{width:100%;max-width:72px;justify-self:center}
+.device.is-landscape .local-collection-game>img{box-shadow:0 3px 9px #0002}
+@container(max-width:620px){.device.is-landscape .local-collection-card{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px;height:142px;padding:13px 15px}.device.is-landscape .local-collection-title{grid-column:1;grid-row:1;flex-direction:row;align-items:baseline;gap:10px}.device.is-landscape .local-collection-title b{order:-1}.device.is-landscape .local-collection-covers{grid-column:1;grid-row:2;gap:7px}.device.is-landscape .local-collection-game{max-width:64px}}
 .home-feature-row .home-shortcuts{grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(4,minmax(0,1fr));padding:3px 7px;gap:0}.home-feature-row .home-shortcuts>button{flex-direction:row;justify-content:flex-start;gap:8px;padding:2px 3px}.home-feature-row .home-shortcut-icon{width:20px;height:20px;border-radius:6px}.home-feature-row .home-shortcut-icon svg{width:15px;height:15px}.home-feature-row .home-shortcuts b{font-size:10px;text-align:left;line-height:1.4}
 @container(max-width:600px){.home-feature-row .home-shortcuts{padding:3px 2px}.home-feature-row .home-shortcuts>button{gap:3px;padding:1px;flex-direction:row;justify-content:flex-start}.home-feature-row .home-shortcut-icon{width:15px;height:15px;border-radius:4px}.home-feature-row .home-shortcut-icon svg{width:12px;height:12px}.home-feature-row .home-shortcuts b{font-size:8px;text-align:left}}

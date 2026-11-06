@@ -56,6 +56,15 @@
 
 .home-shortcuts>button:nth-child(4) .home-shortcut-icon{background:#293145;color:#b3c5f0}
 /* Landscape quick links: icon on the left, label on the right. */
+.device.is-landscape .local-collection-card{grid-template-columns:160px minmax(0,1fr);gap:24px;height:120px;padding:17px 20px;background:linear-gradient(105deg,#293c3c,#222a2c 58%,#2d2930);border:1px solid #ffffff0c}
+.device.is-landscape .local-collection-title{grid-column:1;grid-row:1;padding:0;gap:6px}
+.device.is-landscape .local-collection-title small{color:#a8bbbb}
+.device.is-landscape .local-collection-title b{letter-spacing:0}
+.device.is-landscape .local-collection-covers{grid-column:2;grid-row:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:center;gap:12px;padding:0}
+.device.is-landscape .local-collection-icon-row{display:contents;transform:none}
+.device.is-landscape .local-collection-game{width:100%;max-width:72px;justify-self:center}
+.device.is-landscape .local-collection-game>img{box-shadow:0 3px 9px #0002}
+@container(max-width:620px){.device.is-landscape .local-collection-card{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:10px;height:142px;padding:13px 15px}.device.is-landscape .local-collection-title{grid-column:1;grid-row:1;flex-direction:row;align-items:baseline;gap:10px}.device.is-landscape .local-collection-title b{order:-1}.device.is-landscape .local-collection-covers{grid-column:1;grid-row:2;gap:7px}.device.is-landscape .local-collection-game{max-width:64px}}
 .home-feature-row .home-shortcuts{grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(4,minmax(0,1fr));padding:3px 7px;gap:0}.home-feature-row .home-shortcuts>button{flex-direction:row;justify-content:flex-start;gap:8px;padding:2px 3px}.home-feature-row .home-shortcut-icon{width:20px;height:20px;border-radius:6px}.home-feature-row .home-shortcut-icon svg{width:15px;height:15px}.home-feature-row .home-shortcuts b{font-size:10px;text-align:left;line-height:1.4}
 @container(max-width:600px){.home-feature-row .home-shortcuts{padding:3px 2px}.home-feature-row .home-shortcuts>button{gap:3px;padding:1px;flex-direction:row;justify-content:flex-start}.home-feature-row .home-shortcut-icon{width:15px;height:15px;border-radius:4px}.home-feature-row .home-shortcut-icon svg{width:12px;height:12px}.home-feature-row .home-shortcuts b{font-size:8px;text-align:left}}
 
@@ -203,6 +212,89 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 @media(max-width:1200px){.review-layout{grid-template-columns:244px minmax(0,1fr);gap:22px;padding:20px}.control-panel{padding:22px 17px;top:20px;max-height:calc(100vh - 40px)}.device-stage{padding:0 5px 20px}.device-hardware.is-landscape .device{height:445px}.device-hardware.is-landscape .land-nav nav{gap:20px}.device-hardware.is-landscape .land-status{display:none}}
 @media(max-width:900px){.review-layout{grid-template-columns:220px minmax(0,1fr);gap:16px;padding:16px}.control-panel{padding:20px 14px;top:16px;max-height:calc(100vh - 32px)}.device-stage{padding-left:1px;padding-right:1px}.control-device .small-grid{grid-template-columns:1fr}.control-device .small-grid button{min-height:32px;padding:5px}.device-hardware.is-landscape .device{--app-pad:26px}.device-hardware.is-landscape .land-nav nav{gap:14px}.device-hardware.is-landscape .land-nav button{font-size:10px}.device-hardware.is-ios.is-landscape .land-nav{padding-left:42px;padding-right:12px}}
 @media(max-width:680px){.review-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;padding:14px}.control-panel{position:relative;top:auto;max-height:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;padding:20px;border-radius:23px}.control-intro{grid-column:1/-1;margin-bottom:1px}.control-section,.direction-explanation,.control-conditions{margin:0;min-width:0}.control-device{grid-column:1/-1}.control-device .small-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.control-section:has(#direction-controls){grid-column:1/-1}.direction-controls{grid-template-columns:1fr}.direction-explanation,.control-conditions,.review-boundary{grid-column:1/-1}.control-conditions .control-section{margin:12px 0 0}.field-row{flex-wrap:nowrap}.field-row select{width:60%}.review-boundary p{margin-top:10px}.preview-column{padding:0}.device-stage{min-height:0;padding:0 6px 24px;overflow:visible}.preview-footer{padding:0 7px;font-size:9px}.device-hardware .device{height:822px}.device-hardware.is-landscape .device{height:445px}.device-hardware.is-tablet .device{height:970px}.reset-button{margin:0;justify-self:start}.device-hardware.is-landscape .land-nav nav{gap:11px}.device-hardware.is-landscape .land-nav{gap:9px}.device-hardware.is-landscape .land-tools{display:none}}
+
+/* Confirmed home order. Search stays visible while its content row scrolls away. */
+.home-flow-header{min-width:0;max-width:100%}
+.home-flow-header .channel-tabs{padding:1px 0 10px;margin:0 0 10px;min-height:38px}
+.home-resume-row{display:flex;align-items:center;gap:10px;min-height:58px;margin:0 0 7px;padding:2px 0 7px}
+.resume-play{border:0;background:transparent;color:#e9f4f4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:2px 0;border-radius:8px;font-size:10px;line-height:1.25;width:42px;min-height:48px;flex:0 0 42px}
+.resume-play svg{height:26px;width:26px;fill:none;stroke:currentColor;stroke-width:1.5}
+.resume-play svg path{fill:currentColor;stroke:none}
+.resume-icons{display:flex;gap:9px;min-width:0;overflow-x:auto;scrollbar-width:none;padding:2px}
+.resume-game{border:0;padding:0;background:transparent;flex:0 0 42px;height:42px;overflow:hidden;border-radius:10px}
+.resume-game img,.resume-mini img{width:100%;height:100%;object-fit:cover;object-position:50% 35%}
+.resume-mini{display:none;padding:0;border:1px solid #ffffff18;width:33px;height:33px;flex:0 0 33px;border-radius:8px;overflow:hidden;background:#202226}
+.is-continue-collapsed .resume-mini{display:block}
+.device.is-landscape .home-resume-row,.device.is-tablet .home-resume-row{min-height:53px}
+.device.is-landscape .home-resume-row{margin-bottom:1px}
+.device.is-landscape .home-flow-header .channel-tabs{margin-bottom:7px}
+.land-nav nav{flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.land-nav nav button{flex:0 0 auto}
+.land-right{display:flex;align-items:center;gap:14px;flex:none;margin-left:auto}
+.land-tools,.device.is-landscape .land-tools{display:flex;align-items:center;gap:10px;flex:none}
+.land-nav .land-tools button{display:grid;place-items:center;flex:none;min-width:30px;height:32px;padding:0;border:0;background:transparent;border-radius:6px}
+.land-nav .land-tools .home-checkin{color:#abeee0;font-size:12px;font-weight:650}
+.land-nav .land-tools .app-search,.land-nav .land-tools .app-icon{width:30px;min-width:30px;max-width:30px}
+.land-tools img{width:20px;height:20px;object-fit:contain}
+.land-nav .land-tools button:hover{background:#ffffff0b}
+@media(max-width:900px){.land-right{gap:8px}.land-tools,.device.is-landscape .land-tools{gap:5px}.land-nav .land-tools button{min-width:26px}.land-nav .land-tools .app-search,.land-nav .land-tools .app-icon{width:26px;min-width:26px;max-width:26px}.device.is-tablet .land-status{display:none}}
+.presentation-controls label{display:flex;gap:8px;align-items:center;font-size:11px;min-height:30px;color:#687078}
+.presentation-controls input{accent-color:#2a6e78}
+.admin-preview-link{display:flex;justify-content:space-between;font-size:11px;text-decoration:none;color:#367782;border-top:1px solid #dce2e2;margin-top:9px;padding:12px 1px 0}
+@media(max-width:370px){.resume-game{flex-basis:38px;height:38px}.resume-icons{gap:7px}.resume-play{padding:8px}.app-top{gap:5px}.app-top .app-search>span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.is-continue-collapsed .app-top .home-checkin{padding-left:2px;padding-right:2px}}
+
+.tasks-revision-page{padding:8px 2px 24px;color:#f2f3f5;max-width:820px;margin:auto}
+.tasks-revision-page *{box-sizing:border-box}
+.tasks-revision-card{border:1px solid #33363e;border-radius:20px;background:#1b1d21}
+.tasks-revision-balance{padding:12px 8px 22px;display:flex;flex-direction:column;gap:8px}
+.tasks-revision-balance>span{color:#b4b7c0;font-size:13px}
+.tasks-revision-balance>strong{font-size:38px;line-height:1.15;letter-spacing:-1px;font-weight:650}
+.tasks-revision-checkin{text-align:center;padding:25px 18px 22px;background:linear-gradient(145deg,#27352f,#1b1d21 70%)}
+.tasks-revision-status{width:46px;height:46px;margin:0 auto 13px;border-radius:50%;display:grid;place-items:center;background:#303b36;color:#c5f8bb;font-size:25px;font-weight:600}
+.tasks-revision-status.is-signed{background:#c5f8bb;color:#203726}
+.tasks-revision-checkin h2{margin:0;font-size:20px;font-weight:650}
+.tasks-revision-checkin>p{margin:9px 0 0;color:#b4b9b5;font-size:13px}
+.tasks-revision-reward{margin:15px 0 18px;display:flex;align-items:baseline;justify-content:center;gap:8px}
+.tasks-revision-reward strong{font-size:40px;line-height:1.15;color:#c5f8bb;font-weight:650}
+.tasks-revision-reward>span{font-size:12px;color:#a9b3ac}
+.tasks-revision-sign-button{min-height:42px;width:min(100%,250px);border:0;border-radius:24px;background:#c5f8bb;color:#183522;font-size:14px;font-weight:650}
+.tasks-revision-signed-label{display:inline-block;border-radius:24px;padding:10px 35px;background:#303832;color:#c1cbc3;font-size:13px}
+.tasks-revision-more{margin-top:16px;padding:18px 16px 5px}
+.tasks-revision-more-heading{display:flex;flex-direction:column;gap:6px}
+.tasks-revision-more-heading h2{margin:0;font-size:19px;font-weight:650}
+.tasks-revision-more-heading>span{font-size:12px;color:#92969f}
+.tasks-revision-entry{padding:20px 18px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px}
+.tasks-revision-entry .tasks-revision-more-heading{gap:8px}
+.tasks-revision-tabs{display:flex;gap:8px;margin:19px 0 8px;padding:4px;border-radius:24px;background:#101114}
+.tasks-revision-tabs button{flex:1;min-height:44px;padding:7px 12px;border:0;border-radius:20px;background:transparent;color:#9fa3ac;font-size:13px}
+.tasks-revision-tabs button.is-selected{background:#353d35;color:#d4f9cc;font-weight:600}
+.tasks-revision-row{display:flex;align-items:center;gap:11px;padding:17px 0;border-bottom:1px solid #2b2e34;min-width:0}
+.tasks-revision-row:last-child{border-bottom:0}
+.tasks-revision-order{flex:0 0 28px;font-size:11px;font-variant-numeric:tabular-nums;color:#8a919d}
+.tasks-revision-copy{flex:1;min-width:0}
+.tasks-revision-copy h3{margin:0;font-size:14px;font-weight:550;line-height:1.4}
+.tasks-revision-copy p{margin:5px 0 0;font-size:11px;line-height:1.5;color:#898f99;overflow-wrap:anywhere}
+.tasks-revision-row>button{min-height:44px;flex:0 0 auto;min-width:66px;padding:7px 12px;border:0;border-radius:22px;font-size:12px;white-space:nowrap}
+.tasks-revision-go{background:#c5f8bb;color:#1b3521;font-weight:600}
+.tasks-revision-done,.tasks-revision-row button:disabled{color:#818b83;background:#2b332c;cursor:default}
+.tasks-revision-row button:disabled:not(.tasks-revision-done){color:#858a93;background:#292c32}
+.tasks-revision-empty{text-align:center;padding:42px 8px 45px}
+.tasks-revision-empty h3{margin:0;font-size:15px;font-weight:500;color:#c2c5cc}
+.tasks-revision-empty p{margin:10px 0 0;font-size:12px;color:#858c98}
+.tasks-revision-page button:focus-visible{outline:2px solid #dcffd3;outline-offset:3px}
+.device.is-landscape .tasks-revision-signin{display:grid;grid-template-columns:minmax(200px,.8fr) minmax(300px,1.5fr);gap:12px 18px;padding-top:4px}
+.device.is-landscape .tasks-revision-balance{padding:8px 8px 16px}
+.device.is-landscape .tasks-revision-checkin{padding:18px 12px;align-self:start}
+.device.is-landscape .tasks-revision-summary{grid-column:1}.device.is-landscape .tasks-revision-more{grid-column:2;grid-row:1;margin:0}
+.device.is-landscape .tasks-revision-row{padding:12px 0}
+.device.is-landscape .tasks-revision-center{max-width:720px}
+.device.is-landscape .tasks-revision-entry{align-self:center}
+.device.is-tablet .tasks-revision-signin{display:grid;grid-template-columns:minmax(220px,1fr) minmax(330px,1.5fr);gap:16px 22px;padding-top:14px}
+.device.is-tablet .tasks-revision-balance{padding-bottom:22px}
+.device.is-tablet .tasks-revision-checkin{align-self:start}
+.device.is-tablet .tasks-revision-summary{grid-column:1}.device.is-tablet .tasks-revision-more{grid-column:2;grid-row:1;margin:0}
+.device.is-tablet .tasks-revision-entry{align-self:center}
+@media(prefers-reduced-motion:reduce){.tasks-revision-page *{scroll-behavior:auto}}
 </style>
 </head>
 <body>
@@ -216,7 +308,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
       <section class="control-section control-environment"><h3>系统</h3><div id="os-controls" class="segmented"></div></section>
       <section class="control-section control-environment"><h3>地区</h3><div id="region-controls" class="segmented"></div></section>
       <section class="control-section control-device"><h3>设备预览</h3><div id="form-controls" class="small-grid"></div></section>
-      <section class="control-section"><h3>当前方案</h3><div id="direction-controls" class="direction-controls"></div></section>
+      <section class="control-section presentation-controls"><h3>首页样式</h3><label><input type="checkbox" data-control="showContinue" checked>显示继续游玩</label><label><input type="checkbox" data-control="showBanner" checked>显示资源位</label><a class="admin-preview-link" href="admin.html" target="_blank" rel="noopener">B端栏目配置 <span>↗</span></a></section><section class="control-section"><h3>当前方案</h3><div id="direction-controls" class="direction-controls"></div></section>
       <details class="direction-explanation"><summary>设计思路与内容来源</summary><div id="direction-rationale"></div></details>
       <section class="control-section"><h3>快捷体验情境</h3><div id="scenario-controls" class="small-grid"></div><p id="scenario-note" class="control-note">“设备弱”可叠加在任何来源上，切换云端游玩不会改变原有身份。</p></section>
       <details class="control-conditions"><summary>用户与游玩条件</summary><section class="control-section"><label class="field-row">使用阶段<select id="lifecycle-control" data-control="lifecycle"><option value="new">首次使用</option><option value="returning">已使用过</option></select></label><label class="field-row">游戏来源<select id="source-control" data-control="source"><option value="none">尚未添加</option><option value="import">导入游戏</option><option value="steam">Steam 游戏</option></select></label><label class="field-row">设备条件<select id="capability-control" data-control="capability"><option value="local">可本地游玩</option><option value="weak">设备较弱</option></select></label><label class="field-row">游玩方式<select id="route-control" data-control="route"><option value="local">本机</option><option value="cloud">云端</option></select></label><label class="field-row">适配记录<select id="match-control" data-control="match"><option value="matched">已匹配</option><option value="unknown">设备未识别</option><option value="empty">暂无匹配</option></select></label><label class="field-row">游戏准备<select id="preparation-control" data-control="preparation"><option value="ready">样例游戏已准备</option><option value="not-ready">尚未准备完成</option></select></label></section></details>
@@ -235,10 +327,11 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   'use strict';
   // OS and market are independent dimensions. No account or service is switched.
   function features(state){
-    return {compatQuery:state.os!=='ios',latestCompatibility:state.os!=='ios',cloud:state.region!=='overseas'};
+    return {compatibleCatalog:state.os!=='ios',compatQuery:state.os!=='ios',latestCompatibility:state.os!=='ios',cloud:state.region!=='overseas'};
   }
   function allowsPage(state,page){
     const f=features(state);
+    if(!f.compatibleCatalog&&page==='compatibility')return false;
     if(!f.latestCompatibility&&page==='latest-compatibility')return false;
     if(!f.cloud&&['cloud-list','team-list','cloud-info','pricing'].includes(page))return false;
     if(!f.cloud&&page==='ret-business'&&['battle','catquest'].includes(state.retBusiness))return false;
@@ -605,6 +698,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     const compat=id=>compatible(id)?`<span class="compat-mark" role="img" aria-label="完美兼容">${image('compatibility','')}</span>`:'';
 
     function localModule(){
+      if(!ctx.features.compatibleCatalog)return '';
       const collections=(operations.collections||[]).filter(item=>item&&item.title&&Array.isArray(item.games));
       if(!collections.length)return '';
       const cards=collections.map(item=>{
@@ -639,6 +733,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
     }
     const community=()=>{const body=communityBlock();return body?section('社区精选',body):'';};
     function operationsBanner(){
+      if(state.showBanner===false)return '';
       const items=operations.banners.filter(item=>item&&MEDIA[item.image]&&['ret-calendar','ret-giveaways'].includes(item.action));
       if(!items.length)return '';
       const selected=Math.max(0,Math.min(items.length-1,Number(state.operationsIndex)||0)),item=items[selected];
@@ -647,7 +742,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 
     function conversion(){
       const cloudFirst=state.capability==='weak';
-      return `<div class="concept-home concept-conversion" data-module="paid-conversion">${operationsBanner()}${R.continueStrip()}${P.shortcuts()}${cloudFirst?C.cloud():''}${C.membership()}${cloudFirst?'':C.cloud()}${P.budget()}${P.following()}${R.giveaways({compact:true})}${community()}${R.calendar({compact:true})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
+      return `<div class="concept-home concept-conversion" data-module="paid-conversion">${operationsBanner()}${P.shortcuts()}${cloudFirst?C.cloud():''}${C.membership()}${cloudFirst?'':C.cloud()}${P.budget()}${P.following()}${R.giveaways({compact:true})}${community()}${R.calendar({compact:true})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
     }
 
     function adaptationRecords(){
@@ -659,14 +754,14 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 
     function discovery(){
       const banner=operationsBanner(),quick=shortcuts();
-      const top=state.form==='landscape'?`<div class="home-feature-row" data-module="feature-row">${banner}${quick}</div>`:`${banner}${R.continueStrip()}${quick}`;
+      const top=state.form==='landscape'&&banner?`<div class="home-feature-row" data-module="feature-row">${banner}${quick}</div>`:`${banner}${quick}`;
       const modules={collections:localModule,calendar:()=>R.calendar({compact:true}),latest:adaptationRecords,community,tasks:()=>R.tasks(),business:()=>R.business({kind:'all'})};
       const order=[...new Set(operations.homeOrder||[])].filter(id=>modules[id]);
       return `<div class="concept-home concept-discover" data-module="play-discovery">${top}${order.map(id=>modules[id]()).join('')}</div>`;
     }
 
     function daily(){
-      return `<div class="concept-home concept-daily" data-module="daily-brief">${operationsBanner()}${R.continueStrip()}${P.shortcuts()}${community()}${R.calendar({compact:false})}${R.discounts({compact:false})}${R.giveaways({compact:false})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
+      return `<div class="concept-home concept-daily" data-module="daily-brief">${operationsBanner()}${P.shortcuts()}${community()}${R.calendar({compact:false})}${R.discounts({compact:false})}${R.giveaways({compact:false})}${R.tasks()}${localModule()}${R.business({kind:'all'})}</div>`;
     }
     return ({value:conversion,play:discovery,content:daily}[direction]||discovery)();
   }
@@ -814,6 +909,87 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
 ;
 (() => {
   'use strict';
+
+  // Task names and destinations come from the existing retention Demo.
+  // Rewards and growth-task rules were not supplied; this module does not invent them.
+  const TASKS = [
+    {id:'checkin',name:'签到',description:'每天来盖世看看',page:null},
+    {id:'play',name:'畅玩游戏',description:'前往游戏库选择游戏',page:'library'},
+    {id:'community',name:'社区互动',description:'看看喜欢的帖子',page:'community'},
+    {id:'comment',name:'社区评论',description:'进入社区参与讨论',page:'community'},
+    {id:'share',name:'分享帖子',description:'发现值得分享的内容',page:'community'},
+    {id:'ad',name:'观看广告',description:'广告任务暂未接入',page:null}
+  ];
+
+  function create(ctx) {
+    const {state,esc,action}=ctx;
+    state.retTaskTab ||= 'daily';
+    state.retSigned ??= false;
+    const amount=value=>Number.isFinite(value)&&value>=0?esc(String(value)):'—';
+    const reward=()=>amount(state.signInReward);
+    const balance=()=>amount(state.pointsBalance);
+    const signed=()=>!!state.retSigned;
+
+    function tabs() {
+      return `<nav class="tasks-revision-tabs" aria-label="任务分类">${['daily','growth'].map((id,index)=>action(index?'成长任务':'每日任务','ret-task-tab',`data-tab="${id}" aria-pressed="${state.retTaskTab===id}"`,state.retTaskTab===id?'is-selected':'')).join('')}</nav>`;
+    }
+
+    function taskList() {
+      if(state.retTaskTab==='growth')return '<div class="tasks-revision-empty"><h3>暂无成长任务</h3><p>有新任务时会在这里显示</p></div>';
+      return `<div class="tasks-revision-list">${TASKS.map((task,index)=>`<article class="tasks-revision-row"><span class="tasks-revision-order" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><div class="tasks-revision-copy"><h3>${esc(task.name)}</h3><p>${esc(task.description)}</p></div>${action(task.id==='checkin'?(signed()?'已签到':'签到'):task.id==='ad'?'暂未接入':'去完成',task.id==='checkin'?'ret-checkin':'ret-task',`data-task="${task.id}" ${task.id==='checkin'&&signed()||task.id==='ad'?'disabled':''}`,task.id==='checkin'&&signed()?'tasks-revision-done':'tasks-revision-go')}</article>`).join('')}</div>`;
+    }
+
+    function moreTasks() {
+      return `<section class="tasks-revision-card tasks-revision-more" aria-labelledby="tasks-revision-more-title"><div class="tasks-revision-more-heading"><h2 id="tasks-revision-more-title">获得更多积分</h2></div>${tabs()}${taskList()}</section>`;
+    }
+
+    function renderSignIn() {
+      const configured=Number.isFinite(state.signInReward)&&state.signInReward>=0;
+      return `<div class="tasks-revision-page tasks-revision-signin" data-component-id="D-TASK-SIGNIN"><div class="tasks-revision-summary"><section class="tasks-revision-balance"><span>我的盖世积分</span><strong>${balance()}</strong></section><section class="tasks-revision-card tasks-revision-checkin"><span class="tasks-revision-status ${signed()?'is-signed':''}" aria-hidden="true">${signed()?'✓':'＋'}</span><h2>${signed()?'今日已签到':'每日签到'}</h2><p role="status">${signed()?'获得盖世积分':'签到获得盖世积分'}</p><div class="tasks-revision-reward"><strong>${signed()&&configured?'+':''}${reward()}</strong><span>盖世积分</span></div>${signed()?'<span class="tasks-revision-signed-label">明天再来</span>':action('签到','ret-checkin','','tasks-revision-sign-button')}</section></div><section class="tasks-revision-card tasks-revision-more tasks-revision-entry"><div class="tasks-revision-more-heading"><h2>盖世任务中心</h2><span>每日任务 · 成长任务</span></div>${action('获得更多积分','ret-task-center','','tasks-revision-sign-button')}</section></div>`;
+    }
+
+    function renderTasks() {
+      return `<div class="tasks-revision-page tasks-revision-center" data-component-id="D-TASK-CENTER">${moreTasks()}</div>`;
+    }
+
+    function signIn() {
+      // Only update the existing local Demo flag. No balance mutation or award receipt.
+      if(!state.retSigned)state.retSigned=true;
+    }
+
+    function page(name) {
+      if(name==='ret-task-center')return renderTasks();
+      if(name==='ret-task'&&state.retTask==='checkin')return renderSignIn();
+      return null;
+    }
+
+    function handle(name,data={}) {
+      switch(name) {
+        case 'lab-signin':
+          signIn();state.retTask='checkin';state.retTaskTab='daily';ctx.go('ret-task');return true;
+        case 'ret-task':
+          if(data.task!=='checkin')return false;
+          state.retTask='checkin';state.retTaskTab='daily';ctx.go('ret-task');return true;
+        case 'ret-task-center':
+          state.retTaskTab='daily';ctx.go('ret-task-center');return true;
+        case 'ret-task-tab':
+          state.retTaskTab=data.tab==='growth'?'growth':'daily';ctx.render(ctx.getScroll());return true;
+        case 'ret-checkin':
+          signIn();state.retTask='checkin';
+          if(state.page==='ret-task')ctx.render(ctx.getScroll());else ctx.go('ret-task');
+          return true;
+        default:return false;
+      }
+    }
+
+    return {renderSignIn,renderTasks,page,handle};
+  }
+  window.LAB_TASKS_REVISION={create,tasks:TASKS};
+})();
+
+;
+(() => {
+  'use strict';
   const MEDIA = window.LAB_MEDIA || {};
   const DIRECTIONS = {
     value: {n:'01',name:'促进付费',line:'给导入用户一个付费理由',title:'已经有游戏，为什么还愿意花钱？',description:'围绕想玩的下一款，展示会员游戏库、云端服务与优惠内容；租号保留快捷入口；Steam优惠作为辅助，不把商店跳转等同于盖世付费。'},
@@ -845,7 +1021,7 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   };
   const COMPATIBLE_GAMES=['hades','elden','cyber','wukong','village','horizon'];
   const CHANNEL_PAGES=['home','local-list','compatibility','cloud-list','team-list','retro-list'];
-  const initial = {direction:'play',operationsIndex:0,lifecycle:'returning',source:'import',capability:'local',route:'local',match:'matched',preparation:'ready',form:'portrait',os:'android',region:'domestic',page:'home',game:'hades',article:'pocket',detailRoute:'local',banner:0,filter:'all',query:'',saved:[],following:[],recentPlayed:['hades','elden'],focusGame:'hades',communityPage:0,demoNow:'2026-11-02T10:00:00+08:00'};
+  const initial = {direction:'play',operationsIndex:0,lifecycle:'returning',source:'import',capability:'local',route:'local',match:'matched',preparation:'ready',showContinue:true,showBanner:true,form:'portrait',os:'android',region:'domestic',page:'home',game:'hades',article:'pocket',detailRoute:'local',banner:0,filter:'all',query:'',saved:[],following:[],recentPlayed:['hades','elden'],focusGame:'hades',communityPage:0,demoNow:'2026-11-02T10:00:00+08:00'};
   let state = {...initial,saved:[],following:[],recentPlayed:[...initial.recentPlayed]};
   const stack = [];
   const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -884,20 +1060,22 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   function context(){return {state,MEDIA,GAMES,ARTICLES,features:features(),compatibleGames:COMPATIBLE_GAMES,esc,image,scene,action,heading,section,gameGrid,hero,localEntry,editorial,storyCard,miniStory,topic,compatible,localReady,go,render,getScroll};}
   function timeline(){return window.LAB_TIMELINE.create(context());}
   function fit(){return window.LAB_COMPATIBILITY.create(context());}
+  function tasksRevision(){return window.LAB_TASKS_REVISION.create(context());}
   function retention(){return window.LAB_RETENTION.create(context());}
   function purchase(){return window.LAB_PURCHASE.create(context());}
   function conversion(){return window.LAB_CONVERSION.create(context());}
   function conceptHome(){const ctx=context();ctx.retention=retention();ctx.purchase=purchase();ctx.conversion=conversion();return `<div class="concept-home" data-concept="${state.direction}">${window.LAB_CONTENT.home(state.direction,ctx)}</div>`;}
-  function body(){const fitted=fit().page(state.page);if(fitted!=null)return fitted;const dated=timeline().page(state.page);if(dated!=null)return dated;const paid=conversion().page(state.page);if(paid!==null&&paid!==undefined)return paid;const shopping=purchase().page(state.page);if(shopping!==null&&shopping!==undefined)return shopping;const restored=retention().page(state.page);if(restored!==null&&restored!==undefined)return restored;switch(state.page){case 'home':return conceptHome();case 'game':return gameDetail();case 'article':return articleDetail();case 'cloud-info':return cloudInfo();case 'pricing':return pricing();case 'help':return help();case 'conditions':return conditions();case 'library':return library();case 'player':return player();case 'community':return community();case 'gamehub-forum':return gamehubForum();case 'cloud-list':return `<h2 class="library-heading">云游戏</h2><p class="library-sub">游戏供给与进入条件待接入，当前仅可查看介绍。</p>${gameGrid(['cyber','wukong','elden','horizon'],{cloud:true,compact:true})}`;case 'local-list':return `<h2 class="library-heading">PC游戏</h2>${gameGrid(COMPATIBLE_GAMES,{compact:true})}`;case 'team-list':return retention().business({kind:'team'});case 'retro-list':return `<div class="empty-card"><h3>暂无复古游戏</h3></div>`;case 'adapt-list':return `<h2 class="library-heading">适配记录</h2><p class="library-sub">结论需要与具体设备、游戏版本和运行环境对应。</p>${['hades','elden','horizon'].map(id=>`<div class="adapt-row">${image(scene(id),'')}<div><strong>${GAMES[id].name}</strong><p>查看运行条件与已知问题</p></div>${action('›','conditions',`data-game="${id}" aria-label="查看${GAMES[id].name}适配依据"`,'')}</div>`).join('')}`;case 'search':return search();case 'ranking':return `<h2 class="library-heading">排行榜</h2><div class="empty-card"><h3>榜单数据暂未接入</h3><p>本次预览聚焦首页内容方向，保留原排行榜入口。</p></div>`;case 'profile':return `<h2 class="library-heading">我的</h2><p class="library-sub">当前使用情境</p><div class="setting-row">游戏来源<span>${{none:'尚未添加',import:'导入游戏',steam:'Steam游戏'}[state.source]}</span></div><div class="setting-row">游玩方式<span>${state.route==='cloud'?'云端':'本机'}</span></div>${features().cloud?action('云游戏时长','pricing','','secondary full-button'):''}${action('我的收藏','saved-page','','secondary full-button')}`;default:return '';}}
-  const PAGE_TITLES={'gamehub-forum':'盖世游戏','compatibility':'兼容游戏','team-list':'云游组队玩','retro-list':'复古游戏','latest-compatibility':'盖世最新兼容','conversion-member':'会员游戏库','conversion-member-library':'会员游戏库','purchase-deals':'Steam 折扣','purchase-detail':'购前了解','purchase-following':'降价关注','purchase-rental':'Steam 租号','game':'游戏详情','article':'内容详情','cloud-info':'云端游玩','pricing':'时长服务','help':'游戏准备','conditions':'适配依据','cloud-list':'云端游戏','local-list':'PC游戏','adapt-list':'适配记录','search':'搜索游戏','profile':'我的','ranking':'排行榜','library':'游戏库','community':'社区','ret-calendar':'发售日历','ret-discounts':'Steam 折扣','ret-giveaways':'盖世喜加一','ret-task-center':'任务中心','ret-task':'任务详情','ret-widget':'桌面组件','ret-business':'游玩方式'};
-  function nav(wide=false){const rows=wide?[['library','游戏库','library'],['home','首页','home'],['community','社区','community'],['ranking','排行榜','ranking'],['profile','我的','profile']]:[['home','首页','home'],['ranking','排行榜','ranking'],['library','游戏库','library'],['community','社区','community'],['profile','我的','profile']];return rows.map(([page,title,icon])=>{const active=state.page===page||(page==='community'&&state.page==='gamehub-forum')||(page==='home'&&CHANNEL_PAGES.includes(state.page));return `<button data-action="nav" data-page="${page}" class="${active?'is-selected':''}" aria-label="${title}" ${active?'aria-current="page"':''}>${!wide?image('icon-'+icon,''):''}<span>${title}</span>${page==='community'&&!state.communityRead?'<i class="nav-update" aria-label="社区有更新"></i>':''}</button>`;}).join('');}
-  function topTools(){
-    const tabs=[['home','推荐'],['local-list','PC游戏'],['compatibility','兼容游戏'],['cloud-list','云游戏'],['team-list','云游组队玩'],['retro-list','复古游戏']].filter(([page])=>window.LAB_PLATFORM.allowsPage(state,page));
-    return `<div class="app-top"><button type="button" class="home-checkin" data-action="ret-task-center" aria-label="签到，进入任务中心">签到</button><button class="app-search" data-action="search">${image('icon-search','')}<span>搜索游戏与游玩体验</span></button>${action(image('icon-bell',''),'profile','aria-label="个人与消息入口"','app-icon')}${features().compatQuery?action(image('icon-device',''),'conditions',`data-game="hades" aria-label="当前设备适配信息"`,'app-icon'):''}</div><nav class="channel-tabs" aria-label="首页频道">${tabs.map(([page,label])=>action(label+(page==='compatibility'&&!state.compatRead?'<i class="nav-update" aria-label="兼容游戏有更新"></i>':''),page==='home'?'home':page==='compatibility'?'compatibility':'channel',`data-channel="${page}" ${state.page===page?'aria-current="page"':''}`,state.page===page?'is-selected':'')).join('')}</nav>`;
-  }
-  function shell(){const wide=state.form!=='portrait';const sub=!CHANNEL_PAGES.includes(state.page)&&(!['home','library','community'].includes(state.page)||(state.page!=='home'&&stack.length>0));const status=`<div class="device-status"><span>9:41</span><span class="device-status-right"><i class="status-signal"></i><i class="status-battery"></i></span></div>`;const land=`<div class="land-nav"><nav aria-label="横屏主导航">${nav(true)}</nav><span class="land-status"><span>9:41</span><i class="status-battery"></i></span></div>`;const head=sub?`<div class="subheader">${action('‹','back','aria-label="返回上一页"','back-button')}<h2>${PAGE_TITLES[state.page]||'社区'}</h2></div>`:CHANNEL_PAGES.includes(state.page)?topTools():`<div class="app-top"><h2>${state.page==='community'?'社区':'游戏库'}</h2>${action(image('icon-search',''),'search','aria-label="搜索游戏"','app-icon')}</div>`;return `<div class="device-hardware is-${state.form} is-${state.os}"><i class="hardware-key key-mute" aria-hidden="true"></i><i class="hardware-key key-up" aria-hidden="true"></i><i class="hardware-key key-down" aria-hidden="true"></i><i class="hardware-key key-power" aria-hidden="true"></i><i class="hardware-camera" aria-hidden="true"></i><div class="device is-${state.form} is-${state.os}" data-component-id="${wide?'C-SHELL-L':'C-SHELL-P'}">${wide?land:status}${head}<div class="app-body" tabindex="0" aria-label="${PAGE_TITLES[state.page]||'首页内容'}">${body()}</div>${wide?'':`<nav class="app-bottom" aria-label="竖屏主导航">${nav()}<span class="gesture" aria-hidden="true"></span></nav>`}</div></div>`;}
-  function paintControls(){const note=document.querySelector('#scenario-note');if(note)note.textContent=features().cloud?'“设备弱”可叠加在任何来源上，切换云端游玩不会改变原有身份。':'“设备弱”可叠加在任何来源上；海外版不提供云游。';const logo=document.querySelector('#review-app-logo');if(logo)logo.src=MEDIA['forum-gamehub-logo'];const regions=document.querySelector('#region-controls');if(regions)regions.innerHTML=[['domestic','国内'],['overseas','海外']].map(([id,label])=>action(label,'region',`data-region="${id}" aria-pressed="${state.region===id}"`,state.region===id?'is-selected':'')).join('');document.querySelector('#route-control option[value="cloud"]').disabled=!features().cloud;document.querySelector('#direction-controls').innerHTML=Object.entries(DIRECTIONS).filter(([id])=>id==='play').sort((a,b)=>a[1].n.localeCompare(b[1].n)).map(([id,d])=>`<button class="direction-control ${state.direction===id?'is-selected':''}" data-action="direction" data-direction="${id}" aria-pressed="${state.direction===id}"><span>${d.n}</span><div><strong>${d.name}</strong><small>${d.line}</small></div></button>`).join('');document.querySelector('#scenario-controls').innerHTML=[['new','新用户'],['import','导入用户'],['steam','Steam 用户'],['weak','设备弱 · 想玩3A']].map(([id,label])=>action(label,'scenario',`data-scenario="${id}"`,'')).join('');document.querySelector('#form-controls').innerHTML=[['portrait','手机竖屏'],['landscape','手机横屏'],['tablet','平板']].map(([id,label])=>action(label,'form',`data-form="${id}" aria-pressed="${state.form===id}"`,state.form===id?'is-selected':'')).join('');document.querySelector('#os-controls').innerHTML=[['android','安卓'],['ios','iOS']].map(([id,label])=>action(label,'os',`data-os="${id}" aria-pressed="${state.os===id}"`,state.os===id?'is-selected':'')).join('');for(const key of ['lifecycle','source','capability','route','match','preparation'])document.querySelector('#'+key+'-control').value=state[key];const notes=DESIGN_NOTES[state.direction];document.querySelector('#direction-rationale').innerHTML=Object.entries({reference:'参考思路',attention:'用户关注',priority:'展示权重',supply:'内容来源',boundary:'当前边界'}).map(([key,label])=>`<p><b>${label}</b>${esc(notes[key])}</p>`).join('');const d=DIRECTIONS[state.direction];document.querySelector('#direction-kicker').textContent=`DIRECTION ${d.n}`;document.querySelector('#direction-title').textContent=d.title;document.querySelector('#direction-description').textContent=d.description;document.querySelector('#scenario-summary').textContent=`${state.lifecycle==='new'?'首次使用':'已使用过'} · ${{none:'未添加游戏',import:'导入游戏',steam:'Steam 游戏'}[state.source]} · ${state.route==='cloud'?'云端路径':'本机路径'}`;document.querySelector('#demo-date').textContent=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(state.demoNow)).replaceAll('/','.');document.querySelector('#runtime-caption').textContent=state.page==='player'?'游玩画面演示 · 不运行真实游戏':'策划样例 · 可点击查看演示路径';}
-  function render(scroll=0){if(!features().cloud){state.route='local';if(state.detailRoute==='cloud')state.detailRoute='local';}if(!window.LAB_PLATFORM.allowsPage(state,state.page)){state.page='home';stack.length=0;}paintControls();document.querySelector('#device-mount').innerHTML=shell();const bodyEl=document.querySelector('.app-body');if(bodyEl)bodyEl.scrollTop=scroll;document.querySelectorAll('.device button:not([type])').forEach(b=>b.type='button');const carousel=document.querySelector('.community-carousel');if(carousel){const pages=carousel.querySelectorAll('[data-community-page]');const n=Math.min(state.communityPage,pages.length-1);if(pages[n])carousel.scrollLeft=pages[n].offsetLeft-pages[0].offsetLeft;}const channel=document.querySelector('.channel-tabs'),selected=channel?.querySelector('.is-selected');if(selected)channel.scrollLeft=Math.max(0,selected.offsetLeft-channel.offsetLeft-18);window.dispatchEvent(new CustomEvent('home-lab-render',{detail:getState()}));}
+  function body(){const revised=tasksRevision().page(state.page);if(revised!=null)return revised;const fitted=fit().page(state.page);if(fitted!=null)return fitted;const dated=timeline().page(state.page);if(dated!=null)return dated;const paid=conversion().page(state.page);if(paid!==null&&paid!==undefined)return paid;const shopping=purchase().page(state.page);if(shopping!==null&&shopping!==undefined)return shopping;const restored=retention().page(state.page);if(restored!==null&&restored!==undefined)return restored;switch(state.page){case 'home':return conceptHome();case 'game':return gameDetail();case 'article':return articleDetail();case 'cloud-info':return cloudInfo();case 'pricing':return pricing();case 'help':return help();case 'conditions':return conditions();case 'library':return library();case 'player':return player();case 'community':return community();case 'gamehub-forum':return gamehubForum();case 'cloud-list':return `<h2 class="library-heading">云游戏</h2><p class="library-sub">游戏供给与进入条件待接入，当前仅可查看介绍。</p>${gameGrid(['cyber','wukong','elden','horizon'],{cloud:true,compact:true})}`;case 'local-list':return `<h2 class="library-heading">PC游戏</h2>${gameGrid(COMPATIBLE_GAMES,{compact:true})}`;case 'team-list':return retention().business({kind:'team'});case 'retro-list':return `<div class="empty-card"><h3>暂无复古游戏</h3></div>`;case 'adapt-list':return `<h2 class="library-heading">适配记录</h2><p class="library-sub">结论需要与具体设备、游戏版本和运行环境对应。</p>${['hades','elden','horizon'].map(id=>`<div class="adapt-row">${image(scene(id),'')}<div><strong>${GAMES[id].name}</strong><p>查看运行条件与已知问题</p></div>${action('›','conditions',`data-game="${id}" aria-label="查看${GAMES[id].name}适配依据"`,'')}</div>`).join('')}`;case 'search':return search();case 'ranking':return `<h2 class="library-heading">排行榜</h2><div class="empty-card"><h3>榜单数据暂未接入</h3><p>本次预览聚焦首页内容方向，保留原排行榜入口。</p></div>`;case 'profile':return `<h2 class="library-heading">我的</h2><p class="library-sub">当前使用情境</p><div class="setting-row">游戏来源<span>${{none:'尚未添加',import:'导入游戏',steam:'Steam游戏'}[state.source]}</span></div><div class="setting-row">游玩方式<span>${state.route==='cloud'?'云端':'本机'}</span></div>${features().cloud?action('云游戏时长','pricing','','secondary full-button'):''}${action('我的收藏','saved-page','','secondary full-button')}`;default:return '';}}
+  const PAGE_TITLES={'gamehub-forum':'盖世游戏','compatibility':'兼容游戏','team-list':'云游组队玩','retro-list':'复古游戏','latest-compatibility':'盖世最新兼容','conversion-member':'会员游戏库','conversion-member-library':'会员游戏库','purchase-deals':'Steam 折扣','purchase-detail':'购前了解','purchase-following':'降价关注','purchase-rental':'Steam 租号','game':'游戏详情','article':'内容详情','cloud-info':'云端游玩','pricing':'时长服务','help':'游戏准备','conditions':'适配依据','cloud-list':'云端游戏','local-list':'PC游戏','adapt-list':'适配记录','search':'搜索游戏','profile':'我的','ranking':'排行榜','library':'游戏库','community':'社区','ret-calendar':'发售日历','ret-discounts':'Steam 折扣','ret-giveaways':'盖世喜加一','lab-signin':'盖世积分','lab-tasks':'盖世任务中心','ret-task-center':'盖世任务中心','ret-task':'任务详情','ret-widget':'桌面组件','ret-business':'游玩方式'};
+  function nav(wide=false){const rows=[['home','首页','home'],['community','社区','community'],['library','游戏库','library'],['ranking','排行榜','ranking'],['profile','我的','profile']];return rows.map(([page,title,icon])=>{const active=state.page===page||(page==='community'&&state.page==='gamehub-forum')||(page==='home'&&CHANNEL_PAGES.includes(state.page));return `<button data-action="nav" data-page="${page}" class="${active?'is-selected':''}" aria-label="${title}" ${active?'aria-current="page"':''}>${!wide?image('icon-'+icon,''):''}<span>${title}</span>${page==='community'&&!state.communityRead?'<i class="nav-update" aria-label="社区有更新"></i>':''}</button>`;}).join('');}
+  function recentGames(){return state.form==='portrait'&&state.showContinue&&state.lifecycle==='returning'&&state.source!=='none'&&state.preparation==='ready'&&state.capability==='local'&&state.match==='matched'?(state.recentPlayed||[]).filter(id=>GAMES[id]&&localReady(id)):[];}
+  function continueRow(){const ids=recentGames();if(!ids.length)return '';return `<section class="home-resume-row" data-module="continue" aria-label="继续游玩"><button class="resume-play" data-action="player" data-game="${ids[0]}" data-route="local"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4Z"/></svg><span>继续</span></button><div class="resume-icons" aria-label="最近游玩的游戏">${ids.map(id=>`<button class="resume-game" data-action="game" data-game="${id}" data-route="local" aria-label="查看${esc(GAMES[id].name)}">${image('cover-'+id,GAMES[id].name)}</button>`).join('')}</div></section>`;}
+  function syncContinue(){const d=document.querySelector('.device'),body=document.querySelector('.app-body'),row=document.querySelector('.home-resume-row');if(!d)return;const collapsed=!!(row&&body&&row.getBoundingClientRect().bottom<=body.getBoundingClientRect().top+1);d.classList.toggle('is-continue-collapsed',collapsed);const mini=d.querySelector('.resume-mini');if(mini){mini.tabIndex=collapsed?0:-1;mini.setAttribute('aria-hidden',String(!collapsed));}}
+  function channelTabs(){const tabs=[['home','推荐'],['local-list','PC游戏'],['compatibility','兼容游戏'],['cloud-list','云游戏'],['team-list','云游组队玩'],['retro-list','复古游戏']].filter(([page])=>window.LAB_PLATFORM.allowsPage(state,page));return `<nav class="channel-tabs" aria-label="首页频道">${tabs.map(([page,label])=>action(label+(page==='compatibility'&&!state.compatRead?'<i class="nav-update" aria-label="兼容游戏有更新"></i>':''),page==='home'?'home':page==='compatibility'?'compatibility':'channel',`data-channel="${page}" ${state.page===page?'aria-current="page"':''}`,state.page===page?'is-selected':'')).join('')}</nav>`;}
+  function topTools(wide=false){const id=recentGames()[0];return `<div class="${wide?'land-tools':'app-top'}"><button type="button" class="home-checkin" data-action="lab-signin" aria-label="签到，获得盖世积分">签到</button><button class="app-search" data-action="search" aria-label="搜索游戏"${wide?' title="搜索游戏"':''}>${image('icon-search','')}${wide?'':'<span>搜索游戏与游玩体验</span>'}</button>${action(image('icon-bell',''),'profile','aria-label="个人与消息入口" title="消息"','app-icon')}${features().compatQuery?action(image('icon-device',''),'conditions',`data-game="hades" aria-label="当前设备适配信息" title="当前设备适配信息"`,'app-icon'):''}${id?`<button class="resume-mini" data-action="player" data-game="${id}" data-route="local" aria-label="继续${esc(GAMES[id].name)}" aria-hidden="true" tabindex="-1">${image('cover-'+id,'')}</button>`:''}</div>`;}
+  function shell(){const wide=state.form!=='portrait';const sub=!CHANNEL_PAGES.includes(state.page)&&(!['home','library','community'].includes(state.page)||(state.page!=='home'&&stack.length>0));const status=`<div class="device-status"><span>9:41</span><span class="device-status-right"><i class="status-signal"></i><i class="status-battery"></i></span></div>`;const land=`<div class="land-nav"><nav aria-label="横屏主导航">${nav(true)}</nav><div class="land-right">${topTools(true)}<span class="land-status"><span>9:41</span><i class="status-battery"></i></span></div></div>`;const head=sub?`<div class="subheader">${action('‹','back','aria-label="返回上一页"','back-button')}<h2>${(state.page==='ret-task'&&state.retTask==='checkin'?'盖世积分':PAGE_TITLES[state.page]||'社区')}</h2></div>`:CHANNEL_PAGES.includes(state.page)?(wide?'':topTools()):`<div class="app-top"><h2>${state.page==='community'?'社区':'游戏库'}</h2>${wide?'':action(image('icon-search',''),'search','aria-label="搜索游戏"','app-icon')}</div>`;return `<div class="device-hardware is-${state.form} is-${state.os}"><i class="hardware-key key-mute" aria-hidden="true"></i><i class="hardware-key key-up" aria-hidden="true"></i><i class="hardware-key key-down" aria-hidden="true"></i><i class="hardware-key key-power" aria-hidden="true"></i><i class="hardware-camera" aria-hidden="true"></i><div class="device is-${state.form} is-${state.os}" data-component-id="${wide?'C-SHELL-L':'C-SHELL-P'}">${wide?land:status}${head}<div class="app-body" tabindex="0" aria-label="${PAGE_TITLES[state.page]||'首页内容'}">${CHANNEL_PAGES.includes(state.page)?`<div class="home-flow-header">${continueRow()}${channelTabs()}</div>`:""}${body()}</div>${wide?'':`<nav class="app-bottom" aria-label="竖屏主导航">${nav()}<span class="gesture" aria-hidden="true"></span></nav>`}</div></div>`;}
+  function paintControls(){for(const key of ['showContinue','showBanner']){const box=document.querySelector('[data-control="'+key+'"]');if(box)box.checked=state[key];}const note=document.querySelector('#scenario-note');if(note)note.textContent=features().cloud?'“设备弱”可叠加在任何来源上，切换云端游玩不会改变原有身份。':'“设备弱”可叠加在任何来源上；海外版不提供云游。';const logo=document.querySelector('#review-app-logo');if(logo)logo.src=MEDIA['forum-gamehub-logo'];const regions=document.querySelector('#region-controls');if(regions)regions.innerHTML=[['domestic','国内'],['overseas','海外']].map(([id,label])=>action(label,'region',`data-region="${id}" aria-pressed="${state.region===id}"`,state.region===id?'is-selected':'')).join('');document.querySelector('#route-control option[value="cloud"]').disabled=!features().cloud;document.querySelector('#direction-controls').innerHTML=Object.entries(DIRECTIONS).filter(([id])=>id==='play').sort((a,b)=>a[1].n.localeCompare(b[1].n)).map(([id,d])=>`<button class="direction-control ${state.direction===id?'is-selected':''}" data-action="direction" data-direction="${id}" aria-pressed="${state.direction===id}"><span>${d.n}</span><div><strong>${d.name}</strong><small>${d.line}</small></div></button>`).join('');document.querySelector('#scenario-controls').innerHTML=[['new','新用户'],['import','导入用户'],['steam','Steam 用户'],['weak','设备弱 · 想玩3A']].map(([id,label])=>action(label,'scenario',`data-scenario="${id}"`,'')).join('');document.querySelector('#form-controls').innerHTML=[['portrait','手机竖屏'],['landscape','手机横屏'],['tablet','平板']].map(([id,label])=>action(label,'form',`data-form="${id}" aria-pressed="${state.form===id}"`,state.form===id?'is-selected':'')).join('');document.querySelector('#os-controls').innerHTML=[['android','安卓'],['ios','iOS']].map(([id,label])=>action(label,'os',`data-os="${id}" aria-pressed="${state.os===id}"`,state.os===id?'is-selected':'')).join('');for(const key of ['lifecycle','source','capability','route','match','preparation'])document.querySelector('#'+key+'-control').value=state[key];const notes=DESIGN_NOTES[state.direction];document.querySelector('#direction-rationale').innerHTML=Object.entries({reference:'参考思路',attention:'用户关注',priority:'展示权重',supply:'内容来源',boundary:'当前边界'}).map(([key,label])=>`<p><b>${label}</b>${esc(notes[key])}</p>`).join('');const d=DIRECTIONS[state.direction];document.querySelector('#direction-kicker').textContent=`DIRECTION ${d.n}`;document.querySelector('#direction-title').textContent=d.title;document.querySelector('#direction-description').textContent=d.description;document.querySelector('#scenario-summary').textContent=`${state.lifecycle==='new'?'首次使用':'已使用过'} · ${{none:'未添加游戏',import:'导入游戏',steam:'Steam 游戏'}[state.source]} · ${state.route==='cloud'?'云端路径':'本机路径'}`;document.querySelector('#demo-date').textContent=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(state.demoNow)).replaceAll('/','.');document.querySelector('#runtime-caption').textContent=state.page==='player'?'游玩画面演示 · 不运行真实游戏':'策划样例 · 可点击查看演示路径';}
+  function render(scroll=0){if(!features().cloud){state.route='local';if(state.detailRoute==='cloud')state.detailRoute='local';}if(!window.LAB_PLATFORM.allowsPage(state,state.page)){state.page='home';stack.length=0;}paintControls();document.querySelector('#device-mount').innerHTML=shell();const bodyEl=document.querySelector('.app-body');if(bodyEl)bodyEl.scrollTop=scroll;syncContinue();document.querySelectorAll('.device button:not([type])').forEach(b=>b.type='button');const carousel=document.querySelector('.community-carousel');if(carousel){const pages=carousel.querySelectorAll('[data-community-page]');const n=Math.min(state.communityPage,pages.length-1);if(pages[n])carousel.scrollLeft=pages[n].offsetLeft-pages[0].offsetLeft;}const channel=document.querySelector('.channel-tabs'),selected=channel?.querySelector('.is-selected');if(selected)channel.scrollLeft=Math.max(0,selected.offsetLeft-channel.offsetLeft-18);window.dispatchEvent(new CustomEvent('home-lab-render',{detail:getState()}));}
   function getScroll(){return document.querySelector('.app-body')?.scrollTop||0;}
   function go(page,attrs={}){if(!window.LAB_PLATFORM.allowsPage({...state,...attrs},page))return;if(['community','gamehub-forum'].includes(page))state.communityRead=true;if(['compatibility','latest-compatibility'].includes(page))state.compatRead=true;stack.push({page:state.page,game:state.game,article:state.article,detailRoute:state.detailRoute,scroll:getScroll()});Object.assign(state,attrs,{page});render();}
   function back(){const previous=stack.pop();if(previous){Object.assign(state,previous);render(previous.scroll);}else{state.page='home';render();}}
@@ -906,14 +1084,15 @@ body{background:radial-gradient(ellipse at 85% 12%,#dcecf24d,transparent 47%),ra
   function setScenario(value){if(value&&typeof value==='object'){for(const k of ['lifecycle','source','capability','route','match','preparation','demoNow'])if(value[k]!==undefined)state[k]=value[k];}else{switch(value){case 'new':Object.assign(state,{lifecycle:'new',source:'none',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'import':Object.assign(state,{lifecycle:'returning',source:'import',capability:'local',route:'local',match:'matched',preparation:'ready',recentPlayed:['hades','elden']});break;case 'steam':Object.assign(state,{lifecycle:'returning',source:'steam',capability:'local',route:'local',match:'matched',preparation:'not-ready',recentPlayed:[]});break;case 'cloud':case 'weak':Object.assign(state,{capability:'weak',route:'cloud'});break;default:throw new TypeError('Unknown scenario');}}home();}
   function setForm(value){if(!['portrait','landscape','tablet'].includes(value))throw new TypeError('Unknown form');const y=getScroll();state.form=value;render(y);}
   function setPlatform(value){if(value.os!==undefined){if(!['android','ios'].includes(value.os))throw new TypeError('Unknown OS');state.os=value.os;}if(value.region!==undefined){if(!['domestic','overseas'].includes(value.region))throw new TypeError('Unknown region');state.region=value.region;}home();}
+  function setPresentation(value){for(const key of ['showContinue','showBanner'])if(value[key]!==undefined)state[key]=!!value[key];home();}
   function getState(){return {...state,saved:[...state.saved],following:[...state.following],recentPlayed:[...state.recentPlayed],retSubscriptions:{...state.retSubscriptions},historyDepth:stack.length};}
   function reset(){state={...initial,saved:[],following:[],recentPlayed:[...initial.recentPlayed]};stack.length=0;render();}
-  document.addEventListener('click',event=>{const b=event.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action,id=b.dataset.game||state.game;if(timeline().handle(a,b.dataset)||fit().handle(a,b.dataset)||conversion().handle(a,b.dataset)||purchase().handle(a,b.dataset)||retention().handle(a,b.dataset))return;switch(a){case 'gamehub-forum':go('gamehub-forum',{forumTab:'all'});break;case 'forum-tab':state.forumTab=['all','guide','help'].includes(b.dataset.tab)?b.dataset.tab:'all';render(0);break;case 'operations-page':state.operationsIndex=Number(b.dataset.index)||0;render(getScroll());break;case 'community-page':{const c=document.querySelector('.community-carousel'),pages=c?.querySelectorAll('[data-community-page]'),n=Number(b.dataset.index);if(pages?.[n]){state.communityPage=n;c.scrollTo({left:pages[n].offsetLeft-pages[0].offsetLeft,behavior:'smooth'});}break;}case 'focus-game':if(['hades','elden'].includes(id)){state.focusGame=id;render(getScroll());}break;case 'direction':setDirection(b.dataset.direction);break;case 'scenario':setScenario(b.dataset.scenario);break;case 'form':setForm(b.dataset.form);break;case 'os':setPlatform({os:b.dataset.os});break;case 'region':setPlatform({region:b.dataset.region});break;case 'reset':reset();break;case 'home':home();break;case 'channel':if(CHANNEL_PAGES.includes(b.dataset.channel)){stack.length=0;state.page=b.dataset.channel;render();}break;case 'back':back();break;case 'nav':stack.length=0;state.page=b.dataset.page;if(state.page==='community')state.communityRead=true;render();break;case 'game':go('game',{game:id,detailRoute:b.dataset.route||state.route});break;case 'article':go('article',{article:b.dataset.article});break;case 'player':go('player',{game:id,detailRoute:b.dataset.route||state.detailRoute});break;case 'cloud-info':go('cloud-info',{game:id});break;case 'conditions':go('conditions',{game:id});break;case 'switch-route':state.detailRoute=b.dataset.route;state.route=b.dataset.route;render(getScroll());break;case 'cloud-list':state.route='cloud';go('cloud-list');break;case 'local-list':go('local-list');break;case 'adapt-list':go('adapt-list');break;case 'help':go('help',{game:id});break;case 'library':go('library');break;case 'community':go('community');break;case 'pricing':go('pricing');break;case 'search':go('search');document.querySelector('#game-query')?.focus();break;case 'profile':go('profile');break;case 'saved-page':state.filter='saved';go('community');break;case 'save':{const i=state.saved.indexOf(b.dataset.article);if(i<0)state.saved.push(b.dataset.article);else state.saved.splice(i,1);render(getScroll());break;}case 'follow':{const key=b.dataset.topic,i=state.following.indexOf(key);if(i<0)state.following.push(key);else state.following.splice(i,1);render(getScroll());break;}case 'filter':state.filter=b.dataset.filter;render();break;case 'banner':state.banner=Number(b.dataset.index);render(getScroll());break;}});
-  document.addEventListener('change',event=>{if(event.target.dataset.fit){state[event.target.dataset.fit==='device'?'fitDevice':'fitGenre']=event.target.value;render(getScroll());return;}const key=event.target.dataset.control;if(!key)return;state[key]=event.target.value;if(key==='capability')state.route=state.capability==='weak'?'cloud':'local';if(key==='source'){state.preparation=state.source==='import'?'ready':'not-ready';state.recentPlayed=[];}home();});
+  document.addEventListener('click',event=>{const b=event.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action,id=b.dataset.game||state.game;if(tasksRevision().handle(a,b.dataset)||timeline().handle(a,b.dataset)||fit().handle(a,b.dataset)||conversion().handle(a,b.dataset)||purchase().handle(a,b.dataset)||retention().handle(a,b.dataset))return;switch(a){case 'gamehub-forum':go('gamehub-forum',{forumTab:'all'});break;case 'forum-tab':state.forumTab=['all','guide','help'].includes(b.dataset.tab)?b.dataset.tab:'all';render(0);break;case 'operations-page':state.operationsIndex=Number(b.dataset.index)||0;render(getScroll());break;case 'community-page':{const c=document.querySelector('.community-carousel'),pages=c?.querySelectorAll('[data-community-page]'),n=Number(b.dataset.index);if(pages?.[n]){state.communityPage=n;c.scrollTo({left:pages[n].offsetLeft-pages[0].offsetLeft,behavior:'smooth'});}break;}case 'focus-game':if(['hades','elden'].includes(id)){state.focusGame=id;render(getScroll());}break;case 'direction':setDirection(b.dataset.direction);break;case 'scenario':setScenario(b.dataset.scenario);break;case 'form':setForm(b.dataset.form);break;case 'os':setPlatform({os:b.dataset.os});break;case 'region':setPlatform({region:b.dataset.region});break;case 'reset':reset();break;case 'home':home();break;case 'channel':if(CHANNEL_PAGES.includes(b.dataset.channel)){stack.length=0;state.page=b.dataset.channel;render();}break;case 'back':back();break;case 'nav':stack.length=0;state.page=b.dataset.page;if(state.page==='community')state.communityRead=true;render();break;case 'game':go('game',{game:id,detailRoute:b.dataset.route||state.route});break;case 'article':go('article',{article:b.dataset.article});break;case 'player':go('player',{game:id,detailRoute:b.dataset.route||state.detailRoute});break;case 'cloud-info':go('cloud-info',{game:id});break;case 'conditions':go('conditions',{game:id});break;case 'switch-route':state.detailRoute=b.dataset.route;state.route=b.dataset.route;render(getScroll());break;case 'cloud-list':state.route='cloud';go('cloud-list');break;case 'local-list':go('local-list');break;case 'adapt-list':go('adapt-list');break;case 'help':go('help',{game:id});break;case 'library':go('library');break;case 'community':go('community');break;case 'pricing':go('pricing');break;case 'search':go('search');document.querySelector('#game-query')?.focus();break;case 'profile':go('profile');break;case 'saved-page':state.filter='saved';go('community');break;case 'save':{const i=state.saved.indexOf(b.dataset.article);if(i<0)state.saved.push(b.dataset.article);else state.saved.splice(i,1);render(getScroll());break;}case 'follow':{const key=b.dataset.topic,i=state.following.indexOf(key);if(i<0)state.following.push(key);else state.following.splice(i,1);render(getScroll());break;}case 'filter':state.filter=b.dataset.filter;render();break;case 'banner':state.banner=Number(b.dataset.index);render(getScroll());break;}});
+  document.addEventListener('change',event=>{if(event.target.dataset.fit){state[event.target.dataset.fit==='device'?'fitDevice':'fitGenre']=event.target.value;render(getScroll());return;}const key=event.target.dataset.control;if(!key)return;state[key]=event.target.type==='checkbox'?event.target.checked:event.target.value;if(key==='capability')state.route=state.capability==='weak'?'cloud':'local';if(key==='source'){state.preparation=state.source==='import'?'ready':'not-ready';state.recentPlayed=[];}home();});
   document.addEventListener('input',event=>{if(event.target.id!=='game-query')return;const start=event.target.selectionStart;state.query=event.target.value;render(getScroll());const input=document.querySelector('#game-query');input.focus();input.setSelectionRange?.(start,start);});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!/input|select|textarea/i.test(event.target.tagName)){event.preventDefault();back();}});
-  document.addEventListener('scroll',event=>{const c=event.target;if(!c.matches?.('.community-carousel'))return;const pages=[...c.querySelectorAll('[data-community-page]')];if(!pages.length)return;let nearest=0;pages.forEach((p,i)=>{if(Math.abs(p.offsetLeft-pages[0].offsetLeft-c.scrollLeft)<Math.abs(pages[nearest].offsetLeft-pages[0].offsetLeft-c.scrollLeft))nearest=i;});state.communityPage=nearest;document.querySelectorAll('[data-action="community-page"]').forEach(b=>{const selected=Number(b.dataset.index)===nearest;b.classList.toggle('is-selected',selected);b.setAttribute('aria-pressed',String(selected));});},true);
-  window.HOME_LAB={getState,setDirection,setScenario,setForm,setPlatform,reset};
+  document.addEventListener('scroll',event=>{const c=event.target;if(c.matches?.('.app-body'))syncContinue();if(!c.matches?.('.community-carousel'))return;const pages=[...c.querySelectorAll('[data-community-page]')];if(!pages.length)return;let nearest=0;pages.forEach((p,i)=>{if(Math.abs(p.offsetLeft-pages[0].offsetLeft-c.scrollLeft)<Math.abs(pages[nearest].offsetLeft-pages[0].offsetLeft-c.scrollLeft))nearest=i;});state.communityPage=nearest;document.querySelectorAll('[data-action="community-page"]').forEach(b=>{const selected=Number(b.dataset.index)===nearest;b.classList.toggle('is-selected',selected);b.setAttribute('aria-pressed',String(selected));});},true);
+  window.HOME_LAB={getState,setDirection,setScenario,setForm,setPlatform,setPresentation,reset};
   render();
 })();
 
