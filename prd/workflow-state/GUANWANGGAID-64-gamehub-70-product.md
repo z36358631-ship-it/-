@@ -1,6 +1,6 @@
 # 盖世7.0产品改动
 
-> 最新首页迭代：r10，D099—D102有效。标题连续签到，默认本周一行，更多展开整月/收起；获得更多积分直接内嵌每日/成长任务。PRD/Word V1.5已精简，Word21页/16内嵌图已审。首页61、签到17、月度28组同版通过。Demo和16张固定SHA配图已推送，文档及固定地址最终发布证据见work/GUANWANGGAID-64/homepage-lab/publication-r10.json和http-r10-verification.json；下方旧记录只供追溯。
+> 最新首页迭代：r10，D099—D102有效。标题连续签到，默认本周一行，更多展开整月/收起；获得更多积分直接内嵌每日/成长任务。PRD/Word V1.5已精简，Word21页/16内嵌图已审。首页61、签到17、月度28组同版通过。Demo、PRD/Word和16张固定SHA配图均已推送；固定地址同SHA且线上61组通过，发布证据见work/GUANWANGGAID-64/homepage-lab/publication-r10.json和http-r10-verification.json；下方旧记录只供追溯。
 
 ## 基本信息
 

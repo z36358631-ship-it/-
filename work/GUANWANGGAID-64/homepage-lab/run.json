@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "runId": "21530e9c-7fa2-4c03-9be4-2cdf7e5098d4",
+  "requirementId": "GUANWANGGAID-64-home-lab",
+  "revision": 209,
+  "status": "passed",
+  "createdAt": "2026-11-05T03:16:20.4740262Z",
+  "updatedAt": "2026-11-06T02:36:19.0968760Z",
+  "cardPath": "C:\\Users\\z3635\\官网改动\\work\\GUANWANGGAID-64\\homepage-lab\\state.md",
+  "cardHash": "484F541190419B1A0E508E627D5975121616D8DC6C843DF594FE13427D36A6FD",
+  "contract": {
+    "goal": "恢复查询当前模型对话，完成本周折叠月度签到、页内任务和精简PRD/Word，更新固定预览",
+    "changes": [
+      "D099",
+      "D100",
+      "D101",
+      "D102"
+    ],
+    "inScope": [
+      "签到周/月展开",
+      "页内每日/成长任务",
+      "PRD和Word",
+      "截图及验证",
+      "授权Git及Pages固定地址"
+    ],
+    "inputs": [
+      "盖世7.0原对话",
+      "查找并继续修改盖世7.0对话",
+      "用户追加横屏布局反馈",
+      "当前模块源码及用户截图"
+    ],
+    "outOfScope": [
+      "真实积分结算",
+      "真实任务/兼容/云服务",
+      "原PC体验稿",
+      "真实飞书导入",
+      "其他7.0动效/Steam/Mac任务"
+    ],
+    "deliverables": [
+      "public/gamehub-home-lab/index.html",
+      "public/gamehub-home-lab/admin.html",
+      "首页改版Markdown和Word",
+      "竖版四屏图及配套说明",
+      "机器与专业复核记录"
+    ]
+  },
+  "steps": [
+    {
+      "id": "S1",
+      "type": "requirement-resolution",
+      "required": true,
+      "dependsOn": [],
+      "status": "passed",
+      "attempt": 2,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "C:\\Users\\z3635\\官网改动\\work\\GUANWANGGAID-64\\homepage-lab\\state.md"
+      ],
+      "validation": "定位唯一GUANWANGGAID-64及两条历史对话",
+      "error": null,
+      "reviewer": "root"
+    },
+    {
+      "id": "S2",
+      "type": "fact-recovery",
+      "required": true,
+      "dependsOn": [
+        "S1"
+      ],
+      "status": "passed",
+      "attempt": 2,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "C:\\Users\\z3635\\官网改动\\work\\GUANWANGGAID-64\\homepage-lab\\state.md"
+      ],
+      "validation": "恢复D094及最新反馈D095-D098，旧发布与旧验证仅保留历史",
+      "error": null,
+      "reviewer": "root"
+    },
+    {
+      "id": "S3",
+      "type": "change-compilation",
+      "required": true,
+      "dependsOn": [
+        "S2"
+      ],
+      "status": "passed",
+      "attempt": 14,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "docs/superpowers/plans/2026-11-06-gamehub-monthly-signin.md"
+      ],
+      "validation": "D099-D102及本轮授权范围已更新",
+      "error": null,
+      "reviewer": "root"
+    },
+    {
+      "id": "S4",
+      "type": "page-baseline",
+      "required": true,
+      "dependsOn": [
+        "S3"
+      ],
+      "status": "passed",
+      "attempt": 14,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "work/GUANWANGGAID-64/homepage-lab/sources.json"
+      ],
+      "validation": "核对原参考、错误截图及本轮截图，采用最新明确本周/整月与标题要求",
+      "error": null,
+      "reviewer": "root"
+    },
+    {
+      "id": "S5",
+      "type": "artifact-execution",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S4"
+      ],
+      "status": "passed",
+      "attempt": 19,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "work/GUANWANGGAID-64/homepage-lab/build-manifest.json",
+        "outputs/gamehub-home-prd-20261105/final-revision-verification.json"
+      ],
+      "validation": "周月签到和页内任务、PRD/Word V1.5及16配图同源完成",
+      "error": null,
+      "reviewer": "root"
+    },
+    {
+      "id": "S6",
+      "type": "machine-validation",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 17,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "work/GUANWANGGAID-64/homepage-lab/verification.json",
+        "work/GUANWANGGAID-64/homepage-lab/tasks-evidence/verification.json",
+        "work/GUANWANGGAID-64/homepage-lab/monthly-evidence/verification.json",
+        "outputs/gamehub-home-prd-20261105/final-revision-verification.json"
+      ],
+      "validation": "首页61/签到17/月度28通过；Word同源，文档保留用户覆盖旧模板标题的原始失败记录",
+      "error": null,
+      "reviewer": "root"
+    },
+    {
+      "id": "S7",
+      "type": "professional-review",
+      "required": true,
+      "dependsOn": [
+        "S5"
+      ],
+      "status": "passed",
+      "attempt": 16,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "work/GUANWANGGAID-64/homepage-lab/r10-review.md",
+        "outputs/gamehub-home-prd-20261105/final-revision-verification.json"
+      ],
+      "validation": "主管与独立审图及文档语义复核通过；Word21页实审，真实服务和飞书未执行",
+      "error": null,
+      "reviewer": "root;checkin_reference;prd_simplify"
+    },
+    {
+      "id": "S8",
+      "type": "consistency-delivery",
+      "required": true,
+      "dependsOn": [
+        "S3",
+        "S5",
+        "S6",
+        "S7"
+      ],
+      "status": "passed",
+      "attempt": 11,
+      "inputHashes": [],
+      "outputs": [],
+      "evidence": [
+        "work/GUANWANGGAID-64/homepage-lab/publication-r10.json",
+        "work/GUANWANGGAID-64/homepage-lab/http-r10-verification.json",
+        "work/GUANWANGGAID-64/homepage-lab/prd-images-r10.json",
+        "work/GUANWANGGAID-64/homepage-lab/live-verification.json"
+      ],
+      "validation": "源文件/本地与线上交互/专业审图/Git及固定预览/16远程图片分别通过；文档旧标题模板例外保留，飞书及生产服务未执行",
+      "error": null,
+      "reviewer": "root"
+    }
+  ]
+}
