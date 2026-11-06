@@ -13,7 +13,7 @@ from PIL import Image
 ROOT=Path(__file__).resolve().parents[2]
 OUT=Path(__file__).resolve().parent
 SOURCE=OUT/'prd-v1.4-Draft.md'
-TARGET=ROOT/'prd/最终文档/【PRD】《盖世游戏》7.0首页改版需求/盖世游戏7.0首页改版PRD_V1.5_飞书导入版.docx'
+TARGET=ROOT/'prd/最终文档/【PRD】《盖世游戏》7.0首页改版需求/盖世游戏7.0首页改版PRD_V1.6_飞书导入版.docx'
 doc=Document();sec=doc.sections[0]
 sec.page_width,sec.page_height=Inches(8.27),Inches(11.69)
 sec.left_margin=sec.right_margin=Inches(.7)
@@ -26,7 +26,7 @@ for name,size in [('Normal',10.5),('Title',22),('Heading 1',17),('Heading 2',14)
  if name.startswith('Heading'):st.paragraph_format.keep_with_next=True
 for el in list(doc.styles.element.xpath('.//w:pBdr')):el.getparent().remove(el)
 doc.core_properties.title='盖世游戏7.0首页改版需求'
-doc.core_properties.author='郑群超';doc.core_properties.subject='V1.5 本机开玩首页改版'
+doc.core_properties.author='郑群超';doc.core_properties.subject='V1.6 本机开玩首页改版'
 doc.core_properties.comments=''
 TOKEN=re.compile(r'(!?\[[^\]]*\]\([^)]+\)|\*\*[^*]+\*\*|`[^`]+`|https?://[^\s<>]+)')
 IMAGES=re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
@@ -55,7 +55,7 @@ def image_block(alt,url,caption=None):
  max_height=3.2 if ih>iw else 3.6
  width=min(WIDTH,max_height*iw/ih)
  if ih>iw:width=min(width,1.45)
- elif path.name not in ('flow-overview.png','flow-revision.png','home-overview.png','home-overview-updated.png'):width=min(width,4.0)
+ elif path.name not in ('flow-overview.png','flow-revision.png','home-overview.png','home-overview-updated.png') and not path.name.startswith('admin-review-'):width=min(width,4.0)
  p=doc.add_paragraph();p.alignment=WD_ALIGN_PARAGRAPH.CENTER
  p.paragraph_format.keep_together=True;p.paragraph_format.keep_with_next=True
  p.paragraph_format.line_spacing=1;p.paragraph_format.space_before=Pt(5);p.paragraph_format.space_after=Pt(3)
