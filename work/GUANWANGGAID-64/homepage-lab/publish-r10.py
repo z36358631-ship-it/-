@@ -127,7 +127,7 @@ def docs():
     source = (OUT / 'prd-v1.4-source.md').read_text('utf-8')
     image_root = 'https://cdn.jsdelivr.net/gh/z36358631-ship-it/-@' + record['imageCommit'] + '/public/prd/gamehub-home-r10-20261106'
     rendered = source.replace('__BASE__', image_root)
-    rendered = re.sub(r'(!\[[^\]]*\]\()([^\)]+)(\))', lambda m: m[1] + quote(m[2], safe=':/%') + m[3], rendered)
+    rendered = re.sub(r'(!\[[^\]]*\]\()([^\)]+)(\))', lambda m: m[1] + quote(m[2], safe=':/@%') + m[3], rendered)
     assert '待确认' not in rendered
     MD.write_text(rendered, encoding='utf-8', newline='\n')
     for name in ['final-revision-verification.json', 'monthly-simplification-verification.json']:
@@ -151,7 +151,7 @@ def docs():
     git('fetch', 'origin', 'refs/heads/master:refs/remotes/origin/master')
     base = git('rev-parse', 'refs/remotes/origin/master').decode().strip()
     # Other project commits may have arrived; preserve them and refuse scoped conflicts.
-    conflicts = git('diff', '--name-only', record['imageCommit'], base, '--', *[p.relative_to(ROOT).as_posix() for p in paths]).decode().strip()
+    conflicts = git('diff', '--name-only', record.get('commit', record['imageCommit']), base, '--', *[p.relative_to(ROOT).as_posix() for p in paths]).decode().strip()
     if conflicts:
         raise RuntimeError('Remote document scope changed; review first: ' + conflicts)
     commit, changed = commit_files(base, paths, 'docs(gamehub): simplify home PRD v1.5 and align weekly sign-in and inline tasks')
