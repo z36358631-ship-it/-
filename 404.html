@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>正在打开…</title>
+<script>
+(function () {
+  // 旧 github.io 链接统一落到本页，再跳到 Cloudflare 同路径（保留中文路径、参数和锚点）
+  var TARGET = "https://gamehub-demo-6mq.pages.dev";
+  var p = location.pathname;
+  // 项目站点 user.github.io/<仓库名>/...：去掉第一段仓库名
+  if (/\.github\.io$/i.test(location.hostname)) p = p.replace(/^\/[^\/]+/, "");
+  var url = TARGET + (p || "/") + location.search + location.hash;
+  location.replace(url);
+  window.__target = url;
+})();
+</script>
+</head>
+<body style="font-family:system-ui;padding:40px;color:#333">
+正在打开页面…若未自动跳转，<a id="go" href="#">点此打开</a>。
+<script>document.getElementById('go').href = window.__target;</script>
+</body>
+</html>
